@@ -24,6 +24,9 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   s.add_dependency 'activerecord-nulldb-adapter'
   s.add_dependency 'activerecord-oracle_enhanced-adapter'     # lokal in Gemfile überschreiben mit : gem 'activerecord-oracle_enhanced-adapter', github: 'rsim/oracle-enhanced', branch: 'rails42'
 
+  # Use SCSS for stylesheets
+  s.add_dependency  'sass-rails', '~> 5.0'
+
 =begin
   # Rails 4 Varianten
 
