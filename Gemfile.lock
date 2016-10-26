@@ -9,7 +9,7 @@ GIT
 PATH
   remote: .
   specs:
-    Panorama (2.3.1)
+    Panorama (2.4.1)
       activerecord-nulldb-adapter
       activerecord-oracle_enhanced-adapter
       rails (~> 5.0.0, >= 5.0.0.1)
@@ -130,4 +130,4 @@ DEPENDENCIES
   tzinfo-data
 
 BUNDLED WITH
-   1.13.5
+   1.13.6
