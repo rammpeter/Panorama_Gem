@@ -2,7 +2,7 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 
-require 'application_helper' # Erweiterung der Controller um Helper-Methoden
+#require 'application_helper' # Erweiterung der Controller um Helper-Methoden
 include ActionView::Helpers::JavaScriptHelper      # u.a. zur Nutzung von escape_javascript(j) im Controllern
 
 module Panorama
