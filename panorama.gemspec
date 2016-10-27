@@ -5,7 +5,7 @@ require "panorama/version"
 
 # Describe your gem and declare its dependencies:
 Gem::Specification.new do |s|
-  s.name          = "Panorama_Gem"
+  s.name          = "Panorama"
   s.version       = Panorama::VERSION
   s.authors       = ["Peter Ramm"]
   s.email         = ["Peter@ramm-oberhermsdorf.de"]
@@ -26,9 +26,6 @@ Aims to issues that are inadequately analyzed and presented by other existing to
 
   # Use SCSS for stylesheets
   s.add_dependency  'sass-rails', '~> 5.0'
-
-  # Specify entries for $LOAD_PATH because they are not loaded under Linux
-  # s.require_paths = ['lib', 'app/assets', 'app/controllers', 'app/helpers']
 
 =begin
   # Rails 4 Varianten
