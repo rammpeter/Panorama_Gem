@@ -28,7 +28,8 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   s.add_dependency  'sass-rails', '~> 5.0'
 
   # Specify entries for $LOAD_PATH because they are not loaded under Linux
-  #s.require_paths = ['lib', 'app/assets', 'app/controllers', 'app/helpers']
+  s.require_paths = ['lib', 'app/assets', 'app/controllers', 'app/helpers']
+  #  s.require_paths = ['lib', 'app/assets', 'app/controllers', 'app/helpers', 'app/models']
 
 =begin
   # Rails 4 Varianten
