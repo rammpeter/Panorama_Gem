@@ -1,5 +1,8 @@
 # encoding: utf-8
 
+require 'panorama/menu_helper'
+require 'panorama/licensing_helper'
+
 # version.rb not include wile using gem from http://github.com
 require_relative "../../../lib/panorama/version"
 

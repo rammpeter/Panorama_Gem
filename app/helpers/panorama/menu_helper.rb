@@ -1,6 +1,10 @@
 # encoding: utf-8
+
+require 'panorama/menu_extension_helper'
+
+
 module Panorama::MenuHelper
-  include MenuExtensionHelper   # Helper-File, das von diese Engine nutzenden Apps überschrieben/überblendet werden kann
+  include Panorama::MenuExtensionHelper   # Helper-File, das von diese Engine nutzenden Apps überschrieben/überblendet werden kann
   include ActionView::Helpers::TranslationHelper
 
 
