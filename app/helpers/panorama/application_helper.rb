@@ -1,19 +1,22 @@
 # encoding: utf-8
 
+require 'panorama/menu_extension_helper'
+
 # Fix uninitialized constant Panorama::Application if used as engine
 require_relative '../../../config/engine_config'
 
 # Methods added to this helper will be available to all templates in the application.
 module Panorama::ApplicationHelper
-  include KeyExplanationHelper
-  include AjaxHelper
-  include DiagramHelper
-  include HtmlHelper
+  include Panorama::KeyExplanationHelper
+  include Panorama::AjaxHelper
+  include Panorama::DiagramHelper
+  include Panorama::HtmlHelper
+  include Panorama::DatabaseHelper
+  include Panorama::SlickgridHelper
+  include Panorama::ExplainApplicationInfoHelper
+  include Panorama::StringsHelper
+
   include ActionView::Helpers::SanitizeHelper
-  include DatabaseHelper
-  include SlickgridHelper
-  include ExplainApplicationInfoHelper
-  include StringsHelper
 
   def get_client_info_store
     if !defined?($login_client_store) || $login_client_store.nil?
