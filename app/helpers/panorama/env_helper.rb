@@ -1,6 +1,10 @@
 # encoding: utf-8
+
+require "zlib"
+require 'panorama/database_helper'
+
 module Panorama::EnvHelper
-  require "zlib"
+  include Panorama::DatabaseHelper
 
   # Einlesen diverser Parameter der DB, die spaeter noch laufend gebraucht werden
   def read_initial_db_values
