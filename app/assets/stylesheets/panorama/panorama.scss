@@ -32,7 +32,7 @@ body {
   left: 0;
   width: 100%;
   height: 42px;
-  background-image: asset-url('panorama/liquid.jpg');
+  background-image: url(liquid.jpg);
   border-bottom-style: solid;
   border-bottom-color: black;
   border-bottom-width: 1px;
@@ -43,7 +43,7 @@ body {
 .usage_help_head_block {
   width: 100%;
   height: 50px;
-  background-image: asset-url('panorama/liquid.jpg');
+  background-image: url(liquid.jpg);
   border-bottom-style: solid;
   border-bottom-color: black;
   border-bottom-width: 1px;
@@ -52,7 +52,7 @@ body {
 
 .page_caption {
   text-align: center;
-  background:asset-url('panorama/greychrome.gif') repeat-x scroll left top #FFFFFF;
+  background:url(greychrome.gif) repeat-x scroll left top #FFFFFF;
   width:100%;
   font-weight: bold;
   padding-top: 4px;
@@ -102,13 +102,13 @@ h2 {
 
   background-color: silver;
 
-  background: asset-url('panorama/cellpic1.gif');
+  background: url(cellpic1.gif);
 }
 
 .menu_section_body {
   padding: 2px 2px 2px 20px;
 
-  background: asset-url('panorama/menu-bg.gif') -7em 0px;
+  background: url(menu-bg.gif) -7em 0px;
 
 }
 
@@ -163,7 +163,7 @@ tbody td,tbody th{
 }
 
 tbody th{
-  background: asset-url('panorama/bluechrome.gif')  top left repeat-x #fff;
+  background: url(bluechrome.gif)  top left repeat-x #fff;
   color:#333;
 }
 
@@ -203,21 +203,21 @@ table a:active{
   text-align: center;
 }
 .toggle.expand {
-  background: asset-url('panorama/expand.gif') no-repeat center center;
+  background: url(expand.gif) no-repeat center center;
   cursor: pointer;
 }
 .toggle.collapse {
-  background: asset-url('panorama/collapse.gif') no-repeat center center;
+  background: url(collapse.gif) no-repeat center center;
   cursor: pointer;
 }
 .toggle.vertical-line {
-  background: asset-url('panorama/vertical-line.png') no-repeat center center;
+  background: url(vertical-line.png) no-repeat center center;
 }
 .toggle.corner-line {
-  background: asset-url('panorama/corner-line.png') no-repeat center center;
+  background: url(corner-line.png) no-repeat center center;
 }
 .toggle.vertical-corner-line {
-  background: asset-url('panorama/vertical-corner-line.png') no-repeat center center;
+  background: url(vertical-corner-line.png) no-repeat center center;
 }
 
 
