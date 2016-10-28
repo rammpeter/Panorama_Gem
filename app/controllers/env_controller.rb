@@ -450,8 +450,10 @@ public
     routing_list
   end
 
-  def require_all_controller_and_helpers
-    require 'ajax_helper'
+  def require_all_controller_and_helpers_and_models
+    Dir.glob("#{__dir__}/*.rb")             {|fname| require(fname) }
+    Dir.glob("#{__dir__}/../helpers/*.rb")  {|fname| require(fname) }
+    Dir.glob("#{__dir__}/../models/*.rb")   {|fname| require(fname) }
   end
 
 end
