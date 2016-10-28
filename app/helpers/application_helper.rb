@@ -3,6 +3,8 @@
 #require 'menu_extension_helper'
 require 'connection_holder'
 
+require 'key_explanation_helper'
+
 # Fix uninitialized constant Application if used as engine
 require_relative '../../config/engine_config'
 
