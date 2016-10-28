@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#require 'menu_extension_helper'
+require 'menu_extension_helper'
 
 
 module MenuHelper
