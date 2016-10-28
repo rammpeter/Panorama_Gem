@@ -450,4 +450,8 @@ public
     routing_list
   end
 
+  def require_all_controller_and_helpers
+    require 'ajax_helper'
+  end
+
 end

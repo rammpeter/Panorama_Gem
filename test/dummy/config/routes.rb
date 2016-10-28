@@ -1,7 +1,5 @@
 require 'env_controller'
 
-dummyc = EnvController.new
-
 Rails.application.routes.draw do
   # route geenrated from rails engine
   # mount Panorama::Engine => "/panorama"
