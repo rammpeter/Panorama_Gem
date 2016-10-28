@@ -4,6 +4,13 @@
 require 'connection_holder'
 
 require 'key_explanation_helper'
+require 'ajax_helper'
+require 'diagram_helper'
+require 'html_helper'
+require 'database_helper'
+require 'slickgrid_helper'
+require 'explain_application_info_helper'
+require 'strings_helper'
 
 # Fix uninitialized constant Application if used as engine
 require_relative '../../config/engine_config'

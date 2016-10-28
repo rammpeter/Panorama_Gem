@@ -451,9 +451,9 @@ public
   end
 
   def require_all_controller_and_helpers_and_models
-    Dir.glob("#{__dir__}/*.rb")             {|fname| require(fname) }
-    Dir.glob("#{__dir__}/../helpers/*.rb")  {|fname| require(fname) }
-    Dir.glob("#{__dir__}/../models/*.rb")   {|fname| require(fname) }
+    Dir.glob("#{__dir__}/*.rb")             {|fname| puts "require #{fname}"; require(fname) }
+    Dir.glob("#{__dir__}/../helpers/*.rb")  {|fname| puts "require #{fname}"; require(fname) }
+    Dir.glob("#{__dir__}/../models/*.rb")   {|fname| puts "require #{fname}"; require(fname) }
   end
 
 end
