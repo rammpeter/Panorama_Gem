@@ -1,2 +1,2 @@
-//= link_directory ../javascripts/panorama .js
-//= link_directory ../stylesheets/panorama .css
+//= link_directory ../javascripts .js
+//= link_directory ../stylesheets .css

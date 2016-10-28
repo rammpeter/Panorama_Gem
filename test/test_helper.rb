@@ -37,9 +37,9 @@ end
 
 #class ActionDispatch::IntegrationTest
 class ActiveSupport::TestCase
-  include Panorama::ApplicationHelper
-  include Panorama::EnvHelper
-  include Panorama::MenuHelper
+  include ApplicationHelper
+  include EnvHelper
+  include MenuHelper
 
   # Setup all fixtures in test/fixtures/*.(yml|csv) for all tests in alphabetical order.
   #
@@ -110,7 +110,7 @@ class ActiveSupport::TestCase
     Rails.logger.info "=========== test_helper.rb : set_session_test_db_context ==========="
 
     # Client Info store entfernen, da dieser mit anderem Schlüssel verschlüsselt sein kann
-    #FileUtils.rm_rf(Panorama::Application.config.client_info_filename)
+    #FileUtils.rm_rf(Application.config.client_info_filename)
 
     #initialize_client_key_cookie                                                # Ensure browser cookie for client_key exists
     connect_oracle_db

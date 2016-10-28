@@ -1,8 +1,19 @@
+require 'env_controller'
+
+dummyc = EnvController.new
+
 Rails.application.routes.draw do
   # route geenrated from rails engine
   # mount Panorama::Engine => "/panorama"
 
-  mount Panorama::Engine => "/panorama"
+  #mount Panorama::Engine => "/"
 
-  root  'panorama/env#index'
+  # set routing info for engine
+  EnvController.routing_actions.each do |r|
+    puts "set route for #{r[:controller]}/#{r[:action]}"
+    get  "#{r[:controller]}/#{r[:action]}"
+    post  "#{r[:controller]}/#{r[:action]}"
+  end
+
+  root  'env#index'
 end
