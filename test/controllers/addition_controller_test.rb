@@ -4,7 +4,6 @@ require 'test_helper'
 
 class AdditionControllerTest < ActionController::TestCase
   include MenuHelper
-  include Engine.routes.url_helpers
 
   setup do
     @routes = Engine.routes         # Suppress routing error if only routes for dummy application are active

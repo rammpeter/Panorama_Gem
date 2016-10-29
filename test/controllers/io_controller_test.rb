@@ -3,7 +3,6 @@ require 'test_helper'
 
 class IoControllerTest < ActionController::TestCase
   include IoHelper
-  include Engine.routes.url_helpers
 
   setup do
     @routes = Engine.routes         # Suppress routing error if only routes for dummy application are active

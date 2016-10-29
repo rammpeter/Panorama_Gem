@@ -6,8 +6,6 @@ include ActionView::Helpers::TranslationHelper
 class EnvControllerTest < ActionController::TestCase
 #class EnvControllerTest < ActionDispatch::IntegrationTest
 
-  include Engine.routes.url_helpers
-
   setup do
     @routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context{}
