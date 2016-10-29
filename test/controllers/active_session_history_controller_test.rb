@@ -4,7 +4,7 @@ require 'active_session_history_helper'
 
 class ActiveSessionHistoryControllerTest < ActionController::TestCase
   include ActiveSessionHistoryHelper
-  include Engine.routes.url_helpers
+  #include Engine.routes.url_helpers
 
   setup do
     @routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
