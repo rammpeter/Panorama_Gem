@@ -21,6 +21,9 @@ if RUBY_PLATFORM == 'java' # Allows the application to work with other Rubies if
     restricted_field.set nil, false
   rescue ClassNotFoundException => e
     # Handle Mac Java, etc not having this configuration setting
-    $stderr.print "Java told me: #{e}n"
+    Rails.logger.error "unlimited_strength_cryptography.rb: ClassNotFoundException #{e}"
+  rescue Exception => e
+    Rails.logger.error "unlimited_strength_cryptography.rb: Error faking advanced JCE (#{e})!"
+    Rails.logger.error "Plaes fix this by installing Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files"
   end
 end
