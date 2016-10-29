@@ -5,7 +5,7 @@ require 'menu_helper'
 require 'licensing_helper'
 
 # version.rb not include wile using gem from http://github.com
-require_relative "../../../lib/panorama_gem/version"
+require "panorama_gem/version"
 
 class EnvController < ApplicationController
   layout 'application'
