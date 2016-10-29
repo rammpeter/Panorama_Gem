@@ -110,7 +110,7 @@ module DragnetHelper
           },
       ]
 
-      if defined?(Panorama)                                                     # not for generate_dragnet_html.rb
+      if defined?(PanoramaGem)                                                     # not for generate_dragnet_html.rb
 
         # Extend list with predefined selections from file
         predefined_filename = "#{EngineConfig.config.panorama_var_home}/predefined_dragnet_selections.json"

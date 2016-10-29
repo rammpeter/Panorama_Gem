@@ -1,7 +1,7 @@
 require 'test_helper'
 
-class Panorama::Test < ActiveSupport::TestCase
+class PanoramaGem::Test < ActiveSupport::TestCase
   test "truth" do
-    assert_kind_of Module, Panorama
+    assert_kind_of Module, PanoramaGem
   end
 end

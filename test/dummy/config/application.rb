@@ -3,7 +3,7 @@ require_relative 'boot'
 require 'rails/all'
 
 Bundler.require(*Rails.groups)
-require "panorama"
+require "panorama_gem"
 
 module Dummy
   class Application < Rails::Application

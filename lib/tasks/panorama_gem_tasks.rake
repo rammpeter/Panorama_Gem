@@ -1,5 +1,5 @@
 # desc "Explaining what the task does"
-# task :panorama do
+# task :panorama_gem do
 #   # Task goes here
 # end
 
@@ -40,6 +40,6 @@ namespace :db do
     end
   end
   task :abort_if_pending_migrations do
-    puts 'Task db:db:abort_if_pending_migrations removed by lib/tasks/panorama_tasks.rake !'
+    puts 'Task db:db:abort_if_pending_migrations removed by lib/tasks/panorama_gem_tasks.rake !'
   end
 end

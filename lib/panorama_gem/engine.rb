@@ -1,6 +1,6 @@
-module Panorama
+module PanoramaGem
   class Engine < ::Rails::Engine
     # You should have access from application
-    #isolate_namespace Panorama
+    #isolate_namespace PanoramaGem
   end
 end
