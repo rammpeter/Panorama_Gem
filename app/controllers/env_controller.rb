@@ -407,12 +407,12 @@ public
   end
 
   # Get arry with all engine's controller actions for routing
-  def self.routing_actions
+  def self.routing_actions(controller_dir)
     routing_list = []
 
     puts "Panorama_Gem.route.rb called with routes.draw"
-    Rails.logger.info "###### set routes for all controller methods"
-    Dir.glob("#{__dir__}/*.rb") do |fname|
+    Rails.logger.info "###### set routes for all controller methods in #{controller_dir}"
+    Dir.glob("#{controller_dir}/*.rb") do |fname|
       controller_short_name = nil
       public_actions = true                                                       # following actions are public
       File.open(fname) do |f|
@@ -434,7 +434,7 @@ public
               action_name = line.gsub(/\(/, ' ').split[1]
               if !action_name.match(/\?/) && public_actions && !action_name.match(/self\./)
                 # set route for controllers action
-                Rails.logger.info "set route for #{controller_short_name}/#{action_name}"
+                # Rails.logger.info "set route for #{controller_short_name}/#{action_name}"
                 routing_list << {:controller => controller_short_name, :action => action_name}
                 #get  "#{controller_short_name}/#{action_name}"
                 #post "#{controller_short_name}/#{action_name}"
