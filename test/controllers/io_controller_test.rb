@@ -5,7 +5,7 @@ class IoControllerTest < ActionController::TestCase
   include IoHelper
 
   setup do
-    @routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
+    #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context{}
 
     min_alter_org = Time.new

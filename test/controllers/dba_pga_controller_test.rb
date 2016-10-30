@@ -4,7 +4,7 @@ require 'test_helper'
 class DbaPgaControllerTest < ActionController::TestCase
 
   setup do
-    @routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
+    #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context{}
 
     min_alter_org = Time.new

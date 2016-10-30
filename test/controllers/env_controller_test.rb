@@ -7,7 +7,7 @@ class EnvControllerTest < ActionController::TestCase
 #class EnvControllerTest < ActionDispatch::IntegrationTest
 
   setup do
-    @routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
+    #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context{}
   end
 

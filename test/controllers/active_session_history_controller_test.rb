@@ -6,7 +6,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   include ActiveSessionHistoryHelper
 
   setup do
-    @routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
+    #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context{
       min_alter_org = Time.new
       max_alter_org = min_alter_org-10000
