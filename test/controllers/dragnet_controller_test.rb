@@ -1,7 +1,9 @@
 # encoding: utf-8
 require 'test_helper'
+require 'json'
 
 class DragnetControllerTest < ActionController::TestCase
+  include DragnetHelper
 
   setup do
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
@@ -25,11 +27,38 @@ class DragnetControllerTest < ActionController::TestCase
   end
 
   test "exec_dragnet_sql"  do
-    post  :exec_dragnet_sql, :params => {:format=>:js, :dragnet_hidden_entry_id=>"_0_0_0", "Threshold for pctfree of index"=>10, "Threshold for pctfree of index partition"=>10, "Minumum number of rows" => 10 }
-    assert_response :success
+    # Test all subitems of node
+    def test_tree(node)
+      node.each do |entry|
+        if entry['children']
+          test_tree(entry['children'])        # Test subnode's entries
+        else
+          full_entry = extract_entry_by_entry_id(entry['id'])                   # Get SQL from id
+          Rails.logger.info "Testing dragnet SQL: #{entry['id']} #{full_entry[:name]}"
+          params = {:format=>:js, :dragnet_hidden_entry_id=>entry['id']}
 
-    post  :exec_dragnet_sql, :params => {:format=>:js, :dragnet_hidden_entry_id=>"_0_0_0", "Threshold for pctfree of index"=>10, "Threshold for pctfree of index partition"=>10, "Minumum number of rows" => 10 , :commit_show => 'hugo' }
-    assert_response :success
+          if full_entry[:parameter]
+            full_entry[:parameter].each do |p|                                  # Iterate over optional parameter of selection
+              params[p[:name]] = p[:default]
+            end
+          end
+
+          post  :exec_dragnet_sql, :params => params                            # call execution of SQL
+          assert_response :success
+
+          params[:commit_show] = 'hugo'
+          post  :exec_dragnet_sql, :params => params                            # Call show SQL text
+          assert_response :success
+
+        end
+      end
+    end
+
+    # get available selections
+    get :get_selection_list, :params => {:format=>:json }
+    dragnet_sqls = JSON.parse(@response.body)
+
+    test_tree(dragnet_sqls)                                                     # Test each dragnet SQL with default parameters
   end
 
   # Find unique name by random to ensure selection does not already exists in client_info.store

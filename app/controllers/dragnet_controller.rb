@@ -74,25 +74,7 @@ class DragnetController < ApplicationController
     render :json => response.html_safe, :status => 200
   end # get_selection_list
 
-  private
-  # Über zusammengesetzte ID der verschiedenen Hierarchien Objekt-Referenz in dragnet_sql_list finden
-  def extract_entry_by_entry_id(entry_id)
-    entry_ids = entry_id.split('_')
-    entry_ids.delete_at(0)                                                        # ersten Eintrag entfernen
 
-    entry = nil
-    entry_ids.each do |e|
-      if entry.nil?
-        entry = dragnet_sql_list[e.to_i]                                          # x-tes Element aus erster Hierarchie-Ebene
-      else
-        entry = entry[:entries][e.to_i]                                           # x-tes Element aus innerer Hierarchie
-      end
-    end
-    entry
-  end
-
-
-  public
   # Show new selection diealog
   def refresh_selected_data
     entry = extract_entry_by_entry_id(params[:entry_id])
