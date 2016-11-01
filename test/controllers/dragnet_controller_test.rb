@@ -43,8 +43,10 @@ class DragnetControllerTest < ActionController::TestCase
             end
           end
 
-          post  :exec_dragnet_sql, :params => params                            # call execution of SQL
-          assert_response :success
+          if !full_entry[:sql]['SET SERVEROUT ON;']                             # do not try to execute PL/SQL code
+            post  :exec_dragnet_sql, :params => params                          # call execution of SQL
+            assert_response :success
+          end
 
           params[:commit_show] = 'hugo'
           post  :exec_dragnet_sql, :params => params                            # Call show SQL text
