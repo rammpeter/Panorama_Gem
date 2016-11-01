@@ -61,13 +61,11 @@ function hideIndicator(url) {
     }
 }
 
-var tooltip_document_body = null;
 function closeAllTooltips(self_tooltip){
-    if (tooltip_document_body == null)
-        tooltip_document_body = jQuery(document.body);
-    tooltip_document_body.children(".ui-tooltip").each(function(i){
-        if (!self_tooltip || jQuery(this).attr('id') != self_tooltip.attr('id'))
-        jQuery(this).remove();
+    jQuery('.tooltip_class').each(function(i){                                  // Test each open tooltip to be closed
+        if (!self_tooltip || jQuery(this).attr('id') != self_tooltip.attr('id')){   // down close requestung tooltip itself
+            jQuery(this).remove();                                              // close other tooltip than requesting
+        }
     });
 
 }
@@ -75,7 +73,7 @@ function closeAllTooltips(self_tooltip){
 // jQuery.UI Tooltip verwenden
 function register_tooltip(jquery_object){
     jquery_object.tooltip({                                              // ui-tooltips verwenden
-        tooltipClass: 'tooltip_class',
+        classes: {'ui-tooltip': 'tooltip_class'},
         open: function(event, ui){
             closeAllTooltips(ui.tooltip);
         },
