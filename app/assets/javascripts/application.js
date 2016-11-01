@@ -44,8 +44,8 @@ function useIndicator(url){
     }
 
     return  (!(
-        exclude_action_hit('Env/repeat_last_menu_action') ||
-        exclude_action_hit('DbaHistory/getSQL_ShortText')
+        exclude_action_hit('env/repeat_last_menu_action') ||
+        exclude_action_hit('dba_history/getSQL_ShortText')
     ));
 }
 
@@ -132,7 +132,7 @@ function expand_sql_id_hint(id, sql_id){
     }
     else {
         SQL_shortText_Cache[sql_id] = "< SQL-Text: request in progress>"        // Verhindern, dass während der Abfrage erneut nachgefragt wird
-        jQuery.ajax({url: "DbaHistory/getSQL_ShortText?sql_id="+sql_id,
+        jQuery.ajax({url: "dba_history/getSQL_ShortText?sql_id="+sql_id,
             dataType: "json",
             success: function(response) {
                 if (response.sql_short_text){
