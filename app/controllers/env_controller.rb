@@ -44,7 +44,7 @@ class EnvController < ApplicationController
     session.delete(:time_selection_end)             if session[:time_selection_end]
 
 
-    set_I18n_locale(get_locale)                                                 # ruft u.a. I18n.locale = get_locale auf
+    #set_I18n_locale(get_locale)                                                 # ruft u.a. I18n.locale = get_locale auf
 
     write_to_client_info_store(:last_used_menu_controller,  'env')
     write_to_client_info_store(:last_used_menu_action,      'index')

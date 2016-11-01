@@ -69,22 +69,22 @@ module EnvHelper
   # Ensure client browser has unique client_key stored as cookie
   MAX_NEW_KEY_TRIES  = 1000
   def initialize_client_key_cookie
-    # Test ob sich client_key-Cookie entschlüsseln lässt
-    begin
-      database_helper_decrypt_value(cookies['client_key'])
-    rescue Exception => e
-      Rails.logger.error("Exception #{e.message} while database_helper_decrypt_value(cookies['client_key'])")
-      cookies.delete('client_key')                                               # Verwerfen des nicht entschlüsselbaren Cookies
-      cookies.delete('client_salt')
+    if cookies['client_key']
+      begin
+        database_helper_decrypt_value(cookies['client_key'])                    # Test client_key-Cookie for possible decryption
+      rescue Exception => e
+        Rails.logger.error("Exception #{e.message} while database_helper_decrypt_value(cookies['client_key'])")
+        cookies.delete('client_key')                                            # Verwerfen des nicht entschlüsselbaren Cookies
+        cookies.delete('client_salt')
+      end
     end
 
-
-    unless cookies['client_key']                                                 # Erster Zugriff in neu gestartetem Browser oder Cookie nicht mehr verfügbar
+    unless cookies['client_key']                                                # Erster Zugriff in neu gestartetem Browser oder Cookie nicht mehr verfügbar
       loop_count = 0
       while loop_count < MAX_NEW_KEY_TRIES
         loop_count = loop_count+1
         new_client_key = rand(10000000)
-        unless get_client_info_store.exist?(new_client_key)                        # Dieser Key wurde noch nie genutzt
+        unless get_client_info_store.exist?(new_client_key)                     # Dieser Key wurde noch nie genutzt
           # Salt immer mit belegen bei Vergabe des client_key, da es genutzt wird zur Verschlüsselung des Client_Key im cookie
           cookies['client_salt'] = { :value => rand(10000000000),                              :expires => 1.year.from_now }  # Lokaler Schlüsselbestandteil im Browser-Cookie des Clients, der mit genutzt wird zur Verschlüsselung der auf Server gespeicherten Login-Daten
           cookies['client_key']  = { :value => database_helper_encrypt_value(new_client_key),  :expires => 1.year.from_now }

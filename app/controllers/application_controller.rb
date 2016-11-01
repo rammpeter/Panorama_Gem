@@ -54,12 +54,16 @@ class ApplicationController < ActionController::Base
     ConnectionHolder.init_connection_for_new_request(controller_name, action_name)  # Register new request for delayed connection to Oracle DB with first SQL execution
 
     begin
-      I18n.locale = get_locale                                                  # fuer laufende Action Sprache aktivieren
+      if cookies['client_key']
+        I18n.locale = get_locale                                                # fuer laufende Action Sprache aktivieren
+      else
+        I18n.locale = 'en'                                                      # Use english for first conversation
+      end
     rescue
       I18n.locale = 'en'                                                        # wenn Problem bei Lesen des Cookies auftreten, dann Default verwenden
     end
 
-    # Auuschluss von Methoden, die keine DB-Connection bebötigen
+    # Ausschluss von Methoden, die keine DB-Connection bebötigen
     # Präziser before_filter mit Test auf controller
     if (controller_name == 'env' && ['index', 'get_tnsnames_records', 'set_locale', 'set_dbid', 'set_database_by_params', 'set_database_by_id'].include?(action_name) ) ||
               (controller_name == 'usage' && ['info', 'detail_sum', 'single_record', 'ip_info'].include?(action_name) ) ||
