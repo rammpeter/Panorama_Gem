@@ -35,12 +35,7 @@ Negative aspect is multiple access on every partition of index if partition key 
             :desc  => t(:dragnet_helper_12_desc, :default=>"Also unique indexes may be local partitioned if partition key is in identical order leading part of index.
 This way partition pruning may be used for access on unique indexes plus possible decrease of index' BLevel."),
             :sql=> "SELECT /* DB-Tools Ramm Partitionierung Unique Indizes */
-                              t.Owner, t.Table_Name, i.Uniqueness, tc.Column_Name Partition_Key1, i.Index_Name, t.Num_Rows,
-                              (SELECT  ROUND(SUM(bytes)/(1024*1024),1) MBytes
-                               FROM   DBA_SEGMENTS s
-                               WHERE s.SEGMENT_NAME = i.Index_Name
-                               AND     s.Owner      = i.Owner
-                              ) MBytes
+                              t.Owner, t.Table_Name, i.Uniqueness, tc.Column_Name Partition_Key1, i.Index_Name, t.Num_Rows, seg.MBytes
                       FROM   DBA_Tables t
                              JOIN DBA_Part_Key_Columns tc
                              ON (    tc.Owner           = t.Owner
@@ -59,6 +54,8 @@ This way partition pruning may be used for access on unique indexes plus possibl
                              ON (    i.Owner            = ic.Index_Owner
                                  AND i.Index_Name       = ic.Index_Name
                                 )
+                             JOIN (SELECT Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name
+                                  ) seg ON seg.Owner = i.Owner AND seg.Segment_Name = i.Index_Name
                       WHERE t.Partitioned = 'YES'
                       AND   i.Partitioned = 'NO'
                       ORDER BY t.Num_Rows DESC NULLS LAST",

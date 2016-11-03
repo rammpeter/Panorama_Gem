@@ -591,10 +591,10 @@
 
   dragnet_helper_9_name:                                    Erkennung nicht genutzter Indizes durch System-Monitoring
   dragnet_helper_9_desc: |-
-    Die DB Protokolliert die Nutzung (Zugriff) von Indizes die vorab durch 'ALTER INDEX ... MONITORING USAGE' deklariert wurden.
+    Die DB protokolliert die Nutzung (Zugriff) von Indizes die vorab durch 'ALTER INDEX ... MONITORING USAGE' deklariert wurden.
     Das Ergebnis der Nutzungsprotokollierung ist je Schema in Tabelle v$Object_Usage einsehbar.
     Schemaübergreifend ist die Nutzung mit diese Selektion sichtbar.
-    Achtung: Auch die Ausführung von GATHER_INDEX_STATS zählt als Nutzung, selbts wenn der Index nie durch andere Selects genutzt wurde.
+    Achtung: Auch die Ausführung von GATHER_INDEX_STATS zählt als Nutzung, selbst wenn der Index nie durch andere Selects genutzt wurde.
 
     Weitere Informationen zur Nutzung bringt Anzeige 'Segment statistics historisch' und Analyse der ActiveSessionHistory über Spalte 'Time waited'.
   dragnet_helper_9_param_1_hint:                            Anzahl Tage, die der Start_Monitoring-Zeitstempel ungenutzter Indizes alt sein muss
