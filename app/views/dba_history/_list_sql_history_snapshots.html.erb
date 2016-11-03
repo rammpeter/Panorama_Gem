@@ -41,7 +41,7 @@ column_options =
           {:caption=>"PL/SQL",         :data=>proc{|rec| formattedNumber(rec.plsql_exec_time_secs) },          :title=>"PL/SQL Exec Time (sec)", :align=>"right" },
           {:caption=>"Disk Reads",     :data=>proc{|rec| formattedNumber(rec.disk_reads) },                    :title=>"Anzahl DB-Blöcke von Disk gelesen gesamt", :align=>"right" },
           {:caption=>"Disk / Ex.",     :data=>proc{|rec| formattedNumber(rec.disk_reads_per_execute, 3) },     :title=>"Anzahl DB-Blöcke von Disk gelesen per Execute", :align=>"right" },
-          {:caption=>"ms/Disk Read",   :data=>proc{|rec| formattedNumber(rec.disk_reads>0 ? rec.user_io_wait_time_secs*1000/rec.disk_reads : 0,2)},   :title=>"Millisekunden je von Disk gelesenen DB-Block",  :align=>"right"},
+          {:caption=>"ms/Disk Read",   :data=>proc{|rec| formattedNumber((rec.disk_reads>0 ? rec.user_io_wait_time_secs*1000/rec.disk_reads : 0 rescue 0),2)},   :title=>"Millisekunden je von Disk gelesenen DB-Block",  :align=>"right"},
           {:caption=>"Hit Ratio",      :data=>proc{|rec| formattedNumber(rec.hit_ratio,2) },                   :title=>"Verhältnis Cache-Hits zu Buffer Gets in %",  :align=>"right"},
           {:caption=>"Buffer Gets",    :data=>proc{|rec| formattedNumber(rec.buffer_gets) },                   :title=>"Total number of buffer gets", :align=>"right" },
           {:caption=>"Buffer / Ex.",   :data=>proc{|rec| formattedNumber(rec.buffer_gets_per_exec, 2) },       :title=>"Buffer Gets per execute", :align=>"right" },

@@ -105,7 +105,7 @@ It may also activate cache buffers chains latch-waits.
 This access my be acceptable, if controlling result for nested loop has only one or less records.
 Statement executes only for current connected RAC-Instance (due to runtime prblem otherwise), so it must be executed separately for every instance.'),
             :sql=>  "SELECT p.Inst_ID, p.SQL_ID, s.Executions, s.Elapsed_Time/1000000 Elapsed_time_Secs, p.Child_Number, p.Plan_Hash_Value,
-                             p.Operation, p.Options, p.Object_Owner, Object_Name, p.ID, s.SQL_FullText
+                             p.Operation, p.Options, p.Object_Owner, Object_Name, p.ID SQL_Plan_Line_ID
                       FROM   (
                               WITH Plan AS (SELECT /*+ MATERIALIZE  */
                                                    p.Inst_ID, p.SQL_ID, p.Child_Number, p.Plan_Hash_Value,

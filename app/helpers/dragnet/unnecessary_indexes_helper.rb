@@ -148,7 +148,7 @@ Caution: GATHER_INDEX_STATS also counts as usage even if no other select touches
 
 Additional information about index usage can be requested from DBA_Hist_Seg_Stat and DBA_Hist_Active_Sess_History."),
             :sql=> "SELECT /* DB-Tools Ramm: unused indexes */ u.*, i.Num_Rows, i.Distinct_Keys,
-                             (SELECT SUM(s.Bytes) FROM DBA_Segments s WHERE s.Owner=u.Owner AND s.Segment_Name=u.Index_Name)/(1024*1024) MBytes,
+                             seg.MBytes,
                              i.Tablespace_Name, i.Uniqueness, i.Index_Type,
                              (SELECT IOT_Type FROM DBA_Tables t WHERE t.Owner = u.Owner AND t.Table_Name = u.Table_Name) IOT_Type,
                              c.Constraint_Name foreign_key_protection,
@@ -174,6 +174,8 @@ Additional information about index usage can be requested from DBA_Hist_Seg_Stat
                       LEFT OUTER JOIN DBA_Constraints c     ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'R'
                       LEFT OUTER JOIN DBA_Constraints rc    ON rc.Owner = c.R_Owner AND rc.Constraint_Name = c.R_Constraint_Name
                       LEFT OUTER JOIN DBA_Tables rt         ON rt.Owner = rc.Owner AND rt.Table_Name = rc.Table_Name
+                      LEFT OUTER JOIN (SELECT Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name
+                                      ) seg ON seg.Owner = u.Owner AND seg.Segment_Name = u.Index_Name
                       WHERE u.Used='NO' AND u.Monitoring='YES'
                       AND i.Num_Rows > ?
                       ORDER BY i.Num_Rows DESC NULLS LAST
@@ -196,7 +198,7 @@ This selection already suppresses indexes used for elimination of 'table access 
                                (
                                 SELECT /*+ NO_MERGE USE_HASH(i ms io) */
                                        i.Owner, i.Table_Name, i.Index_Name, i.Num_Rows,
-                                       (SELECT SUM(s.Bytes) FROM DBA_Segments s WHERE s.Owner=i.Owner AND s.Segment_Name=i.Index_Name)/(1024*1024) \"MBytes\",
+                                       seg.MBytes \"MBytes\",
                                        ms.Column_Name \"Max. selective column\", ms.Max_Num_Distinct,
                                        ROUND(ms.Max_Num_Distinct / i.Num_Rows, 2) \"Max. selectivity\",
                                        tc.Column_Name \"Min. selective column\", tc.Num_Distinct \"Min. num. distinct\"
@@ -220,6 +222,8 @@ This selection already suppresses indexes used for elimination of 'table access 
                                                  AND   i.UniqueNess = 'NONUNIQUE'
                                                  GROUP BY i.Owner, i.Index_Name
                                                 ) io ON io.Owner = i.Owner AND io.Index_Name = i.Index_Name
+                                LEFT OUTER JOIN (SELECT Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name
+                                                ) seg ON seg.Owner = i.Owner AND seg.Segment_Name = i.Index_Name
                                 WHERE  i.Num_Rows IS NOT NULL AND i.Num_Rows > 0
                                 AND    ms.Max_Num_Distinct > i.Num_Rows/?   -- Ein Feld mit gen∏gend groﬂer Selektivit‰t existiert im Index
                                 AND    tc.Column_Name != ms.Column_Name     -- Spalte mit hoechster Selektivit‰t ausblenden

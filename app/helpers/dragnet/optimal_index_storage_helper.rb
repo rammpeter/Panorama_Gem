@@ -76,8 +76,8 @@ module Dragnet::OptimalIndexStorageHelper
             ]
         },
         {
-            :name  => t(:dragnet_helper_2_name, :default=> 'Recommendations for index-compression, test by selectivity of single columns from multicolumn index'),
-            :desc  => t(:dragnet_helper_2_desc, :default=> 'For multicolumn-indexes compression of single index columns (beginning from left) may be useful even if this multicolumn-index has overall Num_Rows=Distinct_Keys (selectivity=1).
+            :name  => t(:dragnet_helper_130_name, :default=> 'Recommendations for index-compression, test by selectivity of single columns from multicolumn index'),
+            :desc  => t(:dragnet_helper_130_desc, :default=> 'For multicolumn-indexes compression of single index columns (beginning from left) may be useful even if this multicolumn-index has overall Num_Rows=Distinct_Keys (selectivity=1).
 Partial index-compression (COMPRESS x) assumes that index-column to be compressed has position 1 in index or all columns before are also compressed.
 This selections shows recommendations for compression of single columns of multicolumn indexes beginning with column-position 1.'),
             :sql=> "SELECT *
@@ -90,11 +90,7 @@ This selections shows recommendations for compression of single columns of multi
                                    ) Partitions,
                                    ica.Columns, ic.Column_Name, ic.Column_Position,
                                    tc.Num_Distinct, tc.Avg_Col_Len, ROUND(i.Num_Rows/DECODE(tc.Num_Distinct,0,1,tc.Num_Distinct)) Rows_per_Key,
-                                   (SELECT  ROUND(SUM(bytes)/(1024*1024),1) MBytes
-                                    FROM   DBA_SEGMENTS s
-                                    WHERE s.SEGMENT_NAME = i.Index_Name
-                                    AND     s.Owner      = i.Owner
-                                   ) MBytes
+                                   seg.MBytes
                             FROM   DBA_Indexes i
                             JOIN   (SELECT Index_Owner, Index_Name, COUNT(*) Columns
                                     FROM   DBA_Ind_Columns
@@ -103,6 +99,8 @@ This selections shows recommendations for compression of single columns of multi
                                    ) ica ON ica.Index_Owner = i.Owner AND ica.Index_Name = i.Index_Name
                             JOIN   DBA_Ind_Columns ic ON ic.Index_Owner = i.Owner AND ic.Index_Name = i.Index_Name
                             JOIN   DBA_Tab_Columns tc ON tc.Owner = i.Table_Owner AND tc.Table_Name = i.Table_Name AND tc.Column_Name = ic.Column_Name
+                            JOIN   (SELECT Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name
+                                   ) seg ON seg.Owner = i.Owner AND seg.Segment_Name = i.Index_Name
                             WHERE  i.Owner NOT IN ('SYS', 'SYSTEM', 'OUTLN', 'DBSNMP', 'WMSYS', 'CTXSYS', 'XDB')
                             AND    i.Index_Type NOT IN ('BITMAP')
                             AND    i.Num_Rows > ?
