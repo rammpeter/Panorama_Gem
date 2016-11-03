@@ -410,8 +410,7 @@ public
   def self.routing_actions(controller_dir)
     routing_list = []
 
-    puts "Panorama_Gem.route.rb called with routes.draw"
-    Rails.logger.info "###### set routes for all controller methods in #{controller_dir}"
+    # Rails.logger.info "###### set routes for all controller methods in #{controller_dir}"
     Dir.glob("#{controller_dir}/*.rb") do |fname|
       controller_short_name = nil
       public_actions = true                                                       # following actions are public
