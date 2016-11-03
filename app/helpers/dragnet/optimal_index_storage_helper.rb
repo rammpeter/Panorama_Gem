@@ -35,12 +35,7 @@ module Dragnet::OptimalIndexStorageHelper
             :sql=> "SELECT /* DB-Tools Ramm Komprimierung Indizes */  *
                       FROM (
                                   SELECT ROUND(i.Num_Rows/i.Distinct_Keys) Rows_Per_Key, i.Num_Rows, i.Owner, i.Index_Name, i.Index_Type, i.Table_Owner, i.Table_Name,
-                                         t.IOT_Type,
-                                  (   SELECT  ROUND(SUM(bytes)/(1024*1024),1) MBytes
-                                       FROM   DBA_SEGMENTS s
-                                       WHERE s.SEGMENT_NAME = i.Index_Name
-                                       AND     s.Owner                = i.Owner
-                                  ) MBytes, Distinct_Keys,
+                                         t.IOT_Type, seg.MBytes, Distinct_Keys,
                                   (SELECT SUM(tc.Avg_Col_Len)
                                    FROM   DBA_Ind_Columns ic,
                                           DBA_Tab_Columns tc
@@ -50,6 +45,8 @@ module Dragnet::OptimalIndexStorageHelper
                                   ) Avg_Col_Len
                                   FROM   DBA_Indexes i
                                   JOIN   DBA_Tables t ON t.Owner = i.Table_Owner AND t.Table_Name = i.Table_Name
+                                  JOIN   (SELECT  Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name
+                                         ) seg ON seg.Owner = i.Owner AND seg.Segment_Name = i.Index_Name
                                   WHERE  i.Compression='DISABLED'
                                   AND    i.Distinct_Keys > 0
                                   AND    i.Table_Owner NOT IN ('SYS')
@@ -66,7 +63,7 @@ module Dragnet::OptimalIndexStorageHelper
             :name  => t(:dragnet_helper_3_name, :default=> 'Recommendations for index-compression, test by leaf-block count'),
             :desc  => t(:dragnet_helper_3_desc, :default=> 'Index-compression (COMPRESS) allows reduction of physical size for OLTP-indexes with low selectivity.
   For indexes with low selectivity reduction of index-size by compression can be 1/4 to 1/3.
-  For compressed index for one indexed value all links to data blocks should normally fit into one leaf block'),
+  For compressed index number of leaf blocks should decrease, in best case all references to data blocks of one key should fit into only one leaf block'),
             :sql=> "SELECT /* DB-Tools Ramm Komprimierung Indizes */ i.Owner \"Owner\", i.Table_Name, Index_Name, Index_Type, BLevel, Distinct_Keys,
                              ROUND(i.Num_Rows/i.Distinct_Keys) Rows_Per_Key,
                              Avg_Leaf_Blocks_Per_Key, Avg_Data_Blocks_Per_Key, i.Num_Rows, t.IOT_Type

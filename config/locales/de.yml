@@ -537,7 +537,7 @@
   dragnet_helper_3_desc: |-
     Index-Kompression (COMPRESS) bringt sinnvolle Ergebnisse durch Reduktion der physischen Größe für OLTP-Indizes mit geringer Selektivität.
     Bei geringer Selektivität der Indizes ist Reduzierung der Größe durch Komprimierung um 1/4 bis 1/3 möglich.
-    Bei komprimiertem Index sollten alle Verweise auf Data-Blocks eines Keys in einen Leaf-Block passen
+    Bei komprimiertem Index sollte die Anzahl Leaf-Blocks per Key sinken, im Optimum passen alle Referenzen auf Datenblöcke eines Keys in nur einen Leaf Block.
   dragnet_helper_3_name:                                    Empfehlungen für Index-Komprimierung, Test auf Leaf-Blocks
   dragnet_helper_3_param_1_hint:                            Mindestanzahl Leaf-Blocks / Key
 
