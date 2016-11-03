@@ -9,8 +9,6 @@
 
 
 if RUBY_PLATFORM == 'java' # Allows the application to work with other Rubies if not JRuby
-  puts "Open restriction for JCE Unlimited Strength Jurisdiction Policy File"
-
   require 'java'
   java_import 'java.lang.ClassNotFoundException'
 
