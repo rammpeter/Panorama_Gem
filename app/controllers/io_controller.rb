@@ -19,6 +19,7 @@ class IoController < ApplicationController
   # Hilfsmethode
   def where_from_groupfilter (groupfilter, groupby, key_rule_function)
     @groupfilter = groupfilter             # Instanzvariablen zur nachfolgenden Nutzung
+    @groupfilter = @groupfilter.to_hash if @groupfilter.class != Hash   # convert to Hash if Class is ActionController::Parameters
     @groupby    = groupby                  # Instanzvariablen zur nachfolgenden Nutzung
     @global_where_string  = ""             # Filter-Text für nachfolgendes Statement mit AND-Erweiterung für alle Union-Tabellen
     @global_where_values  = []             # Filter-werte für nachfolgendes Statement für alle Union-Tabellen
