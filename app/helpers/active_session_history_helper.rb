@@ -115,7 +115,8 @@ module ActiveSessionHistoryHelper
   # Belegen des WHERE-Statements aus Hash mit Filter-Bedingungen und setzen Variablen
   def where_from_groupfilter (groupfilter, groupby)
     @groupfilter = groupfilter             # Instanzvariablen zur nachfolgenden Nutzung
-    @groupfilter = @groupfilter.to_hash if @groupfilter.class != Hash   # convert to Hash if Class is ActionController::Parameters
+    @groupfilter = @groupfilter.to_unsafe_h.to_h  if @groupfilter.class == ActionController::Parameters
+    raise "Parameter groupfilter should be of class Hash or ActionController::Parameters" if @groupfilter.class != Hash
     @groupby    = groupby                  # Instanzvariablen zur nachfolgenden Nutzung
     @global_where_string  = ""             # Filter-Text für nachfolgendes Statement mit AND-Erweiterung für alle Union-Tabellen
     @global_where_values = []              # Filter-werte für nachfolgendes Statement für alle Union-Tabellen
