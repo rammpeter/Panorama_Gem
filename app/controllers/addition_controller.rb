@@ -229,6 +229,7 @@ class AdditionController < ApplicationController
   # Belegen des WHERE-Statements aus Hash mit Filter-Bedingungen und setzen Variablen
   def where_from_blocking_locks_groupfilter (groupfilter, groupkey)
     @groupfilter = groupfilter
+    @groupfilter = @groupfilter.to_hash if @groupfilter.class != Hash   # convert to Hash if Class is ActionController::Parameters
     @groupkey    = groupkey
     @where_string  = ""                    # Filter-Text für nachfolgendes Statement mit AND-Erweiterung
     @where_values = []    # Filter-werte für nachfolgendes Statement
