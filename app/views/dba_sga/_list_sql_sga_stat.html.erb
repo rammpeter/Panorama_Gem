@@ -1,5 +1,10 @@
+<%= render_page_caption("#{t(:dba_sga_list_sql_sga_stat_caption, :default=>'Statement details of current SGA from')} #{@modus}",
+                        [
+                            get_recall_params_info_for_render_page_caption
+                        ]
+    )
+%>
 
-<div class="page_caption"><%= t(:dba_sga_list_sql_sga_stat_caption, :default=>'Statement details of current SGA from') %> <%= @modus %></div>
 
 <div>  <%= defined?(@list_sql_sga_stat_msg) ? @list_sql_sga_stat_msg : ''%></div>
 

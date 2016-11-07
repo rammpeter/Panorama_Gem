@@ -28,13 +28,13 @@ class ActiveSessionHistoryController < ApplicationController
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
     @instance = prepare_param_instance
     params[:groupfilter] = {}
-    params[:groupfilter]["DBID"]                  = prepare_param_dbid
-    params[:groupfilter]["Instance"]              =  @instance if @instance
-    params[:groupfilter]["Idle_Wait1"]            = 'PX Deq Credit: send blkd' unless params[:idle_waits] == '1'
-    params[:groupfilter]["time_selection_start"]  = @time_selection_start
-    params[:groupfilter]["time_selection_end"]    = @time_selection_end
+    params[:groupfilter][:DBID]                  = prepare_param_dbid
+    params[:groupfilter][:Instance]              =  @instance if @instance
+    params[:groupfilter][:Idle_Wait1]            = 'PX Deq Credit: send blkd' unless params[:idle_waits] == '1'
+    params[:groupfilter][:time_selection_start]  = @time_selection_start
+    params[:groupfilter][:time_selection_end]    = @time_selection_end
 
-    params[:groupfilter]['Additional Filter']     = params[:filter]  if params[:filter] && params[:filter] != ''
+    params[:groupfilter][:Additional_Filter]     = params[:filter]  if params[:filter] && params[:filter] != ''
 
     list_session_statistic_historic_grouping      # Weiterleiten Request an Standard-Verarbeitung für weiteres DrillDown
   end # list_session_statistic_historic
@@ -88,7 +88,7 @@ class ActiveSessionHistoryController < ApplicationController
     # Anzeige der Filterbedingungen im Caption des Diagrammes
     @filter = ''
     @groupfilter.each do |key, value|
-      @filter << "#{key}=\"#{value}\", " unless groupfilter_value(key)[:hide_content]
+      @filter << "#{groupfilter_value(key)[:name]}=\"#{value}\", " unless groupfilter_value(key)[:hide_content]
     end
 
     diagram_caption = "#{t(:active_session_history_list_session_statistic_historic_timeline_header,
@@ -804,11 +804,11 @@ class ActiveSessionHistoryController < ApplicationController
     @instance = prepare_param_instance
     params[:groupfilter] = {}
 
-    params[:groupfilter]["DBID"]                  = prepare_param_dbid
-    params[:groupfilter]["Instance"]              =  @instance if @instance
-    params[:groupfilter]["Idle_Wait1"]            = 'PX Deq Credit: send blkd'
-    params[:groupfilter]["time_selection_start"]  = @time_selection_start
-    params[:groupfilter]["time_selection_end"]    = @time_selection_end
+    params[:groupfilter][:DBID]                  = prepare_param_dbid
+    params[:groupfilter][:Instance]              =  @instance if @instance
+    params[:groupfilter][:Idle_Wait1]            = 'PX Deq Credit: send blkd'
+    params[:groupfilter][:time_selection_start]  = @time_selection_start
+    params[:groupfilter][:time_selection_end]    = @time_selection_end
 
     list_temp_usage_historic    # weiterleitung Event
   end

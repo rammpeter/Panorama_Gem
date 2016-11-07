@@ -229,7 +229,7 @@ class AdditionController < ApplicationController
   # Belegen des WHERE-Statements aus Hash mit Filter-Bedingungen und setzen Variablen
   def where_from_blocking_locks_groupfilter (groupfilter, groupkey)
     @groupfilter = groupfilter
-    @groupfilter = @groupfilter.to_unsafe_h.to_h  if @groupfilter.class == ActionController::Parameters
+    @groupfilter = @groupfilter.to_unsafe_h.to_h.symbolize_keys  if @groupfilter.class == ActionController::Parameters
     raise "Parameter groupfilter should be of class Hash or ActionController::Parameters" if @groupfilter.class != Hash
     @groupkey    = groupkey
     @where_string  = ""                    # Filter-Text für nachfolgendes Statement mit AND-Erweiterung
@@ -786,6 +786,5 @@ class AdditionController < ApplicationController
       format.js {render :js => "$('##{params[:update_area]}').html('#{j output }');"}
     end
   end
-
 
 end

@@ -710,4 +710,17 @@ module ApplicationHelper
     ".html_safe
   end
 
+  # get request parameter for later recreation of view
+  # as arry entry for render_page_caption
+  # My not contain '
+  def get_recall_params_info_for_render_page_caption
+    {
+        :name =>       :recall_params_info,
+        :caption =>    'Copy link to clipboard',
+        :hint =>       'Copy info to clipboard which allows you to reconstruct this page',
+        :icon_class => 'ui-icon ui-icon-plus',
+        :action =>     "alert('#{request.parameters}');"
+    }
+  end
+
 end

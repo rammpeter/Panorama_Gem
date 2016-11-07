@@ -1,4 +1,6 @@
 # encoding: utf-8
+require_relative '../../config/engine_config'
+
 class UsageController < ApplicationController
   layout false        # Aufruf der Seite ohne Layout
 
@@ -54,7 +56,7 @@ class UsageController < ApplicationController
     @groupkey = params[:groupkey]
     @filter   = params[:filter]
 
-    @filter = @filter.to_unsafe_h.to_h  if @filter.class == ActionController::Parameters
+    @filter = @filter.to_unsafe_h.to_h.symbolize_keys  if @filter.class == ActionController::Parameters
     raise "Parameter filter should be of class Hash or ActionController::Parameters" if @filter.class != Hash
 
     file = File.open(EngineConfig.config.usage_info_filename, "r")
