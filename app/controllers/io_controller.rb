@@ -38,7 +38,7 @@ class IoController < ApplicationController
         end
       end
 
-      if key == "time_selection_end" || key=="time_selection_start" || key=="DBID" || key=="instance"
+      if key == :time_selection_end || key==:time_selection_start || key==:DBID || key==:instance
         @with_where_string << " AND #{sql}"
         @with_where_values << value
       else
@@ -70,11 +70,11 @@ class IoController < ApplicationController
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
 
     groupfilter = {
-        "DBID"                 => @dbid,
-        "time_selection_end"   => @time_selection_end,
-        "time_selection_start" => @time_selection_start,
+        :DBID                 => @dbid,
+        :time_selection_end   => @time_selection_end,
+        :time_selection_start => @time_selection_start,
     }
-    groupfilter["Instance"]    = @instance if @instance
+    groupfilter[:Instance]    = @instance if @instance
 
     params[:groupfilter] = groupfilter
     list_io_file_history_grouping
@@ -253,11 +253,11 @@ class IoController < ApplicationController
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
 
     groupfilter = {
-        "DBID"                 => @dbid,
-        "time_selection_end"   => @time_selection_end,
-        "time_selection_start" => @time_selection_start,
+        :DBID                 => @dbid,
+        :time_selection_end   => @time_selection_end,
+        :time_selection_start => @time_selection_start,
     }
-    groupfilter["Instance"]    = @instance if @instance
+    groupfilter[:Instance]    = @instance if @instance
 
     params[:groupfilter] = groupfilter
     list_iostat_detail_history_grouping
@@ -434,11 +434,11 @@ class IoController < ApplicationController
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
 
     groupfilter = {
-        "DBID"                 => @dbid,
-        "time_selection_end"   => @time_selection_end,
-        "time_selection_start" => @time_selection_start,
+        :DBID                 => @dbid,
+        :time_selection_end   => @time_selection_end,
+        :time_selection_start => @time_selection_start,
     }
-    groupfilter["Instance"]    = @instance if @instance
+    groupfilter[:Instance]    = @instance if @instance
 
     params[:groupfilter] = groupfilter
     list_iostat_filetype_history_grouping

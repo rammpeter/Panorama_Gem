@@ -32,6 +32,9 @@ class IoControllerTest < ActionController::TestCase
     io_file_key_rules.each do |groupby, value|
       post :list_io_file_history, :params => { :format=>:js, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby }
       assert_response :success
+
+      post :list_io_file_history, :params => { :format=>:js, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby }
+      assert_response :success
     end
   end
 
@@ -70,6 +73,9 @@ class IoControllerTest < ActionController::TestCase
       if ENV['DB_VERSION'] >= '11.2'
         post :list_iostat_detail_history, :params => { :format=>:js, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby }
         assert_response :success
+
+        post :list_iostat_detail_history, :params => { :format=>:js, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby }
+        assert_response :success
       end
     end
   end
@@ -104,6 +110,9 @@ class IoControllerTest < ActionController::TestCase
     iostat_filetype_key_rules.each do |groupby, value|
       if ENV['DB_VERSION'] >= '11.2'
         post :list_iostat_filetype_history, :params => { :format=>:js, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby }
+        assert_response :success
+
+        post :list_iostat_filetype_history, :params => { :format=>:js, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby }
         assert_response :success
       end
     end
