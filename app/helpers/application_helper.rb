@@ -710,16 +710,16 @@ module ApplicationHelper
     ".html_safe
   end
 
-  # get request parameter for later recreation of view
+  # request parameter for later recreation of view
   # as arry entry for render_page_caption
-  # My not contain '
+  # May not contain '
   def get_recall_params_info_for_render_page_caption
     {
         :name =>       :recall_params_info,
-        :caption =>    'Copy link to clipboard',
-        :hint =>       'Copy info to clipboard which allows you to reconstruct this page',
-        :icon_class => 'ui-icon ui-icon-plus',
-        :action =>     "alert('#{request.parameters}');"
+        :caption =>    t(:addition_copy_recall_params_caption, :default=>'Copy request parameters to clipboard'),
+        :hint =>       t(:addition_copy_recall_params_hint, :default=>"Copy request parameter to clipboard which allows you to reconstruct/replay this page later\nCall menu 'Spec. additions / Execute with given parameters' and paste this info to reconstruct your page at later time."),
+        :icon_class => 'ui-icon ui-icon-copy',
+        :action =>     "copy_to_clipboard('#{request.parameters.except(:update_area)}');  alert('#{t(:addition_copy_recall_params_answer, :default=>"Current request parameters are copied to clipboard.\nUse menu \"Spec. additions / Execute with given parameters\" to paste this parameters").sub("\n", '\\n')}');"
     }
   end
 

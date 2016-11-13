@@ -5,6 +5,47 @@ require 'resolv'
 # Diverse Ajax-Aufrufe und fachliche Code-Schnipsel
 module AjaxHelper
 
+  # render menu button with submenu
+  def render_command_array_menu(command_array)
+    command_array = [command_array] if command_array.class == Hash              # Construct Array if only single entry
+
+    output = ''
+    div_id = get_unique_area_id                                                 # Basis for DOM-IDs
+    output << "<div style=\"float:left; margin-left:5px;   \" class=\"slick-shadow\" >"
+    output << "<div id=\"#{div_id}\" style=\"padding-left: 10px; padding-right: 10px; background-color: #E0E0E0; cursor: pointer; \">"
+    output << "\u2261" # 3 waagerechte Striche ≡
+    # Construction context-menu
+    context_menu_id = "#{div_id}_context_menu"
+    output << "<div class=\"contextMenu\" id=\"#{context_menu_id}\" style=\"display:none;\"><ul>"
+    command_array.each do |ca|
+      output << "<li id=\"#{context_menu_id}_#{ca[:name]}\" title=\"#{ca[:hint]}\"><span class=\"#{ca[:icon_class]}\" style=\"float:left\"></span><span>#{ca[:caption]}</span></li>"
+    end
+    output << "</ul></div>"
+    output << "</div>"
+    output << "</div>"
+
+    output << "<script type=\"text/javascript\">"
+    output << "var bindings = {};"
+    command_array.each do |ca|
+      output << "bindings[\"#{context_menu_id}_#{ca[:name]}\"] = function(){ #{ca[:action]} };"
+    end
+    output << "jQuery(\"##{div_id}\").contextMenu(\"#{context_menu_id}\", {
+                    menuStyle: {  width: '330px' },
+                    bindings:   bindings,
+                    onContextMenu : function(event, menu)                                   // dynamisches Anpassen des Context-Menü
+                    {
+                      return true;
+                    }
+                    });"
+    output << "jQuery(\"##{div_id}\").bind('click' , function( event) {
+                                console.log('pageX '+event.pageX);
+                                jQuery(\"##{div_id}\").trigger(\"contextmenu\", event);
+                                return false;
+                    });"
+    output << "</script>"
+    output
+  end
+
   # Render header line with caption
   # Parameter:  caption text
   #             Array of Hashes with commands for list, Keys: :name, :caption, :hint, :icon_class, :action (JS-function)
@@ -13,39 +54,7 @@ module AjaxHelper
     output << "<div class=\"page_caption\">"
 
     unless command_array.nil?                                                   # render command button and list
-      div_id = get_unique_area_id                                               # Basis for DOM-IDs
-      output << "<div style=\"float:left; margin-left:5px;   \" class=\"slick-shadow\" >"
-        output << "<div id=\"#{div_id}\" style=\"padding-left: 10px; padding-right: 10px; background-color: #E0E0E0; cursor: pointer; \">"
-          output << "\u2261" # 3 waagerechte Striche ≡
-          # Construction context-menu
-          context_menu_id = "#{div_id}_context_menu"
-          output << "<div class=\"contextMenu\" id=\"#{context_menu_id}\" style=\"display:none;\"><ul>"
-          command_array.each do |ca|
-            output << "<li id=\"#{context_menu_id}_#{ca[:name]}\" title=\"#{ca[:hint]}\"><span class=\"#{ca[:icon_class]}\" style=\"float:left\"></span><span>#{ca[:caption]}</span></li>"
-          end
-          output << "</ul></div>"
-        output << "</div>"
-      output << "</div>"
-
-      output << "<script type=\"text/javascript\">"
-        output << "var bindings = {};"
-        command_array.each do |ca|
-          output << "bindings[\"#{context_menu_id}_#{ca[:name]}\"] = function(){ #{ca[:action]} };"
-        end
-        output << "jQuery(\"##{div_id}\").contextMenu(\"#{context_menu_id}\", {
-                    menuStyle: {  width: '330px' },
-                    bindings:   bindings,
-                    onContextMenu : function(event, menu)                                   // dynamisches Anpassen des Context-Menü
-                    {
-                      return true;
-                    }
-                    });"
-        output << "jQuery(\"##{div_id}\").bind('click' , function( event) {
-                                console.log('pageX '+event.pageX);
-                                jQuery(\"##{div_id}\").trigger(\"contextmenu\", event);
-                                return false;
-                    });"
-      output << "</script>"
+      output << render_command_array_menu(command_array)
     end
     output << my_html_escape(caption)
     output << "</div>"

@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 /**
  * @name SlickGridExtended
@@ -79,7 +79,7 @@ function SlickGridExtended(container_id, options){
     this.initSlickGridExtended = function(container_id, data, columns, options, additional_context_menu){
         this.all_columns = columns;                                             // Column-Deklaration in der Form wie dem SlickGrid übergeben inkl. hidden columns
 
-        var viewable_columns = []
+        var viewable_columns = [];
         for (var col_index in columns) {
             var column = columns[col_index];
             if (!column['hidden'])                                              // nur sichtbare Spalten weiter verwenden
@@ -113,7 +113,7 @@ function SlickGridExtended(container_id, options){
                 options['plotting'] = true;
 
             if (column['show_pct_hint'] || column['show_pct_background']){
-                var column_sum = 0
+                var column_sum = 0;
                 for (var row_index in data){
                     column_sum += this.parseFloatLocale(data[row_index]['col'+col_index]);  // Kumulieren der Spaltensumme
                 }
@@ -313,10 +313,57 @@ function SlickGridExtended(container_id, options){
             show_full_cell_content(jQuery(grid.getCellNode(args['row'], args['cell'])).children().text());  // Anzeige des Zell-Inhaltes
         });
 
-        // Caption setzen
+        // set caption and additional menu actions
         if (options['caption'] && options['caption'] != ""){
             var caption = jQuery("<div id='caption_"+container_id.replace(/#/, "")+"' class='slick-caption slick-shadow'></div>").insertBefore('#'+container_id);
-            caption.html(options['caption'])
+
+            if (options['command_menu_entries']){
+                var command_menu_id = 'command_menu_'+container_id.replace(/#/, "");
+
+                var command_menu_context_id = command_menu_id+'_context_menu';
+
+                caption.append('<div style="float:left; margin-left:5px; margin-right:5px;" class="slick-shadow">' +
+                    '<div id="'+command_menu_id+'" style="padding-left: 10px; padding-right: 10px; background-color: #E0E0E0; cursor: pointer;">' +
+                    '\u2261' + // 3 waagerechte Striche ≡
+                    '<div class="contextMenu" id="'+command_menu_context_id+'" style="display:none;">' +
+                    '</div></div></div>'
+                );
+
+                var command_menu_list = '<ul>';
+
+                for (var cmd_index in options['command_menu_entries']) {
+                    var cmd = options['command_menu_entries'][cmd_index];
+                    command_menu_list = command_menu_list +
+                        '<li id="'+command_menu_id+'_'+cmd['name']+'" title="'+cmd['hint']+'"><span class="'+cmd['icon_class']+'" style="float:left"></span><span>'+cmd['caption']+'</span></li>'
+                }
+                command_menu_list = command_menu_list + '</ul>';
+                jQuery('#'+command_menu_context_id).html(command_menu_list);
+
+
+                var bindings = {};
+                for (var cmd_index in options['command_menu_entries']) {
+                    var cmd = options['command_menu_entries'][cmd_index];
+                    bindings[command_menu_id+'_'+cmd['name']] = function(){ eval(cmd['action']); };
+                    //bindings[command_menu_id+'_'+cmd['name']] = function(){ alert('Hugo')};
+                }
+
+                jQuery("#"+command_menu_id).contextMenu(command_menu_context_id, {
+                    menuStyle: {  width: '330px' },
+                    bindings:   bindings, onContextMenu : function(event, menu)                                   // dynamisches Anpassen des Context-Menü
+                    {
+                        return true;
+                    }
+                });
+
+                jQuery("#"+command_menu_id).bind('click' , function( event) {
+                    jQuery("#"+command_menu_id).trigger("contextmenu", event);
+                    return false;
+                });
+
+
+
+            }
+            caption.append(options['caption']);                                 // Add content after eventually menu
         }
 
         dataView.setFilter(options["data_filter"]);                       // optinaler Filter auf Daten
@@ -377,7 +424,7 @@ function SlickGridExtended(container_id, options){
         } else {
             return parseFloat(value.replace(/\./g, "").replace(/,/,"."));
         }
-    }
+    };
 
     /**
      * Ausgabe eines numerischen Wertes in der landesspezifischen Darstellung mit Komma
@@ -391,7 +438,7 @@ function SlickGridExtended(container_id, options){
         } else {
             return String(rounded_value).replace(/\./g, ",");
         }
-    }
+    };
 
 
     /**
@@ -408,7 +455,7 @@ function SlickGridExtended(container_id, options){
             }
         }
         return null;                                                            // nichts gefunden
-    }
+    };
 
     /**
      * Translate key into string according to options[:locale]
@@ -430,10 +477,10 @@ function SlickGridExtended(container_id, options){
         } else {
             return 'No translation available for key "'+key+'"';
         }
-    }
+    };
 
     // privileged function fuer Zugriff von aussen
-    this.ext_locale_translate = function(key){ return locale_translate(key); }
+    this.ext_locale_translate = function(key){ return locale_translate(key); };
 
 
     /**
@@ -476,7 +523,7 @@ function SlickGridExtended(container_id, options){
      */
     this.calculate_current_grid_column_widths = function(caller){
         var options = this.grid.getOptions();
-        var viewport_div = this.gridContainer.children('.slick-viewport')
+        var viewport_div = this.gridContainer.children('.slick-viewport');
 
         var current_grid_width = this.gridContainer.parent().prop('clientWidth');           // erstmal maximale Breit als Client annehmen, wird für auto-Breite später auf das notwendige reduziert
         var columns = this.grid.getColumns();
@@ -489,7 +536,7 @@ function SlickGridExtended(container_id, options){
 
         this.slickgrid_render_needed = 0;                                       // Falls das Flag gesetzt war, wird das rendern jetzt durchgeführt und Flag damit entwertet
 
-        viewport_div.css('overflow', '')                                        // Default-Einstellung des SlickGrid für Scrollbar entfernen
+        viewport_div.css('overflow', '');                                        // Default-Einstellung des SlickGrid für Scrollbar entfernen
 
         for (var col_index in columns) {
             var column = columns[col_index];
@@ -847,7 +894,7 @@ function SlickGridExtended(container_id, options){
         var distinct = {};
         var distinct_count = 0;
         for (var row_index in data){
-            sum += thiz.parseFloatLocale(data[row_index][column_name])
+            sum += thiz.parseFloatLocale(data[row_index][column_name]);
             count ++;
             distinct[data[row_index][column_name]] = 1;     // Wert in hash merken
         }
@@ -908,8 +955,7 @@ function SlickGridExtended(container_id, options){
                     data_row['metadata']['columns'][col['field']] = {};         // Metadata für alle Spalten anlegen  TODO: warum?
             }
         }
-    };
-
+    }
     /**
      * Ermittlung Spaltenbreite der Header auf Basis der konketen Inhalte
      *
@@ -963,8 +1009,7 @@ function SlickGridExtended(container_id, options){
         // Entfernen der DIVs fuer Breitenermittlung aus dem DOM-Baum
         test_header_outer.remove();
         test_header_wrap_outer.remove();
-    };
-
+    }
     /**
      * Options um Defaults erweitern
      *
@@ -982,9 +1027,7 @@ function SlickGridExtended(container_id, options){
         init_option('width',                'auto');
         init_option('locale',               'en');
         init_option('sort_method',          'QuickSort');                       // QuickSort (Array.sort) oder BubbleSort
-    };
-
-
+    }
     /**
      * Speichern Inhalt und Erneutes Berechnen der Breite und Höhe einer Zelle nach Änderung ihres Inhaltes + Aktualisieren der Anzeige,
      * um kompletten neuen Content zeigen zu können (nicht abgeschnitten)
@@ -1018,8 +1061,7 @@ function SlickGridExtended(container_id, options){
         scrollbarWidth_internal_cache = div.width() - div.find("#scrollbarWidth_testdiv").width();
         $(div).remove();
         return scrollbarWidth_internal_cache;
-    };
-
+    }
     /**
      * Zeichnen eines Diagrammes mit den Daten einer slickgrid-Spalte
      *
@@ -1146,8 +1188,7 @@ function SlickGridExtended(container_id, options){
                 xaxes: (x_axis_time ? [{ mode: 'time'}] : [{}])
             }
         );
-    }; // plot_slickgrid_diagram
-
+    } // plot_slickgrid_diagram
     /**
      * Callback aus plot_diagram wenn eine Kurve entfernt wurde, denn plottable der Spalte auf 0 drehen
      *
@@ -1160,7 +1201,7 @@ function SlickGridExtended(container_id, options){
                 columns[column_index]['plottable'] = 0;                         // diese Spalte beim nächsten plot_diagram nicht mehr mit zeichnen
             }
         }
-    }
+    };
 
     /**
      * Berechnen der Dimensionen einer konkreten Zelle
@@ -1337,7 +1378,7 @@ function HTMLFormatter(row, cell, value, columnDef, dataContext){
         style += "white-space: normal; ";
     if (style != "")
         output += " style='"+style+"'";
-    output += ">"
+    output += ">";
 
     if (columnDef['show_pct_background'] && columnDef['column_sum'] > 0 ){
         var pct_value = Math.round(slickGrid.parseFloatLocale(value) * 100 / columnDef['column_sum']);
@@ -1359,9 +1400,7 @@ function trace_log(msg){
     if (false){
         console.log(msg);                                                           // Aktivieren trace-Ausschriften
     }
-};
-
-
+}
 /**
  * Übersetzungsliste
  *

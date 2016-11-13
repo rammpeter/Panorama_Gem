@@ -3,7 +3,7 @@
 <script type="text/javascript">
 
   function call_ajax_single_rows<%=@update_area%>(min_snap_id, max_snap_id, group_by_value, record_count){
-    var json_data = <%= {:groupfilter => @groupfilter}.to_json.html_safe %>
+    var json_data =; <%= {:groupfilter => @groupfilter}.to_json.html_safe %>
     if (min_snap_id)
       json_data['groupfilter']['Min_Snap_ID'] = min_snap_id;
     if (max_snap_id)
@@ -16,7 +16,7 @@
   }
 
   function call_ajax_grouping<%=@update_area%>(min_snap_id, max_snap_id, group_by_value, next_group_by_name){
-    var json_data = <%= {:groupfilter => @groupfilter}.to_json.html_safe %>
+    var json_data =; <%= {:groupfilter => @groupfilter}.to_json.html_safe %>
 
     if (min_snap_id)
       json_data['groupfilter']['Min_Snap_ID'] = min_snap_id;
@@ -223,7 +223,8 @@
                    {
                        :caption => @caption ? @caption : "",
                        :max_height => 450,
-                       :context_menu_entries => context_menu_entries
+                       :context_menu_entries => context_menu_entries,
+                       :command_menu_entries => get_recall_params_info_for_render_page_caption
                    }
                   )
 %>

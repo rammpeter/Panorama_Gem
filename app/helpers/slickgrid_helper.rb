@@ -108,6 +108,7 @@ module SlickgridHelper
     output << "  line_height_single:   #{global_options[:line_height_single]},"
     output << "  data_filter:          #{global_options[:data_filter]},"      if global_options[:data_filter]
     output << "  locale:               '#{get_locale}',"
+    output << "  command_menu_entries: #{global_options[:command_menu_entries].to_json},"    if global_options[:command_menu_entries]
     output << '}'
     output
 
@@ -169,6 +170,7 @@ module SlickgridHelper
   #     :multiple_y_axes      => Jedem Wert im Diagramm seinen eigenen 100%-Wertebereich der y-Achse zuweisen (true|false)
   #     :show_y_axes          => Anzeige der y-Achsen links im Diagramm? (true|false)
   #     :context_menu_entries => Array mit Hashes bzw. einzelner Hash mit weiterem Eintrag für Context-Menu: :label, :icon, :action
+  #     :command_menu_entries => Array with hashes or single hash for actions available in caption bar: :name, :caption, :hint, :icon_class=>"ui-icon xxx", :action=>javascript
   #     :line_height_single   => Einzeilige Anzeige in Zeile der Tabelle oder mehrzeilige Anzeige wenn durch Umburch im Feld nötig (true|false)
   #     :data_filter          => Name der JavaScript-Methode für filtern der angezeigten Zeilen: Methode muss einen Parameter "item" besitzen mit aktuell zu prüfender Zeile
   #     :grid_id              => DOM-ID des DIV-Elementes für slickgrid
@@ -194,6 +196,9 @@ module SlickgridHelper
         global_options[:caption]            = "<span style=\"font-weight: bold;\">#{global_options[:caption]}</span>"
       end
     end
+
+    global_options[:command_menu_entries] = [global_options[:command_menu_entries]] if global_options[:command_menu_entries] && global_options[:command_menu_entries].class == Hash
+
     global_options[:width]              = '100%'                                unless global_options[:width]         # Default für Weite wenn nichts anderes angegeben
     global_options[:width]              = :auto                                 if global_options[:width] == 'auto'   # Symbol verwenden
     global_options[:height]             = :auto                                 unless global_options[:height]

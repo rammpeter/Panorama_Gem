@@ -24,7 +24,7 @@
 //= require jstree
 //= require_tree .
 
-"use strict"
+"use strict";
 
 
 // global gültige Variable im js, wird von EnvController.setDatabase gesetzt entsprechend der Spracheinstellung
@@ -68,6 +68,29 @@ function closeAllTooltips(self_tooltip){
         }
     });
 
+}
+
+// copy text to clipboard, must be executed from mouse action
+function copy_to_clipboard(text){
+    var copy_elem = jQuery('<textarea id="copy_to_clipboard_text_area">'+text+'</textarea>');
+
+    copy_elem.css('position', 'absolute');                                      // Ensure that current scroll position is not changed
+
+    jQuery(document.body).append(copy_elem);
+    //copy_elem.focus();                                                        // not really necessary to work in Firefox. Needed by other browsers?
+    copy_elem.select();
+
+    var successful = true;
+    try {
+        successful = document.execCommand('copy');
+    }
+    catch (err) {
+        successful = false;
+    }
+    copy_elem.remove();
+    if (!successful){
+        alert('Error copying following text to clipboard:\n'+text);
+    }
 }
 
 // jQuery.UI Tooltip verwenden
@@ -129,7 +152,7 @@ function expand_sql_id_hint(id, sql_id){
         set_sql_title(id, SQL_shortText_Cache[sql_id]);
     }
     else {
-        SQL_shortText_Cache[sql_id] = "< SQL-Text: request in progress>"        // Verhindern, dass während der Abfrage erneut nachgefragt wird
+        SQL_shortText_Cache[sql_id] = "< SQL-Text: request in progress>";        // Verhindern, dass während der Abfrage erneut nachgefragt wird
         jQuery.ajax({url: "dba_history/getSQL_ShortText?sql_id="+sql_id,
             dataType: "json",
             success: function(response) {
@@ -147,7 +170,7 @@ function expand_sql_id_hint(id, sql_id){
 function bind_special_ajax_callbacks(obj) {
     obj.bind('ajax:success', function(){                                        // Komischerweise funktioniert hier obj.ajaxSuccess nicht ???
          if (obj.parents(".slick-cell").length > 0){                            // ajax wurde aus einer slickgrid-Zelle heraus aufgerufen
-             var grid_extended = obj.parents('.slickgrid_top').data('slickgridextended')
+             var grid_extended = obj.parents('.slickgrid_top').data('slickgridextended');
              if (!grid_extended){
                  console.log("No slickgridextended found in data for "+obj.parents(".slick-cell").html());
              } else {

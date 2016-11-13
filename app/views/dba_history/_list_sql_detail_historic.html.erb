@@ -14,7 +14,8 @@ def show_single_value(name, param, decimals, title="", second_value="-", second_
 end
 %>
 
-<div class="page_caption">Statement-Details <%= t(:from_until, :default=>'from')%> <%= @sql.first_occurrence ? localeDateTime(@sql.first_occurrence) : @time_selection_start %> <%= t(:until, :default=>'until')%> <%= @sql.last_occurrence ? localeDateTime(@sql.last_occurrence) : @time_selection_end %> Instance = <%= @instance %></div>
+
+<%= render_page_caption("Statement-Details #{t(:from_until, :default=>'from')} #{@sql.first_occurrence ? localeDateTime(@sql.first_occurrence) : @time_selection_start} #{t(:until, :default=>'until')} #{@sql.last_occurrence ? localeDateTime(@sql.last_occurrence) : @time_selection_end} Instance = #{@instance}", get_recall_params_info_for_render_page_caption) %>
 
 <table border="0">
   <tr>

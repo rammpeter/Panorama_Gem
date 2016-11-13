@@ -457,9 +457,9 @@ class DbaSgaController < ApplicationController
       ", @instance, @sql_id, @child_number ].concat(@child_address.nil? ? [] : [@child_address])
 
     @open_cursors         = get_open_cursor_count(@instance, @sql_id)
-    @sql_monitor_sessions = sql_monitor_session_count(@instance, @sql_id, @sql.plan_hash_value)
 
     if @sql
+      @sql_monitor_sessions = sql_monitor_session_count(@instance, @sql_id, @sql.plan_hash_value)
       render_partial :list_sql_detail_sql_id_childno
     else
       show_popup_message("#{t(:dba_sga_list_sql_detail_sql_id_childno_no_hit_msg, :default=>'No record found in GV$SQL for')} SQL_ID='#{@sql_id}', Instance=#{@instance}, Child_Number=#{@child_number}")

@@ -169,6 +169,8 @@ module MenuHelper
         ).concat(
             showObjectIncrease ?
                 [{:class=> 'item', :caption=> 'Wachstum von Objekten',           :controller=> 'addition',                 :action=> 'show_object_increase',     :hint=> 'Wachstum von Objekten in gegebenem Zeitraum'}] : []
+        ).concat(
+            [{:class=> 'item', :caption=> t(:menu_addition_exec_with_given_parameters_caption, :default=>'Execute with given parameters') ,           :controller=> 'addition',                 :action=> 'show_recall_params',     :hint=>t(:menu_addition_exec_with_given_parameters_hint, :default=>'Execute one of Panoramas functions directly with given parameters') }]
         )
     },
     ]

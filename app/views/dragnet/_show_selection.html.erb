@@ -1,3 +1,5 @@
+<% %>
+
 <%= render_page_caption(
         t(:dragnet_show_selection_header, :default=> "Dragnet investigation for performance bottlenecks and usage of anti-pattern"),
         [
@@ -16,7 +18,7 @@
     function refresh_tree(filter, include_description) {
         $('#dragnet_selection_wrapper')
                 .html('')
-                .append('<div id="dragnet_selection_tree"></div>')
+                .append('<div id="dragnet_selection_tree"></div>');
         $('#dragnet_selection_tree')
             // listen for event
                 .on('changed.jstree', function (e, data) {

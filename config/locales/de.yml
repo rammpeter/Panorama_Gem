@@ -147,6 +147,20 @@
   active_session_history_show_top_ten_hint:                 Anzeige der Top 10 nach total time waited in Zeitleiste, jeweils ein Punkt im Graph für die Summe über %{sec} Sekunden
   active_session_history_total_time_waited_hint:            Summe Time waited in Sekunden (Sample-Zyklus(1/10 Sekunden) * Samples)
 
+  addition_copy_recall_params_caption:                      Kopieren der Request-Parameter in Zwischenablage
+  addition_copy_recall_params_hint: |-
+    Kopieren der Request-Parameter in die Zwischenablage erlaubt die direkte Rekonstruktion / das Wiederholen dieser Abfrage zu einem späteren Zeitpunkt
+    durch Einfügen dieser Paremeter-Info unter Menüpunkt 'Spez. Erweiterungen / Ausführung mit gegebenen Parametern'
+
+  addition_copy_recall_params_answer: |-
+    Die aktuellen Request-Parameter wurden in die Zwischenablage kopiert.
+    Menüpunkt "Spez. Erweiterungen / Ausführung mit gegebenen Parametern" kann genutzt werden zum Einfügen dieser Parameter
+
+  addition_show_recall_params_caption:                      Directe Ausführung einer Funktion mit gegebenen Parametern
+  addition_show_recall_params_parameter_info_hint:          Einfügen der Parameter für Ausführung
+  addition_show_recall_params_submit_hint:                  Ausführen von Panorama's Funktion entsprechend 'controller' und 'action' der gegebenen Parameter
+
+
   application_connection_no_db_choosen:                     Keine DB ausgewählt! Bitte rechts oben DB auswählen! (Speicherung von Browser-Cookies ist erforderlich)
 
   application_helper_delimiter_on_pos:                      Trenner an Position
@@ -1318,6 +1332,12 @@
     Panorama: Login auf Ziel-DB
   login_tns_hint:                                           Auswahl Oracle TNS-Alias (aus tnsnames.ora des Servers)
 
+  menu_addition_caption:                                    Spez. Erweiterungen
+  menu_addition_dragnet_caption:                            Rasterfahndung
+  menu_addition_dragnet_hint:                               Rasterfahndung nach Performance-Bottlenecks
+  menu_addition_exec_with_given_parameters_caption:         Ausführung mit gegebenen Parametern
+  menu_addition_exec_with_given_parameters_hint:            Ausführung einer Funktion von Panorama direkt mit gegebenen Parametern
+
   menu_current_caption:                                     Aktuell
 
   menu_dba_caption:                                         DBA Allgemein
@@ -1413,11 +1433,6 @@
   menu_wait_sysmetric_caption:                              System-Metric
   menu_wait_sysmetric_historic_hint:                        Historisierte System-Metric aus DBA_Hist_Sysmetric_History
   menu_wait_system_statistics_historic_hint:                Historisierte System-Statistik
-
-
-  menu_addition_caption:                                    Spez. Erweiterungen
-  menu_addition_dragnet_caption:                            Rasterfahndung
-  menu_addition_dragnet_hint:                               Rasterfahndung nach Performance-Bottlenecks
 
   menu_env_index_hint:                                      Start der Applikation ohne Anmeldung an Datenbank
   menu_env_set_database_hint:                               Start der Applikation nach Anmeldung an Datenbank

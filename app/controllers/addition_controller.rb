@@ -787,4 +787,21 @@ class AdditionController < ApplicationController
     end
   end
 
+  # call action given by parameters
+  def exec_recall_params
+    begin
+      parameter_info = eval(params[:parameter_info])
+      raise "wrong ruby class '#{parameter_info.class}'! Expression must be of ruby class 'Hash' (comparable to JSON)." if parameter_info.class != Hash
+    rescue Exception => e
+      show_popup_message("Exception while evaluating expression:\n#{e.message}")
+      return
+    end
+
+    parameter_info.symbolize_keys!
+    parameter_info[:update_area] = params[:update_area]
+
+    redirect_to url_for(:controller => parameter_info[:controller],:action => parameter_info[:action], :params => parameter_info, :method=>:post)
+
+  end
+
 end

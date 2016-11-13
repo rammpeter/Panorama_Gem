@@ -183,7 +183,8 @@ public
 
   # Entscheiden auf Grund der Länge der Eingabe, welche Maske hier zu verwenden ist
   def sql_datetime_mask(datetime_string)
-    return "sql_datetime_mask: Parameter=nil" if datetime_string.nil?     # Maske nicht verwendbar
+    return "sql_datetime_mask: Parameter=nil" if datetime_string.nil?           # Maske nicht verwendbar
+    datetime_string.strip!                                                      # remove leading and trailing blanks
     case datetime_string.length
       when 10 then sql_datetime_date_mask
       when 16 then sql_datetime_minute_mask

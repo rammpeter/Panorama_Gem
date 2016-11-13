@@ -229,3 +229,11 @@ table a:active{
   -webkit-box-shadow: 5px 5px 5px #888;
   -moz-box-shadow: 5px 5px 5px #888;
 }
+
+.full_width_text_area {
+  width:100%;
+  box-sizing: border-box;         /* For IE and modern versions of Chrome */
+  -moz-box-sizing: border-box;    /* For Firefox                          */
+  -webkit-box-sizing: border-box; /* For Safari                           */
+}
+
