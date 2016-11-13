@@ -343,8 +343,7 @@ function SlickGridExtended(container_id, options){
                 var bindings = {};
                 for (var cmd_index in options['command_menu_entries']) {
                     var cmd = options['command_menu_entries'][cmd_index];
-                    bindings[command_menu_id+'_'+cmd['name']] = function(){ eval(cmd['action']); };
-                    //bindings[command_menu_id+'_'+cmd['name']] = function(){ alert('Hugo')};
+                    bindings[command_menu_id+'_'+cmd['name']] = function(){ eval(cmd['action']); }
                 }
 
                 jQuery("#"+command_menu_id).contextMenu(command_menu_context_id, {
@@ -359,9 +358,6 @@ function SlickGridExtended(container_id, options){
                     jQuery("#"+command_menu_id).trigger("contextmenu", event);
                     return false;
                 });
-
-
-
             }
             caption.append(options['caption']);                                 // Add content after eventually menu
         }
