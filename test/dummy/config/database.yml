@@ -62,9 +62,9 @@ test_11.2:
 test_12.1:
   adapter: nulldb
 
-  test_url:      jdbc:oracle:thin:@localhost:1521:amos
-  test_username: pramm
-  test_password: dw-pr18
+  test_url:      jdbc:oracle:thin:@localhost:1521:oracle121
+  test_username: panorama-test
+  test_password: panorama-test
 
 production:
   <<: *default
