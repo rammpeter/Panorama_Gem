@@ -63,8 +63,8 @@ test_12.1:
   adapter: nulldb
 
   test_url:      jdbc:oracle:thin:@localhost:1521:oracle121
-  test_username: panorama-test
-  test_password: panorama-test
+  test_username: panorama_test
+  test_password: panorama_test
 
 production:
   <<: *default
