@@ -919,11 +919,11 @@ class ActiveSessionHistoryController < ApplicationController
                      )
               GROUP BY Sample_Time     -- Auf Ebene eines Samples reduzieren ueber RAC-Instanzen hinweg
              ) s
-      WHERE  s.Sample_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@groupfilter['time_selection_start'])}')    -- Nochmal Filtern nach der Rundung auf ganze Sekunden
-      AND    s.Sample_Time <  TO_TIMESTAMP(?, '#{sql_datetime_mask(@groupfilter['time_selection_end'])}')      -- Nochmal Filtern nach der Rundung auf ganze Sekunden
+      WHERE  s.Sample_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@groupfilter[:time_selection_start])}')    -- Nochmal Filtern nach der Rundung auf ganze Sekunden
+      AND    s.Sample_Time <  TO_TIMESTAMP(?, '#{sql_datetime_mask(@groupfilter[:time_selection_end])}')      -- Nochmal Filtern nach der Rundung auf ganze Sekunden
       GROUP BY #{group_by_value}
       ORDER BY #{group_by_value}
-      "].concat(@dba_hist_where_values).concat(@global_where_values).concat([@groupfilter['time_selection_start'], @groupfilter['time_selection_end']])
+      "].concat(@dba_hist_where_values).concat(@global_where_values).concat([@groupfilter[:time_selection_start], @groupfilter[:time_selection_end]])
 
     @total_temp_mb = sql_select_one 'SELECT SUM(Bytes)/(1024*1024) FROM DBA_Temp_Files'
 

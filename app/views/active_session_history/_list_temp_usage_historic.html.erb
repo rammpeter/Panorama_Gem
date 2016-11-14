@@ -19,8 +19,8 @@
 <%
    def link_samples(rec)
      groupfilter = @groupfilter.clone
-     groupfilter['time_selection_start'] = localeDateTime(rec.start_sample_time, :minutes)
-     groupfilter['time_selection_end']   = localeDateTime(rec.end_sample_time+60, :minutes)
+     groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :minutes)
+     groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+60, :minutes)
      my_ajax_link_to(fn(rec.sample_count),
                      url_for({:action        => :list_temp_usage_historic,
                               :groupfilter   => groupfilter,
@@ -36,8 +36,8 @@
 
    def link_single_rows(rec)
      groupfilter = @groupfilter.clone
-     groupfilter['time_selection_start'] = localeDateTime(rec.start_sample_time, :minutes)
-     groupfilter['time_selection_end']   = localeDateTime(rec.end_sample_time+60, :minutes)
+     groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :minutes)
+     groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+60, :minutes)
      my_ajax_link_to(fn(rec.sample_count),
                      url_for({:action        => :list_session_statistic_historic_single_record,
                               :groupfilter   => groupfilter,
@@ -52,8 +52,8 @@
 
    def link_wait_time(rec)
      groupfilter = @groupfilter.clone
-     groupfilter['time_selection_start'] = localeDateTime(rec.start_sample_time, :minutes)
-     groupfilter['time_selection_end']   = localeDateTime(rec.end_sample_time+60, :minutes)
+     groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :minutes)
+     groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+60, :minutes)
      my_ajax_link_to(fn(rec.time_waited_secs),
                      url_for({:action        => :list_session_statistic_historic_grouping,
                               :groupfilter   => groupfilter,
