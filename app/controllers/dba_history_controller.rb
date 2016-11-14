@@ -1801,36 +1801,34 @@ FROM (
                                    FROM   DBA_Hist_Snapshot
                                    WHERE  DBID = ?
                                    AND    Begin_Interval_Time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                                   #{' AND Instance_Number = ?' if @instance}
-                                  ", get_dbid, time_selection_start].concat(@instance ? [@instance] : [])
+                                   #{' AND Instance_Number = ?' if instance}
+                                  ", get_dbid, time_selection_start].concat(instance ? [instance] : [])
     if @min_snap_id.nil?                                                      # Ersten Snap nehmen wenn keiner zum start gefunden
       @min_snap_id = sql_select_one ["SELECT MIN(Snap_ID)
                                       FROM   DBA_Hist_Snapshot
                                       WHERE  DBID = ?
-                                      #{' AND Instance_Number = ?' if @instance}
-                                     ", get_dbid].concat(@instance ? [@instance] : [])
-
+                                      #{' AND Instance_Number = ?' if instance}
+                                     ", get_dbid].concat(instance ? [instance] : [])
     end
 
     @max_snap_id = sql_select_one ["SELECT MIN(Snap_ID)
                                    FROM   DBA_Hist_Snapshot
                                    WHERE  DBID = ?
                                    AND    End_Interval_Time > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                                   #{' AND Instance_Number = ?' if @instance}
-                                   ", get_dbid, time_selection_end].concat(@instance ? [@instance] : [])
+                                   #{' AND Instance_Number = ?' if instance}
+                                   ", get_dbid, time_selection_end].concat(instance ? [instance] : [])
 
     if @max_snap_id.nil?                                                        # Letzten Snap nehmen wenn keiner zum Endezeitpunkt gefunden
       @max_snap_id = sql_select_one ["SELECT MAX(Snap_ID)
                                      FROM   DBA_Hist_Snapshot
                                      WHERE  DBID = ?
-                                    #{' AND Instance_Number = ?' if @instance}
-                                     ", get_dbid].concat(@instance ? [@instance] : [])
+                                    #{' AND Instance_Number = ?' if instance}
+                                     ", get_dbid].concat(instance ? [instance] : [])
 
     end
 
-    if @min_snap_id >= @max_snap_id
-      raise "Only one or less AWR snapshots found for time period '#{time_selection_start}' until '#{time_selection_end}' and instance=#{instance}."
-    end
+    raise "No AWR snapshots are found for your database / instance!" if @min_snap_id.nil? || @max_snap_id.nil?
+    raise "Only one or less AWR snapshots found for time period '#{time_selection_start}' until '#{time_selection_end}' and instance=#{instance}." if @min_snap_id >= @max_snap_id
   end
 
   public
