@@ -55,14 +55,14 @@ test_11.1:
 test_11.2:
   adapter: nulldb
 
-  test_url:      jdbc:oracle:thin:@ramm.osp-dd.de:1521:RAMM
-  test_username: noatest
-  test_password: noa
+  test_url:      jdbc:oracle:thin:@panorama-test.osp-dd.de:1522:oracle112
+  test_username: panorama_test
+  test_password: panorama_test
 
 test_12.1:
   adapter: nulldb
 
-  test_url:      jdbc:oracle:thin:@localhost:1521:oracle121
+  test_url:      jdbc:oracle:thin:@panorama-test.osp-dd.de:1521:oracle121
   test_username: panorama_test
   test_password: panorama_test
 
