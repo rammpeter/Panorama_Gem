@@ -27,6 +27,9 @@ class DragnetControllerTest < ActionController::TestCase
   end
 
   test "exec_dragnet_sql"  do
+    Rails.logger.info 'DRAGNET Step 0'; puts 'DRAGNET Step 0'
+
+
     # Test all subitems of node
     def test_tree(node)
       node.each do |entry|
@@ -35,7 +38,7 @@ class DragnetControllerTest < ActionController::TestCase
           test_tree(entry['children'])        # Test subnode's entries
         else
 
-          if !['_0_7', '_3_4', '_7_1'].include?(entry['id'])                            # Exclude selections from test
+          if !['_0_7', '_3_4', '_7_1'].include?(entry['id'])                    # Exclude selections from test
             puts "Testing dragnet function: #{entry['text']}"
             full_entry = extract_entry_by_entry_id(entry['id'])                 # Get SQL from id
 
@@ -47,7 +50,6 @@ class DragnetControllerTest < ActionController::TestCase
                 params[p[:name]] = p[:default]
               end
             end
-
             post  :exec_dragnet_sql, :params => params                          # call execution of SQL
             assert_response :success
 
@@ -59,11 +61,21 @@ class DragnetControllerTest < ActionController::TestCase
       end
     end
 
+    Rails.logger.info 'DRAGNET Step 1'; puts 'DRAGNET Step 1'
+
     # get available selections
     get :get_selection_list, :params => {:format=>:json }
+
+    Rails.logger.info 'DRAGNET Step 2'; puts 'DRAGNET Step 2'
+
     dragnet_sqls = JSON.parse(@response.body)
 
+    Rails.logger.info 'DRAGNET Step 3'; puts 'DRAGNET Step 3'
+
     test_tree(dragnet_sqls)                                                     # Test each dragnet SQL with default parameters
+
+    Rails.logger.info 'DRAGNET Step 4'; puts 'DRAGNET Step 4'
+
   end
 
   # Find unique name by random to ensure selection does not already exists in client_info.store
