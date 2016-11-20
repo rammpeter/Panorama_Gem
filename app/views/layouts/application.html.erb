@@ -22,9 +22,9 @@
 
     // Handle javascript errors
     window.onerror = function (msg, url, lineNo, columnNo, error) {
-      alert('Error: '+msg+'\nURL: '+url+'\nLine-No.: '+lineNo+'\nColumn-No.: '+columnNo)
+      alert('Error: '+msg+'\nURL: '+url+'\nLine-No.: '+lineNo+'\nColumn-No.: '+columnNo);
       return false;
-    }
+    };
     /* Initialisierung von Objekten bei startup der Seite */
     jQuery(document).ready(function(){
       bind_ajax_callbacks();                                                  // Callbacks für jeden Ajax-Aufruf binden
@@ -109,19 +109,9 @@
         <tr>
           <th><%= t :login_lang_caption, :default=>"Language" %></th>
           <td align="center">
-            <%
-              sprachen = {:de=>"deutsch", :en=>"english"}
-              @locale_options = ""
-              sprachen.each do |key, value|
-                @locale_options << "<option #{I18n.locale==key ? "selected" : ""} value='#{key}'>#{value}</option>"
-              end
-            %>
             <!-- Wechsel der Sprache und neu laden der gesamten Seite -->
-            <div title="<%= t(:login_locale_title, :default=>"Select application language")%>">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
-              <select name="database[locale]"  autocomplete="off" onchange="jQuery.ajax({type: 'POST', url:'env/set_locale', data: {locale: this.value} });">
-                <%= @locale_options.html_safe %>
-              </select>
-            </div>
+            <img src="assets/british-flag-small.gif" style="cursor:pointer; height: 16pt" title="Set language to english"   onclick="jQuery.ajax({type: 'POST', url: 'env/set_locale', data: {locale: 'en'}});">
+            <img src="assets/german-flag-small.gif"  style="cursor:pointer; height: 16pt" title="Setze Sprache auf deutsch" onclick="jQuery.ajax({type: 'POST', url: 'env/set_locale', data: {locale: 'de'}});">
           </td>
         </tr>
         <tr>
