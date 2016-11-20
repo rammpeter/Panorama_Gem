@@ -86,7 +86,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
         post :list_session_statistic_historic_grouping, :params => {:format=>:js, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter) }
         assert_response :success
 
-        post :list_session_statistic_historic_grouping, :params => {:format=>:js, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge('Additional Filter'=>'sys') }
+        post :list_session_statistic_historic_grouping, :params => {:format=>:js, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge(:Additional_Filter=>'sys') }
         assert_response :success
 
         # Test mit NULL als Filterkriterium
@@ -94,7 +94,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
         post :list_session_statistic_historic_grouping, :params => {:format=>:js, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter) }
         assert_response :success
 
-        post :list_session_statistic_historic_grouping, :params => {:format=>:js, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge('Additional Filter'=>'sys') }
+        post :list_session_statistic_historic_grouping, :params => {:format=>:js, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge(:Additional_Filter=>'sys') }
         assert_response :success
       end
     end
