@@ -31,27 +31,30 @@ class DragnetControllerTest < ActionController::TestCase
     def test_tree(node)
       node.each do |entry|
         if entry['children']
+          puts "Testing subtree: #{entry['text']}"
           test_tree(entry['children'])        # Test subnode's entries
         else
-          full_entry = extract_entry_by_entry_id(entry['id'])                   # Get SQL from id
-          Rails.logger.info "Testing dragnet SQL: #{entry['id']} #{full_entry[:name]}"
-          params = {:format=>:js, :dragnet_hidden_entry_id=>entry['id']}
 
-          if full_entry[:parameter]
-            full_entry[:parameter].each do |p|                                  # Iterate over optional parameter of selection
-              params[p[:name]] = p[:default]
+          if !['_0_7', '_3_4', '_7_1'].include?(entry['id'])                            # Exclude selections from test
+            puts "Testing dragnet function: #{entry['text']}"
+            full_entry = extract_entry_by_entry_id(entry['id'])                 # Get SQL from id
+
+            Rails.logger.info "Testing dragnet SQL: #{entry['id']} #{full_entry[:name]}"
+            params = {:format=>:js, :dragnet_hidden_entry_id=>entry['id']}
+
+            if full_entry[:parameter]
+              full_entry[:parameter].each do |p|                                # Iterate over optional parameter of selection
+                params[p[:name]] = p[:default]
+              end
             end
-          end
 
-          if !full_entry[:sql]['SET SERVEROUT ON;']                             # do not try to execute PL/SQL code
             post  :exec_dragnet_sql, :params => params                          # call execution of SQL
             assert_response :success
+
+            params[:commit_show] = 'hugo'
+            post  :exec_dragnet_sql, :params => params                          # Call show SQL text
+            assert_response :success
           end
-
-          params[:commit_show] = 'hugo'
-          post  :exec_dragnet_sql, :params => params                            # Call show SQL text
-          assert_response :success
-
         end
       end
     end
