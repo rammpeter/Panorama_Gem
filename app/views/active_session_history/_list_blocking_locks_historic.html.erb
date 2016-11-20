@@ -7,7 +7,7 @@
         my_ajax_link_to(rec.root_blocking_session,
           url_for(:action     => :list_session_statistic_historic_grouping,
                 :groupfilter  => {
-                                  "Session-ID"          => rec.root_blocking_session,
+                                  :Session_ID           => rec.root_blocking_session,
                                   :SerialNo             => rec.root_blocking_session_serialno,
                                   :Idle_Wait1           => "PX Deq Credit: send blkd",
                                   :DBID                 => get_dbid,

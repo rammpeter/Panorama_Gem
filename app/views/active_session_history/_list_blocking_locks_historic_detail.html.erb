@@ -34,7 +34,7 @@
         url_for(:action     => :list_session_statistic_historic_grouping,
               :groupfilter  => {
                                 :Instance                 => rec.instance_number,
-                                "Session-ID"              => rec.session_id,
+                                :Session_ID               => rec.session_id,
                                 :SerialNo                 => rec.session_serialno,
                                 :Idle_Wait1               => "PX Deq Credit: send blkd",
                                 :DBID                     => get_dbid,
@@ -59,7 +59,7 @@
         url_for(:action     => :list_session_statistic_historic_grouping,
               :groupfilter  => {
                                 :Instance             => rec.instance_number,
-                                "Session-ID"          => rec.session_id,
+                                :Session_ID           => rec.session_id,
                                 :SerialNo             => rec.session_serialno,
                                 :Idle_Wait1           => "PX Deq Credit: send blkd",
                                 :DBID                 => get_dbid,
@@ -85,7 +85,7 @@
                               :update_area      => @update_area,
                               :groupfilter      => {
                                 :Instance                 => rec.instance_number,
-                                "Session-ID"              => rec.session_id,
+                                :Session_ID               => rec.session_id,
                                 :SerialNo                 => rec.session_serialno,
                                 :Blocking_Session         => @blocking_session,
                                 :Blocking_Session_Status  => rec.root_blocking_session_status,
