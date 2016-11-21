@@ -6,10 +6,54 @@ module Dragnet::SqlsCursorRedundanciesHelper
   def sqls_cursor_redundancies
     [
         {
-            :name  => t(:dragnet_helper_114_name, :default=>'Missing usage of bind variables'),
-            :desc  => t(:dragnet_helper_114_desc, :default=>'Usage of literals instead of bind variables for filter without compensation by cursor_sharing-parameter leads to high parse counts and flooding of SQL-Area in SGA.
-This selection looks for statements which differentiate themself only by literals. It compares the first x characters of SQL to identify similar statements.
-The length of the compared substring may be varied.'),
+            :name  => t(:dragnet_helper_133_name, :default=>'Missing usage of bind variables: Detection by identical plan-hash-value'),
+            :desc  => t(:dragnet_helper_133_desc, :default=>"Usage of literals instead of bind variables with high number of different literals leads to high parse counts and flooding of SQL-Area in SGA.
+You may reduce the problem by setting cursor_sharing != EXACT, but you still need large amount of SGA-memory to match your SQL with the corresponding SQL with replaced bind variables.
+So strong suggestion is: Use bind variables!
+This selection looks for statements with identical execution plans by plan-hash-value."),
+            :sql=>  "WITH Ret AS (SELECT ? Days FROM DUAL)
+                      SELECT x.SQL_Plan_Hash_Value, x.Different_SQL_IDs, x.Last_Used_SQL_ID, u.UserName, x.First_Occurrence, x.Last_Occurrence, x.Elapsed_Secs
+                      FROM   (
+                              SELECT h.SQL_Plan_Hash_Value,
+                                     COUNT(DISTINCT h.SQL_ID) Different_SQL_IDs,
+                                     MAX(h.SQL_ID) KEEP (DENSE_RANK LAST ORDER BY h.Sample_Time) Last_Used_SQL_ID,
+                                     User_ID,
+                                     MIN(h.Sample_Time) First_Occurrence,
+                                     MAX(h.Sample_Time) Last_Occurrence,
+                                     SUM(CASE WHEN h.Sample=1 OR d.Min_Sample_Time IS NULL OR h.Sample_Time < d.Min_Sample_Time THEN h.Sample END) Elapsed_Secs   /* dont count twice in SGA and AWR */
+                              FROM   (SELECT Inst_ID Instance_Number, Sample_Time, SQL_Plan_Hash_Value, SQL_ID, 1 Sample, User_ID,
+                                             MIN(Sample_Time) OVER (PARTITION BY SQL_Plan_Hash_Value) Delimiter
+                                      FROM   gv$Active_Session_History
+                                      CROSS JOIN Ret
+                                      WHERE  Sample_Time > SYSDATE-Ret.Days
+                                      UNION ALL
+                                      SELECT Instance_Number, Sample_Time, SQL_Plan_Hash_Value, SQL_ID, 10 Sample, User_ID,NULL Delimiter
+                                      FROM   DBA_Hist_Active_Sess_History
+                                      CROSS JOIN Ret
+                                      WHERE  Sample_Time > SYSDATE-Ret.Days
+                                     ) h
+                              LEFT OUTER JOIN (SELECT Inst_ID Instance_Number, SQL_Plan_Hash_Value, MIN(Sample_Time) Min_Sample_Time   /* limit Values in AWR-table from SGA*/
+                                               FROM   gv$Active_Session_History
+                                               GROUP BY  Inst_ID, SQL_Plan_Hash_Value
+                                              ) d ON d.Instance_Number = h.Instance_Number AND d.SQL_Plan_Hash_Value = h.SQL_Plan_Hash_Value
+                              WHERE  h.SQL_Plan_Hash_Value != 0
+                              GROUP BY h.SQL_Plan_Hash_Value, h.User_ID
+                             ) x
+                      JOIN   DBA_Users u ON u.User_ID = x.User_ID
+                      WHERE Different_SQL_IDs > ?
+                      ORDER BY Different_SQL_IDs DESC",
+            :parameter=>[
+                {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
+                {:name=> t(:dragnet_helper_133_param_1_name, :default=>'Minimum number of different SQL-IDs'), :size=>8, :default=>10, :title=>t(:dragnet_helper_133_param_1_hint, :default=>'Minimum number of different SQL-IDs per plan-hash-value for consideration in selection') }
+            ]
+        },
+        {
+            :name  => t(:dragnet_helper_114_name, :default=>'Missing usage of bind variables: Detection by identical part of SQL-text'),
+            :desc  => t(:dragnet_helper_114_desc, :default=>"Usage of literals instead of bind variables with high number of different literals leads to high parse counts and flooding of SQL-Area in SGA.
+You may reduce the problem by setting cursor_sharing != EXACT, but you still need large amount of SGA-memory to match your SQL with the corresponding SQL with replaced bind variables.
+So strong suggestion is: Use bind variables!
+This selection looks for statements in SGA which differentiate themself only by literals. It compares the first x characters of SQL to identify similar statements.
+The length of the compared substring may be varied."),
             :sql=>  "WITH Len AS (SELECT ? Substr_Len FROM DUAL)
                        SELECT g.*, s.SQL_Text \"Beispiel SQL-Text\"
                        FROM   (
@@ -35,7 +79,8 @@ The length of the compared substring may be varied.'),
         {
             :name  => t(:dragnet_helper_125_name, :default=>'Number of distinct SQL-IDs per time in time line'),
             :desc  => t(:dragnet_helper_125_desc, :default=>"The number of dictinct SQL-IDs in time line allows you to identify times where multiple statements with missing bind variables are executed.
-You can refine your search using Panorama's view on single samples per time of active session history at menu 'Session waits / Historic'"),
+You can refine your search using Panorama's view on single samples per time of active session history at menu 'Session waits / Historic'.
+Remind the diagram view via context menu 'Show column in diagram'."),
             :sql=>  "
               SELECT Start_Time \"Start Time\", COUNT(*) \"Number of ASH-Samples\", COUNT(DISTINCT SQL_ID) \"Number of different SQLs\"
               FROM   (SELECT TRUNC(Sample_Time, ?) Start_Time, SQL_ID
