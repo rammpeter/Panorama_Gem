@@ -23,5 +23,6 @@ if RUBY_PLATFORM == 'java' # Allows the application to work with other Rubies if
   rescue Exception => e
     Rails.logger.error "unlimited_strength_cryptography.rb: Error faking advanced JCE (#{e})!"
     Rails.logger.error "Please fix this by installing Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files"
+    Rails.logger.error "This files are available at http://www.oracle.com/technetwork/java/javase/downloads/index.html"
   end
 end
