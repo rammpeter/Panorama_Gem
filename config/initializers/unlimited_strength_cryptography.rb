@@ -16,7 +16,12 @@ if RUBY_PLATFORM == 'java' # Allows the application to work with other Rubies if
     security_class = java.lang.Class.for_name('javax.crypto.JceSecurity')
     restricted_field = security_class.get_declared_field('isRestricted')
     restricted_field.accessible = true
-    restricted_field.set nil, false
+    if restricted_field.get(nil)
+      Rails.logger.info "Unlimited strength cryptography is not active for your current JRE/JDK, trying to fake it. If you don't want this, install Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files"
+      restricted_field.set nil, false
+    else
+      Rails.logger.info "Unlimited strength cryptography is already active for your current JRE/JDK"
+    end
   rescue ClassNotFoundException => e
     # Handle Mac Java, etc not having this configuration setting
     Rails.logger.error "unlimited_strength_cryptography.rb: ClassNotFoundException #{e}"
