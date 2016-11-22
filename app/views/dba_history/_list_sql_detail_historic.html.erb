@@ -240,7 +240,7 @@ column_options = [
                                    :min_snap_id     => @sql.min_snap_id,
                                    :max_snap_id     => @sql.max_snap_id
                            ),
-                           :disabled => (@sql.optimizer_env_hash_value_count != 1),
+                           :disabled => (@sql.plan_hash_value_count != 1),
                            :title=> t(:dba_history_list_sql_detail_historic_create_baseline_hint, :default=>"Generate script to fix exactly this execution plan as SQL-baseline for this SQL.\nAvailable only if exactly one execution plan exists for this SQL in considered time slice."))
 
     %>

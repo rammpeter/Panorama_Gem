@@ -827,6 +827,7 @@ class DbaHistoryController < ApplicationController
              MAX(snap.End_Interval_Time)        Last_Occurrence,
              COUNT(DISTINCT s.Plan_Hash_Value)  Execution_Plans,
              MIN(Plan_Hash_Value)               First_Plan_Hash_Value,
+             COUNT(DISTINCT s.Optimizer_Env_Hash_Value) Optimizer_Envs,
              MIN(Optimizer_Env_Hash_Value)      First_Opt_Env_Hash_Value,
              SUM(Executions_Delta)              Executions,
              SUM(Fetches_Delta)                 Fetches,
