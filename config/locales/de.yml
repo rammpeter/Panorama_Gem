@@ -1180,6 +1180,7 @@
     Dieser View listet Objekte an, die für ihre Platzierung im Shared Pool andere verdrängen mussten.
     Bei der Selektion werden die Inhalte gelöscht, d.h., die Selektion zeigt die Verdrängungen seit der letzten Selektion (nur einmalig).
     'No. Items flushed from shared pool' von 7..8 ist normal, höhere Werte zeigen Probleme Platz zu finden.
+    Die Rolle DBA wird benötigt um diese Abfrage auszuführen.
   dragnet_helper_123_name: |-
     Konkurrenz bzgl. Speicher: Verdrängung im Shared Pool
 

@@ -150,6 +150,7 @@ SQLs with multiple open cursors withon one session my flood session cursor cache
             :desc  => t(:dragnet_helper_123_desc, :default=>"This view lists objects which squeezed out others from shared pool to get place.
 While selecting this view it's contents in SGA will be deleted. That means, this view shows replacement since the last execution of this view (only one time).
 Value for 'No. Items flushed from shared pool' from 7..8 is normal, higher values indicate problems to find place in shared pool.
+Role DBA is required to execute this selection.
 "),
             :sql=>  "SELECT /* DB-Tools Ramm  Verdreaengung Shared Pool */
                          RAWTOHEX(Addr)         \"row-address in array or SGA\",

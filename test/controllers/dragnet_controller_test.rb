@@ -38,7 +38,7 @@ class DragnetControllerTest < ActionController::TestCase
           test_tree(entry['children'])        # Test subnode's entries
         else
 
-          if !['_0_7', '_3_4', '_7_1'].include?(entry['id'])                    # Exclude selections from test
+          if !['_0_7', '_3_4', '_3_5', '_7_1'].include?(entry['id'])            # Exclude selections from test which are not executable
             puts "Testing dragnet function: #{entry['text']}"
             full_entry = extract_entry_by_entry_id(entry['id'])                 # Get SQL from id
 
