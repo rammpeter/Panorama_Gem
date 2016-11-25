@@ -15,7 +15,6 @@ class DragnetControllerTest < ActionController::TestCase
     call_controllers_menu_entries_with_actions
   end
 
-
   test "get_selection_list"  do
     get :get_selection_list, :params => {:format=>:json }
     assert_response :success
@@ -27,6 +26,8 @@ class DragnetControllerTest < ActionController::TestCase
   end
 
   # Test all subitems of node
+  # Error: Java::JavaLang::ClassCastException: org.jruby.RubyObject cannot be cast to org.jruby.RubyModule
+  # if method is declared inside test
   def execute_tree(node)
     node.each do |entry|
       if entry['children']
@@ -57,25 +58,10 @@ class DragnetControllerTest < ActionController::TestCase
   end
 
   test "exec_dragnet_sql"  do
-    Rails.logger.info 'DRAGNET Step 0'; puts 'DRAGNET Step 0'
-
-
-
-    Rails.logger.info 'DRAGNET Step 1'; puts 'DRAGNET Step 1'
-
     # get available selections
     get :get_selection_list, :params => {:format=>:json }
-
-    Rails.logger.info 'DRAGNET Step 2'; puts 'DRAGNET Step 2'
-
     dragnet_sqls = JSON.parse(@response.body)
-
-    Rails.logger.info 'DRAGNET Step 3'; puts 'DRAGNET Step 3'
-
     execute_tree(dragnet_sqls)                                                     # Test each dragnet SQL with default parameters
-
-    Rails.logger.info 'DRAGNET Step 4'; puts 'DRAGNET Step 4'
-
   end
 
   # Find unique name by random to ensure selection does not already exists in client_info.store
