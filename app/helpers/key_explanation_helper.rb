@@ -7,9 +7,9 @@ module KeyExplanationHelper
     {
      '0' => 'none',
      '1' => 'null',
-     '2' => 'row-S(SS)',
-     '3' => 'row-X(SX)',
-     '4' => 'share(S), Waits for TX in mode 4 can occur: waiting for potential duplicates in a UNIQUE index, Index block split by another transaction, ITL overflow.',
+     '2' => 'row-S(SS), lock table row in shared mode',
+     '3' => 'row-X(SX), lock table row in exclusive mode',
+     '4' => "share(S), Waits for TX in mode 4 can occur:\n- waiting for potential duplicates in a UNIQUE index\n- Index block split by another transaction\n- ITL overflow.\n- DML on referenced table blocked by exclusive locks on referencing table (missing index on foreign key column)",
      '5' => 'S/row-X(SSX)',
      '6' => 'exclusive(X), Waits for TX in mode 6 occurs when a session is waiting for a row level lock that is already held by another session.'
     }
