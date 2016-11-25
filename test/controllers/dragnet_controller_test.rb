@@ -32,12 +32,12 @@ class DragnetControllerTest < ActionController::TestCase
 
     # Test all subitems of node
     def test_tree(node)
+=begin
       node.each do |entry|
         if entry['children']
           puts "Testing subtree: #{entry['text']}"
           test_tree(entry['children'])        # Test subnode's entries
         else
-=begin
           if !['_0_7', '_3_4', '_3_5', '_7_1'].include?(entry['id'])            # Exclude selections from test which are not executable
             puts "Testing dragnet function: #{entry['text']}"
             full_entry = extract_entry_by_entry_id(entry['id'])                 # Get SQL from id
@@ -57,9 +57,9 @@ class DragnetControllerTest < ActionController::TestCase
             post  :exec_dragnet_sql, :params => params                          # Call show SQL text
             assert_response :success
           end
-=end
         end
       end
+=end
     end
 
     Rails.logger.info 'DRAGNET Step 1'; puts 'DRAGNET Step 1'
