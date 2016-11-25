@@ -26,38 +26,39 @@ class DragnetControllerTest < ActionController::TestCase
     assert_response :success
   end
 
-  # Test all subitems of node
-  def test_tree(node)
-    node.each do |entry|
-      if entry['children']
-        puts "Testing subtree: #{entry['text']}"
-        test_tree(entry['children'])        # Test subnode's entries
-      else
-        if !['_0_7', '_3_4', '_3_5', '_7_1'].include?(entry['id'])            # Exclude selections from test which are not executable
-          puts "Testing dragnet function: #{entry['text']}"
-          full_entry = extract_entry_by_entry_id(entry['id'])                 # Get SQL from id
+  test "exec_dragnet_sql"  do
+    Rails.logger.info 'DRAGNET Step 0'; puts 'DRAGNET Step 0'
 
-          Rails.logger.info "Testing dragnet SQL: #{entry['id']} #{full_entry[:name]}"
-          params = {:format=>:js, :dragnet_hidden_entry_id=>entry['id']}
 
-          if full_entry[:parameter]
-            full_entry[:parameter].each do |p|                                # Iterate over optional parameter of selection
-              params[p[:name]] = p[:default]
+    # Test all subitems of node
+    def execute_tree(node)
+      node.each do |entry|
+        if entry['children']
+          puts "Testing subtree: #{entry['text']}"
+          execute_tree(entry['children'])        # Test subnode's entries
+        else
+          if !['_0_7', '_3_4', '_3_5', '_7_1'].include?(entry['id'])            # Exclude selections from test which are not executable
+            puts "Testing dragnet function: #{entry['text']}"
+            full_entry = extract_entry_by_entry_id(entry['id'])                 # Get SQL from id
+
+            Rails.logger.info "Testing dragnet SQL: #{entry['id']} #{full_entry[:name]}"
+            params = {:format=>:js, :dragnet_hidden_entry_id=>entry['id']}
+
+            if full_entry[:parameter]
+              full_entry[:parameter].each do |p|                                # Iterate over optional parameter of selection
+                params[p[:name]] = p[:default]
+              end
             end
-          end
-          post  :exec_dragnet_sql, :params => params                          # call execution of SQL
-          assert_response :success
+            post  :exec_dragnet_sql, :params => params                          # call execution of SQL
+            assert_response :success
 
-          params[:commit_show] = 'hugo'
-          post  :exec_dragnet_sql, :params => params                          # Call show SQL text
-          assert_response :success
+            params[:commit_show] = 'hugo'
+            post  :exec_dragnet_sql, :params => params                          # Call show SQL text
+            assert_response :success
+          end
         end
       end
     end
-  end
-
-  test "exec_dragnet_sql"  do
-    Rails.logger.info 'DRAGNET Step 0'; puts 'DRAGNET Step 0'
 
     Rails.logger.info 'DRAGNET Step 1'; puts 'DRAGNET Step 1'
 
@@ -70,7 +71,7 @@ class DragnetControllerTest < ActionController::TestCase
 
     Rails.logger.info 'DRAGNET Step 3'; puts 'DRAGNET Step 3'
 
-    test_tree(dragnet_sqls)                                                     # Test each dragnet SQL with default parameters
+    execute_tree(dragnet_sqls)                                                     # Test each dragnet SQL with default parameters
 
     Rails.logger.info 'DRAGNET Step 4'; puts 'DRAGNET Step 4'
 
