@@ -31,11 +31,12 @@ class DragnetControllerTest < ActionController::TestCase
   def execute_tree(node)
     node.each do |entry|
       if entry['children']
-        #puts "Testing subtree: #{entry['text']}"
+        puts "Testing subtree: #{entry['text']}"
         execute_tree(entry['children'])        # Test subnode's entries
       else
-        if !['_0_7', '_3_4', '_3_5', '_7_1'].include?(entry['id'])            # Exclude selections from test which are not executable
-          #puts "Testing dragnet function: #{entry['text']}"
+        # _1_1_4 excluded because ORA600 on Oracle12.1
+        if !['_0_7', '_1_1_4', '_3_4', '_3_5', '_7_1'].include?(entry['id'])            # Exclude selections from test which are not executable
+          puts "Testing dragnet function: #{entry['text']}"
           full_entry = extract_entry_by_entry_id(entry['id'])                 # Get SQL from id
 
           Rails.logger.info "Testing dragnet SQL: #{entry['id']} #{full_entry[:name]}"
