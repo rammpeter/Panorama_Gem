@@ -7,7 +7,10 @@ class DbaSgaControllerTest < ActionController::TestCase
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context{}
 
-    time_selection_end  = Time.new
+    # TODO: Additional test with overlapping start and end (first snapshot after start and last snapshot before end)
+    # End with latest existing sample
+    time_selection_end = sql_select_one "SELECT /* Panorama-Tool Ramm */ MAX(Begin_Interval_Time) FROM DBA_Hist_Snapshot"
+    #time_selection_end  = Time.new
     time_selection_start  = time_selection_end-10000          # x Sekunden Abstand
     @time_selection_end = time_selection_end.strftime("%d.%m.%Y %H:%M")
     @time_selection_start = time_selection_start.strftime("%d.%m.%Y %H:%M")

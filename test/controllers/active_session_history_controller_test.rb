@@ -8,7 +8,10 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   setup do
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context{
-      min_alter_org = Time.new
+      # TODO: Additional test with overlapping start and end (first snapshot after start and last snapshot before end)
+      # End with latest existing sample
+      min_alter_org = sql_select_one "SELECT /* Panorama-Tool Ramm */ MAX(Begin_Interval_Time) FROM DBA_Hist_Snapshot"
+      #min_alter_org = Time.new
       max_alter_org = min_alter_org-10000
       @time_selection_end = min_alter_org.strftime("%d.%m.%Y %H:%M")
       @time_selection_start = (max_alter_org).strftime("%d.%m.%Y %H:%M")

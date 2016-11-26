@@ -8,6 +8,8 @@ class AdditionControllerTest < ActionController::TestCase
   setup do
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context{}
+
+    showBlockingLocksMenu                                                       # Set cache with owner-schema for table
     #connect_oracle_db     # Nutzem Oracle-DB für Selektion
     time_selection_end  = Time.new
     time_selection_start  = time_selection_end-10000          # x Sekunden Abstand
