@@ -367,6 +367,7 @@ class DbaSchemaController < ApplicationController
 
     @indexes = sql_select_one ['SELECT COUNT(*) FROM DBA_Indexes WHERE Table_Owner = ? AND Table_Name = ?', @owner, @table_name]
 
+    @viewtext = nil                                                             # suppress warning: instance variable @viewtext not initialized
     if @table_type == "MATERIALIZED VIEW"
       @viewtext = sql_select_one ["SELECT m.query
                                    FROM   sys.dba_mviews m
