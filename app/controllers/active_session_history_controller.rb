@@ -49,7 +49,8 @@ class ActiveSessionHistoryController < ApplicationController
 
     record_modifier = proc{|rec|
       # Angenommene Anzahl Sekunden je Zyklus korrigieren, wenn Gruppierung < als Zyklus der Aufzeichnung
-      divider = rec.max_sample_cycle > group_seconds ? rec.max_sample_cycle : group_seconds/rec.max_sample_cycle
+      divider = rec.max_sample_cycle > group_seconds ? group_seconds : group_seconds/rec.max_sample_cycle
+
       rec['diagram_value'] = rec.count_samples.to_f / divider  # Anzeige als Anzahl aktive Sessions
     }
 
