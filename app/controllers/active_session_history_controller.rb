@@ -49,6 +49,7 @@ class ActiveSessionHistoryController < ApplicationController
 
     record_modifier = proc{|rec|
       # Angenommene Anzahl Sekunden je Zyklus korrigieren, wenn Gruppierung < als Zyklus der Aufzeichnung
+      # rec.max_sample_cycle > group_seconds kann nur auftreten wenn group_seconds=1 und Daten aus DBA_Hist_Active_Sess_History
       divider = rec.max_sample_cycle > group_seconds ? group_seconds : group_seconds/rec.max_sample_cycle
 
       rec['diagram_value'] = rec.count_samples.to_f / divider  # Anzeige als Anzahl aktive Sessions
@@ -428,47 +429,6 @@ class ActiveSessionHistoryController < ApplicationController
     #redirect_to url_for(:controller => params[:repeat_controller],:action => params[:repeat_action], :params => params, :method=>:post)
     #send params[:repeat_action]    # Methode erneut aufrufen
   end
-
-  private
-  # Ermitteln der Min- und Max-Abgrenzungen auf Basis Snap_ID für Zeitraum über alle Instanzen hinweg
-  def get_min_max_snap_ids(time_selection_start, time_selection_end, dbid)
-    @min_snap_id = sql_select_one ["SELECT /*+ Panorama-Tool Ramm */ MIN(Snap_ID)
-                                    FROM   (SELECT MAX(Snap_ID) Snap_ID
-                                            FROM   DBA_Hist_Snapshot
-                                            WHERE DBID = ?
-                                            AND Begin_Interval_Time <= TO_DATE(?, '#{sql_datetime_mask(time_selection_start)}')
-                                            GROUP BY Instance_Number
-                                           )
-                                   ", dbid, time_selection_start
-                                  ]
-    unless @min_snap_id   # Start vor Beginn der Aufzeichnungen, dann kleinste existierende Snap-ID
-      @min_snap_id = sql_select_one ['SELECT /*+ Panorama-Tool Ramm */ MIN(Snap_ID)
-                                      FROM   DBA_Hist_Snapshot
-                                      WHERE DBID = ?
-                                     ', dbid
-                                    ]
-    end
-
-    @max_snap_id = sql_select_one ["SELECT /*+ Panorama-Tool Ramm */ MAX(Snap_ID)
-                                    FROM   (SELECT MIN(Snap_ID) Snap_ID
-                                            FROM   DBA_Hist_Snapshot
-                                            WHERE DBID = ?
-                                            AND End_Interval_Time >= TO_DATE(?, '#{sql_datetime_mask(time_selection_end)}')
-                                            GROUP BY Instance_Number
-                                          )
-                                   ", dbid, time_selection_end
-                                  ]
-    unless @max_snap_id       # Letzten bekannten Snapshot werten, wenn End-Zeitpunkt in der Zukunft liegt
-      @max_snap_id = sql_select_one ['SELECT /*+ Panorama-Tool Ramm */ MAX(Snap_ID)
-                                      FROM   DBA_Hist_Snapshot
-                                      WHERE DBID = ?
-                                     ', dbid
-                                    ]
-    end
-  end
-
-  public
-
 
   def list_blocking_locks_historic
     @dbid = prepare_param_dbid
