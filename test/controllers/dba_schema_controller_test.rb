@@ -23,6 +23,11 @@ class DbaSchemaControllerTest < ActionController::TestCase
       @subpart_table_owner            = subpart_table.table_owner
       @subpart_table_table_name       = subpart_table.table_name
       @subpart_table_partition_name   = subpart_table.partition_name
+    else
+      puts "DbaSchemaControllerTest.setup: There are no table subpartitions in database"
+      @subpart_table_owner            = nil
+      @subpart_table_table_name       = nil
+      @subpart_table_partition_name   = nil
     end
 
     subpart_index = sql_select_first_row "SELECT Index_Owner, Index_Name, Partition_Name FROM DBA_Ind_SubPartitions WHERE RowNum < 2"
@@ -30,6 +35,11 @@ class DbaSchemaControllerTest < ActionController::TestCase
       @subpart_index_owner            = subpart_index.index_owner
       @subpart_index_index_name       = subpart_index.index_name
       @subpart_index_partition_name   = subpart_index.partition_name
+    else
+      puts "DbaSchemaControllerTest.setup: There are no index subpartitions in database"
+      @subpart_index_owner            = nil
+      @subpart_index_index_name       = nil
+      @subpart_index_partition_name   = nil
     end
 
   end
