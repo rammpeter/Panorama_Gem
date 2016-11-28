@@ -8,7 +8,6 @@
 //= require jquery.ui.touch-punch.js
 // jquery_ujs.js aus gem jquery-rails nach vendor/assets/javascript kopiert, da im gem selbst nicht gefunden, statt dessen: sprocket-Error
 //= require jquery_ujs
-//= require turbolinks
 //= require jquery-ui-timepicker-addon
 //= require jquery_table2CSV
 //= require flot/jquery.flot
