@@ -27,6 +27,8 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   # Use SCSS for stylesheets
   s.add_dependency  'sass-rails', '~> 5.0'
 
+  s.add_dependency  'turbolinks'                                                # needed for redirect_to
+
 =begin
   # Rails 4 Varianten
 
@@ -49,7 +51,6 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   spec.add_dependency  'uglifier'
   spec.add_dependency  'sass'
   spec.add_dependency  'jquery-rails'
-  spec.add_dependency  'turbolinks'
   spec.add_dependency  'tzinfo-data'    # Fixes error " No source of timezone data could be found " on windows systems
 
   # some Linux systems require krypt gem to fix following error
