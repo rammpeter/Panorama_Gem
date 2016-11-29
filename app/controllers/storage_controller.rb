@@ -368,9 +368,39 @@ class StorageController < ApplicationController
 
   # Ermittlung und Anzeige der realen Größe
   def list_real_num_rows
-    num_rows = sql_select_one ["\
-      SELECT /*+ PARALLEL_INDEX(l,2) */ COUNT(*)
-      FROM   #{params[:owner]}.#{params[:name]}"]
+    object_owner = params[:owner]
+    object_name  = params[:name]
+    object_type  = params[:object_type]
+    object_type  = 'TABLE' if object_type.nil? || object_type == ''
+
+    case object_type
+      when 'TABLE' then
+        num_rows = sql_select_one ["\
+          SELECT /*+ PARALLEL_INDEX(l,2) */ COUNT(*)
+          FROM   #{object_owner}.#{object_name} l"]
+      when 'INDEX' then
+        expr = ''
+        table_owner = ''
+        table_name = ''
+        sql_select_all(["\
+        SELECT ie.Column_Expression, ic.Column_Name, ic.Table_Owner, ic.Table_Name
+        FROM   DBA_Ind_Columns ic
+        LEFT OUTER JOIN DBA_Ind_Expressions ie ON ie.Index_Owner = ic.Index_Owner AND ie.Index_Name=ic.Index_Name AND ie.Column_Position = ic.Column_Position
+        WHERE  ic.Index_Owner = ?
+        AND    ic.Index_Name  = ?
+        ORDER BY ic.Column_Position", object_owner, object_name]).each do |rec|
+          expr = "#{expr}||#{rec.column_expression ? rec.column_expression : rec.column_name}"
+          table_owner = rec.table_owner
+          table_name  = rec.table_name
+        end
+
+        expr = expr[2, expr.length-2]                                           # remove first two characters
+        num_rows = sql_select_one ["\
+          SELECT /*+ PARALLEL_INDEX(l,2) */ COUNT(#{expr})
+          FROM   #{table_owner}.#{table_name} l"]
+      else
+        raise "Unsupported object type '#{object_type}'"
+    end
 
     respond_to do |format|
       format.js {render :js => "$('##{params[:update_area]}').html('#{j "real:&nbsp;#{fn num_rows}"}');".html_safe}

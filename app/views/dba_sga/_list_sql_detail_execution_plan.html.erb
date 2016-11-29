@@ -178,7 +178,25 @@
      output
    end
 
+   def link_real_num_rows(rec)
+     object_type = rec.object_type
+     object_type = 'INDEX' if !rec.object_type.nil? && rec.object_type['INDEX']
 
+     if object_type == 'TABLE' || object_type == 'INDEX'
+       update_area = "#{@update_area}_#{rec.id}"
+       my_ajax_link_to(rec.num_rows ? fn(rec.num_rows) : "[No analyze]",
+                       url_for(:controller      => :storage,
+                               :action          => :list_real_num_rows,
+                               :owner           => rec.object_owner,
+                               :name            => rec.object_name,
+                               :object_type     => object_type,
+                               :update_area     => update_area
+                              ),
+                       :title=>"Count current number of rows in Table. CAUTION: May be long running!")+"&nbsp;<span id=\"#{update_area}\"></span>".html_safe
+     else
+       fn(rec.num_rows)
+     end
+   end
 
    column_options =
 [
@@ -186,7 +204,7 @@
   {:caption=>"ID",          :data=>proc{|rec| rec.id },  :align=>:right,                    :title=>'ID of operation',             :data_title=>proc{|rec| "%t: Parent_ID=#{rec.parent_id}"} },
   {:caption=>"R.",          :data=>proc{|rec| rec.execorder },  :align=>:right,             :title=>'Execution order of operation',    :data_title=>proc{|rec| "%t: ID=#{rec.id}\nParent_ID=#{rec.parent_id}"} },
   {:caption=>"Object-name", :data=>proc{|rec| link_object_description(@update_area, rec.object_owner, rec.object_name)}, :title=>'Name of accessed object', :data_title=>proc{|rec| "%t: Type = #{rec.object_type},\nAlias = #{rec.object_alias},\nQuery block name = #{rec.qblock_name}"} },
-  {:caption=>"Rows",        :data=>proc{|rec| fn(rec.num_rows) },                           :title=>"Number of rows of object (from analyze info)",     :align=>:right, :data_title=>proc{|rec| "%t, Last_Analyzed=#{localeDateTime(rec.last_analyzed)}"}  },
+  {:caption=>"Rows",        :data=>proc{|rec| link_real_num_rows(rec) },                    :title=>"Number of rows of object (from analyze info)",     :align=>:right, :data_title=>proc{|rec| "%t, Last_Analyzed=#{localeDateTime(rec.last_analyzed)}"}  },
   {:caption=>"MB",          :data=>proc{|rec| fn(rec.mbytes) },                             :title=>"Size of object in MBytes",     :align=>:right },
   {:caption=>"Cost",        :data=>proc{|rec| fn(rec.cost) },                               :title=>"Costs calculated by optimizer + additional optimizer calculations", :align=>:right, :data_title=>proc{|rec| "%t\nCPU cost = #{fn rec.cpu_cost}\nIO cost = #{fn rec.io_cost}\nestimated bytes = #{fn rec.bytes},\nestimated time (secs.) = #{fn rec.time}\npartition start = #{rec.partition_start}\npartition stop = #{rec.partition_stop}\npartition ID = #{rec.partition_id}"} },
   {:caption=>'Card.',       :data=>proc{|rec| fn(rec.cardinality) },                        :title=>'Estimated number of rows produced by the operation', :align=>:right, :data_title=>proc{|rec| "%t\nCPU cost = #{fn rec.cpu_cost}\nIO cost = #{fn rec.io_cost}\nestimated bytes = #{fn rec.bytes}\nestimated time (secs.) = #{fn rec.time}\nPartition_Start = #{rec.partition_start}\nPartition_Stop = #{rec.partition_stop}\nPartition_ID = #{rec.partition_id}"} },
