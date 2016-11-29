@@ -373,7 +373,7 @@ class StorageController < ApplicationController
       FROM   #{params[:owner]}.#{params[:name]}"]
 
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j "real: #{fn num_rows}"}');"}
+      format.js {render :js => "$('##{params[:update_area]}').html('#{j "real:&nbsp;#{fn num_rows}"}');".html_safe}
     end
   end
 

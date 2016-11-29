@@ -172,13 +172,30 @@
      output
    end
 
+   def link_real_num_rows(rec)
+     if rec.object_type == 'TABLE'
+       update_area = "#{@update_area}_#{rec.id}"
+       my_ajax_link_to(rec.num_rows ? fn(rec.num_rows) : "[No analyze]",
+                       url_for(:controller      => :storage,
+                               :action          => :list_real_num_rows,
+                               :owner           => rec.object_owner,
+                               :name            => rec.object_name,
+                               :update_area     => update_area
+                              ),
+                       :title=>"Count current number of rows in Table. CAUTION: May be long running!")+"&nbsp;<span id=\"#{update_area}\"></span>".html_safe
+     else
+       fn(rec.num_rows)
+     end
+   end
+
+
    column_options =
     [
       {:caption=>'Operation',   :data=>proc{|rec| list_operation(rec)},         :no_wrap=>true, :title=>t(:dba_history_list_sql_detail_execution_plan_operation_hint, :default=>'Kind of access'), :data_title=>proc{|rec| "%t: #{rec.operation} #{rec.options}"}},
       {:caption=>'ID',          :data=>proc{|rec| rec.id },  :align=>:right,                    :title=>t(:dba_history_list_sql_detail_execution_plan_id_hint, :default=>'ID of operation'),             :data_title=>proc{|rec| "%t:\nParent_ID=#{rec.parent_id}"} },
       {:caption=>'R.',          :data=>proc{|rec| rec.execorder },  :align=>:right,             :title=>t(:dba_history_list_sql_detail_execution_plan_order_hint, :default=>'Execution order of operation'),    :data_title=>proc{|rec| "%t:\nID=#{rec.id}, Parent_ID=#{rec.parent_id}"} },
       {:caption=>'Object-name', :data=>proc{|rec| link_object_description(@update_area, rec.object_owner, rec.object_name) }, :title=>t(:dba_history_list_sql_detail_execution_plan_objectname_hint, :default=>'Name of object'), :data_title=>proc{|rec| "%t,\nType = #{rec.object_type},\nAlias = #{rec.object_alias},\nQuery block name = #{rec.qblock_name}"} },
-      {:caption=>'Rows',        :data=>proc{|rec| fn(rec.num_rows) },                           :title=>"Number of rows of object (from analyze info)",     :align=>:right, :data_title=>proc{|rec| "%t, Last_Analyzed=#{localeDateTime(rec.last_analyzed)}"} },
+      {:caption=>'Rows',        :data=>proc{|rec| link_real_num_rows(rec) },                    :title=>"Number of rows of object (from analyze info)",     :align=>:right, :data_title=>proc{|rec| "%t, Last_Analyzed=#{localeDateTime(rec.last_analyzed)}"} },
       {:caption=>'MB',          :data=>proc{|rec| fn(rec.mbytes) },                             :title=>"Size of object in MBytes",     :align=>:right },
       {:caption=>'Cost',        :data=>proc{|rec| fn(rec.cost) },                               :title=>"Costs calculated by optimizer + additional optimizer calculations", :align=>:right, :data_title=>proc{|rec| "%t\nCPU cost = #{fn rec.cpu_cost}\nIO cost = #{fn rec.io_cost}\nestimated bytes = #{fn rec.bytes}\nestimated time (secs.) = #{fn rec.time}\nPartition_Start = #{rec.partition_start}\nPartition_Stop = #{rec.partition_stop}\nPartition_ID = #{rec.partition_id}"} },
       {:caption=>'Card.',       :data=>proc{|rec| fn(rec.cardinality) },                        :title=>'Estimated number of rows produced by the operation', :align=>:right, :data_title=>proc{|rec| "%t\nCPU cost = #{fn rec.cpu_cost}\nIO cost = #{fn rec.io_cost}\nestimated bytes = #{fn rec.bytes}\nestimated time (secs.) = #{fn rec.time}\nPartition_Start = #{rec.partition_start}\nPartition_Stop = #{rec.partition_stop}\nPartition_ID = #{rec.partition_id}"} },
