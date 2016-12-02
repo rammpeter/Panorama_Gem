@@ -145,6 +145,7 @@ module SlickgridHelper
   #     :align                => Ausrichtung
   #     :plot_master          => Spalte ist X-Achse für Diagramm-Darstellung <true>
   #     :plot_master_time     => Spalte ist x-Achse mit Datum/Zeit, die als Zeitstrahl dargestellt werden soll <true>
+  #     :css_class            => class für Feld
   #     :header_class         => class-Ausdruck für <th> Spaltenheader
   #     :show_pct_hint        => true für Anzeige des %-Anteil des Feldes an der Summe aller Records als Zusatz zum MouseOver-Hint
   #     :show_pct_background  => true für Anzeige des %-Anteil des Feldes an der Summe aller Records als transparenter horizontaler Füllstand

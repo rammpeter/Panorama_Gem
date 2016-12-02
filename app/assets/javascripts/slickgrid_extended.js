@@ -310,7 +310,7 @@ function SlickGridExtended(container_id, options){
         });
 
         grid.onDblClick.subscribe(function(e, args){
-            show_full_cell_content(jQuery(grid.getCellNode(args['row'], args['cell'])).children().text());  // Anzeige des Zell-Inhaltes
+            show_full_cell_content(jQuery(grid.getCellNode(args['row'], args['cell'])).children().html());  // Anzeige des Zell-Inhaltes
         });
 
         // set caption and additional menu actions
@@ -643,16 +643,52 @@ function SlickGridExtended(container_id, options){
         if (options["line_height_single"]){
             row_height = single_line_height() + 7;
         } else {                                                                // Volle notwendige Höhe errechnen
-            // Hoehen von Cell so setzen, dass der komplette Inhalt dargestellt wird
-            this.gridContainer.find(".slick-inner-cell").each(function(){
-                var scrollHeight = jQuery(this).prop("scrollHeight");           // virtuelle Höhe des Inhaltes
+            // Hoehen von Cell so setzen, dass der komplette Inhalt dargestellt wird, aber wenigstens eine Zeile im Ganzen sichtbar bleibt
+
+            // Ermitteln der max. Zeilen-Höhe für ganze Zeile im sichtbaren Bereich
+            var max_visible_row_height = jQuery(window).height() / 3;           // sichtbare Browser-Hoehe
+            if (options['maxHeight']) {
+                max_visible_row_height = options['maxHeight'] / 3;
+            }
+
+            var set_columns_needed = false;
+            this.gridContainer.find(".slick-inner-cell").each(function(){       // Iteration über alle Zellen
+                var slick_inner_cell = jQuery(this);
+                var scrollHeight = slick_inner_cell.prop("scrollHeight");           // virtuelle Höhe des Inhaltes
 
                 // Normalerweise muss row_height genau 2px groesser sein als scrollHeight (1px border-top + 1px border-bottom  hinzurechnen)
-                // wenn row_height größer gewählt wirdm müssen genau so viel px beim Vergleich von scrollHeight abgezogen werden wie mehr als 2px hinzugenommen werden
+                // wenn row_height größer gewählt wird müssen genau so viel px beim Vergleich von scrollHeight abgezogen werden wie mehr als 2px hinzugenommen werden
                 if (row_height < scrollHeight){                                 // Inhalt steht nach unten über
                     row_height = scrollHeight + 4;                              // 1px border-top + 1px border-bottom  hinzurechnen
                 }
+
+                if (row_height > max_visible_row_height) {
+                    row_height = max_visible_row_height;                        // Reduzieren auf Limit wenn die Zeile zu hoch würde
+
+                    // Ermitteln des Column-Objektes zu colx
+                    var column_id = slick_inner_cell.attr('column');
+                    var column;
+                    for (var col_index in columns) {
+                        if (columns[col_index].id == column_id) {
+                            column = columns[col_index];
+                        }
+                    }
+
+                    var new_css = 'overflow-y: auto;';
+                    if (column['style']) {
+                        if (column['style'].indexOf(new_css) !== -1) {
+                            column['style'] = column['style']+' '+new_css;
+                            set_columns_needed = true;
+                        }
+
+                    } else {                                                    // noch kein style definiert
+                        column['style'] = new_css;
+                        set_columns_needed = true;
+                    }
+                }
             });
+            if (set_columns_needed)
+                this.grid.setColumns(columns);                          // Setzen der veränderten Styles am slickGrid, löst onScroll-Ereignis aus mit wiederholtem Aufruf dieser Funktion, daher erst am Ende setzen
         }
 
         var total_height = options['headerHeight']                              // innere Höhe eines Headers
@@ -906,7 +942,22 @@ function SlickGridExtended(container_id, options){
      * @param content
      */
     function show_full_cell_content(content){
-        alert(content);
+        var div_id = 'slickgrid_extended_alert_box';
+        if (!jQuery('#'+div_id).length){
+            jQuery('body').append('<div id="slickgrid_extended_alert_box" stype="">Hugo</div>');
+        }
+        jQuery("#slickgrid_extended_alert_box" )
+            .html(content)
+            .dialog({
+                    title:'',
+                    draggable:  true,
+                    width:      jQuery(window).width()*0.5,
+                    maxHeight:  jQuery(window).height()*0.9,
+                    beforeClose:function(){jQuery('#'+div_id).html('')}     // clear div before close dialog
+            })
+        ;
+
+        //alert(content);
     }
 
     /**

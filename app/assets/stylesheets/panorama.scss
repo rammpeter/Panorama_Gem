@@ -72,6 +72,14 @@ h2 {
   text-shadow: 1px 1px 1px gray;
 }
 
+/* Override default of 1em */
+pre {
+  margin-top:     0;
+  margin-bottom:  0;
+  font-family: 'Lucida Console', monospace;
+  font-size: 11px;
+}
+
 .monospace {
   font-family: 'Lucida Console', monospace;
   font-size: 11px;
@@ -119,6 +127,7 @@ input {
   padding: 2px;
   border-width: 2px;
 }
+
 
 a {
   text-decoration: none;

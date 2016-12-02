@@ -1,6 +1,8 @@
 <%
 
   @update_area = get_unique_area_id
+  @table_id_prefix = get_unique_area_id
+
 # Anzeige sowohl des konkreten Wertes als auch je Execution in zwei TD-Abschnitten
 def show_both_values(name, param, decimals, title="")
   param = param.to_f   # Sicherstellen Typ
@@ -19,9 +21,9 @@ end
 
 <table border="0">
   <tr>
-    <td valign="top"class="monospace"><%= convert_word_wrap_comma(@sql_statement) %></td>
+    <td valign="top"><pre id="<%= "#{@table_id_prefix}_sql" %>" class="monospace" style="overflow-y: auto;"><%= convert_word_wrap_comma(@sql_statement) %></pre></td>
     <td valign="top">
-      <table border="1" style="font-size:small;">
+      <table  id="<%= "#{@table_id_prefix}_right_table" %>" border="1" style="font-size:small;">
         <tr><th>Name</th><th>Total</th><th>Per Exec.</th></tr>
         <tr>
           <td title="Instance / SQL_ID / Plan-Hash-Value, <%= t(:dba_history_list_sql_detail_historic_plan_count_hint, :default=>"Number of different execution plans in time period")%>">Instance / SQL-ID / Plan-Hash-Value</td>
@@ -249,3 +251,8 @@ column_options = [
 
 <div id="<%= @update_area %>" style="clear:both; width:100%;">
 </div>
+
+<script type="application/javascript">
+  // set height of sql (left column) to height of right column
+  jQuery("#<%= "#{@table_id_prefix}_sql" %>").height(jQuery("#<%= "#{@table_id_prefix}_right_table"%>").height());
+</script>

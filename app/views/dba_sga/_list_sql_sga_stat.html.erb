@@ -1,5 +1,6 @@
 <%= render_page_caption("#{t(:dba_sga_list_sql_sga_stat_caption, :default=>'Statement details of current SGA from')} #{@modus}", get_recall_params_info_for_render_page_caption) %>
 
+<% @table_id_prefix = get_unique_area_id %>
 
 <div>  <%= defined?(@list_sql_sga_stat_msg) ? @list_sql_sga_stat_msg : ''%></div>
 
@@ -26,9 +27,9 @@ end
 %>
 <table border="0">
   <tr>
-    <td valign="top" class="monospace"><%= convert_word_wrap_comma(@sql_statement) %></td>
+    <td valign="top"><pre id="<%= "#{@table_id_prefix}_sql" %>" class="monospace" style="overflow-y: auto;"><%= convert_word_wrap_comma(@sql_statement) %></pre></td>
     <td valign="top">
-       <table border="1" style="font-size:small;">
+       <table id="<%= "#{@table_id_prefix}_right_table" %>" border="1" style="font-size:small;">
          <tr><th>Name</th><th>Total</th><th>Per Exec.</th></tr>
          <tr>
            <td>Instance / SQL-ID / Plan-Hash-Value, Child</td>
@@ -111,3 +112,8 @@ end
      </td>
    </tr>
 </table>
+
+<script type="application/javascript">
+  // set height of sql (left column) to height of right column
+  jQuery("#<%= "#{@table_id_prefix}_sql" %>").height(jQuery("#<%= "#{@table_id_prefix}_right_table"%>").height());
+</script>
