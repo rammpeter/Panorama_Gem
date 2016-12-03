@@ -424,6 +424,10 @@
   dba_sga_list_sql_sga_stat_footer_complete_timeline_hint:      Anlistung der kompletten im AWR gespeicherten zeitlichen Historie des SQL
   dba_sga_list_sql_sga_stat_footer_open_cursor_hint:            Anzeige der aktuellen offenen Cursor in Sessions des Statements
 
+  dba_sga_list_sql_shared_cursor_caption:                   Hinderungsgründe für Nutzung Shared Cursor für
+  dba_sga_list_sql_shared_cursor_hint:                      Für detaillierte Aussagen bitte diese Description nachschlagen
+  dba_sga_list_sql_shared_cursor_reason_hint:               Ein oder mehrere Hinterungsgründe für Nichtnutzung Shared Cursor
+
   dba_sga_show_sga_components_caption:                      Anzeige der Memory-Verbraucher der SGA
   dba_sga_show_sga_components_submit_caption:               Anzeige der Memory-Komponenten
   dba_sga_show_sga_components_submit_hint:                  Anlistung der Memory-Komponenten der SGA
