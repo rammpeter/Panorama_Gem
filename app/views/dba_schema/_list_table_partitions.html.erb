@@ -37,6 +37,7 @@
       {:caption=> 'Created',                :data=>proc{|rec| localeDateTime(rec.created)},      :title=> 'Timestamp of partition creation'},
       {:caption=> 'Last DDL',               :data=>proc{|rec| localeDateTime(rec.last_ddl_time)},:title=> 'Timestamp of last DDL operation on table partition'},
       {:caption=> 'Last analyzed',          :data=>proc{|rec| localeDateTime rec.last_analyzed}, :title=> 'Date on which this partition was most recently analyzed'},
+      {:caption=> 'Log.',                   :data=>proc{|rec| rec.logging},                      :title=> "Indicates whether or not changes to the table are logged in Redo-Log" },
     ]
 
     column_options << {:caption=> 'Inserts',          :data=>proc{|rec| fn rec.inserts},                  :title=> "Number of insert-operations since last table analysis if table has MONITORING-flag.\nStatistics are populated in memory by database. Run the DBMS_STATS.FLUSH_DATABASE_MONITORING_INFO to see the latest information here.", :align=>:right}
