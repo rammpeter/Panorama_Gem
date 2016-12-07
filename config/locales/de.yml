@@ -1350,6 +1350,7 @@
   login_saved_delete_title:                                 Die ausgewählte gespeicherte DB-Verbindung löschen
   login_saved_login_title:                                  Mit der gespeicherten DB-Verbindung anmelden
   login_saved_logins_title:                                 Gespeicherte DB-Verbindungen aus früherer Nutzung
+  login_sid_service_title:                                  Interpretieren des Wertes als SID oder Service-Name?
   login_submit_caption:                                     Anmelden
   login_title: |-
     Panorama: Login auf Ziel-DB
