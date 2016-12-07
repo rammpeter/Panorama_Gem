@@ -151,7 +151,7 @@ class EnvController < ApplicationController
     #current_database = params[:database].to_h.symbolize_keys                    # Puffern in lokaler Variable, bevor in client_info-Cache geschrieben wird
     current_database = params[:database]                                        # Puffern in lokaler Variable, bevor in client_info-Cache geschrieben wird
 
-    if params[:database][:modus] == 'tns'                                       # TNS-Alias auswerten
+    if current_database[:modus] == 'tns'                                       # TNS-Alias auswerten
       tns_records = read_tnsnames                                               # Hash mit Attributen aus tnsnames.ora für gesuchte DB
       tns_record = tns_records[current_database[:tns]]
       unless tns_record
@@ -161,13 +161,18 @@ class EnvController < ApplicationController
         set_dummy_db_connection
         return
       end
-      current_database[:host]      = tns_record[:hostName]   # Erweitern um Attribute aus tnsnames.ora
-      current_database[:port]      = tns_record[:port]       # Erweitern um Attribute aus tnsnames.ora
-      current_database[:sid]       = tns_record[:sidName]    # Erweitern um Attribute aus tnsnames.ora
-      current_database[:sid_usage] = tns_record[:sidUsage]   # :SID oder :SERVICE_NAME
+      #current_database[:host]      = tns_record[:hostName]   # Erweitern um Attribute aus tnsnames.ora
+      #current_database[:port]      = tns_record[:port]       # Erweitern um Attribute aus tnsnames.ora
+      #current_database[:sid]       = tns_record[:sidName]    # Erweitern um Attribute aus tnsnames.ora
+      #current_database[:sid_usage] = tns_record[:sidUsage]   # :SID oder :SERVICE_NAME
     else # Host, Port, SID auswerten
-      current_database[:sid_usage] = :SID unless current_database[:sid_usage]  # Erst mit SID versuchen, zweiter Versuch dann als ServiceName
-      current_database[:tns]       = "#{current_database[:host]}:#{current_database[:port]}:#{current_database[:sid]}"   # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
+      #current_database[:sid_usage] = :SID unless current_database[:sid_usage]  # Erst mit SID versuchen, zweiter Versuch dann als ServiceName
+      sid_separator = case current_database[:sid_usage].to_sym
+                        when :SID then          ':'
+                        when :SERVICE_NAME then '/'
+                        else raise "Unknown value '#{current_database[:sid_usage]}' for :sid_usage"
+                      end
+      current_database[:tns]       = "#{current_database[:host]}:#{current_database[:port]}#{sid_separator}#{current_database[:sid]}"   # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
     end
 
     # Temporaerer Schutz des Produktionszuganges bis zur Implementierung LDAP-Autorisierung    
@@ -196,36 +201,11 @@ class EnvController < ApplicationController
     # Test der Connection und ruecksetzen auf vorherige wenn fehlschlaegt
     begin
       # Test auf Funktionieren der Connection
-      begin
-        sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"
-      rescue Exception => e    # 2. Versuch mit alternativer SID-Deutung
-        Rails.logger.error "Error connecting to database: URL='#{jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
-        Rails.logger.error e.message
-        #Rails.logger.error e.backtrace
-        Rails.logger.error 'Switching between SID and SERVICE_NAME'
-
-        database_helper_switch_sid_usage
-        begin
-          # Oracle-Connection aufbauen mit Wechsel zwischen SID und ServiceName
-          sql_select_one("SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL")     # Ruft implizit open_oracle_connection
-
-        rescue Exception => e    # 3. Versuch mit alternativer SID-Deutung
-          Rails.logger.error "Error connecting to database: URL='#{jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
-          Rails.logger.error e.message
-
-          curr_line_no=0
-          e.backtrace.each do |bt|
-            Rails.logger.error bt if curr_line_no < 20                                # report First 20 lines of stacktrace in log
-            curr_line_no += 1
-          end
-
-          Rails.logger.error 'Error persists, switching back between SID and SERVICE_NAME'
-          database_helper_switch_sid_usage
-          # Oracle-Connection aufbauen mit Wechsel zurück zwischen SID und ServiceName, sql_select_all ruft implizit open_oracle_connection
-          sql_select_all "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"    # Provozieren der ursprünglichen Fehlermeldung wenn auch zweiter Versuch fehlschlägt
-        end
-      end
+      sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"
     rescue Exception => e
+      Rails.logger.error "Error connecting to database: URL='#{jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
+      Rails.logger.error e.message
+      #Rails.logger.error e.backtrace
       set_dummy_db_connection
       respond_to do |format|
         format.js {render :js => "$('#content_for_layout').html('#{j "Fehler bei Anmeldung an DB: <br>
@@ -310,7 +290,7 @@ class EnvController < ApplicationController
                                     closeText: 'Auswählen',"
     end
     respond_to do |format|
-      format.js {render :js => "$('#current_tns').html('#{j "<span title='TNS=#{get_current_database[:tns]},Host=#{get_current_database[:host]},Port=#{get_current_database[:port]},#{get_current_database[:sid_usage]}=#{get_current_database[:sid]}, User=#{get_current_database[:user]}'>#{get_current_database[:user]}@#{get_current_database[:tns]}</span>"}');
+      format.js {render :js => "$('#current_tns').html('#{j "<span title='TNS=#{get_current_database[:tns]},\n#{"Host=#{get_current_database[:host]},\nPort=#{get_current_database[:port]},\n#{get_current_database[:sid_usage]}=#{get_current_database[:sid]},\n" if get_current_database[:modus].to_sym == :host}User=#{get_current_database[:user]}'>#{get_current_database[:user]}@#{get_current_database[:tns]}</span>"}');
                                 $('#main_menu').html('#{j render_to_string :partial =>"build_main_menu" }');
                                 $.timepicker.regional = { #{timepicker_regional}
                                     ampm: false,

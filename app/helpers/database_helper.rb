@@ -3,27 +3,6 @@
 # Hilfsmethoden mit Bezug auf die aktuell verbundene Datenbank sowie verbundene Einstellunen wie Sprache
 module DatabaseHelper
 
-
-  def database_helper_switch_sid_usage
-    current_database = read_from_client_info_store(:current_database)
-    if current_database[:sid_usage] == :SID
-      current_database[:sid_usage] = :SERVICE_NAME
-    else
-      current_database[:sid_usage] = :SID
-    end
-    set_current_database(current_database)                                      # Schreiben und Cache verwerfen
-  end
-
-
-    # Notation für Anzeige und Connect per Ruby
-  def database_helper_tns
-    if get_current_database[:tns]
-      get_current_database[:tns]
-    else
-      database_helper_raw_tns
-    end
-  end
-
   private
   def get_salted_encryption_key
     #"#{cookies['client_salt']}#{Rails.application.config.secret_key_base}"
@@ -43,25 +22,12 @@ module DatabaseHelper
     crypt.decrypt_and_verify(encrypted_value)
   end
 
-  def database_helper_raw_tns
-    if get_current_database
-      "#{get_current_database[:host]}:#{get_current_database[:port]}:#{get_current_database[:sid]}"
-    else
-      "current_database not set!"
-    end
-  end
-
 private
   # Notation für Connect per JRuby
   def jdbc_thin_url
     current_database = read_from_client_info_store(:current_database)
-
-    sid_separator = ":" # Default, if current_database[:sid_usage].to_sym == :SID
     raise 'No current DB connect info set! Please reconnect to DB!' unless current_database
-
-    sid_separator = "/" if current_database[:sid_usage].to_sym == :SERVICE_NAME
-    raise "Keine Deutung (#{current_database[:sid_usage]}) für #{current_database[:sid]} bekannt ob SID oder SERVICE_NAME" unless sid_separator
-    "jdbc:oracle:thin:@#{current_database[:host]}:#{current_database[:port]}#{sid_separator}#{current_database[:sid]}"
+    "jdbc:oracle:thin:@#{current_database[:tns]}"
   end
 
 public

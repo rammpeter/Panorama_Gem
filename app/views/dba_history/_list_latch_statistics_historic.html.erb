@@ -9,7 +9,7 @@
                              :max_snap_id     => rec.max_snap_id,
                              :update_area     => :list_latch_statistics_historic_detail_area
                             ),
-                     :title=>"Anzeige der einzelnen Samples des Latches")
+                     :title=>"Show single sample records for latch")
    end
 
 
@@ -17,9 +17,9 @@ column_options =
   [
     {:caption=>"I",                 :data=>proc{|rec| rec.instance_number },                    :title=>"RAC-Instance"},
     {:caption=>"Name",              :data=>proc{|rec| rec.latch_name },                         :title=>"Latch-Name", :data_title=>proc{|rec| "%t Hash=#{rec.latch_hash}, Level# = #{rec.levelno}" } },
-    {:caption=>"Erstes Auftreten",  :data=>proc{|rec| localeDateTime(rec.first_occurrence) },   :title=>"Erstes Auftreten im Sample"},
-    {:caption=>"Letztes Auftreten", :data=>proc{|rec| localeDateTime(rec.last_occurrence) },    :title=>"Letztes Auftreten im Sample"},
-    {:caption=>"Samples",           :data=>proc{|rec| link_column(rec, fn(rec.anzahl_samples))},:title=>"Anzahl Samples in Verdichtung", :align=>"right"},
+    {:caption=>"Erstes Auftreten",  :data=>proc{|rec| localeDateTime(rec.first_occurrence) },   :title=>"First occurrence in sample"},
+    {:caption=>"Letztes Auftreten", :data=>proc{|rec| localeDateTime(rec.last_occurrence) },    :title=>"Last occurrence in sample"},
+    {:caption=>"Samples",           :data=>proc{|rec| link_column(rec, fn(rec.anzahl_samples))},:title=>"Number of sample records in grouping", :align=>"right"},
     {:caption=>"Gets",              :data=>proc{|rec| fn(rec.getsno)},                          :title=>"Number of times the latch was requested in willing-to-wait mode", :align=>"right"},
     {:caption=>"Misses",            :data=>proc{|rec| fn(rec.misses)},                          :title=>"Number of times the latch was requested in willing-to-wait mode and the requestor had to wait", :align=>"right"},
     {:caption=>"% Misses",          :data=>proc{|rec| fn(rec.pct_misses, 2)},                   :title=>"% Misses von Gets", :align=>"right"},
@@ -38,7 +38,11 @@ column_options =
 %>
 
 <%= gen_slickgrid(@latches, column_options, {
-        :caption    =>"Latch-History zwischen #{@time_selection_start} und #{@time_selection_end} #{"für Instance=#{@instance}" if @instance}",
+        :caption    =>"#{t(:dba_history_list_latch_statistics_historic_caption, {
+                          :default              => 'Latch history from DBA_Hist_Latch between %{time_selection_start} and %{time_selection_end}',
+                          :time_selection_start => @time_selection_start,
+                          :time_selection_end   => @time_selection_end
+        })} #{"#{t(:for, :default=>'for')}=#{@instance}" if @instance}",
         :max_height => 450
 })
 %>

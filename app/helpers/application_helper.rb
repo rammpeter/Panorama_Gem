@@ -317,7 +317,7 @@ module ApplicationHelper
   # Genutzt zur Anzeige im zentralen Screen
   def current_tns
     if get_current_database
-      database_helper_tns
+      get_current_database[:tns]
     else
       '[Keine]'
     end
