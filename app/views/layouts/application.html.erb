@@ -94,7 +94,7 @@
               <select name="saved_logins_id"  autocomplete="off" >
                 <% last_logins.each_index do |index| %>
                     <% database = last_logins[index] %>
-                    <option <%= "selected=1" if index ==  0 %> value="<%= index %>"><%= "#{database[:sid]} ( #{database[:user]} ) - #{database[:host]} : #{database[:port]} " %></option>
+                    <option <%= "selected=1" if index ==  0 %> value="<%= index %>"><%= "#{database[:user]} @ #{database[:tns]}" %></option>
                 <% end %>
               </select>
             </div>
