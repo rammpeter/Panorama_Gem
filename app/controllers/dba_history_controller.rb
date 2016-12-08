@@ -282,6 +282,7 @@ class DbaHistoryController < ApplicationController
                    s.*
       FROM (
           SELECT /*+ NO_MERGE ORDERED */ s.DBID, s.SQL_ID,
+                 COUNT(DISTINCT s.Snap_ID)          Sample_Count,
                  CASE WHEN COUNT(DISTINCT s.Instance_number) = 1 THEN MIN(s.Instance_Number) ELSE NULL END Instance_Number,
                  COUNT(DISTINCT s.Instance_number)  Instance_Count,
                  COUNT(DISTINCT CASE WHEN s.Plan_Hash_Value = 0 THEN NULL ELSE s.Plan_Hash_Value END)  Plans,
@@ -898,6 +899,7 @@ SELECT /* Panorama-Tool Ramm */
        sql.*
 FROM (
         SELECT p.DBID, p.SQL_ID, s.Instance_Number, Parsing_Schema_Name, p.Operation, p.Options, p.Other_Tag,
+               COUNT(DISTINCT s.Snap_ID)          Sample_Count,
                COUNT(DISTINCT CASE WHEN s.Plan_Hash_Value = 0 THEN NULL ELSE s.Plan_Hash_Value END) Plans,
                COUNT(DISTINCT s.Instance_number)  Instance_Count,
                MIN(snap.Begin_Interval_Time)      First_Occurrence,
