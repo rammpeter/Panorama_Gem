@@ -236,6 +236,7 @@ class ActiveSessionHistoryController < ApplicationController
              #{ single_record_distinct_sql('s.SQL_ID') },
              SUM(s.Wait_Time)       Wait_Time,
              SUM(s.Time_waited)     Time_Waited,
+             MAX(s.Time_Waited)     Max_Time_Waited,
              #{" #{ single_record_distinct_sql('s.Is_SQLID_Current') },
                  #{ single_record_distinct_sql('s.Top_Level_SQL_ID') },
                  #{ single_record_distinct_sql('s.SQL_Plan_Line_ID') },

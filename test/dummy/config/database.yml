@@ -66,6 +66,14 @@ test_12.1:
   test_username: panorama_test
   test_password: panorama_test
 
+test_12.2_PDB:
+  adapter: nulldb
+
+  test_url:      jdbc:oracle:thin:@140.86.9.99:1521/pdb1.a195079.oraclecloud.internal
+  test_username: panorama_test
+  test_password: Ddcwovsfanax12#
+
+
 production:
   <<: *default
 
