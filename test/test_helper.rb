@@ -71,11 +71,13 @@ class ActiveSupport::TestCase
     test_url = test_config['test_url'].split(":")
 
     current_database = {}
-    current_database[:sid_usage] = :SERVICE_NAME
+    current_database[:modus]    = :host
+    current_database[:sid_usage] = :SID
     current_database[:host]     = test_url[3].delete "@"
     current_database[:port]     = test_url[4]
     current_database[:sid]      = test_url[5]
     current_database[:user]     = test_config["test_username"]
+    current_database[:tns]      = "#{current_database[:host]}:#{current_database[:port]}:#{current_database[:sid]}"
 
     # Config im Cachestore ablegen
     # Sicherstellen, dass ApplicationHelper.get_cached_client_key nicht erneut den client_key entschlüsseln will
