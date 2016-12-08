@@ -74,6 +74,14 @@ test_12.2_PDB:
   test_password: Ddcwovsfanax12#
 
 
+test_12.2_CDB:
+  adapter: nulldb
+
+  test_url:      jdbc:oracle:thin:@140.86.9.99:1521/pdb1.a195079.oraclecloud.internal
+  test_username: c##panorama_test
+  test_password: Ddcwovsfanax12#
+
+
 production:
   <<: *default
 
