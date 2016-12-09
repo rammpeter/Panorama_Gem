@@ -27,8 +27,9 @@ Platform: <%= @platform_name%>
     {:caption=>"Force logging", :data=>proc{|rec| rec.force_logging },                  :title=>"Indicates whether the database is under force logging mode (YES) or not (NO)"},
     {:caption=>"AWR interval",  :data=>proc{|rec| rec.snap_interval_minutes },          :title=>'Interval in minutes for AWR-snapshots', :align=>:right},
     {:caption=>"AWR retention", :data=>proc{|rec| rec.snap_retention_days },            :title=>'Retention in days for AWR-snapshots', :align=>:right},
-    {:caption=>'CDB',           :data=>proc{|rec| rec.cdb },                            :title=>'Is this database a container DB (PDB)?', :align=>:right},
   ]
+  column_options << {:caption=>'CDB',           :data=>proc{|rec| rec.cdb },            :title=>'Is this database a container DB (PDB)?', :align=>:right}  if get_db_version >= '12.1'
+
 
 %>
 <%= gen_slickgrid(@instance_data, column_options, {

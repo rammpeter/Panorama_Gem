@@ -79,6 +79,9 @@ end #class_eval
 
 class SqlSelectIterator
 
+  # Remember this parameters for execution at method each
+  # stmt - SQL-String
+  # binds - Parameter-Array
   def initialize(stmt, binds, modifier, query_timeout, query_name = 'SqlSelectIterator')
     @stmt           = stmt
     @binds          = binds
