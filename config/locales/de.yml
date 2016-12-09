@@ -1377,6 +1377,8 @@
   menu_dba_redologs_historic_hint:                          Anlistung historischer Info der Redo-Logs
   menu_dba_server_logs_hint:                                Anlistung des Inhaltes der Server-Logs (alert.log, listener.log, ASM-Log)
   menu_dba_sessions_hint:                                   Anlistung der aktuellen Session-Info
+  menu_dba_start_page_caption:                              Start-Seite
+  menu_dba_start_page_hint:                                 Anzeige der globalen Informationen zur ausgewählten Datenbank
   menu_dba_temp_usage_hint:                                 Aktuelle Nutzung Temp-Tablespace
 
   menu_historic_caption:                                    Historisch

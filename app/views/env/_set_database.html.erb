@@ -1,4 +1,4 @@
-<h2><%= t :env_current_database, :default=>"current database" %></h2>
+<h2><%= t :env_current_database, :default=>"Current database" %></h2>
 
 <%= "TNS=#{get_current_database[:tns]}, Host=#{get_current_database[:host]}, Port=#{get_current_database[:port]}, #{get_current_database[:sid_usage]}=#{get_current_database[:sid]}" %>
 <br/><br/>
@@ -27,6 +27,7 @@ Platform: <%= @platform_name%>
     {:caption=>"Force logging", :data=>proc{|rec| rec.force_logging },                  :title=>"Indicates whether the database is under force logging mode (YES) or not (NO)"},
     {:caption=>"AWR interval",  :data=>proc{|rec| rec.snap_interval_minutes },          :title=>'Interval in minutes for AWR-snapshots', :align=>:right},
     {:caption=>"AWR retention", :data=>proc{|rec| rec.snap_retention_days },            :title=>'Retention in days for AWR-snapshots', :align=>:right},
+    {:caption=>'CDB',           :data=>proc{|rec| rec.cdb },                            :title=>'Is this database a container DB (PDB)?', :align=>:right},
   ]
 
 %>
@@ -50,6 +51,23 @@ Platform: <%= @platform_name%>
     <% end %>
     <div id="dbid_response_area"></div>
 <% end %>
+
+<% if get_current_database[:cdb] %>
+    <% column_options =
+           [
+               {:caption=>'Con-ID',        :data=>proc{|rec| rec.con_id },                         :title=>"The ID of the container to which the data pertains. Possible values include:\n0: This value is used for rows containing data that pertain to the entire CDB. This value is also used for rows in non-CDBs.\n1: This value is used for rows containing data that pertain to only the root\nn: Where n is the applicable container ID for the rows containing data"},
+               {:caption=>'DBID',          :data=>proc{|rec| rec.dbid },                           :title=>"PDB identifier calculated when the PDB is created and stored in all file headers associated with the PDB"},
+               {:caption=>'DBID',          :data=>proc{|rec| rec.dbid },                           :title=>"PDB identifier calculated when the PDB is created and stored in all file headers associated with the PDB", :data_title => proc{|rec| "%t\nCon-UID=#{rec.con_uid}\n"}},
+               {:caption=>'Name',          :data=>proc{|rec| rec.name },                           :title=>"Name of the PDB"},
+           ]
+
+    %>
+    <%= gen_slickgrid(@containers, column_options, {
+        :caption => "Pluggable database info", :max_height=>200, :width => :auto
+    })
+    %>
+<% end %>
+
 
 <% if @dictionary_access_problem %>
     <h2><%= "Dictionary Access-Problem"   %></h2>

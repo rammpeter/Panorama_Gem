@@ -79,6 +79,12 @@ class EnvController < ApplicationController
     end
   end
 
+  # start page after login called again
+  def start_page
+    params[:database] = get_current_database
+    set_database
+  end
+
   # Aufgerufen aus dem Anmelde-Dialog für gemerkte DB-Connections
   def set_database_by_id
     if params[:login]                                                           # Button Login gedrückt
@@ -161,12 +167,7 @@ class EnvController < ApplicationController
         set_dummy_db_connection
         return
       end
-      #current_database[:host]      = tns_record[:hostName]   # Erweitern um Attribute aus tnsnames.ora
-      #current_database[:port]      = tns_record[:port]       # Erweitern um Attribute aus tnsnames.ora
-      #current_database[:sid]       = tns_record[:sidName]    # Erweitern um Attribute aus tnsnames.ora
-      #current_database[:sid_usage] = tns_record[:sidUsage]   # :SID oder :SERVICE_NAME
     else # Host, Port, SID auswerten
-      #current_database[:sid_usage] = :SID unless current_database[:sid_usage]  # Erst mit SID versuchen, zweiter Versuch dann als ServiceName
       sid_separator = case current_database[:sid_usage].to_sym
                         when :SID then          ':'
                         when :SERVICE_NAME then '/'
@@ -240,8 +241,9 @@ class EnvController < ApplicationController
                                                       (SELECT p.Value FROM GV$Parameter p WHERE p.Inst_ID = gi.Inst_ID AND LOWER(p.Name) = 'cpu_count') CPU_Count,
                                                       d.Open_Mode, d.Protection_Mode, d.Protection_Level, d.Switchover_Status, d.Dataguard_Broker, d.Force_Logging,
                                                       ws.Snap_Interval_Minutes, ws.Snap_Retention_Days
+                                                      #{", CDB" if get_db_version >= '12.1'}
                                                FROM  GV$Instance gi
-                                               JOIN  v$Database d ON 1=1
+                                               CROSS JOIN  v$Database d
                                                LEFT OUTER JOIN v$Instance i ON i.Instance_Number = gi.Instance_Number
                                                LEFT OUTER JOIN (SELECT DBID, MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM DBA_Hist_WR_Control GROUP BY DBID) ws ON ws.DBID = ?
                                       ", get_dbid ]
@@ -252,6 +254,7 @@ class EnvController < ApplicationController
         if i.instance_connected
           @instance_name = i.instance_name
           @host_name     = i.host_name
+          set_current_database(get_current_database.merge({:cdb => true})) if get_db_version >= '12.1' && i.cdb == 'YES'  # Merken ob DB eine CDP/PDB ist
         end
       end
       @dbids = sql_select_all ["SELECT s.DBID, MIN(Begin_Interval_Time) Min_TS, MAX(End_Interval_Time) Max_TS,
@@ -264,6 +267,9 @@ class EnvController < ApplicationController
                                 GROUP BY s.DBID
                                 ORDER BY MIN(Begin_Interval_Time)"]
       @platform_name = sql_select_one "SELECT /* Panorama Tool Ramm */ Platform_name FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
+      if get_current_database[:cdb]
+        @containers = sql_select_all "SELECT * FROM v$Containers"
+      end
     rescue Exception => e
       @dictionary_access_problem = true    # Fehler bei Zugriff auf Dictionary
       @dictionary_access_msg << "<div> User '#{get_current_database[:user]}' has no right for read on data dictionary!<br/>#{e.message}<br/>Functions of Panorama will not or not completely be usable<br/>

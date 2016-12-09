@@ -102,6 +102,15 @@ module ApplicationHelper
   end
 
   def set_current_database(current_database)
+    # Transfer to Hash if it is not
+    if current_database.class != Hash
+      not_hash = current_database
+      current_database = {}
+      not_hash.each do |key, value|
+        current_database[key.to_sym] = value
+      end
+    end
+
     @buffered_current_database = nil                                            # lokalen Cache verwerfen
     current_database[:query_timeout] = current_database[:query_timeout].to_i if !current_database.nil?
     write_to_client_info_store(:current_database, current_database)
