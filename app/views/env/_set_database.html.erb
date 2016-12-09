@@ -55,15 +55,40 @@ Platform: <%= @platform_name%>
 <% if get_current_database[:cdb] %>
     <% column_options =
            [
-               {:caption=>'Con-ID',        :data=>proc{|rec| rec.con_id },                         :title=>"The ID of the container to which the data pertains. Possible values include:\n0: This value is used for rows containing data that pertain to the entire CDB. This value is also used for rows in non-CDBs.\n1: This value is used for rows containing data that pertain to only the root\nn: Where n is the applicable container ID for the rows containing data"},
-               {:caption=>'DBID',          :data=>proc{|rec| rec.dbid },                           :title=>"PDB identifier calculated when the PDB is created and stored in all file headers associated with the PDB"},
-               {:caption=>'DBID',          :data=>proc{|rec| rec.dbid },                           :title=>"PDB identifier calculated when the PDB is created and stored in all file headers associated with the PDB", :data_title => proc{|rec| "%t\nCon-UID=#{rec.con_uid}\n"}},
-               {:caption=>'Name',          :data=>proc{|rec| rec.name },                           :title=>"Name of the PDB"},
+               {:caption=>'Inst.',            :data=>proc{|rec| rec.inst_id},                         :title=>"Instance number"},
+               {:caption=>'Con-ID',           :data=>proc{|rec| "#{rec.con_id}#{" (*)" if rec.con_id == rec.connected_con_id}" },   :title=>"The ID of the container to which the data pertains. Possible values include:\n0: This value is used for rows containing data that pertain to the entire CDB. This value is also used for rows in non-CDBs.\n1: This value is used for rows containing data that pertain to only the root\nn: Where n is the applicable container ID for the rows containing data\n(*) for the container-ID you are connected on"},
+               {:caption=>'DBID',             :data=>proc{|rec| rec.dbid },                           :title=>"PDB identifier calculated when the PDB is created and stored in all file headers associated with the PDB"},
+               {:caption=>'Con-UID',          :data=>proc{|rec| fn rec.con_uid },                     :title=>"Unique identifier associated with the PDB"},
+               {:caption=>'Name',             :data=>proc{|rec| rec.name },                           :title=>"Name of the PDB"},
+               {:caption=>'Open mode',        :data=>proc{|rec| rec.open_mode},                       :title=>"Open mode info"},
+               {:caption=>'Restricted',       :data=>proc{|rec| rec.restricted},                      :title=>"Indicates whether only users possessing RESTRICTED SESSION privilege can connect to the PDB"},
+               {:caption=>'Open time',        :data=>proc{|rec| localeDateTime(rec.open_time)},       :title=>"Date and time when the database was last opened"},
+               {:caption=>'Total size',       :data=>proc{|rec| fn(rec.total_size/(1024*1024))},      :title=>"If a PDB is opened, disk space (in MBytes) used by the container,\nincluding both data and temp files.\nIf a PDB is closed, will be set to 0."},
+               {:caption=>'Block size',       :data=>proc{|rec| fn(rec.block_size)},                  :title=>"The current block size for the PDB"},
+               {:caption=>'Recovery status',  :data=>proc{|rec| rec.recovery_status},                 :title=>"Shows whether recovery is enabled or disabled for the PDB."},
+               {:caption=>'Snapshot parent',  :data=>proc{|rec| rec.snapshot_parent_con_id },         :title=>"This column shows the container ID of the master PDB that this PDB is a snapshot clone of.\nThis column shows a non-zero value only if the PDB is a snapshot clone.\nFor all other cases, it shows a value of 0."},
            ]
+       column_options << {:caption=>'Application root',         :data=>proc{|rec| rec.application_root},                :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Application PDB',          :data=>proc{|rec| rec.application_pdb},                 :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Application seed',         :data=>proc{|rec| rec.application_seed},                :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Application root con-ID',  :data=>proc{|rec| rec.application_root_con_id},         :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Application root clone',   :data=>proc{|rec| rec.application_root_clone},          :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Proxy PDB',                :data=>proc{|rec| rec.proxy_pdb},                       :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Local UNDO',               :data=>proc{|rec| rec.local_undo},                      :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Local UNDO',               :data=>proc{|rec| rec.local_undo},                      :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Creation time',            :data=>proc{|rec| localeDateTime(rec.creation_time)},   :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'PDB count',                :data=>proc{|rec| fn rec.pdb_count},                    :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Audit files size',         :data=>proc{|rec| fn rec.audit_files_size},             :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Max. size',                :data=>proc{|rec| fn rec.max_size},                     :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Max. diag. size',          :data=>proc{|rec| fn rec.max_diagnostics_size},         :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Max. audit size',          :data=>proc{|rec| fn rec.max_audit_size},               :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+
+
+
 
     %>
     <%= gen_slickgrid(@containers, column_options, {
-        :caption => "Pluggable database info", :max_height=>200, :width => :auto
+        :caption => "Pluggable database info from gv$Containers", :max_height=>200, :width => :auto
     })
     %>
 <% end %>

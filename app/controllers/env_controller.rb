@@ -268,7 +268,10 @@ class EnvController < ApplicationController
                                 ORDER BY MIN(Begin_Interval_Time)"]
       @platform_name = sql_select_one "SELECT /* Panorama Tool Ramm */ Platform_name FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
       if get_current_database[:cdb]
-        @containers = sql_select_all "SELECT * FROM v$Containers"
+        @containers = sql_select_all "SELECT c.*, s.Con_ID Connected_Con_ID
+                                      FROM   gv$Containers c
+                                      JOIN   v$session s ON audsid = userenv('sessionid')
+                                     "
       end
     rescue Exception => e
       @dictionary_access_problem = true    # Fehler bei Zugriff auf Dictionary

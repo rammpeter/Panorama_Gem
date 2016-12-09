@@ -142,6 +142,9 @@ class ActiveSessionHistoryController < ApplicationController
     else
       retval << ', SQL_ID' # für 10er DB keine Top_Level_SQL_ID verfügbar
     end
+    if get_db_version >= '12.1'
+      retval << ", Con_ID"
+    end
     retval
   end
 
@@ -201,6 +204,7 @@ class ActiveSessionHistoryController < ApplicationController
              AVG(s.Sample_Cycle)    Sample_Cycle,
              SUM(Sample_Cycle)      Wait_Time_Seconds_Sample,
              #{ single_record_distinct_sql('s.Instance_Number') },
+             #{"#{ single_record_distinct_sql('s.Con_ID') }," if get_current_database[:cdb]}
              #{ single_record_distinct_sql('s.Sample_ID') },
              #{ single_record_distinct_sql('s.Session_id') },
              #{ single_record_distinct_sql('s.Session_Type') },

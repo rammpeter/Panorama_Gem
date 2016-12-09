@@ -69,7 +69,7 @@ class DbaSgaController < ApplicationController
       SELECT /* Panorama-Tool Ramm */ *
       FROM (SELECT  SUBSTR(LTRIM(SQL_TEXT),1,40) SQL_Text,
                 s.SQL_Text Full_SQL_Text,
-                s.Inst_ID, s.Parsing_Schema_Name,
+                s.Inst_ID, #{"s.Con_ID, " if get_current_database[:cdb]} s.Parsing_Schema_Name,
                 u.USERNAME,
                 s.ELAPSED_TIME/1000000 ELAPSED_TIME_SECS,
                 (s.ELAPSED_TIME / 1000000) / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS) ELAPSED_TIME_SECS_PER_EXECUTE,
@@ -132,7 +132,7 @@ class DbaSgaController < ApplicationController
 
   private
   # Modus enthält GV$SQL oder GV$SQLArea
-  def fill_sql_sga_stat(modus, instance, sql_id, object_status, child_number=nil, parsing_schema_name=nil, child_address=nil)
+  def fill_sql_sga_stat(modus, instance, sql_id, object_status, child_number=nil, parsing_schema_name=nil, child_address=nil, con_id=nil)
     where_string = ""
     where_values = []
 
@@ -159,6 +159,11 @@ class DbaSgaController < ApplicationController
     if parsing_schema_name
       where_string << " AND s.Parsing_Schema_Name = ?"
       where_values << parsing_schema_name
+    end
+
+    if con_id
+      where_string << " AND s.Con_ID = ?"
+      where_values << con_id
     end
 
     sql = sql_select_first_row ["\
@@ -472,6 +477,7 @@ class DbaSgaController < ApplicationController
     @sql_id   = params[:sql_id]
     @object_status= params[:object_status]
     @object_status='VALID' unless @object_status  # wenn kein status als Parameter uebergeben, dann VALID voraussetzen
+    @con_id  = params[:con_id]
 
     # Liste der Child-Cursoren
     @sqls = fill_sql_area_list("GV$SQL", @instance, nil, @sql_id, 100, nil)
@@ -504,7 +510,7 @@ class DbaSgaController < ApplicationController
       return
     end
 
-    @sql = fill_sql_sga_stat("GV$SQLArea", @instance, params[:sql_id], @object_status)
+    @sql = fill_sql_sga_stat("GV$SQLArea", @instance, params[:sql_id], @object_status, nil, nil, nil, @con_id)
     @sql_statement         = get_sga_sql_statement(@instance, params[:sql_id])
     @sql_profiles          = get_sql_profiles(@sql)
     @sql_plan_baselines    = get_sql_plan_baselines(@sql)
