@@ -71,13 +71,12 @@ class ActiveSupport::TestCase
     test_url = test_config['test_url'].split(":")
 
     current_database = {}
-    current_database[:modus]    = :tns
+    current_database[:modus]    = 'tns'
     #current_database[:sid_usage] = :SID
     #current_database[:host]     = test_url[3].delete "@"
     #current_database[:port]     = test_url[4]
     #current_database[:sid]      = test_url[5]
     current_database[:user]     = test_config["test_username"]
-    #current_database[:tns]      = "#{current_database[:host]}:#{current_database[:port]}:#{current_database[:sid]}"
     current_database[:tns]      = test_config['test_url'].split('@')[1]                # Alles nach jdbc:oracle:thin@
 
     # Config im Cachestore ablegen
