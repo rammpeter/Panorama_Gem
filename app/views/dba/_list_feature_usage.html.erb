@@ -1,0 +1,9 @@
+<%
+  column_options =
+      [
+          {:caption=>'DBID',                :data=>proc{|rec| fn rec.dbid },                        :title=>"Database identifier of the database being tracked"},
+      ]
+
+%>
+<%= gen_slickgrid(@feature_usage, column_options, {:max_height=>450}) %>
+

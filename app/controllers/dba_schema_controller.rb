@@ -192,13 +192,13 @@ class DbaSchemaController < ApplicationController
 
     case
       when @owner.nil? && @object_type.nil? then
-        @objects = sql_select_all ["SELECT DISTINCT Owner, Object_Name, Object_Type FROM DBA_Objects WHERE SubObject_Name IS NULL AND Object_Name=?", @object_name]
+        @objects = sql_select_all ["SELECT DISTINCT Owner, Object_Name, Object_Type FROM DBA_Objects WHERE SubObject_Name IS NULL AND Object_Name LIKE ?", @object_name]
       when @owner.nil?
-        @objects = sql_select_all ["SELECT DISTINCT Owner, Object_Name, Object_Type FROM DBA_Objects WHERE SubObject_Name IS NULL AND Object_Name=? AND Object_Type = ?", @object_name, @object_type]
+        @objects = sql_select_all ["SELECT DISTINCT Owner, Object_Name, Object_Type FROM DBA_Objects WHERE SubObject_Name IS NULL AND Object_Name LIKE ? AND Object_Type = ?", @object_name, @object_type]
       when @object_type.nil?
-        @objects = sql_select_all ["SELECT DISTINCT Owner, Object_Name, Object_Type FROM DBA_Objects WHERE SubObject_Name IS NULL AND Object_Name=? AND Owner = ?", @object_name, @owner]
+        @objects = sql_select_all ["SELECT DISTINCT Owner, Object_Name, Object_Type FROM DBA_Objects WHERE SubObject_Name IS NULL AND Object_Name LIKE ? AND Owner LIKE ?", @object_name, @owner]
       else
-        @objects = sql_select_all ["SELECT DISTINCT Owner, Object_Name, Object_Type FROM DBA_Objects WHERE SubObject_Name IS NULL AND Object_Name=? AND Owner = ? AND Object_Type = ?", @object_name, @owner, @object_type]
+        @objects = sql_select_all ["SELECT DISTINCT Owner, Object_Name, Object_Type FROM DBA_Objects WHERE SubObject_Name IS NULL AND Object_Name LIKE ? AND Owner LIKE ? AND Object_Type = ?", @object_name, @owner, @object_type]
     end
 
 

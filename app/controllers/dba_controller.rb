@@ -1291,5 +1291,9 @@ Möglicherweise fehlende Zugriffsrechte auf Table X$BH! Lösung: Exec als User '
     render_partial
   end
 
+  def list_feature_usage
+    @feature_usage = sql_select_iterator "SELECT * FROM DBA_FEATURE_USAGE_STATISTICS"
+    render_partial
+  end
 
 end # Class
