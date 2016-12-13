@@ -413,18 +413,40 @@ class DbaController < ApplicationController
     begin
       @parameters = sql_select_iterator("\
         SELECT /* Panorama-Tool Ramm */
-          i.Instance_Number                 Instance,  -- Daten koennen nur on aktueller Instance gezogen werden
-          X$KSPPI.INDX                      ID,
-          X$KSPPI.KSPPITY                   ParamType,
-          X$KSPPI.KSPPINM                   Name,
-          X$KSPPI.KSPPDESC                  Description,
-          X$KSPPSV.KSPPSTVL                 Value,
-          NULL /* X$KSPPSV.ksppstdvl */     Display_Value, -- existiert ab 11g nicht mehr in dem View
-          X$KSPPSV.KSPPSTDF                 IsDefault
-        FROM  X$KSPPI
-        JOIN  X$KSPPSV ON X$KSPPSV.INDX = X$KSPPI.INDX
-        CROSS JOIN  V$Instance i
-        ORDER BY 3 ASC",
+               NVL(v.Instance,      i.Instance)      Instance,
+               NVL(v.ID,            i.ID)            ID,
+               NVL(v.ParamType,     i.ParamType)     ParamType,
+               NVL(v.Name,          i.Name)          Name,
+               NVL(v.Description,   i.Description)   Description,
+               NVL(v.Value,         i.Value)         Value,
+               NVL(v.Display_Value, i.Display_Value) Display_Value,
+               NVL(v.IsDefault,     i.IsDefault)     IsDefault
+        FROM   (SELECT /*+ NO_MERGE */
+                       i.Instance_Number                 Instance,  -- Daten koennen nur on aktueller Instance gezogen werden
+                       X$KSPPI.INDX                      ID,
+                       X$KSPPI.KSPPITY                   ParamType,
+                       X$KSPPI.KSPPINM                   Name,
+                       X$KSPPI.KSPPDESC                  Description,
+                       X$KSPPSV.KSPPSTVL                 Value,
+                       NULL /* X$KSPPSV.ksppstdvl */     Display_Value, -- existiert ab 11g nicht mehr in dem View
+                       X$KSPPSV.KSPPSTDF                 IsDefault
+                FROM  X$KSPPI
+                JOIN  X$KSPPSV ON X$KSPPSV.INDX = X$KSPPI.INDX
+                CROSS JOIN  V$Instance i
+               ) i
+        FULL OUTER JOIN (
+                         SELECT /*+ NO_MERGE */
+                                Inst_ID                Instance,
+                                Num                    ID,
+                                Type                   ParamType,
+                                Name,
+                                Description,
+                                Value,
+                                Display_Value,
+                                IsDefault
+                         FROM  gv$Parameter
+                        ) v ON v.Instance = i.Instance AND v.ID = i.ID+1
+        ORDER BY Name, Instance",
         record_modifier
       )
 
