@@ -1292,7 +1292,31 @@ Möglicherweise fehlende Zugriffsrechte auf Table X$BH! Lösung: Exec als User '
   end
 
   def list_feature_usage
-    @feature_usage = sql_select_iterator "SELECT * FROM DBA_FEATURE_USAGE_STATISTICS"
+    @feature_usage = sql_select_all "SELECT * FROM DBA_FEATURE_USAGE_STATISTICS"
+
+    # info grouped by management pack
+    pack_usage = {}
+    @feature_usage.each do |f|
+      key = "#{f.dbid} #{pack_from_feature(f.name) }"
+      if pack_usage[key].nil?
+        pack_usage[key] = { :dbid               => f.dbid,
+                            :pack               => pack_from_feature(f.name),
+                            :detected_usages    => 0,
+                            :currently_used     => 'FALSE'
+        }
+      end
+      pack_usage[key][:detected_usages]   = pack_usage[key][:detected_usages] + f.detected_usages
+      pack_usage[key][:currently_used]    = 'TRUE' if f.currently_used == 'TRUE'
+      pack_usage[key][:first_usage_date]  = f.first_usage_date if f.first_usage_date && (pack_usage[key][:first_usage_date].nil? || f.first_usage_date <  pack_usage[key][:first_usage_date])
+      pack_usage[key][:last_usage_date]   = f.last_usage_date  if f.last_usage_date  && (pack_usage[key][:last_usage_date].nil?  || f.last_usage_date  >  pack_usage[key][:last_usage_date])
+    end
+
+    @pack_usage = []
+    pack_usage.each do |key, value|
+      value.extend TolerantSelectHashHelper
+      @pack_usage << value
+    end
+
     render_partial
   end
 
