@@ -230,7 +230,6 @@ class EnvController < ApplicationController
     begin
       @banners       = []   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
       @instance_data = []   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
-      @dbids         = []   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
       @platform_name = ""   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
       # Einlesen der DBID der Database, gleichzeitig Test auf Zugriffsrecht auf DataDictionary
       read_initial_db_values
@@ -257,15 +256,6 @@ class EnvController < ApplicationController
           set_current_database(get_current_database.merge({:cdb => true})) if get_db_version >= '12.1' && i.cdb == 'YES'  # Merken ob DB eine CDP/PDB ist
         end
       end
-      @dbids = sql_select_all ["SELECT s.DBID, MIN(Begin_Interval_Time) Min_TS, MAX(End_Interval_Time) Max_TS,
-                                       (SELECT MIN(DB_Name) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) DB_Name,
-                                       (SELECT COUNT(DISTINCT Instance_Number) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) Instances,
-                                       MIN(EXTRACT(MINUTE FROM w.Snap_Interval)) Snap_Interval_Minutes,
-                                       MIN(EXTRACT(DAY FROM w.Retention))        Snap_Retention_Days
-                                FROM   DBA_Hist_Snapshot s
-                                LEFT OUTER JOIN DBA_Hist_WR_Control w ON w.DBID = s.DBID
-                                GROUP BY s.DBID
-                                ORDER BY MIN(Begin_Interval_Time)"]
       @platform_name = sql_select_one "SELECT /* Panorama Tool Ramm */ Platform_name FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
       if get_current_database[:cdb]
         @containers = sql_select_all "SELECT c.*, s.Con_ID Connected_Con_ID
@@ -348,12 +338,25 @@ private
 
 
 public
+
+  def list_dbids
+    @dbids = sql_select_all ["SELECT s.DBID, MIN(Begin_Interval_Time) Min_TS, MAX(End_Interval_Time) Max_TS,
+                                       (SELECT MIN(DB_Name) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) DB_Name,
+                                       (SELECT COUNT(DISTINCT Instance_Number) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) Instances,
+                                       MIN(EXTRACT(MINUTE FROM w.Snap_Interval)) Snap_Interval_Minutes,
+                                       MIN(EXTRACT(DAY FROM w.Retention))        Snap_Retention_Days
+                                FROM   DBA_Hist_Snapshot s
+                                LEFT OUTER JOIN DBA_Hist_WR_Control w ON w.DBID = s.DBID
+                                GROUP BY s.DBID
+                                ORDER BY MIN(Begin_Interval_Time)"]
+
+    render_partial :list_dbids
+  end
+
   # DBID explizit setzen wenn mehrere verschiedene in Historie vorhande
   def set_dbid
     set_cached_dbid(params[:dbid])
-    respond_to do |format|
-       format.js {render :js => "$('##{params[:update_area]}').html('#{j "DBID for access on AWR history set to #{get_dbid}"}');"}
-    end
+    list_dbids
   end
 
   # repeat last called menu action

@@ -124,7 +124,7 @@ module ApplicationHelper
 
   def set_cached_dbid(dbid)
     @buffered_dbid = nil
-    write_to_client_info_store(:dbid, dbid)
+    write_to_client_info_store(:dbid, dbid.to_i)
   end
 
   def get_dbid    # die originale oder nach Login ausgewählte DBID

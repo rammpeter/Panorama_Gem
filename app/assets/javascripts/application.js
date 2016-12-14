@@ -119,7 +119,7 @@ function check_dom_for_duplicate_ids() {
     jQuery('[id]').each(function(index, element) {
         idDictionary[this.id] == undefined ? idDictionary[this.id] = 1 : idDictionary[this.id] ++;
     });
-    for (id in idDictionary) {
+    for (var id in idDictionary) {
         if (idDictionary[id] > 1) {
             console.warn("Duplicate html-IDs in Dom-Tree:\nID " + id + " was used " + (idDictionary[id]) + " times: "+jQuery('#'+id).html());
             console.log("====================================================================================");

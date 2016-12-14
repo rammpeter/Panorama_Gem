@@ -37,21 +37,12 @@ Platform: <%= @platform_name%>
 })
 %>
 
-<% if @dbids.count > 1 %>
-    <h2>Data for multiple database IDs is recorded in AWR history</h2>
-    <%=  my_ajax_form_tag url_for(:controller  => :env,
-                                  :action      => :set_dbid,
-                                  :update_area => :dbid_response_area
-                          ) do %>
-        <select name="dbid">
-          <% @dbids.each do |d| %>
-              <%=  "<option value='#{d.dbid}' #{"selected='selected'" if d.dbid==get_dbid}>DBID=#{d.dbid}, DB-name=#{d.db_name} from #{localeDateTime(d.min_ts)} until #{localeDateTime(d.max_ts)} with #{d.instances} instance#{'s' if d.instances > 1}, snap-interval=#{d.snap_interval_minutes} minutes, retention=#{d.snap_retention_days} days </option>".html_safe %>
-          <% end %>
-        </select>
-        <%= submit_tag("Select this DBID for statistics", :title => "Choose this selected DBID for statistic selections in AWR-history") %>
-    <% end %>
-    <div id="dbid_response_area"></div>
-<% end %>
+<% @update_area_dbids = get_unique_area_id %>
+<script type="text/javascript">
+  jQuery.ajax({method: "POST", url: "env/list_dbids", data: {update_area: "<%= @update_area_dbids %>"} });
+</script>
+<div id="<%= @update_area_dbids %>"></div>
+
 
 <% if get_current_database[:cdb] %>
     <% column_options =

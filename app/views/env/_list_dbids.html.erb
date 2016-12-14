@@ -1,0 +1,41 @@
+<%
+  def select(rec)
+    my_ajax_link_to(rec.dbid,
+      url_for(:controller   => :env,
+              :action       => :set_dbid,
+               :dbid        => rec.dbid,
+              :update_area  => params[:update_area]
+              ),
+      {:title => 'Select this DBID for selections in AWR history and Active Session History'}
+    )
+  end
+
+  def selected(rec)
+    'x ' if rec.dbid == get_dbid
+  end
+
+  column_options =
+    [
+        {:caption=> 'S',                :data=>proc{|rec| selected(rec)},                 :title=> 'The selected DBID is used for statistics'},
+        {:caption=> 'DBID',             :data=>proc{|rec| select(rec)},                   :title=> 'Database ID\nThe selected DBID is used for statistics'},
+        {:caption=> 'Name',             :data=>proc{|rec| rec.db_name},                   :title=> 'Name of database'},
+        {:caption=> 'First usage',      :data=>proc{|rec| localeDateTime(rec.min_ts)},    :title=> 'First usage of database with this name and DBID'},
+        {:caption=> 'Last usage',       :data=>proc{|rec| localeDateTime(rec.max_ts)},    :title=> 'Last usage of database with this name and DBID'},
+        {:caption=> 'Instances',        :data=>proc{|rec| fn(rec.instances)},             :title=> 'Number of RAC-instances', :align=>:right},
+        {:caption=> 'AWR interval',     :data=>proc{|rec| fn(rec.snap_interval_minutes)}, :title=> 'AWR snapshot interval in minutes', :align=>:right},
+        {:caption=> 'AWR retention',    :data=>proc{|rec| fn(rec.snap_retention_days)},   :title=> 'AWR retention time for snapshots in days', :align=>:right},
+    ]
+
+%>
+
+
+
+<%=
+  if @dbids.count > 1
+    gen_slickgrid(@dbids, column_options, {
+      :caption => 'Data for multiple database IDs is recorded in AWR history. Please select your preferred DBID',
+      :width => :auto,
+      :max_height => 200
+    })
+  end
+%>
