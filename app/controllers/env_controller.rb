@@ -264,9 +264,7 @@ class EnvController < ApplicationController
                                      "
       end
     rescue Exception => e
-      @dictionary_access_problem = true    # Fehler bei Zugriff auf Dictionary
-      @dictionary_access_msg << "<div> User '#{get_current_database[:user]}' has no right for read on data dictionary!<br/>#{e.message}<br/>Functions of Panorama will not or not completely be usable<br/>
-      </div>"
+      raise "Your user is missing SELECT-right on gv$Instance, gv$Database.\nPlease ensure that your user has granted SELECT ANY DICTIONARY.\nPanorama is not usable with this user account!\n\n #{e.message}"
     end
 
     @dictionary_access_problem = true unless select_any_dictionary?(@dictionary_access_msg)
