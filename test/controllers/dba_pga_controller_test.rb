@@ -4,7 +4,6 @@ require 'test_helper'
 class DbaPgaControllerTest < ActionController::TestCase
 
   setup do
-    #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context{}
 
     min_alter_org = sql_select_one "SELECT /* Panorama-Tool Ramm */ MAX(Begin_Interval_Time) FROM DBA_Hist_Snapshot"

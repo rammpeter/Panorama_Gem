@@ -4,10 +4,8 @@ include MenuHelper
 include ActionView::Helpers::TranslationHelper
 
 class EnvControllerTest < ActionController::TestCase
-#class EnvControllerTest < ActionDispatch::IntegrationTest
 
   setup do
-    #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context{}
   end
 
@@ -63,8 +61,6 @@ class EnvControllerTest < ActionController::TestCase
 
 
   test "Diverses" do
-    get :index, :format=>:js
-    assert_response :success
 
     post :set_locale, :params => {:format=>:js, :locale=>'de'}
     assert_response :success
@@ -72,7 +68,14 @@ class EnvControllerTest < ActionController::TestCase
     post :set_locale, :params => {:format=>:js, :locale=>'en'}
     assert_response :success
 
+    post :list_dbids, :params => {:format=>:js}
+    assert_response :success
+
     post :set_dbid, :params => {:format=>:js, :dbid =>get_dbid }  # Alten Wert erneut setzen um andere Tests nicht zu gefährden
+    assert_response :success
+
+    # Index destroys your cuurent session, therefore ist should be the last action of test
+    get :index, :format=>:js
     assert_response :success
   end
 
