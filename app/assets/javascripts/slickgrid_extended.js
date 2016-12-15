@@ -942,11 +942,18 @@ function SlickGridExtended(container_id, options){
      * @param content
      */
     function show_full_cell_content(content){
+        // remove a-tags from content
+        var wrapped = jQuery("<div>" + content + "</div>");
+        wrapped.find("a").replaceWith(function() { return jQuery(this).html(); });
+        content = wrapped.html();
+
         var div_id = 'slickgrid_extended_alert_box';
+
+        // create div for dialog at body if not exists
         if (!jQuery('#'+div_id).length){
-            jQuery('body').append('<div id="slickgrid_extended_alert_box" stype="">Hugo</div>');
+            jQuery('body').append('<div id="'+div_id+'" stype=""></div>');
         }
-        jQuery("#slickgrid_extended_alert_box" )
+        jQuery("#"+div_id)
             .html(content)
             .dialog({
                     title:'',
@@ -957,7 +964,6 @@ function SlickGridExtended(container_id, options){
             })
         ;
 
-        //alert(content);
     }
 
     /**
