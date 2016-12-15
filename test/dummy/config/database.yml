@@ -66,6 +66,13 @@ test_12.1:
   test_username: panorama_test
   test_password: panorama_test
 
+test_12.1_SE:
+  adapter: nulldb
+
+  test_url:      jdbc:oracle:thin:@panorama-test.osp-dd.de:1523:oracle121
+  test_username: panorama_test
+  test_password: panorama_test
+
 test_12.2_PDB:
   adapter: nulldb
 
