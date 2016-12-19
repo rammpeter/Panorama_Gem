@@ -3,7 +3,7 @@
 <script type="text/javascript">
 
   function call_ajax_single_rows<%=@update_area%>(min_snap_id, max_snap_id, group_by_value, record_count){
-    var json_data = <%= {:groupfilter => @groupfilter}.to_json.html_safe %>
+    var json_data =; <%= {:groupfilter => @groupfilter}.to_json.html_safe %>
     if (min_snap_id)
       json_data['groupfilter']['Min_Snap_ID'] = min_snap_id;
     if (max_snap_id)
@@ -16,7 +16,7 @@
   }
 
   function call_ajax_grouping<%=@update_area%>(min_snap_id, max_snap_id, group_by_value, next_group_by_name){
-    var json_data = <%= {:groupfilter => @groupfilter}.to_json.html_safe %>
+    var json_data =; <%= {:groupfilter => @groupfilter}.to_json.html_safe %>
 
     if (min_snap_id)
       json_data['groupfilter']['Min_Snap_ID'] = min_snap_id;
@@ -115,7 +115,7 @@
         decorated_cell_value = cell_value;
 
         // Einsetzen von optionalen Umbruch-Stellen in Strings
-        console.log(columnDef['name']+' '+columnDef['sort_type']);
+        // console.log(columnDef['name']+' '+columnDef['sort_type']);
         if (columnDef['sort_type'] == 'string'){
 
             decorated_cell_value = decorated_cell_value.replace('.', '.<wbr>');                       // Optionaler Wort-Umbruch
