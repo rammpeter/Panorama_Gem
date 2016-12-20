@@ -88,8 +88,8 @@ class DbaHistoryControllerTest < ActionController::TestCase
     post :list_sql_history_snapshots, :params => {:format=>:js, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
     assert_response :success
 
-    post :list_sql_history_execution_plan, :params => {:format=>:js, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name,
-         :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
+    post :list_sql_historic_execution_plan, :params => {:format=>:js, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name,
+                                                        :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
     assert_response :success
   end
 

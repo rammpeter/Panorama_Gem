@@ -7,7 +7,20 @@
 
 <div style="padding: 5px"></div>
 
-<%= render :partial=>"dba_sga/list_sql_detail_execution_plan" %>
+<div id="<%= "#{@update_area}_execution_plan" %>"></div>
+<script type="text/javascript">
+  jQuery.ajax({method: "POST", url: "dba_sga/list_sql_detail_execution_plan", data: {
+    update_area:    "<%= "#{@update_area}_execution_plan" %>",
+    modus:          "<%= @modus %>",
+    sql_id:         "<%= @sql_id %>",
+    instance:       "<%= @instance %>",
+    child_number:   "<%= @child_number %>",
+    child_address:  "<%= @child_address %>",
+    restrict_ash_to_child: true
+  }
+  });
+</script>
+
 
 <%
    def link_session(instance, sid, serialno)

@@ -286,16 +286,25 @@ class DbaSgaController < ApplicationController
   end
 
   # Erzeugt Daten für execution plan
-  def get_sga_execution_plan(modus, sql_id, instance, child_number, child_address, restrict_ash_to_child)
+  #def get_sga_execution_plan(modus, sql_id, instance, child_number, child_address, restrict_ash_to_child)
+  def list_sql_detail_execution_plan
+    @modus                  = params[:modus]
+    @sql_id                 = params[:sql_id]
+    @instance               = prepare_param_instance
+    @child_number           = params[:child_number].to_i rescue nil
+    @child_address          = params[:child_address]
+    @restrict_ash_to_child  = params[:restrict_ash_to_child]
+
+
     where_string = ''
     where_values = []
 
-    unless child_address.nil?
+    unless @child_address.nil?
       where_string << 'AND Child_Address = HEXTORAW(?)'
-      where_values << child_address
+      where_values << @child_address
     end
 
-    plans = sql_select_all ["\
+    @plans = sql_select_all ["\
         SELECT /* Panorama-Tool Ramm */
           Operation, Options, Object_Owner, Object_Name, Object_Type, Object_Alias, QBlock_Name, p.Timestamp,
           CASE WHEN p.ID = 0 THEN (SELECT Optimizer    -- Separater Zugriff auf V$SQL_Plan, da nur dort die Spalte Optimizer gefüllt ist
@@ -364,7 +373,7 @@ class DbaSgaController < ApplicationController
                                      FROM   gv$Active_Session_History
                                      WHERE  SQL_ID  = ?
                                      AND    Inst_ID = ?
-                                     #{(modus == 'GV$SQL' && restrict_ash_to_child ) ? 'AND    SQL_Child_Number = ?' : ''}   -- auch andere Child-Cursoren von PQ beruecksichtigen wenn Child-uebergreifend angefragt
+                                     #{(@modus == 'GV$SQL' && @restrict_ash_to_child ) ? 'AND    SQL_Child_Number = ?' : ''}   -- auch andere Child-Cursoren von PQ beruecksichtigen wenn Child-uebergreifend angefragt
                                      GROUP BY SQL_Plan_Line_ID, SQL_Plan_Hash_Value, NVL(QC_Session_ID, Session_ID), Sample_ID   -- Alle PQ-Werte mit auf Session kumulieren
                                     )
                              GROUP BY SQL_Plan_Line_ID, SQL_Plan_Hash_Value
@@ -375,7 +384,7 @@ class DbaSgaController < ApplicationController
         AND   Child_Number = ?
         #{where_string}
         ORDER BY ID"
-        ].concat(get_db_version >= "11.2" ? [sql_id, instance].concat(modus == 'GV$SQL' ? [child_number] : []) : []).concat([sql_id, instance, child_number]).concat(where_values)
+        ].concat(get_db_version >= "11.2" ? [@sql_id, @instance].concat(@modus == 'GV$SQL' ? [@child_number] : []) : []).concat([@sql_id, @instance, @child_number]).concat(where_values)
 
     # Vergabe der exec-Order im Explain
     # iteratives neu durchsuchen der Liste nach folgenden erfuellten Kriterien
@@ -385,9 +394,9 @@ class DbaSgaController < ApplicationController
 
     # Array mit den Positionen der Objekte in plans anlegen
     pos_array = []
-    0.upto(plans.length-1) {|i|  pos_array << i }
+    0.upto(@plans.length-1) {|i|  pos_array << i }
 
-    plans.each do |p|
+    @plans.each do |p|
       p[:is_parent] = false                                                     # Vorbelegung
     end
 
@@ -396,21 +405,22 @@ class DbaSgaController < ApplicationController
       pos_array.each {|i|                                          # Iteration ueber Verbliebene Records
         is_parent = false                                          # Default-Annahme, wenn kein Child gefunden
         pos_array.each {|x|                                        # Suchen, ob noch ein Child zum Parent existiert in verbliebener Menge
-          if plans[i].id == plans[x].parent_id                     # Doch noch ein Child zum Parent gefunden
+          if @plans[i].id == @plans[x].parent_id                     # Doch noch ein Child zum Parent gefunden
             is_parent = true
-            plans[i][:is_parent] = true                            # Merken Status als Knoten
+            @plans[i][:is_parent] = true                            # Merken Status als Knoten
             break                                                  # Braucht nicht weiter gesucht werden
           end
         }
         unless is_parent
-          plans[i].execorder = curr_execorder                      # Vergabe Folge
+          @plans[i].execorder = curr_execorder                      # Vergabe Folge
           curr_execorder = curr_execorder + 1
           pos_array.delete(i)                                      # entwerten der verarbeiten Zeile fuer Folgebetrachtung
           break                                                    # Neue Suche vom Beginn an
         end
       }
     end
-    plans
+
+    render_partial :list_sql_detail_execution_plan
   end
 
 
@@ -431,7 +441,7 @@ class DbaSgaController < ApplicationController
     @sql_plan_baselines  = get_sql_plan_baselines(@sql)
     @sql_outlines        = get_sql_outlines(@sql)
 
-    @plans               = get_sga_execution_plan(@modus, @sql_id, @instance, @child_number, @child_address, true)
+    #@plans               = get_sga_execution_plan(@modus, @sql_id, @instance, @child_number, @child_address, true)
 
     # PGA-Workarea-Nutzung
     @workareas = sql_select_all ["\
@@ -518,13 +528,13 @@ class DbaSgaController < ApplicationController
     @open_cursors          = get_open_cursor_count(@instance, @sql_id)
     @sql_monitor_sessions  = sql_monitor_session_count(@instance, @sql_id)
 
-    sql_child_info = sql_select_first_row ["SELECT COUNT(DISTINCT plan_hash_value) Plan_Count,
+    @sql_child_info = sql_select_first_row ["SELECT COUNT(DISTINCT plan_hash_value) Plan_Count,
                                                    MIN(Child_Number)          Min_Child_Number,
                                                    MIN(RAWTOHEX(Child_Address)) KEEP (DENSE_RANK FIRST ORDER BY Child_Number)   Min_Child_Address
                                             FROM   gv$SQL
                                             WHERE  Inst_ID = ? AND SQL_ID = ?", @instance, @sql_id]
 
-    @plans = get_sga_execution_plan('GV$SQLArea', @sql_id, @instance, sql_child_info.min_child_number, sql_child_info.min_child_address, false) if sql_child_info.plan_count == 1 # Nur anzeigen wenn eindeutig immer der selbe plan
+    #@plans = get_sga_execution_plan('GV$SQLArea', @sql_id, @instance, sql_child_info.min_child_number, sql_child_info.min_child_address, false) if @sql_child_info.plan_count == 1 # Nur anzeigen wenn eindeutig immer der selbe plan
 
     render_partial :list_sql_detail_sql_id
 

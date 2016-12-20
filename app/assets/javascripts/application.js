@@ -29,6 +29,7 @@
 
 // global gültige Variable im js, wird von EnvController.setDatabase gesetzt entsprechend der Spracheinstellung
 var session_locale = "en";
+var indicator_call_stack_depth = 0;                                             // only last returning ajax call is closing indicator
 
 function log_stack(message){
     var e = new Error();
@@ -51,13 +52,16 @@ function useIndicator(url){
 
 function showIndicator(url) {
     if (useIndicator(url)){                                          // Unterdrücken der Anzeige Indikator
+        indicator_call_stack_depth = indicator_call_stack_depth + 1;
         jQuery("#ajax_indicator").dialog("open");
     }
 }
 
 function hideIndicator(url) {
     if (useIndicator(url)) {                                          // Unterdrücken des Löschens des Indikator
-        jQuery("#ajax_indicator").dialog("close");
+        indicator_call_stack_depth = indicator_call_stack_depth - 1;
+        if (indicator_call_stack_depth == 0)                                    // last call of stacked ajax calls
+            jQuery("#ajax_indicator").dialog("close");
     }
 }
 

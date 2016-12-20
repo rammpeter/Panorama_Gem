@@ -552,7 +552,7 @@ class DbaHistoryController < ApplicationController
 
 
 
-  def list_sql_history_execution_plan
+  def list_sql_historic_execution_plan
     update_area  = params[:update_area]
     @instance    = prepare_param_instance         # optional
     @sql_id      = params[:sql_id]
@@ -773,7 +773,7 @@ class DbaHistoryController < ApplicationController
       end
     end
 
-    render_partial 'list_sql_detail_execution_plan'
+    render_partial :list_sql_detail_historic_execution_plan
   end
 
   # Anzeige aller gespeicherter Werte eines konkreten SQL
