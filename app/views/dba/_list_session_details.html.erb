@@ -1,5 +1,6 @@
 <div style="clear:both; padding: 5px;"></div>
-<h2><%= t(:dba_list_session_details_caption, :default=>'Details for session') %>  SID=<%= @sid%>, Serial#=<%= @serialno%>, Instance=<%= @instance %>, <%= localeDateTime(Time.now) %></h2>
+<%= render_page_caption("#{t(:dba_list_session_details_caption, :default=>'Details for session')} SID=#{@sid}, Serial#=#{@serialno}, Instance=#{@instance}, #{localeDateTime(Time.now)}", get_recall_params_info_for_render_page_caption) %>
+
 <% @prev_update_area = @update_area
    @update_area = get_unique_area_id
 %>
