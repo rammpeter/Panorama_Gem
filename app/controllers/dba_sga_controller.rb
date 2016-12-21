@@ -1248,7 +1248,7 @@ class DbaSgaController < ApplicationController
   def list_sql_profile_sqltext
     @sql = sql_select_one ["SELECT SQL_Text FROM  DBA_SQL_Profiles WHERE Name = ?", params[:profile_name]]
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('<pre style=\"background-color: lightyellow;  white-space: pre-wrap;\">#{my_html_escape(@sql)}</pre>');" }
+      format.js {render :js => "$('##{params[:update_area]}').html('<pre class=\"yellow-panel\" style=\"white-space: pre-wrap;\">#{my_html_escape(@sql)}</pre>');" }
     end
 
   end
@@ -1269,7 +1269,7 @@ class DbaSgaController < ApplicationController
   def list_sql_plan_baseline_sqltext
     @sql = sql_select_one ["SELECT SQL_Text FROM  DBA_SQL_Plan_Baselines WHERE Plan_Name = ?", params[:plan_name]]
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('<pre style=\"background-color: lightyellow;  white-space: pre-wrap;\">#{my_html_escape(@sql)}</pre>');" }
+      format.js {render :js => "$('##{params[:update_area]}').html('<pre class=\"yellow-panel\" style=\"white-space: pre-wrap;\">#{my_html_escape(@sql)}</pre>');" }
     end
 
   end
