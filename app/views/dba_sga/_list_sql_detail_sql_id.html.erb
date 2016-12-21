@@ -15,7 +15,8 @@
                                                                                           instance:       "<%= @instance %>",
                                                                                           child_number:   "<%= @sql_child_info.min_child_number %>",
                                                                                           child_address:  "<%= @sql_child_info.min_child_address %>",
-                                                                                          restrict_ash_to_child: false
+                                                                                          restrict_ash_to_child: false,
+                                                                                          next_update_area: "<%= @update_area %>"
                                                                                         }
       });
     </script>
@@ -29,5 +30,5 @@
 <% @modus = "GV$SQL" # Ab jetzt Child-Info anzeigen%>
 <%= render :partial=>"list_sql_area" %>
 
-<div style="clear: both;" id="<%= @update_area_list_sql_detail_sql_id %>"></div>
+<div style="clear: both;" id="<%= @update_area %>"></div>
 

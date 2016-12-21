@@ -60,6 +60,8 @@ function showIndicator(url) {
 function hideIndicator(url) {
     if (useIndicator(url)) {                                          // Unterdrücken des Löschens des Indikator
         indicator_call_stack_depth = indicator_call_stack_depth - 1;
+        if (indicator_call_stack_depth < 0)
+            indicator_call_stack_depth = 0;
         if (indicator_call_stack_depth == 0)                                    // last call of stacked ajax calls
             jQuery("#ajax_indicator").dialog("close");
     }

@@ -10,13 +10,14 @@
 <div id="<%= "#{@update_area}_execution_plan" %>"></div>
 <script type="text/javascript">
   jQuery.ajax({method: "POST", url: "dba_sga/list_sql_detail_execution_plan", data: {
-    update_area:    "<%= "#{@update_area}_execution_plan" %>",
-    modus:          "<%= @modus %>",
-    sql_id:         "<%= @sql_id %>",
-    instance:       "<%= @instance %>",
-    child_number:   "<%= @child_number %>",
-    child_address:  "<%= @child_address %>",
-    restrict_ash_to_child: true
+    update_area:      "<%= "#{@update_area}_execution_plan" %>",
+    modus:            "<%= @modus %>",
+    sql_id:           "<%= @sql_id %>",
+    instance:         "<%= @instance %>",
+    child_number:     "<%= @child_number %>",
+    child_address:    "<%= @child_address %>",
+    restrict_ash_to_child: true,
+    next_update_area: "<%= @update_area %>"
   }
   });
 </script>

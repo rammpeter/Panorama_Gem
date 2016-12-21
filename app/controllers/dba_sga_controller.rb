@@ -294,6 +294,7 @@ class DbaSgaController < ApplicationController
     @child_number           = params[:child_number].to_i rescue nil
     @child_address          = params[:child_address]
     @restrict_ash_to_child  = params[:restrict_ash_to_child]
+    @update_area            = params[:next_update_area]                         # div-ID for next detail request
 
 
     where_string = ''
@@ -396,8 +397,10 @@ class DbaSgaController < ApplicationController
     pos_array = []
     0.upto(@plans.length-1) {|i|  pos_array << i }
 
+    other_xml = nil
     @plans.each do |p|
       p[:is_parent] = false                                                     # Vorbelegung
+      other_xml = p.other_xml if get_db_version >= "11.2" && !p.other_xml.nil?  # Only one record per plan has values
     end
 
     curr_execorder = 1                                             # Startwert
@@ -418,6 +421,32 @@ class DbaSgaController < ApplicationController
           break                                                    # Neue Suche vom Beginn an
         end
       }
+    end
+
+    # Segmentation of XML document
+    @plan_additions = []
+    begin
+      xml_doc = Nokogiri::XML(other_xml)
+      xml_doc.xpath('//info').each do |info|
+        @plan_additions << ({
+            :record_type  => 'Info',
+            :attribute    => info.attributes['type'].to_s,
+            :value        => info.children.text
+        }.extend SelectHashHelper)
+      end
+      xml_doc.xpath('//hint').each do |hint|
+        @plan_additions << ({
+            :record_type  => 'Hint',
+            :attribute    => nil,
+            :value        => hint.children.text
+        }.extend SelectHashHelper)
+      end
+    rescue Exception => e
+      @plan_additions << ({
+          :record_type  => 'Exception while processing XML document',
+          :attribute => e.message,
+          :value => my_html_escape(other_xml).gsub(/&lt;info/, "<br/>&lt;info").gsub(/&lt;hint/, "<br/>&lt;hint")
+      }.extend SelectHashHelper)
     end
 
     render_partial :list_sql_detail_execution_plan
