@@ -237,13 +237,21 @@ class DbaSchemaController < ApplicationController
         end
       when "INDEX", "INDEX PARTITION", "INDEX SUBPARTITION"
         if @object_name[0,6] == "SYS_IL"
-          res = sql_select_first_row ["SELECT Owner Table_Owner, Object_Name Table_Name FROM DBA_Objects WHERE Object_ID=TO_NUMBER(?)", @object_name[6,10]]
+          res = sql_select_first_row ["SELECT Owner Table_Owner, Object_Name Table_Name, Object_Type Table_Type FROM DBA_Objects WHERE Object_ID=TO_NUMBER(?)", @object_name[6,10]]
         else
-          res = sql_select_first_row ["SELECT Table_Owner, Table_Name FROM DBA_Indexes WHERE Owner=? AND Index_Name=?", @owner, @object_name]
+          res = sql_select_first_row ["SELECT Table_Owner, Table_Name, Table_Type FROM DBA_Indexes WHERE Owner=? AND Index_Name=?", @owner, @object_name]
         end
         raise "Segment #{@owner}.#{@object_name} is not known index type" unless res
         @owner      = res.table_owner
         @table_name = res.table_name
+        case res.table_type
+          when 'CLUSTER'
+            list_cluster(@owner, @table_name)
+            return
+          when 'TABLE'
+          else
+            raise "Segment #{@owner}.#{@object_name} is of unsupported type #{res.table_type}"
+        end
       when "LOB"
         res = sql_select_first_row ["SELECT Owner Table_Owner, Object_Name Table_Name FROM DBA_Objects WHERE Object_ID=TO_NUMBER(?)", @object_name[7,10]]
         @owner      = res.table_owner
@@ -266,6 +274,9 @@ class DbaSchemaController < ApplicationController
         return
       when 'VIEW'
         list_view_description
+        return
+      when 'CLUSTER'
+        list_cluster(@owner, @object_name)
         return
       else
         raise "Segment #{@owner}.#{@object_name} is of unsupported type #{object.object_type}"
@@ -742,6 +753,31 @@ class DbaSchemaController < ApplicationController
     render_partial :list_synonym
   end
 
+  def list_cluster(owner, cluster_name)
+    @owner        = owner
+    @cluster_name = cluster_name
+
+    @attribs = sql_select_all ["SELECT c.*, o.Created, o.Last_DDL_Time, o.Object_ID
+                                FROM DBA_Clusters c
+                                LEFT OUTER JOIN DBA_Objects o ON o.Owner = c.Owner AND o.Object_Name = c.Cluster_Name AND o.Object_Type = 'CLUSTER'
+                                WHERE c.Owner = ? AND c.Cluster_Name = ?
+                               ", @owner, @cluster_name]
+
+    @tables = sql_select_one ['SELECT COUNT(*) FROM DBA_Tables WHERE Owner = ? AND Cluster_Name = ?', @owner, @cluster_name]
+
+    @indexes = sql_select_one ['SELECT COUNT(*) FROM DBA_Indexes WHERE Table_Owner = ? AND Table_Name = ?', @owner, @cluster_name]
+
+    render_partial :list_cluster
+  end
+
+  def list_cluster_tables
+    @owner        = params[:owner]
+    @cluster_name = params[:cluster_name]
+
+    @tables = sql_select_all ["SELECT t.* FROM DBA_Tables t WHERE t.Owner = ? AND t.Cluster_Name = ?", @owner, @cluster_name]
+
+    render_partial :list_cluster_tables
+  end
 
   def list_view_description
     @owner         = params[:owner]

@@ -185,8 +185,6 @@ class DbaSgaController < ApplicationController
                 s.PLSQL_Exec_Time/1000000       PLSQL_Exec_Time_secs,
                 s.SQL_ID,
                 #{modus=="GV$SQL" ? "Child_Number, RAWTOHEX(Child_Address) Child_Address, " : "" }
-                (SELECT COUNT(*) FROM GV$SQL c WHERE c.Inst_ID = s.Inst_ID AND c.SQL_ID = s.SQL_ID) Child_Count,
-                #{modus=="GV$SQL" ? "1" : "(SELECT COUNT(DISTINCT Plan_Hash_Value) FROM GV$SQL c WHERE c.Inst_ID = s.Inst_ID AND c.SQL_ID = s.SQL_ID)" } Plan_Hash_Value_Count,
                 s.Plan_Hash_Value, /* Enthaelt im Falle v$SQLArea nur einem von mehreren moeglichen Werten */
                 s.Optimizer_Env_Hash_Value, s.Module, s.Action, s.Inst_ID,
                 s.Parsing_Schema_Name, SQL_Profile,
@@ -205,6 +203,15 @@ class DbaSgaController < ApplicationController
     if sql.nil? && parsing_schema_name
       sql = fill_sql_sga_stat(modus, instance, sql_id, object_status, child_number, nil)
       sql[:warning_message] = "No SQL found with Parsing_Schema_Name='#{parsing_schema_name}' in #{modus}. Filter Parsing_Schema_Name is supressed now." if sql
+    end
+
+    if modus == "GV$SQL"
+      sql[:child_count] = 1                                                    # not from DB
+      sql[:plan_hash_value_count] = 1                                          # not from DB
+    else
+      sql_counts = sql_select_first_row ["SELECT COUNT(*) child_count, COUNT(DISTINCT Plan_Hash_Value) Plan_Hash_Value_Count FROM GV$SQL c WHERE c.Inst_ID = ? AND c.SQL_ID = ?", @instance, @sql_id]
+      sql[:child_count]            = sql_counts.child_count
+      sql[:plan_hash_value_count]  = sql_counts.plan_hash_value_count
     end
 
     sql
@@ -307,16 +314,7 @@ class DbaSgaController < ApplicationController
 
     @plans = sql_select_all ["\
         SELECT /* Panorama-Tool Ramm */
-          Operation, Options, Object_Owner, Object_Name, Object_Type, Object_Alias, QBlock_Name, p.Timestamp,
-          CASE WHEN p.ID = 0 THEN (SELECT Optimizer    -- Separater Zugriff auf V$SQL_Plan, da nur dort die Spalte Optimizer gefüllt ist
-                                    FROM  gV$SQL_Plan sp
-                                    WHERE sp.SQL_ID          = p.SQL_ID
-                                    AND   sp.Inst_ID         = p.Inst_ID
-                                    AND   sp.Child_Number    = p.Child_Number
-                                    AND   sp.Child_Address   = p.Child_Address
-                                    AND   sp.Plan_Hash_Value = p.Plan_Hash_Value
-                                    AND   sp.ID              = 0
-                                   ) ELSE NULL END Optimizer,
+          Operation, Options, Object_Owner, Object_Name, Object_Type, Object_Alias, QBlock_Name, p.Timestamp, p.Optimizer,
           DECODE(Other_Tag,
                  'PARALLEL_COMBINED_WITH_PARENT', 'PCWP',
                  'PARALLEL_COMBINED_WITH_CHILD' , 'PCWC',
@@ -465,6 +463,7 @@ class DbaSgaController < ApplicationController
     @parsing_schema_name = params[:parsing_schema_name]
 
     @sql                 = fill_sql_sga_stat("GV$SQL", @instance, @sql_id, @object_status, @child_number, @parsing_schema_name, @child_address)
+
     @sql_statement       = get_sga_sql_statement(@instance, @sql_id)
     @sql_profiles        = get_sql_profiles(@sql)
     @sql_plan_baselines  = get_sql_plan_baselines(@sql)
@@ -549,7 +548,8 @@ class DbaSgaController < ApplicationController
       return
     end
 
-    @sql = fill_sql_sga_stat("GV$SQLArea", @instance, params[:sql_id], @object_status, nil, nil, nil, @con_id)
+    @sql = fill_sql_sga_stat("GV$SQLArea", @instance, @sql_id, @object_status, nil, nil, nil, @con_id)
+
     @sql_statement         = get_sga_sql_statement(@instance, params[:sql_id])
     @sql_profiles          = get_sql_profiles(@sql)
     @sql_plan_baselines    = get_sql_plan_baselines(@sql)
