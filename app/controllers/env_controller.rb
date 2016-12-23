@@ -206,7 +206,10 @@ class EnvController < ApplicationController
     rescue Exception => e
       Rails.logger.error "Error connecting to database: URL='#{jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
       Rails.logger.error e.message
-      #Rails.logger.error e.backtrace
+      e.backtrace.each do |bt|
+        Rails.logger.error bt
+      end
+
       set_dummy_db_connection
       respond_to do |format|
         format.js {render :js => "$('#content_for_layout').html('#{j "Fehler bei Anmeldung an DB: <br>

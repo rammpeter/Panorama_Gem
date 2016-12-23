@@ -78,10 +78,7 @@ public
       raise "Native ruby (RUBY_ENGINE=#{RUBY_ENGINE}) is no longer supported! Please use JRuby runtime environment! Call contact for support request if needed."
     end
 
-  rescue Exception => e                   # Exception kommt i.d.R. erst bei erstem DB-Zugriff
-    Rails.logger.error "Error connecting to database: URL='#{jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
-    Rails.logger.error e.message
-    raise e
+    # No exception handling at this time because connection problems are raised at first access
   end
 
   # Format für JQuery-UI Plugin DateTimePicker

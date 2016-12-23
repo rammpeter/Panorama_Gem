@@ -31,6 +31,7 @@ class ConnectionHolder < ApplicationRecord
       #                                          [[ActiveRecord::ConnectionAdapters::Column.new(':action', nil, ActiveRecord::Type::Value.new), "#{@@current_controller_name}/#{@@current_action_name}"]]
       #)
 
+      # This method raises connection exception at first database access
       self.connection().exec_update("call dbms_application_info.set_Module('Panorama', :action)", nil,
                                     [ActiveRecord::Relation::QueryAttribute.new(':action', "#{@@current_controller_name}/#{@@current_action_name}", ActiveRecord::Type::Value.new)]
       )
