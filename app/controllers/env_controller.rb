@@ -173,7 +173,7 @@ class EnvController < ApplicationController
                         when :SERVICE_NAME then '/'
                         else raise "Unknown value '#{current_database[:sid_usage]}' for :sid_usage"
                       end
-      current_database[:tns]       = "#{current_database[:host]}:#{current_database[:port]}#{sid_separator}#{current_database[:sid]}"   # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
+      current_database[:tns]       = "//#{current_database[:host]}:#{current_database[:port]}#{sid_separator}#{current_database[:sid]}"   # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
     end
 
     # Temporaerer Schutz des Produktionszuganges bis zur Implementierung LDAP-Autorisierung    
@@ -217,7 +217,7 @@ class EnvController < ApplicationController
                                                                       URL:  '#{jdbc_thin_url}'<br>
                                                                       Host: #{get_current_database[:host]}<br>
                                                                       Port: #{get_current_database[:port]}<br>
-                                                                      SID: #{get_current_database[:sid]}"
+                                                                      #{get_current_database[:sid_usage]}: #{get_current_database[:sid]}"
                                                                   }');
                                     $('#login_dialog').effect('shake', { times:3 }, 100);
                                  "
