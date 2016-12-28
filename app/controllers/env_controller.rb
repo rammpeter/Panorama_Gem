@@ -173,7 +173,8 @@ class EnvController < ApplicationController
                         when :SERVICE_NAME then '/'
                         else raise "Unknown value '#{current_database[:sid_usage]}' for :sid_usage"
                       end
-      current_database[:tns]       = "//#{current_database[:host]}:#{current_database[:port]}#{sid_separator}#{current_database[:sid]}"   # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
+      connect_prefix = sid_separator==:SERVICE_NAME ? '//' : ''                 # only for service name // is needed at first
+      current_database[:tns]       = "#{connect_prefix}#{current_database[:host]}:#{current_database[:port]}#{sid_separator}#{current_database[:sid]}"   # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
     end
 
     # Temporaerer Schutz des Produktionszuganges bis zur Implementierung LDAP-Autorisierung    
