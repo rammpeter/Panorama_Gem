@@ -1,6 +1,8 @@
 <h2><%= t :env_current_database, :default=>"Current database" %></h2>
 
-<%= "TNS=#{get_current_database[:tns]}, Host=#{get_current_database[:host]}, Port=#{get_current_database[:port]}, #{get_current_database[:sid_usage]}=#{get_current_database[:sid]}" %>
+<%= "JDBC connect string = \"#{jdbc_thin_url}\"" %>
+<br/>
+<%= "Client time zone = \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}" %>
 <br/><br/>
 
 <%  @banners.each do |b| %>

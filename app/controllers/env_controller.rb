@@ -3,6 +3,7 @@
 require 'application_controller'
 require 'menu_helper'
 require 'licensing_helper'
+require 'java'
 
 # version.rb not include wile using gem from http://github.com
 require "panorama_gem/version"
@@ -213,12 +214,11 @@ class EnvController < ApplicationController
 
       set_dummy_db_connection
       respond_to do |format|
-        format.js {render :js => "$('#content_for_layout').html('#{j "Fehler bei Anmeldung an DB: <br>
-                                                                      #{e.message}<br>
-                                                                      URL:  '#{jdbc_thin_url}'<br>
-                                                                      Host: #{get_current_database[:host]}<br>
-                                                                      Port: #{get_current_database[:port]}<br>
-                                                                      #{get_current_database[:sid_usage]}: #{get_current_database[:sid]}"
+        format.js {render :js => "$('#content_for_layout').html('#{j "#{t(:env_connect_error, :default=>'Error connecting to database')}: <br/>
+                                                                      #{e.message}<br/><br/>
+                                                                      URL:  '#{jdbc_thin_url}'<br/>
+                                                                      Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}
+                                                                     "
                                                                   }');
                                     $('#login_dialog').effect('shake', { times:3 }, 100);
                                  "
