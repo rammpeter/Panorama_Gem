@@ -119,6 +119,21 @@ class EnvController < ApplicationController
     set_database
   end
 
+
+
+  private
+  def get_host_tns(current_database)                                            # JDBC-URL for host/port/sid
+    sid_separator = case current_database[:sid_usage].to_sym
+                      when :SID then          ':'
+                      when :SERVICE_NAME then '/'
+                      else raise "Unknown value '#{current_database[:sid_usage]}' for :sid_usage"
+                    end
+    connect_prefix = sid_separator==:SERVICE_NAME ? '//' : ''                 # only for service name // is needed at first
+    "#{connect_prefix}#{current_database[:host]}:#{current_database[:port]}#{sid_separator}#{current_database[:sid]}"   # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
+  end
+
+  public
+
   # Erstes Anmelden an DB
   def set_database
     # Test auf Lesbarkeit von X$-Tabellen
@@ -155,6 +170,8 @@ class EnvController < ApplicationController
     write_to_client_info_store(:last_used_menu_caption,    "Login")
     write_to_client_info_store(:last_used_menu_hint,       t(:menu_env_set_database_hint, :default=>"Start of application after connect to database"))
 
+
+
     #current_database = params[:database].to_h.symbolize_keys                    # Puffern in lokaler Variable, bevor in client_info-Cache geschrieben wird
     current_database = params[:database]                                        # Puffern in lokaler Variable, bevor in client_info-Cache geschrieben wird
 
@@ -168,14 +185,13 @@ class EnvController < ApplicationController
         set_dummy_db_connection
         return
       end
+      # Alternative settings for connection if connect with current_database[:modus] == 'tns' does not work
+      current_database[:host]       = tns_record[:hostName]
+      current_database[:port]       = tns_record[:port]
+      current_database[:sid]        = tns_record[:sidName]
+      current_database[:sid_usage]  = tns_record[:sidUsage]
     else # Host, Port, SID auswerten
-      sid_separator = case current_database[:sid_usage].to_sym
-                        when :SID then          ':'
-                        when :SERVICE_NAME then '/'
-                        else raise "Unknown value '#{current_database[:sid_usage]}' for :sid_usage"
-                      end
-      connect_prefix = sid_separator==:SERVICE_NAME ? '//' : ''                 # only for service name // is needed at first
-      current_database[:tns]       = "#{connect_prefix}#{current_database[:host]}:#{current_database[:port]}#{sid_separator}#{current_database[:sid]}"   # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
+      current_database[:tns]       = get_host_tns(current_database)             # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
     end
 
     # Temporaerer Schutz des Produktionszuganges bis zur Implementierung LDAP-Autorisierung    
@@ -196,15 +212,30 @@ class EnvController < ApplicationController
       end
     end
 
-    set_current_database(current_database)                                      # Persistieren im Cache
+    set_current_database(current_database)                                      # Persist current database setting in cache
     current_database = nil                                                      # Diese Variable nicht mehr verwenden ab jetzt, statt dessen get_current_database verwenden
 
     # First SQL execution opens Oracle-Connection
 
     # Test der Connection und ruecksetzen auf vorherige wenn fehlschlaegt
     begin
-      # Test auf Funktionieren der Connection
-      sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"
+      if get_current_database[:modus] == 'tns'
+        begin
+          sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"    # Connect with TNS-Alias has second try if does not function
+        rescue Exception => e                                                   # Switch to host/port/sid instead
+          Rails.logger.error "Error connecting to database: URL='#{jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
+          Rails.logger.error e.message
+          e.backtrace.each do |bt|
+            Rails.logger.error bt
+          end
+
+          set_current_database(get_current_database.merge({:modus => 'host', :tns => get_host_tns(get_current_database)}))
+          Rails.logger.info "Second try to connect with host/port/sid instead of TNS-alias: URL='#{jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
+          sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"    # Connect with host/port/sid as second try if does not function
+        end
+      else
+        sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"      # Connect with host/port/sid should function at first try
+      end
     rescue Exception => e
       Rails.logger.error "Error connecting to database: URL='#{jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
       Rails.logger.error e.message
