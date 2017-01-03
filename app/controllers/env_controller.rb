@@ -128,7 +128,7 @@ class EnvController < ApplicationController
                       when :SERVICE_NAME then '/'
                       else raise "Unknown value '#{current_database[:sid_usage]}' for :sid_usage"
                     end
-    connect_prefix = sid_separator==:SERVICE_NAME ? '//' : ''                 # only for service name // is needed at first
+    connect_prefix = current_database[:sid_usage].to_sym==:SERVICE_NAME ? '//' : ''                 # only for service name // is needed at first
     "#{connect_prefix}#{current_database[:host]}:#{current_database[:port]}#{sid_separator}#{current_database[:sid]}"   # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
   end
 
