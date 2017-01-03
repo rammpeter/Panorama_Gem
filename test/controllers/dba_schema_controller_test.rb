@@ -79,6 +79,9 @@ class DbaSchemaControllerTest < ActionController::TestCase
     post :list_indexes, :params => {:format=>:js, :owner=>"SYS", :table_name=>"AUD$" }
     assert_response :success;
 
+    post :list_current_index_stats, :params => {:format=>:js, :table_owner=>"SYS", :table_name=>"DIR$", :index_owner=>'SYS', :index_name=>'I_DIR1', :leaf_blocks=>1 }
+    assert_response :success;
+
     post :list_primary_key, :params => {:format=>:js, :owner=>"SYS", :table_name=>"HS$_INST_DD" }
     assert_response :success;
 

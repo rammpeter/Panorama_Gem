@@ -605,6 +605,48 @@ class DbaSchemaController < ApplicationController
     render_partial
   end
 
+  private
+  def get_session_consistent_gets
+    sql_select_one "SELECT Value FROM v$SesStat WHERE SID = USERENV('SID') AND Statistic# = 72"
+  end
+  public
+
+  def list_current_index_stats
+    @table_owner = params[:table_owner]
+    @table_name  = params[:table_name]
+    @index_owner = params[:index_owner]
+    @index_name  = params[:index_name]
+    leaf_blocks  = params[:leaf_blocks]
+
+    object_id = sql_select_one ["SELECT Object_ID FROM DBA_Objects WHERE Owner = ? AND Object_Name = ?", @index_owner, @index_name]
+
+    consistent_gets_before = get_session_consistent_gets
+
+    @stats = sql_select_all "\
+      SELECT SUM(Row_Count) Row_Count,
+             COUNT(*)       Used_Leaf_Block_Count,
+             MIN(Row_Count) Min_Rows_Per_Leaf_Block,
+             MAX(Row_Count) Max_Rows_Per_Leaf_Block,
+             AVG(Row_Count) Avg_Rows_per_Leaf_Block
+      FROM   (
+              SELECT COUNT(*) Row_Count, Block_ID
+              FROM   (
+                      SELECT /*+ INDEX_FFS(tab #{@index_name}) */ sys_op_lbid(#{object_id}, 'L', rowid) block_id
+                      FROM   #{@table_owner}.#{@table_name} tab
+                     )
+              GROUP BY Block_ID
+             )
+       "
+
+    @consistent_gets = get_session_consistent_gets - consistent_gets_before
+
+    @stats.each do |s|
+      s['total_leaf_blocks'] = leaf_blocks ? leaf_blocks.to_i : nil
+    end
+
+    render_partial
+  end
+
 
   def list_check_constraints
     @owner      = params[:owner]
