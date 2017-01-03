@@ -23,6 +23,12 @@ class ConnectionHolder < ApplicationRecord
     @@request_connection_state  = :pending                                      # Oracle connection not guaranteed open
   end
 
+  def self.get_jdbc_driver_version
+    self.connection.raw_connection.getMetaData().getDriverVersion()
+  rescue Exception => e
+    e.message                                                                   # return Exception message instead of raising exeption
+  end
+
   def self.check_for_open_connection(controller)                                # Check for opened connection, tested from before SQL execution
     if @@request_connection_state != :opened
       controller.open_oracle_connection                                         # start Oracle-Connection if not already exists
