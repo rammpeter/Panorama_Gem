@@ -295,7 +295,11 @@ class DbaSchemaController < ApplicationController
     @columns = sql_select_all ["\
                  SELECT /*+ Panorama Ramm */
                        c.*, co.Comments,
-                       NVL(c.Data_Precision, c.Char_Length)||CASE WHEN c.Char_Used='B' THEN ' Bytes' WHEN c.Char_Used='C' THEN ' Chars' ELSE '' END Precision,
+                       CASE WHEN Data_Type LIKE '%CHAR%' THEN
+                         c.Char_Length ||CASE WHEN c.Char_Used='B' THEN ' Bytes' WHEN c.Char_Used='C' THEN ' Chars' ELSE '' END
+                       ELSE
+                         TO_CHAR(c.Data_Precision)
+                       END Precision,
                        l.Segment_Name LOB_Segment,
                        s.Density, s.Num_Buckets, s.Histogram
                        #{', u.*' if get_db_version >= '11.2'}  -- fuer normale User nicht sichtbar in 10g
