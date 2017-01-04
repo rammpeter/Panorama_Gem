@@ -279,8 +279,8 @@ class EnvController < ApplicationController
                                                FROM  GV$Instance gi
                                                CROSS JOIN  v$Database d
                                                LEFT OUTER JOIN v$Instance i ON i.Instance_Number = gi.Instance_Number
-                                               LEFT OUTER JOIN (SELECT DBID, MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM DBA_Hist_WR_Control GROUP BY DBID) ws ON ws.DBID = ?
-                                      ", get_dbid ]
+                                               LEFT OUTER JOIN (SELECT DBID, MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM DBA_Hist_WR_Control GROUP BY DBID) ws ON ws.DBID = d.DBID
+                                      "]
 
       @control_management_pack_access = sql_select_one "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"  # ab Oracle 11 belegt
 
@@ -382,6 +382,12 @@ public
                                 LEFT OUTER JOIN DBA_Hist_WR_Control w ON w.DBID = s.DBID
                                 GROUP BY s.DBID
                                 ORDER BY MIN(Begin_Interval_Time)"]
+
+    set_new_dbid = true
+    @dbids.each do |d|
+      set_new_dbid = false if get_dbid == d.dbid                                # Reuse alread set dbid because it is valid
+    end
+    set_cached_dbid(sql_select_one("SELECT /* Panorama Tool Ramm */ DBID FROM v$Database")) if set_new_dbid # dbid has not been set or is not valid
 
     render_partial :list_dbids
   end

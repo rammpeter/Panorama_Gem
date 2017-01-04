@@ -8,7 +8,6 @@ module EnvHelper
 
   # Einlesen diverser Parameter der DB, die spaeter noch laufend gebraucht werden
   def read_initial_db_values
-    set_cached_dbid(sql_select_one("SELECT /* Panorama Tool Ramm */ DBID FROM v$Database"))
     write_to_client_info_store(:db_block_size,  sql_select_one("SELECT /* Panorama Tool Ramm */ TO_NUMBER(Value) FROM v$parameter WHERE UPPER(Name) = 'DB_BLOCK_SIZE'"))
     write_to_client_info_store(:db_version,     sql_select_one("SELECT /* Panorama Tool Ramm */ Version FROM V$Instance"))
     write_to_client_info_store(:db_wordsize,    sql_select_one("SELECT /* Panorama Tool Ramm */ DECODE (INSTR (banner, '64bit'), 0, 4, 8) FROM v$version WHERE Banner LIKE '%Oracle Database%'"))
