@@ -307,7 +307,7 @@ class DbaSgaController < ApplicationController
     where_string = ''
     where_values = []
 
-    unless @child_address.nil?
+    if !@child_address.nil? && @child_address != ''
       where_string << 'AND Child_Address = HEXTORAW(?)'
       where_values << @child_address
     end
