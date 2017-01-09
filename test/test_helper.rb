@@ -137,7 +137,7 @@ class ActiveSupport::TestCase
         if m[:class] == "item" &&
             controller_action_defined?(m[:controller], m[:action]) &&           # Controller hat eine Action-Methode für diesen Menü-Eintrag
             "#{m[:controller]}_controller".camelize == @controller.class.name   # Nur Menues des aktuellen Controllers testen
-          get m[:action], :params => {:format=>:js}
+          get m[:action], :params => {:format=>:html, :update_area=>:hugo }
           assert_response :success
         end
       end
