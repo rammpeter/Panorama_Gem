@@ -23,11 +23,11 @@
 
 <%
    def link_tx(rec)
-     my_ajax_link_to(fn(rec.transactions),
-                     url_for(:action          => :list_undo_transactions,
+     ajax_link(fn(rec.transactions), {
+                             :action          => :list_undo_transactions,
                              :segment_id      => rec.segment_id,
                              :update_area     => @update_area
-                     ),
+                     },
                      :title=>"Show transactions for undo segment")
    end
 

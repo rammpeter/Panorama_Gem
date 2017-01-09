@@ -49,12 +49,12 @@
             <%
 
                def link_column(rec, value, groupkey)
-                   my_ajax_link_to(value,
-                     url_for(:action      => "detail_sum",
+                   ajax_link(value, {
+                             :action      => "detail_sum",
                              :groupkey    => groupkey,
                              :filter      => { :Month => rec.Month },
                              :update_area => "usage_info_detail_area"
-                           ),
+                           },
                     :title=>"Aufgliederung der Daten nach #{groupkey}")
                end
 
@@ -75,11 +75,11 @@
                end
 
                def link_column_single_record(rec, value)
-                   my_ajax_link_to(value,
-                     url_for(:action      => "single_record",
+                   ajax_link(value, {
+                             :action      => "single_record",
                              :filter      => { :Month => rec.Month },
                              :update_area => "usage_info_detail_area"
-                           ),
+                           },
                     :title=>"Anzeige der einzelnen Records")
                end
 

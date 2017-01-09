@@ -26,14 +26,14 @@
 
 <%
   def link_column_sid(rec)
-    my_ajax_link_to("#{rec.sid},#{rec.serialno}",
-                    url_for(:controller     => :dba,
+    ajax_link("#{rec.sid},#{rec.serialno}", {
+                            :controller     => :dba,
                             :action         => :show_session_detail,
                             :instance       => rec.inst_id,
                             :sid            => rec.sid,
                             :serialno       => rec.serialno,
                             :update_area    => @update_area
-                           ),
+                           },
                     :title=> "Anzeige Details zu Session"
                    )
   end

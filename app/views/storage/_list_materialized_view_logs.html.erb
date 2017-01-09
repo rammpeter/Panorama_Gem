@@ -3,22 +3,22 @@
 
 def link_real_num_rows(rec)
   update_area = "list_materialized_view_logs_#{(rec.log_owner+rec.log_table).hash.abs}"
-  my_ajax_link_to(rec.num_rows ? fn(rec.num_rows) : "[No analyze]",
-                  url_for(:action          => :list_real_num_rows,
+  ajax_link(rec.num_rows ? fn(rec.num_rows) : "[No analyze]", {
+                          :action          => :list_real_num_rows,
                           :owner           => rec.log_owner,
                           :name            => rec.log_table,
                           :update_area     => update_area
-                         ),
+                         },
                   :title=>"Show current number of rows in MV-log. CAUTION: May be long running!")+"<br><div id=\"#{update_area}\"></div>".html_safe
 end
 
 def link_snapshot_count(rec)
-  my_ajax_link_to(fn(rec.snapshot_count),
-                  url_for(:action          => :list_snapshot_logs,
+  ajax_link(fn(rec.snapshot_count), {
+                          :action          => :list_snapshot_logs,
                           :log_owner       => rec.log_owner,
                           :log_table       => rec.log_table,
                           :update_area     => @update_area
-                         ),
+                         },
                   :title=>"Show registered materialized view logs for this MV log from DBA_Snapshot_Logs")
 end
 

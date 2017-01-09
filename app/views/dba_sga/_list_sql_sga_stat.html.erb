@@ -45,11 +45,11 @@ end
            <td>
              <%=
                  @update_area_module = get_unique_area_id
-                 my_ajax_link_to(@sql.module,
-                  url_for(:action        => :show_application_info,
+                 ajax_link(@sql.module, {
+                           :action        => :show_application_info,
                            :update_area  => @update_area_module,
                            :org_text     => @sql.module
-                         ),
+                 },
                   :title=>t(:dba_sga_list_sql_sga_stat_module_link_hint, :default=>'Show further details for module name if available'))
              %>
              <div id='<%= @update_area_module %>'></div>
@@ -57,11 +57,11 @@ end
            <td align='right' title="Parsing Action">
              <%=
                  @update_area_action = get_unique_area_id
-                 my_ajax_link_to(@sql.action,
-                  url_for(:action        => :show_application_info,
+                 ajax_link(@sql.action, {
+                           :action        => :show_application_info,
                            :update_area  => @update_area_action,
                            :org_text     => @sql.action
-                         ),
+                 },
                   :title=>t(:dba_sga_list_sql_sga_stat_action_link_hint, :default=>'Show further details for action name if available'))
              %>
              <div id='<%= @update_area_action %>'></div>

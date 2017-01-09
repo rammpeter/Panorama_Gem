@@ -2,11 +2,11 @@
    @update_area = "single_record_detail_area"
 
    def show_client(rec)
-     my_ajax_link_to(rec.IP_Address,
-       url_for(:action      => "ip_info",
+     ajax_link(rec.IP_Address, {
+               :action      => "ip_info",
                :ip_address  => rec.IP_Address,
                :update_area => @update_area
-             ),
+             },
       :title=>"Details zu IP-Adresse")
    end
 

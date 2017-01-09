@@ -88,13 +88,13 @@
              :Idle_Wait1             => 'PX Deq Credit: send blkd'
      }
      groupfilter[:Instance] = @instance if @instance
-     my_ajax_link_to(value,
-                     url_for(:controller     => :active_session_history,
+     ajax_link(value, {
+                             :controller     => :active_session_history,
                              :action         => :list_session_statistic_historic_grouping,
                              :groupfilter    => groupfilter,
                              :groupby        => 'Event',
                              :update_area    => @update_area
-                     ),
+                     },
                      :title => 'Show wait events for operation in Active Session History'
      )
    end

@@ -35,29 +35,22 @@ column_options =
 </div>
 
 <%
-   # Alternativ-Variante für Aktualisierung des Links in Javascript
-   def decorator_mb_used
-     link_text = my_ajax_link_to('VALUE_ALIAS',
-                 url_for({:controller   => :dba_schema,
+
+  def link_mb_used(rec)
+    if rec.contents == 'PERMANENT'
+      ajax_link(fn(rec.mbused),
+                         {:controller   => :dba_schema,
                           :action       => :list_objects,
-                          :tablespace   => {:name => 'TS_NAME_VALUE_ALIAS'},
+                          :tablespace   => {:name => rec.tablespace_name},
                           :update_area  => @update_area,
-                         }),
+                         },
                  :title=>t(:storage_tablespace_usage_tablespaces_link_hint, :default=>'Show objects of tablespace')
      )
+    else
+      fn rec.mbused
+    end
+  end
 
-     "
-       var link_text = '#{link_text}';
-       if (dataContext[slickGrid.all_columns[1].id] == 'PERMANENT' ){
-         return link_text
-           .replace(/TS_NAME_VALUE_ALIAS/g,    dataContext[slickGrid.all_columns[0].id])
-           .replace(/VALUE_ALIAS/g,            cell_value)
-         ;
-       } else {
-         return cell_value;
-       }
-     "
-   end
 
    column_options =
 [
@@ -65,7 +58,7 @@ column_options =
   {:caption=>"Contents",            :data=>proc{|rec| rec.contents},                    :title=>t(:storage_tablespace_usage_tablespace_content_hint, :default=>'Type/content of tablespace') },
   {:caption=>"Blocksize",           :data=>proc{|rec| formattedNumber(rec.blocksize)},  :title=>t(:storage_tablespace_usage_tablespace_blocksize_hint, :default=>'Blocksize of tablespace in Bytes'),        :align=>:right},
   {:caption=>"MB Total",            :data=>proc{|rec| formattedNumber(rec.mbtotal)},    :title=>"Größe des Tablespace gesamt in MB",        :align=>:right},
-  {:caption=>"MB Used",             :data=>proc{|rec| formattedNumber(rec.mbused)},     :title=>"Genutzter Platz des Tablespaces in MB",    :align=>:right, :field_decorator_function=>decorator_mb_used},
+  {:caption=>"MB Used",             :data=>proc{|rec| link_mb_used(rec) },              :title=>"Genutzter Platz des Tablespaces in MB",    :align=>:right},
   {:caption=>"MB Free",             :data=>proc{|rec| formattedNumber(rec.mbfree)},     :title=>"Freier Platz des Tablespaces in MB",       :align=>:right},
   {:caption=>"% used",              :data=>proc{|rec| formattedNumber(rec.pctused,1)},  :title=>"Prozentuale Auslastung",                   :align=>:right},
   {:caption=>"Allocation Type",     :data=>proc{|rec| rec.allocation_type}},

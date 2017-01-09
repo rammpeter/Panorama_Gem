@@ -110,13 +110,13 @@ column_options =
 
    def link_real_num_rows(rec)
      update_area = "#{@update_area}_num_rows"
-     my_ajax_link_to(rec.num_rows ? fn(rec.num_rows) : "[No analyze]",
-                     url_for(:controller      => :storage,
+     ajax_link(rec.num_rows ? fn(rec.num_rows) : "[No analyze]", {
+                             :controller      => :storage,
                              :action          => :list_real_num_rows,
                              :owner           => @owner,
                              :name            => @table_name,
                              :update_area     => update_area
-                            ),
+                            },
                      :title=>"Count current number of rows in Table. CAUTION: May be long running!")+"<br><div id=\"#{update_area}\"></div>".html_safe
    end
 
