@@ -18,29 +18,29 @@ column_options =
 
 <%
    def link_single_results(rec)
-     my_ajax_link_to(fn(rec.result_count),
-                     url_for(:controller    => :dba_sga,
+     ajax_link(fn(rec.result_count), {
+                             :controller    => :dba_sga,
                              :action        => :list_result_cache_single_results,
                              :instance      => rec.inst_id,
                              :status        => rec.status,
                              :name          => rec.name,
                              :namespace     => rec.namespace,
                              :update_area => @update_area
-                     ),
+                     },
                      :title=> 'Show single results for name')
    end
 
 
    def link_dependencies(rec)
-     my_ajax_link_to(fn(rec.depend_count),
-                     url_for(:controller    => :dba_sga,
+     ajax_link(fn(rec.depend_count), {
+                             :controller    => :dba_sga,
                              :action        => :list_result_cache_dependencies_by_name,
                              :instance      => rec.inst_id,
                              :status        => rec.status,
                              :name          => rec.name,
                              :namespace     => rec.namespace,
                              :update_area => @update_area
-                     ),
+                     },
                      :title=> 'Show depencies for result')
    end
 

@@ -3,13 +3,12 @@
     @update_area = get_unique_area_id
 
    def link_samples(rec)
-     my_ajax_link_to(
-       fn(rec.samples),
-       url_for(
+     ajax_link(
+       fn(rec.samples), {
          :action       => :list_io_file_history_samples,
          :groupfilter  => @groupfilter.merge({@groupby => rec.group_value}),
          :update_area  => @update_area,
-       ),
+       },
        :title=>t(:list_io_file_history_samples_hint, :default=>"Show timeline of sample records")
      )
    end
@@ -19,13 +18,12 @@
             if value == "< 0 >"
                 ""
             else
-                my_ajax_link_to(value,
-                    url_for({:action       => :list_io_file_history_grouping,
+                ajax_link(value,
+                    {:action       => :list_io_file_history_grouping,
                         :groupfilter  => @groupfilter.merge({@groupby => rec.group_value}),
                         :groupby      => add_url[:groupby],
                         :update_area  => @update_area,
-                        }
-                    ),
+                    },
                     :title=>"#{t(:active_session_history_list_session_statistic_historic_grouping_link_hint, :default=>"Show different")} #{add_url[:groupby]}s #{t(:of, :default=>"of")} #{@groupby}s")
             end
         else

@@ -349,7 +349,7 @@ class StorageController < ApplicationController
       ", @mview_id]
 
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j "<pre>#{my_html_escape text}</pre>"}');"}
+      format.html {render :html => "<pre>#{my_html_escape text}</pre>"}
     end
   end
 
@@ -362,7 +362,7 @@ class StorageController < ApplicationController
       ", params[:owner], params[:name]]
 
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j "<pre>#{my_html_escape text}</pre>"}');"}
+      format.html {render :html => "<pre>#{my_html_escape text}</pre>"}
     end
   end
 

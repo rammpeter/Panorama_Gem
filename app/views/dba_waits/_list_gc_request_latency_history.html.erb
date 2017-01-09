@@ -1,14 +1,14 @@
 <%
   def link_column(h, value, order_by)
-    my_ajax_link_to(value,
-                  url_for(:action => :list_gc_request_latency_history_detail,
+    ajax_link(value, {
+                          :action => :list_gc_request_latency_history_detail,
                           :update_area => :list_gc_request_latency_history_detail_area,
                           :instance       => h.instance_number,
                           :min_snap_id    => h.min_snap_id,
                           :max_snap_id    => h.max_snap_id,
                           :begin_interval_time => h.begin_interval_time ? localeDateTime(h.begin_interval_time) : @time_selection_start,
                           :order_by       => order_by
-                          ),
+                          },
                    :title => t(:dba_waits_show_gc_request_latency_link_hint, :default=>'Show single objects ordered by transferred blocks')
                    )
   end

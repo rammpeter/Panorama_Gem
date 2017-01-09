@@ -2,12 +2,12 @@
     @update_area = get_unique_area_id
 
     def show_source(rec)
-      my_ajax_link_to(rec.description.html_safe,
-                      url_for({:action       => :list_trigger_body,
+      ajax_link(rec.description.html_safe,
+                              {:action       => :list_trigger_body,
                                :owner        => rec.owner,
                                :trigger_name => rec.trigger_name,
                                :update_area  => @update_area,
-                              }),
+                              },
                       :title=>"Show body of trigger #{rec.owner}.#{rec.trigger_name}"
       )
     end

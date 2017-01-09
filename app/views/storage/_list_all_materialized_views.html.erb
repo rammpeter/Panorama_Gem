@@ -3,12 +3,12 @@
 
 
 def link_text(rec, value)
-  my_ajax_link_to(value,
-                  url_for(:action          => :list_mview_query_text,
+  ajax_link(value, {
+                          :action          => :list_mview_query_text,
                           :owner           => rec.owner,
                           :name            => rec.mview_name,
                           :update_area     => @update_area
-                         ),
+                         },
                   :title=>"Show query text of materialized view")
 end
 
@@ -24,23 +24,23 @@ def link_real_num_rows(rec)
 end
 
 def link_snapshot_logs(rec)
-  my_ajax_link_to(rec.snapshot_logs,
-                  url_for(:action          => :list_snapshot_logs,
+  ajax_link(rec.snapshot_logs, {
+                          :action          => :list_snapshot_logs,
                           :snapshot_id     => rec.mview_id,
                           :update_area     => @update_area
-                         ),
-                  :title=>"Show query text of materialized view")
+                         },
+                  :title=>"Show snapshot logs of materialized view")
 end
 
 def link_registered_mv(rec)
   if rec.registered == 'N'
     rec.registered
   else
-      my_ajax_link_to(rec.registered,
-                      url_for(:action          => :list_registered_materialized_views,
+      ajax_link(rec.registered, {
+                              :action          => :list_registered_materialized_views,
                               :snapshot_id     => rec.mview_id,
                               :update_area     => @update_area
-                      ),
+                      },
                       :title=>"Show details of registered materialized view")
   end
 end

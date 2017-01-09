@@ -85,8 +85,8 @@
      end
 
      def link_column_wait(rec, value)
-       my_ajax_link_to(value,
-                       url_for(:controller     => :active_session_history,
+       ajax_link(value, {
+                               :controller     => :active_session_history,
                                :action         => :list_session_statistic_historic_grouping,
                                :groupfilter    => {
                                        :DBID                   => get_dbid,
@@ -100,7 +100,7 @@
                                },
                                :groupby        => "Event",
                                :update_area    => @update_area
-                       ),
+                       },
                        :title => "Show wait events for operation in Active Session History"
        )
      end

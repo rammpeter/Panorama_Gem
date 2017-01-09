@@ -6,11 +6,11 @@ def link_text(rec, value)
   if rec.mbytes
     link_object_description(@update_area, rec.owner, rec.name, rec.name)
   else
-    my_ajax_link_to(value,
-                    url_for(:action          => :list_registered_mview_query_text,
+    ajax_link(value, {
+                            :action          => :list_registered_mview_query_text,
                             :mview_id        => rec.mview_id,
                             :update_area     => @update_area
-                           ),
+                           },
                     :title=>"Show query text of materialized view")
   end
 end
@@ -28,12 +28,12 @@ end
 
 def link_mview_site(rec)
   if rec.mbytes
-    my_ajax_link_to(rec.mview_site,
-                    url_for(:action          => :list_all_materialized_views,
+    ajax_link(rec.mview_site, {
+                            :action          => :list_all_materialized_views,
                             :owner           => rec.owner,
                             :name            => rec.name,
                             :update_area     => @update_area
-                           ),
+                           },
                     :title=>"Show details for local materialized view")
   else
     rec.mview_site
@@ -41,11 +41,11 @@ def link_mview_site(rec)
 end
 
 def link_snapshot_logs(rec)
-  my_ajax_link_to(rec.snapshot_logs,
-                  url_for(:action          => :list_snapshot_logs,
+  ajax_link(rec.snapshot_logs, {
+                          :action          => :list_snapshot_logs,
                           :snapshot_id     => rec.mview_id,
                           :update_area     => @update_area
-                         ),
+                         },
                   :title=>"Show details for registered materialized view logs")
 end
 

@@ -1,11 +1,11 @@
 <%
   def link_select(rec)
-    my_ajax_link_to(rec.dbid,
-      url_for(:controller   => :env,
+    ajax_link(rec.dbid, {
+              :controller   => :env,
               :action       => :set_dbid,
-               :dbid        => rec.dbid,
+              :dbid        => rec.dbid,
               :update_area  => params[:update_area]
-              ),
+              },
       {:title => 'Select this DBID for selections in AWR history and Active Session History'}
     )
   end

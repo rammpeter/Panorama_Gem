@@ -31,14 +31,14 @@ column_options =
    @update_area = get_unique_area_id
 
    def link_column_sql(rec)
-     my_ajax_link_to("#{rec.owner} . #{rec.object_name}#{rec.subobject_name ? " ("+rec.subobject_name+")": ""}",
-                     url_for(:controller   => :dba_sga,
+     ajax_link("#{rec.owner} . #{rec.object_name}#{rec.subobject_name ? " ("+rec.subobject_name+")": ""}", {
+                              :controller   => :dba_sga,
                              :action       => :show_using_sqls,
                              :ObjectOwner  => rec.owner,
                              :ObjectName   => rec.object_name,
                              :instance     => @instance,
                              :update_area  => @update_area
-                     ),
+                     },
                      :title => "Show SQL from SGA accessing this object"
      )
    end

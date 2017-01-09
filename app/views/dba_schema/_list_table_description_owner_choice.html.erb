@@ -2,16 +2,7 @@
   @update_area = get_unique_area_id
 
   def link_owner(value, rec)
-    my_ajax_link_to(value,
-                    url_for(
-                      :action       => :list_object_description,
-                      :owner        => rec.owner,
-                      :segment_name => rec.object_name,
-                      :object_type  => rec.object_type,
-                      :update_area  => @update_area
-                    ),
-                    :title => "Show description of database object #{rec.object_type} #{rec.owner}.#{rec.object_name}"
-    )
+    link_object_description(@update_area, rec.owner, rec.object_name, value, object_type=rec.object_type)
   end
 
   column_options =

@@ -2,21 +2,21 @@
 @update_area = get_unique_area_id
 
 def link_mview_log(rec)
-  my_ajax_link_to(rec.log_table,
-                  url_for(:action          => :list_materialized_view_logs,
+  ajax_link(rec.log_table, {
+                          :action          => :list_materialized_view_logs,
                           :log_owner       => rec.log_owner,
                           :log_name        => rec.log_table,
                           :update_area     => @update_area
-                         ),
+                         },
                   :title=>"Show details for materialized view log")
 end
 
 def link_registered_mview(rec)
-  my_ajax_link_to(rec.snapshot_id,
-                  url_for(:action          => :list_registered_materialized_views,
+  ajax_link(rec.snapshot_id, {
+                          :action          => :list_registered_materialized_views,
                           :snapshot_id     => rec.snapshot_id,
                           :update_area     => @update_area
-                         ),
+                         },
                   :title=>"Show details for registered materialized view with this snapshot id")
 end
 
