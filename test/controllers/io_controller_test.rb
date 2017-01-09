@@ -40,21 +40,21 @@ class IoControllerTest < ActionController::TestCase
 
   test "list_io_file_history_grouping" do
     io_file_key_rules.each do |groupby, value|
-      post :list_io_file_history_grouping, :params => { :format=>:js, :groupfilter=>@groupfilter, :groupby=>groupby  }
+      post :list_io_file_history_grouping, :params => { :format=>:js, :groupfilter=>@groupfilter, :groupby=>groupby, :update_area=>:hugo   }
       assert_response :success
     end
   end
 
   test "list_io_file_history_samples" do
     io_file_key_rules.each do |groupby, value|
-      post :list_io_file_history_samples, :params => { :format=>:js, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end }
+      post :list_io_file_history_samples, :params => { :format=>:js, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo  }
       assert_response :success
     end
   end
 
   test "list_io_file_history_timeline" do
     io_file_key_rules.each do |groupby, value|
-      post :list_io_file_history_timeline, :params => { :format=>:js, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end }
+      post :list_io_file_history_timeline, :params => { :format=>:js, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo  }
       assert_response :success
     end
   end

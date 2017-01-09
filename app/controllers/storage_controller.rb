@@ -403,7 +403,7 @@ class StorageController < ApplicationController
     end
 
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j "real:&nbsp;#{fn num_rows}"}');".html_safe}
+      format.html {render :html => "real:&nbsp;#{fn num_rows}".html_safe}
     end
   end
 
