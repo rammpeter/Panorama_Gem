@@ -3,7 +3,7 @@
 <% @update_area = "list_sysmetric_history_detail_area" %>
 
 <%=
-    my_ajax_form_tag url_for(:controller  => :dba_history,
+    ajax_form(:controller  => :dba_history,
                              :action      => :list_sysmetric_historic,
                              :update_area => @update_area
                      ) do%>

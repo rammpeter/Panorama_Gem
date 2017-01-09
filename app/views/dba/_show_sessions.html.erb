@@ -1,7 +1,7 @@
 <div class="page_caption"><%= t(:dba_show_sessions_caption, :default=>"Show sessions") %></div>
 <% @update_area = get_unique_area_id %>
 
-       <%= my_ajax_form_tag url_for(:controller => :dba, :action => "list_sessions", :update_area=>@update_area) do  %>
+<%= ajax_form(:controller => :dba, :action => "list_sessions", :update_area=>@update_area) do  %>
   <div class="float_left">
     <%= t(:dba_show_sessions_only_active_caption, :default=>"Active only") %>
     <%= check_box_tag(:onlyActive, 1, true, :title=>t(:dba_show_sessions_only_active_hint, :default=>"Show active sessions only")) %>

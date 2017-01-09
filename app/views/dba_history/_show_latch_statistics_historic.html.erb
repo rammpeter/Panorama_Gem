@@ -1,7 +1,7 @@
 <div class="page_caption">Latch-Statistics from DBA_Hist_Latch</div>
 
 
-<%= my_ajax_form_tag url_for(:controller => :dba_history, :action => :list_latch_statistics_historic, :update_area => :list_latch_statistics_historic_area)  do %>
+<%= ajax_form(:controller => :dba_history, :action => :list_latch_statistics_historic, :update_area => :list_latch_statistics_historic_area)  do %>
 
   <%= include_start_end_timepicker %>
 

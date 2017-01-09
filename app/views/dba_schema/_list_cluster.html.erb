@@ -36,24 +36,22 @@
 
 
 <div class="float_left">
-  <%= my_ajax_submit_tag("#{@tables} Tables",
-                         url_for(:update_area => @update_area,
+  <%= ajax_submit("#{@tables} Tables", {
+                                 :update_area => @update_area,
                                  :action      => :list_cluster_tables,
                                  :owner       => @owner,
                                  :cluster_name  => @cluster_name
-                         ),
-                         :title => "Show indexes for object #{@owner}.#{@cluster_name}")
+      }, :title => "Show indexes for object #{@owner}.#{@cluster_name}")
   %>
 </div>
 
 <div class="float_left">
-  <%= my_ajax_submit_tag("#{@indexes} Indexes",
-                         url_for(:update_area => @update_area,
+  <%= ajax_submit("#{@indexes} Indexes", {
+                                 :update_area => @update_area,
                                  :action      => :list_indexes,
                                  :owner       => @owner,
                                  :table_name  => @cluster_name
-                         ),
-                         :title => "Show indexes for object #{@owner}.#{@cluster_name}")
+      }, :title => "Show indexes for object #{@owner}.#{@cluster_name}")
   %>
 </div>
 

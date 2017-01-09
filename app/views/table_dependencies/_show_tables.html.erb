@@ -1,4 +1,4 @@
-<%= my_ajax_form_tag url_for(:action => "find_dependencies", :update_area => :dependencies, :username => @username) do %>
+<%= ajax_form(:action => "find_dependencies", :update_area => :dependencies, :username => @username) do %>
     <div class="float_left">
       <%=@username%>.
     </div>

@@ -1,7 +1,7 @@
 <div class="page_caption"><%= "Historie aus #{read_from_client_info_store(:dba_hist_blocking_locks_owner)}.DBA_Hist_Blocking_Locks" %></div>
 
 
-<%= my_ajax_form_tag url_for(:controller=>:addition, :action=>:list_blocking_locks_history, :update_area=>:list_blocking_locks_history_area) do %>
+<%= ajax_form(:controller=>:addition, :action=>:list_blocking_locks_history, :update_area=>:list_blocking_locks_history_area) do %>
   <div class="float_left">
       <%= include_start_end_timepicker %>
   </div>

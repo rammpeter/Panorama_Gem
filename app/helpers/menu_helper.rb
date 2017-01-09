@@ -224,20 +224,23 @@ private
         exec_controller = controller
         exec_action     = action
       end
-      my_ajax_link_to(title,
-                      url_for(:controller          => exec_controller,
-                              :action              => exec_action,
-                              :update_area         => 'content_for_layout',     # Standard-Div für Anzeige in Layout
-                              :redirect_controller => controller,
-                              :redirect_action     => action,
-                              :last_used_menu_controller => controller, # Merken der zuletzt aus Menü ausgeführten Action
-                              :last_used_menu_action     => action,
-                              :last_used_menu_caption    => title,
-                              :last_used_menu_hint       => hint
-                        ),
-                      :title => hint,
-                      :id    => "menu_#{controller}_#{action}"
-                     )
+      ajax_link(title,
+                {
+                    :controller          => exec_controller,
+                    :action              => exec_action,
+                    :update_area         => 'content_for_layout',     # Standard-Div für Anzeige in Layout
+                    :redirect_controller => controller,
+                    :redirect_action     => action,
+                    :last_used_menu_controller => controller, # Merken der zuletzt aus Menü ausgeführten Action
+                    :last_used_menu_action     => action,
+                    :last_used_menu_caption    => title,
+                    :last_used_menu_hint       => hint
+                },
+                {
+                    :title => hint,
+                    :id    => "menu_#{controller}_#{action}"
+                }
+      )
   end
 
 

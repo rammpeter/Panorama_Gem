@@ -2,7 +2,7 @@
 <div class="page_caption">Übersicht über Tablespace-Objekte</div>
 
 <div>
-  <%= my_ajax_form_tag url_for(:controller => :dba_schema, :action => :list_objects, :update_area=>@update_area) do
+  <%= ajax_form(:controller => :dba_schema, :action => :list_objects, :update_area=>@update_area) do
   %>
   <div class="float_left">
     Tablespaces<br/>

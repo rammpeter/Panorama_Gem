@@ -1,6 +1,6 @@
 <div class="page_caption"><%= t(:dba_history_show_system_statistics_historic_caption, :default=>'History of system statistics from DBA_Hist_SysStat') %>  (<a href="http://docs.oracle.com/database/121/REFRN/GUID-2FBC1B7E-9123-41DD-8178-96176260A639.htm" target="_blank"><%= t(:dba_history_show_system_statistics_historic_caption_link, :default=>'Click here for further details') %></a>)</div>
 
-<%= my_ajax_form_tag url_for(:controller=>:dba_history, :action=>:list_system_statistics_historic, :update_area=>:list_system_statistics_historic_area) do%>
+<%= ajax_form(:controller=>:dba_history, :action=>:list_system_statistics_historic, :update_area=>:list_system_statistics_historic_area) do%>
     <div class="float_left">
         <%= include_start_end_timepicker %>
 

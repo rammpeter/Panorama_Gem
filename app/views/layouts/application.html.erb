@@ -69,6 +69,10 @@
       jQuery.ajax({type: 'GET', url:'env/get_tnsnames_records', async: false});
       jQuery('#database_modus_tns').click();                                    // Set radiobutton to default
       jQuery('#login_dialog').dialog('open');                                   // Erst jetzt den Anmeldedialog oeffnen
+
+      // replace ajax result in html div
+      bind_ajax_html_response($("#formSavedLogin"),  'content_for_layout');
+      bind_ajax_html_response($("#formLoginDialog"), 'content_for_layout');
     });
   </script>
 
@@ -89,7 +93,7 @@
       <td>
         <%  last_logins = read_last_logins %>
 
-        <%= form_tag url_for(:controller=>:env, :action=>:set_database_by_id), :remote=>true, :id=>:formSavedLogin do %>
+        <%= form_tag url_for(:controller=>:env, :action=>:set_database_by_id), {:remote=>true, 'data-type'=>:html, :id=>:formSavedLogin} do %>
             <div class="float_left" title="<%= t(:login_saved_logins_title, :default=>"Saved DB connections from former use") %>">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
               <select name="saved_logins_id"  autocomplete="off" >
                 <% last_logins.each_index do |index| %>
@@ -105,7 +109,7 @@
     </tr>
   </table>
   <br/>
-  <%= form_tag url_for(:controller=>:env, :action=>:set_database_by_params), :remote => true, :id=>:formLoginDialog do %>
+  <%= form_tag url_for(:controller=>:env, :action=>:set_database_by_params), :remote => true, 'data-type'=>:html, :id=>:formLoginDialog do %>
       <table width="100%">
         <tr>
           <th><%= t :login_lang_caption, :default=>"Language" %></th>

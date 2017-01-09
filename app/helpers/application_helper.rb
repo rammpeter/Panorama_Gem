@@ -683,6 +683,15 @@ module ApplicationHelper
       format.js {render :js => "$('##{update_area}').html('#{escape_javascript(render_to_string :partial=>"#{controller}/#{partial}")
                                                                  .gsub(/§SINGLE_QUOTE§/, "#{92.chr}#{92.chr}#{92.chr}#{92.chr}x27")
                                                             }'); #{additional_javascript_string}" }
+      format.html {
+        if additional_javascript_string.nil?
+          render(:partial=>"#{controller}/#{partial}")                          # don't store rendered document as string
+        else
+          rendered_document = render_to_string :partial=>"#{controller}/#{partial}"
+          rendered_document << "<script type='text/javascript'>#{additional_javascript_string}</script>".html_safe
+          render :html => rendered_document
+        end
+      }
     end
   end
 

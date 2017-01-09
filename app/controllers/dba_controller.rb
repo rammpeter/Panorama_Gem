@@ -1089,7 +1089,7 @@ Möglicherweise fehlende Zugriffsrechte auf Table X$BH! Lösung: Exec als User '
     output = gen_slickgrid(@data, @column_options, {:caption=>@header, :width=>"auto",  :max_height=>450})
 
     respond_to do |format|
-      format.js {render :js => "$('#segment_statistics_detail').html('#{j output}');"}
+      format.html {render :html => output}
     end
   end
 

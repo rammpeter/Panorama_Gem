@@ -9,7 +9,7 @@
    @time_selection_end_id   = "time_selection_end_#{get_unique_area_id}"
 
    @caption = ""
-   @caption << (my_ajax_form_tag url_for(:controller => :io, :action        => :refresh_time_selection,
+   @caption << (ajax_form(:controller => :io, :action        => :refresh_time_selection,
                                          :groupby       => @groupby,                     # Gruppierungskriterium für einen Dialog
                                          :groupfilter   => @groupfilter,            # Groupfilter des letzten Aufrufes wiederverwenden, reduziert um Fehlerquellen
                                          :update_area   => params[:update_area],         # Update_area des letzten Aufrufes wiederverwenden

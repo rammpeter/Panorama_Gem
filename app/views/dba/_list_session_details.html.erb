@@ -107,121 +107,114 @@ column_options =
 
 <div style="clear:both;">
   <div class="float_left">
-    <%= my_ajax_submit_tag("Wait-Status",
-       url_for(:action => "show_session_details_waits",
+    <%= ajax_submit("Wait-Status", {
+               :action => :show_session_details_waits,
                :update_area => @update_area,
                :instance => @instance,
                :sid      => @sid,
-               :serialno => @serialno),
-      :title => t(:dba_list_session_details_link_wait, :default=>'Show current wait status of session') )
+               :serialno => @serialno
+        }, :title => t(:dba_list_session_details_link_wait, :default=>'Show current wait status of session') )
     %>
   </div>
   <div class="float_left">
-    <%= my_ajax_submit_tag("Locks",
-       url_for(:action => "show_session_details_locks",
+    <%= ajax_submit("Locks", {
+               :action => :show_session_details_locks,
                :update_area => @update_area,
                :instance => @instance,
                :sid      => @sid,
-               :serialno => @serialno),
-      :title => t(:dba_list_session_details_link_locks, :default=>'Show locks of session') )
+               :serialno => @serialno
+        }, :title => t(:dba_list_session_details_link_locks, :default=>'Show locks of session') )
     %>
   </div>
   <div class="float_left">
-    <%= my_ajax_submit_tag("Temp-Usage",
-       url_for(:action => :show_session_details_temp,
+    <%= ajax_submit("Temp-Usage", {
+               :action => :show_session_details_temp,
                :update_area => @update_area,
                :instance => @instance,
                :saddr      => @dbsession.saddr,
                :sid        => @sid,
-               :serialno   => @serialno),
-      :title => t(:dba_list_session_details_link_temp, :default=>'Show TEMP-usage of session') )
+               :serialno   => @serialno
+        }, :title => t(:dba_list_session_details_link_temp, :default=>'Show TEMP-usage of session') )
     %>
   </div>
   <div class="float_left">
       <%=
-        my_ajax_submit_tag("#{@open_cursor_counts.total} #{t(:dba_list_session_details_link_open_cursor_caption, :default=>'open cursor')}",
-           url_for(:action => "list_open_cursor_per_session",
+        ajax_submit("#{@open_cursor_counts.total} #{t(:dba_list_session_details_link_open_cursor_caption, :default=>'open cursor')}", {
+                   :action => "list_open_cursor_per_session",
                    :controller => :dba,
                    :update_area => @update_area,
                    :instance  => @instance,
                    :sid       => @sid,
                    :serialno  => @serialno
-                   ),
-           :title=> t(:dba_list_session_details_link_open_cursor_hint, :default=>'Show open cursor of session (GV$OPEN_CURSOR) %{own_saddr} with identical SAddr', :own_saddr=>@open_cursor_counts.own_saddr))
+        }, :title=> t(:dba_list_session_details_link_open_cursor_hint, :default=>'Show open cursor of session (GV$OPEN_CURSOR) %{own_saddr} with identical SAddr', :own_saddr=>@open_cursor_counts.own_saddr))
       %>
   </div>
   <div class="float_left">
     <%=
-        my_ajax_submit_tag('Objects accessed',
-                           url_for(:controller  => :dba,
+        ajax_submit('Objects accessed', {
+                                   :controller  => :dba,
                                    :action      => :list_accessed_objects,
                                    :update_area => @update_area,
                                    :instance    => @instance,
                                    :sid         => @sid,
-                           ),
-                           :title=> 'List objects accessed by this session in library cache (from GV$Access)')
+        }, :title=> 'List objects accessed by this session in library cache (from GV$Access)')
     %>
   </div>
   <div class="float_left">
       <%=
-        my_ajax_submit_tag("Active Session History",
-           url_for(:action => :show_prepared_active_session_history,
+        ajax_submit("Active Session History", {
+                   :action => :show_prepared_active_session_history,
                    :controller => :active_session_history,
                    :update_area => @update_area,
                    :instance  => @instance,
                    :sid       => @sid,
                    :serialno  => @serialno
-                   ),
-           :title=> t(:dba_list_session_details_link_ash, :default=>'Show wait history of session from Active Session History'))
+        }, :title=> t(:dba_list_session_details_link_ash, :default=>'Show wait history of session from Active Session History'))
       %>
   </div>
   <div class="float_left">
       <%=
-        my_ajax_submit_tag("Session-Statistics",
-           url_for(:action => :list_session_statistic,
+        ajax_submit("Session-Statistics", {
+                   :action => :list_session_statistic,
                    :update_area => @update_area,
                    :instance  => @instance,
                    :sid       => @sid
-                   ),
-           :title=> t(:dba_list_session_details_link_stat, :default=>'Show session statistics from V$SessStat'))
+        }, :title=> t(:dba_list_session_details_link_stat, :default=>'Show session statistics from V$SessStat'))
       %>
   </div>
   <div class="float_left">
       <%=
-        my_ajax_submit_tag("Audit Trail",
-                           url_for(:controller   => :dba_schema,
+        ajax_submit("Audit Trail", {
+                                   :controller   => :dba_schema,
                                    :action       => :list_audit_trail,
                                    :sessionid    => @dbsession.audsid,
                                    :update_area  => @update_area
-                           ),
-                           :title=> "Show audit trail records from DBA_Audit_Trail"
+        }, :title=> "Show audit trail records from DBA_Audit_Trail"
         )
       %>
   </div>
   <div class="float_left">
     <%=
-        my_ajax_submit_tag("Optimizer Env.",
-                           url_for(:controller   => :dba,
+        ajax_submit("Optimizer Env.", {
+                                   :controller   => :dba,
                                    :action       => :list_session_optimizer_environment,
                                    :instance     => @instance,
                                    :sid          => @sid,
                                    :update_area  => @update_area
-                           ),
-                           :title=> "Show audit optimizer environment for this session"
+        }, :title=> "Show audit optimizer environment for this session"
         )
     %>
   </div>
   <div class="float_left">
-    <%= my_ajax_submit_tag("SQL Monitor",
-                                   url_for(:controller   => :dba_sga,
+    <%= ajax_submit("SQL Monitor", {
+                                           :controller   => :dba_sga,
                                            :action       => :list_sql_monitor_sessions,
                                            :instance     => @instance,
                                            :sid          => @sid,
                                            :serialno     => @serialno,
                                            :update_area  => @update_area
-                                   ),
-                                   {:disabled=>!@sql_monitor_exists, :title =>strings(:sql_monitor_link_title) }
-                )
+        }, {:disabled=>!@sql_monitor_exists, :title =>strings(:sql_monitor_link_title) }
+        )
       %>
   </div>
 </div>

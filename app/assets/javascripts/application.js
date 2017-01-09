@@ -172,6 +172,48 @@ function expand_sql_id_hint(id, sql_id){
     }
 }
 
+// call ajax with data type html
+// Parameter:
+//   update_area:   div-element as target for html-response
+//   controller:    Controller-name
+//   action:        Action-name
+//   payload:       data for transfer as JSON-object
+//   element:       DOM-Element on_click is called for (this in on_click) to bind slickgrid refresh
+function ajax_html(update_area, controller, action, payload, element){
+    //bind_special_ajax_callbacks(jQuery(element));     // direkt implementiert in success-Handler
+
+    jQuery.ajax({
+        method: "POST",
+        dataType: "html",
+        success: function (data) {
+            $('#'+update_area).html(data);                                      // Fill target div with html-response
+
+            if (element){                                                       // refresh only if valid element is given in call
+                var obj = jQuery(element);
+                if (obj.parents(".slick-cell").length > 0){                     // ajax wurde aus einer slickgrid-Zelle heraus aufgerufen
+                    var grid_extended = obj.parents('.slickgrid_top').data('slickgridextended');
+                    if (!grid_extended){
+                        console.log("No slickgridextended found in data for "+obj.parents(".slick-cell").html());
+                    } else {
+                        grid_extended.save_new_cell_content(obj);               // unterstellen, dass dann auch der Inhalt dieser Zelle geändert sein könnte
+                    }
+                }
+            }
+        },
+        url: controller+'/'+action,
+        data: payload
+    });
+}
+
+
+// bind ajax:success to store html-response in target
+// Parameter:
+//   element:     DOM-Element as jQuery
+//   target:      target DOM-ID for response
+function bind_ajax_html_response(element, target){
+    element.bind("ajax:success", function(elem, data) { $('#'+target).html(data);});
+}
+
 // Registriere Ajax-Callbacks an konkretes jQuery-Objekt
 function bind_special_ajax_callbacks(obj) {
     obj.bind('ajax:success', function(){                                        // Komischerweise funktioniert hier obj.ajaxSuccess nicht ???

@@ -1,7 +1,7 @@
 <div class="page_caption">Compare execution plans of two different cursor in SGA</div>
 
 <% @update_area = get_unique_area_id %>
-<%= my_ajax_form_tag url_for(:controller => :dba_sga, :action => :list_compare_execution_plans, :update_area => @update_area) do %>
+<%= ajax_form(:controller => :dba_sga, :action => :list_compare_execution_plans, :update_area => @update_area) do %>
     <div class="float_left">
         Inst. 1<br>
         <%= text_field_tag(:instance_1, "1", :size=>5, :title=>"RAC-instance of first cursor to compare") %>

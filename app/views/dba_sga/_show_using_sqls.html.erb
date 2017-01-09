@@ -32,13 +32,12 @@ column_options =
 <%= gen_slickgrid(@sqls, column_options, {:caption=>"SQL statements in SGA accessing #{@object_owner}.#{@object_name} (by gv$SQL_Plan)", :max_height=>450}) %>
 
 <%=
-    my_ajax_form_tag(url_for(:controller    =>:dba_history,
-                             :action        => :show_using_sqls_historic,
-                             :ObjectOwner   =>  @object_owner,
-                             :ObjectName    => @object_name,
-                             :update_area   => @update_area
-                     )
-    )  do
+    ajax_form(:controller    =>:dba_history,
+              :action        => :show_using_sqls_historic,
+              :ObjectOwner   =>  @object_owner,
+              :ObjectName    => @object_name,
+              :update_area   => @update_area
+             ) do
 %>
 
     <%= include_start_end_timepicker('show_using_sqls') %>

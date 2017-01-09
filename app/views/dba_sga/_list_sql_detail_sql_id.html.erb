@@ -8,7 +8,12 @@
 <% if @sql_child_info.plan_count == 1 %>
     <div id="<%= "#{@update_area}_execution_plan" %>"></div>
     <script type="text/javascript">
-      jQuery.ajax({method: "POST", url: "dba_sga/list_sql_detail_execution_plan", data: {
+      jQuery.ajax({method: "POST",
+        dataType: "html",
+        success: function (data) {
+          $('#<%= "#{@update_area}_execution_plan" %>').html(data);
+        },
+        url: "dba_sga/list_sql_detail_execution_plan", data: {
                                                                                           update_area:    "<%= "#{@update_area}_execution_plan" %>",
                                                                                           modus:          "GV$SQLArea",
                                                                                           sql_id:         "<%= @sql_id %>",

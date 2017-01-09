@@ -180,7 +180,10 @@ class EnvController < ApplicationController
       tns_record = tns_records[current_database[:tns]]
       unless tns_record
         respond_to do |format|
-          format.js {render :js => "$('#content_for_layout').html('#{j "Entry for DB '#{current_database[:tns]}' not found in tnsnames.ora"}'); $('#login_dialog').effect('shake', { times:3 }, 100);"}
+          format.html {render :html => "Entry for DB '#{current_database[:tns]}' not found in tnsnames.ora
+                                        <script type='text/javascript'>$('#login_dialog').effect('shake', { times:3 }, 100);</script>
+                                       ".html_safe
+          }
         end
         set_dummy_db_connection
         return
@@ -198,14 +201,25 @@ class EnvController < ApplicationController
     if current_database[:host].upcase.rindex("DM03-SCAN") && current_database[:sid].upcase.rindex("NOADB")
       if params[:database][:authorization]== nil  || params[:database][:authorization]==""
         respond_to do |format|
-          format.js {render :js => "$('#content_for_layout').html('#{j "zusätzliche Autorisierung erforderlich fuer NOA-Produktionssystem"}'); $('#login_dialog_authorization').show(); $('#login_dialog').effect('shake', { times:3 }, 100);"}
+          format.html {render :html => "zusätzliche Autorisierung erforderlich fuer CORE-Produktionssystem
+                                        <script type='text/javascript'>
+                                          $('#login_dialog_authorization').show();
+                                          $('#login_dialog').effect('shake', { times:3 }, 100);
+                                        </script>
+                                       ".html_safe
+          }
         end
         set_dummy_db_connection
         return
       end
       if params[:database][:authorization]== nil || params[:database][:authorization]!="meyer"
         respond_to do |format|
-          format.js {render :js => "$('#content_for_layout').html('#{j "Autorisierung '#{params[:database][:authorization]}' ungueltig fuer NOA-Produktionssystem"}'); $('#login_dialog').effect('shake', { times:3 }, 100);"}
+          format.html {render :html => "Autorisierung '#{params[:database][:authorization]}' ungueltig fuer NOA-Produktionssystem
+                                        <script type='text/javascript'>
+                                          $('#login_dialog').effect('shake', { times:3 }, 100);
+                                        </script>
+                                       ".html_safe
+          }
         end
         set_dummy_db_connection
         return
@@ -245,15 +259,13 @@ class EnvController < ApplicationController
 
       set_dummy_db_connection
       respond_to do |format|
-        format.js {render :js => "$('#content_for_layout').html('#{j "#{t(:env_connect_error, :default=>'Error connecting to database')}: <br/>
+        format.html {render :html => "#{t(:env_connect_error, :default=>'Error connecting to database')}: <br/>
                                                                       #{e.message}<br/><br/>
                                                                       URL:  '#{jdbc_thin_url}'<br/>
                                                                       Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}
-                                                                     "
-                                                                  }');
-                                    $('#login_dialog').effect('shake', { times:3 }, 100);
-                                 "
-                  }
+                                                                      <script type='text/javascript'>$('#login_dialog').effect('shake', { times:3 }, 100);</script>
+                                                                     ".html_safe
+        }
       end
       return        # Fehler-Ausgang
     end
@@ -322,7 +334,9 @@ class EnvController < ApplicationController
                                     closeText: 'Auswählen',"
     end
     respond_to do |format|
-      format.js {render :js => "$('#current_tns').html('#{j "<span title='TNS=#{get_current_database[:tns]},\n#{"Host=#{get_current_database[:host]},\nPort=#{get_current_database[:port]},\n#{get_current_database[:sid_usage]}=#{get_current_database[:sid]},\n" if get_current_database[:modus].to_sym == :host}User=#{get_current_database[:user]}'>#{get_current_database[:user]}@#{get_current_database[:tns]}</span>"}');
+      format.html {
+        render_partial :set_database,
+                               "$('#current_tns').html('#{j "<span title='TNS=#{get_current_database[:tns]},\n#{"Host=#{get_current_database[:host]},\nPort=#{get_current_database[:port]},\n#{get_current_database[:sid_usage]}=#{get_current_database[:sid]},\n" if get_current_database[:modus].to_sym == :host}User=#{get_current_database[:user]}'>#{get_current_database[:user]}@#{get_current_database[:tns]}</span>"}');
                                 $('#main_menu').html('#{j render_to_string :partial =>"build_main_menu" }');
                                 $.timepicker.regional = { #{timepicker_regional}
                                     ampm: false,
@@ -333,10 +347,9 @@ class EnvController < ApplicationController
                                 $.datepicker.setDefaults({ firstDay: 1, dateFormat: '#{timepicker_dateformat }'});
                                 numeric_decimal_separator = '#{numeric_decimal_separator}';
                                 var session_locale = '#{get_locale}';
-                                $('#content_for_layout').html('#{j render_to_string :partial=> "env/set_database"}');
                                 $('#login_dialog').dialog('close');
                                 "
-                }
+      }
     end
   rescue Exception=>e
     set_dummy_db_connection                                                     # Rückstellen auf neutrale DB

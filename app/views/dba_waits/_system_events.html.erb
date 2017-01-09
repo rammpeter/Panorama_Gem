@@ -1,7 +1,7 @@
 <div class="page_caption" style="margin-bottom: 5px;"><%= t(:dba_waits_system_events_caption, :default=>'Evaluation of current system events from V$System_Event') %></div>
 <% @update_area = get_unique_area_id %>
 
-<%= my_ajax_form_tag url_for(:controller=>:dba_waits, :action=>:show_system_events, :update_area=>@update_area) do %>
+<%= ajax_form(:controller=>:dba_waits, :action=>:show_system_events, :update_area=>@update_area) do %>
   <%= t(:dba_waits_system_events_sample_length_caption, :default=>'Sample length (sec)') %>
   <%= text_field_tag("sample_length", "1", :maxlength=>10, :size => 5, :title=>t(:dba_waits_system_events_sample_length_hint, :default=>'Duration of sample snapshot in seconds')) %>
   Filter

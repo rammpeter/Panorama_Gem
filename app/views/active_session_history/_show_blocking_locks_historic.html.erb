@@ -1,7 +1,7 @@
 <div class="page_caption">Blocking Locks <%= t(:from, :default=>'from')%> DBA_Hist_Active_Sess_History</div>
 
 
-<%= my_ajax_form_tag url_for(:controller  => :active_session_history,
+<%= ajax_form(:controller  => :active_session_history,
                              :action      => :list_blocking_locks_historic,
                              :update_area => :show_blocking_locks_detail_area
                      ) do %>

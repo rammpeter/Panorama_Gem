@@ -16,7 +16,7 @@
    end
 
     @caption = ""
-    @caption << (my_ajax_form_tag url_for(:controller => :active_session_history, :action        => :refresh_time_selection,
+    @caption << (ajax_form(:controller => :active_session_history, :action        => :refresh_time_selection,
                                 :groupby       => @groupby,                     # Gruppierungskriterium für einen Dialog
                                 :groupfilter   => strip_groupfilter,            # Groupfilter des letzten Aufrufes wiederverwenden, reduziert um Fehlerquellen
                                 :update_area   => params[:update_area],         # Update_area des letzten Aufrufes wiederverwenden

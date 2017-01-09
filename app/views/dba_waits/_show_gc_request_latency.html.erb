@@ -6,7 +6,7 @@
   <% end %>
 </div>
 
-<%= my_ajax_form_tag url_for(:controller => :dba_waits, :action=>:list_gc_request_latency_history, :update_area=>@update_area) do %>
+<%= ajax_form(:controller => :dba_waits, :action=>:list_gc_request_latency_history, :update_area=>@update_area) do %>
   <%= include_start_end_timepicker %>
   <div class="float_left">
     RAC-Instance

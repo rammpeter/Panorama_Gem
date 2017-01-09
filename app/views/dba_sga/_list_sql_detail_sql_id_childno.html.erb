@@ -9,7 +9,7 @@
 
 <div id="<%= "#{@update_area}_execution_plan" %>"></div>
 <script type="text/javascript">
-  jQuery.ajax({method: "POST", url: "dba_sga/list_sql_detail_execution_plan", data: {
+  ajax_html('<%= "#{@update_area}_execution_plan" %>', 'dba_sga', 'list_sql_detail_execution_plan', {
     update_area:      "<%= "#{@update_area}_execution_plan" %>",
     modus:            "<%= @modus %>",
     sql_id:           "<%= @sql_id %>",
@@ -18,10 +18,8 @@
     child_address:    "<%= @child_address %>",
     restrict_ash_to_child: true,
     next_update_area: "<%= @update_area %>"
-  }
   });
 </script>
-
 
 <%
    def link_session(instance, sid, serialno)

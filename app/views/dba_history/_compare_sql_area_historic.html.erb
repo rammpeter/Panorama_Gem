@@ -1,6 +1,6 @@
 <div class="page_caption"><%= t(:dba_history_compare_sql_area_historic_caption, :default=>'Compare runtime of SQL for two days (by DBA_Hist_SQLStat)') %></div>
 
-<%= my_ajax_form_tag url_for(:controller => :dba_history, :action => :list_compare_sql_area_historic, :update_area => :compare_sql_area_historic_area) do %>
+<%= ajax_form(:controller => :dba_history, :action => :list_compare_sql_area_historic, :update_area => :compare_sql_area_historic_area) do %>
   <div class="float_left" title="<%= t(:dba_history_compare_sql_area_historic_diff_hint, :default=>'Difference of runtime per execution is at least x %')%>">
     <%= t(:dba_history_compare_sql_area_historic_diff_caption, :default=>'Runtime difference >') %>
     <%= text_field_tag(:minProzDiff, "50", :size=>2) %>

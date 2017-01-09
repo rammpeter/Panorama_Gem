@@ -83,7 +83,7 @@
     )
 %>
 
-<%= my_ajax_form_tag url_for(:action            => :list_iostat_filetype_history_timeline,
+<%= ajax_form(:action            => :list_iostat_filetype_history_timeline,
                              :groupfilter       => @groupfilter,
                              :groupby           => @groupby,
                              :update_area       => "#{@update_area}_timeline"

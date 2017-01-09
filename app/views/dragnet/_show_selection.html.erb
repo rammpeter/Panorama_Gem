@@ -72,7 +72,7 @@
 
 
       <td>
-        <%= my_ajax_form_tag url_for(:controller => :dragnet, :action => "exec_dragnet_sql", :update_area=>"show_selection_result_area")  do %>
+        <%= ajax_form(:controller => :dragnet, :action => "exec_dragnet_sql", :update_area=>"show_selection_result_area")  do %>
             <table style="border: 0px; " width="100%">
               <tr><td id="show_selection_header_area"></td></tr>
               <tr><td id="show_selection_hint_area" style="background-color: white;"></td></tr>

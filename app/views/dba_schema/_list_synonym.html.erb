@@ -24,14 +24,13 @@
 
 
 <div class="float_left">
-  <%= my_ajax_submit_tag("#{@dependencies} Dependencies",
-                         url_for(:update_area  => @update_area,
+  <%= ajax_submit("#{@dependencies} Dependencies", {
+                                 :update_area  => @update_area,
                                  :action       => :list_dependencies,
                                  :owner        => @owner,
                                  :object_name  => @object_name,
                                  :object_type  => @object_type
-                         ),
-                         :title => "Show object dependencies for #{@object_type} #{@owner}.#{@table_name}")
+      },:title => "Show object dependencies for #{@object_type} #{@owner}.#{@table_name}")
   %>
 </div>
 <div id="<%= @update_area %>" style="clear:both;"></div>

@@ -1,7 +1,7 @@
 <div class="page_caption">Suche nach das Objekt nutzenden (referenzierenden) SQL-Statements (GV$SQL_Plan)</div>
 
 <% @update_area = get_unique_area_id %>
-<%= my_ajax_form_tag url_for(:controller => :dba_sga, :action => :show_using_sqls, :update_area => @update_area) do %>
+<%= ajax_form(:controller => :dba_sga, :action => :show_using_sqls, :update_area => @update_area) do %>
   Objekt-Owner
   <%= text_field_tag(:ObjectOwner, "", :size=>40, :title=>"Schema-Name des Objektes (optional)") %>
   Objekt-Name

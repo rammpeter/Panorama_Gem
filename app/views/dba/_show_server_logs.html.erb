@@ -3,7 +3,7 @@
 <div class="page_caption">Show content of server logs (selects data only for your login instance = <%= @instance %>) </div>
 
 
-<%= my_ajax_form_tag url_for(:controller => :dba, :action => :list_server_logs, :update_area => @update_area) do %>
+<%= ajax_form(:controller => :dba, :action => :list_server_logs, :update_area => @update_area) do %>
     <%= include_start_end_timepicker %>
 
     <!--

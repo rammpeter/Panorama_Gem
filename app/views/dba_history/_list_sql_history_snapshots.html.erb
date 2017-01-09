@@ -71,7 +71,7 @@ grouping_options = {
 
 
 
-caption << (my_ajax_form_tag url_for(:controller => :dba_history, :action        => :list_sql_history_snapshots,
+caption << (ajax_form(:controller => :dba_history, :action        => :list_sql_history_snapshots,
                                       :sql_id         => @sql_id,
                                       :update_area   => @prev_update_area,                   # Update_area des letzten Aufrufes wiederverwenden
                               ) do

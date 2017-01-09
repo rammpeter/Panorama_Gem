@@ -61,22 +61,66 @@ module AjaxHelper
     output.html_safe
   end
 
-
   # Ajax-Formular definieren mit Indikator-Anzeige während Ausführung
-  # Parameter url notfalls mit url_for formatieren
-  def my_ajax_form_tag(url, html_options={})
+  # Parameter:
+  #   url:          Hash mit controller, action, update_area
+  #   html_options: Hash
+  def ajax_form(url, html_options={})
     html_options = prepare_html_options(html_options)
-    (form_tag url, html_options do            # internen Rails-Helper verwenden
+    html_options['data-type'] = :html
+    html_options[:onsubmit] = "bind_ajax_html_response(jQuery(this), '#{url[:update_area]}');"
+
+    url[:controller] = controller_name unless url[:controller]
+
+    raise 'ajax_form: key=:controller missing in parameter url'   unless url[:controller]
+    raise 'ajax_form: key=:action missing in parameter url'       unless url[:action]
+    raise 'ajax_form: key=:update_area missing in parameter url'  unless url[:update_area]
+
+    # update_area should be part of request for additional use in server
+    (form_tag url_for(url), html_options do                                     # internen Rails-Helper verwenden
       yield
     end )
-  end # my_ajax_form_tag
+
+  end
+
 
   # Ajax-Link definieren mit Indikator-Anzeige während Ausführung
   # Parameter url notfalls mit url_for formatieren
+
   def my_ajax_link_to(caption, url, html_options={})
     html_options = prepare_html_options(html_options)
     link_to(caption ? caption : "", url, html_options)  # internen Rails-Helper verwenden
   end # my_ajax_link_to
+  #deprecate :my_ajax_link_to
+
+  # Ajax-Link definieren mit Indikator-Anzeige während Ausführung
+  # Parameter:
+  #   caption:      String
+  #   url:          Hash with controller, action, update_area, payload
+  #   html_options: Hash
+  def ajax_link(caption, url, html_options={})
+    data = {}
+    options = ''
+
+    # update_area should pe passed to server
+    url.each do |key, value|
+      data[key] = value if key != :controller && key != :action
+    end
+
+    url[:controller] = controller_name unless url[:controller]
+
+    raise 'ajax_link: key=:controller missing in parameter url'   unless url[:controller]
+    raise 'ajax_link: key=:action missing in parameter url'       unless url[:action]
+    raise 'ajax_link: key=:update_area missing in parameter url'  unless url[:update_area]
+
+    html_options.each do |key, value|
+      options << " #{key}=\"#{value}\""
+    end
+
+    json_data = data.to_json
+
+    "<a href=\"#\" onclick=\" ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{my_html_escape(json_data)}, this); return false; \"  #{options}>#{my_html_escape(caption)}</a>".html_safe
+  end # ajax_link
 
   # absetzen eines Ajax-Calls aus Javascript
   def js_ajax_post_call(url_data)
@@ -110,12 +154,17 @@ module AjaxHelper
     "<a href=\"#\" #{options} onclick=§SINGLE_QUOTE§#{js_ajax_post_call(url_data)} return false; §SINGLE_QUOTE§>#{my_html_escape(caption)}</a>".html_safe
   end # my_ajax_post_link
 
-  # Ajax-formular mit einzelnem Submit-Button erzeugen
-  def my_ajax_submit_tag(caption, url, html_options={})
-    my_ajax_form_tag url do
+
+  # Ajax-Link definieren mit Indikator-Anzeige während Ausführung
+  # Parameter:
+  #   caption:      String
+  #   url:          Hash with controller, action, update_area, payload
+  #   html_options: Hash
+  def ajax_submit(caption, url, html_options)
+    ajax_form(url) do
       submit_tag caption, html_options
     end
-  end # my_ajax_submit_tag
+  end
 
 
   # Erzeugen eines Links aus den konkreten Wait-Parametern mit aktueller Erläuterung sowie link auf aufwendige Erklärung
@@ -168,8 +217,8 @@ module AjaxHelper
     unique_id = get_unique_area_id
     prefix = "#{t(:ajax_helper_link_sql_id_title_prefix, :default=>"Show details in SGA for")} SQL-ID=#{sql_id} : "
     prefix << "ChildNo=#{childno} : " if childno
-    my_ajax_link_to(sql_id,
-     url_for( :controller     => :dba_sga,
+    ajax_link(sql_id, {
+              :controller     => :dba_sga,
               :action         => childno ||child_address ? :list_sql_detail_sql_id_childno : :list_sql_detail_sql_id,
               :update_area    => update_area,
               :instance       => instance,
@@ -179,7 +228,7 @@ module AjaxHelper
               :parsing_schema_name => parsing_schema_name,   # Sichern der Eindeutigkeit bei mehrfachem Vorkommen identischer SQL in verschiedenen Schemata
               :object_status  => object_status,
               :con_id         => con_id
-            ),
+    },
      {:title       => "#{prefix} <#{t :link_historic_sql_id_coming_soon, :default=>"Text of SQL is loading, please hold mouse over object again"}>",
       :id          =>  unique_id,
       :prefix      => prefix,
@@ -190,14 +239,14 @@ module AjaxHelper
 
 
   def link_session_details(update_area, instance, sid, serialno)
-    my_ajax_link_to("#{sid}, #{serialno}",
-                    url_for(:controller   => :dba,
+    ajax_link("#{sid}, #{serialno}",
+                    {       :controller   => :dba,
                             :action       => :show_session_detail,
                             :instance     => instance,
                             :sid          => sid,
                             :serialno     => serialno,
                             :update_area  => update_area
-                    ),
+                    },
                     :title=>t(:dba_list_sessions_show_session_hint, :default=>'Show session details') )
   end
 
