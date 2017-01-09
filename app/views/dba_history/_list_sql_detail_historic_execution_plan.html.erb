@@ -178,14 +178,14 @@
 
      if object_type == 'TABLE' || object_type == 'INDEX'
        update_area = "#{@update_area}_#{rec.id}"
-       my_ajax_link_to(rec.num_rows ? fn(rec.num_rows) : "[No analyze]",
-                       url_for(:controller      => :storage,
+       ajax_link(rec.num_rows ? fn(rec.num_rows) : "[No analyze]", {
+                               :controller      => :storage,
                                :action          => :list_real_num_rows,
                                :owner           => rec.object_owner,
                                :name            => rec.object_name,
                                :object_type     => object_type,
                                :update_area     => update_area
-                              ),
+                              },
                        :title=>"Count current number of rows in Table. CAUTION: May be long running!")+"&nbsp;<span id=\"#{update_area}\"></span>".html_safe
      else
        fn(rec.num_rows)

@@ -83,9 +83,9 @@ class DbaHistoryControllerTest < ActionController::TestCase
          :sql_id=>@sga_sql_id, :parsing_schema_name=>@sga_parsing_schema_Name }
     assert_response :success
 
-    post :list_sql_history_snapshots, :params => {:format=>:js, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name, :groupby=>:day }
+    post :list_sql_history_snapshots, :params => {:format=>:js, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name, :groupby=>:day, :update_area=>:hugo }
     assert_response :success
-    post :list_sql_history_snapshots, :params => {:format=>:js, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
+    post :list_sql_history_snapshots, :params => {:format=>:js, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
     assert_response :success
 
     post :list_sql_historic_execution_plan, :params => {:format=>:js, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name,

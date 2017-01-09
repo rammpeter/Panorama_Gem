@@ -143,7 +143,7 @@ class DbaSgaControllerTest < ActionController::TestCase
   end
 
   test "list_db_cache_by_object_id" do
-    post :list_db_cache_by_object_id, :params => {:format=>:js, :object_id=>@object_id }
+    post :list_db_cache_by_object_id, :params => {:format=>:js, :object_id=>@object_id, :update_area=>:hugo }
     assert_response :success
   end
 
