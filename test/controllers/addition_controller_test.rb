@@ -53,19 +53,21 @@ class AdditionControllerTest < ActionController::TestCase
 
 
   test "db_cache_historic" do
-    post :list_db_cache_historic, :params => { :format=>:js,
+    post :list_db_cache_historic, :params => { :format=>:html,
          :time_selection_start =>"01.01.2011 00:00",
          :time_selection_end =>"01.01.2011 01:00",
          :instance  => "1",
-         :maxResultCount => 100 } if ENV['DB_VERSION'] >= '11.2'
+         :maxResultCount => 100,
+         :update_area=>:hugo } if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
 
-    get :list_db_cache_historic_detail, :params => { :format=>:js,
+    get :list_db_cache_historic_detail, :params => { :format=>:html,
         :time_selection_start =>"01.01.2011 00:00",
         :time_selection_end =>"01.01.2011 01:00",
         :instance  => 1,
         :owner     => "sysp",
-        :name      => "Employee" } if ENV['DB_VERSION'] >= '11.2'
+        :name      => "Employee",
+        :update_area=>:hugo  } if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
 
     get :list_db_cache_historic_snap, :params => { :format=>:js,
@@ -99,7 +101,7 @@ class AdditionControllerTest < ActionController::TestCase
       end
     end
 
-    get :list_object_increase_object_timeline, :params => { :format=>:js, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :owner=>'Hugo', :name=>'Hugo' }
+    get :list_object_increase_object_timeline, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :owner=>'Hugo', :name=>'Hugo', :update_area=>:hugo  }
     assert_response :success
   end
 
