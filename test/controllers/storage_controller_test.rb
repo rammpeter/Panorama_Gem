@@ -19,52 +19,52 @@ class StorageControllerTest < ActionController::TestCase
 
   test "storage_controller" do
 
-    get  :datafile_usage, :params => { :format=>:js }
+    get  :datafile_usage, :params => { :format=>:html, :update_area=>:hugo  }
     assert_response :success
 
-    post :list_materialized_view_action, :params => { :format=>:js, :registered_mviews => "Hugo" }
+    post :list_materialized_view_action, :params => { :format=>:html, :registered_mviews => "Hugo", :update_area=>:hugo  }
     assert_response :success;
 
-    post :list_materialized_view_action, :params => { :format=>:js, :all_mviews => "Hugo" }
+    post :list_materialized_view_action, :params => { :format=>:html, :all_mviews => "Hugo", :update_area=>:hugo  }
     assert_response :success;
 
-    post :list_materialized_view_action, :params => { :format=>:js, :mview_logs => "Hugo" }
+    post :list_materialized_view_action, :params => { :format=>:html, :mview_logs => "Hugo", :update_area=>:hugo  }
     assert_response :success;
 
-    get :list_registered_materialized_views, :params => { :format=>:js }
+    get :list_registered_materialized_views, :params => { :format=>:html, :update_area=>:hugo  }
     assert_response :success;
 
-    get :list_registered_materialized_views, :params => { :format=>:js, :snapshot_id=>1 }
+    get :list_registered_materialized_views, :params => { :format=>:html, :snapshot_id=>1, :update_area=>:hugo  }
     assert_response :success;
 
-    get :list_all_materialized_views, :params => { :format=>:js }
+    get :list_all_materialized_views, :params => { :format=>:html, :update_area=>:hugo  }
     assert_response :success;
 
-    get :list_all_materialized_views, :params => { :format=>:js, :owner=>"Hugo", :name=>"Hugo" }
+    get :list_all_materialized_views, :params => { :format=>:html, :owner=>"Hugo", :name=>"Hugo", :update_area=>:hugo  }
     assert_response :success;
 
-    get :list_materialized_view_logs, :params => { :format=>:js }
+    get :list_materialized_view_logs, :params => { :format=>:html, :update_area=>:hugo  }
     assert_response :success;
 
-    get :list_materialized_view_logs, :params => { :format=>:js, :log_owner=>"Hugo", :log_name=>"Hugo" }
+    get :list_materialized_view_logs, :params => { :format=>:html, :log_owner=>"Hugo", :log_name=>"Hugo", :update_area=>:hugo  }
     assert_response :success;
 
-    get :list_snapshot_logs,  :params => { :format=>:js, :snapshot_id=>1 }
+    get :list_snapshot_logs,  :params => { :format=>:html, :snapshot_id=>1, :update_area=>:hugo  }
     assert_response :success;
 
-    get :list_snapshot_logs,  :params => { :format=>:js,  :log_owner=>"Hugo", :log_name=>"Hugo" }
+    get :list_snapshot_logs,  :params => { :format=>:html,  :log_owner=>"Hugo", :log_name=>"Hugo", :update_area=>:hugo  }
     assert_response :success;
 
-    get :list_registered_mview_query_text, :params => { :format=>:js, :mview_id=>1 }
+    get :list_registered_mview_query_text, :params => { :format=>:html, :mview_id=>1, :update_area=>:hugo  }
     assert_response :success;
 
-    get :list_mview_query_text, :params => { :format=>:js, :owner=>"Hugo", :name=>"Hugo" }
+    get :list_mview_query_text, :params => { :format=>:html, :owner=>"Hugo", :name=>"Hugo", :update_area=>:hugo  }
     assert_response :success;
 
-    get :list_real_num_rows, :params => { :format=>:js, :owner=>"sys", :name=>"obj$" } # sys.user$ requires extra rights compared to SELECT ANY DICTIONARY in 12c
+    get :list_real_num_rows, :params => { :format=>:html, :owner=>"sys", :name=>"obj$", :update_area=>:hugo  } # sys.user$ requires extra rights compared to SELECT ANY DICTIONARY in 12c
     assert_response :success;
 
-    get  :tablespace_usage, :params => { :format=>:js }
+    get  :tablespace_usage, :params => { :format=>:html, :update_area=>:hugo  }
     assert_response :success
   end
 
