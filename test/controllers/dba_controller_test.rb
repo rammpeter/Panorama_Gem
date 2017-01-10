@@ -21,73 +21,73 @@ class DbaControllerTest < ActionController::TestCase
 
 
   test "dba"       do
-    get  :show_redologs, :format=>:js
+    get  :show_redologs, :format=>:html, :update_area=>:hugo
     assert_response :success
 
-    post :list_redologs_historic, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
+    post :list_redologs_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
     assert_response :success
-    post :list_redologs_historic, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
+    post :list_redologs_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :update_area=>:hugo }
     assert_response :success
 
-    post :list_dml_locks, :params => {:format=>:js }
+    post :list_dml_locks, :params => {:format=>:html }
     assert_response :success
 
 
     if sql_select_one("select COUNT(*) from dba_views where view_name='DBA_KGLLOCK' ") > 0      # Nur Testen wenn View auch existiert
-      post :list_ddl_locks, :format=>:js;  assert_response :success
+      post :list_ddl_locks, :format=>:html;  assert_response :success
     end
 
-    post :list_blocking_dml_locks, :params => {:format=>:js }
+    post :list_blocking_dml_locks, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
 
-    post :list_sessions, :params => {:format=>:js }
+    post :list_sessions, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
 
-    post :list_sessions, :params => {:format=>:js, :onlyActive=>1, :showOnlyUser=>1, :instance=>1, :filter=>'hugo', :object_owner=>'SYS', :object_name=>'HUGO' }
+    post :list_sessions, :params => {:format=>:html, :onlyActive=>1, :showOnlyUser=>1, :instance=>1, :filter=>'hugo', :object_owner=>'SYS', :object_name=>'HUGO', :update_area=>:hugo }
     assert_response :success
 
-    get :list_waits_per_event, :params => {:format=>:js, :event=>"db file sequential read", :instance=>"1", :update_area=>"hugo" }
+    get :list_waits_per_event, :params => {:format=>:html, :event=>"db file sequential read", :instance=>"1", :update_area=>"hugo" }
     assert_response :success
 
-    get  :show_session_detail, :params => {:format=>:js, :instance=>@instance, :sid=>@sid, :serialno=>@serialno }
+    get  :show_session_detail, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
     assert_response :success
 
-    post :show_session_details_waits, :params => {:format=>:js, :instance=>@instance, :sid=>@sid, :serialno=>@serialno }
+    post :show_session_details_waits, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
     assert_response :success
 
-    post :show_session_details_locks, :params => {:format=>:js, :instance=>@instance, :sid=>@sid, :serialno=>@serialno }
+    post :show_session_details_locks, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
     assert_response :success
 
-    post :show_session_details_temp, :params => {:format=>:js, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :saddr=>@saddr }
+    post :show_session_details_temp, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :saddr=>@saddr, :update_area=>:hugo }
     assert_response :success
 
-    post :list_open_cursor_per_session, :params => {:format=>:js, :instance=>@instance, :sid=>@sid, :serialno=>@serialno }
+    post :list_open_cursor_per_session, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
     assert_response :success
 
-    post :list_accessed_objects, :params => {:format=>:js, :instance=>@instance, :sid=>@sid }
+    post :list_accessed_objects, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :update_area=>:hugo }
     assert_response :success
 
-    post :list_session_statistic, :params => {:format=>:js, :instance=>@instance, :sid=>@sid }
+    post :list_session_statistic, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :update_area=>:hugo }
     assert_response :success
 
-    post :list_session_optimizer_environment, :params => {:format=>:js, :instance=>@instance, :sid=>@sid }
+    post :list_session_optimizer_environment, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :update_area=>:hugo }
     assert_response :success
 
-    post :show_session_details_waits_object, :params => {:format=>:js, :event=>"db file sequential read" }
+    post :show_session_details_waits_object, :params => {:format=>:html, :event=>"db file sequential read", :update_area=>:hugo }
     assert_response :success
 
-    post  :show_explain_plan, :params => {:format=>:js, :statement => "SELECT SYSDATE FROM DUAL" }
+    post  :show_explain_plan, :params => {:format=>:html, :statement => "SELECT SYSDATE FROM DUAL", :update_area=>:hugo }
     assert_response :success
 
-    get  :show_session_waits, :format=>:js
+    get  :show_session_waits, :format=>:html, :update_area=>:hugo
     assert_response :success
     #test "show_application" do get  :show_application, :applexec_id => "0";  assert_response :success; end
     #test "show_segment_statistics" do get  :show_segment_statistics;  assert_response :success; end
 
-    get  :segment_stat, :format=>:js
+    get  :segment_stat, :format=>:html, :update_area=>:hugo
     assert_response :success
 
-#    get :oracle_parameter, :format=>:js
+#    get :oracle_parameter, :format=>:html
 #    assert_response :success
   end
 

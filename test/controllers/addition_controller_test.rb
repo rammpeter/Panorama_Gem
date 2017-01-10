@@ -29,25 +29,28 @@ class AdditionControllerTest < ActionController::TestCase
   end
 
   test "blocking_locks_history" do
-    post :list_blocking_locks_history, :params => { :format=>:js,
+    post :list_blocking_locks_history, :params => { :format=>:html,
          :time_selection_start =>"01.01.2011 00:00",
          :time_selection_end =>"01.01.2011 01:00",
          :timeslice =>"10",
-         :commit_table => "1" } if ENV['DB_VERSION'] >= '11.2'
+         :commit_table => "1",
+         :update_area=>:hugo } if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
 
-    post :list_blocking_locks_history, :params => { :format=>:js,
+    post :list_blocking_locks_history, :params => { :format=>:html,
          :time_selection_start =>"01.01.2011 00:00",
          :time_selection_end =>"01.01.2011 01:00",
          :timeslice =>'10',
-         :commit_hierarchy => "1" } if ENV['DB_VERSION'] >= '11.2'
+         :commit_hierarchy => "1",
+         :update_area=>:hugo } if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
 
-    post :list_blocking_locks_history_hierarchy_detail, :params => { :format=>:js,
+    post :list_blocking_locks_history_hierarchy_detail, :params => { :format=>:html,
          :blocking_instance => 1,
          :blocking_sid => 1,
          :blocking_serialno => 1,
-         :snapshotts =>"01.01.2011 00:00:00" } if ENV['DB_VERSION'] >= '11.2'
+         :snapshotts =>"01.01.2011 00:00:00",
+         :update_area=>:hugo } if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
   end
 
@@ -70,31 +73,32 @@ class AdditionControllerTest < ActionController::TestCase
         :update_area=>:hugo  } if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
 
-    get :list_db_cache_historic_snap, :params => { :format=>:js,
+    get :list_db_cache_historic_snap, :params => { :format=>:html,
         :snapshotts =>"01.01.2011 00:00",
-        :instance  => "1" } if ENV['DB_VERSION'] >= '11.2'
+        :instance  => "1",
+        :update_area=>:hugo } if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
   end
 
   test "object_increase" do
-    get :show_object_increase, :format=>:js    if ENV['DB_VERSION'] >= '11.2'
+    get :show_object_increase, :format=>:html    if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
 
     ['Segment_Type', 'Tablespace_Name', 'Owner'].each do |gruppierung_tag|
       [{:detail=>1}, {:timeline=>1}].each do |submit_tag|
         if showObjectIncrease                                                     # Nur Testen wenn Tabelle(n) auch existieren
-          post :list_object_increase,  {:params => { :format=>:js, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
-                                        :tablespace=>{"name"=>"[Alle]"}, "schema"=>{"name"=>"[Alle]"}, :gruppierung=>{"tag"=>gruppierung_tag} }.merge(submit_tag)
+          post :list_object_increase,  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
+                                        :tablespace=>{"name"=>"[Alle]"}, "schema"=>{"name"=>"[Alle]"}, :gruppierung=>{"tag"=>gruppierung_tag}, :update_area=>:hugo }.merge(submit_tag)
           }
           assert_response :success
 
-          post :list_object_increase,  {:params => { :format=>:js, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
-                                        :tablespace=>{"name"=>'USERS'}, "schema"=>{"name"=>"[Alle]"}, :gruppierung=>{"tag"=>gruppierung_tag} }.merge(submit_tag)
+          post :list_object_increase,  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
+                                        :tablespace=>{"name"=>'USERS'}, "schema"=>{"name"=>"[Alle]"}, :gruppierung=>{"tag"=>gruppierung_tag}, :update_area=>:hugo }.merge(submit_tag)
           }
           assert_response :success
 
-          post :list_object_increase,  {:params => { :format=>:js, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
-                                        :tablespace=>{"name"=>"[Alle]"}, "schema"=>{"name"=>'SYS'}, :gruppierung=>{"tag"=>gruppierung_tag} }.merge(submit_tag)
+          post :list_object_increase,  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
+                                        :tablespace=>{"name"=>"[Alle]"}, "schema"=>{"name"=>'SYS'}, :gruppierung=>{"tag"=>gruppierung_tag}, :update_area=>:hugo }.merge(submit_tag)
           }
           assert_response :success
         end

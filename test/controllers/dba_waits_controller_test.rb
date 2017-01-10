@@ -20,28 +20,28 @@ class DbaWaitsControllerTest < ActionController::TestCase
 
 
   test "show_system_events" do
-    post :show_system_events, :params => {:format=>:js, :sample_length=>"1", :filter=>"", :suppress_idle_waits=>"1" }
+    post :show_system_events, :params => {:format=>:html, :sample_length=>"1", :filter=>"", :suppress_idle_waits=>"1", :update_area=>:hugo }
     assert_response :success
   end
 
   test "show_session_waits" do
-    post :show_session_waits, :params => {:format=>:js, :instance=>1, :event=>"Hugo" }
+    post :show_session_waits, :params => {:format=>:html, :instance=>1, :event=>"Hugo", :update_area=>:hugo }
     assert_response :success
   end
 
 
   test "gc_request_latency" do
-    get :gc_request_latency, :params => {:format=>:js }
+    get :gc_request_latency, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
   end
 
   test "list_gc_request_latency_history" do
-    get :list_gc_request_latency_history, :params => {:format=>:js, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end }
+    get :list_gc_request_latency_history, :params => {:format=>:html, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo }
     assert_response :success
   end
 
   test "show_ges_blocking_enqueue" do
-    get  :show_ges_blocking_enqueue, :params => {:format=>:js }
+    get  :show_ges_blocking_enqueue, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
   end
 

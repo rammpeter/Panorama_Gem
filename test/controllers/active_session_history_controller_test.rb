@@ -72,10 +72,10 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   test "list_session_statistics_historic" do
     # Iteration über Gruppierungskriterien
     session_statistics_key_rules.each do |groupby, value|
-      post :list_session_statistic_historic, :params => {:format=>:js, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
+      post :list_session_statistic_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
       assert_response :success
 
-      post :list_session_statistic_historic, :params => {:format=>:js, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :filter=>'sys', :update_area=>:hugo}
+      post :list_session_statistic_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :filter=>'sys', :update_area=>:hugo}
       assert_response :success
     end
   end
@@ -86,18 +86,18 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
       session_statistics_key_rules.each do |groupby, value_inner|
         # Test mit realem Wert
         add_filter = {outer_groupby => bind_value_from_key_rule(outer_groupby)}
-        post :list_session_statistic_historic_grouping, :params => {:format=>:js, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
+        post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
         assert_response :success
 
-        post :list_session_statistic_historic_grouping, :params => {:format=>:js, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge(:Additional_Filter=>'sys'), :update_area=>:hugo }
+        post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge(:Additional_Filter=>'sys'), :update_area=>:hugo }
         assert_response :success
 
         # Test mit NULL als Filterkriterium
         add_filter = {outer_groupby => nil}
-        post :list_session_statistic_historic_grouping, :params => {:format=>:js, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
+        post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
         assert_response :success
 
-        post :list_session_statistic_historic_grouping, :params => {:format=>:js, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge(:Additional_Filter=>'sys'), :update_area=>:hugo }
+        post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge(:Additional_Filter=>'sys'), :update_area=>:hugo }
         assert_response :success
       end
     end
@@ -105,7 +105,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
 
   test "refresh_time_selection" do
     session_statistics_key_rules.each do |groupby, value|
-      post :refresh_time_selection, :params => {:format=>:js, :groupfilter=>@groupfilter, :groupby=>groupby, :repeat_action => :list_session_statistic_historic_grouping, :update_area=>:hugo }
+      post :refresh_time_selection, :params => {:format=>:html, :groupfilter=>@groupfilter, :groupby=>groupby, :repeat_action => :list_session_statistic_historic_grouping, :update_area=>:hugo }
       assert_response :success   # redirect_to schwierig im Test?
     end
   end
@@ -113,7 +113,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   test "list_session_statistic_historic_single_record" do
     session_statistics_key_rules.each do |groupby, value|
       add_filter = {groupby => bind_value_from_key_rule(groupby)}
-      post :list_session_statistic_historic_single_record, :params => {:format=>:js, :groupby=>groupby,
+      post :list_session_statistic_historic_single_record, :params => {:format=>:html, :groupby=>groupby,
            :groupfilter=>@groupfilter.merge(add_filter), :update_area=>:hugo }
       assert_response :success
     end
@@ -122,7 +122,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   test "list_session_statistics_historic_timeline" do
     session_statistics_key_rules.each do |groupby, value|
       add_filter = {groupby => bind_value_from_key_rule(groupby)}
-      post :list_session_statistic_historic_timeline, :params => {:format=>:js, :groupby=>groupby,
+      post :list_session_statistic_historic_timeline, :params => {:format=>:html, :groupby=>groupby,
            :groupfilter=>@groupfilter.merge(add_filter),
            :top_values => ["1", "2", "3"], :group_seconds=>60, :update_area=>:hugo }
       assert_response :success
@@ -135,7 +135,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
         # Iteration über Gruppierungskriterien
         temp_historic_grouping_options.each do |time_groupby, inner_value|
           add_filter = {outer_filter => bind_value_from_key_rule(outer_filter)}
-          post :list_temp_usage_historic, :params => {:format=>:js, :time_groupby=>time_groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
+          post :list_temp_usage_historic, :params => {:format=>:html, :time_groupby=>time_groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
           assert_response :success
         end
       end
@@ -144,14 +144,14 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
 
 
   test "show_prepared_active_session_history" do
-    post :show_prepared_active_session_history, :params => {:format=>:js, :instance=>1, :sql_id=>@sga_sql_id }
+    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>1, :sql_id=>@sga_sql_id }
     assert_response :success
-    post :show_prepared_active_session_history, :params => {:format=>:js, :instance=>1, :sid=>@sid }
+    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>1, :sid=>@sid }
     assert_response :success
   end
 
   test "list_prepared_active_session_history" do
-    post :list_prepared_active_session_history, :params => {:format=>:js, :groupby=>"SQL-ID",
+    post :list_prepared_active_session_history, :params => {:format=>:html, :groupby=>"SQL-ID",
          :groupfilter => {
                          :DBID     => get_dbid,
                          :Instance => 1,
@@ -163,7 +163,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
   test "blocking_locks_historic" do
-    post :list_blocking_locks_historic, :params => {:format=>:js, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end }
+    post :list_blocking_locks_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end }
     assert_response :success
   end
 

@@ -12,7 +12,8 @@
     json_data['record_count'] = record_count;
     json_data['update_area'] = '<%= @update_area %>';
 
-    jQuery.ajax({method: "POST", url: "active_session_history/list_session_statistic_historic_single_record", data: json_data});
+    ajax_html('<%= @update_area %>', 'active_session_history', 'list_session_statistic_historic_single_record', json_data);
+    //jQuery.ajax({method: "POST", url: "active_session_history/list_session_statistic_historic_single_record", data: json_data});
   }
 
   function call_ajax_grouping<%=@update_area%>(min_snap_id, max_snap_id, group_by_value, next_group_by_name){
@@ -27,7 +28,8 @@
     json_data['groupby'] = next_group_by_name;
     json_data['update_area'] = '<%= @update_area %>';
 
-    jQuery.ajax({method: "POST", url: "active_session_history/list_session_statistic_historic_grouping", data: json_data});
+    ajax_html('<%= @update_area %>', 'active_session_history', 'list_session_statistic_historic_grouping', json_data);
+    //jQuery.ajax({method: "POST", url: "active_session_history/list_session_statistic_historic_grouping", data: json_data});
   }
 
 
@@ -119,7 +121,6 @@
         if (columnDef['sort_type'] == 'string'){
 
             decorated_cell_value = decorated_cell_value.replace('.', '.<wbr>');                       // Optionaler Wort-Umbruch
-            console.log(decorated_cell_value);
         }
       }
 
@@ -134,6 +135,7 @@
       }
 
       var groupby_value = dataContext.col0.replace(new RegExp(\"&\", 'g'), \"\\\\&\");
+      //var groupby_value = jQuery(dataContext.col0).text();
 
       return '<a href=\"#\" title=\"#{"#{t(:active_session_history_list_session_statistic_historic_grouping_link_hint, :default=>"Show different")} #{next_groupby}s #{t(:of, :default=>"of")} #{@groupby}s"}\" '+
         'onclick=\"call_ajax_grouping#{@update_area}('+min_snap_id+', '+max_snap_id+', '+String.fromCharCode(39)+groupby_value+String.fromCharCode(39)+', '+String.fromCharCode(39)+'#{next_groupby}'+String.fromCharCode(39)+'); return false;\"'+

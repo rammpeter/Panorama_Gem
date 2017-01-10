@@ -38,7 +38,7 @@ class DragnetControllerTest < ActionController::TestCase
         if !['_0_7', '_1_1_4', '_3_4', '_3_5', '_7_1'].include?(entry['id'])            # Exclude selections from test which are not executable
           full_entry = extract_entry_by_entry_id(entry['id'])                 # Get SQL from id
 
-          params = {:format=>:js, :dragnet_hidden_entry_id=>entry['id']}
+          params = {:format=>:html, :dragnet_hidden_entry_id=>entry['id'], :update_area=>:hugo}
 
           if full_entry[:parameter]
             full_entry[:parameter].each do |p|                                # Iterate over optional parameter of selection
@@ -65,7 +65,7 @@ class DragnetControllerTest < ActionController::TestCase
 
   # Find unique name by random to ensure selection does not already exists in client_info.store
   test "personal_selection" do
-    post :add_personal_selection, :params => {:format=>:js, :selection => "
+    post :add_personal_selection, :params => {:format=>:js, :update_area=>:hugo, :selection => "
 {
   name: \"Name of selection in list#{Random.rand(1000000)}\",
   desc: \"Explanation of selection in right dialog\",
@@ -89,7 +89,7 @@ class DragnetControllerTest < ActionController::TestCase
     assert_response :success
 
     # :dragnet_hidden_entry_id=>"_8_0" depends from number of submenus in list
-    post :exec_dragnet_sql, :params => {:format=>:js, :commit_drop=>"Drop personal SQL", :dragnet_hidden_entry_id=>"_8_0" }
+    post :exec_dragnet_sql, :params => {:format=>:js, :commit_drop=>"Drop personal SQL", :dragnet_hidden_entry_id=>"_8_0", :update_area=>:hugo }
     assert_response :success
 
   end

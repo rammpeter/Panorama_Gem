@@ -13,12 +13,13 @@ module SlickgridHelper
     # Stripping html from string is expensive operation
     # Rails provides santitize and strip_tags which is slightly slow
     # Nokogiri is 2 times faster than strip_tags, but should only be called if string contains tags
-    # content = Nokogiri::HTML(content).text if content['<'] && content['>']
+    content = Nokogiri::HTML(content).text if content['<'] && content['>']
 
     # Regular expression is 2 times faster than Nokogiri
-    content.gsub(%r{</?[^>]+?>}, '').
-        gsub('&nbsp;', ' ').
-        gsub('&amp;', '&')
+    # content.gsub(%r{</?[^>]+?>}, '').
+    #    gsub('&nbsp;', ' ').
+    #    gsub('&amp;', '&')
+    content.gsub('&nbsp;', ' ').gsub('&amp;', '&')
   end
 
   def internal_escape(input)
@@ -282,7 +283,6 @@ module SlickgridHelper
         end
 
         output << "#{col[:name]}: '#{escape_js_chars stripped_celldata}',"
-
         if (title && title != '') || (style && style != '') || (celldata != stripped_celldata)
           metadata << "#{col[:name]}: {"
           metadata << "title:    '#{ecape_js_chars_without_br title}',"    if title && title != ''    # \n erhalten bei esacpe, da das vom tooltip so dargestellt werden kann
