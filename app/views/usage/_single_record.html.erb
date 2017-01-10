@@ -3,6 +3,7 @@
 
    def show_client(rec)
      ajax_link(rec.IP_Address, {
+               :controller  => '../usage',                                      # Default-URL-Prefix is already usage, so prevent URL usage/usage/action
                :action      => "ip_info",
                :ip_address  => rec.IP_Address,
                :update_area => @update_area
