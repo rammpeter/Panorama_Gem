@@ -146,7 +146,7 @@ protected
 
   def show_popup_message(message)
     respond_to do |format|
-      format.js { render :js => "alert('#{j "#{message}"}');" }
+      format.html { render :html => "<script type='text/javascript'>alert('#{j "#{message}"}');</script>".html_safe }
     end
 
   end

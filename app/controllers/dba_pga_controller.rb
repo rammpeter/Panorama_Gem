@@ -36,8 +36,7 @@ class DbaPgaController < ApplicationController
         :max_height => 450
     })
     respond_to do |format|
-      format.js {render :js => "$('#content_for_layout').html('#{j output }');"
-      }
+      format.html {render :html => output }
     end
 
 
@@ -173,8 +172,7 @@ class DbaPgaController < ApplicationController
         :max_height => 450
     })
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j output }');"
-      }
+      format.html {render :html => output }
     end
   end
 

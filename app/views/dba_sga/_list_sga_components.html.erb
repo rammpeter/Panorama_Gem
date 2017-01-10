@@ -20,7 +20,7 @@ column_options =
    def link_name(rec)
      case rec.name
       when 'SQLA' then
-        my_ajax_post_link(rec.name, {
+        ajax_link(rec.name, {
                               :controller   => :dba_sga,
                               :action       => :list_sql_area_memory,
                               :instance     => rec.inst_id,
@@ -51,7 +51,7 @@ column_options =
 
 <%
    def link_sharable_mem(rec)
-        my_ajax_post_link(fn(rec.sharable_mem_mb), {
+        ajax_link(fn(rec.sharable_mem_mb), {
                               :controller   => :dba_sga,
                               :action       => :list_object_cache_detail,
                               :instance     => rec.inst_id,
@@ -67,7 +67,7 @@ column_options =
    end
 
    def link_distinct(rec)
-     my_ajax_post_link(fn(rec.count_distinct), {
+     ajax_link(fn(rec.count_distinct), {
                            :controller   => :dba_sga,
                            :action       => :list_object_cache_detail,
                            :instance     => rec.inst_id,

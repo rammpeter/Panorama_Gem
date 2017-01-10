@@ -14,7 +14,7 @@ class DbaSgaController < ApplicationController
     end
 
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j explain_text }');"}
+      format.html {render :html => explain_text  }
     end
   end
 
@@ -521,9 +521,7 @@ class DbaSgaController < ApplicationController
     @sqls = fill_sql_area_list("GV$SQL", @instance, nil, @sql_id, 100, nil)
 
     if @sqls.count == 0
-      respond_to do |format|
-        format.js { render :js => "alert(\"SQL-ID '#{@sql_id}' not found in GV$SQL for instance = #{@instance} !\");" }
-      end
+      show_popup_message "SQL-ID '#{@sql_id}' not found in GV$SQL for instance = #{@instance} !"
       return
     end
 
@@ -894,9 +892,7 @@ class DbaSgaController < ApplicationController
   # Result Cache
   def list_result_cache
     if get_db_version < "11.1"
-      respond_to do |format|
-        format.js {render :js => "$('##{params[:update_area]}').html('<h2>This funktion is available only for Oracle 11g and above</h2>');"}
-      end
+      show_popup_message 'This funktion is available only for Oracle 11g and above!'
       return
     end
 
@@ -1116,7 +1112,7 @@ class DbaSgaController < ApplicationController
     })
 
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j output }');"}
+      format.html {render :html => output }
     end
   end
 
@@ -1248,7 +1244,7 @@ class DbaSgaController < ApplicationController
   def list_sql_profile_sqltext
     @sql = sql_select_one ["SELECT SQL_Text FROM  DBA_SQL_Profiles WHERE Name = ?", params[:profile_name]]
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('<pre class=\"yellow-panel\" style=\"white-space: pre-wrap;\">#{my_html_escape(@sql)}</pre>');" }
+      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(@sql)}</pre>".html_safe }
     end
 
   end
@@ -1269,7 +1265,7 @@ class DbaSgaController < ApplicationController
   def list_sql_plan_baseline_sqltext
     @sql = sql_select_one ["SELECT SQL_Text FROM  DBA_SQL_Plan_Baselines WHERE Plan_Name = ?", params[:plan_name]]
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('<pre class=\"yellow-panel\" style=\"white-space: pre-wrap;\">#{my_html_escape(@sql)}</pre>');" }
+      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(@sql)}</pre>".html_safe }
     end
 
   end

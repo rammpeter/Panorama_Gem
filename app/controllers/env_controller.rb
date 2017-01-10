@@ -76,7 +76,7 @@ class EnvController < ApplicationController
     set_I18n_locale(params[:locale])                                            # Merken in Client_Info_Cache
 
     respond_to do |format|
-      format.js {render :js => "window.location.reload();" }                    # Reload der Sganzen Seite
+      format.js {render :js => "window.location.reload();" }                    # Reload der ganzen Seite
     end
   end
 
@@ -422,16 +422,6 @@ public
     end
   end
 
-  # Anzeige einer Message im Browser
-  # Aufruf per:
-  #   params[:message_text] = "Show this"
-  #   redirect_to url_for(:controller => :env,:action => send_message, :method=>:get)
-  def send_message
-    respond_to do |format|
-      format.js {render :js => "alert('#{j params[:message_text]}');" }
-    end
-  end
-
   def list_machine_ip_info
     machine_name = params[:machine_name]
 
@@ -444,10 +434,7 @@ public
         result << "Name for IP-address \"#{address}\" = #{name}\\n"
       end
     end
-
-    respond_to do |format|
-      format.js {render :js => "alert('#{result}');" }
-    end
+    show_popup_message result
   end
 
   # Get arry with all engine's controller actions for routing

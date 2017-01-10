@@ -165,10 +165,10 @@ class UsageController < ApplicationController
 #{my_html_escape `nslookup #{ip_address} `}
 <h4>nmblookup -A:</h4>
 #{my_html_escape `nmblookup -A #{ip_address} `}
-"
+".html_safe
 
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j output}');"}
+      format.html {render :html => output}
     end
   end
 

@@ -41,7 +41,8 @@ Platform: <%= @platform_name%>
 
 <% @update_area_dbids = get_unique_area_id %>
 <script type="text/javascript">
-  jQuery.ajax({method: "POST", url: "env/list_dbids", data: {update_area: "<%= @update_area_dbids %>"} });
+  ajax_html('<%= @update_area_dbids %>', 'env', 'list_dbids', {update_area: "<%= @update_area_dbids %>"});
+  //jQuery.ajax({method: "POST", url: "env/list_dbids", data: {update_area: "<%= @update_area_dbids %>"} });
 </script>
 <div id="<%= @update_area_dbids %>"></div>
 

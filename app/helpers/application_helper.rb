@@ -675,14 +675,15 @@ module ApplicationHelper
 
   # Eigentliche Durchführung des renderns, auch genutzt von env_controller.render_menu_action
   def render_internal(update_area, controller, partial, additional_javascript_string = nil)
-    # Ersetzen des Platzhalters für single quotes durch \\x27, die nachträglich noch einmal per Javascript interpretiert werden,
-    # damit aus \\x27 ein \x27 wird
-    # Nur sinnvoll nutzbar aus SlickGrid-Spaltendeklarationen, da diese beim rendern in javascript noch einmal interpretiert werden
 
     respond_to do |format|
-      format.js {render :js => "$('##{update_area}').html('#{escape_javascript(render_to_string :partial=>"#{controller}/#{partial}")
-                                                                 .gsub(/§SINGLE_QUOTE§/, "#{92.chr}#{92.chr}#{92.chr}#{92.chr}x27")
-                                                            }'); #{additional_javascript_string}" }
+      format.js {
+        raise "render_internal js should not be called"
+        #render :js => "$('##{update_area}').html('#{escape_javascript(render_to_string :partial=>"#{controller}/#{partial}")
+        #
+        #                                                         .gsub(/§SINGLE_QUOTE§/, "#{92.chr}#{92.chr}#{92.chr}#{92.chr}x27")
+        #                                                    }'); #{additional_javascript_string}"
+      }
       format.html {
         if additional_javascript_string.nil?
           render(:partial=>"#{controller}/#{partial}")                          # don't store rendered document as string

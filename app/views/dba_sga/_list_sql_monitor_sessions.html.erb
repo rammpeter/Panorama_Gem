@@ -3,7 +3,7 @@
 <%=
 
   def link_monitor(rec)
-    my_ajax_post_link(fn(rec.sql_exec_id),
+    ajax_link(fn(rec.sql_exec_id),
                       {
                         :controller   => :dba_sga,
                         :action       => :start_sql_monitor_in_new_window,

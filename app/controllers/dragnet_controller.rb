@@ -151,8 +151,7 @@ class DragnetController < ApplicationController
 
     respond_to do |format|
 
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j render_yellow_pre(show_value, 450) }');"}
-      #format.js {render :js => "$('##{params[:update_area]}').html('#{j "<div class='float_left' style='background-color:lightgray; margin-top: 10px;'><pre>#{my_html_escape(show_value)}</pre></div>" }');"}
+      format.html {render :html => render_yellow_pre(show_value, 450) }
     end
   end
 

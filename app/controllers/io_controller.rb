@@ -197,9 +197,7 @@ class IoController < ApplicationController
       data_column = c if c[:caption] == @data_column_name
     end
     unless data_column && data_column[:raw_data]
-      respond_to do |format|
-        format.js {render :js => "alert('#{j "Column '#{@data_column_name}' is not supported for diagram"}');" }
-      end
+      show_popup_message "Column '#{@data_column_name}' is not supported for diagram"
       return
     end
 
@@ -377,9 +375,7 @@ class IoController < ApplicationController
       data_column = c if c[:caption] == @data_column_name
     end
     unless data_column && data_column[:raw_data]
-      respond_to do |format|
-        format.js {render :js => "alert('#{j "Column '#{@data_column_name}' is not supported for diagram"}');" }
-      end
+      show_popup_message "Column '#{@data_column_name}' is not supported for diagram"
       return
     end
 
@@ -569,9 +565,7 @@ class IoController < ApplicationController
       data_column = c if c[:caption] == @data_column_name
     end
     unless data_column && data_column[:raw_data]
-      respond_to do |format|
-        format.js {render :js => "alert('#{j "Column '#{@data_column_name}' is not supported for diagram"}');" }
-      end
+      show_popup_message "Column '#{@data_column_name}' is not supported for diagram"
       return
     end
 

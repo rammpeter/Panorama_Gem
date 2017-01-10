@@ -2,7 +2,7 @@
    @update_area = get_unique_area_id
 
    def link_profile_name(rec)
-     my_ajax_post_link(rec.name, {
+     ajax_link(rec.name, {
                        :controller    => :dba_sga,
                        :action        => :list_sql_profile_detail,
                        :profile_name  => rec.name,
@@ -14,7 +14,7 @@
    end
 
    def link_sql_text(rec)
-     my_ajax_post_link(rec.sql_text[0, 30], {
+     ajax_link(rec.sql_text[0, 30], {
                        :controller    => :dba_sga,
                        :action        => :list_sql_profile_sqltext,
                        :profile_name  => rec.name,

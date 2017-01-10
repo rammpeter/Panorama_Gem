@@ -3,7 +3,7 @@
 
    def link_partition(rec)
      if (Float(rec.partition_name) rescue false)
-       my_ajax_post_link(rec.partition_name,     # Verhindern Zeilenumbruch in Anzeige
+       ajax_link(rec.partition_name,     # Verhindern Zeilenumbruch in Anzeige
                      {:action           => :list_objects,
                       :tablespace       => {:name => @tablespace_name},
                       :schema           => {:name => rec.owner},

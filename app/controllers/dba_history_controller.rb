@@ -1139,7 +1139,7 @@ FROM (
     output << "<div id='list_system_statistics_historic_plot_area' style='float:left; width:100%;'></div>".html_safe
 
     respond_to do |format|
-      format.js {render :js => "$('#list_system_statistics_historic_area').html('#{j output }');"}
+      format.html {render :html => output }
     end
   end
 
@@ -1225,7 +1225,7 @@ FROM (
     output << "<div id='list_system_statistics_historic_detail_plot_area' style='float:left; width:100%;'></div>".html_safe
 
     respond_to do |format|
-      format.js {render :js => "$('#list_system_statistics_historic_detail_area').html('#{j output }');"}
+      format.html {render :html => output }
     end
   end
 
@@ -1349,7 +1349,7 @@ FROM (
     output << "<div id='list_sysmetric_historic_plot_area' style='float:left; width:100%;'></div>".html_safe
 
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j output }');"}
+      format.html {render :html => output }
     end
   end
 
@@ -1545,7 +1545,7 @@ FROM (
       ORDER BY Sleep_Timestamp"].concat(where_values)
 
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j render_to_string :partial=>"dragnet/list_dragnet_sql_result" }');"}
+      format.html {render :partial=>"dragnet/list_dragnet_sql_result" }
     end
   end
 

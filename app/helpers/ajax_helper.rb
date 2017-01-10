@@ -133,19 +133,6 @@ module AjaxHelper
     "jQuery.ajax({method: \"POST\", url: \"#{url_for(url)}\", data: #{json_data}});"
   end
 
-  # Funktion nur brauchbar im Slickgrid oder anderen Funktionen, deren Daten im Browser nochmals per Javascript interpretiert werden
-  # wegen doppeltem Escape von single Quote per \\x27
-  # Ajax-Link definieren mit Indikator-Anzeige während Ausführung
-  def my_ajax_post_link(caption, url_data, html_options={})
-    options = ''
-    html_options.each do |key, value|
-      options << " #{key}=\"#{value}\""
-    end
-
-    "<a href=\"#\" #{options} onclick=§SINGLE_QUOTE§#{js_ajax_post_call(url_data)} return false; §SINGLE_QUOTE§>#{my_html_escape(caption)}</a>".html_safe
-  end # my_ajax_post_link
-
-
   # Ajax-Link definieren mit Indikator-Anzeige während Ausführung
   # Parameter:
   #   caption:      String

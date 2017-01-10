@@ -50,6 +50,7 @@
 
                def link_column(rec, value, groupkey)
                    ajax_link(value, {
+                             :controller  => :usage,
                              :action      => "detail_sum",
                              :groupkey    => groupkey,
                              :filter      => { :Month => rec.Month },
@@ -76,6 +77,7 @@
 
                def link_column_single_record(rec, value)
                    ajax_link(value, {
+                             :controller  => :usage,
                              :action      => "single_record",
                              :filter      => { :Month => rec.Month },
                              :update_area => "usage_info_detail_area"
