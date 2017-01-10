@@ -1,7 +1,7 @@
 <%
   def link_column(rec, value)
-    my_ajax_link_to(value,
-                  url_for(:action          => :list_enqueue_statistics_historic_details,
+    ajax_link(value, {
+                          :action          => :list_enqueue_statistics_historic_details,
                           :instance        => rec.instance_number,
                           :eventno         => rec.eventno,
                           :reason          => rec.req_reason,
@@ -9,7 +9,7 @@
                           :min_snap_id     => rec.min_snap_id,
                           :max_snap_id     => rec.max_snap_id,
                           :update_area     => :list_enqueue_statistics_historic_detail_area
-                         ),
+                         },
                   :title=>"Anzeige der einzelnen Samples des Enqueue-Events")
   end
 

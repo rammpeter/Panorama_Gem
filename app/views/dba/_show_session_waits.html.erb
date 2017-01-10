@@ -1,12 +1,12 @@
 <%
    @update_area = get_unique_area_id
    def link_column(rec, value)
-     my_ajax_link_to(value,
-             url_for(:action   => "list_waits_per_event",
+     ajax_link(value, {
+                     :action   => "list_waits_per_event",
                      :instance => rec.inst_id,
                      :event    => rec.event,
                      :update_area => @update_area
-                     ),
+                    },
              :title=> "Anzeige Sessions zu Event")
    end
 
@@ -34,27 +34,27 @@
 <%
 
 def link_column_blocking_object(rec)
-    my_ajax_link_to("Row_Wait_File#=#{rec.row_wait_file_no}, Row_Wait_Block#=#{rec.row_wait_block_no}, Row_Wait_Row#=#{rec.row_wait_row_no}",
-                  url_for(:action           => :convert_to_rowid,
+    ajax_link("Row_Wait_File#=#{rec.row_wait_file_no}, Row_Wait_Block#=#{rec.row_wait_block_no}, Row_Wait_Row#=#{rec.row_wait_row_no}", {
+                          :action           => :convert_to_rowid,
                           :update_area      => "lockdetail_#{rec.row_num}",
                           :waitingforobject => "#{rec.blocking_object_schema}.#{rec.blocking_object_name}",
                           :data_object_id   => rec.data_object_id,
                           :row_wait_file_no => rec.row_wait_file_no,
                           :row_wait_block_no => rec.row_wait_block_no,
                           :row_wait_row_no  => rec.row_wait_row_no
-                         ),
+                         },
                   :title=>t(:dba_list_blocking_dml_locks_link_column_blocking_object_hint, :default=>"Determine associated rowid")
                 )+"<div id=\"lockdetail_#{rec.row_num}\"></div>".html_safe
 end
 
 def link_column_session_info(instance, sid, serialno)
-  my_ajax_link_to("#{instance} : #{sid}",
-                  url_for(:action            => "show_session_detail",
+  ajax_link("#{instance} : #{sid}", {
+                          :action            => "show_session_detail",
                           :instance          => instance,
                           :sid               => sid,
                           :serialno          => serialno,
                           :update_area       => @update_area
-                         ),
+                         },
                   :title => "#{t(:dba_show_session_waits_link_session_hint, :default=>'Details for session, serial no. =')} #{serialno}"
                  )
 end

@@ -5,8 +5,8 @@
    @update_area = get_unique_area_id
 
     def link_column(tag, d, value)
-      my_ajax_link_to(value,
-                    url_for(:action => :list_sql_detail_historic,
+      ajax_link(value, {
+                            :action => :list_sql_detail_historic,
                             :sql_id      => d.sql_id,
                             :parsing_schema_name => d.parsing_schema_name,
                             :dbid        => tag == 1 ? d.dbid_t1 : d.dbid_t2,
@@ -16,20 +16,20 @@
                             :time_selection_start   => (tag == 1 ? @tag1 : @tag2) + " 00:00",
                             :time_selection_end     => (tag == 1 ? @tag1 : @tag2) + " 23:59",
                             :update_area => @update_area
-                           ),
+                           },
                      :title=>"Show details of SQL for the respective day")
     end
 
    def link_execution_plan(rec, value)
-     my_ajax_link_to(value,
-                     url_for(:update_area          => @update_area,
+     ajax_link(value, {
+                             :update_area          => @update_area,
                              :action               => :list_sql_history_execution_plan,
                              :controller           => :dba_history,
                              :instance             => @instance,
                              :sql_id               => rec.sql_id,
                              :time_selection_start => "#{@tag1} 00:00",
                              :time_selection_end   => "#{@tag2} 23:59",
-                             ),
+                            },
                     :title=>"All execution plans between first and last day")
    end
 

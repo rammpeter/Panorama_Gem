@@ -1,8 +1,8 @@
 <%
 
    def link_column(result, value)
-     my_ajax_link_to(value,
-       url_for(:action     => :list_system_events_historic_detail,
+     ajax_link(value, {
+               :action     => :list_system_events_historic_detail,
                :instance   => result.instance_number,
                :event_id   => result.event_id,
                :event_name => result.event_name,
@@ -11,7 +11,7 @@
                :min_snap_id=> result.min_snap_id,
                :max_snap_id=> result.max_snap_id,
                :update_area=> :list_system_events_historic_detail_area
-             ),
+             },
       :title=>"Anzeige der einzelnen Snaphots des Events (unterhalb)")
    end
 

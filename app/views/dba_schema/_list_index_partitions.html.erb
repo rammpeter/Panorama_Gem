@@ -6,13 +6,13 @@
     if rec.subpartition_count == 0
       rec.subpartition_count
     else
-      my_ajax_link_to(fn(rec.subpartition_count),
-                      url_for({:action         => :list_index_subpartitions,
+      ajax_link(fn(rec.subpartition_count),
+                              {:action         => :list_index_subpartitions,
                                :owner          => @owner,
                                :index_name     => @index_name,
                                :partition_name => rec.partition_name,
                                :update_area    => @update_area,
-                              }),
+                              },
                       :title=>"Show sub-partitions of index #{@owner}.#{@index_name}, partition #{rec.partition_name}"
       )
     end

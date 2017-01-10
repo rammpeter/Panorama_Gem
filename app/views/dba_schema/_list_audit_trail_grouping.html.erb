@@ -2,8 +2,8 @@
    @update_area = get_unique_area_id
 
    def link_audits_total(rec)
-     my_ajax_link_to(fn(rec.audits),
-                     url_for(:controller   => :dba_schema,
+     ajax_link(fn(rec.audits), {
+                             :controller   => :dba_schema,
                              :action       => :list_audit_trail,
                              :time_selection_start  => localeDateTime(rec.begin_timestamp, :minutes),
                              :time_selection_end    => localeDateTime(rec.max_timestamp, :minutes),
@@ -14,14 +14,14 @@
                              :object_name  => @object_name,         # optionaler Filter
                              :action_name  => @action_name,         # optionaler Filter
                              :update_area  => @update_area
-                     ),
+                     },
                      :title=> 'Show single audit records of time period')
 
    end
 
    def link_group(rec, value, filter_name, filter_value)
-     my_ajax_link_to(fn(value),
-                     url_for(:controller   => :dba_schema,
+     ajax_link(fn(value), {
+                             :controller   => :dba_schema,
                              :action       => :list_audit_trail,
                              :time_selection_start  => localeDateTime(rec.begin_timestamp, :minutes),
                              :time_selection_end    => localeDateTime(rec.max_timestamp, :minutes),
@@ -35,7 +35,7 @@
                              :action_name  => @action_name,         # optionaler Filter
                              filter_name   => filter_value,
                              :update_area  => @update_area
-                     ),
+                     },
                      :title=> 'Add this criteria and time period to filter conditions and show grouped values again')
 
    end

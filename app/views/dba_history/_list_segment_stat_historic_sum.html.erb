@@ -3,8 +3,8 @@
 @update_area = get_unique_area_id
 
 def link_column_stmt(rec, value)
-  my_ajax_link_to(value,
-                url_for(:action => "list_segment_stat_hist_sql",
+  ajax_link(value, {
+                        :action => "list_segment_stat_hist_sql",
                         :owner          => rec.owner,
                         :object_name    => rec.object_name,
                         :subobject_name => rec.subobject_name,
@@ -12,14 +12,14 @@ def link_column_stmt(rec, value)
                         :time_selection_start => @time_selection_start,
                         :time_selection_end   => @time_selection_end,
                         :update_area    => @update_area
-                        ),
+                        },
                 :title => t(:dba_history_list_segment_stat_historic_sum_link_sql_hint, :default=>"show SQLs in time slice from DBA_Hist_SQLStat with usage of object in explain plan")
 )
 end
 
 def link_column_snap(rec, value)
-  my_ajax_link_to(value,
-                url_for(:action => "list_segment_stat_hist_detail",
+  ajax_link(value, {
+                        :action => "list_segment_stat_hist_detail",
                         :owner          => rec.owner,
                         :object_name    => rec.object_name,
                         :subobject_name => rec.subobject_name,
@@ -29,7 +29,7 @@ def link_column_snap(rec, value)
                         :min_snap_id    => rec.min_snap_id,
                         :max_snap_id    => rec.max_snap_id,
                         :update_area    => @update_area
-                       ),
+                       },
                 :title => t(:dba_history_list_segment_stat_historic_sum_snaps_hint, :default=>'Show data of single AWR snapshots of this object')
   )
 end
@@ -46,8 +46,8 @@ def link_column_wait(rec, value)
   end
 
 
-  my_ajax_link_to(value,
-                url_for(:controller     => :active_session_history,
+  ajax_link(value, {
+                        :controller     => :active_session_history,
                         :action         => :list_session_statistic_historic_grouping,
                         :groupfilter    => {
                                 :DBID                   => get_dbid,
@@ -60,7 +60,7 @@ def link_column_wait(rec, value)
                         }.merge(value_filter),
                         :groupby        => "DB-Object",
                         :update_area    => @update_area
-                       ),
+                       },
                 :title => t(:dba_history_list_segment_stat_historic_sum_link_wait_hint, :default=>"deeper details on incurred wait times of object from Active Session History")
   )
 end

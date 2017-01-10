@@ -6,13 +6,13 @@
  end
 
  def link_QC_session(rec)
-    my_ajax_link_to(rec.qcinst_id ? "#{rec.qcinst_id}:#{rec.qcsid},#{rec.qcserialno}" : "",
-      url_for(:action => :show_session_detail,
+    ajax_link(rec.qcinst_id ? "#{rec.qcinst_id}:#{rec.qcsid},#{rec.qcserialno}" : "", {
+              :action => :show_session_detail,
               :instance => rec.qcinst_id,
               :sid      => rec.qcsid,
               :serialno => rec.qcserialno,
               :update_area => @update_area
-             ),
+             },
       :title=> "Show details for query coordinator session")
   end
 

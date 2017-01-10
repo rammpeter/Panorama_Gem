@@ -170,8 +170,8 @@ module AjaxHelper
   # Erzeugen eines Links aus den konkreten Wait-Parametern mit aktueller Erläuterung sowie link auf aufwendige Erklärung
   def link_wait_params(instance, event, p1, p1text, p1raw, p2, p2text, p2raw, p3, p3text, p3raw, unique_div_identifier)
       (""+  # Wenn kein String als erster Operand, funktioniert html_safe nicht auf Result !!!
-       my_ajax_link_to("P1: #{p1text} = #{p1} P2: #{p2text} = #{p2} P3: #{p3text} = #{p3}",
-                       url_for(:controller => :dba,
+       ajax_link("P1: #{p1text} = #{p1} P2: #{p2text} = #{p2} P3: #{p3text} = #{p3}", {
+                               :controller => :dba,
                                :action     => :show_session_details_waits_object,
                                :update_area => unique_div_identifier,
                                :instance    => instance,
@@ -179,8 +179,7 @@ module AjaxHelper
                                :p1=>p1, :p1text=>p1text,
                                :p2=>p2, :p2text=>p2text,
                                :p3=>p3, :p3text=>p3text
-                              ),
-                       :title=>t(:ajax_helper_link_wait_params_hint, :default=>'Show details of wait-parametern for event')
+       }, :title=>t(:ajax_helper_link_wait_params_hint, :default=>'Show details of wait-parametern for event')
                      ) +
          " #{quick_wait_params_info(event, p1, p1text, p1raw, p2, p2text, p2raw, p3, p3text, p3raw)}" +
          "<span id=\"#{unique_div_identifier}\"></span>").html_safe
@@ -193,8 +192,8 @@ module AjaxHelper
     parsing_schema_name="[UNKNOWN]" if parsing_schema_name.nil?                 # Zweiter pass findet dann Treffer, wenn SQL-ID unter anderem User existiert
     unique_id = get_unique_area_id
     prefix = "#{t(:link_historic_sql_id_hint_prefix, :default=>"Show details of")} SQL-ID=#{sql_id} : "
-    my_ajax_link_to(value ? value : sql_id,
-     url_for( :controller => :dba_history,
+    ajax_link(value ? value : sql_id, {
+              :controller => :dba_history,
               :action     => :list_sql_detail_historic,
               :update_area=> update_area,
               :instance   => instance,
@@ -202,7 +201,7 @@ module AjaxHelper
               :time_selection_start  => time_selection_start,
               :time_selection_end  => time_selection_end,
               :parsing_schema_name => parsing_schema_name   # Sichern der Eindeutigkeit bei mehrfachem Vorkommen identischer SQL in verschiedenen Schemata
-            ),
+    },
      {:title       => "#{prefix} <#{t :link_historic_sql_id_coming_soon, :default=>"Text of SQL is loading, please hold mouse over object again"}>",
       :id          =>  unique_id,
       :prefix      => prefix,
@@ -252,12 +251,11 @@ module AjaxHelper
 
 
   def link_machine_ip_info(machine_name)
-    my_ajax_link_to(machine_name,
-                    url_for(:controller   => :env,
+    ajax_link(machine_name, {
+                            :controller   => :env,
                             :action       => :list_machine_ip_info,
                             :machine_name => machine_name
-                    ),
-                    :title=>'Show IP name resolution'
+    }, :title=>'Show IP name resolution'
     )
 
   end
@@ -266,15 +264,14 @@ module AjaxHelper
     owner         = owner.upcase        if owner
     segment_name  = segment_name.upcase if segment_name
     print_value = "#{owner}.#{segment_name}" unless print_value
-    my_ajax_link_to(print_value,
-       url_for(:controller   => :dba_schema,
+    ajax_link(print_value, {
+               :controller   => :dba_schema,
                :action       => :list_object_description,
                :owner        => owner,
                :segment_name => segment_name,
                :object_type  => object_type,
                :update_area  => update_area
-              ),
-      :title=>"#{t(:ajax_helper_link_object_description_hint, :default=>"Show object structure and details for")} #{owner}.#{segment_name}"
+    }, :title=>"#{t(:ajax_helper_link_object_description_hint, :default=>"Show object structure and details for")} #{owner}.#{segment_name}"
     )
   end
 
@@ -282,16 +279,15 @@ module AjaxHelper
     if file_no && block_no && row_no && (file_no.to_i > 0 || block_no.to_i > 0)
       value = "#{'<br>' if linefeed_prefix}File#=#{file_no}, Block#=#{block_no}, Row#=#{row_no}".html_safe
       if data_object_id
-        my_ajax_link_to(value,
-                        url_for(:controller         => :dba,
+        ajax_link(value, {
+                                :controller         => :dba,
                                 :action             => :convert_to_rowid,
                                 :update_area        => update_area,
                                 :data_object_id     => data_object_id,
                                 :row_wait_file_no   => file_no,
                                 :row_wait_block_no  => block_no,
                                 :row_wait_row_no    => row_no
-                        ),
-                        :title=>t(:ajax_helper_link_file_block_row_hint, :default=>"Calculate associated rowid for file/block/row.\nThis allows determination of primary key value in next step.")
+        }, :title=>t(:ajax_helper_link_file_block_row_hint, :default=>"Calculate associated rowid for file/block/row.\nThis allows determination of primary key value in next step.")
         )+"<div id=\"#{update_area}\"></div>".html_safe
       else
         value

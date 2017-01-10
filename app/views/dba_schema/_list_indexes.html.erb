@@ -5,12 +5,12 @@
      if rec.partition_number == 0
        rec.partition_number
      else
-       my_ajax_link_to(fn(rec.partition_number),
-                       url_for({:action       => :list_index_partitions,
+       ajax_link(fn(rec.partition_number),
+                               {:action       => :list_index_partitions,
                                 :owner        => rec.owner,
                                 :index_name   => rec.index_name,
                                 :update_area  => @update_area,
-                               }),
+                               },
                        :title=>"Show partitions of index #{rec.index_name}"
        )
      end
@@ -20,12 +20,12 @@
      if rec.subpartition_number == 0
        rec.subpartition_number
      else
-       my_ajax_link_to(fn(rec.subpartition_number),
-                       url_for({:action       => :list_index_subpartitions,
+       ajax_link(fn(rec.subpartition_number),
+                               {:action       => :list_index_subpartitions,
                                 :owner        => rec.owner,
                                 :index_name   => rec.index_name,
                                 :update_area  => @update_area,
-                               }),
+                               },
                        :title=>"Show sub-partitions of index #{rec.index_name}"
        )
      end
@@ -33,20 +33,20 @@
 
 
    def link_using_sqls(rec)
-       my_ajax_link_to('Show',
-                       url_for({:controller   => :dba_sga,
+       ajax_link('Show',
+                               {:controller   => :dba_sga,
                                 :action       => :show_using_sqls,
                                 :ObjectOwner => rec.owner,
                                 :ObjectName  => rec.index_name,
                                 :update_area  => @update_area,
-                               }),
+                               },
                        :title=>"Show SQLs in SGA (gv$SQL_Plan) using this index"
        )
    end
 
   def link_current_index_stats(rec, value)
-     my_ajax_link_to(value,
-                     url_for({:controller   => :dba_schema,
+     ajax_link(value,
+                             {:controller   => :dba_schema,
                               :action       => :list_current_index_stats,
                               :table_owner  => @owner,
                               :table_name   => @table_name,
@@ -54,7 +54,7 @@
                               :index_name   => rec.index_name,
                               :leaf_blocks  => rec.leaf_blocks,
                               :update_area  => @update_area,
-                             }),
+                             },
                      :title=>'Calculate current index block usage statistics (executes select with index fast full scan on this index)'
      )
   end

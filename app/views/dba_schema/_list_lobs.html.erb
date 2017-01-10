@@ -5,13 +5,13 @@
      if rec.partition_count == 0
        '0'
      else
-       my_ajax_link_to(fn(rec.partition_count),
-                       url_for({:action       => :list_lob_partitions,
+       ajax_link(fn(rec.partition_count),
+                               {:action       => :list_lob_partitions,
                                 :owner        => rec.owner,
                                 :table_name   => rec.table_name,
                                 :lob_name      => rec.segment_name,
                                 :update_area  => @update_area,
-                               }),
+                               },
                        :title=>"Show partitions LOB #{rec.segment_name} of table #{rec.owner}.#{rec.table_name}"
          )
      end
@@ -21,13 +21,13 @@
      if rec.subpartition_count == 0
        '0'
      else
-       my_ajax_link_to(fn(rec.subpartition_count),
-                       url_for({:action       => :list_lob_subpartitions,
+       ajax_link(fn(rec.subpartition_count),
+                               {:action       => :list_lob_subpartitions,
                                 :owner        => rec.owner,
                                 :table_name   => rec.table_name,
                                 :lob_name      => rec.segment_name,
                                 :update_area  => @update_area,
-                               }),
+                               },
                        :title=>"Show sub-partitions of LOB #{rec.segment_name} of #{rec.owner}.#{rec.table_name}"
        )
      end

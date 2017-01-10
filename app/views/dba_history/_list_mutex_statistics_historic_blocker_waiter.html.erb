@@ -2,8 +2,8 @@
   @update_area = get_unique_area_id
 
   def link_column_samples(rec, value)
-    my_ajax_link_to(value,
-                  url_for(:action               => :list_mutex_statistics_historic_samples,
+    ajax_link(value, {
+                          :action               => :list_mutex_statistics_historic_samples,
                           :update_area          => @update_area,
                           :instance             => rec.inst_id,
                           :time_selection_start => @time_selection_start,
@@ -11,18 +11,18 @@
                           :mutex_type           => rec.mutex_type,
                           :filter               => @groupby,
                           :filter_value         => (@groupby==:Blocking_Session ? rec.blocking_session : rec.requesting_session )
-                         ),
+                         },
                   :title=>"Show single sample records of mutex-wait")
   end
 
   def link_column_sid(rec, value)
-    my_ajax_link_to(value,
-                  url_for(:controller           => :active_session_history,
+    ajax_link(value, {
+                          :controller           => :active_session_history,
                           :action               => :show_prepared_active_session_history,
                           :update_area          => @update_area,
                           :sid                  => (@groupby==:Blocking_Session ? rec.blocking_session : rec.requesting_session ),
                           :instance             => rec.inst_id
-                         ),
+                         },
                   :title=>"Show wait-events of session")
   end
 

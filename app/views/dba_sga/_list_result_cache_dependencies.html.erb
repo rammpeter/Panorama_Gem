@@ -2,8 +2,8 @@
 <%
 
    def link_dependents(rec)
-     my_ajax_link_to(fn(rec.depend_count),
-                     url_for(:controller    => :dba_sga,
+     ajax_link(fn(rec.depend_count), {
+                             :controller    => :dba_sga,
                              :action        => :list_result_cache_dependents,
                              :instance      => rec.inst_id,
                              :id            => rec.id,
@@ -11,7 +11,7 @@
                              :name          => rec.name,
                              :namespace     => 'Dependency',
                              :update_area => @update_area
-                     ),
+                     },
                      :title=> 'Show depent results for dependency')
    end
 

@@ -2,8 +2,8 @@
 @update_area = get_unique_area_id
 
 def link_column_detail(rec, value)
-  my_ajax_link_to(value,
-    url_for(:action     => "list_sql_detail_historic",
+  ajax_link(value, {
+            :action     => "list_sql_detail_historic",
             :dbid       => get_dbid,
             :instance   => @instance,
             :sql_id     => @sql_id,
@@ -13,7 +13,7 @@ def link_column_detail(rec, value)
             :time_selection_start => localeDateTime(rec.begin_interval_time, :minutes),
             :time_selection_end   => localeDateTime(rec.end_interval_time, :minutes),  # 1 Tag weiter
             :update_area=> @update_area
-          ),
+          },
    :title=>t(:dba_history_list_sql_history_snapshots_link_sql_detail_hint, :default=>'Show details for SQL from DBA_Hist_SQLStat within interval (below)')
   )
 end

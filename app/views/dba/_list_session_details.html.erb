@@ -35,13 +35,13 @@ column_options << {:caption=>'Client driver',       :data=>proc{|rec| rec.client
     <%
 
        def link_session(rec)
-         my_ajax_link_to("#{rec.sid},#{rec.serialno}",
-           url_for(:action => "show_session_detail",
+         ajax_link("#{rec.sid},#{rec.serialno}", {
+                   :action => "show_session_detail",
                    :instance => rec.inst_id,
                    :sid      => rec.sid,
                    :serialno => rec.serialno,
                    :update_area => @update_area
-                  ),
+                  },
            :title=> "Anzeige Details zu Session")
        end
 

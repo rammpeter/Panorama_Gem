@@ -3,26 +3,26 @@
 
 <%
   def link_depending_objects(rec)
-    my_ajax_link_to(fn(rec.depending),
-                    url_for({:action         => :list_dependencies,
+    ajax_link(fn(rec.depending),
+                            {:action         => :list_dependencies,
                              :owner          => rec.owner,
                              :object_name    => rec.name,
                              :object_type    => rec.type,
                              :update_area    => @update_area,
-                            }),
+                            },
                     :title=>"Show object dependencies for #{rec.type} #{rec.owner}.#{rec.name}"
     )
   end
 
 
   def link_objects_depending(rec)
-    my_ajax_link_to(fn(rec.depending),
-                    url_for({:action         => :list_dependencies,
+    ajax_link(fn(rec.depending),
+                            {:action         => :list_dependencies,
                              :owner          => rec.referenced_owner,
                              :object_name    => rec.referenced_name,
                              :object_type    => rec.referenced_type,
                              :update_area    => @update_area,
-                            }),
+                            },
                     :title=>"Show object dependencies for #{rec.referenced_type} #{rec.referenced_owner}.#{rec.referenced_name}"
     )
 

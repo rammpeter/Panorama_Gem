@@ -2,12 +2,12 @@
   @update_area = get_unique_area_id
 
     def link_session(rec)
-      my_ajax_link_to(rec.sessionid,
-          url_for(:controller   => :dba_schema,
+      ajax_link(rec.sessionid, {
+                  :controller   => :dba_schema,
                   :action       => :list_audit_trail,
                   :sessionid    => rec.sessionid,
                   :update_area  => @update_area
-                 ),
+                 },
          :title=> 'Show audit records of session')
 
     end
