@@ -1,6 +1,23 @@
 # encoding: utf-8
 module KeyExplanationHelper
 
+  @@data_access = nil # Cache
+  def explain_data_access(operation_options)
+    unless @@data_access
+      @@data_access = {
+        'JOIN FILTER CREATE'                  => 'Create bloom filter based on data from previous operation.\nBloom filter allows to exactly state that a value does not exist in an result.\nThis created filter is used at an operation JOIN FILTER USE with same object name to filter out (not all) rows that will not match the join condition.',
+        'JOIN FILTER USE'                     => 'Usage of bloom filter to filter out (not all) rows that will not match the join condition. Used bloom filter data was created by operation JOIN FILTER CREATE with same object name.\nBloom filter allows to exactly state that a value does not exist in an result.',
+        'TABLE ACCESS STORAGE FULL'           => 'Table full scan on EXADATA storage cell',
+      }
+    end
+    result = @@data_access[operation_options]
+    if result.nil?
+      "... no explanation available yet"
+    else
+      result
+    end
+  end
+
   def lock_modes(search_mode)
     search_mode = search_mode.to_s
     lockmodes =
@@ -564,5 +581,7 @@ module KeyExplanationHelper
     retval = '### Unknown pack for feature ###' if retval.nil?
     retval
   end
+
+
 
 end

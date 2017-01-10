@@ -190,7 +190,7 @@
 
    column_options =
 [
-  {:caption=>"Operation",   :data=>proc{|rec| list_operation(rec)}, :no_wrap=>true, :title=>'Kind of data access', :data_title=>proc{|rec| "%t: #{rec.operation} #{rec.options}"}},
+  {:caption=>"Operation",   :data=>proc{|rec| list_operation(rec)}, :no_wrap=>true, :title=>'Kind of data access', :data_title=>proc{|rec| "%t:\nOperation = #{rec.operation}\nOptions = #{rec.options}\n\n#{explain_data_access("#{rec.operation} #{rec.options}")}"}},
   {:caption=>"ID",          :data=>proc{|rec| rec.id },  :align=>:right,                    :title=>'ID of operation',             :data_title=>proc{|rec| "%t: Parent_ID=#{rec.parent_id}"} },
   {:caption=>"R.",          :data=>proc{|rec| rec.execorder },  :align=>:right,             :title=>'Execution order of operation',    :data_title=>proc{|rec| "%t: ID=#{rec.id}\nParent_ID=#{rec.parent_id}"} },
   {:caption=>"Object-name", :data=>proc{|rec| link_object_description(@update_area, rec.object_owner, rec.object_name)}, :title=>'Name of accessed object', :data_title=>proc{|rec| "%t: Type = #{rec.object_type},\nAlias = #{rec.object_alias},\nQuery block name = #{rec.qblock_name}"} },
