@@ -1996,7 +1996,7 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     end
 
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('<div style=\" background-color: lightyellow; white-space: pre-wrap; padding: 10px;\">#{my_html_escape(result)}</div>');" }
+      format.html {render :html => "<div style='background-color: lightyellow; white-space: pre-wrap; padding: 10px;'>#{my_html_escape(result)}</div>".html_safe }
     end
   end
 

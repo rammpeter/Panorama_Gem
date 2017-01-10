@@ -221,7 +221,7 @@ class DbaController < ApplicationController
     end
 
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j render_to_string :text=>res_string}');"}
+      format.html {render :html => res_string }
     end
   end
 
@@ -341,7 +341,7 @@ class DbaController < ApplicationController
     result = "#{t(:table, :default=>'table')} #{table_name}, PKey (#{pkey_cols}) = '#{pkey_vals[0].line}'"
 
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j result }');"}
+      format.html {render :html => result }
     end
   end # show_lock_details
 
@@ -769,9 +769,7 @@ Möglicherweise fehlende Zugriffsrechte auf Table X$BH! Lösung: Exec als User '
     if @dbsession
       render_partial :list_session_details
     else
-      respond_to do |format|
-        format.js {render :js => "$('##{@update_area}').html('#{j "<h2>Session ist nicht mehr existent</h2>".html_safe }');"}
-      end
+      show_popup_message "Session #{@sid}/#{@serialno} does not exist anymore at instance #{@instance}!"
     end
   end
 
@@ -961,7 +959,7 @@ Möglicherweise fehlende Zugriffsrechte auf Table X$BH! Lösung: Exec als User '
             params[:p3], params[:p3raw], params[:p3text]
           )
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j @object }');"}
+      format.html {render :html => @object }
     end
   end
     

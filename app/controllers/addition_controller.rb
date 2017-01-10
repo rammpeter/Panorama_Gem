@@ -187,11 +187,15 @@ class AdditionController < ApplicationController
     output << "plot_diagram('#{unique_id}', '#{plot_area_id}', '#{diagram_caption}', data_array, {plot_diagram: {locale: '#{get_locale}'}, yaxis: { min: 0 } });"
     output << "});"
 
-    html="<div id='#{plot_area_id}'></div>"
+    html="
+      <div id='#{plot_area_id}'></div>
+      <script type='test/javascript'>
+        #{ output}
+      </script>
+      ".html_safe
+
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j html}');
-                                #{ output}"
-      }
+      format.html {render :html => html }
     end
   end # list_db_cache_historic_timeline
 
@@ -742,7 +746,7 @@ class AdditionController < ApplicationController
 
 
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j output }');"}
+      format.html {render :html => output }
     end
   end
 
@@ -783,7 +787,7 @@ class AdditionController < ApplicationController
     output << '<div id="list_object_increase_object_timeline_diagramm"></div>'.html_safe
 
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j output }');"}
+      format.html {render :html => output }
     end
   end
 
