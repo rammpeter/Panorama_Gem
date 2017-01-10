@@ -4,8 +4,8 @@
 # Generische Funktion für Link
     def link_column_blocking_sid(rec)
       if rec.root_blocking_session
-        my_ajax_link_to(rec.root_blocking_session,
-          url_for(:action     => :list_session_statistic_historic_grouping,
+        ajax_link(rec.root_blocking_session, {
+                :action     => :list_session_statistic_historic_grouping,
                 :groupfilter  => {
                                   :Session_ID           => rec.root_blocking_session,
                                   :SerialNo             => rec.root_blocking_session_serialno,
@@ -18,7 +18,7 @@
                           }.merge(rec["root_blocking_inst_id"] ? {:Instance =>rec.root_blocking_inst_id}: {}) ,         # root_blocking_inst_id erst ab 11.2
                 :groupby      => 'Session/Sn.',
                 :update_area  => @update_area
-              ),
+              },
            :title=>t(:active_session_history_list_blocking_locks_historic_link_sid_hint, :default=>'Show history of blocking session in Active Session History')
         )
       else
@@ -38,8 +38,8 @@
     end
 
 def link_column_blocked(rec, value)
-  my_ajax_link_to(value,
-   url_for( :action               => :list_blocking_locks_historic_detail,
+  ajax_link(value, {
+            :action               => :list_blocking_locks_historic_detail,
             :update_area          => @update_area,
             :min_snap_id          => rec.min_snap_id,
             :max_snap_id          => rec.max_snap_id,
@@ -50,7 +50,7 @@ def link_column_blocked(rec, value)
             :blocking_instance    => rec["root_blocking_inst_id"] ? rec.root_blocking_inst_id : nil,
             :blocking_session     => rec.root_blocking_session,
             :blocking_session_serialno => rec.root_blocking_session_serialno
-          ),
+          },
    :title=>t(:active_session_history_list_blocking_locks_historic_link_blocked_hint, :default=>'Show waiting sessions blocked by this session') )
 end
 
@@ -80,8 +80,8 @@ end
   end
 
   def link_column_sample_count_direct(rec)
-    my_ajax_link_to(fn(rec.sample_count_direct),
-                      url_for(:action           => :list_session_statistic_historic_single_record,
+    ajax_link(fn(rec.sample_count_direct), {
+                              :action           => :list_session_statistic_historic_single_record,
                               :update_area      => @update_area,
                               :groupfilter      => {
                                 :Blocking_Session           => rec.root_blocking_session,
@@ -93,7 +93,7 @@ end
                                 :Min_Snap_ID                => rec.min_snap_id,
                                 :Max_Snap_ID                => rec.max_snap_id
                               }.merge(get_db_version >= '11.2' ? {:Blocking_Instance => rec.root_blocking_inst_id} : {})
-                      ),
+                      },
                       :title=>t(:dba_list_dml_locks_historic_detail_link_column_sample_count_hint, :default=>"Show records from active session history with blocking of this session")
     )
   end

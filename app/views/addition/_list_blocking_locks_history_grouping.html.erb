@@ -8,12 +8,11 @@ end
 
 
 def link_column(result, value, newgroupkey, action, linktitle)
-  my_ajax_link_to(value,
-      url_for({:action       => action,
+  ajax_link(value,
+              {:action       => action,
                :groupfilter  => @groupfilter.merge({@groupkey => result.group_value}),
                :update_area  => @update_area
-              }.merge(newgroupkey)
-             ),
+              }.merge(newgroupkey),
        :title=>linktitle)
 end
 
@@ -90,27 +89,26 @@ def link_column_caption(rec, caption, value)
 end
 
 def link_column_blocking_reason_cascade(rec, value)
-    my_ajax_link_to(value,
-        url_for({:action       => "list_blocking_reason_cascade",
+    ajax_link(value,
+                {:action       => "list_blocking_reason_cascade",
                  :update_area  => @update_area,
                  :snapshotts   => localeDateTime(rec.max_snapshotts),
                  :instance     => rec.instance_number,
                  :sid          => rec.sid,
                  :serialno     => rec.serialno
-                }
-               ),
+                },
          :title => "Anzeige der kompletten Kaskade der auslösenden Blocker für diese Session")
 end
 
 def link_column_blocked(rec, value)
-  my_ajax_link_to(value,
-   url_for( :action            => 'list_blocking_locks_history_hierarchy_detail',
+  ajax_link(value, {
+            :action            => 'list_blocking_locks_history_hierarchy_detail',
             :update_area       => @update_area,
             :snapshotts        => localeDateTime(rec.max_snapshotts),
             :blocking_instance => rec.blocking_instance_number,
             :blocking_sid      => rec.blocking_sid,
             :blocking_serialno => rec.blocking_serialno
-          ),
+          },
    :title=>'Anzeige der durch diese blocking Session geblockten Sessions')
 end
 

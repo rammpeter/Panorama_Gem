@@ -27,13 +27,13 @@
    @update_area = get_unique_area_id
 
     def link_column_sid(rec)
-      my_ajax_link_to("#{rec.instance_number}:#{rec.sid},#{rec.serialno}",
-        url_for( :action            => "show_session_detail",
+      ajax_link("#{rec.instance_number}:#{rec.sid},#{rec.serialno}", {
+                 :action            => "show_session_detail",
                  :instance          => rec.inst_id,
                  :sid               => rec.sid,
                  :serialno          => rec.serialno,
                  :update_area       => @update_area
-                 ),
+                },
          :title => t(:dba_list_dml_locks_link_sid_hint, :default=>'List details for session')
        )
     end
@@ -41,32 +41,32 @@
    # TODO statt html-Inhalten Data des Grid verändern
    def link_column_module(rec)
      local_update_area = "explain_module_info_#{rec.rownum}"
-     my_ajax_link_to(rec.module,
-       url_for(:action => :explain_info,
+     ajax_link(rec.module, {
+               :action => :explain_info,
                :info=>rec.module,
                :update_area=>local_update_area
-       ),
+       },
      :title => t(:dba_list_dml_locks_link_module_hint, :default=>'Further explanation for module') ) + "<div id=\"#{local_update_area}\"></div>".html_safe
    end
 
    def link_column_action(rec)
      local_update_area = "explain_action_info_#{rec.rownum}"
-     my_ajax_link_to(rec.action,
-       url_for(:action => :explain_info,
+     ajax_link(rec.action, {
+               :action => :explain_info,
                :info=>rec.action,
                :update_area=>local_update_area
-       ),
+       },
      :title => t(:dba_list_dml_locks_link_action_hint, :default=>'Further explanation for action') ) + "<div id=\"#{local_update_area}\"></div>".html_safe
    end
 
    def link_column_blocking_sid(rec)
-     my_ajax_link_to(rec.blocking_instance_number ? "#{rec.blocking_instance_number}:#{rec.blocking_sid},#{rec.blocking_serialno}" : "",
-     url_for( :action            => "show_session_detail",
+     ajax_link(rec.blocking_instance_number ? "#{rec.blocking_instance_number}:#{rec.blocking_sid},#{rec.blocking_serialno}" : "", {
+              :action            => "show_session_detail",
               :instance          => rec.blocking_instance_number,
               :sid               => rec.blocking_sid,
               :serialno          => rec.blocking_serialno,
               :update_area       => @update_area
-              ),
+             },
       :title => t(:dba_list_dml_locks_link_sid_hint, :default=>'List details for session')
     )
    end
@@ -75,15 +75,15 @@
      unless rec.waitingforobject
            ""
      else
-       my_ajax_link_to("Row_Wait_File#=#{rec.row_wait_file_no}, Row_Wait_Block#=#{rec.row_wait_block_no}, Row_Wait_Row#=#{rec.row_wait_row_no}",
-                         url_for(:action           => :convert_to_rowid,
+       ajax_link("Row_Wait_File#=#{rec.row_wait_file_no}, Row_Wait_Block#=#{rec.row_wait_block_no}, Row_Wait_Row#=#{rec.row_wait_row_no}", {
+                                 :action           => :convert_to_rowid,
                                  :update_area      => "lockdetail_#{rec.row_num}",
                                  :waitingforobject => rec.waitingforobject,
                                  :data_object_id   => rec.data_object_id,
                                  :row_wait_file_no => rec.row_wait_file_no,
                                  :row_wait_block_no => rec.row_wait_block_no,
                                  :row_wait_row_no  => rec.row_wait_row_no
-                         ),
+                         },
                          :title=>t(:dba_list_dml_locks_link_column_blocking_object_hint, :default=>"Determine associated rowid")
             )+"<div id=\"lockdetail_#{rec.row_num}\"></div>".html_safe
      end

@@ -8,15 +8,14 @@ end
 
 
 def link_column_blocking_reason_cascade(rec, value)
-    my_ajax_link_to(value,
-        url_for({:action       => "list_blocking_reason_cascade",
+    ajax_link(value,
+                {:action       => "list_blocking_reason_cascade",
                  :update_area  => @update_area,
                  :snapshotts   => localeDateTime(rec.snapshotts),
                  :instance     => rec.instance_number,
                  :sid          => rec.sid,
                  :serialno     => rec.serialno
-                }
-               ),
+                },
          :title => "Anzeige der kompletten Kaskade der auslösenden Blocker für diese Session")
 end
 

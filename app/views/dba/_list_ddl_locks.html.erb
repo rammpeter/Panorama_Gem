@@ -2,13 +2,13 @@
    @update_area = get_unique_area_id
 
     def link_column_session(instance, sid, serialno)
-   my_ajax_link_to("#{instance}:#{sid},#{serialno}",
-   url_for( :action            => "show_session_detail",
+   ajax_link("#{instance}:#{sid},#{serialno}", {
+            :action            => "show_session_detail",
             :instance          => instance,
             :sid               => sid,
             :serialno          => serialno,
             :update_area       => @update_area
-            ),
+           },
     :title => "Details zur Session"
   )
  end

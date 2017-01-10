@@ -96,15 +96,15 @@ module DiagramHelper
     # JavaScript-Array aufbauen mit Daten
     output = ""
     output << "jQuery(function($){"
-    output << "var data_array = ["
+    output << "var data_array = [\n"
     graph_array.each do |g|                                             # Ausgabe mit groesstem beginnen
-      output << "  { label: '#{g[0]}',"
+      output << "  { label: '#{g[0]}',\n"
       output << "    data: ["
       result_data_array.each do |s|
         output << "[#{milliSec1970(s[:timestamp])}, #{s[g[0]]}],"
       end
-      output << "    ]"
-      output << "  },"
+      output << "    ]\n"
+      output << "  },\n"
     end
     output << "];"
 
@@ -119,10 +119,13 @@ module DiagramHelper
 
     output << "});"
 
-    html="<div id='#{plot_area_id}'></div>"
     respond_to do |format|
-      format.js {render :js => "$('##{params[:update_area]}').html('#{j html}');
-                                #{ output}"
+      format.html {render :html => "
+        <div id='#{plot_area_id}'></div>
+        <script type='text/javascript'>
+        #{output}
+        </script>
+        ".html_safe
       }
     end
 

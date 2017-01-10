@@ -1,14 +1,14 @@
 <%
 def link_column_sql(rec, value)
-    my_ajax_link_to(value,
-    url_for(:controller => "dba_history",
+    ajax_link(value, {
+            :controller => "dba_history",
             :action     => "show_using_sqls_historic",
             :time_selection_start  => @snapshotts[0,16],   # Sekunden des Zeitstempels abschneiden
             :time_selection_end    => @snapshotts[0,16],   # Sekunden des Zeitstempels abschneiden
             :ObjectOwner=> rec.owner,
             :ObjectName => rec.name,
             :update_area=> "list_db_cache_historic_snap_detail_area"
-          ),
+          },
    :title=>"Anzeige der SQL-Statements mit Nutzung dieses Objektes im Zeitraum (unterhalb)")
 end
 

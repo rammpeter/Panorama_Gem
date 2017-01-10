@@ -36,10 +36,8 @@ class DragnetControllerTest < ActionController::TestCase
       else
         # _1_1_4 excluded because ORA600 on Oracle12.1
         if !['_0_7', '_1_1_4', '_3_4', '_3_5', '_7_1'].include?(entry['id'])            # Exclude selections from test which are not executable
-          puts "Testing dragnet function: #{entry['text']}"
           full_entry = extract_entry_by_entry_id(entry['id'])                 # Get SQL from id
 
-          Rails.logger.info "Testing dragnet SQL: #{entry['id']} #{full_entry[:name]}"
           params = {:format=>:js, :dragnet_hidden_entry_id=>entry['id']}
 
           if full_entry[:parameter]
@@ -48,7 +46,7 @@ class DragnetControllerTest < ActionController::TestCase
             end
           end
           post  :exec_dragnet_sql, :params => params                          # call execution of SQL
-          assert_response :success
+          assert_response(:success, "Error testing dragnet SQL #{entry['id']} #{full_entry[:name]}")
 
           params[:commit_show] = 'hugo'
           post  :exec_dragnet_sql, :params => params                          # Call show SQL text

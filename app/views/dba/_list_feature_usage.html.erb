@@ -19,13 +19,6 @@
 
 <%
   def link_info(rec)
-
-    #my_ajax_link_to('Show',
-    #                url_for( :action               => :show_feature_usage_feature_info
-    #                       ),
-    #                :title=>t(:active_session_history_list_blocking_locks_historic_detail_sessions_direct_hint, :default=>"Show sessions blocked by this blocking session")
-    #                )
-
     unless rec.feature_info.nil?
       "<a href='#' onclick=\"jQuery('##{@update_area}').text('#{my_html_escape(rec.feature_info)}'); return false;\">Show</a>".html_safe
     end

@@ -3,8 +3,8 @@
 
   def link_blocked_sessions_direct(rec)
     if rec.blocked_sessions_direct != 0
-      my_ajax_link_to(rec.blocked_sessions_direct == 1 ? rec.max_blocked_session_direct : "< #{fn(rec.blocked_sessions_direct)} >",
-                      url_for( :action               => :list_blocking_locks_historic_detail,
+      ajax_link(rec.blocked_sessions_direct == 1 ? rec.max_blocked_session_direct : "< #{fn(rec.blocked_sessions_direct)} >", {
+                               :action               => :list_blocking_locks_historic_detail,
                                :update_area          => @update_area,
                                :sample_id            => @sample_id,
                                :min_snap_id          => rec.min_snap_id,
@@ -16,7 +16,7 @@
                                :blocking_instance    => rec.instance_number,
                                :blocking_session     => rec.session_id,
                                :blocking_session_serialno => rec.session_serialno
-                             ),
+                             },
                       :title=>t(:active_session_history_list_blocking_locks_historic_detail_sessions_direct_hint, :default=>"Show sessions blocked by this blocking session")
                       )
     end
@@ -30,8 +30,8 @@
 
   def link_column_sql_id(rec)
     if rec.sql_id && rec.sql_id['<']
-      my_ajax_link_to(rec.sql_id,
-        url_for(:action     => :list_session_statistic_historic_grouping,
+      ajax_link(rec.sql_id, {
+              :action     => :list_session_statistic_historic_grouping,
               :groupfilter  => {
                                 :Instance                 => rec.instance_number,
                                 :Session_ID               => rec.session_id,
@@ -46,7 +46,7 @@
                         },
               :groupby      => 'SQL-ID',
               :update_area  => @update_area
-            ),
+            },
          :title=>t(:active_session_history_list_blocking_locks_historic_detail_link_sql_id_hint, :default=>"Show wait history of blocked session grouped by SQL-ID")
       )
     else
@@ -55,8 +55,8 @@
   end
 
   def link_column_sid(rec)
-      my_ajax_link_to(rec.session_id,
-        url_for(:action     => :list_session_statistic_historic_grouping,
+      ajax_link(rec.session_id, {
+              :action     => :list_session_statistic_historic_grouping,
               :groupfilter  => {
                                 :Instance             => rec.instance_number,
                                 :Session_ID           => rec.session_id,
@@ -70,7 +70,7 @@
                         },
               :groupby      => 'Session/Sn.',
               :update_area  => @update_area
-            ),
+            },
          :title=>t(:active_session_history_list_blocking_locks_historic_detail_link_sid_hint, :default=>"Show wait history of blocked session")
       )
   end
@@ -80,8 +80,8 @@
   end
 
   def link_column_sample_count_direct(rec)
-    my_ajax_link_to(fn(rec.sample_count_direct),
-                      url_for(:action           => :list_session_statistic_historic_single_record,
+    ajax_link(fn(rec.sample_count_direct), {
+                              :action           => :list_session_statistic_historic_single_record,
                               :update_area      => @update_area,
                               :groupfilter      => {
                                 :Instance                 => rec.instance_number,
@@ -96,7 +96,7 @@
                                 :Min_Snap_ID              => rec.min_snap_id,
                                 :Max_Snap_ID              => rec.max_snap_id
                               }
-                      ),
+                      },
                       :title=>t(:dba_list_dml_locks_historic_detail_link_column_sample_count_hint, :default=>"Show records from active session history with blocking of this session")
     )
   end

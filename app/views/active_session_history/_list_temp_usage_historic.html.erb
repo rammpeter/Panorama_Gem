@@ -21,14 +21,13 @@
      groupfilter = @groupfilter.clone
      groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :minutes)
      groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+60, :minutes)
-     my_ajax_link_to(fn(rec.sample_count),
-                     url_for({:action        => :list_temp_usage_historic,
+     ajax_link(fn(rec.sample_count),
+                             {:action        => :list_temp_usage_historic,
                               :groupfilter   => groupfilter,
                               :time_groupby  => @time_groupby,
                               :fuzzy_seconds => @fuzzy_seconds,
                               :update_area   => @update_area
-                             }
-                     ),
+                             },
                      :title=>"Show values for time period #{localeDateTime(rec.start_sample_time)} until #{localeDateTime(rec.end_sample_time)} in same structure"
      )
 
@@ -38,12 +37,11 @@
      groupfilter = @groupfilter.clone
      groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :minutes)
      groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+60, :minutes)
-     my_ajax_link_to(fn(rec.sample_count),
-                     url_for({:action        => :list_session_statistic_historic_single_record,
+     ajax_link(fn(rec.sample_count),
+                             {:action        => :list_session_statistic_historic_single_record,
                               :groupfilter   => groupfilter,
                               :update_area   => @update_area
-                             }
-                     ),
+                             },
                      :title=>"Show single ASH records for time period #{localeDateTime(rec.start_sample_time)} until #{localeDateTime(rec.end_sample_time)}"
      )
 
@@ -54,13 +52,12 @@
      groupfilter = @groupfilter.clone
      groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :minutes)
      groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+60, :minutes)
-     my_ajax_link_to(fn(rec.time_waited_secs),
-                     url_for({:action        => :list_session_statistic_historic_grouping,
+     ajax_link(fn(rec.time_waited_secs),
+                             {:action        => :list_session_statistic_historic_grouping,
                               :groupfilter   => groupfilter,
                               :groupby       => 'Instance',
                               :update_area   => @update_area
-                             }
-                     ),
+                             },
                      :title=>"Show active session history for #{localeDateTime(rec.start_sample_time)} until #{localeDateTime(rec.end_sample_time)}"
      )
    end

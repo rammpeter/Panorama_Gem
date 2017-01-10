@@ -85,15 +85,6 @@ module AjaxHelper
 
 
   # Ajax-Link definieren mit Indikator-Anzeige während Ausführung
-  # Parameter url notfalls mit url_for formatieren
-
-  def my_ajax_link_to(caption, url, html_options={})
-    html_options = prepare_html_options(html_options)
-    link_to(caption ? caption : "", url, html_options)  # internen Rails-Helper verwenden
-  end # my_ajax_link_to
-  #deprecate :my_ajax_link_to
-
-  # Ajax-Link definieren mit Indikator-Anzeige während Ausführung
   # Parameter:
   #   caption:      String
   #   url:          Hash with controller, action, update_area, payload

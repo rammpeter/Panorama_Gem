@@ -7,14 +7,14 @@ def link_column_sql_id(rec, sql_id, child_number, parsing_schema_name)
 end
 
 def link_column_blocked(rec, value)
-  my_ajax_link_to(value,
-   url_for( :action            => 'list_blocking_locks_history_hierarchy_detail',
+  ajax_link(value, {
+            :action            => 'list_blocking_locks_history_hierarchy_detail',
             :update_area       => @update_area,
             :snapshotts        => @snapshotts,
             :blocking_instance => rec.blocking_instance_number,
             :blocking_sid      => rec.blocking_sid,
             :blocking_serialno => rec.blocking_serialno
-          ),
+          },
    :title=>'Anzeige der durch diese blocking Session gelockten Sessions')
 end
 

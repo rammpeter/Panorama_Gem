@@ -143,7 +143,7 @@
 
 
   def link_temp_and_pga_usage(rec, value)
-    my_ajax_post_link(value,     # Verhindern Zeilenumbruch in Anzeige
+    ajax_link(value,     # Verhindern Zeilenumbruch in Anzeige
                     {:action  => :list_temp_usage_historic,
                      :groupfilter  => get_groupfilter(rec, @groupby, rec.group_value),
                      :time_groupby => :day,
@@ -230,14 +230,13 @@
 
 <%
   def link_timeline(group_seconds)
-    my_ajax_link_to("Hidden Auslöser für Timeline",
-                    url_for({:action        => "list_session_statistic_historic_timeline",
+    ajax_link("Hidden Auslöser für Timeline",
+                            {:action        => "list_session_statistic_historic_timeline",
                              :groupfilter   => @groupfilter,
                              :groupby       => @groupby,
                              :group_seconds => group_seconds,
                              :update_area   => "#{@update_area}_timeline"
-                            }
-                    ),
+                            },
                     :style=>"display:none",
                     :id=>"#{@hidden_link_timeline_id}_#{group_seconds}"
     )

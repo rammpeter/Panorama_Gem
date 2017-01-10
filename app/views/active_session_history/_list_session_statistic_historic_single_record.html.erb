@@ -36,12 +36,11 @@
      groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :minutes)
      groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+60, :minutes)   # Sicherstellen, dass nach Abschneiden auf Minute die Folgeminute als Ende engenommen wird
 
-     my_ajax_link_to(fn(rec.sample_count),
-                     url_for({:action       => :list_session_statistic_historic_single_record,
+     ajax_link(fn(rec.sample_count),
+                             {:action       => :list_session_statistic_historic_single_record,
                               :groupfilter  => groupfilter,
                               :update_area  => @update_area,
-                             }
-                     ),
+                             },
                      :title=>'Show single sample records for time slice of grouping'
      )
    end
@@ -61,13 +60,12 @@ end
 
 def link_column_sid(rec)
   if rec.session_id_cnt == 1
-      my_ajax_link_to("#{rec.session_id}, #{rec.session_serial_no}",
-                      url_for({:action       => :list_session_statistic_historic_grouping,
+      ajax_link("#{rec.session_id}, #{rec.session_serial_no}",
+                              {:action       => :list_session_statistic_historic_grouping,
                                :groupfilter  => @groupfilter.merge('Session/Sn.' => "#{rec.session_id}, #{rec.session_serial_no}"),
                                :groupby      => 'Session/Sn.',
                                :update_area  => @update_area,
-                              }
-                      ),
+                              },
                       :title=>t(:active_session_history_list_session_statistic_single_record_link_sid_hint, :default=>"Show active session history for session-ID")
                      )
   else
@@ -80,8 +78,8 @@ def link_column_object(rec)
   unless rec["current_row_no"]  # vor Oracle 11.2
     ""
   else
-    my_ajax_link_to("File#=#{rec.current_file_no}, Block#=#{rec.current_block_no}, Row#=#{rec.current_row_no}#{", Remote-Instance=#{rec.remote_instance_no}" if rec.remote_instance_no}",
-                      url_for(:controller       => :dba,
+    ajax_link("File#=#{rec.current_file_no}, Block#=#{rec.current_block_no}, Row#=#{rec.current_row_no}#{", Remote-Instance=#{rec.remote_instance_no}" if rec.remote_instance_no}", {
+                              :controller       => :dba,
                               :action           => :convert_to_rowid,
                               :update_area      => update_area,
                               :waitingforobject => "#{rec.owner}.#{rec.object_name}",
@@ -89,7 +87,7 @@ def link_column_object(rec)
                               :row_wait_file_no => rec.current_file_no,
                               :row_wait_block_no => rec.current_block_no,
                               :row_wait_row_no  => rec.current_row_no
-                      ),
+                      },
                       :title=>t(:dba_list_dml_locks_link_column_blocking_object_hint, :default=>"Determine associated rowid")
          )+"<div id=\"#{update_area}\"></div>".html_safe
   end
@@ -98,8 +96,8 @@ end
    def link_blocking_sid(rec)
      value = "#{rec["blocking_inst_id"] ? "#{rec.blocking_inst_id}:" : ""}#{rec.blocking_session ? rec.blocking_session : (rec.blocking_session_status=="NO HOLDER" ? "" : rec.blocking_session_status )}"
      if rec["blocking_inst_id"] && rec.blocking_session
-         my_ajax_link_to("#{rec["blocking_inst_id"] ? "#{rec.blocking_inst_id}:" : ""}#{rec.blocking_session ? rec.blocking_session : (rec.blocking_session_status=="NO HOLDER" ? "" : rec.blocking_session_status )}",
-                         url_for({:action       => :list_session_statistic_historic_grouping,
+         ajax_link("#{rec["blocking_inst_id"] ? "#{rec.blocking_inst_id}:" : ""}#{rec.blocking_session ? rec.blocking_session : (rec.blocking_session_status=="NO HOLDER" ? "" : rec.blocking_session_status )}",
+                                 {:action       => :list_session_statistic_historic_grouping,
                                   :groupfilter  => {:DBID                   => @groupfilter[:DBID],
                                                     :time_selection_start   => @groupfilter[:time_selection_start],
                                                     :time_selection_end     => @groupfilter[:time_selection_end],
@@ -109,8 +107,7 @@ end
                                   },
                                   :groupby      => 'Session/Sn.',
                                   :update_area  => @update_area,
-                                 }
-                         ),
+                                 },
                          :title=>t(:active_session_history_list_session_statistic_single_record_link_sid_hint, :default=>"Show active session history for session-ID")
          )
      else

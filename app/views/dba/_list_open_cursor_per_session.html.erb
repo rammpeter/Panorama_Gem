@@ -3,13 +3,13 @@
    @update_area = get_unique_area_id
 
    def link_column_workarea(rec, value)
-       my_ajax_link_to(value,
-       url_for( :controller        => "dba_sga",
+       ajax_link(value, {
+                :controller        => "dba_sga",
                 :action            => "list_cursor_memory",
                 :update_area       => @update_area,
                 :instance          => @instance,
                 :sql_id            => rec.oc_sql_id
-              ),
+              },
         :title => "Anzeige Details des PGA-Workarea"
         )
    end
@@ -18,13 +18,13 @@
      output = rec.own_saddr
      if rec.own_saddr == 'NO'
        output << ": "
-       output << my_ajax_link_to("NO: SID=#{rec.saddr_sid}, Serial#=#{rec.saddr_serialno}",
-                       url_for(:action => :show_session_detail,
+       output << ajax_link("NO: SID=#{rec.saddr_sid}, Serial#=#{rec.saddr_serialno}", {
+                               :action => :show_session_detail,
                                :instance => @instance,
                                :sid      => rec.saddr_sid,
                                :serialno => rec.saddr_serialno,
                                :update_area => @update_area
-                              ),
+                              },
                        :title => "Show details for session referenced by gv$Open_Cursor.SAddr"
         )
      end
