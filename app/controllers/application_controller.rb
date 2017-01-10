@@ -135,7 +135,7 @@ protected
       message = 'ApplicationController.alert: Exception = nil'
     end
     respond_to do |format|
-      format.js { render :js => "alert('#{j "#{header}\n\n#{message}"}');" } # Optional zu erweitern um caller.to_s
+      format.html { render :html => "<sript type='text/javascript'>alert('#{j "#{header}\n\n#{message}"}');</script>" } # Optional zu erweitern um caller.to_s
     end
 
   end

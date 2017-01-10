@@ -30,38 +30,38 @@ class IoControllerTest < ActionController::TestCase
   ################### io_file ######################
   test "list_io_file_history" do
     io_file_key_rules.each do |groupby, value|
-      post :list_io_file_history, :params => { :format=>:js, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
+      post :list_io_file_history, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
       assert_response :success
 
-      post :list_io_file_history, :params => { :format=>:js, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
+      post :list_io_file_history, :params => { :format=>:html, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
       assert_response :success
     end
   end
 
   test "list_io_file_history_grouping" do
     io_file_key_rules.each do |groupby, value|
-      post :list_io_file_history_grouping, :params => { :format=>:js, :groupfilter=>@groupfilter, :groupby=>groupby, :update_area=>:hugo   }
+      post :list_io_file_history_grouping, :params => { :format=>:html, :groupfilter=>@groupfilter, :groupby=>groupby, :update_area=>:hugo   }
       assert_response :success
     end
   end
 
   test "list_io_file_history_samples" do
     io_file_key_rules.each do |groupby, value|
-      post :list_io_file_history_samples, :params => { :format=>:js, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo  }
+      post :list_io_file_history_samples, :params => { :format=>:html, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo  }
       assert_response :success
     end
   end
 
   test "list_io_file_history_timeline" do
     io_file_key_rules.each do |groupby, value|
-      post :list_io_file_history_timeline, :params => { :format=>:js, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo  }
+      post :list_io_file_history_timeline, :params => { :format=>:html, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo  }
       assert_response :success
     end
   end
 
   test "refresh_time_selection" do
     io_file_key_rules.each do |groupby, value|
-      post :refresh_time_selection, :params => { :format=>:js, :groupfilter=>@groupfilter, :grooupby=>'Instance', :repeat_action => :list_io_file_history_grouping, :groupby=>groupby, :update_area=>:hugo }
+      post :refresh_time_selection, :params => { :format=>:html, :groupfilter=>@groupfilter, :grooupby=>'Instance', :repeat_action => :list_io_file_history_grouping, :groupby=>groupby, :update_area=>:hugo }
       assert_response :success   # redirect_to schwierig im Test?
     end
   end
@@ -71,10 +71,10 @@ class IoControllerTest < ActionController::TestCase
   test "list_iostat_detail_history" do
     iostat_detail_key_rules.each do |groupby, value|
       if ENV['DB_VERSION'] >= '11.2'
-        post :list_iostat_detail_history, :params => { :format=>:js, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
+        post :list_iostat_detail_history, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
         assert_response :success
 
-        post :list_iostat_detail_history, :params => { :format=>:js, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
+        post :list_iostat_detail_history, :params => { :format=>:html, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
         assert_response :success
       end
     end
@@ -83,7 +83,7 @@ class IoControllerTest < ActionController::TestCase
   test "list_iostat_detail_history_grouping" do
     iostat_detail_key_rules.each do |groupby, value|
       if ENV['DB_VERSION'] >= '11.2'
-        post :list_iostat_detail_history_grouping, :params => { :format=>:js, :groupfilter=>@groupfilter, :groupby=>groupby, :update_area=>:hugo }
+        post :list_iostat_detail_history_grouping, :params => { :format=>:html, :groupfilter=>@groupfilter, :groupby=>groupby, :update_area=>:hugo }
         assert_response :success
       end
     end
@@ -92,7 +92,7 @@ class IoControllerTest < ActionController::TestCase
   test "list_iostat_detail_history_samples" do
     iostat_detail_key_rules.each do |groupby, value|
       if ENV['DB_VERSION'] >= '11.2'
-        post :list_iostat_detail_history_samples, :params => { :format=>:js, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo  }
+        post :list_iostat_detail_history_samples, :params => { :format=>:html, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo  }
         assert_response :success
       end
     end
@@ -100,7 +100,7 @@ class IoControllerTest < ActionController::TestCase
 
   test "list_iostat_detail_history_timeline" do
     iostat_detail_key_rules.each do |groupby, value|
-      post :list_iostat_detail_history_timeline, :params => { :format=>:js, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo  }
+      post :list_iostat_detail_history_timeline, :params => { :format=>:html, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo  }
       assert_response :success
     end
   end
@@ -109,10 +109,10 @@ class IoControllerTest < ActionController::TestCase
   test "list_iostat_filetype_history" do
     iostat_filetype_key_rules.each do |groupby, value|
       if ENV['DB_VERSION'] >= '11.2'
-        post :list_iostat_filetype_history, :params => { :format=>:js, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
+        post :list_iostat_filetype_history, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
         assert_response :success
 
-        post :list_iostat_filetype_history, :params => { :format=>:js, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
+        post :list_iostat_filetype_history, :params => { :format=>:html, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
         assert_response :success
       end
     end
@@ -121,7 +121,7 @@ class IoControllerTest < ActionController::TestCase
   test "list_iostat_filetype_history_grouping" do
     iostat_filetype_key_rules.each do |groupby, value|
       if ENV['DB_VERSION'] >= '11.2'
-        post :list_iostat_filetype_history_grouping, :params => { :format=>:js, :groupfilter=>@groupfilter, :groupby=>groupby, :update_area=>:hugo }
+        post :list_iostat_filetype_history_grouping, :params => { :format=>:html, :groupfilter=>@groupfilter, :groupby=>groupby, :update_area=>:hugo }
         assert_response :success
       end
     end
@@ -130,7 +130,7 @@ class IoControllerTest < ActionController::TestCase
   test "list_iostat_filetype_history_samples" do
     iostat_filetype_key_rules.each do |groupby, value|
       if ENV['DB_VERSION'] >= '11.2'
-        post :list_iostat_filetype_history_samples, :params => { :format=>:js, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo }
+        post :list_iostat_filetype_history_samples, :params => { :format=>:html, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo }
         assert_response :success
       end
     end
@@ -138,7 +138,7 @@ class IoControllerTest < ActionController::TestCase
 
   test "list_iostat_filetype_history_timeline" do
     iostat_filetype_key_rules.each do |groupby, value|
-      post :list_iostat_filetype_history_timeline, :params => { :format=>:js, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo }
+      post :list_iostat_filetype_history_timeline, :params => { :format=>:html, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo }
       assert_response :success
     end
 
