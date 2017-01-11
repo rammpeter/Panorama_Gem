@@ -21,7 +21,7 @@ class DragnetControllerTest < ActionController::TestCase
   end
 
   test "refresh_selected_data"  do
-    get :refresh_selected_data, :params => {:format=>:js, :entry_id=>"_0_0_3" }
+    get :refresh_selected_data, :params => {:format=>:html, :entry_id=>"_0_0_3" }
     assert_response :success
   end
 
@@ -64,7 +64,7 @@ class DragnetControllerTest < ActionController::TestCase
 
   # Find unique name by random to ensure selection does not already exists in client_info.store
   test "personal_selection" do
-    post :add_personal_selection, :params => {:format=>:js, :update_area=>:hugo, :selection => "
+    post :add_personal_selection, :params => {:format=>:html, :update_area=>:hugo, :selection => "
 {
   name: \"Name of selection in list#{Random.rand(1000000)}\",
   desc: \"Explanation of selection in right dialog\",
@@ -88,7 +88,7 @@ class DragnetControllerTest < ActionController::TestCase
     assert_response :success
 
     # :dragnet_hidden_entry_id=>"_8_0" depends from number of submenus in list
-    post :exec_dragnet_sql, :params => {:format=>:js, :commit_drop=>"Drop personal SQL", :dragnet_hidden_entry_id=>"_8_0", :update_area=>:hugo }
+    post :exec_dragnet_sql, :params => {:format=>:html, :commit_drop=>"Drop personal SQL", :dragnet_hidden_entry_id=>"_8_0", :update_area=>:hugo }
     assert_response :success
 
   end
