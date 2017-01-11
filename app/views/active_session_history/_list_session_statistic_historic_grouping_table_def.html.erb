@@ -88,7 +88,7 @@
                                  else
                                    rec.group_value
                                  end
-      when 'Machine'        then link_machine_ip_info(rec.group_value)
+      when 'Machine'        then link_machine_ip_info(@update_area, rec.group_value)
       when "SQL-ID"         then link_column_sql_id(rec)
     else rec.group_value
     end

@@ -228,11 +228,12 @@ module AjaxHelper
   end
 
 
-  def link_machine_ip_info(machine_name)
+  def link_machine_ip_info(update_area, machine_name)
     ajax_link(machine_name, {
                             :controller   => :env,
                             :action       => :list_machine_ip_info,
-                            :machine_name => machine_name
+                            :machine_name => machine_name,
+                            :update_area  => update_area
     }, :title=>'Show IP name resolution'
     )
 

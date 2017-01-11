@@ -17,7 +17,7 @@ class EnvControllerTest < ActionController::TestCase
   test "should connect to test-db" do
     database = get_current_database
     database[:password] = database_helper_decrypt_value(database[:password])
-    post :set_database_by_params, :params => {:format=>:js, :database => database }
+    post :set_database_by_params, :params => {:format=>:html, :database => database }
     assert_response :success
   end
 
@@ -28,7 +28,7 @@ class EnvControllerTest < ActionController::TestCase
     real_passwd = session[:database][:password]
     params = session[:database]
     params[:password] = "hugo"
-    post :set_database_by_params, :format=>:js, :database => params
+    post :set_database_by_params, :format=>:html, :database => params
     assert_response :success
     expected_fehler_text = "Fehler bei Anmeldung an DB"
     assert @response.body.include?(expected_fehler_text),
@@ -46,13 +46,13 @@ class EnvControllerTest < ActionController::TestCase
       exec_menu_entry_action(m) if m[:class] == "menu"       # Rekursives Abtauchen in Menüstruktur
       if m[:class] == "item" && !controller_action_defined?(m[:controller], m[:action])
         Rails.logger.info "calling #{m[:controller]}/#{m[:action]}"
-        get :render_menu_action, :params => {:format=>:js, :redirect_controller => m[:controller], :redirect_action => m[:action]}
-        assert_response :success
+        get :render_menu_action, :params => {:format=>:html, :redirect_controller => m[:controller], :redirect_action => m[:action], :update_area=>:hugo}
+        assert_response :success, "Error executing #{m[:controller]}/#{m[:action]}, response_code=#{@response.response_code}"
       end
     end
   end
 
-  # Test aller generischer Menü-Einträge ohne korrespondierende Action im Controller
+  # Test aller generischer Menü-Einträge ohne korrespondierende Action im konkreten Controller
   test "render_menu_action" do
     menu_content.each do |mo|
       exec_menu_entry_action(mo)
@@ -62,16 +62,16 @@ class EnvControllerTest < ActionController::TestCase
 
   test "Diverses" do
 
-    post :set_locale, :params => {:format=>:js, :locale=>'de'}
+    post :set_locale, :params => {:format=>:html, :locale=>'de'}
     assert_response :success
 
-    post :set_locale, :params => {:format=>:js, :locale=>'en'}
+    post :set_locale, :params => {:format=>:html, :locale=>'en'}
     assert_response :success
 
-    post :list_dbids, :params => {:format=>:js}
+    post :list_dbids, :params => {:format=>:html, :update_area=>:hugo}
     assert_response :success
 
-    post :set_dbid, :params => {:format=>:js, :dbid =>get_dbid }  # Alten Wert erneut setzen um andere Tests nicht zu gefährden
+    post :set_dbid, :params => {:format=>:html, :dbid =>get_dbid, :update_area=>:hugo }  # Alten Wert erneut setzen um andere Tests nicht zu gefährden
     assert_response :success
 
     # Index destroys your cuurent session, therefore ist should be the last action of test

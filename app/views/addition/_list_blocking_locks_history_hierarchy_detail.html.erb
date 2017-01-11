@@ -19,7 +19,7 @@
 
   def link_single(rec)
     ajax_link("< #{rec.samples} >",
-               ({:action       => "list_blocking_locks_history_single_record",
+                {:action       => "list_blocking_locks_history_single_record",
                  :groupfilter  =>  {:SnapshotTS      => @snapshotts,
                                     :Min_Zeitstempel => @snapshotts,
                                     :Max_Zeitstempel => @snapshotts,

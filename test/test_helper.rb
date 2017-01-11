@@ -138,7 +138,7 @@ class ActiveSupport::TestCase
             controller_action_defined?(m[:controller], m[:action]) &&           # Controller hat eine Action-Methode für diesen Menü-Eintrag
             "#{m[:controller]}_controller".camelize == @controller.class.name   # Nur Menues des aktuellen Controllers testen
           get m[:action], :params => {:format=>:html, :update_area=>:hugo }
-          assert_response(:success, "Error calling #{m[:controller]}/#{m[:action]}")
+          assert_response(:success, "Error calling #{m[:controller]}/#{m[:action]}, response_code=#{@response.response_code}")
         end
       end
     end
