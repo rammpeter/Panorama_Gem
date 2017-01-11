@@ -80,7 +80,7 @@ class DbaSgaControllerTest < ActionController::TestCase
     post :list_sga_components, :params => {:format=>:html, :instance=>1, :update_area=>:hugo }
     assert_response :success
 
-    post :list_sga_components, :format=>:js
+    post :list_sga_components, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
 
     post :list_sql_area_memory, :params => {:format=>:html, :instance=>1, :update_area=>:hugo }
