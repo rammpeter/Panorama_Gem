@@ -62,10 +62,10 @@ class EnvControllerTest < ActionController::TestCase
 
   test "Diverses" do
 
-    post :set_locale, :params => {:format=>:html, :locale=>'de'}
+    post :set_locale, :params => {:format=>:js, :locale=>'de'}
     assert_response :success
 
-    post :set_locale, :params => {:format=>:html, :locale=>'en'}
+    post :set_locale, :params => {:format=>:js, :locale=>'en'}
     assert_response :success
 
     post :list_dbids, :params => {:format=>:html, :update_area=>:hugo}
