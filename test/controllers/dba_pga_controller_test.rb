@@ -20,7 +20,7 @@ class DbaPgaControllerTest < ActionController::TestCase
 
 
   test "list_pga_stat_historic" do
-    post :list_pga_stat_historic, :params => {:format=>:js, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :instance =>1 }
+    post :list_pga_stat_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :instance =>1 }
     assert_response :success
   end
 
