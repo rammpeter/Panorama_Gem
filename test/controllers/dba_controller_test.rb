@@ -21,7 +21,7 @@ class DbaControllerTest < ActionController::TestCase
 
 
   test "dba"       do
-    get  :show_redologs, :format=>:html, :update_area=>:hugo
+    get  :show_redologs, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
 
     post :list_redologs_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
@@ -79,12 +79,12 @@ class DbaControllerTest < ActionController::TestCase
     post  :show_explain_plan, :params => {:format=>:html, :statement => "SELECT SYSDATE FROM DUAL", :update_area=>:hugo }
     assert_response :success
 
-    get  :show_session_waits, :format=>:html, :update_area=>:hugo
+    get  :show_session_waits, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
     #test "show_application" do get  :show_application, :applexec_id => "0";  assert_response :success; end
     #test "show_segment_statistics" do get  :show_segment_statistics;  assert_response :success; end
 
-    get  :segment_stat, :format=>:html, :update_area=>:hugo
+    get  :segment_stat, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
 
 #    get :oracle_parameter, :format=>:html
