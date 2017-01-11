@@ -3,6 +3,7 @@
 #require 'menu_extension_helper'
 require 'connection_holder'
 
+require 'sql_helper'
 require 'key_explanation_helper'
 require 'ajax_helper'
 require 'diagram_helper'
@@ -17,6 +18,7 @@ require_relative '../../config/engine_config'
 
 # Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
+  include SqlHelper
   include KeyExplanationHelper
   include AjaxHelper
   include DiagramHelper
@@ -116,7 +118,6 @@ module ApplicationHelper
     write_to_client_info_store(:current_database, current_database)
   end
 
-
   def get_current_database
     @buffered_current_database = read_from_client_info_store(:current_database) if !defined?(@buffered_current_database) || @buffered_current_database.nil?
     @buffered_current_database
@@ -167,166 +168,7 @@ module ApplicationHelper
     @buffered_time_selection_end
   end
 
-  private
-  def sql_prepare_binds(sql)
-    binds = []
-    if sql.class == Array
-      stmt =sql[0].clone      # Kopieren, da im Stmt nachfolgend Ersetzung von ? durch :A1 .. :A<n> durchgeführt wird
-      # Aufbereiten SQL: Ersetzen Bind-Aliases
-      bind_index = 0
-      while stmt['?']                   # Iteration über Binds
-        bind_index = bind_index + 1
-        bind_alias = ":A#{bind_index}"
-        stmt['?'] = bind_alias          # Ersetzen ? durch Host-Variable
-        unless sql[bind_index]
-          raise "bind value at position #{bind_index} is NULL for '#{bind_alias}' in binds-array for sql: #{stmt}"
-        end
-        raise "bind value at position #{bind_index} missing for '#{bind_alias}' in binds-array for sql: #{stmt}" if sql.count <= bind_index
-        binds << ActiveRecord::Relation::QueryAttribute.new(bind_alias, sql[bind_index], ActiveRecord::Type::Value.new)   # Ab Rails 5
-        # binds << [ ActiveRecord::ConnectionAdapters::Column.new(bind_alias, nil, ActiveRecord::Type::Value.new), sql[bind_index]] # Neu ab Rails 4.2.0, Abstrakter Typ muss angegeben werden
-      end
-    else
-      if sql.class == String
-        stmt = sql
-      else
-        raise "Unsupported Parameter-Class '#{sql.class.name}' for parameter sql of sql_select_all(sql)"
-      end
-    end
-    [stmt, binds]
-  end
 
-  # Translate text in SQL-statement
-  def translate_sql(stmt)
-    stmt.gsub!(/\n[ \n]*\n/, "\n")                                                  # Remove empty lines in SQL-text
-    stmt
-  end
-
-  public
-  # Helper fuer Ausführung SQL-Select-Query,
-  # Parameter: sql = String mit Statement oder Array mit Statement und Bindevariablen
-  #            modifier = proc für Anwendung auf die fertige Row
-  # return Array of Hash mit Columns des Records
-  def sql_select_all(sql, modifier=nil, query_name = 'sql_select_all')   # Parameter String mit SQL oder Array mit SQL und Bindevariablen
-    #### alte standalone-Lösung
-    # stmt, binds = sql_prepare_binds(sql)
-    # result = ConnectionHolder.connection().select_all(stmt, 'sql_select_all', binds)
-    # result.each do |h|
-    #   h.each do |key, value|
-    #     h[key] = value.strip if value.class == String   # Entfernen eines eventuellen 0x00 am Ende des Strings, dies führt zu Fehlern im Internet Explorer
-    #   end
-    #   h.extend SelectHashHelper    # erlaubt, dass Element per Methode statt als Hash-Element zugegriffen werden können
-    #   modifier.call(h) unless modifier.nil?             # Anpassen der Record-Werte
-    # end
-    # result.to_ary                                                               # Ab Rails 4 ist result nicht mehr vom Typ Array, sondern ActiveRecord::Result
-
-    # Mapping auf sql_select_iterator
-
-    result = []
-    sql_select_iterator(sql, modifier, query_name).each do |r|
-      result << r
-    end
-    result
-  end
-
-  # Analog sql_select all, jedoch return ResultIterator mit each-Method
-  # liefert Objekt zur späteren Iteration per each, erst dann wird SQL-Select ausgeführt (jedesmal erneut)
-  # Parameter: sql = String mit Statement oder Array mit Statement und Bindevariablen
-  #            modifier = proc für Anwendung auf die fertige Row
-  def sql_select_iterator(sql, modifier=nil, query_name = 'sql_select_iterator')
-    ConnectionHolder.check_for_open_connection(self)                            # ensure opened Oracle-connection
-    stmt, binds = sql_prepare_binds(sql)
-    SqlSelectIterator.new(translate_sql(stmt), binds, modifier, get_current_database[:query_timeout], query_name)      # kann per Aufruf von each die einzelnen Records liefern
-  end
-
-
-  # Select genau erste Zeile
-  def sql_select_first_row(sql, query_name = 'sql_select_first_row')
-    result = sql_select_all(sql, nil, query_name)
-    return nil if result.empty?
-    result[0]     #.extend SelectHashHelper      # Erweitern Hash um Methodenzugriff auf Elemente
-  end
-
-  # Select genau einen Wert der ersten Zeile des Result
-  def sql_select_one(sql, query_name = 'sql_select_one')
-    result = sql_select_first_row(sql, query_name)
-    return nil unless result
-    result.first[1]           # Value des Key/Value-Tupels des ersten Elememtes im Hash
-  end
-
-  # Einlesen und strukturieren der Datei tnsnames.ora
-  def read_tnsnames
-
-    tnsnames = {}
-
-    if ENV['TNS_ADMIN']
-      tnsadmin = ENV['TNS_ADMIN']
-    else
-      if ENV['ORACLE_HOME']
-        tnsadmin = "#{ENV['ORACLE_HOME']}/network/admin"
-      else
-        logger.warn 'read_tnsnames: TNS_ADMIN or ORACLE_HOME not set in environment, no TNS names provided'
-        return tnsnames # Leerer Hash
-      end
-    end
-
-    fullstring = IO.read( "#{tnsadmin}/tnsnames.ora" )
-    
-    while true 
-      # Ermitteln TNSName
-      start_pos_description = fullstring.index('DESCRIPTION')
-      break unless start_pos_description                               # Abbruch, wenn kein weitere DESCRIPTION im String
-      tns_name = fullstring[0..start_pos_description-1]
-      while tns_name[tns_name.length-1,1].match '[=,\(, ,\n,\r]'            # Zeichen nach dem TNSName entfernen
-        tns_name = tns_name[0, tns_name.length-1]                         # Letztes Zeichen des Strings entfernen
-      end
-      while tns_name.index("\n")                                        # Alle Zeilen vor der mit DESCRIPTION entfernen
-        tns_name = tns_name[tns_name.index("\n")+1, 10000]                # Wert akzeptieren nach Linefeed wenn enthalten
-      end
-      fullstring = fullstring[start_pos_description + 10, 1000000]     # Rest des Strings fuer weitere Verarbeitung
-
-      next if tns_name[0,1] == "#"                                              # Auskommentierte Zeile
-
-      # ermitteln Hostname
-      start_pos_host = fullstring.index('HOST')
-      # Naechster Block mit Description beginnen wenn kein Host enthalten oder in naechster Description gefunden
-      next if start_pos_host==nil || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos_host)    # Alle weiteren Treffer muessen vor der naechsten Description liegen
-      fullstring = fullstring[start_pos_host + 5, 1000000]
-      hostName = fullstring[0..fullstring.index(')')-1]
-      hostName = hostName.delete(' ').delete('=') # Entfernen Blank u.s.w
-      
-      # ermitteln Port
-      start_pos_port = fullstring.index('PORT')
-      # Naechster Block mit Description beginnen wenn kein Port enthalten oder in naechster Description gefunden
-      next if start_pos_port==nil || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos_port) # Alle weiteren Treffer muessen vor der naechsten Description liegen
-      fullstring = fullstring[start_pos_port + 5, 1000000]
-      port = fullstring[0..fullstring.index(')')-1]
-      port = port.delete(' ').delete('=')      # Entfernen Blank u.s.w.
-
-      # ermitteln SID oder alternativ Instance_Name oder Service_Name
-      sid_tag_length = 4
-      sid_usage = :SID
-      start_pos_sid = fullstring.index('SID=')                                  # i.d.R. folgt unmittelbar ein "="
-      start_pos_sid = fullstring.index('SID ') if start_pos_sid.nil?            # evtl. " " zwischen SID und "="
-      if start_pos_sid.nil? || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos_sid) # Alle weiteren Treffer muessen vor der naechsten Description liegen
-        sid_tag_length = 12
-        sid_usage = :SERVICE_NAME
-        start_pos_sid = fullstring.index('SERVICE_NAME')
-      end
-      # Naechster Block mit Description beginnen wenn kein SID enthalten oder in naechster Description gefunden
-      next if start_pos_sid==nil || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos_sid) # Alle weiteren Treffer muessen vor der naechsten Description liegen
-      fullstring = fullstring[start_pos_sid + sid_tag_length, 1000000]               # Rest des Strings fuer weitere Verarbeitung
-      
-      sidName = fullstring[0..fullstring.index(')')-1]
-      sidName = sidName.delete(' ').delete('=')   # Entfernen Blank u.s.w.
-   
-      # Kompletter Record gefunden
-      tnsnames[tns_name] = {:hostName => hostName, :port => port, :sidName => sidName, :sidUsage =>sid_usage }
-    end
-    tnsnames
-  rescue Exception => e
-    Rails.logger.error "Error processing tnsnames.ora: #{e.message}"
-    tnsnames
-  end
 
   # Genutzt zur Anzeige im zentralen Screen
   def current_tns

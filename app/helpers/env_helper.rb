@@ -101,5 +101,79 @@ module EnvHelper
     end
   end
 
+  # Einlesen und strukturieren der Datei tnsnames.ora
+  def read_tnsnames
+
+    tnsnames = {}
+
+    if ENV['TNS_ADMIN']
+      tnsadmin = ENV['TNS_ADMIN']
+    else
+      if ENV['ORACLE_HOME']
+        tnsadmin = "#{ENV['ORACLE_HOME']}/network/admin"
+      else
+        logger.warn 'read_tnsnames: TNS_ADMIN or ORACLE_HOME not set in environment, no TNS names provided'
+        return tnsnames # Leerer Hash
+      end
+    end
+
+    fullstring = IO.read( "#{tnsadmin}/tnsnames.ora" )
+
+    while true
+      # Ermitteln TNSName
+      start_pos_description = fullstring.index('DESCRIPTION')
+      break unless start_pos_description                               # Abbruch, wenn kein weitere DESCRIPTION im String
+      tns_name = fullstring[0..start_pos_description-1]
+      while tns_name[tns_name.length-1,1].match '[=,\(, ,\n,\r]'            # Zeichen nach dem TNSName entfernen
+        tns_name = tns_name[0, tns_name.length-1]                         # Letztes Zeichen des Strings entfernen
+      end
+      while tns_name.index("\n")                                        # Alle Zeilen vor der mit DESCRIPTION entfernen
+        tns_name = tns_name[tns_name.index("\n")+1, 10000]                # Wert akzeptieren nach Linefeed wenn enthalten
+      end
+      fullstring = fullstring[start_pos_description + 10, 1000000]     # Rest des Strings fuer weitere Verarbeitung
+
+      next if tns_name[0,1] == "#"                                              # Auskommentierte Zeile
+
+      # ermitteln Hostname
+      start_pos_host = fullstring.index('HOST')
+      # Naechster Block mit Description beginnen wenn kein Host enthalten oder in naechster Description gefunden
+      next if start_pos_host==nil || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos_host)    # Alle weiteren Treffer muessen vor der naechsten Description liegen
+      fullstring = fullstring[start_pos_host + 5, 1000000]
+      hostName = fullstring[0..fullstring.index(')')-1]
+      hostName = hostName.delete(' ').delete('=') # Entfernen Blank u.s.w
+
+      # ermitteln Port
+      start_pos_port = fullstring.index('PORT')
+      # Naechster Block mit Description beginnen wenn kein Port enthalten oder in naechster Description gefunden
+      next if start_pos_port==nil || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos_port) # Alle weiteren Treffer muessen vor der naechsten Description liegen
+      fullstring = fullstring[start_pos_port + 5, 1000000]
+      port = fullstring[0..fullstring.index(')')-1]
+      port = port.delete(' ').delete('=')      # Entfernen Blank u.s.w.
+
+      # ermitteln SID oder alternativ Instance_Name oder Service_Name
+      sid_tag_length = 4
+      sid_usage = :SID
+      start_pos_sid = fullstring.index('SID=')                                  # i.d.R. folgt unmittelbar ein "="
+      start_pos_sid = fullstring.index('SID ') if start_pos_sid.nil?            # evtl. " " zwischen SID und "="
+      if start_pos_sid.nil? || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos_sid) # Alle weiteren Treffer muessen vor der naechsten Description liegen
+        sid_tag_length = 12
+        sid_usage = :SERVICE_NAME
+        start_pos_sid = fullstring.index('SERVICE_NAME')
+      end
+      # Naechster Block mit Description beginnen wenn kein SID enthalten oder in naechster Description gefunden
+      next if start_pos_sid==nil || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos_sid) # Alle weiteren Treffer muessen vor der naechsten Description liegen
+      fullstring = fullstring[start_pos_sid + sid_tag_length, 1000000]               # Rest des Strings fuer weitere Verarbeitung
+
+      sidName = fullstring[0..fullstring.index(')')-1]
+      sidName = sidName.delete(' ').delete('=')   # Entfernen Blank u.s.w.
+
+      # Kompletter Record gefunden
+      tnsnames[tns_name] = {:hostName => hostName, :port => port, :sidName => sidName, :sidUsage =>sid_usage }
+    end
+    tnsnames
+  rescue Exception => e
+    Rails.logger.error "Error processing tnsnames.ora: #{e.message}"
+    tnsnames
+  end
 
 end
