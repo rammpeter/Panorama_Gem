@@ -31,7 +31,6 @@ class DragnetControllerTest < ActionController::TestCase
   def execute_tree(node)
     node.each do |entry|
       if entry['children']
-        puts "Testing subtree: #{entry['text']}"
         execute_tree(entry['children'])        # Test subnode's entries
       else
         # _1_1_4 excluded because ORA600 on Oracle12.1
