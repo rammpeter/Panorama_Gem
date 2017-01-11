@@ -49,7 +49,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
     call_controllers_menu_entries_with_actions
   end
 
-  test "show_object_size"       do get  :show_object_size, :format=>:html, :update_area=>:hugo;   assert_response :success; end
+  test "show_object_size"       do get  :show_object_size, :params => {:format=>:html, :update_area=>:hugo };   assert_response :success; end
   test "list_objects"           do post :list_objects, :params => {:format=>:html, :tablespace=>{:name=>"USERS"}, :schema=>{:name=>"SCOTT"}, :update_area=>:hugo };       assert_response :success; end
 
   test "list_table_description" do
