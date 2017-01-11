@@ -21,7 +21,7 @@ class DragnetControllerTest < ActionController::TestCase
   end
 
   test "refresh_selected_data"  do
-    get :refresh_selected_data, :params => {:format=>:html, :entry_id=>"_0_0_3" }
+    get :refresh_selected_data, :params => {:format=>:js, :entry_id=>"_0_0_3" }
     assert_response :success
   end
 
