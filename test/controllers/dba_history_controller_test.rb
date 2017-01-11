@@ -32,16 +32,16 @@ class DbaHistoryControllerTest < ActionController::TestCase
 
 
   test "segment_stat_historic" do
-    post :list_segment_stat_historic_sum, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
+    post :list_segment_stat_historic_sum, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
     assert_response :success
-    post :list_segment_stat_historic_sum, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
-    assert_response :success
-
-    post :list_segment_stat_hist_detail, :params => {:format=>:js, :instance=>1, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-         :owner=>'sys', :object_name=>'SEG$' }
+    post :list_segment_stat_historic_sum, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :update_area=>:hugo }
     assert_response :success
 
-    post :list_segment_stat_hist_sql, :params => {:format=>:js, :instance=>1,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :owner =>"sys", :object_name=> "all_tables" }
+    post :list_segment_stat_hist_detail, :params => {:format=>:html, :instance=>1, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
+         :owner=>'sys', :object_name=>'SEG$', :update_area=>:hugo }
+    assert_response :success
+
+    post :list_segment_stat_hist_sql, :params => {:format=>:html, :instance=>1,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :owner =>"sys", :object_name=> "all_tables", :update_area=>:hugo }
     assert_response :success
   end
 
@@ -58,75 +58,75 @@ class DbaHistoryControllerTest < ActionController::TestCase
      'BufferGets',
      'ClusterWaits'
     ].each do |topSort|
-      post :list_sql_area_historic, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :maxResultCount=>100, :topSort=>topSort }
+      post :list_sql_area_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :maxResultCount=>100, :topSort=>topSort, :update_area=>:hugo }
       assert_response :success
 
-      post :list_sql_area_historic, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :maxResultCount=>100, :topSort=>topSort, :sql_id=>'14147ß1471' }
+      post :list_sql_area_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :maxResultCount=>100, :topSort=>topSort, :sql_id=>'14147ß1471', :update_area=>:hugo }
       assert_response :success
 
-      post :list_sql_area_historic, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :maxResultCount=>100, :topSort=>topSort, :filter=>'hugo<>%&' }
+      post :list_sql_area_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :maxResultCount=>100, :topSort=>topSort, :filter=>'hugo<>%&', :update_area=>:hugo }
       assert_response :success
 
-      post :list_sql_area_historic, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :maxResultCount=>100, :topSort=>topSort, :instance=>1 }
+      post :list_sql_area_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :maxResultCount=>100, :topSort=>topSort, :instance=>1, :update_area=>:hugo }
       assert_response :success
     end
 
-    post :list_sql_detail_historic, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-         :sql_id=>@sga_sql_id }
+    post :list_sql_detail_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
+         :sql_id=>@sga_sql_id, :update_area=>:hugo }
      assert_response :success
 
-    post :list_sql_detail_historic, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-         :sql_id=>@sga_sql_id, :instance=>1 }
+    post :list_sql_detail_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
+         :sql_id=>@sga_sql_id, :instance=>1, :update_area=>:hugo }
     assert_response :success
 
-    post :list_sql_detail_historic, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-         :sql_id=>@sga_sql_id, :parsing_schema_name=>@sga_parsing_schema_Name }
+    post :list_sql_detail_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
+         :sql_id=>@sga_sql_id, :parsing_schema_name=>@sga_parsing_schema_Name, :update_area=>:hugo }
     assert_response :success
 
-    post :list_sql_history_snapshots, :params => {:format=>:js, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name, :groupby=>:day, :update_area=>:hugo }
+    post :list_sql_history_snapshots, :params => {:format=>:html, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name, :groupby=>:day, :update_area=>:hugo, :update_area=>:hugo }
     assert_response :success
-    post :list_sql_history_snapshots, :params => {:format=>:js, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
+    post :list_sql_history_snapshots, :params => {:format=>:html, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo, :update_area=>:hugo }
     assert_response :success
 
-    post :list_sql_historic_execution_plan, :params => {:format=>:js, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name,
-                                                        :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
+    post :list_sql_historic_execution_plan, :params => {:format=>:html, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name,
+                                                        :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
     assert_response :success
   end
 
 
   test "show_using_sqls_historic" do
-    post :show_using_sqls_historic, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-                                    :ObjectName => "WRH$_sysmetric_history" }
+    post :show_using_sqls_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
+                                    :ObjectName => "WRH$_sysmetric_history", :update_area=>:hugo }
     assert_response :success
   end
 
   test "list_system_events_historic" do
-    post :list_system_events_historic, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-         :instance=>1 }
+    post :list_system_events_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
+         :instance=>1, :update_area=>:hugo }
      assert_response :success
   end
 
   test "list_system_events_historic_detail" do
-    post :list_system_events_historic_detail, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-         :instance=>1, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :event_id=>1, :event_name=>"Hugo" }
+    post :list_system_events_historic_detail, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
+         :instance=>1, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :event_id=>1, :event_name=>"Hugo", :update_area=>:hugo }
      assert_response :success
      assert_response :success
   end
 
   test "list_system_statistics_historic" do
-    post :list_system_statistics_historic, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :stat_class=> {:bit => 1}, :instance=>1, :sum=>1 }
+    post :list_system_statistics_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :stat_class=> {:bit => 1}, :instance=>1, :sum=>1, :update_area=>:hugo }
     assert_response :success
-    post :list_system_statistics_historic, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :stat_class=> {:bit => 1}, :instance=>1, :full=>1, :verdichtung=>{:tag =>"MI"} }
+    post :list_system_statistics_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :stat_class=> {:bit => 1}, :instance=>1, :full=>1, :verdichtung=>{:tag =>"MI"}, :update_area=>:hugo }
     assert_response :success
-    post :list_system_statistics_historic, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :stat_class=> {:bit => 1}, :instance=>1, :full=>1, :verdichtung=>{:tag =>"HH24"} }
+    post :list_system_statistics_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :stat_class=> {:bit => 1}, :instance=>1, :full=>1, :verdichtung=>{:tag =>"HH24"}, :update_area=>:hugo }
     assert_response :success
-    post :list_system_statistics_historic, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :stat_class=> {:bit => 1}, :instance=>1, :full=>1, :verdichtung=>{:tag =>"DD"} }
+    post :list_system_statistics_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :stat_class=> {:bit => 1}, :instance=>1, :full=>1, :verdichtung=>{:tag =>"DD"}, :update_area=>:hugo }
     assert_response :success
   end
 
   test "list_system_statistics_historic_detail" do
-    post :list_system_statistics_historic_detail, :params => {:format=>:js,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1,
-         :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :stat_id=>1, :stat_name=>"Hugo" }
+    post :list_system_statistics_historic_detail, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1,
+         :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :stat_id=>1, :stat_name=>"Hugo", :update_area=>:hugo }
     assert_response :success
   end
 
@@ -145,79 +145,79 @@ class DbaHistoryControllerTest < ActionController::TestCase
      time_selection_end = time_selection_end.strftime("%d.%m.%Y %H:%M")
      time_selection_start = time_selection_start.strftime("%d.%m.%Y %H:%M")
 
-     post :list_sysmetric_historic, :params => {:format=>:js,  :time_selection_start =>time_selection_start, :time_selection_end =>time_selection_end, :detail=>1, :grouping=>{:tag =>grouping} }
+     post :list_sysmetric_historic, :params => {:format=>:html,  :time_selection_start =>time_selection_start, :time_selection_end =>time_selection_end, :detail=>1, :grouping=>{:tag =>grouping}, :update_area=>:hugo }
      assert_response :success
-     post :list_sysmetric_historic, :params => {:format=>:js,  :time_selection_start =>time_selection_start, :time_selection_end =>time_selection_end, :instance=>1, :detail=>1, :grouping=>{:tag =>grouping} }
+     post :list_sysmetric_historic, :params => {:format=>:html,  :time_selection_start =>time_selection_start, :time_selection_end =>time_selection_end, :instance=>1, :detail=>1, :grouping=>{:tag =>grouping}, :update_area=>:hugo }
      assert_response :success
-     post :list_sysmetric_historic, :params => {:format=>:js,  :time_selection_start =>time_selection_start, :time_selection_end =>time_selection_end, :summary=>1, :grouping=>{:tag =>grouping} }
+     post :list_sysmetric_historic, :params => {:format=>:html,  :time_selection_start =>time_selection_start, :time_selection_end =>time_selection_end, :summary=>1, :grouping=>{:tag =>grouping}, :update_area=>:hugo }
      assert_response :success
-     post :list_sysmetric_historic, :params => {:format=>:js,  :time_selection_start =>time_selection_start, :time_selection_end =>time_selection_end, :instance=>1, :summary=>1, :grouping=>{:tag =>grouping} }
+     post :list_sysmetric_historic, :params => {:format=>:html,  :time_selection_start =>time_selection_start, :time_selection_end =>time_selection_end, :instance=>1, :summary=>1, :grouping=>{:tag =>grouping}, :update_area=>:hugo }
      assert_response :success
    end
   end
 
   test "mutex_statistics_historic" do
     [:Blocker, :Waiter, :Timeline].each do |submit_name|
-      post :list_mutex_statistics_historic, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, submit_name=>"Hugo" }
+      post :list_mutex_statistics_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, submit_name=>"Hugo", :update_area=>:hugo }
       assert_response :success
-      post :list_mutex_statistics_historic, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, submit_name=>"Hugo" }
+      post :list_mutex_statistics_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, submit_name=>"Hugo", :update_area=>:hugo }
       assert_response :success
     end
 
-    get :list_mutex_statistics_historic_samples, :params => {:format=>:js, :instance=>1, :mutex_type=>:Hugo, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-        :filter=>:Blocking_Session, :filter_session=>@sid }
+    get :list_mutex_statistics_historic_samples, :params => {:format=>:html, :instance=>1, :mutex_type=>:Hugo, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
+        :filter=>:Blocking_Session, :filter_session=>@sid, :update_area=>:hugo }
     assert_response :success
 
-    get :list_mutex_statistics_historic_samples, :params => {:format=>:js, :instance=>1, :mutex_type=>:Hugo, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-        :filter=>:Requesting_Session, :filter_session=>@sid }
+    get :list_mutex_statistics_historic_samples, :params => {:format=>:html, :instance=>1, :mutex_type=>:Hugo, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
+        :filter=>:Requesting_Session, :filter_session=>@sid, :update_area=>:hugo }
     assert_response :success
   end
 
   test "latch_statistics_historic" do
-    post :list_latch_statistics_historic, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
+    post :list_latch_statistics_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
     assert_response :success
 
-    post :list_latch_statistics_historic_details, :params => {:format=>:js, :instance=>1, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id,
+    post :list_latch_statistics_historic_details, :params => {:format=>:html, :instance=>1, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id,
          :latch_hash => 12313123, :latch_name=>"Hugo" }
     assert_response :success
   end
 
   test "enqueue_statistics_historic" do
-    post :list_enqueue_statistics_historic, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_start, :instance=>1 }
+    post :list_enqueue_statistics_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_start, :instance=>1 }
     assert_response :success
 
-    post :list_enqueue_statistics_historic_details, :params => {:format=>:js, :instance=>1, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id,
+    post :list_enqueue_statistics_historic_details, :params => {:format=>:html, :instance=>1, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id,
          :eventno => 12313123, :reason=>"Hugo", :description=>"Hugo" }
     assert_response :success
   end
 
   test "list_compare_sql_area_historic" do
     tag1 = Time.new
-    post :list_compare_sql_area_historic, :params => {:format=>:js, :instance=>1, :filter=>"Hugo", :sql_id=>@sga_sql_id, :minProzDiff=>50,
+    post :list_compare_sql_area_historic, :params => {:format=>:html, :instance=>1, :filter=>"Hugo", :sql_id=>@sga_sql_id, :minProzDiff=>50,
          :tag1=> tag1.strftime("%d.%m.%Y"), :tag2=>(tag1-86400).strftime("%d.%m.%Y") }
     assert_response :success
   end
 
   test "genuine_oracle_reports" do
-    post :list_awr_report_html, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
+    post :list_awr_report_html, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
     assert_response :success
 
-    post :list_awr_global_report_html, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
+    post :list_awr_global_report_html, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
     assert_response :success
 
-    post :list_awr_global_report_html, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
+    post :list_awr_global_report_html, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
     assert_response :success
 
-    post :list_ash_report_html, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
+    post :list_ash_report_html, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
     assert_response :success
 
-    post :list_ash_global_report_html, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
+    post :list_ash_global_report_html, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
     assert_response :success
 
-    post :list_ash_global_report_html, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
+    post :list_ash_global_report_html, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
     assert_response :success
 
-    post :list_awr_sql_report_html, :params => {:format=>:js, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :sql_id=>@sga_sql_id }
+    post :list_awr_sql_report_html, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :sql_id=>@sga_sql_id }
     assert_response :success
   end
 
