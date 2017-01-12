@@ -68,19 +68,19 @@ class DragnetControllerTest < ActionController::TestCase
 {
   name: \"Name of selection in list#{Random.rand(1000000)}\",
   desc: \"Explanation of selection in right dialog\",
-  sql:  \"Your SQL-Statement without trailing ';'. Example: SELECT * FROM DBA_Tables WHERE Owner = ? AND Table_Name = ?\",
+  sql:  \"SELECT * FROM DBA_Tables WHERE Owner = ? AND Table_Name = ?\",
   parameter: [
     {
       name:     \"Name of parameter for \\\"owner\\\" in dialog\",
       title:    \"Description of parameter \\\"owner\\\" for mouseover hint\",
       size:     \"Size of input field for parameter \\\"owner\\\" in characters\",
-      default:  \"Default value for parameter \\\"owner\\\" in input field\",
+      default:  \"SYS\",
     },
     {
       name:     \"Name of parameter for \\\"table_name\\\" in dialog\",
       title:    \"Description of parameter \\\"table_name\\\" for mouseover hint\",
       size:     \"Size of input field for parameter \\\"table_name\\\" in characters\",
-      default:  \"Default value for parameter \\\"table_name\\\" in input field\",
+      default:  \"AUD$\",
     },
   ]
 }
