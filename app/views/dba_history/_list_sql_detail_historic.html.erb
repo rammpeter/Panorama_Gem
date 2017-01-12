@@ -4,13 +4,24 @@
   @table_id_prefix = get_unique_area_id
 
 # Anzeige sowohl des konkreten Wertes als auch je Execution in zwei TD-Abschnitten
-def show_both_values(name, param, decimals, title="")
+def show_both_values(name, param, decimals, title="", show_per_result_row=false)
   param = param.to_f   # Sicherstellen Typ
   execs = @sql.executions.to_i==0 ? 1 : @sql.executions.to_i;
-  "<tr><td title='#{title}'>#{name}</td><td align='right' title='#{title}'>#{formattedNumber(param,decimals)}</td><td align='right' title='#{title} #{t(:per_execution, :default=>'per execution')}'>#{formattedNumber( (param/execs),(decimals+2))}</td></tr>".html_safe
+
+    if show_per_result_row && @sql.rows_processed.to_i > 0                        # Suppress division by 0
+      per_res_row = "\n#{formattedNumber(param/@sql.rows_processed.to_i, decimals+2)} per result row"
+    else
+      per_res_row = ''
+    end
+
+  "<tr>
+     <td title='#{title}'>#{name}</td>
+     <td align='right' title='#{title}#{per_res_row}'>#{formattedNumber(param,decimals)}</td>
+     <td align='right' title='#{title} #{t(:per_execution, :default=>'per execution')}#{per_res_row}'>#{formattedNumber( (param/execs),(decimals+2))}</td>
+   </tr>".html_safe
 end
 
-# Anzeige des konkreten Wertes ohne je Execution in zwei TD-Abschnitten
+  # Anzeige des konkreten Wertes ohne je Execution in zwei TD-Abschnitten
 def show_single_value(name, param, decimals, title="", second_value="-", second_title="")
   "<tr><td title='#{title}'>#{name}</td><td align='right' title='#{title}'>#{formattedNumber(param,decimals)}</td><td title='#{second_title}' align='center'>#{second_value}</td></tr>".html_safe
 end
@@ -68,25 +79,20 @@ end
           <td align='right' title="Number of rows processed in time period"><%= fn(@sql.rows_processed)%></td>
           <td align='right' title="Number of rows processed in time period per execution"><%= fn(@sql.rows_processed.to_f/ (@sql.executions.to_i==0 ? 1 : @sql.executions), 2) %></td>
         </tr>
-        <%= show_both_values("Disk reads", @sql.disk_reads,0, "Number of DB-blocks read from disk") %>
+        <%= show_both_values("Disk reads", @sql.disk_reads,0, "Number of DB-blocks read from disk", true) %>
         <tr>
           <td title="Time per db block read from disk / Avg. disk transfer speed in MB/sec. per session (if using PQ)">ms/disk read, transfer speed (MB/sec.)</td>
           <td title="Time per db block read from disk in milliseconds" align="right"><%= formattedNumber((@sql.disk_reads && @sql.disk_reads>0 ? @sql.user_io_wait_time_secs*1000/@sql.disk_reads : 0),2) %></td>
           <td title="Avg. disk transfer speed in MB/sec. per session (if using PQ)" align="right"><%= formattedNumber((@sql.user_io_wait_time_secs && @sql.user_io_wait_time_secs>0 ? @sql.disk_reads * get_db_block_size / (1024*1024) / @sql.user_io_wait_time_secs : 0),2) %></td>
         </tr>
-        <tr>
-          <td title="Number of total DB-blocks read">Buffer gets</td>
-          <td align='right' title="Number of total DB-blocks read, <%= fn(@sql.buffer_gets.to_f/(@sql.rows_processed.to_i==0 ? 1 : @sql.rows_processed), 1) %> buffer gets per result row"><%= fn(@sql.buffer_gets)%></td>
-          <td align='right' title="Number of total DB-blocks read per execution, <%= fn(@sql.buffer_gets.to_f/(@sql.rows_processed.to_i==0 ? 1 : @sql.rows_processed), 1) %> buffer gets per result row"><%= fn(@sql.buffer_gets.to_f/ (@sql.executions.to_i==0 ? 1 : @sql.executions), 2) %></td>
-        </tr>
-
-        <%= show_both_values("Elapsed time (sec), incl. parallel query slaves", @sql.elapsed_time_secs,2, "Runtime total in Seconds, sum over all PQ-processes")%>
-        <%= show_both_values("CPU-time (sec)", @sql.cpu_time_secs, 2, "CPU-time total in seconds, sum over all PQ-processes") %>
-        <%= show_both_values("Application wait time (sec)", @sql.application_wait_time_secs, 2, "Application wait-time total in seconds, incl. row lock waits") %>
-        <%= show_both_values("Concurrency wait time (sec)", @sql.concurrency_wait_time_secs, 2, "Concurrency wait-time total in seconds") %>
-        <%= show_both_values("Cluster wait time (sec)", @sql.cluster_wait_time_secs, 2) %>
-        <%= show_both_values("User-IO wait time (sec)", @sql.user_io_wait_time_secs, 2) %>
-        <%= show_both_values("PL/SQL execution time (sec)", @sql.plsql_exec_time_secs, 2, "PL/SQL Execution-Time (Sec.) anteilig von CPU-Time") %>
+        <%= show_both_values('Buffer gets', @sql.buffer_gets,1, 'Number of total DB-blocks read', true) %>
+        <%= show_both_values("Elapsed time (sec), incl. parallel query slaves", @sql.elapsed_time_secs,2, "Runtime total in Seconds, sum over all PQ-processes", true)%>
+        <%= show_both_values("CPU-time (sec)", @sql.cpu_time_secs, 2, "CPU-time total in seconds, sum over all PQ-processes", true) %>
+        <%= show_both_values("Application wait time (sec)", @sql.application_wait_time_secs, 2, "Application wait-time total in seconds, incl. row lock waits", true) %>
+        <%= show_both_values("Concurrency wait time (sec)", @sql.concurrency_wait_time_secs, 2, "Concurrency wait-time total in seconds", true) %>
+        <%= show_both_values("Cluster wait time (sec)", @sql.cluster_wait_time_secs, 2, 'Wait time caused by RAC cluster issues', true) %>
+        <%= show_both_values("User-IO wait time (sec)", @sql.user_io_wait_time_secs, 2, 'Wait time caused by I/O operations', true) %>
+        <%= show_both_values("PL/SQL execution time (sec)", @sql.plsql_exec_time_secs, 2, "PL/SQL Execution-Time (Sec.) anteilig von CPU-Time", true) %>
         <tr>
           <td title="First occurrence in AWR-snapshot or active session history">First Occurrence</td>
           <td title="Begin of AWR-snapshot of first occurrence"><%= localeDateTime(@sql.first_occurrence) %></td>
