@@ -344,6 +344,26 @@ function render_yellow_pre(id, max_height){
     elem.find(".ui-resizable-se").remove();                   // Entfernen des rechten unteren resize-Cursors
 }
 
+function show_popup_message(message){
+    var div_id = 'show_popup_message_alert_box';
+
+    // create div for dialog at body if not exists
+    if (!jQuery('#'+div_id).length){
+        jQuery('body').append('<div id="'+div_id+'"></div>');
+    }
+    jQuery('#'+div_id)
+        .html(message)
+        .dialog({
+            title:'Panorama',
+            draggable:  true,
+            open:       function(event, ui){ $(this).parent().focus(); },
+            width:      jQuery(window).width()*0.5,
+            maxHeight:  jQuery(window).height()*0.9,
+            beforeClose:function(){jQuery('#'+div_id).html('')}     // clear div before close dialog
+        })
+    ;
+
+}
 
 
 
