@@ -31,7 +31,6 @@ function createSlickGridExtended(container_id, data, columns, options, additiona
     var sle = new SlickGridExtended(container_id, options);
     sle.initSlickGridExtended(container_id, data, columns, options, additional_context_menu);
     sle.calculate_current_grid_column_widths('createSlickGridExtended');        // Sicherstellen, dass mindestens ein zweites Mal diese Funktion durchlaufen wird und Scrollbars real berücksichtigt werden
-console.time('async_calc_all_cell_dimensions');
     setTimeout(async_calc_all_cell_dimensions, 0, sle, 0);                      // Asynchrone Berechnung der noch nicht vermessenen Zellen für Kalkulation der Dimensionen
     return sle;
 }
@@ -1343,7 +1342,6 @@ function resize_handler(){
 
 
 function async_calc_all_cell_dimensions(slickGrid, start_row){
-//console.time('single50');
     var columns = slickGrid.grid.getColumns();
     var data    = slickGrid.grid.getData().getItems();
 
@@ -1359,11 +1357,9 @@ function async_calc_all_cell_dimensions(slickGrid, start_row){
         }
         current_row++;
     }
-//console.timeEnd('single50');
     if (current_row < data.length){                                             // not all rows processed with initial request
         setTimeout(async_calc_all_cell_dimensions, 0, slickGrid, current_row);  // Erneut Aufruf einstellen für den Rest des Arrays
     } else {
-console.timeEnd('async_calc_all_cell_dimensions');
         if (slickGrid.slickgrid_render_needed ==1){
             slickGrid.calculate_current_grid_column_widths('async_calc_all_cell_dimensions'); // calculate grid at end of last call
         }
