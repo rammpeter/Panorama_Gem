@@ -109,7 +109,7 @@ function SlickGridExtended(container_id, options){
         for (var col_index in viewable_columns) {
             var column = viewable_columns[col_index];
             if (options['plotting'] && (column['plot_master'] || column['plot_master_time']))
-                alert('Es kann nur eine Spalte einer Tabelle Plot-Master für X-Achse sein');
+                alert('Only one column of table can be plot-masert for x-axis!');
             if (column['plot_master'] || column['plot_master_time'])
                 options['plotting'] = true;
 
@@ -934,7 +934,7 @@ function SlickGridExtended(container_id, options){
         for (var i in distinct) {
             distinct_count += 1;
         }
-        alert("Sum = "+sum+"\nCount = "+count+"\nCount distinct = "+distinct_count);
+        show_full_cell_content("Sum = "+sum+"<br/>Count = "+count+"<br/>Count distinct = "+distinct_count);
     }
 
     /**
@@ -1191,7 +1191,7 @@ function SlickGridExtended(container_id, options){
             }
         }
         if (plot_master_column_index == null){
-            alert('Fehler: Keine <th>-Spalte besitzt die Klasse "plot_master"! Exakt eine Spalte mit dieser Klasse wird erwartet');
+            alert('Error: No <th>-column has class "plot_master"! Exactly one column of this class is expected!');
         }
 
         var x_axis_time = false;                                                    // Defaut, wenn keine plot_master_time gesetzt werden
