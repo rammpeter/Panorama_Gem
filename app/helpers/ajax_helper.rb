@@ -66,7 +66,7 @@ module AjaxHelper
   #   url:          Hash mit controller, action, update_area
   #   html_options: Hash
   def ajax_form(url, html_options={})
-    html_options = prepare_html_options(html_options)
+    html_options[:remote] = true              # Ajax-Call verwenden
     html_options['data-type'] = :html
     html_options[:onsubmit] = "bind_ajax_html_response(jQuery(this), '#{url[:update_area]}');"
 
@@ -276,16 +276,6 @@ module AjaxHelper
       ''
     end
   end
-
-
-  private
-  # Aufbereiten der HTML-Options für Ajax
-  def prepare_html_options(html_options)
-    html_options[:remote] = true              # Ajax-Call verwenden
-    html_options[:onclick] = "bind_special_ajax_callbacks(jQuery(this));"   # Erst bei Klicken auf Link die Objekt-spezifischen Ajax-Callbacks registrieren nur für diesen Link/Form
-    html_options
-  end
-
 
 
 end

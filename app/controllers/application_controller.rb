@@ -119,7 +119,7 @@ class ApplicationController < ActionController::Base
 
 protected
   # Ausgabe der Meldungen einer Exception
-  def alert(exception, header='')
+  def alert_exception(exception, header='')
     if exception
       logger.error exception.message
       exception.backtrace.each do |bt|
@@ -145,8 +145,33 @@ protected
   # Nach Aufruf von show_popup_message muss mittels return die Verarbeitung der Controller-Methode abgebrochen werden (Vermeiden doppeltes rendern)
 
   def show_popup_message(message)
+    output = "
+      var div_id = 'show_popup_message_alert_box';
+
+      // create div for dialog at body if not exists
+      if (!jQuery('#'+div_id).length){
+          jQuery('body').append('<div id=\"'+div_id+'\"></div>');
+      }
+      jQuery('#'+div_id)
+                 .html('#{my_html_escape(message)}')
+                 .dialog({
+                             title:'Panorama',
+                             draggable:  true,
+                             open:       function(event, ui){ $(this).parent().focus(); },
+                             width:      jQuery(window).width()*0.5,
+                             maxHeight:  jQuery(window).height()*0.9,
+                             beforeClose:function(){jQuery('#'+div_id).html('')}     // clear div before close dialog
+            })
+        ;
+"
+
+
+
+
+
     respond_to do |format|
-      format.html { render :html => "<script type='text/javascript'>alert('#{j "#{message}"}');</script>".html_safe }
+      format.js { render :js => output.html_safe }
+#      format.html { render :html => "<script type='text/javascript'>alert('#{j "#{message}"}');</script>".html_safe }
     end
 
   end

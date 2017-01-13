@@ -84,7 +84,7 @@ class DragnetControllerTest < ActionController::TestCase
   ]
 }
     " }
-    assert_response :success
+    assert_response :success, "add_personal_selection"
 
   end
 
@@ -100,15 +100,15 @@ class DragnetControllerTest < ActionController::TestCase
 
     # drop 2nd entry
     post :drop_personal_selection, :params => {:format=>:html, :dragnet_hidden_entry_id=>"_8_1", :update_area=>:content_for_layout }
-    assert_response :success
+    assert_response :success, "Error drop_personal_selection _8_1"
 
     # drop 1st entry
     post :drop_personal_selection, :params => {:format=>:html, :dragnet_hidden_entry_id=>"_8_0", :update_area=>:content_for_layout }
-    assert_response :success
+    assert_response :success, "Error drop_personal_selection _8_0 1"
 
     # drop 3rd entry
     post :drop_personal_selection, :params => {:format=>:html, :dragnet_hidden_entry_id=>"_8_0", :update_area=>:content_for_layout }
-    assert_response :success
+    assert_response :success, "Error drop_personal_selection _8_0 2"
   end
 
 end

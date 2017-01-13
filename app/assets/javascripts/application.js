@@ -37,6 +37,16 @@ function log_stack(message){
     console.log(e.stack);
 }
 
+// Handle javascript errors
+window.onerror = function (msg, url, lineNo, columnNo, error) {
+    hideIndicator('');                                                          // close indicator window
+    indicator_call_stack_depth = 0;                                             // ensure start with 0 at next indicator open
+
+    alert('Error: '+msg+'\nURL: '+url+'\nLine-No.: '+lineNo+'\nColumn-No.: '+columnNo);
+    return false;
+};
+
+
 // soll der Indikator angezeigt werden für aktuelle url ?
 function useIndicator(url){
 
@@ -172,6 +182,21 @@ function expand_sql_id_hint(id, sql_id){
     }
 }
 
+// Process ajax success event
+// Parameter:
+//   data:          response data string
+//   xhr:           jqXHR object
+//   target:        dom-id if target for html-response
+function process_ajax_success(data, xhr, target){
+    if (xhr.getResponseHeader("content-type").indexOf("text/html") >= 0){
+        $('#'+target).html(data);                                               // render html in target dom-element
+    } else if (xhr.getResponseHeader("content-type").indexOf("text/javascript") >= 0){
+        eval(data);                                                             // Execute as javascript
+    } else {
+        alert("Unsupported content type in ajax response: "+xhr.getResponseHeader("content-type"));
+    }
+}
+
 // call ajax with data type html
 // Parameter:
 //   update_area:   div-element as target for html-response
@@ -180,13 +205,11 @@ function expand_sql_id_hint(id, sql_id){
 //   payload:       data for transfer as JSON-object
 //   element:       DOM-Element on_click is called for (this in on_click) to bind slickgrid refresh
 function ajax_html(update_area, controller, action, payload, element){
-    //bind_special_ajax_callbacks(jQuery(element));     // direkt implementiert in success-Handler
-
     jQuery.ajax({
         method: "POST",
         dataType: "html",
-        success: function (data) {
-            $('#'+update_area).html(data);                                      // Fill target div with html-response
+        success: function (data, status, xhr) {
+            process_ajax_success(data, xhr, update_area);                       // Fill target div with html-response
 
             if (element){                                                       // refresh only if valid element is given in call
                 var obj = jQuery(element);
@@ -211,21 +234,9 @@ function ajax_html(update_area, controller, action, payload, element){
 //   element:     DOM-Element as jQuery
 //   target:      target DOM-ID for response
 function bind_ajax_html_response(element, target){
-    element.bind("ajax:success", function(elem, data) { $('#'+target).html(data);});
-}
-
-// Registriere Ajax-Callbacks an konkretes jQuery-Objekt
-function bind_special_ajax_callbacks(obj) {
-    obj.bind('ajax:success', function(){                                        // Komischerweise funktioniert hier obj.ajaxSuccess nicht ???
-         if (obj.parents(".slick-cell").length > 0){                            // ajax wurde aus einer slickgrid-Zelle heraus aufgerufen
-             var grid_extended = obj.parents('.slickgrid_top').data('slickgridextended');
-             if (!grid_extended){
-                 console.log("No slickgridextended found in data for "+obj.parents(".slick-cell").html());
-             } else {
-                 grid_extended.save_new_cell_content(obj);  // unterstellen, dass dann auch der Inhalt dieser Zelle geändert sein könnte
-             }
-         }
-     });
+    element.bind("ajax:success", function(event, data, status, xhr) {
+        process_ajax_success(data, xhr, target);
+    });
 }
 
 // einmaliges Binden der allgemeinen Ajax-Callbacks für Dokument

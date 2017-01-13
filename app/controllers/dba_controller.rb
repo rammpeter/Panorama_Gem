@@ -508,7 +508,7 @@ class DbaController < ApplicationController
       ORDER BY 1 ASC")
 
     render_partial
-  rescue Exception => ex; alert ex, "
+  rescue Exception => ex; alert_exception ex, "
 Möglicherweise fehlende Zugriffsrechte auf Table X$BH! Lösung: Exec als User 'SYS':
 > create view x_$bh as select * from x$bh;
 > grant select on x_$bh to public;
