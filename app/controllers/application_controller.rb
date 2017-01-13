@@ -134,10 +134,8 @@ protected
     else
       message = 'ApplicationController.alert: Exception = nil'
     end
-    respond_to do |format|
-      format.html { render :html => "<script type='text/javascript'>alert('#{j "#{header}\n\n#{message}"}');</script>".html_safe } # Optional zu erweitern um caller.to_s
-    end
 
+    show_popup_message("#{header}\n\n#{message}")
   end
 
 
@@ -164,14 +162,8 @@ protected
             })
         ;
 "
-
-
-
-
-
     respond_to do |format|
       format.js { render :js => output.html_safe }
-#      format.html { render :html => "<script type='text/javascript'>alert('#{j "#{message}"}');</script>".html_safe }
     end
 
   end
