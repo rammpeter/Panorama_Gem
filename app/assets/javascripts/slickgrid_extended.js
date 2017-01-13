@@ -31,6 +31,7 @@ function createSlickGridExtended(container_id, data, columns, options, additiona
     var sle = new SlickGridExtended(container_id, options);
     sle.initSlickGridExtended(container_id, data, columns, options, additional_context_menu);
     sle.calculate_current_grid_column_widths('createSlickGridExtended');        // Sicherstellen, dass mindestens ein zweites Mal diese Funktion durchlaufen wird und Scrollbars real berücksichtigt werden
+console.time('async_calc_all_cell_dimensions');
     setTimeout(async_calc_all_cell_dimensions, 0, sle, 0);                      // Asynchrone Berechnung der noch nicht vermessenen Zellen für Kalkulation der Dimensionen
     return sle;
 }
@@ -51,6 +52,8 @@ function SlickGridExtended(container_id, options){
     var slickgrid_render_needed         = 0;                                    // globale Variable, die steuert, ob aktuell gezeichnetes Grid nach Abschluss neu gerendert werden muss, da sich Größen geändert haben
     var js_test_cell                    = null;                                 // Objekt zum Test der realen string-Breite für td, wird bei erstem Zugriff initialisiert
     var js_test_cell_wrap               = null;                                 // Objekt zum Test der realen string-Breite für td, wird bei erstem Zugriff initialisiert
+    var last_used_test_css_class        = null;                                 // last used css-class for test_cell
+    var last_used_test_css_class_wrap   = null;                                 // last used css-class for test_cell_wrap
     var columnFilters                   = {};                                   // aktuelle Filter-Kriterien der Daten
     var sort_pfeil_width                = 12;                                   // Breite des Sort-Pfeils im Column-Header
     this.force_height_calculation       = false;                                // true aktiviert Neuberechnung der Grid-Höhe
@@ -65,7 +68,6 @@ function SlickGridExtended(container_id, options){
     jQuery(window).resize(function(){ resize_handler();});                      // Registrieren des Resize-Event Handlers
 
     // ###################### Ende Constructor-Code #######################
-
 
     /**
      * Helper zur Initialisierung des Objektes
@@ -1266,19 +1268,26 @@ function SlickGridExtended(container_id, options){
     this.calc_cell_dimensions = function(value, fullvalue, column){
         var js_test_cell        = thiz.js_test_cell;
         var js_test_cell_wrap   = thiz.js_test_cell_wrap;
-
         if (!column['last_calc_value'] || (value != column['last_calc_value'] && value.length*9 > column['max_wrap_width'])){  // gleicher Wert muss nicht erneut gecheckt werden, neuer Wert muss > alter sein bei 10 Pixel Breite, aber bei erstem Male durchlauen
             fullvalue =  fullvalue.replace(/<wbr>/g, '');                       // entfernen von vorderfinierten Umbruchstellen, da diese in der Testzelle sofort zum Umbruch führen und die Ermittlung der Darstellungsbreite fehlschlägt
             js_test_cell.innerHTML = fullvalue;                                 // Test-DOM nowrapped mit voll dekoriertem Inhalt füllen
-            js_test_cell.className = 'slick-inner-cell '+column['cssClass'];    // Class ersetzen am Objekt durch aktuelle, dabei überschreiben evtl. vorheriger
+            var target_class = 'slick-inner-cell';
+            if (column['cssClass'])
+                target_class = target_class+' '+column['cssClass'];
+            if (thiz.last_used_test_css_class != target_class){
+                js_test_cell.className = target_class;                          // Class ersetzen am Objekt durch aktuelle, dabei überschreiben evtl. vorheriger
+                thiz.last_used_test_css_class = target_class;                   // compare-value for next call
+            }
             if (js_test_cell.scrollWidth  > column['max_nowrap_width']){
                 column['max_nowrap_width']  = js_test_cell.scrollWidth;
                 thiz.slickgrid_render_needed = 1;
             }
             if (!column['no_wrap']  && js_test_cell.scrollWidth > column['max_wrap_width']){     // Nur Aufrufen, wenn max_wrap_width sich auch vergrößern kann (aktuelle Breite > bisher größte Wrap-Breite)
                 js_test_cell_wrap.innerHTML = fullvalue;                        // Test-DOM wrapped mit voll dekoriertem Inhalt füllen
-                // TODO: muss hier nicht auch slick-inner-cell gesetzt werden?
-                js_test_cell_wrap.className = column['cssClass'];               // Class ersetzen am Objekt durch aktuelle, dabei überschreiben evtl. vorheriger
+                if (thiz.last_used_test_css_class_wrap != target_class){
+                    js_test_cell_wrap.className = target_class;                 // Class ersetzen am Objekt durch aktuelle, dabei überschreiben evtl. vorheriger
+                    thiz.last_used_test_css_class_wrap = target_class;          // compare-value for next call
+                }
 
                 if (js_test_cell_wrap.scrollWidth  > column['max_wrap_width']){
                     if (column['max_wrap_width_allowed'] && column['max_wrap_width_allowed'] < js_test_cell_wrap.scrollWidth )
@@ -1334,11 +1343,11 @@ function resize_handler(){
 
 
 function async_calc_all_cell_dimensions(slickGrid, start_row){
+//console.time('single50');
     var columns = slickGrid.grid.getColumns();
     var data    = slickGrid.grid.getData().getItems();
 
     var current_row = start_row;
-
     while (current_row < data.length && current_row < start_row+50){
         var rec = data[current_row];
         for (var col_index in columns){
@@ -1350,9 +1359,11 @@ function async_calc_all_cell_dimensions(slickGrid, start_row){
         }
         current_row++;
     }
+//console.timeEnd('single50');
     if (current_row < data.length){                                             // not all rows processed with initial request
         setTimeout(async_calc_all_cell_dimensions, 0, slickGrid, current_row);  // Erneut Aufruf einstellen für den Rest des Arrays
     } else {
+console.timeEnd('async_calc_all_cell_dimensions');
         if (slickGrid.slickgrid_render_needed ==1){
             slickGrid.calculate_current_grid_column_widths('async_calc_all_cell_dimensions'); // calculate grid at end of last call
         }
