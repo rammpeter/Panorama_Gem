@@ -62,8 +62,7 @@ class DragnetControllerTest < ActionController::TestCase
     execute_tree(dragnet_sqls)                                                     # Test each dragnet SQL with default parameters
   end
 
-  # Find unique name by random to ensure selection does not already exists in client_info.store
-  test "personal_selection" do
+  def create_personal_selection
     post :add_personal_selection, :params => {:format=>:html, :update_area=>:hugo, :selection => "
 {
   name: \"Name of selection in list#{Random.rand(1000000)}\",
@@ -87,10 +86,29 @@ class DragnetControllerTest < ActionController::TestCase
     " }
     assert_response :success
 
+  end
+
+  # Find unique name by random to ensure selection does not already exists in client_info.store
+  test "personal_selection" do
+
+    # create 3 entries
+    create_personal_selection
+    create_personal_selection
+    create_personal_selection
+
     # :dragnet_hidden_entry_id=>"_8_0" depends from number of submenus in list
-    post :exec_dragnet_sql, :params => {:format=>:html, :commit_drop=>"Drop personal SQL", :dragnet_hidden_entry_id=>"_8_0", :update_area=>:hugo }
+
+    # drop 2nd entry
+    post :drop_personal_selection, :params => {:format=>:html, :dragnet_hidden_entry_id=>"_8_1", :update_area=>:content_for_layout }
     assert_response :success
 
+    # drop 1st entry
+    post :drop_personal_selection, :params => {:format=>:html, :dragnet_hidden_entry_id=>"_8_0", :update_area=>:content_for_layout }
+    assert_response :success
+
+    # drop 3rd entry
+    post :drop_personal_selection, :params => {:format=>:html, :dragnet_hidden_entry_id=>"_8_0", :update_area=>:content_for_layout }
+    assert_response :success
   end
 
 end

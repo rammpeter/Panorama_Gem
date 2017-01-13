@@ -2,7 +2,7 @@
 
 <%= render_page_caption(t(:dragnet_show_personal_selection_form_caption, :default=> "Extend dragnet SQLs with your personal selections")) %>
 
-<%= ajax_form(:controller=>:dragnet, :action=>:add_personal_selection) do %>
+<%= ajax_form(:controller=>:dragnet, :action=>:add_personal_selection, :update_area => 'content_for_layout') do %>
     <%
        template = "
 {

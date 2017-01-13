@@ -110,28 +110,8 @@ module AjaxHelper
 
     json_data = data.to_json
 
-    "<a href=\"#\" onclick=\" ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{my_html_escape(json_data)}, this); return false; \"  #{options}>#{my_html_escape(caption)}</a>".html_safe
+    "<a href=\"#\" onclick=\"ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{my_html_escape(json_data)}, this); return false; \"  #{options}>#{my_html_escape(caption)}</a>".html_safe
   end # ajax_link
-
-  # absetzen eines Ajax-Calls aus Javascript
-  def js_ajax_post_call(url_data)
-    url = {}
-    data = {}
-
-    # Extrahieren der UML-Elemente vom Rest der Daten
-    url_data.each do |key, value|
-      case
-        when key == :controller || key == :action   then url[key] = value
-        when key == :title                          then html_options[:title] = value   # title auch akzeptieren, wenn in url_data enthalten
-        else
-          data[key] = value
-      end
-    end
-
-    json_data = data.to_json.html_safe
-
-    "jQuery.ajax({method: \"POST\", url: \"#{url_for(url)}\", data: #{json_data}});"
-  end
 
   # Ajax-Link definieren mit Indikator-Anzeige während Ausführung
   # Parameter:
@@ -143,6 +123,27 @@ module AjaxHelper
       submit_tag caption, html_options
     end
   end
+
+
+  # absetzen eines Ajax-Calls aus Javascript
+  def js_ajax_post_call(url)
+    data = {}
+
+    # update_area should pe passed to server
+    url.each do |key, value|
+      data[key] = value if key != :controller && key != :action
+    end
+
+    raise 'ajax_link: key=:controller missing in parameter url'   unless url[:controller]
+    raise 'ajax_link: key=:action missing in parameter url'       unless url[:action]
+    raise 'ajax_link: key=:update_area missing in parameter url'  unless url[:update_area]
+
+    json_data = data.to_json
+
+    #"jQuery.ajax({method: \"POST\", url: \"#{url_for(url)}\", data: #{json_data}});"
+    "ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{json_data})".html_safe
+  end
+
 
 
   # Erzeugen eines Links aus den konkreten Wait-Parametern mit aktueller Erläuterung sowie link auf aufwendige Erklärung

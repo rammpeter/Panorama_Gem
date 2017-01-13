@@ -108,12 +108,6 @@ class DragnetController < ApplicationController
       return
     end
 
-    if params[:commit_drop]                                                     # Remove entry from list
-      drop_personal_selection(dragnet_sql)
-      return
-    end
-
-
     # Headerzeile des Report erstellen, Parameter ermitteln
     @caption = "#{dragnet_sql[:name]}"
     command_array = [dragnet_sql[:sql]]
@@ -200,15 +194,20 @@ class DragnetController < ApplicationController
   # Kompletten Menu-Baum durchsuchen nach Name und drop der Treffer
   def drop_external_selection(list, name)
     list.each do |l|
-      drop_external_selection(l[:entries], name) if l[:entries]
-      list.delete(l) if l[:name] == name
+      unless l.nil?                                                             # already deleted entry of list
+        drop_external_selection(l[:entries], name) if l[:entries]
+        list.delete(l) if l[:name] == name
+      end
     end
   end
 
 
   public
   # Drop selection from personal list
-  def drop_personal_selection(drop_selection)
+  def drop_personal_selection
+    drop_selection = extract_entry_by_entry_id(params[:dragnet_hidden_entry_id])
+
+
     dragnet_personal_selection_list = read_from_client_info_store(:dragnet_personal_selection_list)
 
     drop_external_selection(dragnet_personal_selection_list, drop_selection[:name])
