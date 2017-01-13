@@ -459,7 +459,7 @@ class DbaSgaController < ApplicationController
     @child_number = params[:child_number].to_i
     @child_address = params[:child_address]
     @object_status= params[:object_status]
-    @object_status='VALID' unless @object_status  # wenn kein status als Parameter uebergeben, dann VALID voraussetzen
+    @object_status='VALID' if @object_status.nil? || @object_status == ''  # wenn kein status als Parameter uebergeben, dann VALID voraussetzen
     @parsing_schema_name = params[:parsing_schema_name]
 
     @sql                 = fill_sql_sga_stat("GV$SQL", @instance, @sql_id, @object_status, @child_number, @parsing_schema_name, @child_address)
@@ -514,7 +514,7 @@ class DbaSgaController < ApplicationController
     @instance = prepare_param_instance
     @sql_id   = params[:sql_id]
     @object_status= params[:object_status]
-    @object_status='VALID' unless @object_status  # wenn kein status als Parameter uebergeben, dann VALID voraussetzen
+    @object_status='VALID' if @object_status.nil? || @object_status == ''  # wenn kein status als Parameter uebergeben, dann VALID voraussetzen
     @con_id  = params[:con_id]
 
     # Liste der Child-Cursoren
