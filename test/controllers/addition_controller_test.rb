@@ -24,11 +24,11 @@ class AdditionControllerTest < ActionController::TestCase
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
-  test "test_controllers_menu_entries_with_actions" do
+  test "test_controllers_menu_entries_with_actions with xhr: true" do
     call_controllers_menu_entries_with_actions
   end
 
-  test "blocking_locks_history" do
+  test "blocking_locks_history with xhr: true" do
     post :list_blocking_locks_history, :params => { :format=>:html,
          :time_selection_start =>"01.01.2011 00:00",
          :time_selection_end =>"01.01.2011 01:00",
@@ -55,7 +55,7 @@ class AdditionControllerTest < ActionController::TestCase
   end
 
 
-  test "db_cache_historic" do
+  test "db_cache_historic with xhr: true" do
     post :list_db_cache_historic, :params => { :format=>:html,
          :time_selection_start =>"01.01.2011 00:00",
          :time_selection_end =>"01.01.2011 01:00",
@@ -80,7 +80,7 @@ class AdditionControllerTest < ActionController::TestCase
     assert_response :success
   end
 
-  test "object_increase" do
+  test "object_increase with xhr: true" do
     get :show_object_increase, :format=>:html    if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
 

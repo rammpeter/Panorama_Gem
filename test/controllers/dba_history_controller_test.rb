@@ -26,12 +26,12 @@ class DbaHistoryControllerTest < ActionController::TestCase
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
-  test "test_controllers_menu_entries_with_actions" do
+  test "test_controllers_menu_entries_with_actions with xhr: true" do
     call_controllers_menu_entries_with_actions
   end
 
 
-  test "segment_stat_historic" do
+  test "segment_stat_historic with xhr: true" do
     post :list_segment_stat_historic_sum, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
     assert_response :success
     post :list_segment_stat_historic_sum, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :update_area=>:hugo }
@@ -47,7 +47,7 @@ class DbaHistoryControllerTest < ActionController::TestCase
 
 
 
-  test "sql_area_historic" do
+  test "sql_area_historic with xhr: true" do
     ['ElapsedTimePerExecute',
      'ElapsedTimeTotal',
      'ExecutionCount',
@@ -83,9 +83,9 @@ class DbaHistoryControllerTest < ActionController::TestCase
          :sql_id=>@sga_sql_id, :parsing_schema_name=>@sga_parsing_schema_Name, :update_area=>:hugo }
     assert_response :success
 
-    post :list_sql_history_snapshots, :params => {:format=>:html, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name, :groupby=>:day, :update_area=>:hugo, :update_area=>:hugo }
+    post :list_sql_history_snapshots, :params => {:format=>:html, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name, :groupby=>:day, :update_area=>:hugo}
     assert_response :success
-    post :list_sql_history_snapshots, :params => {:format=>:html, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo, :update_area=>:hugo }
+    post :list_sql_history_snapshots, :params => {:format=>:html, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
     assert_response :success
 
     post :list_sql_historic_execution_plan, :params => {:format=>:html, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_Name,
@@ -94,26 +94,26 @@ class DbaHistoryControllerTest < ActionController::TestCase
   end
 
 
-  test "show_using_sqls_historic" do
+  test "show_using_sqls_historic with xhr: true" do
     post :show_using_sqls_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
                                     :ObjectName => "WRH$_sysmetric_history", :update_area=>:hugo }
     assert_response :success
   end
 
-  test "list_system_events_historic" do
+  test "list_system_events_historic with xhr: true" do
     post :list_system_events_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
          :instance=>1, :update_area=>:hugo }
      assert_response :success
   end
 
-  test "list_system_events_historic_detail" do
+  test "list_system_events_historic_detail with xhr: true" do
     post :list_system_events_historic_detail, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
          :instance=>1, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :event_id=>1, :event_name=>"Hugo", :update_area=>:hugo }
      assert_response :success
      assert_response :success
   end
 
-  test "list_system_statistics_historic" do
+  test "list_system_statistics_historic with xhr: true" do
     post :list_system_statistics_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :stat_class=> {:bit => 1}, :instance=>1, :sum=>1, :update_area=>:hugo }
     assert_response :success
     post :list_system_statistics_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :stat_class=> {:bit => 1}, :instance=>1, :full=>1, :verdichtung=>{:tag =>"MI"}, :update_area=>:hugo }
@@ -124,13 +124,13 @@ class DbaHistoryControllerTest < ActionController::TestCase
     assert_response :success
   end
 
-  test "list_system_statistics_historic_detail" do
+  test "list_system_statistics_historic_detail with xhr: true" do
     post :list_system_statistics_historic_detail, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1,
          :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :stat_id=>1, :stat_name=>"Hugo", :update_area=>:hugo }
     assert_response :success
   end
 
-  test "list_sysmetric_historic" do
+  test "list_sysmetric_historic with xhr: true" do
     # Evtl. als sysdba auf Test-DB Table loeschen wenn noetig: truncate table sys.WRH$_SYSMETRIC_HISTORY;
 
     if get_current_database[:host] == "ramm.osp-dd.de"                              # Nur auf DB ausführen wo Test-User ein ALTER-Grant auf sys.WRH$_SYSMETRIC_HISTORY hat
@@ -156,7 +156,7 @@ class DbaHistoryControllerTest < ActionController::TestCase
    end
   end
 
-  test "mutex_statistics_historic" do
+  test "mutex_statistics_historic with xhr: true" do
     [:Blocker, :Waiter, :Timeline].each do |submit_name|
       post :list_mutex_statistics_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, submit_name=>"Hugo", :update_area=>:hugo }
       assert_response :success
@@ -173,7 +173,7 @@ class DbaHistoryControllerTest < ActionController::TestCase
     assert_response :success
   end
 
-  test "latch_statistics_historic" do
+  test "latch_statistics_historic with xhr: true" do
     post :list_latch_statistics_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
     assert_response :success
 
@@ -182,7 +182,7 @@ class DbaHistoryControllerTest < ActionController::TestCase
     assert_response :success
   end
 
-  test "enqueue_statistics_historic" do
+  test "enqueue_statistics_historic with xhr: true" do
     post :list_enqueue_statistics_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_start, :instance=>1 }
     assert_response :success
 
@@ -191,14 +191,14 @@ class DbaHistoryControllerTest < ActionController::TestCase
     assert_response :success
   end
 
-  test "list_compare_sql_area_historic" do
+  test "list_compare_sql_area_historic with xhr: true" do
     tag1 = Time.new
     post :list_compare_sql_area_historic, :params => {:format=>:html, :instance=>1, :filter=>"Hugo", :sql_id=>@sga_sql_id, :minProzDiff=>50,
          :tag1=> tag1.strftime("%d.%m.%Y"), :tag2=>(tag1-86400).strftime("%d.%m.%Y") }
     assert_response :success
   end
 
-  test "genuine_oracle_reports" do
+  test "genuine_oracle_reports with xhr: true" do
     post :list_awr_report_html, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
     assert_response :success
 

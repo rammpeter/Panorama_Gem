@@ -65,11 +65,11 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
-  test "test_controllers_menu_entries_with_actions" do
+  test "test_controllers_menu_entries_with_actions with xhr: true" do
     call_controllers_menu_entries_with_actions
   end
 
-  test "list_session_statistics_historic" do
+  test "list_session_statistics_historic with xhr: true" do
     # Iteration über Gruppierungskriterien
     session_statistics_key_rules.each do |groupby, value|
       post :list_session_statistic_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
@@ -80,7 +80,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
     end
   end
 
-  test "list_session_statistic_historic_grouping" do
+  test "list_session_statistic_historic_grouping with xhr: true" do
     session_statistics_key_rules.each do |outer_groupby, value_outer|
       # Iteration über Gruppierungskriterien
       session_statistics_key_rules.each do |groupby, value_inner|
@@ -103,14 +103,14 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
     end
   end
 
-  test "refresh_time_selection" do
+  test "refresh_time_selection with xhr: true" do
     session_statistics_key_rules.each do |groupby, value|
       post :refresh_time_selection, :params => {:format=>:html, :groupfilter=>@groupfilter, :groupby=>groupby, :repeat_action => :list_session_statistic_historic_grouping, :update_area=>:hugo }
       assert_response :success   # redirect_to schwierig im Test?
     end
   end
 
-  test "list_session_statistic_historic_single_record" do
+  test "list_session_statistic_historic_single_record with xhr: true" do
     session_statistics_key_rules.each do |groupby, value|
       add_filter = {groupby => bind_value_from_key_rule(groupby)}
       post :list_session_statistic_historic_single_record, :params => {:format=>:html, :groupby=>groupby,
@@ -119,7 +119,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
     end
   end
 
-  test "list_session_statistics_historic_timeline" do
+  test "list_session_statistics_historic_timeline with xhr: true" do
     session_statistics_key_rules.each do |groupby, value|
       add_filter = {groupby => bind_value_from_key_rule(groupby)}
       post :list_session_statistic_historic_timeline, :params => {:format=>:html, :groupby=>groupby,
@@ -129,7 +129,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
     end
   end
 
-  test "list_temp_usage_historic" do
+  test "list_temp_usage_historic with xhr: true" do
     if get_db_version >= "11.2"
       session_statistics_key_rules.each do |outer_filter, value|
         # Iteration über Gruppierungskriterien
@@ -143,14 +143,14 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
 
-  test "show_prepared_active_session_history" do
+  test "show_prepared_active_session_history with xhr: true" do
     post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>1, :sql_id=>@sga_sql_id }
     assert_response :success
     post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>1, :sid=>@sid }
     assert_response :success
   end
 
-  test "list_prepared_active_session_history" do
+  test "list_prepared_active_session_history with xhr: true" do
     post :list_prepared_active_session_history, :params => {:format=>:html, :groupby=>"SQL-ID",
          :groupfilter => {
                          :DBID     => get_dbid,
@@ -162,7 +162,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
     assert_response :success
   end
 
-  test "blocking_locks_historic" do
+  test "blocking_locks_historic with xhr: true" do
     post :list_blocking_locks_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end }
     assert_response :success
   end

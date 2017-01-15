@@ -11,16 +11,16 @@ class DragnetControllerTest < ActionController::TestCase
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
-  test "test_controllers_menu_entries_with_actions" do
+  test "test_controllers_menu_entries_with_actions with xhr: true" do
     call_controllers_menu_entries_with_actions
   end
 
-  test "get_selection_list"  do
+  test "get_selection_list with xhr: true"  do
     get :get_selection_list, :params => {:format=>:json }
     assert_response :success
   end
 
-  test "refresh_selected_data"  do
+  test "refresh_selected_data with xhr: true"  do
     get :refresh_selected_data, :params => {:format=>:js, :entry_id=>"_0_0_3" }
     assert_response :success
   end
@@ -55,7 +55,7 @@ class DragnetControllerTest < ActionController::TestCase
     end
   end
 
-  test "exec_dragnet_sql"  do
+  test "exec_dragnet_sql with xhr: true"  do
     # get available selections
     get :get_selection_list, :params => {:format=>:json }
     dragnet_sqls = JSON.parse(@response.body)
@@ -89,7 +89,7 @@ class DragnetControllerTest < ActionController::TestCase
   end
 
   # Find unique name by random to ensure selection does not already exists in client_info.store
-  test "personal_selection" do
+  test "personal_selection with xhr: true" do
 
     # create 3 entries
     create_personal_selection

@@ -105,7 +105,7 @@ module ApplicationHelper
 
   def set_current_database(current_database)
     # Transfer to Hash if it is not
-    if current_database.class != Hash
+    if !current_database.nil? && current_database.class != Hash
       not_hash = current_database
       current_database = {}
       not_hash.each do |key, value|

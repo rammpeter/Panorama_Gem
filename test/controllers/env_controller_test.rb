@@ -10,11 +10,11 @@ class EnvControllerTest < ActionController::TestCase
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
-  test "test_controllers_menu_entries_with_actions" do
+  test "test_controllers_menu_entries_with_actions with xhr: true" do
     call_controllers_menu_entries_with_actions
   end
 
-  test "should connect to test-db" do
+  test "should connect to test-db with xhr: true" do
     database = get_current_database
     database[:password] = database_helper_decrypt_value(database[:password])
     post :set_database_by_params, :params => {:format=>:html, :database => database }
@@ -53,20 +53,15 @@ class EnvControllerTest < ActionController::TestCase
   end
 
   # Test aller generischer Menü-Einträge ohne korrespondierende Action im konkreten Controller
-  test "render_menu_action" do
+  test "render_menu_action with xhr: true" do
     menu_content.each do |mo|
       exec_menu_entry_action(mo)
     end
   end
 
 
-  test "Diverses" do
+  test "Diverses with xhr: true" do
 
-    post :set_locale, :params => {:format=>:js, :locale=>'de'}
-    assert_response :success
-
-    post :set_locale, :params => {:format=>:js, :locale=>'en'}
-    assert_response :success
 
     post :list_dbids, :params => {:format=>:html, :update_area=>:hugo}
     assert_response :success
@@ -74,8 +69,17 @@ class EnvControllerTest < ActionController::TestCase
     post :set_dbid, :params => {:format=>:html, :dbid =>get_dbid, :update_area=>:hugo }  # Alten Wert erneut setzen um andere Tests nicht zu gefährden
     assert_response :success
 
+  end
+
+  test "Startup_Without_Ajax" do
     # Index destroys your cuurent session, therefore ist should be the last action of test
     get :index, :format=>:js
+    assert_response :success
+
+    post :set_locale, :params => {:format=>:js, :locale=>'de'}
+    assert_response :success
+
+    post :set_locale, :params => {:format=>:js, :locale=>'en'}
     assert_response :success
   end
 

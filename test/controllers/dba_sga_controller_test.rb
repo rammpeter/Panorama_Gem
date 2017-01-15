@@ -30,36 +30,36 @@ class DbaSgaControllerTest < ActionController::TestCase
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
-  test "test_controllers_menu_entries_with_actions" do
+  test "test_controllers_menu_entries_with_actions with xhr: true" do
     call_controllers_menu_entries_with_actions
   end
 
 
-  test "show_application_info" do
+  test "show_application_info with xhr: true" do
     get :show_application_info, :params => {:format=>:html, :moduletext=>"Application = 128", :update_area=>:hugo }
     assert_response :success
   end
 
-  test "list_sql_area_sql_id" do
+  test "list_sql_area_sql_id with xhr: true" do
     @topSort.each do |ts|
       post :list_sql_area_sql_id, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"", :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
       assert_response :success
     end
   end
 
-  test "list_sql_area_sql_id_childno" do
+  test "list_sql_area_sql_id_childno with xhr: true" do
     @topSort.each do |ts|
       post :list_sql_area_sql_id_childno, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"", :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
       assert_response :success
     end
   end
 
-  test "list_sql_detail_sql_id_childno" do
+  test "list_sql_detail_sql_id_childno with xhr: true" do
     get :list_sql_detail_sql_id_childno, :params => {:format=>:html, :instance => "1", :sql_id => @sga_sql_id, :update_area=>:hugo  }
     assert_response :success
   end
 
-  test "list_sql_detail_sql_id" do
+  test "list_sql_detail_sql_id with xhr: true" do
     get  :list_sql_detail_sql_id , :params => {:format=>:html, :instance => "1", :sql_id => @sga_sql_id, :update_area=>:hugo }
     assert_response :success
 
@@ -71,12 +71,12 @@ class DbaSgaControllerTest < ActionController::TestCase
 
   end
 
-  test "list_open_cursor_per_sql" do
+  test "list_open_cursor_per_sql with xhr: true" do
     get :list_open_cursor_per_sql, :params => {:format=>:html, :instance=>1, :sql_id => @sga_sql_id, :update_area=>:hugo }
     assert_response :success
   end
 
-  test "list_sga_components" do
+  test "list_sga_components with xhr: true" do
     post :list_sga_components, :params => {:format=>:html, :instance=>1, :update_area=>:hugo }
     assert_response :success
 
@@ -94,27 +94,27 @@ class DbaSgaControllerTest < ActionController::TestCase
 
   end
 
-  test "list_db_cache_content" do
+  test "list_db_cache_content with xhr: true" do
     post :list_db_cache_content, :params => {:format=>:html, :instance=>1, :update_area=>:hugo }
     assert_response :success
   end
 
-  test "show_using_sqls" do
+  test "show_using_sqls with xhr: true" do
     get :show_using_sqls, :params => {:format=>:html, :ObjectName=>"gv$sql", :update_area=>:hugo }
     assert_response :success
   end
 
-  test "list_cursor_memory" do
+  test "list_cursor_memory with xhr: true" do
     get :list_cursor_memory, :params => {:format=>:html, :instance=>1, :sql_id=>@sga_sql_id, :update_area=>:hugo }
     assert_response :success
   end
 
-  test "compare_execution_plans" do
+  test "compare_execution_plans with xhr: true" do
     post :list_compare_execution_plans, :params => {:format=>:html, :instance_1=>1, :sql_id_1=>@sga_sql_id, :child_number_1 =>@sga_child_number,  :instance_2=>1, :sql_id_2=>@sga_sql_id, :child_number_2 =>@sga_child_number, :update_area=>:hugo }
     assert_response :success
   end
 
-  test "list_result_cache" do
+  test "list_result_cache with xhr: true" do
     post :list_result_cache, :params => {:format=>:html, :instance=>1, :update_area=>:hugo }
     assert_response :success
     post :list_result_cache, :params => {:format=>:html, :update_area=>:hugo }
@@ -137,17 +137,17 @@ class DbaSgaControllerTest < ActionController::TestCase
 
   end
 
-  test "list_db_cache_advice_historic" do
+  test "list_db_cache_advice_historic with xhr: true" do
     post :list_db_cache_advice_historic, :params => {:format=>:html, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo }
     assert_response :success
   end
 
-  test "list_db_cache_by_object_id" do
+  test "list_db_cache_by_object_id with xhr: true" do
     post :list_db_cache_by_object_id, :params => {:format=>:html, :object_id=>@object_id, :update_area=>:hugo }
     assert_response :success
   end
 
-  test "plan_management" do
+  test "plan_management with xhr: true" do
     post :list_sql_profile_sqltext, :params => {:format=>:html, :profile_name=>'Hugo', :update_area=>:hugo }
     assert_response :success
 

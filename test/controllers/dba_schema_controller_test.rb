@@ -45,14 +45,14 @@ class DbaSchemaControllerTest < ActionController::TestCase
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
-  test "test_controllers_menu_entries_with_actions" do
+  test "test_controllers_menu_entries_with_actions with xhr: true" do
     call_controllers_menu_entries_with_actions
   end
 
-  test "show_object_size"       do get  :show_object_size, :params => {:format=>:html, :update_area=>:hugo };   assert_response :success; end
-  test "list_objects"           do post :list_objects, :params => {:format=>:html, :tablespace=>{:name=>"USERS"}, :schema=>{:name=>"SCOTT"}, :update_area=>:hugo };       assert_response :success; end
+  test "show_object_size with xhr: true"       do get  :show_object_size, :params => {:format=>:html, :update_area=>:hugo };   assert_response :success; end
+  test "list_objects with xhr: true"           do post :list_objects, :params => {:format=>:html, :tablespace=>{:name=>"USERS"}, :schema=>{:name=>"SCOTT"}, :update_area=>:hugo };       assert_response :success; end
 
-  test "list_table_description" do
+  test "list_table_description with xhr: true" do
     get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"AUD$", :update_area=>:hugo }
     assert_response :success;
 
@@ -144,7 +144,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
 
   end
 
-  test "list_audit_trail" do
+  test "list_audit_trail with xhr: true" do
     get :list_audit_trail, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :grouping=>"none", :update_area=>:hugo }
     assert_response :success;
 
@@ -167,7 +167,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
 
   end
 
-  test "list_object_nach_file_und_block" do
+  test "list_object_nach_file_und_block with xhr: true" do
     get :list_object_nach_file_und_block, :params => {:format=>:html, :fileno=>1, :blockno=>1, :update_area=>:hugo }
     assert_response :success
   end

@@ -13,11 +13,11 @@ class StorageControllerTest < ActionController::TestCase
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
-  test "test_controllers_menu_entries_with_actions" do
+  test "test_controllers_menu_entries_with_actions with xhr: true" do
     call_controllers_menu_entries_with_actions
   end
 
-  test "storage_controller" do
+  test "storage_controller with xhr: true" do
 
     get  :datafile_usage, :params => { :format=>:html, :update_area=>:hugo  }
     assert_response :success

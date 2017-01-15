@@ -487,7 +487,7 @@ class DbaController < ApplicationController
 
   # Latch-Waits wegen cache buffers chains
   def latch_cache_buffers_chains
-    @waits = sql_select_all("\
+@waits = sql_select_all("\
       SELECT /*+ FIRST_ROWS */ /* Panorama-Tool Ramm */
         ln.Name,                                                  
         o.Owner,                                                  
@@ -508,13 +508,16 @@ class DbaController < ApplicationController
       ORDER BY 1 ASC")
 
     render_partial
-  rescue Exception => ex; alert_exception ex, "
-Möglicherweise fehlende Zugriffsrechte auf Table X$BH! Lösung: Exec als User 'SYS':
+  rescue Exception => ex
+    # render as html because format=>:html was requested, otherwhise test will fail
+    alert_exception(ex, "
+Possibly missing access rights on table X$BH!
+Solution: Execute as user 'SYS':
 > create view x_$bh as select * from x$bh;
 > grant select on x_$bh to public;
 > create public synonym x$bh for sys.x_$bh;
 
-                                "
+                                ", :html)
   end
 
   # Waits wegen db_file_sequential_read

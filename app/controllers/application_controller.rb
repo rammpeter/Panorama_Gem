@@ -119,7 +119,7 @@ class ApplicationController < ActionController::Base
 
 protected
   # Ausgabe der Meldungen einer Exception
-  def alert_exception(exception, header='')
+  def alert_exception(exception, header='', format=:js)
     if exception
       logger.error exception.message
       exception.backtrace.each do |bt|
@@ -135,16 +135,26 @@ protected
       message = 'ApplicationController.alert: Exception = nil'
     end
 
-    show_popup_message("#{header}\n\n#{message}")
+    show_popup_message("#{header}\n\n#{message}", format)
   end
 
 
   # Ausgabe einer Popup-Message,
   # Nach Aufruf von show_popup_message muss mittels return die Verarbeitung der Controller-Methode abgebrochen werden (Vermeiden doppeltes rendern)
 
-  def show_popup_message(message)
-    respond_to do |format|
-      format.js { render :js => "show_popup_message('#{my_html_escape(message)}');" }
+  def show_popup_message(message, format=:js)
+
+    case format.to_sym
+      when :js
+        respond_to do |format|
+          format.js { render :js => "show_popup_message('#{my_html_escape(message)}');" }
+        end
+      when :html
+        respond_to do |format|
+          format.html { render :html => "<script type='text/javascript'>show_popup_message('#{my_html_escape(message)}');</script>".html_safe }
+        end
+      else
+        raise "show_popup_message: unsupported format #{format}"
     end
   end
 
