@@ -54,7 +54,7 @@ class IoControllerTest < ActionController::TestCase
 
   test "list_io_file_history_timeline" do
     io_file_key_rules.each do |groupby, value|
-      post :list_io_file_history_timeline, :params => { :format=>:html, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo  }
+      post :list_io_file_history_timeline, :params => { :format=>:html, :groupby=>groupby, :groupfilter=>@groupfilter,  :data_column_name=>io_file_values_column_options[0][:caption],  :update_area=>:hugo  }
       assert_response :success
     end
   end
@@ -100,7 +100,7 @@ class IoControllerTest < ActionController::TestCase
 
   test "list_iostat_detail_history_timeline" do
     iostat_detail_key_rules.each do |groupby, value|
-      post :list_iostat_detail_history_timeline, :params => { :format=>:html, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo  }
+      post :list_iostat_detail_history_timeline, :params => { :format=>:html, :groupby=>groupby, :groupfilter=>@groupfilter, :data_column_name=>iostat_detail_values_column_options[0][:caption],  :update_area=>:hugo  }
       assert_response :success
     end
   end
@@ -138,7 +138,7 @@ class IoControllerTest < ActionController::TestCase
 
   test "list_iostat_filetype_history_timeline" do
     iostat_filetype_key_rules.each do |groupby, value|
-      post :list_iostat_filetype_history_timeline, :params => { :format=>:html, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo }
+      post :list_iostat_filetype_history_timeline, :params => { :format=>:html, :groupby=>groupby, :groupfilter=>@groupfilter,  :data_column_name=>iostat_filetype_values_column_options[0][:caption],  :update_area=>:hugo }
       assert_response :success
     end
 
