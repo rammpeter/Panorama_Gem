@@ -1,0 +1,52 @@
+<h3>Oracle management packs</h3>
+
+<% unless @control_management_pack_access.nil? %>
+    <%= "Your database's init-Parameter 'control_management_pack_access' = '#{@control_management_pack_access}'." %><br/><br/>
+<% end %>
+<div style="width: auto;">
+  <div class="fieldset_input_outer">
+    <fieldset class="fieldset_input">
+    <legend>Set licensing of management packs for your current database</legend>
+      <div class="float_left">
+        <%= radio_button_tag(:management_pack_license, :diagnostic_pack, get_current_database[:management_pack_license] == :diagnostic_pack,
+                             :onclick=>"ajax_html('#{params[:update_area]}', 'env', 'set_management_pack_license', {management_pack_license: 'diagnostic_pack', update_area: '#{params[:update_area]}'} );",
+                             :title=>"Panorama will use Oracle's 'Diagnostic Pack' if you choose this option\nbut doesn't use Orace's 'Tuning Pack'"
+            )
+        %>
+        Diagnostic Pack is licensed
+      </div>
+      <div class="float_left">
+        <%= radio_button_tag(:management_pack_license, :diagnostic_and_tuning_pack, get_current_database[:management_pack_license] == :diagnostic_and_tuning_pack,
+                             :onclick=>"ajax_html('#{params[:update_area]}', 'env', 'set_management_pack_license', {management_pack_license: 'diagnostic_and_tuning_pack', update_area: '#{params[:update_area]}'} ); ",
+                             :title=>"Panorama will use Oracle's 'Diagnostic Pack' and 'Tuning Pack' if you choose this option"
+            )
+        %>
+        Diagnostic and Tuning Pack are licensed
+      </div>
+      <div class="float_left">
+        <%= radio_button_tag(:management_pack_license, :none, get_current_database[:management_pack_license] == :none,
+                             :onclick=>"ajax_html('#{params[:update_area]}', 'env', 'set_management_pack_license', {management_pack_license: 'none', update_area: '#{params[:update_area]}'} );",
+                             :title=>"Panorama will not use Oracle's 'Diagnostic Pack' or 'Tuning Pack' if you choose this option"                                                                                               )
+        %>
+        No management packs are licensed
+      </div>
+    </fieldset>
+  </div>
+</div>
+
+<% unless @control_management_pack_access.nil? %>
+    <div style="color:red;">
+      <% @english_text = "Your database's 'control_management_pack_access'-setting says %{pack} is not licensed!\nPanorama will use %{pack} with this setting\nand you may eventually violate Oracle's license agreements!" %>
+
+
+      <% if get_current_database[:management_pack_license] == :diagnostic_pack && !@control_management_pack_access['DIAGNOSTIC'] %>
+           <%= my_html_escape(t(:env_licensing_diagnostics_pack_violated, :default=>@english_text, :pack=>'Diagnostic Pack')).html_safe  %>
+      <% end %>
+
+      <% if get_current_database[:management_pack_license] == :diagnostic_and_tuning_pack && !@control_management_pack_access['TUNING'] %>
+          <%= my_html_escape(t(:env_licensing_diagnostics_pack_violated, :default=>@english_text, :pack=>'Tuning Pack')).html_safe  %>
+      <% end %>
+
+      <br/>
+    </div>
+<% end %>

@@ -1310,6 +1310,7 @@
   env_handling_hint_2:                                      Sortieren nach mehreren Spalten durch aufeinanderfolgende Sortierung nach einzelnen Spalten
   env_handling_hint_3:                                      Such-Filter, optionale Diagramm-Darstellung sowie Excel-Export sind verfügbar über Kontext-Menü (rechter Mouse-Button)
   env_licensing_header:                                     Lizensierung
+  env_licensing_panorama_statement:                         Panorama steht frei zur Nutzung unter den Bedingungen der
 
   env_set_database_select_any_dictionary_msg:               Dem DB-User %{user} fehlt das Recht 'SELECT ANY DICTIONARY'!<br>Viele FUnktionen von Panorama werden evtl. nicht nutzbar sein!<br>
   env_set_database_xmem_line1:                              DB-User %{user} hat kein Leserecht auf X$%{table_name_suffix} ! Damit sind sehr wenige Funktionen von Panorama nicht nutzbar!

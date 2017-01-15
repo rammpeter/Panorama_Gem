@@ -247,3 +247,13 @@ table a:active{
   -webkit-box-sizing: border-box; /* For Safari                           */
 }
 
+.fieldset_input {
+    display: inline-block;
+}
+
+.fieldset_input_outer {
+  display: inline-block;
+  background: url(greychrome.gif) repeat-x scroll left top #FFFFFF;
+  padding: 4px;
+  margin-bottom: 5px;
+}

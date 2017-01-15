@@ -172,10 +172,11 @@ class EnvController < ApplicationController
 
 
 
-    #current_database = params[:database].to_h.symbolize_keys                    # Puffern in lokaler Variable, bevor in client_info-Cache geschrieben wird
+    #current_database = params[:database].to_h.symbolize_keys                   # Puffern in lokaler Variable, bevor in client_info-Cache geschrieben wird
     current_database = params[:database]                                        # Puffern in lokaler Variable, bevor in client_info-Cache geschrieben wird
+    current_database[:saveLogin] = current_database[:saveLogin] == '1'          # Store as bool instead of number
 
-    if current_database[:modus] == 'tns'                                       # TNS-Alias auswerten
+    if current_database[:modus] == 'tns'                                        # TNS-Alias auswerten
       tns_records = read_tnsnames                                               # Hash mit Attributen aus tnsnames.ora für gesuchte DB
       tns_record = tns_records[current_database[:tns]]
       unless tns_record
@@ -270,7 +271,13 @@ class EnvController < ApplicationController
       return        # Fehler-Ausgang
     end
 
-    set_current_database(get_current_database.merge({:database_name => ConnectionHolder.current_database_name}))        # Merken interner DB-Name ohne erneuten DB-Zugriff
+    # Merken interner DB-Name und ohne erneuten DB-Zugriff
+    set_current_database(get_current_database.merge(
+        {
+            :database_name            => ConnectionHolder.current_database_name,
+            :management_pack_license  => init_management_pack_license(get_current_database)
+        }
+    ))
 
     @dictionary_access_msg = ""       # wird additiv belegt in Folge
     @dictionary_access_problem = false    # Default, keine Fehler bei Zugriff auf Dictionary
@@ -293,9 +300,6 @@ class EnvController < ApplicationController
                                                LEFT OUTER JOIN v$Instance i ON i.Instance_Number = gi.Instance_Number
                                                LEFT OUTER JOIN (SELECT DBID, MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM DBA_Hist_WR_Control GROUP BY DBID) ws ON ws.DBID = d.DBID
                                       "]
-
-      @control_management_pack_access = sql_select_one "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"  # ab Oracle 11 belegt
-
       @instance_data.each do |i|
         if i.instance_connected
           @instance_name = i.instance_name
@@ -373,9 +377,9 @@ private
     min_id = nil
 
     last_logins.each do |value|
-      last_logins.delete(value) if value && value[:sid] == database[:sid] && value[:host] == database[:host] && value[:user] == database[:user]    # Aktuellen eintrag entfernen
+      last_logins.delete(value) if value && value[:tns] == database[:tns] && value[:user] == database[:user]    # Aktuellen eintrag entfernen
     end
-    if params[:saveLogin] == "1"
+    if database[:saveLogin]
       last_logins = [database] + last_logins                                    # Neuen Eintrag an erster Stelle
       write_last_logins(last_logins)                                            # Zurückschreiben in client-info-store
     end
@@ -409,6 +413,21 @@ public
   def set_dbid
     set_cached_dbid(params[:dbid])
     list_dbids
+  end
+
+  def list_management_pack_license
+    @control_management_pack_access = read_control_management_pack_access       # ab Oracle 11 belegt
+
+    render_partial :list_management_pack_license
+  end
+
+  def set_management_pack_license
+    current_database = get_current_database
+    current_database[:management_pack_license] = params[:management_pack_license].to_sym
+    set_current_database(current_database)
+    write_connection_to_last_logins
+
+    list_management_pack_license
   end
 
   # repeat last called menu action

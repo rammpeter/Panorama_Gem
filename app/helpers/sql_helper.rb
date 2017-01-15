@@ -95,4 +95,5 @@ module SqlHelper
     result.first[1]           # Value des Key/Value-Tupels des ersten Elememtes im Hash
   end
 
+
 end

@@ -190,7 +190,7 @@
         </tr>
         <tr>
           <th><%= t :login_save_login_caption, :default=>"Save login?" %></th>
-          <td align="center"><%= check_box_tag(:saveLogin, 1, true, :title=>t(:login_save_login_hint, :default=>"save login-info for further usage?")) %></td>
+          <td align="center"><%= check_box_tag('database[saveLogin]', 1, true, :title=>t(:login_save_login_hint, :default=>"save login-info for further usage?")) %></td>
         </tr>
         <tr>
           <td colspan="2" align="center">

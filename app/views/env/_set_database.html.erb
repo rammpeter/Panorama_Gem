@@ -1,16 +1,23 @@
 <h2><%= t :env_current_database, :default=>"Current database" %></h2>
 
-<%= "JDBC connect string = \"#{jdbc_thin_url}\"" %><br/>
-<%= "JDBC driver version = \"#{ConnectionHolder.get_jdbc_driver_version}\"" %><br/>
-<%= "Client time zone = \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}" %><br/>
+<table style="display: inline-block">
+  <tr>
+    <td>
+      <%  @banners.each do |b| %>
+          <%= (b.banner+"<br>").html_safe %>
+      <% end %>
+      Platform: <%= @platform_name%>
+    </td>
+    <td>
+      <%= "JDBC connect string = \"#{jdbc_thin_url}\"" %><br/>
+      <%= "JDBC driver version = \"#{ConnectionHolder.get_jdbc_driver_version}\"" %><br/>
+      <%= "Client time zone = \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}" %><br/>
+    </td>
+  </tr>
+</table>
+
 <br/>
 
-<%  @banners.each do |b| %>
-  <%= (b.banner+"<br>").html_safe %>
-<% end %>
-<br/>
-Platform: <%= @platform_name%>
-<br/><br/>
 
 
 <% column_options =
@@ -87,27 +94,15 @@ Platform: <%= @platform_name%>
     %>
 <% end %>
 
-
-<% if @dictionary_access_problem %>
-    <h2><%= "Dictionary Access-Problem"   %></h2>
-    <div style='color:red;'><br/>
-      <%= @dictionary_access_msg.html_safe %>
-    </div>
-<% end %>
-
 <h2><%= t :env_licensing_header, :default=>"Licensing" %></h2>
 <%= render :partial => 'licensing' %>
 
-<% unless @control_management_pack_access.nil? %>
-    <br>
-    <div style="color:red;">
-      <%="Oracle Diagnostics Pack #{ @control_management_pack_access['DIAGNOSTIC'] ?  t(:env_set_database_mgmt_msg_true, :default=>'is for this database marked as licensed and will be used by Panorama') :  t(:env_set_database_mgmt_msg_false, :default=>'is for this database marked as not licensed')}." %>
-      <br/>
-      <%="Oracle Tuning Pack #{ @control_management_pack_access['TUNING'] ?  t(:env_set_database_mgmt_msg_true, :default=>'is for this database marked as licensed and will be used by Panorama') :  t(:env_set_database_mgmt_msg_false, :default=>'is for this database marked as not licensed')}." %>
-      </div>
-    <%= "Init-Parameter 'control_management_pack_access' = '#{@control_management_pack_access}'." %>
+<% if @dictionary_access_problem %>
+    <h2><%= "Dictionary Access-Problem"   %></h2>
+    <div style='color:red;'>
+      <%= @dictionary_access_msg.html_safe %>
+    </div>
 <% end %>
-
 
 <h2><%= t :env_handling_hints, :default=>"Handling hints" %></h2>
 

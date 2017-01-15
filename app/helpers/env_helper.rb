@@ -16,6 +16,22 @@ module EnvHelper
     raise
   end
 
+  def init_management_pack_license(current_database)
+    if current_database[:management_pack_license].nil?                          # not already set, calculate initial value
+      control_management_pack_access = read_control_management_pack_access
+      return :diagnostic_and_tuning_pack  if control_management_pack_access['TUNING']
+      return :diagnostic_pack             if control_management_pack_access['DIAGNOSTIC']
+      return :none
+    end
+    return current_database[:management_pack_license]                           # Use old value if already set
+  end
+
+  def read_control_management_pack_access
+    sql_select_one "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"  # ab Oracle 11 belegt
+  end
+
+
+
 
 
   # Einlesen last_logins aus client_info-store
