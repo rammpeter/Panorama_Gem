@@ -96,6 +96,9 @@ class ActiveSupport::TestCase
     open_oracle_connection                                                      # Connection zur Test-DB aufbauen, um Parameter auszulesen
     read_initial_db_values                                                      # evtl. Exception tritt erst beim ersten Zugriff auf
 
+    # DBID is set at first request after login normally
+    set_cached_dbid(sql_select_one("SELECT /* Panorama Tool Ramm */ DBID FROM v$Database"))
+
     set_I18n_locale('de')
 
     showBlockingLocksMenu     # belegt dba_hist_blocking_locks_owner]
