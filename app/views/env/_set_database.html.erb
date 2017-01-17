@@ -1,22 +1,12 @@
-<h2><%= t :env_current_database, :default=>"Current database" %></h2>
+<h2><%= t :env_current_database, :default=>"Current database" %> "<%= @database_info.name %>" <%= t(:created, :default=>'created') %> <%= localeDateTime(@database_info.created) %> </h2>
 
-<table style="display: inline-block" class="fieldset_input_outer">
-  <tr>
-    <td>
-      <%  @banners.each do |b| %>
-          <%= (b.banner+"<br>").html_safe %>
-      <% end %>
-      Platform: <%= @platform_name%>
-    </td>
-    <td>
-      <%= "JDBC connect string = \"#{jdbc_thin_url}\"" %><br/>
-      <%= "JDBC driver version = \"#{ConnectionHolder.get_jdbc_driver_version}\"" %><br/>
-      <%= "Client time zone = \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}" %><br/>
-    </td>
-  </tr>
-</table>
-
-<br/>
+<% column_options =
+       [
+           {:caption=>"Server versions",      :data=>proc{|rec| rec.banner },         :title=>"Version info for database server"},
+           {:caption=>"Client versions",      :data=>proc{|rec| rec.client_info },    :title=>"Version info for client machine (machine where Panorama's server instance is running)"},
+       ]
+%>
+<%= gen_slickgrid(@version_info, column_options, {:width => :auto}) %>
 
 
 

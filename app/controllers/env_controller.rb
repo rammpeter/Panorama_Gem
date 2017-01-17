@@ -284,10 +284,21 @@ class EnvController < ApplicationController
     begin
       @banners       = []   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
       @instance_data = []   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
-      @platform_name = ""   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
+      @version_info  = []   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
       # Einlesen der DBID der Database, gleichzeitig Test auf Zugriffsrecht auf DataDictionary
       read_initial_db_values
-      @banners = sql_select_all "SELECT /* Panorama Tool Ramm */ Banner FROM V$Version"
+
+      # Data for DB versions
+      @version_info = sql_select_all "SELECT /* Panorama Tool Ramm */ Banner FROM V$Version"
+      @database_info = sql_select_first_row "SELECT /* Panorama Tool Ramm */ Name, Platform_name, Created FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
+
+      @version_info << ({:banner => "Platform: #{@database_info.platform_name}" }.extend SelectHashHelper)
+
+      @version_info.each {|vi| vi[:client_info] = nil }                         # each row should have this column defined
+      @version_info[0][:client_info] = "JDBC connect string = \"#{jdbc_thin_url}\""                                                                           if @version_info.count > 0
+      @version_info[1][:client_info] = "JDBC driver version = \"#{ConnectionHolder.get_jdbc_driver_version}\""                                                if @version_info.count > 1
+      @version_info[2][:client_info] = "Client time zone = \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}"  if @version_info.count > 2
+
       @instance_data = sql_select_all ["SELECT /* Panorama Tool Ramm */ gi.*, i.Instance_Number Instance_Connected,
                                                       (SELECT n.Value FROM gv$NLS_Parameters n WHERE n.Inst_ID = gi.Inst_ID AND n.Parameter='NLS_CHARACTERSET') NLS_CharacterSet,
                                                       (SELECT n.Value FROM gv$NLS_Parameters n WHERE n.Inst_ID = gi.Inst_ID AND n.Parameter='NLS_NCHAR_CHARACTERSET') NLS_NChar_CharacterSet,
@@ -307,7 +318,6 @@ class EnvController < ApplicationController
           set_current_database(get_current_database.merge({:cdb => true})) if get_db_version >= '12.1' && i.cdb == 'YES'  # Merken ob DB eine CDP/PDB ist
         end
       end
-      @platform_name = sql_select_one "SELECT /* Panorama Tool Ramm */ Platform_name FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
       if get_current_database[:cdb]
         @containers = sql_select_all "SELECT c.*, s.Con_ID Connected_Con_ID
                                       FROM   gv$Containers c

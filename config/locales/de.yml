@@ -4,6 +4,7 @@
   all:                                                      Alle
   and:                                                      und
   close:                                                    Schliessen
+  created:                                                  angelegt
   content:                                                  Inhalt
   day:                                                      Tag
   error:                                                    Fehler
