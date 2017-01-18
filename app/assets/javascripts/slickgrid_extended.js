@@ -304,7 +304,7 @@ function SlickGridExtended(container_id, options){
             }
 
             $(args.node).empty();
-            $("<input type='text' style='font-size: 11.5em; width: 100%;' title='"+input_hint(args.column.id)+"'>")
+            $("<input type='text' style='font-size: 12px; width: 100%;' title='"+input_hint(args.column.id)+"'>")
                 .data("columnId", args.column.id)
                 .val(columnFilters[args.column.id])
                 .appendTo(args.node);

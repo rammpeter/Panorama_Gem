@@ -127,6 +127,8 @@ module DragnetHelper
           @@dragnet_internal_list << { :name    => t(:dragnet_helper_predefined_menu_name, :default=> 'Predefined extensions from local Panorama server instance'),
                                        :entries => dragnet_predefined_list
           }
+        else
+          Rails.logger.info("Predefined dragnet selections not found at #{predefined_filename}")
         end
 
         # Extend list with personal selections (dependent from browser cookie)
