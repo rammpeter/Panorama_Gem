@@ -304,7 +304,7 @@ function SlickGridExtended(container_id, options){
             }
 
             $(args.node).empty();
-            $("<input type='text' style='font-size: 11.5; width: 100%;' title='"+input_hint(args.column.id)+"'>")
+            $("<input type='text' style='font-size: 11.5em; width: 100%;' title='"+input_hint(args.column.id)+"'>")
                 .data("columnId", args.column.id)
                 .val(columnFilters[args.column.id])
                 .appendTo(args.node);
@@ -1284,7 +1284,7 @@ function SlickGridExtended(container_id, options){
             if (!column['no_wrap']  && js_test_cell.scrollWidth > column['max_wrap_width']){     // Nur Aufrufen, wenn max_wrap_width sich auch vergrößern kann (aktuelle Breite > bisher größte Wrap-Breite)
                 js_test_cell_wrap.innerHTML = fullvalue;                        // Test-DOM wrapped mit voll dekoriertem Inhalt füllen
                 if (thiz.last_used_test_css_class_wrap != target_class){
-                    js_test_cell_wrap.className = target_class;                 // Class ersetzen am Objekt durch aktuelle, dabei überschreiben evtl. vorheriger
+                    js_test_cell_wrap.className = target_class;                 // Class ersetzen am Objekt durch aktuelle, dabei überschreiben evtl. Successor
                     thiz.last_used_test_css_class_wrap = target_class;          // compare-value for next call
                 }
 
@@ -1309,7 +1309,7 @@ function SlickGridExtended(container_id, options){
      * @returns {*}
      */
     function single_line_height() {
-        return thiz.test_cell.html("1").prop("scrollHeight");
+        return thiz.js_test_cell.html("1").prop("scrollHeight");
     }
 
 } // Ende SlickGridExtended
