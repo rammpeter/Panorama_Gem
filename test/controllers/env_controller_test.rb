@@ -18,13 +18,13 @@ class EnvControllerTest < ActionController::TestCase
     database = get_current_database
     database[:password] = database_helper_decrypt_value(database[:password])
 
-    # Test with stored login
+    # Test with new login parameters
+    database[:save_login] = '1'                                                 # String insted of bool like for connect with saved credentials
     post :set_database_by_params, :params => {:format=>:html, :database => database }
     assert_response :success
 
-    test with new login
-    database[:save_login] = '1'                                                 # String insted of bool like for connect with saved credentials
-    post :set_database, :params => {:format=>:html, :database => database }
+    # test with stored login from previous connect (0 = first position in list of stored connections)
+    post :set_database_by_id, :params => {:format=>:html, :saved_logins_id=>'0' }
     assert_response :success
 
   end
