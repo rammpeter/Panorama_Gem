@@ -1301,6 +1301,9 @@
   dragnet_show_selection_show_sql_hint:                     Anzeige des auszuführenden SQL-Statements
 
   env_build_main_menu_repeat_hint:                          Wiederholen der letzten im Menü ausgewählten Aktion
+  env_choose_management_pack_caption:                       Verbunden mit Datenbank '%{database_name}', bitte Lizensierung des Management Pack auswählen
+  env_choose_managent_pack_license_submit_caption:          Bestätigen und Fortsetzen
+  env_choose_managent_pack_license_submit_hint:             Bestätigen der ausgewählten Lizenz für Management Pack für diese Datenbank und Fortsetzen
   env_connect_error:                                        Fehler bei Anmeldung an DB
   env_current_database:                                     Aktuelle Datenbank
   env_handling_hints:                                       Tips zur Bedienung
@@ -1310,8 +1313,24 @@
   env_handling_hint_1:                                      Sortieren der Tabellenanzeige durch Klick auf Spalten-Header
   env_handling_hint_2:                                      Sortieren nach mehreren Spalten durch aufeinanderfolgende Sortierung nach einzelnen Spalten
   env_handling_hint_3:                                      Such-Filter, optionale Diagramm-Darstellung sowie Excel-Export sind verfügbar über Kontext-Menü (rechter Mouse-Button)
+  env_licensing_diagnostics_pack_violated: |-
+    Die Einstellung 'control_management_pack_access' der aktuellen Datenbank sagt, %{pack} is nicht lizensiert!
+    Panorama wird das %{pack} nutzen mit dieser Einstellung
+    und Sie werden eventuell Oracle's Lizenzbestimmungen verletzen!
   env_licensing_header:                                     Lizensierung
   env_licensing_panorama_statement:                         Panorama steht frei zur Nutzung unter den Bedingungen der
+  env_list_management_pack_license_caption:                 Nutzung der Oracle Management Packs durch Panorama
+  env_list_management_pack_license_dp_caption:              Diagnostic Pack ist lizensiert
+  env_list_management_pack_license_dp_hint: |-
+    Panorama wird Oracle's 'Diagnostic Pack' nutzen wenn diese Option gewählt ist
+    aber nicht Oracle's 'Tuning Pack' nutzen
+  env_list_management_pack_license_legend:                  Lizensierung von Management-Packs für die aktuelle Datenbank
+  env_list_management_pack_license_none_caption:            Es sind keine Management Packs lizensiert
+  env_list_management_pack_license_none_hint:               Panorama wird weder Oracle's 'Diagnostic Pack' noch 'Tuning Pack' nutzen wenn diese Option gewählt ist
+  env_list_management_pack_license_setting:                 Der Init-Parameter der aktuellen Datenbank
+  env_list_management_pack_license_tp_caption:              Diagnostic Pack und Tuning Pack sind lizensiert
+  env_list_management_pack_license_tp_hint:                 Panorama wird Oracle's 'Diagnostic Pack' und 'Tuning Pack' nutzen wenn diese Option gewählt ist
+
 
   env_set_database_select_any_dictionary_msg:               Dem DB-User %{user} fehlt das Recht 'SELECT ANY DICTIONARY'!<br>Viele FUnktionen von Panorama werden evtl. nicht nutzbar sein!<br>
   env_set_database_xmem_line1:                              DB-User %{user} hat kein Leserecht auf X$%{table_name_suffix} ! Damit sind sehr wenige Funktionen von Panorama nicht nutzbar!

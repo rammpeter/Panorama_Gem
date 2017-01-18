@@ -78,7 +78,8 @@ class ActiveSupport::TestCase
     #current_database[:port]     = test_url[4]
     #current_database[:sid]      = test_url[5]
     current_database[:user]     = test_config["test_username"]
-    current_database[:tns]      = test_config['test_url'].split('@')[1]                # Alles nach jdbc:oracle:thin@
+    current_database[:tns]      = test_config['test_url'].split('@')[1]         # Alles nach jdbc:oracle:thin@
+    current_database[:management_pack_license] = :diagnostic_and_tuning_pack    # Allow access on management packs
 
     # Config im Cachestore ablegen
     # Sicherstellen, dass ApplicationHelper.get_cached_client_key nicht erneut den client_key entschlüsseln will

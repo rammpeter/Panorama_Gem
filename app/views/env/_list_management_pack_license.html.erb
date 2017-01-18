@@ -1,32 +1,34 @@
-<h3>Oracle management pack <access></access></h3>
+<h3><%= t(:env_list_management_pack_license_caption, :default=>'Usage of Oracle management packs by Panorama') %> </h3>
 
 <% unless @control_management_pack_access.nil? %>
-    <%= "Your database's init-Parameter 'control_management_pack_access' = '#{@control_management_pack_access}'." %><br/><br/>
+    <%= "#{t(:env_list_management_pack_license_setting, :default=>"Your database's init-Parameter")} 'control_management_pack_access' = '#{@control_management_pack_access}'." %><br/><br/>
 <% end %>
 <div style="width: auto;">
   <div class="fieldset_input_outer">
     <fieldset class="fieldset_input">
-    <legend>Set licensing of management packs for your current database</legend>
-      <div class="float_left" title="Panorama will access Oracle's 'Diagnostic Pack' if you choose this option\nbut doesn't access Orace's 'Tuning Pack'">
+    <legend><%= t(:env_list_management_pack_license_legend, :default=>'Licensing of management packs for your current database') %></legend>
+      <div class="float_left" title="<%= t(:env_list_management_pack_license_dp_hint, :default=>"Panorama will access Oracle's 'Diagnostic Pack' if you choose this option\nbut doesn't access Oracle's 'Tuning Pack'") %>">
         <%= radio_button_tag(:management_pack_license, :diagnostic_pack, get_current_database[:management_pack_license] == :diagnostic_pack,
                              :onclick=>"ajax_html('#{params[:update_area]}', 'env', 'set_management_pack_license', {management_pack_license: 'diagnostic_pack', update_area: '#{params[:update_area]}'} );"
             )
         %>
-        Diagnostic Pack is licensed
+        <%= t(:env_list_management_pack_license_dp_caption, :default=>'Diagnostic Pack is licensed')%>
       </div>
-      <div class="float_left" title="Panorama will access Oracle's 'Diagnostic Pack' and 'Tuning Pack' if you choose this option">
+
+      <div class="float_left" title="<%= t(:env_list_management_pack_license_tp_hint, :default=>"Panorama will access Oracle's 'Diagnostic Pack' and 'Tuning Pack' if you choose this option") %>">
         <%= radio_button_tag(:management_pack_license, :diagnostic_and_tuning_pack, get_current_database[:management_pack_license] == :diagnostic_and_tuning_pack,
                              :onclick=>"ajax_html('#{params[:update_area]}', 'env', 'set_management_pack_license', {management_pack_license: 'diagnostic_and_tuning_pack', update_area: '#{params[:update_area]}'} ); "
             )
         %>
-        Diagnostic and Tuning Pack are licensed
+        <%= t(:env_list_management_pack_license_tp_caption, :default=>'Diagnostic Pack and Tuning Pack are licensed')%>
       </div>
-      <div class="float_left" title="Panorama will not access Oracle's 'Diagnostic Pack' or 'Tuning Pack' if you choose this option">
+
+      <div class="float_left" title="<%= t(:env_list_management_pack_license_none_hint, :default=>"Panorama will not access Oracle's 'Diagnostic Pack' or 'Tuning Pack' if you choose this option") %>">
         <%= radio_button_tag(:management_pack_license, :none, get_current_database[:management_pack_license] == :none,
                              :onclick=>"ajax_html('#{params[:update_area]}', 'env', 'set_management_pack_license', {management_pack_license: 'none', update_area: '#{params[:update_area]}'} );"
             )
         %>
-        No management packs are licensed
+        <%= t(:env_list_management_pack_license_none_caption, :default=>'No management packs are licensed')%>
       </div>
     </fieldset>
   </div>

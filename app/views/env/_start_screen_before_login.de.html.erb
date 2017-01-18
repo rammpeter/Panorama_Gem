@@ -12,9 +12,12 @@
 <BR>
 
 <h3><%= t :env_licensing_header, :default=>"Licensing" %></h3>
+<% @show_management_plan_choice = false %>
 <%= render :partial => 'licensing' %>
-<span style="color:red;">Teile der Anwendung erfordern Lizensierung von Oracle's 'Diagnostics Pack' und 'Tuning Pack'!<br>
-  Die Nutzung dieser Management-Packs kann pro Ziel-DB gesteuert werden.
+<br/>
+<span style="color:red;">
+  Teile der Anwendung benötigen die Lizensierung von Oracle's 'Diagnostics Pack' und 'Tuning Pack' um zu funktionieren!<br>
+  Nach dem Login kann gewählt werden ob Management-Packs für diese Datenbank lizensiert sind.
 </span><BR><BR>
 
 Der zur Anmeldung genutzte Oracle-User benötigt das Recht "SELECT ANY DICTIONARY".<BR><BR>

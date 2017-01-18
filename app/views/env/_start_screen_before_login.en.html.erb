@@ -11,9 +11,12 @@
 </B>
 <BR>
 <h3><%= t :env_licensing_header, :default=>"Licensing" %></h3>
+<% @show_management_plan_choice = false %>
 <%= render :partial => 'licensing' %>
-<span style="color:red;">Parts of this application require licensing of Oracle's 'Diagnostic Pack' and 'Tuning Pack'!<br/>
-  You can control usage of this management packs per target database.
+<br/>
+<span style="color:red;">
+  Parts of this application require licensing of Oracle's 'Diagnostic Pack' and 'Tuning Pack' to work properly!<br/>
+  You can can choose after login if management packs are licensed for your database.
 </span><BR><BR>
 
 Oracle-User used for login with Panorama requires the right "SELECT ANY DICTIONARY".<BR><BR>

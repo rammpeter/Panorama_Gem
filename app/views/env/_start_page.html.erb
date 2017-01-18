@@ -1,4 +1,4 @@
-<h2><%= t :env_current_database, :default=>"Current database" %> "<%= @database_info.name %>" <%= t(:created, :default=>'created') %> <%= localeDateTime(@database_info.created) %> </h2>
+<%= render_page_caption("#{t :env_current_database, :default=>"Current database"} '#{@database_info.name}' #{t(:created, :default=>'created')} #{localeDateTime(@database_info.created)}") %>
 
 <% column_options =
        [
@@ -11,23 +11,23 @@
 
 
 <% column_options =
-  [
-    {:caption=>"Instance",      :data=>proc{|rec| "#{rec.instance_number}#{" (*)" if rec.instance_connected && @instance_data.length >1}" },       :title=>"Instance number, (*) for connecting instance"},
-    {:caption=>"Name",          :data=>proc{|rec| rec.instance_name },                  :title=>"Instance name"},
-    {:caption=>"Hostname",      :data=>proc{|rec| rec.host_name },                      :title=>"Last startup time of instance"},
-    {:caption=>"Startup",       :data=>proc{|rec| localeDateTime(rec.startup_time) },   :title=>"Startup der DB", :data_title=>proc{|rec| "%t, open mode = #{rec.open_mode}"}},
-    {:caption=>"Archiver",      :data=>proc{|rec| rec.archiver },                       :title=>"Archiver mode of instance"},
-    {:caption=>"Character-Set", :data=>proc{|rec| rec.nls_characterset },               :title=>"Character set of database", :data_title=>proc{|rec| "%t: NChar_Character_Set=#{rec.nls_nchar_characterset}"}},
-    {:caption=>"Instance-Role", :data=>proc{|rec| rec["instance_role"] },                  :title=>"Instance role for data guard"},
-    {:caption=>"CPU-Count",     :data=>proc{|rec| rec.cpu_count },                      :title=>"Number of CPUs counted for instance"},
-    {:caption=>"Protection mode", :data=>proc{|rec| rec.protection_mode },              :title=>"Protection mode currently in effect for the database.\nLook at DB-parameter \"log_archive_dest_n\" to recognize what sync-mode is used for standby configuration (SYNC or NOSYNC, AFFIRM or NOAFFIRM).",  :data_title=>proc{|rec| "%t\nProtection level = #{rec.protection_level}"}},
-    {:caption=>"Switchover status", :data=>proc{|rec| rec.switchover_status },          :title=>"Indicates whether switchover is allowed:\nNOT ALLOWED - Either this is a standby database and the primary database has not been switched first or this is a primary database and there are no standby databases."},
-    {:caption=>"DG broker",     :data=>proc{|rec| rec.dataguard_broker },               :title=>"Indicates whether the Data Guard configuration is being managed by the broker (ENABLED) or not (DISABLED)"},
-    {:caption=>"Force logging", :data=>proc{|rec| rec.force_logging },                  :title=>"Indicates whether the database is under force logging mode (YES) or not (NO)"},
-    {:caption=>"AWR interval",  :data=>proc{|rec| rec.snap_interval_minutes },          :title=>'Interval in minutes for AWR-snapshots', :align=>:right},
-    {:caption=>"AWR retention", :data=>proc{|rec| rec.snap_retention_days },            :title=>'Retention in days for AWR-snapshots', :align=>:right},
-  ]
-  column_options << {:caption=>'CDB',           :data=>proc{|rec| rec.cdb },            :title=>'Is this database a container DB (PDB)?', :align=>:right}  if get_db_version >= '12.1'
+       [
+           {:caption=>"Instance",      :data=>proc{|rec| "#{rec.instance_number}#{" (*)" if rec.instance_connected && @instance_data.length >1}" },       :title=>"Instance number, (*) for connecting instance"},
+           {:caption=>"Name",          :data=>proc{|rec| rec.instance_name },                  :title=>"Instance name"},
+           {:caption=>"Hostname",      :data=>proc{|rec| rec.host_name },                      :title=>"Last startup time of instance"},
+           {:caption=>"Startup",       :data=>proc{|rec| localeDateTime(rec.startup_time) },   :title=>"Startup der DB", :data_title=>proc{|rec| "%t, open mode = #{rec.open_mode}"}},
+           {:caption=>"Archiver",      :data=>proc{|rec| rec.archiver },                       :title=>"Archiver mode of instance"},
+           {:caption=>"Character-Set", :data=>proc{|rec| rec.nls_characterset },               :title=>"Character set of database", :data_title=>proc{|rec| "%t: NChar_Character_Set=#{rec.nls_nchar_characterset}"}},
+           {:caption=>"Instance-Role", :data=>proc{|rec| rec["instance_role"] },                  :title=>"Instance role for data guard"},
+           {:caption=>"CPU-Count",     :data=>proc{|rec| rec.cpu_count },                      :title=>"Number of CPUs counted for instance"},
+           {:caption=>"Protection mode", :data=>proc{|rec| rec.protection_mode },              :title=>"Protection mode currently in effect for the database.\nLook at DB-parameter \"log_archive_dest_n\" to recognize what sync-mode is used for standby configuration (SYNC or NOSYNC, AFFIRM or NOAFFIRM).",  :data_title=>proc{|rec| "%t\nProtection level = #{rec.protection_level}"}},
+           {:caption=>"Switchover status", :data=>proc{|rec| rec.switchover_status },          :title=>"Indicates whether switchover is allowed:\nNOT ALLOWED - Either this is a standby database and the primary database has not been switched first or this is a primary database and there are no standby databases."},
+           {:caption=>"DG broker",     :data=>proc{|rec| rec.dataguard_broker },               :title=>"Indicates whether the Data Guard configuration is being managed by the broker (ENABLED) or not (DISABLED)"},
+           {:caption=>"Force logging", :data=>proc{|rec| rec.force_logging },                  :title=>"Indicates whether the database is under force logging mode (YES) or not (NO)"},
+           {:caption=>"AWR interval",  :data=>proc{|rec| rec.snap_interval_minutes },          :title=>"Interval in minutes for AWR-snapshots\nValues are hidden if you did not acknowledge licensing of Diagnostic Pack yet", :align=>:right},
+           {:caption=>"AWR retention", :data=>proc{|rec| rec.snap_retention_days },            :title=>"Retention in days for AWR-snapshots\nValues are hidden if you did not acknowledge licensing of Diagnostic Pack yet", :align=>:right},
+       ]
+   column_options << {:caption=>'CDB',           :data=>proc{|rec| rec.cdb },            :title=>'Is this database a container DB (PDB)?', :align=>:right}  if get_db_version >= '12.1'
 
 
 %>
@@ -38,7 +38,7 @@
 
 <% @update_area_dbids = get_unique_area_id %>
 <script type="text/javascript">
-  ajax_html('<%= @update_area_dbids %>', 'env', 'list_dbids', {update_area: "<%= @update_area_dbids %>"});
+    ajax_html('<%= @update_area_dbids %>', 'env', 'list_dbids', {update_area: "<%= @update_area_dbids %>"});
 </script>
 <div id="<%= @update_area_dbids %>"></div>
 
@@ -85,6 +85,7 @@
 <% end %>
 
 <h2><%= t :env_licensing_header, :default=>"Licensing" %></h2>
+<% @show_management_plan_choice = true %>
 <%= render :partial => 'licensing' %>
 
 <% if @dictionary_access_problem %>

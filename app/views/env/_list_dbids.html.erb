@@ -31,7 +31,7 @@
 
 
 <%=
-  if @dbids.count > 1
+  if !@dbids.nil? && @dbids.count > 1
     gen_slickgrid(@dbids, column_options, {
       :caption => 'Data for multiple database IDs is recorded in AWR history. Please select your preferred DBID',
       :width => :auto,

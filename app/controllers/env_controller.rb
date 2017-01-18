@@ -51,6 +51,7 @@ class EnvController < ApplicationController
     write_to_client_info_store(:last_used_menu_action,      'index')
     write_to_client_info_store(:last_used_menu_caption,     'Start')
     write_to_client_info_store(:last_used_menu_hint,        t(:menu_env_index_hint, :default=>"Start of application without connect to database"))
+
   rescue Exception=>e
     Rails.logger.error("#{e.message}")
     set_current_database(nil) if !cookies['client_key'].nil?                     # Sicherstellen, dass bei naechstem Aufruf neuer Einstieg (nur wenn client_info_store bereits initialisiert ist)
@@ -80,10 +81,76 @@ class EnvController < ApplicationController
     end
   end
 
-  # start page after login called again
+  # start page called after login and management pack choice
   def start_page
-    params[:database] = get_current_database
-    set_database
+
+    @dictionary_access_msg = ""       # wird additiv belegt in Folge
+    @dictionary_access_problem = false    # Default, keine Fehler bei Zugriff auf Dictionary
+    begin
+      @banners       = []   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
+      @instance_data = []   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
+      @version_info  = []   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
+      # Einlesen der DBID der Database, gleichzeitig Test auf Zugriffsrecht auf DataDictionary
+      read_initial_db_values
+
+      # Data for DB versions
+      @version_info = sql_select_all "SELECT /* Panorama Tool Ramm */ Banner FROM V$Version"
+      @database_info = sql_select_first_row "SELECT /* Panorama Tool Ramm */ Name, Platform_name, Created FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
+
+      @version_info << ({:banner => "Platform: #{@database_info.platform_name}" }.extend SelectHashHelper)
+
+      @version_info.each {|vi| vi[:client_info] = nil }                         # each row should have this column defined
+      @version_info[0][:client_info] = "JDBC connect string = \"#{jdbc_thin_url}\""                                                                           if @version_info.count > 0
+      @version_info[1][:client_info] = "JDBC driver version = \"#{ConnectionHolder.get_jdbc_driver_version}\""                                                if @version_info.count > 1
+      @version_info[2][:client_info] = "Client time zone = \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}"  if @version_info.count > 2
+
+      @instance_data = sql_select_all ["SELECT /* Panorama Tool Ramm */ gi.*, i.Instance_Number Instance_Connected,
+                                                      (SELECT n.Value FROM gv$NLS_Parameters n WHERE n.Inst_ID = gi.Inst_ID AND n.Parameter='NLS_CHARACTERSET') NLS_CharacterSet,
+                                                      (SELECT n.Value FROM gv$NLS_Parameters n WHERE n.Inst_ID = gi.Inst_ID AND n.Parameter='NLS_NCHAR_CHARACTERSET') NLS_NChar_CharacterSet,
+                                                      (SELECT p.Value FROM GV$Parameter p WHERE p.Inst_ID = gi.Inst_ID AND LOWER(p.Name) = 'cpu_count') CPU_Count,
+                                                      d.Open_Mode, d.Protection_Mode, d.Protection_Level, d.Switchover_Status, d.Dataguard_Broker, d.Force_Logging,
+                                                      ws.Snap_Interval_Minutes, ws.Snap_Retention_Days
+                                                      #{", CDB" if get_db_version >= '12.1'}
+                                               FROM  GV$Instance gi
+                                               CROSS JOIN  v$Database d
+                                               LEFT OUTER JOIN v$Instance i ON i.Instance_Number = gi.Instance_Number
+                                               #{
+      if PackLicense.diagnostic_pack_licensed?(get_current_database[:management_pack_license])
+        "LEFT OUTER JOIN (SELECT DBID, MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM DBA_Hist_WR_Control GROUP BY DBID) ws ON ws.DBID = d.DBID"
+      else
+        "CROSS JOIN (SELECT NULL Snap_Interval_Minutes, NULL Snap_Retention_Days FROM DUAL) ws"
+      end
+      }
+
+                                       "]
+      @instance_data.each do |i|
+        if i.instance_connected
+          @instance_name = i.instance_name
+          @host_name     = i.host_name
+          set_current_database(get_current_database.merge({:cdb => true})) if get_db_version >= '12.1' && i.cdb == 'YES'  # Merken ob DB eine CDP/PDB ist
+        end
+      end
+      if get_current_database[:cdb]
+        @containers = sql_select_all "SELECT c.*, s.Con_ID Connected_Con_ID
+                                      FROM   gv$Containers c
+                                      JOIN   v$session s ON audsid = userenv('sessionid')
+                                     "
+      end
+    rescue Exception => e
+      Rails.logger.error "Exception: #{e.message}"
+      curr_line_no=0
+      e.backtrace.each do |bt|
+        Rails.logger.error bt if curr_line_no < 20                                # report First 20 lines of stacktrace in log
+        curr_line_no += 1
+      end
+
+      raise "Your user is missing SELECT-right on gv$Instance, gv$Database.\nPlease ensure that your user has granted SELECT ANY DICTIONARY.\nPanorama is not usable with this user account!\n\n #{e.message}"
+    end
+
+    @dictionary_access_problem = true unless select_any_dictionary?(@dictionary_access_msg)
+    @dictionary_access_problem = true unless x_memory_table_accessible?("BH", @dictionary_access_msg )
+
+    render_partial :start_page
   end
 
   # Aufgerufen aus dem Anmelde-Dialog für gemerkte DB-Connections
@@ -93,7 +160,6 @@ class EnvController < ApplicationController
 
       params[:database][:query_timeout] = 360 unless params[:database][:query_timeout]  # Initialize if stored login dies not contain query_timeout
 
-      params[:saveLogin] = "1"                                                  # Damit bei nächstem Refresh auf diesem Eintrag positioniert wird
       raise "env_controller.set_database_by_id: No database found to login! Please use direct login!" unless params[:database]
       set_database
     end
@@ -115,13 +181,43 @@ class EnvController < ApplicationController
     # Passwort sofort verschlüsseln als erstes und nur in verschlüsselter Form in session-Hash speichern
     params[:database][:password]  = database_helper_encrypt_value(params[:database][:password])
 
-    set_I18n_locale(params[:database][:locale])
-    set_database
+    #set_I18n_locale(params[:database][:locale])  # locale is set directly before, use this
+    set_database(true)
   end
 
 
 
   private
+
+  # Test auf Lesbarkeit von X$-Tabellen
+  def x_memory_table_accessible?(table_name_suffix, msg)
+    begin
+      sql_select_all "SELECT /* Panorama Tool Ramm */ * FROM X$#{table_name_suffix} WHERE RowNum < 1"
+      return true
+    rescue Exception => e
+      msg << "<div>#{t(:env_set_database_xmem_line1, :user=>get_current_database[:user], :table_name_suffix=>table_name_suffix, :default=>'DB-User %{user} has no right to read on X$%{table_name_suffix} ! Therefore a very small number of functions of Panorama is not usable!')}<br/>"
+      msg << "<a href='#' onclick=\"jQuery('#xbh_workaround').show(); return false;\">#{t(:moeglicher, :default=>'possible')} workaround:</a><br/>"
+      msg << "<div id='xbh_workaround' style='display:none; background-color: lightyellow; padding: 20px;'>"
+      msg << "#{t(:env_set_database_xmem_line2, :default=>'Alternative 1: Connect with role SYSDABA')}<br/>"
+      msg << "#{t(:env_set_database_xmem_line3, :default=>'Alternative 2: Execute as user SYS')}<br/>"
+      msg << "> create view X_$#{table_name_suffix} as select * from X$#{table_name_suffix};<br/>"
+      msg << "> create public synonym X$#{table_name_suffix} for sys.X_$#{table_name_suffix};<br/>"
+      msg << t(:env_set_database_xmem_line4, :table_name_suffix=>table_name_suffix, :default=>'This way X$%{table_name_suffix} becomes available with role SELECT ANY DICTIONARY')
+      msg << "</div>"
+      msg << "</div>"
+      return false
+    end
+  end
+
+  def select_any_dictionary?(msg)
+    if sql_select_one("SELECT COUNT(*) FROM Session_Privs WHERE Privilege = 'SELECT ANY DICTIONARY'") == 0
+      msg << t(:env_set_database_select_any_dictionary_msg, :user=>get_current_database[:user], :default=>"DB-User %{user} doesn't have the grant 'SELECT ANY DICTIONARY'! Many functions of Panorama may be not usable!<br>")
+      false
+    else
+      true
+    end
+  end
+
   def get_host_tns(current_database)                                            # JDBC-URL for host/port/sid
     sid_separator = case current_database[:sid_usage].to_sym
                       when :SID then          ':'
@@ -135,35 +231,8 @@ class EnvController < ApplicationController
   public
 
   # Erstes Anmelden an DB
-  def set_database
-    # Test auf Lesbarkeit von X$-Tabellen
-    def x_memory_table_accessible?(table_name_suffix, msg)
-      begin
-        sql_select_all "SELECT /* Panorama Tool Ramm */ * FROM X$#{table_name_suffix} WHERE RowNum < 1"
-        return true
-      rescue Exception => e
-        msg << "<div>#{t(:env_set_database_xmem_line1, :user=>get_current_database[:user], :table_name_suffix=>table_name_suffix, :default=>'DB-User %{user} has no right to read on X$%{table_name_suffix} ! Therefore a very small number of functions of Panorama is not usable!')}<br/>"
-        msg << "<a href='#' onclick=\"jQuery('#xbh_workaround').show(); return false;\">#{t(:moeglicher, :default=>'possible')} workaround:</a><br/>"
-        msg << "<div id='xbh_workaround' style='display:none; background-color: lightyellow; padding: 20px;'>"
-        msg << "#{t(:env_set_database_xmem_line2, :default=>'Alternative 1: Connect with role SYSDABA')}<br/>"
-        msg << "#{t(:env_set_database_xmem_line3, :default=>'Alternative 2: Execute as user SYS')}<br/>"
-        msg << "> create view X_$#{table_name_suffix} as select * from X$#{table_name_suffix};<br/>"
-        msg << "> create public synonym X$#{table_name_suffix} for sys.X_$#{table_name_suffix};<br/>"
-        msg << t(:env_set_database_xmem_line4, :table_name_suffix=>table_name_suffix, :default=>'This way X$%{table_name_suffix} becomes available with role SELECT ANY DICTIONARY')
-        msg << "</div>"
-        msg << "</div>"
-        return false
-      end
-    end
-
-    def select_any_dictionary?(msg)
-      if sql_select_one("SELECT COUNT(*) FROM Session_Privs WHERE Privilege = 'SELECT ANY DICTIONARY'") == 0
-        msg << t(:env_set_database_select_any_dictionary_msg, :user=>get_current_database[:user], :default=>"DB-User %{user} doesn't have the grant 'SELECT ANY DICTIONARY'! Many functions of Panorama may be not usable!<br>")
-        false
-      else
-        true
-      end
-    end
+  # Wurde direkt aus Browser aufgerufen oder per set_database_by_params_called?
+  def set_database(called_from_set_database_by_params = false)
 
     write_to_client_info_store(:last_used_menu_controller, "env")
     write_to_client_info_store(:last_used_menu_action,     "set_database")
@@ -174,7 +243,9 @@ class EnvController < ApplicationController
 
     #current_database = params[:database].to_h.symbolize_keys                   # Puffern in lokaler Variable, bevor in client_info-Cache geschrieben wird
     current_database = params[:database]                                        # Puffern in lokaler Variable, bevor in client_info-Cache geschrieben wird
-    current_database[:saveLogin] = current_database[:saveLogin] == '1'          # Store as bool instead of number
+    current_database[:save_login] = current_database[:save_login] == '1' if called_from_set_database_by_params # Store as bool instead of number fist time after login
+
+    @show_management_plan_choice =  current_database[:management_pack_license].nil?          # show choice for management pack if first login to database or stored login does not contain the choice
 
     if current_database[:modus] == 'tns'                                        # TNS-Alias auswerten
       tns_records = read_tnsnames                                               # Hash mit Attributen aus tnsnames.ora für gesuchte DB
@@ -272,68 +343,16 @@ class EnvController < ApplicationController
     end
 
     # Merken interner DB-Name und ohne erneuten DB-Zugriff
-    set_current_database(get_current_database.merge(
-        {
-            :database_name            => ConnectionHolder.current_database_name,
-            :management_pack_license  => init_management_pack_license(get_current_database)
-        }
-    ))
-
-    @dictionary_access_msg = ""       # wird additiv belegt in Folge
-    @dictionary_access_problem = false    # Default, keine Fehler bei Zugriff auf Dictionary
-    begin
-      @banners       = []   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
-      @instance_data = []   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
-      @version_info  = []   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
-      # Einlesen der DBID der Database, gleichzeitig Test auf Zugriffsrecht auf DataDictionary
-      read_initial_db_values
-
-      # Data for DB versions
-      @version_info = sql_select_all "SELECT /* Panorama Tool Ramm */ Banner FROM V$Version"
-      @database_info = sql_select_first_row "SELECT /* Panorama Tool Ramm */ Name, Platform_name, Created FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
-
-      @version_info << ({:banner => "Platform: #{@database_info.platform_name}" }.extend SelectHashHelper)
-
-      @version_info.each {|vi| vi[:client_info] = nil }                         # each row should have this column defined
-      @version_info[0][:client_info] = "JDBC connect string = \"#{jdbc_thin_url}\""                                                                           if @version_info.count > 0
-      @version_info[1][:client_info] = "JDBC driver version = \"#{ConnectionHolder.get_jdbc_driver_version}\""                                                if @version_info.count > 1
-      @version_info[2][:client_info] = "Client time zone = \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}"  if @version_info.count > 2
-
-      @instance_data = sql_select_all ["SELECT /* Panorama Tool Ramm */ gi.*, i.Instance_Number Instance_Connected,
-                                                      (SELECT n.Value FROM gv$NLS_Parameters n WHERE n.Inst_ID = gi.Inst_ID AND n.Parameter='NLS_CHARACTERSET') NLS_CharacterSet,
-                                                      (SELECT n.Value FROM gv$NLS_Parameters n WHERE n.Inst_ID = gi.Inst_ID AND n.Parameter='NLS_NCHAR_CHARACTERSET') NLS_NChar_CharacterSet,
-                                                      (SELECT p.Value FROM GV$Parameter p WHERE p.Inst_ID = gi.Inst_ID AND LOWER(p.Name) = 'cpu_count') CPU_Count,
-                                                      d.Open_Mode, d.Protection_Mode, d.Protection_Level, d.Switchover_Status, d.Dataguard_Broker, d.Force_Logging,
-                                                      ws.Snap_Interval_Minutes, ws.Snap_Retention_Days
-                                                      #{", CDB" if get_db_version >= '12.1'}
-                                               FROM  GV$Instance gi
-                                               CROSS JOIN  v$Database d
-                                               LEFT OUTER JOIN v$Instance i ON i.Instance_Number = gi.Instance_Number
-                                               LEFT OUTER JOIN (SELECT DBID, MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM DBA_Hist_WR_Control GROUP BY DBID) ws ON ws.DBID = d.DBID
-                                      "]
-      @instance_data.each do |i|
-        if i.instance_connected
-          @instance_name = i.instance_name
-          @host_name     = i.host_name
-          set_current_database(get_current_database.merge({:cdb => true})) if get_db_version >= '12.1' && i.cdb == 'YES'  # Merken ob DB eine CDP/PDB ist
-        end
-      end
-      if get_current_database[:cdb]
-        @containers = sql_select_all "SELECT c.*, s.Con_ID Connected_Con_ID
-                                      FROM   gv$Containers c
-                                      JOIN   v$session s ON audsid = userenv('sessionid')
-                                     "
-      end
-    rescue Exception => e
-      raise "Your user is missing SELECT-right on gv$Instance, gv$Database.\nPlease ensure that your user has granted SELECT ANY DICTIONARY.\nPanorama is not usable with this user account!\n\n #{e.message}"
-    end
-
-    @dictionary_access_problem = true unless select_any_dictionary?(@dictionary_access_msg)
-    @dictionary_access_problem = true unless x_memory_table_accessible?("BH", @dictionary_access_msg )
-
+    set_current_database(get_current_database.merge( { :database_name => ConnectionHolder.current_database_name } ))
     write_connection_to_last_logins
 
     initialize_unique_area_id                                                   # Zaehler für eindeutige IDs ruecksetzen
+
+    # Set management pack according to 'control_management_pack_access' only after DB selects,
+    # Until now get_current_database[:management_pack_license] is nil for first time login, so no management pack license is violated until now
+    # User has to acknowlede management pack licensing at next screen
+    set_current_database(get_current_database.merge( {:management_pack_license  => init_management_pack_license(get_current_database) } ))
+
 
     timepicker_regional = ""
     if get_locale == "de"  # Deutsche Texte für DateTimePicker
@@ -349,7 +368,7 @@ class EnvController < ApplicationController
     end
     respond_to do |format|
       format.html {
-        render_partial :set_database,
+        render_partial :choose_management_pack,
                                "$('#current_tns').html('#{j "<span title='TNS=#{get_current_database[:tns]},\n#{"Host=#{get_current_database[:host]},\nPort=#{get_current_database[:port]},\n#{get_current_database[:sid_usage]}=#{get_current_database[:sid]},\n" if get_current_database[:modus].to_sym == :host}User=#{get_current_database[:user]}'>#{get_current_database[:user]}@#{get_current_database[:tns]}</span>"}');
                                 $('#main_menu').html('#{j render_to_string :partial =>"build_main_menu" }');
                                 $.timepicker.regional = { #{timepicker_regional}
@@ -370,6 +389,11 @@ class EnvController < ApplicationController
     raise e
   end
 
+
+
+
+
+
   # Rendern des zugehörigen Templates, wenn zugehörige Action nicht selbst existiert
   def render_menu_action
     # Template der eigentlichen Action rendern
@@ -389,32 +413,49 @@ private
     last_logins.each do |value|
       last_logins.delete(value) if value && value[:tns] == database[:tns] && value[:user] == database[:user]    # Aktuellen eintrag entfernen
     end
-    if database[:saveLogin]
+    if database[:save_login]
       last_logins = [database] + last_logins                                    # Neuen Eintrag an erster Stelle
       write_last_logins(last_logins)                                            # Zurückschreiben in client-info-store
     end
 
   end
 
+  def persist_management_pack_license(management_pack_license)
+    current_database = get_current_database
+    current_database[:management_pack_license] = management_pack_license.to_sym
+    set_current_database(current_database)
+    write_connection_to_last_logins
+  end
 
 public
 
-  def list_dbids
-    @dbids = sql_select_all ["SELECT s.DBID, MIN(Begin_Interval_Time) Min_TS, MAX(End_Interval_Time) Max_TS,
-                                       (SELECT MIN(DB_Name) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) DB_Name,
-                                       (SELECT COUNT(DISTINCT Instance_Number) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) Instances,
-                                       MIN(EXTRACT(MINUTE FROM w.Snap_Interval)) Snap_Interval_Minutes,
-                                       MIN(EXTRACT(DAY FROM w.Retention))        Snap_Retention_Days
-                                FROM   DBA_Hist_Snapshot s
-                                LEFT OUTER JOIN DBA_Hist_WR_Control w ON w.DBID = s.DBID
-                                GROUP BY s.DBID
-                                ORDER BY MIN(Begin_Interval_Time)"]
+  # Process choosen management pack
+  def choose_managent_pack_license
+    persist_management_pack_license(params[:management_pack_license])
+    start_page
+  end
 
-    set_new_dbid = true
-    @dbids.each do |d|
-      set_new_dbid = false if get_dbid == d.dbid                                # Reuse alread set dbid because it is valid
+  def list_dbids
+    if PackLicense.diagnostic_pack_licensed?(get_current_database[:management_pack_license])
+
+      @dbids = sql_select_all ["SELECT s.DBID, MIN(Begin_Interval_Time) Min_TS, MAX(End_Interval_Time) Max_TS,
+                                         (SELECT MIN(DB_Name) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) DB_Name,
+                                         (SELECT COUNT(DISTINCT Instance_Number) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) Instances,
+                                         MIN(EXTRACT(MINUTE FROM w.Snap_Interval)) Snap_Interval_Minutes,
+                                         MIN(EXTRACT(DAY FROM w.Retention))        Snap_Retention_Days
+                                  FROM   DBA_Hist_Snapshot s
+                                  LEFT OUTER JOIN DBA_Hist_WR_Control w ON w.DBID = s.DBID
+                                  GROUP BY s.DBID
+                                  ORDER BY MIN(Begin_Interval_Time)"]
+
+      set_new_dbid = true
+      @dbids.each do |d|
+        set_new_dbid = false if get_dbid == d.dbid                                # Reuse alread set dbid because it is valid
+      end
+      set_cached_dbid(sql_select_one("SELECT /* Panorama Tool Ramm */ DBID FROM v$Database")) if set_new_dbid # dbid has not been set or is not valid
+    else
+      @dbids = nil
     end
-    set_cached_dbid(sql_select_one("SELECT /* Panorama Tool Ramm */ DBID FROM v$Database")) if set_new_dbid # dbid has not been set or is not valid
 
     render_partial :list_dbids
   end
@@ -432,11 +473,7 @@ public
   end
 
   def set_management_pack_license
-    current_database = get_current_database
-    current_database[:management_pack_license] = params[:management_pack_license].to_sym
-    set_current_database(current_database)
-    write_connection_to_last_logins
-
+    persist_management_pack_license(params[:management_pack_license])
     list_management_pack_license
   end
 
