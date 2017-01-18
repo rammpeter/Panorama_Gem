@@ -150,7 +150,8 @@ class EnvController < ApplicationController
     @dictionary_access_problem = true unless select_any_dictionary?(@dictionary_access_msg)
     @dictionary_access_problem = true unless x_memory_table_accessible?("BH", @dictionary_access_msg )
 
-    render_partial :start_page
+    render_partial :start_page, "$('#main_menu').html('#{j render_to_string :partial =>"build_main_menu" }');"  # Wait until all loogon jobs are processed before showing menu
+
   end
 
   # Aufgerufen aus dem Anmelde-Dialog für gemerkte DB-Connections
@@ -370,7 +371,6 @@ class EnvController < ApplicationController
       format.html {
         render_partial :choose_management_pack,
                                "$('#current_tns').html('#{j "<span title='TNS=#{get_current_database[:tns]},\n#{"Host=#{get_current_database[:host]},\nPort=#{get_current_database[:port]},\n#{get_current_database[:sid_usage]}=#{get_current_database[:sid]},\n" if get_current_database[:modus].to_sym == :host}User=#{get_current_database[:user]}'>#{get_current_database[:user]}@#{get_current_database[:tns]}</span>"}');
-                                $('#main_menu').html('#{j render_to_string :partial =>"build_main_menu" }');
                                 $.timepicker.regional = { #{timepicker_regional}
                                     ampm: false,
                                     firstDay: 1,
