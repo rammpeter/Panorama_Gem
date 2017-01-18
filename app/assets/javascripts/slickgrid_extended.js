@@ -1309,7 +1309,9 @@ function SlickGridExtended(container_id, options){
      * @returns {*}
      */
     function single_line_height() {
-        return thiz.js_test_cell.html("1").prop("scrollHeight");
+        thiz.js_test_cell.innerHTML = '1';
+
+        return thiz.js_test_cell.scrollHeight;
     }
 
 } // Ende SlickGridExtended
