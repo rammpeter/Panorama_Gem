@@ -31,7 +31,7 @@ function createSlickGridExtended(container_id, data, columns, options, additiona
     var sle = new SlickGridExtended(container_id, options);
     sle.initSlickGridExtended(container_id, data, columns, options, additional_context_menu);
     sle.calculate_current_grid_column_widths('createSlickGridExtended');        // Sicherstellen, dass mindestens ein zweites Mal diese Funktion durchlaufen wird und Scrollbars real berücksichtigt werden
-    setTimeout(async_calc_all_cell_dimensions, 0, sle, 0);                      // Asynchrone Berechnung der noch nicht vermessenen Zellen für Kalkulation der Dimensionen
+    setTimeout(async_calc_all_cell_dimensions, 0, sle, 0, 0);                      // Asynchrone Berechnung der noch nicht vermessenen Zellen für Kalkulation der Dimensionen
     return sle;
 }
 
@@ -398,7 +398,7 @@ function SlickGridExtended(container_id, options){
                 '<div class="slick-inner-cell" style="visibility:hidden; position: absolute; z-index: -1; padding: 0; margin: 0; height: 20px; width: 90%;"><nobr><div id="' + test_cell_id + '" style="width: 1px; height: 1px; overflow: hidden;"></div></nobr></div>'+
                 // Zwei table für umgebrochene Zeichenbreite
                 //'<table style="visibility:hidden; position:absolute; width:1px;"><tr><td class="slick-inner-cell"  style="padding: 0; margin: 0;"><div id="' + test_cell_wrap_id + '"></div></td></tr></table>' +
-                '<div  class="slick-inner-cell" id="' + test_cell_wrap_id + '" style="visibility:hidden; position:absolute; width:1px; padding: 0; margin: 0; word-wrap: normal;"></div>' +
+                '<div  class="slick-inner-cell" id="' + test_cell_wrap_id + '" style="visibility:hidden; position:absolute; z-index: -1; width:1px; padding: 0; margin: 0; word-wrap: normal;"></div>' +
                 '</div>'
         );
 
@@ -1342,28 +1342,33 @@ function resize_handler(){
     TO = setTimeout(resize_slickGrids, 100); //200 is time in miliseconds
 }
 
-
-function async_calc_all_cell_dimensions(slickGrid, start_row){
+// Calculate dimension for every cell exactly one time
+// process column by column to reduce changes in cell style
+function async_calc_all_cell_dimensions(slickGrid, current_column, start_row){
     var columns = slickGrid.grid.getColumns();
     var data    = slickGrid.grid.getData().getItems();
 
-    var current_row = start_row;
-    while (current_row < data.length && current_row < start_row+50){
+    var current_row    = start_row;
+
+    var column = columns[current_column];
+
+    while (current_row < data.length && current_row < start_row+500){
         var rec = data[current_row];
-        for (var col_index in columns){
-            var column = columns[col_index];
-            var column_metadata = rec['metadata']['columns'][column['field']];  // Metadata der Spalte der Row
-            if (!column_metadata['dc'] || column_metadata['dc']==0) {            // bislang fand noch keine Messung der Dimensionen der Zellen dieser Zeile statt
-                HTML_Formatter_prepare(slickGrid, current_row, col_index, rec[column['field']], column, rec, column_metadata);
-            }
+        var column_metadata = rec['metadata']['columns'][column['field']];  // Metadata der Spalte der Row
+        if (!column_metadata['dc'] || column_metadata['dc']==0) {            // bislang fand noch keine Messung der Dimensionen der Zellen dieser Zeile statt
+            HTML_Formatter_prepare(slickGrid, current_row, current_column, rec[column['field']], column, rec, column_metadata);
         }
         current_row++;
     }
     if (current_row < data.length){                                             // not all rows processed with initial request
-        setTimeout(async_calc_all_cell_dimensions, 0, slickGrid, current_row);  // Erneut Aufruf einstellen für den Rest des Arrays
+        setTimeout(async_calc_all_cell_dimensions, 0, slickGrid, current_column, current_row);  // Erneut Aufruf einstellen für den Rest des Arrays dieser Spalte
     } else {
-        if (slickGrid.slickgrid_render_needed ==1){
-            slickGrid.calculate_current_grid_column_widths('async_calc_all_cell_dimensions'); // calculate grid at end of last call
+        if (current_column < columns.length-1){                                     // not all columns processed ?
+            setTimeout(async_calc_all_cell_dimensions, 0, slickGrid, current_column+1, 0);  // Erneut Aufruf einstellen für Daten der naechsten Spalte
+        } else {
+            if (slickGrid.slickgrid_render_needed ==1){
+                slickGrid.calculate_current_grid_column_widths('async_calc_all_cell_dimensions'); // calculate grid at end of last call
+            }
         }
     }
 }
