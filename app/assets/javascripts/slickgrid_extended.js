@@ -551,8 +551,8 @@ function SlickGridExtended(container_id, options){
             current_table_width += scrollbarWidth();
         }
 
-        // console.log('Grid_Container='+this.gridContainer.prop('id')+' current_grid_width='+current_grid_width+' max_table_width='+max_table_width);
-        // Neuimplementierung wrap
+        // Check for possible wrap in column to reduce width of grid
+        // TODO: gleichmaessige Reduktion der Spaltenbreiten um Hoehe der umgebrochenen Zellen minimal zu halten
         for (var col_index in columns) {
             column = columns[col_index];
             if (   current_table_width > current_grid_width                         // Verkleinerung der Breite notwendig?
@@ -568,7 +568,6 @@ function SlickGridExtended(container_id, options){
                 column['width'] = column['width'] - wrap_diff;
                 current_table_width -= wrap_diff;
             }
-
         }
 
         // Evtl. Zoomen der Spalten wenn noch mehr Platz rechts vorhanden
