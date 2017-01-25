@@ -22,16 +22,9 @@ class ActiveSupport::TestCase
   #  {:client_key => 100 }
   #end
 
-  # Verbindungsparameter der für Test konfigurierten DB als Session-Parameter hinterlegen
-  # damit wird bei Connect auf diese DB zurückgegriffen
 
-  def connect_oracle_db
-
-    raise "Environment-Variable DB_VERSION not set" unless ENV['DB_VERSION']
-    Rails.logger.info "Starting Test with configuration test_#{ENV['DB_VERSION']}"
-
-    # Array mit Bestandteilen der Vorgabe aus database.yml
-    test_config = Dummy::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]
+  # Method shared with Panorama children
+  def connect_oracle_db_internal(test_config)
     test_url = test_config['test_url'].split(":")
 
     current_database = {}
@@ -64,9 +57,6 @@ class ActiveSupport::TestCase
     set_cached_dbid(sql_select_one("SELECT /* Panorama Tool Ramm */ DBID FROM v$Database"))
 
     set_I18n_locale('de')
-
-    showBlockingLocksMenu     # belegt dba_hist_blocking_locks_owner]
-    showDbCacheMenu           # belegt dba_hist_cache_objects_owner]
   end
 
   def set_session_test_db_context
