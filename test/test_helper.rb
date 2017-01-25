@@ -9,9 +9,10 @@ require "rails/test_help"
 require 'fileutils'
 
 # Load own helpers
-require 'oracle_connection_test_helper'           # requires config/environment.rb loaded
+require File.expand_path("../../lib/test_helpers/oracle_connection_test_helper.rb", __FILE__)
+#require '../../lib/test_helpers/oracle_connection_test_helper'           # requires config/environment.rb loaded
 require 'menu_test_helper'
-require 'capybara_test_helper'
+#require 'capybara_test_helper'
 
 # Filter out Minitest backtrace while allowing backtrace from other libraries
 # to be shown.
