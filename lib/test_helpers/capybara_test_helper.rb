@@ -1,5 +1,7 @@
 require "minitest/rails/capybara"
 
+require 'capybara/poltergeist'
+
 class Capybara::Rails::TestCase
 
 
@@ -19,8 +21,16 @@ class Capybara::Rails::TestCase
 
   # Login application at test-DB an create menu in browser
   def login_until_menu
-    Capybara.current_driver     = :webkit                                       # Setting works for all Capybara-Tests
-    Capybara.javascript_driver  = :webkit                                       # Setting works for all Capybara-Tests
+
+    Capybara.current_driver    = :poltergeist                                    # Setting works for all Capybara-Tests
+    Capybara.javascript_driver = :poltergeist
+
+    Capybara.register_driver :poltergeist do |app|
+      Capybara::Poltergeist::Driver.new(app, window_size: [2560, 1440])          # Menu should not wrap to vertical
+    end
+
+#    Capybara.current_driver     = :webkit                                       # Setting works for all Capybara-Tests
+#    Capybara.javascript_driver  = :webkit                                       # Setting works for all Capybara-Tests
 
     visit root_path                                                             # /env/index
     #page.save_and_open_page
@@ -61,6 +71,7 @@ class Capybara::Rails::TestCase
     if page.html['please choose your management pack license'] && page.html['Usage of Oracle management packs by Panorama']
       page.find_by_id('management_pack_license_diagnostic_and_tuning_pack').set(true)
       click_button('Acknowledge and proceed')
+      wait_for_ajax                                                               # Wait until start_page is loaded
     end
   end
 

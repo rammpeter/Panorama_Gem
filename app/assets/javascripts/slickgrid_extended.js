@@ -1450,7 +1450,7 @@ function HTMLFormatter(row, cell, value, columnDef, dataContext){
 
 
 function trace_log(msg){
-    if (true){
+    if (false){
         console.log(msg);                                                           // Aktivieren trace-Ausschriften
     }
 }

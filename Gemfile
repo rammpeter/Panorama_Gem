@@ -20,7 +20,8 @@ group :test do
   gem "minitest-rails-capybara"
 
   gem "capybara"
-  gem "capybara-webkit"
+  #gem "capybara-webkit"
   gem "launchy"
-  gem "selenium-webdriver"
+  gem 'poltergeist'
+  gem 'phantomjs', :require => 'phantomjs/poltergeist'
 end
