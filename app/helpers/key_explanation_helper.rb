@@ -8,6 +8,7 @@ module KeyExplanationHelper
         'JOIN FILTER CREATE'                  => 'Create bloom filter based on data from previous operation.\nBloom filter allows to exactly state that a value does not exist in an result.\nThis created filter is used at an operation JOIN FILTER USE with same object name to filter out (not all) rows that will not match the join condition.',
         'JOIN FILTER USE'                     => 'Usage of bloom filter to filter out (not all) rows that will not match the join condition. Used bloom filter data was created by operation JOIN FILTER CREATE with same object name.\nBloom filter allows to exactly state that a value does not exist in an result.',
         'TABLE ACCESS STORAGE FULL'           => 'Table full scan on EXADATA storage cell',
+        'STATISTICS COLLECTOR'                => 'Collecting statistics for adaptive plan feature',
       }
     end
     result = @@data_access[operation_options]
