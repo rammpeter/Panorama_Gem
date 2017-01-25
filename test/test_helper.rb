@@ -9,10 +9,9 @@ require "rails/test_help"
 require 'fileutils'
 
 # Load own helpers
-require File.expand_path("../../lib/test_helpers/oracle_connection_test_helper.rb", __FILE__)
-#require '../../lib/test_helpers/oracle_connection_test_helper'           # requires config/environment.rb loaded
-require 'menu_test_helper'
-#require 'capybara_test_helper'
+require File.expand_path("../../lib/test_helpers/oracle_connection_test_helper.rb", __FILE__)       # requires config/environment.rb loaded
+require File.expand_path("../../lib/test_helpers/menu_test_helper.rb", __FILE__)
+require File.expand_path("../../lib/test_helpers/capybara_test_helper.rb", __FILE__)
 
 # Filter out Minitest backtrace while allowing backtrace from other libraries
 # to be shown.
@@ -54,7 +53,9 @@ class ActiveSupport::TestCase
     Rails.logger.info "Starting Test with configuration test_#{ENV['DB_VERSION']}"
 
     # Array mit Bestandteilen der Vorgabe aus database.yml
-    test_config = Dummy::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]
+    #test_config = Dummy::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]
+
+    test_config = PanoramaTestConfig.test_config
 
     connect_oracle_db_internal(test_config)   # aus lib/test_helpers/oracle_connection_test_helper
 
@@ -62,5 +63,11 @@ class ActiveSupport::TestCase
     showDbCacheMenu           # belegt dba_hist_cache_objects_owner]
   end
 
+end
+
+class PanoramaTestConfig
+  def self.test_config
+    Dummy::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]
+  end
 end
 

@@ -14,3 +14,13 @@ gemspec
 gem 'activerecord-nulldb-adapter', :git => 'http://github.com/mnoack/nulldb', :branch =>'rails5'
 
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+
+group :test do
+  gem "chromedriver-helper"
+  gem "minitest-rails-capybara"
+
+  gem "capybara"
+  gem "capybara-webkit"
+  gem "launchy"
+  gem "selenium-webdriver"
+end

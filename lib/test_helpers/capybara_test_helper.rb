@@ -1,3 +1,5 @@
+require "minitest/rails/capybara"
+
 class Capybara::Rails::TestCase
 
 
@@ -26,7 +28,9 @@ class Capybara::Rails::TestCase
 
     page.must_have_content "Please choose saved connection"
 
-    test_config = PanoramaOtto::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]
+    #test_config = PanoramaOtto::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]
+    test_config = PanoramaTestConfig.test_config
+
     test_url          = test_config['test_url'].split(":")
     test_host         = test_url[3].delete "@"
     test_port         = test_url[4].split('/')[0].split(':')[0]
@@ -53,5 +57,27 @@ class Capybara::Rails::TestCase
     click_button('submit_login_dialog')
 
     wait_for_ajax                                                               # Wait until start_page is loaded
+
+    if page.html['please choose your management pack license'] && page.html['Usage of Oracle management packs by Panorama']
+      page.find_by_id('management_pack_license_diagnostic_and_tuning_pack').set(true)
+      click_button('Acknowledge and proceed')
+    end
   end
+
+  # Call menu, last argument is DOM-ID of menu entry to click on
+  # previous arguments are captions of submenus for hover to open submenu
+  def login_and_menu_call(*args)
+    login_until_menu
+
+    args.each_index do |i|
+      if i < args.length-1                                                      # SubMenu
+        page.find('.sf-with-ul', :text => args[i]).hover                        # Expand menu node
+        sleep(0.5)
+      else                                                                      # last argument is DOM-ID of menu entry to click on
+        click_link args[i]                                                      # click menu
+        wait_for_ajax                                                           # Wait for ajax request to complete
+      end
+    end
+  end
+
 end
