@@ -150,7 +150,7 @@ class EnvController < ApplicationController
     @dictionary_access_problem = true unless select_any_dictionary?(@dictionary_access_msg)
     @dictionary_access_problem = true unless x_memory_table_accessible?("BH", @dictionary_access_msg )
 
-    render_partial :start_page, "$('#main_menu').html('#{j render_to_string :partial =>"build_main_menu" }');"  # Wait until all loogon jobs are processed before showing menu
+    render_partial :start_page, {:additional_javascript_string => "$('#main_menu').html('#{j render_to_string :partial =>"build_main_menu" }');" }  # Wait until all loogon jobs are processed before showing menu
 
   end
 
@@ -332,11 +332,25 @@ class EnvController < ApplicationController
 
       set_dummy_db_connection
       respond_to do |format|
-        format.html {render :html => "#{t(:env_connect_error, :default=>'Error connecting to database')}: <br/>
-                                                                      #{e.message}<br/><br/>
-                                                                      URL:  '#{jdbc_thin_url}'<br/>
-                                                                      Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}
-                                                                      <script type='text/javascript'>$('#login_dialog').effect('shake', { times:3 }, 100);</script>
+#        format.html {render :html => "#{t(:env_connect_error, :default=>'Error connecting to database')}: <br/>
+#                                                                      #{e.message}<br/><br/>
+#                                                                      URL:  '#{jdbc_thin_url}'<br/>
+#                                                                      Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}
+#                                                                      <script type='text/javascript'>$('#login_dialog').effect('shake', { times:3 }, 100);</script>
+#                                                                     ".html_safe
+        format.html {render :html => "<script type='text/javascript'>
+                                        show_status_bar_message('#{
+                                          my_html_escape("#{
+t(:env_connect_error, :default=>'Error connecting to database')}:
+#{e.message}
+
+URL:  '#{jdbc_thin_url}'
+Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}
+
+                                                         ")
+                                        }');
+                                        jQuery('#login_dialog').effect('shake', { times:3 }, 300);
+</script>
                                                                      ".html_safe
         }
       end
@@ -369,7 +383,7 @@ class EnvController < ApplicationController
     end
     respond_to do |format|
       format.html {
-        render_partial :choose_management_pack,
+        render_partial :choose_management_pack, :additional_javascript_string=>
                                "$('#current_tns').html('#{j "<span title='TNS=#{get_current_database[:tns]},\n#{"Host=#{get_current_database[:host]},\nPort=#{get_current_database[:port]},\n#{get_current_database[:sid_usage]}=#{get_current_database[:sid]},\n" if get_current_database[:modus].to_sym == :host}User=#{get_current_database[:user]}'>#{get_current_database[:user]}@#{get_current_database[:tns]}</span>"}');
                                 $.timepicker.regional = { #{timepicker_regional}
                                     ampm: false,

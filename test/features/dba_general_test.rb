@@ -12,6 +12,17 @@ class DbaGeneralTest < Capybara::Rails::TestCase
     page.must_have_content 'Usage of Oracle management packs by Panorama'
     page.must_have_content 'Handling hints'
   end
+
+  test "DB-Locks current" do
+    login_and_menu_call('DBA general', 'DB-Locks', 'menu_dba_show_locks')
+    page.must_have_content 'List current locks of different types'
+
+    page.click_button 'DML-locks complete'
+    wait_for_ajax
+    page.must_have_content 'DML Database locks (from GV$Lock)'
+    save_and_open_screenshot
+
+  end
 end
 
 

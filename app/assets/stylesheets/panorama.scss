@@ -49,6 +49,18 @@ body {
   border-bottom-width: 1px;
 }
 
+.status_bar {
+  position: fixed;
+  z-index: 100;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background:url(greychrome.gif) repeat-x scroll left top #FFFFFF;
+  border-top-style: solid;
+  border-top-color: black;
+  border-top-width: 1px;
+}
+
 
 .page_caption {
   text-align: center;

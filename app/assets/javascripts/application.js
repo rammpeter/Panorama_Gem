@@ -42,7 +42,7 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
     hideIndicator('');                                                          // close indicator window
     indicator_call_stack_depth = 0;                                             // ensure start with 0 at next indicator open
 
-    alert('Error: '+msg+'\nURL: '+url+'\nLine-No.: '+lineNo+'\nColumn-No.: '+columnNo);
+    alert('Error: '+msg+'\nURL: '+url+'\nLine-No.: '+lineNo+'\nColumn-No.: '+columnNo+'\n'+error.stack);
     return false;
 };
 
@@ -187,7 +187,13 @@ function expand_sql_id_hint(id, sql_id){
 //   data:          response data string
 //   xhr:           jqXHR object
 //   target:        dom-id if target for html-response
-function process_ajax_success(data, xhr, target){
+function process_ajax_success(data, xhr, target, options){
+    options = options || {};
+
+    if (!options.retain_status_message){                                        // hide status bar not suppressed
+        hide_status_bar();
+    }
+
     if (xhr.getResponseHeader("content-type").indexOf("text/html") >= 0){
         $('#'+target).html(data);                                               // render html in target dom-element
     } else if (xhr.getResponseHeader("content-type").indexOf("text/javascript") >= 0){
@@ -203,16 +209,21 @@ function process_ajax_success(data, xhr, target){
 //   controller:    Controller-name
 //   action:        Action-name
 //   payload:       data for transfer as JSON-object
-//   element:       DOM-Element on_click is called for (this in on_click) to bind slickgrid refresh
-function ajax_html(update_area, controller, action, payload, element){
+//   options:       object with serveral options
+//      element:                    DOM-Element on_click is called for (this in on_click) to bind slickgrid refresh
+//      retain_status_message:      Don't hide status bar
+function ajax_html(update_area, controller, action, payload, options){
+    options = options || {};
+
     jQuery.ajax({
         method: "POST",
         dataType: "html",
         success: function (data, status, xhr) {
-            process_ajax_success(data, xhr, update_area);                       // Fill target div with html-response
+            console.log("ajax_html success");
+            process_ajax_success(data, xhr, update_area, options);              // Fill target div with html-response
 
-            if (element){                                                       // refresh only if valid element is given in call
-                var obj = jQuery(element);
+            if (options.element){                                               // refresh only if valid element is given in call
+                var obj = jQuery(options.element);
                 if (obj.parents(".slick-cell").length > 0){                     // ajax wurde aus einer slickgrid-Zelle heraus aufgerufen
                     var grid_extended = obj.parents('.slickgrid_top').data('slickgridextended');
                     if (!grid_extended){
@@ -235,6 +246,7 @@ function ajax_html(update_area, controller, action, payload, element){
 //   target:      target DOM-ID for response
 function bind_ajax_html_response(element, target){
     element.bind("ajax:success", function(event, data, status, xhr) {
+console.log("bind_ajax_html_response");
         process_ajax_success(data, xhr, target);
     });
 }
@@ -363,6 +375,29 @@ function show_popup_message(message){
         })
     ;
 
+}
+
+var status_bar_timeout;
+
+function hide_status_bar(){
+    var status_bar = jQuery('#status_bar');
+
+    status_bar.css('display', 'none');
+
+    //if (status_bar.css('display') != 'none'){
+    //    status_bar.slideToggle(200);                                            // hide previous status message
+    //    clearTimeout(status_bar_timeout);
+    //}
+}
+
+function show_status_bar_message(message, delay_ms){
+    delay_ms = delay_ms || 60000;
+
+    hide_status_bar();
+
+    jQuery('#status_bar_content').html(message);
+    jQuery('#status_bar').slideToggle(1500);
+    status_bar_timeout = setTimeout(function(){ hide_status_bar(); }, delay_ms);
 }
 
 

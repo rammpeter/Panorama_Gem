@@ -215,6 +215,10 @@
 <div id="content_for_layout" style="clear: both; width:100%; " >
   <%= render :partial => 'start_screen_before_login' %>
 </div>
+<div class="status_bar" id="status_bar" style="display: none;">
+  <div style="float:left; padding: 5px;" id="status_bar_content"></div>
+  <div align="right"><input type="button" title="Hide status bar" onclick="jQuery('#status_bar').slideToggle();" value="X"></div>
+</div>
 
 <!-- Verlaufsdialog zur Anzeige bei Wartezustaenden -->
 <div id="ajax_indicator" style="background-color: #A9BCF5; ">

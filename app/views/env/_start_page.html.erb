@@ -38,7 +38,7 @@
 
 <% @update_area_dbids = get_unique_area_id %>
 <script type="text/javascript">
-    ajax_html('<%= @update_area_dbids %>', 'env', 'list_dbids', {update_area: "<%= @update_area_dbids %>"});
+    ajax_html('<%= @update_area_dbids %>', 'env', 'list_dbids', {update_area: "<%= @update_area_dbids %>"}, {retain_status_message: true});
 </script>
 <div id="<%= @update_area_dbids %>"></div>
 
@@ -110,5 +110,3 @@
   <li><%= t :env_handling_hint_2, :default=>"Sort by multiple columns may be done by subsequent sorting of single columns" %></li>
   <li><%= t :env_handling_hint_3, :default=>"Search filter, optional diagram view and export to Excel are available via context menu (right mouse button)" %></li>
 </ul>
-
-

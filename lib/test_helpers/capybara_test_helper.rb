@@ -5,7 +5,7 @@ require 'capybara/poltergeist'
 class Capybara::Rails::TestCase
 
 
-  def wait_for_ajax(timeout_secs = 10)
+  def wait_for_ajax(timeout_secs = 60)
 
     loop_count = 0
     while page.evaluate_script('indicator_call_stack_depth') > 0 && loop_count < timeout_secs

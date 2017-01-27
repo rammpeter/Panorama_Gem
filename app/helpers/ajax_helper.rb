@@ -110,7 +110,7 @@ module AjaxHelper
 
     json_data = data.to_json
 
-    "<a href=\"#\" onclick=\"ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{my_html_escape(json_data)}, this); return false; \"  #{options}>#{my_html_escape(caption)}</a>".html_safe
+    "<a href=\"#\" onclick=\"ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{my_html_escape(json_data)}, { element: this}); return false; \"  #{options}>#{my_html_escape(caption)}</a>".html_safe
   end # ajax_link
 
   # Ajax-Link definieren mit Indikator-Anzeige während Ausführung

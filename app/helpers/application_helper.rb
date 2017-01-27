@@ -508,13 +508,25 @@ module ApplicationHelper
   end
 
   # Rendern des Templates für Action, optionale mit Angabe des Partial-Namens wenn von Action abweicht
-  def render_partial(partial_name = nil, additional_javascript_string = nil)
+  # options support:
+  #    :additional_javascript_string  = js-text
+  #    :status_bar_message            = html-text
+  #    :hide_status_bar               = true
+
+  def render_partial(partial_name = nil, options = {})
+    raise "render_partial: options should of class Hash, not #{options.class}" unless options.class == Hash
+
     partial_name = self.action_name if partial_name.nil?
-    render_internal(params[:update_area], controller_name, partial_name, additional_javascript_string)
+    render_internal(params[:update_area], controller_name, partial_name, options)
   end
 
   # Eigentliche Durchführung des renderns, auch genutzt von env_controller.render_menu_action
-  def render_internal(update_area, controller, partial, additional_javascript_string = nil)
+  def render_internal(update_area, controller, partial, options = {})
+    raise "render_internal: options should of class Hash, not #{options.class}" unless options.class == Hash
+
+    additional_javascript_string = options[:additional_javascript_string]
+    additional_javascript_string = "hide_status_bar(); #{additional_javascript_string}" if options[:hide_status_bar]
+    additional_javascript_string = "show_status_bar_message('#{options[:status_bar_message]}'); #{additional_javascript_string}" if options[:status_bar_message]
 
     respond_to do |format|
       format.js {

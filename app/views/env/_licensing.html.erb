@@ -3,7 +3,7 @@
 <% if @show_management_plan_choice %>
   <% @update_area_management_pack_license = get_unique_area_id %>
   <script type="text/javascript">
-      ajax_html('<%= @update_area_management_pack_license %>', 'env', 'list_management_pack_license', {update_area: "<%= @update_area_management_pack_license %>"});
+      ajax_html('<%= @update_area_management_pack_license %>', 'env', 'list_management_pack_license', {update_area: "<%= @update_area_management_pack_license %>"},  {retain_status_message: true});
   </script>
   <div id="<%= @update_area_management_pack_license %>"></div>
 <% end %>

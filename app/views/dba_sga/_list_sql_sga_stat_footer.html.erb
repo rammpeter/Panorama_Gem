@@ -72,7 +72,8 @@
                                :update_area=> @update_area
     },
                        #:disabled => (@sql_monitor_sessions == 0),
-                       :title    => strings(:sql_monitor_link_title)
+                :title    => strings(:sql_monitor_link_title),
+                'data-disable-with'=>false
     )
   %>
 </div>

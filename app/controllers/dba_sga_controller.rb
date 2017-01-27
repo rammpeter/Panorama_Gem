@@ -503,7 +503,7 @@ class DbaSgaController < ApplicationController
 
     if @sql
       @sql_monitor_sessions = sql_monitor_session_count(@instance, @sql_id, @sql.plan_hash_value)
-      render_partial :list_sql_detail_sql_id_childno
+      render_partial :list_sql_detail_sql_id_childno, (defined?(@list_sql_sga_stat_msg) ? {:status_bar_message => my_html_escape(@list_sql_sga_stat_msg)} : {})
     else
       show_popup_message("#{t(:dba_sga_list_sql_detail_sql_id_childno_no_hit_msg, :default=>'No record found in GV$SQL for')} SQL_ID='#{@sql_id}', Instance=#{@instance}, Child_Number=#{@child_number}")
     end
@@ -564,8 +564,12 @@ class DbaSgaController < ApplicationController
 
     #@plans = get_sga_execution_plan('GV$SQLArea', @sql_id, @instance, sql_child_info.min_child_number, sql_child_info.min_child_address, false) if @sql_child_info.plan_count == 1 # Nur anzeigen wenn eindeutig immer der selbe plan
 
-    render_partial :list_sql_detail_sql_id
+    @status_message = nil
+    if @sql_child_info.plan_count > 1
+      @status_message = "Multiple different execution plans exist for this SQL-ID!\nPlease select one SQL child number for exact execution plan of this child cursor."
+    end
 
+    render_partial :list_sql_detail_sql_id, (@status_message ? {:status_bar_message => my_html_escape(@status_message)} : {})
   end
 
   def list_sql_shared_cursor
@@ -1421,7 +1425,7 @@ class DbaSgaController < ApplicationController
       show_popup_message "No data found in gv$SQL_Monitor for Instance=#{@instance}, SID=#{@sid}, Serial#=#{@serialno}, SQL-ID='#{@sql_id}', SQL_Exec_ID=#{@sql_exec_id}"
     else
       @button_id = get_unique_area_id
-      render_partial(:start_sql_monitor_in_new_window, "jQuery('##{@button_id}').click();")
+      render_partial(:start_sql_monitor_in_new_window, :additional_javascript_string => "jQuery('##{@button_id}').click();")
     end
   end
 

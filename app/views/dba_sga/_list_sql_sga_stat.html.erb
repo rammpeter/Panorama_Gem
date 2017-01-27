@@ -2,8 +2,6 @@
 
 <% @table_id_prefix = get_unique_area_id %>
 
-<div>  <%= defined?(@list_sql_sga_stat_msg) ? @list_sql_sga_stat_msg : ''%></div>
-
 <div><%= @sql[:warning_message] %></div>
 <%
 # Anzeige sowohl des konkreten Wertes als auch je Execution in zwei TD-Abschnitten
