@@ -219,7 +219,7 @@ function ajax_html(update_area, controller, action, payload, options){
         method: "POST",
         dataType: "html",
         success: function (data, status, xhr) {
-            console.log("ajax_html success");
+            console.log("ajax_html success "+update_area);
             process_ajax_success(data, xhr, update_area, options);              // Fill target div with html-response
 
             if (options.element){                                               // refresh only if valid element is given in call
@@ -246,7 +246,7 @@ function ajax_html(update_area, controller, action, payload, options){
 //   target:      target DOM-ID for response
 function bind_ajax_html_response(element, target){
     element.bind("ajax:success", function(event, data, status, xhr) {
-console.log("bind_ajax_html_response");
+console.log("bind_ajax_html_response "+target);
         process_ajax_success(data, xhr, target);
     });
 }

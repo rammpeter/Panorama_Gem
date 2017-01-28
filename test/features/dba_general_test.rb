@@ -20,7 +20,7 @@ class DbaGeneralTest < Capybara::Rails::TestCase
     page.click_button 'DML-locks complete'
     wait_for_ajax
     page.must_have_content 'DML Database locks (from GV$Lock)'
-    save_and_open_screenshot
+    # save_and_open_screenshot  # cannot work at headless server
 
   end
 end
