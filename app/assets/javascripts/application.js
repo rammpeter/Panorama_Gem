@@ -78,7 +78,7 @@ function hideIndicator(url) {
 }
 
 function closeAllTooltips(self_tooltip){
-    jQuery('.tooltip_class').each(function(i){                                  // Test each open tooltip to be closed
+    jQuery('.tooltip_class').each(function(){                                   // Test each open tooltip to be closed
         if (!self_tooltip || jQuery(this).attr('id') != self_tooltip.attr('id')){   // down close requestung tooltip itself
             jQuery(this).remove();                                              // close other tooltip than requesting
         }
@@ -132,14 +132,15 @@ function register_tooltip(jquery_object){
 // DOM-Tree auf doppelte ID's testen
 function check_dom_for_duplicate_ids() {
     var idDictionary = {};
-    jQuery('[id]').each(function(index, element) {
+    jQuery('[id]').each(function() {
         idDictionary[this.id] == undefined ? idDictionary[this.id] = 1 : idDictionary[this.id] ++;
     });
     for (var id in idDictionary) {
         if (idDictionary[id] > 1) {
-            console.warn("Duplicate html-IDs in Dom-Tree:\nID " + id + " was used " + (idDictionary[id]) + " times: "+jQuery('#'+id).html());
+            var test_elem = jQuery('#'+id);
+            console.warn("Duplicate html-IDs in Dom-Tree:\nID " + id + " was used " + (idDictionary[id]) + " times: "+test_elem.html());
             console.log("====================================================================================");
-            jQuery('#'+id).each(function(index, element) {
+            test_elem.each(function(index, element) {
                 console.log(jQuery(element).html());
                 console.log(jQuery(element).parent().attr("id") + " "+jQuery(element).parent().attr("class"));
             });
@@ -172,9 +173,9 @@ function expand_sql_id_hint(id, sql_id){
         jQuery.ajax({url: "dba_history/getSQL_ShortText?sql_id="+sql_id,
             dataType: "json",
             success: function(response) {
-                if (response.sql_short_text){
-                    SQL_shortText_Cache[sql_id] = response.sql_short_text;      // Cachen Ergebnis
-                    set_sql_title(id, response.sql_short_text);                 // Title setzen
+                if (response['sql_short_text']){
+                    SQL_shortText_Cache[sql_id] = response['sql_short_text'];   // Cachen Ergebnis
+                    set_sql_title(id, response['sql_short_text']);              // Title setzen
                     // jQuery(".ui-tooltip-content").html(get_content(id, response.sql_short_text));         // bringt hintereinander alle Treffer
                 }
             }
@@ -270,7 +271,8 @@ function bind_ajax_callbacks() {
 
             var error_dialog_content = jQuery("#error_dialog_content");
 
-            if (jqXHR.responseText == undefined){                               // Server nicht erreichbar
+            if (typeof jqXHR.responseText == 'undefined'){                        // Server nicht erreichbar
+//            if (jqXHR.responseText == undefined){                               // Server nicht erreichbar
                 error_dialog_content.text('Panorama-Server is not available');
             } else {
                 if (jqXHR.responseText.search('Error at server ') == -1) {      // Error kommt nicht vom Server, sondern aus JavaScript des Browsers
@@ -285,9 +287,10 @@ function bind_ajax_callbacks() {
 
             //jQuery("#error_dialog_stacktrace").text((new Error()).stack);
 
-            jQuery("#error_dialog").dialog("open");
-            jQuery("#error_dialog").css('width',  'auto');                      // Evtl. manuelle Aenderungen des Dialoges bei vorherigen Aufrufen zuruecksetzen
-            jQuery("#error_dialog").css('height', 'auto');                      // Evtl. manuelle Aenderungen des Dialoges bei vorherigen Aufrufen zuruecksetzen
+            jQuery("#error_dialog").dialog("open")
+                .css('width',  'auto')                                          // Evtl. manuelle Aenderungen des Dialoges bei vorherigen Aufrufen zuruecksetzen
+                .css('height', 'auto')                                          // Evtl. manuelle Aenderungen des Dialoges bei vorherigen Aufrufen zuruecksetzen
+            ;
         })
     ;
 }
@@ -309,8 +312,9 @@ function rpad(org_string, max_length, compare_obj_id){
 // aufgerufen über resize-Event
 function check_menu_width() {
     var menu_ul =  jQuery('.sf-menu');
+    var main_menu = jQuery('#main_menu');
 
-    var menu_width = jQuery('#main_menu').width();
+    var menu_width = main_menu.width();
     if (menu_ul.data('unshrinked_menu_width') != undefined)
         menu_width = menu_ul.data('unshrinked_menu_width');
 
@@ -318,19 +322,21 @@ function check_menu_width() {
     var total_width = jQuery('body').width();
 
     var matches = menu_width + tns_width < total_width-10;
-    var menu_shrinked = jQuery('.sf-small-ul').length > 0;
+    var sf_small_ul_element = jQuery('.sf-small-ul');
+    var menu_shrinked = sf_small_ul_element.length > 0;
+    var menu_content;
 
     if (!matches && !menu_shrinked) {     // menu einklappen
         menu_ul.data('unshrinked_menu_width', menu_width);                      // merken der ursprünglichen Breites des Menus
-        var menu_content = menu_ul.html();
+        menu_content = menu_ul.html();
         var newMenu = jQuery('<li><a class="sf-with-ul" href="#">Menu<span class="sf-sub-indicator"></span></a><ul class="sf-small-ul"></ul></li>');
         menu_ul.html(newMenu);
-        jQuery('.sf-small-ul').html(menu_content);
+        sf_small_ul_element.html(menu_content);
     }
     if (matches && menu_shrinked) { // menu ausklappen
-        var menu_content = jQuery('.sf-small-ul').html();
+        menu_content = sf_small_ul_element.html();
         menu_ul.html(menu_content);
-        menu_ul.data('unshrinked_menu_width', jQuery('#main_menu').width());    // erneut die neue Breite merken (evtl. erstmals ausgeklappt)
+        menu_ul.data('unshrinked_menu_width', main_menu.width());    // erneut die neue Breite merken (evtl. erstmals ausgeklappt)
     }
 }
 
@@ -357,20 +363,21 @@ function render_yellow_pre(id, max_height){
 
 function show_popup_message(message){
     var div_id = 'show_popup_message_alert_box';
+    var msg_div = jQuery('#'+div_id);
 
     // create div for dialog at body if not exists
-    if (!jQuery('#'+div_id).length){
+    if (!msg_div.length){
         jQuery('body').append('<div id="'+div_id+'"></div>');
     }
-    jQuery('#'+div_id)
+    msg_div
         .html(message)
         .dialog({
             title:'Panorama',
             draggable:  true,
-            open:       function(event, ui){ $(this).parent().focus(); },
+            open:       function(/*event, ui*/){ $(this).parent().focus(); },
             width:      jQuery(window).width()*0.5,
             maxHeight:  jQuery(window).height()*0.9,
-            beforeClose:function(){jQuery('#'+div_id).html('')}     // clear div before close dialog
+            beforeClose:function(){msg_div.html('')}     // clear div before close dialog
         })
     ;
 

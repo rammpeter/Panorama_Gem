@@ -88,7 +88,7 @@
       <td>
         <%  last_logins = read_last_logins %>
 
-        <%= form_tag url_for(:controller=>:env, :action=>:set_database_by_id), {:remote=>true, 'data-type'=>:html, :id=>:formSavedLogin} do %>
+        <%= form_tag url_for(:controller=>:env, :action=>:set_database_by_id), {:remote=>true, 'data-type'.to_sym=>:html, :id=>:formSavedLogin} do %>
             <div class="float_left" title="<%= t(:login_saved_logins_title, :default=>"Saved DB connections from former use") %>">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
               <select name="saved_logins_id"  autocomplete="off" >
                 <% last_logins.each_index do |index| %>
@@ -236,6 +236,7 @@
   </div>
   <div id="error_dialog_stacktrace">
   </div>
+  <br/>
   <input value="<%= t(:close, :default=>'Close') %>" type="submit" onclick="jQuery('#error_dialog').dialog('close');"/>
 </div>
 
