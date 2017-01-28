@@ -376,6 +376,15 @@
   dba_schema_list_objects_partition_hint:                   Partition-Name bzw. Anzahl Partitionen
   dba_schema_list_objects_used_extents_hint:                Genutzte Anzahl Extents
 
+  dba_sga_db_cache_content_caption:                         DB-Cache-Nutzung
+  dba_sga_db_cache_content_instance_hint:                   ID der betrachteten RAC-Instanz
+  dba_sga_db_cache_content_partition_hint:                  Partitionsdetails anzeigen?
+  dba_sga_db_cache_content_submit_caption:                  Cache-Inhalt anzeigen
+  dba_sga_db_cache_content_submit_hint:                     Anlistung der Objekte und Größen im DB-Cache
+
+  dba_sga_list_db_cache_content_caption:                    DB-Cache-Nutzung
+  dba_sga_list_db_cache_summary_caption:                    Summen
+
   dba_sga_list_sql_area_caption:                            SQL der aktuellen SGA aus %{modus}, gruppiert nach
 
   dba_sga_list_sql_detail_execution_plan_cr_title:          Durchschn. Anzahl Buffer gets in consistend mode (meist für Query) der Operation je Ausführung des SQL, kumulativ inlusive aller untergeordneten Operationen

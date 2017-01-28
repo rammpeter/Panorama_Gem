@@ -1,4 +1,4 @@
-<h1>DB-Cache-Nutzung Instance <%= @instance %> / <%= localeDateTime(@sysdate) %></h1>
+<%= render_page_caption("#{t(:dba_sga_list_db_cache_content_caption, :default=>'DB-cache usage')}: Instance=#{@instance}, #{localeDateTime(@sysdate)}" ) %>
 
 <!-- Hints -->
 <% stati = {
@@ -22,7 +22,7 @@ column_options =
   {:caption=>"%",             :data=>proc{|rec| fn(rec.blocks*100.0/@total_status_blocks,2)},:title=>"Percentage of total cache", :align=>:right },
 ]
 %>
-<%= gen_slickgrid(@db_cache_global_sums, column_options, {:caption =>"Summen", :max_height=>450, :width=>:auto}) %>
+<%= gen_slickgrid(@db_cache_global_sums, column_options, {:caption =>t(:dba_sga_list_db_cache_summary_caption, :default=>'Summary'), :max_height=>450, :width=>:auto}) %>
 
 
 <!-- Tabelle mit Objekten -->

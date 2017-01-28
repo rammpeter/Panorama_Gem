@@ -97,8 +97,8 @@
                 <% end %>
               </select>
             </div>
-            <%= submit_tag t(:login_submit_caption, :default=>"Login"), :name => "login", :title => t(:login_saved_login_title, :default=>"Login with selected saved credentials") %>
-            <%= submit_tag t(:login_saved_delete_caption, :default=>"Delete"), :name => "delete", :title => t(:login_saved_delete_title, :default=>"Delete selected saved login information"), data: { confirm: t(:login_saved_delete_confirmation, :default=>"Do you really want to delete this saved login credential?") } %>
+            <%= submit_tag t(:login_submit_caption, :default=>"Login"), :name => "login", :title => t(:login_saved_login_title, :default=>"Login with selected saved credentials"), :disabled=>(last_logins.length==0) %>
+            <%= submit_tag t(:login_saved_delete_caption, :default=>"Delete"), :name => "delete", :title => t(:login_saved_delete_title, :default=>"Delete selected saved login information"), data: { confirm: t(:login_saved_delete_confirmation, :default=>"Do you really want to delete this saved login credential?") }, :disabled=>(last_logins.length==0) %>
         <% end %>
       </td>
     </tr>
