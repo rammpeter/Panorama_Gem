@@ -1,28 +1,15 @@
-# Panorama
-Short description and motivation.
+Panorama
+========
 
-## Usage
-How to use my plugin.
+Web-tool for analysis of performance issues on Oracle databases.
+Provides easy access to several internal information.<br>
+Aims to issues that are inadequately analyzed and presented by other existing tools such as Enterprise Manager.
 
-## Installation
-Add this line to your application's Gemfile:
+Here you can find more information about Panorama (including download link for Java web application):
+http://rammpeter.github.io/panorama.html
 
-```ruby
-gem 'panorama'
-```
-
-And then execute:
-```bash
-$ bundle
-```
-
-Or install it yourself as:
-```bash
-$ gem install panorama
-```
-
-## Contributing
-Contribution directions go here.
+This GitHub-project is intended to provide function as Rails engine which can be embedded in other Rails application.
+Runnable Rails application with Panorama-gem embedded as engine you find at https://github.com/rammpeter/Panorama
 
 ## License
-The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
+The gem is available as open source under the terms of the [GNU General Public License](http://www.gnu.org/licenses/gpl-3.0).
