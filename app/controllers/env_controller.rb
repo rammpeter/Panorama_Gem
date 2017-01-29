@@ -253,9 +253,9 @@ class EnvController < ApplicationController
       tns_record = tns_records[current_database[:tns]]
       unless tns_record
         respond_to do |format|
-          format.html {render :html => "Entry for DB '#{current_database[:tns]}' not found in tnsnames.ora
-                                        <script type='text/javascript'>$('#login_dialog').effect('shake', { times:3 }, 100);</script>
-                                       ".html_safe
+          format.js {render :js => "show_status_bar_message('Entry for DB \"#{current_database[:tns]}\" not found in tnsnames.ora');
+                                    jQuery('#login_dialog').effect('shake', { times:3 }, 100);
+                                   "
           }
         end
         set_dummy_db_connection
@@ -274,12 +274,10 @@ class EnvController < ApplicationController
     if current_database[:host].upcase.rindex("DM03-SCAN") && current_database[:sid].upcase.rindex("NOADB")
       if params[:database][:authorization]== nil  || params[:database][:authorization]==""
         respond_to do |format|
-          format.html {render :html => "zusätzliche Autorisierung erforderlich fuer CORE-Produktionssystem
-                                        <script type='text/javascript'>
-                                          $('#login_dialog_authorization').show();
-                                          $('#login_dialog').effect('shake', { times:3 }, 100);
-                                        </script>
-                                       ".html_safe
+          format.js {render :js => "show_status_bar_message('zusätzliche Autorisierung erforderlich fuer CORE-Produktionssystem');
+                                    jQuery('#login_dialog_authorization').show();
+                                    jQuery('#login_dialog').effect('shake', { times:3 }, 100);
+                                   "
           }
         end
         set_dummy_db_connection
@@ -287,11 +285,9 @@ class EnvController < ApplicationController
       end
       if params[:database][:authorization]== nil || params[:database][:authorization]!="meyer"
         respond_to do |format|
-          format.html {render :html => "Autorisierung '#{params[:database][:authorization]}' ungueltig fuer NOA-Produktionssystem
-                                        <script type='text/javascript'>
-                                          $('#login_dialog').effect('shake', { times:3 }, 100);
-                                        </script>
-                                       ".html_safe
+          format.js {render :js => "show_status_bar_message('Autorisierung \"#{params[:database][:authorization]}\" ungueltig fuer CORE-Produktionssystem');
+                                    jQuery('#login_dialog').effect('shake', { times:3 }, 100);
+                                   "
           }
         end
         set_dummy_db_connection
@@ -338,8 +334,7 @@ class EnvController < ApplicationController
 #                                                                      Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}
 #                                                                      <script type='text/javascript'>$('#login_dialog').effect('shake', { times:3 }, 100);</script>
 #                                                                     ".html_safe
-        format.html {render :html => "<script type='text/javascript'>
-                                        show_status_bar_message('#{
+        format.js {render :js => "show_status_bar_message('#{
                                           my_html_escape("#{
 t(:env_connect_error, :default=>'Error connecting to database')}:
 #{e.message}
@@ -349,9 +344,8 @@ Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get
 
                                                          ")
                                         }');
-                                        jQuery('#login_dialog').effect('shake', { times:3 }, 300);
-</script>
-                                                                     ".html_safe
+                                  jQuery('#login_dialog').effect('shake', { times:3 }, 300);
+                                 "
         }
       end
       return        # Fehler-Ausgang
