@@ -3,6 +3,7 @@
 # Likewise, all the methods added will be available for all controllers.
 
 #require 'application_helper' # Erweiterung der Controller um Helper-Methoden
+
 include ActionView::Helpers::JavaScriptHelper      # u.a. zur Nutzung von escape_javascript(j) im Controllern
 
 class ApplicationController < ActionController::Base
@@ -95,14 +96,14 @@ class ApplicationController < ActionController::Base
     begin
       # Ausgabe Logging-Info in File für Usage-Auswertung
       filename = EngineConfig.config.usage_info_filename
-      File.open(filename, 'a'){|file| file.write("#{request.remote_ip.nil? ? 'localhost': request.remote_ip} #{get_current_database[:database_name]} #{Time.now.year}/#{"%02d" % Time.now.month} #{real_controller_name} #{real_action_name} #{Time.now.strftime('%Y/%m/%d-%H:%M:%S')} #{get_current_database[:tns]}\n")}
+      File.open(filename, 'a'){|file| file.write("#{request.remote_ip.nil? ? 'localhost': request.remote_ip} #{get_current_database[:database_name]} #{Time.now.year}/#{'%02d' % Time.now.month} #{real_controller_name} #{real_action_name} #{Time.now.strftime('%Y/%m/%d-%H:%M:%S')} #{get_current_database[:tns]}\n")}
     rescue Exception => e
       Rails.logger.warn("#### ApplicationController.begin_request: #{t(:application_helper_usage_error, :default=>'Exception while writing in')} #{filename}: #{e.message}")
     end
 
-  rescue Exception=>e
+  rescue Exception
     set_dummy_db_connection                                                     # Sicherstellen, dass für nächsten Request gültige Connection existiert
-    raise # "Error while connecting to #{database_helper_raw_tns}"         # Explizit anzeige des Connect-Problemes als Popup-Message
+    raise # "Error while connecting to #{database_helper_raw_tns}"              # Explizit anzeige des Connect-Problemes als Popup-Message
   end
 
   # Aktivitäten nach Requestbearbeitung
@@ -142,9 +143,9 @@ protected
   # Ausgabe einer Popup-Message,
   # Nach Aufruf von show_popup_message muss mittels return die Verarbeitung der Controller-Methode abgebrochen werden (Vermeiden doppeltes rendern)
 
-  def show_popup_message(message, format=:js)
+  def show_popup_message(message, response_format=:js)
 
-    case format.to_sym
+    case response_format.to_sym
       when :js
         respond_to do |format|
           format.js { render :js => "show_popup_message('#{my_html_escape(message)}');" }
@@ -154,7 +155,7 @@ protected
           format.html { render :html => "<script type='text/javascript'>show_popup_message('#{my_html_escape(message)}');</script>".html_safe }
         end
       else
-        raise "show_popup_message: unsupported format #{format}"
+        raise "show_popup_message: unsupported format #{response_format}"
     end
   end
 

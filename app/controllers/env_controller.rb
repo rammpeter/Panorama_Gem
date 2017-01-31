@@ -339,8 +339,8 @@ class EnvController < ApplicationController
 t(:env_connect_error, :default=>'Error connecting to database')}:
 #{e.message}
 
-URL:  '#{jdbc_thin_url}'
-Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}
+JDBC URL:  '#{jdbc_thin_url}'
+Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}
 
                                                          ")
                                         }');
