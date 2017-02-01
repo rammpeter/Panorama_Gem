@@ -383,7 +383,13 @@ class DbaSgaController < ApplicationController
         AND   Child_Number = ?
         #{where_string}
         ORDER BY ID"
-        ].concat(get_db_version >= "11.2" ? [@sql_id, @instance].concat(@modus == 'GV$SQL' ? [@child_number] : []) : []).concat([@sql_id, @instance, @child_number]).concat(where_values)
+        ].concat(get_db_version >= "11.2" ? [@sql_id, @instance].concat((@modus == 'GV$SQL' && @restrict_ash_to_child) ? [@child_number] : []) : []).concat([@sql_id, @instance, @child_number]).concat(where_values)
+
+    @additional_ash_message = nil
+    if @modus == 'GV$SQL' && @restrict_ash_to_child
+      child_count = sql_select_one ["SELECT COUNT(*) FROM gv$SQL WHERE Inst_ID = ? AND SQL_ID = ?", @instance, @sql_id]
+      @additional_ash_message = "ASH-values are for child_number=#{@child_number} only but #{child_count} children exists for this SQL-ID and Instance" if child_count > 1
+    end
 
     # Vergabe der exec-Order im Explain
     # iteratives neu durchsuchen der Liste nach folgenden erfuellten Kriterien

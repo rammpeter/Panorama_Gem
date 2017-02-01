@@ -1255,7 +1255,7 @@ function SlickGridExtended(container_id, options){
         var js_test_cell        = thiz.js_test_cell;
         var js_test_cell_wrap   = thiz.js_test_cell_wrap;
         if (!column['last_calc_value'] || (value != column['last_calc_value'] && value.length*9 > column['max_wrap_width'])){  // gleicher Wert muss nicht erneut gecheckt werden, neuer Wert muss > alter sein bei 10 Pixel Breite, aber bei erstem Male durchlauen
-            fullvalue =  fullvalue.replace(/<wbr>/g, '');                       // entfernen von vorderfinierten Umbruchstellen, da diese in der Testzelle sofort zum Umbruch führen und die Ermittlung der Darstellungsbreite fehlschlägt
+            fullvalue =  fullvalue.replace(/<wbr>/g, '');                       // entfernen von vordefinierten Umbruchstellen, da diese in der Testzelle sofort zum Umbruch führen und die Ermittlung der Darstellungsbreite fehlschlägt
             js_test_cell.innerHTML = fullvalue;                                 // Test-DOM nowrapped mit voll dekoriertem Inhalt füllen
             var target_class = 'slick-inner-cell';
             if (column['cssClass'])
