@@ -699,7 +699,7 @@ class DbaSgaController < ApplicationController
              ) x
       LEFT OUTER JOIN   sys.TS$ ts ON ts.TS# = x.TS#
       GROUP BY x.Inst_ID, x.Status
-      ", @instance];
+      ", @instance]
 
     @total_status_blocks = 0                  # Summation der Blockanzahl des Caches
     @db_cache_global_sums.each do |c|
@@ -755,7 +755,7 @@ class DbaSgaController < ApplicationController
         LEFT OUTER JOIN DBA_Objects o ON o.Data_Object_ID = bh.ObjD
         LEFT OUTER JOIN sys.TS$ ts ON ts.TS# = bh.TS#
       GROUP BY NVL(o.Owner,'[UNKNOWN]'), NVL(o.Object_Name,'TS='||ts.Name)#{@show_partitions=="1" ? ", o.SubObject_Name" : ""}
-      ORDER BY 6 DESC", @instance];
+      ORDER BY 6 DESC", @instance]
     @total_blocks = 0                  # Summation der Blockanzahl des Caches
     @objects.each do |o|
       @total_blocks += o.blocks
