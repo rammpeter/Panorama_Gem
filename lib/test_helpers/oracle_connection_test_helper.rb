@@ -28,13 +28,22 @@ class ActiveSupport::TestCase
     test_url = test_config['test_url'].split(":")
 
     current_database = {}
-    current_database[:modus]    = 'tns'
-    #current_database[:sid_usage] = :SID
-    #current_database[:host]     = test_url[3].delete "@"
-    #current_database[:port]     = test_url[4]
-    #current_database[:sid]      = test_url[5]
-    current_database[:user]     = test_config["test_username"]
-    current_database[:tns]      = test_config['test_url'].split('@')[1]         # Alles nach jdbc:oracle:thin@
+    current_database[:modus]        = 'host'
+
+    current_database[:host]         = test_url[3].delete "@"
+    if test_url[4]['/']                                                         # Service_Name
+      current_database[:port]       = test_url[4].split('/')[0]
+      current_database[:sid]        = test_url[4].split('/')[1]
+
+      current_database[:sid_usage]  = :SERVICE_NAME
+    else                                                                        # SID
+      current_database[:port]       = test_url[4]
+      current_database[:sid]        = test_url[5]
+      current_database[:sid_usage]  = :SID
+    end
+
+    current_database[:user]         = test_config["test_username"]
+    current_database[:tns]          = test_config['test_url'].split('@')[1]     # Alles nach jdbc:oracle:thin@
     current_database[:management_pack_license] = :diagnostic_and_tuning_pack    # Allow access on management packs
 
     # Config im Cachestore ablegen

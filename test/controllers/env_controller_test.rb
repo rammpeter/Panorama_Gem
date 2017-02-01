@@ -3,7 +3,8 @@ require 'test_helper'
 include MenuHelper
 include ActionView::Helpers::TranslationHelper
 
-class EnvControllerTest < ActionController::TestCase
+#class EnvControllerTest < ActionController::TestCase
+class EnvControllerTest <  ActionDispatch::IntegrationTest
 
   setup do
     set_session_test_db_context{}
@@ -20,11 +21,11 @@ class EnvControllerTest < ActionController::TestCase
 
     # Test with new login parameters
     database[:save_login] = '1'                                                 # String insted of bool like for connect with saved credentials
-    post :set_database_by_params, :params => {:format=>:html, :database => database }
+    post '/env/set_database_by_params', :params => {:format=>:html, :database => database }
     assert_response :success
 
     # test with stored login from previous connect (0 = first position in list of stored connections)
-    post :set_database_by_id, :params => {:format=>:html, :saved_logins_id=>'0' }
+    post '/env/set_database_by_id', :params => {:saved_logins_id=>'0' }
     assert_response :success
 
   end
@@ -54,7 +55,7 @@ class EnvControllerTest < ActionController::TestCase
       exec_menu_entry_action(m) if m[:class] == "menu"       # Rekursives Abtauchen in Menüstruktur
       if m[:class] == "item" && !controller_action_defined?(m[:controller], m[:action])
         Rails.logger.info "calling #{m[:controller]}/#{m[:action]}"
-        get :render_menu_action, :params => {:format=>:html, :redirect_controller => m[:controller], :redirect_action => m[:action], :update_area=>:hugo}
+        get '/env/render_menu_action', :params => {:format=>:html, :redirect_controller => m[:controller], :redirect_action => m[:action], :update_area=>:hugo}
         assert_response :success, "Error executing #{m[:controller]}/#{m[:action]}, response_code=#{@response.response_code}"
       end
     end
@@ -71,23 +72,23 @@ class EnvControllerTest < ActionController::TestCase
   test "Diverses with xhr: true" do
 
 
-    post :list_dbids, :params => {:format=>:html, :update_area=>:hugo}
+    post '/env/list_dbids', :params => {:format=>:html, :update_area=>:hugo}
     assert_response :success
 
-    post :set_dbid, :params => {:format=>:html, :dbid =>get_dbid, :update_area=>:hugo }  # Alten Wert erneut setzen um andere Tests nicht zu gefährden
+    post '/env/set_dbid', :params => {:format=>:html, :dbid =>get_dbid, :update_area=>:hugo }  # Alten Wert erneut setzen um andere Tests nicht zu gefährden
     assert_response :success
 
   end
 
   test "Startup_Without_Ajax" do
     # Index destroys your cuurent session, therefore ist should be the last action of test
-    get :index, :format=>:js
+    get '/env/index', :format=>:js
     assert_response :success
 
-    post :set_locale, :params => {:format=>:js, :locale=>'de'}
+    post '/env/set_locale', :params => {:format=>:js, :locale=>'de'}
     assert_response :success
 
-    post :set_locale, :params => {:format=>:js, :locale=>'en'}
+    post '/env/set_locale', :params => {:format=>:js, :locale=>'en'}
     assert_response :success
   end
 
