@@ -1343,7 +1343,9 @@ function async_calc_all_cell_dimensions(slickGrid, current_column, start_row){
         var rec = data[current_row];
         var column_metadata = rec['metadata']['columns'][column['field']];  // Metadata der Spalte der Row
         if (!column_metadata['dc'] || column_metadata['dc']==0) {            // bislang fand noch keine Messung der Dimensionen der Zellen dieser Zeile statt
-            HTML_Formatter_prepare(slickGrid, current_row, current_column, rec[column['field']], column, rec, column_metadata);
+            var fullvalue = HTML_Formatter_prepare(slickGrid, current_row, current_column, rec[column['field']], column, rec, column_metadata);
+            slickGrid.calc_cell_dimensions(rec[column['field']], fullvalue, column);            // Werte ermitteln und gegen bislang bekannte Werte der Spalte testen
+            column_metadata['dc'] = 1;                                              // Zeile als berechnet markieren
         }
         current_row++;
     }
@@ -1381,10 +1383,6 @@ function HTML_Formatter_prepare(slickGrid, row, cell, value, columnDef, dataCont
         fullvalue = columnDef['field_decorator_function'](slickGrid, row, cell, value, fullvalue, columnDef, dataContext);
     }
 
-    if (!column_metadata['dc'] || column_metadata['dc']==0){                    // bislang fand noch keine Messung der Dimensionen der Zellen dieser Zeile statt
-        slickGrid.calc_cell_dimensions(value, fullvalue, columnDef);            // Werte ermitteln und gegen bislang bekannte Werte der Spalte testen
-        column_metadata['dc'] = 1;                                              // Zeile als berechnet markieren
-    }
     return fullvalue;
 }
 
@@ -1404,6 +1402,11 @@ function HTMLFormatter(row, cell, value, columnDef, dataContext){
     var slickGrid = columnDef['slickgridExtended'];
 
     var fullvalue = HTML_Formatter_prepare(slickGrid, row, cell, value, columnDef, dataContext, column_metadata);   // Aufbereitung der anzuzeigenden Daten mit optionaler Berechnung der Abmessungen
+
+    if (!column_metadata['dc'] || column_metadata['dc']==0){                    // bislang fand noch keine Messung der Dimensionen der Zellen dieser Zeile statt
+        slickGrid.calc_cell_dimensions(value, fullvalue, columnDef);            // Werte ermitteln und gegen bislang bekannte Werte der Spalte testen
+        column_metadata['dc'] = 1;                                              // Zeile als berechnet markieren
+    }
 
     var output = "<div class='slick-inner-cell' row="+row+" column='"+columnDef['field']+"'";           // sichert u.a. 100% Ausdehnung im Parent und Wiedererkennung der Spalte bei Mouse-Events
 
