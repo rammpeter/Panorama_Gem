@@ -82,7 +82,7 @@ class EnvControllerTest <  ActionDispatch::IntegrationTest
 
   test "Startup_Without_Ajax" do
     # Index destroys your cuurent session, therefore ist should be the last action of test
-    get '/env/index', :format=>:js
+    get '/env/index', :params => {:format=>:js}
     assert_response :success
 
     post '/env/set_locale', :params => {:format=>:js, :locale=>'de'}
