@@ -127,20 +127,20 @@ class DbaSchemaControllerTest < ActionController::TestCase
       assert_response :success;
     end
 
-    post :list_dbms_metadata_get_ddl, :params => {:format=>:html, :owner=>"SYS", :table_name=>"AUD$", :update_area=>:hugo }
-    assert_response :success;
+    post :list_dbms_metadata_get_ddl, :params => {:format=>:html, :object_type=>'TABLE', :owner=>"SYS", :table_name=>"AUD$", :update_area=>:hugo }
+    assert_response :success
 
     post :list_dependencies, :params => {:format=>:html, :owner=>"SYS", :object_name=>"AUD$", :object_type=>'TABLE', :update_area=>:hugo }
-    assert_response :success;
+    assert_response :success
     post :list_dependencies, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBA_AUDIT_TRAIL", :object_type=>'VIEW', :update_area=>:hugo }
-    assert_response :success;
+    assert_response :success
     post :list_dependencies, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBMS_LOCK", :object_type=>'PACKAGE', :update_area=>:hugo }
-    assert_response :success;
+    assert_response :success
     post :list_dependencies, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBMS_LOCK", :object_type=>'PACKAGE BODY', :update_area=>:hugo }
-    assert_response :success;
+    assert_response :success
 
     post :list_grants, :params => {:format=>:html, :owner=>"SYS", :object_name=>"AUD$", :update_area=>:hugo }
-    assert_response :success;
+    assert_response :success
 
   end
 
