@@ -55,7 +55,7 @@ class ApplicationController < ActionController::Base
     ConnectionHolder.init_connection_for_new_request(controller_name, action_name)  # Register new request for delayed connection to Oracle DB with first SQL execution
 
     begin
-      if cookies['client_key']
+      if get_locale
         I18n.locale = get_locale                                                # fuer laufende Action Sprache aktivieren
       else
         I18n.locale = 'en'                                                      # Use english for first conversation

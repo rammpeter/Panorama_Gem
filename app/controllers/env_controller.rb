@@ -24,6 +24,8 @@ class EnvController < ApplicationController
     # Ensure client browser has unique client_key stored as cookie (create new one if not already exists)
     initialize_client_key_cookie
 
+    set_I18n_locale('en') if get_locale.nil?                                    # Locale not yet specified, set default
+
     # Entfernen evtl. bisheriger Bestandteile des Session-Cookies
     cookies.delete(:locale)                         if cookies[:locale]
     cookies.delete(:last_logins)                    if cookies[:last_logins]
