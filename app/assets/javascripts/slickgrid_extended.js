@@ -52,8 +52,6 @@ function SlickGridExtended(container_id, options){
     var js_test_cell                    = null;                                 // Objekt zum Test der realen string-Breite für td, wird bei erstem Zugriff initialisiert
     var js_test_cell_wrap               = null;                                 // Objekt zum Test der realen string-Breite für td, wird bei erstem Zugriff initialisiert
     var js_test_cell_header             = null;
-    var last_used_test_css_class        = null;                                 // last used css-class for test_cell
-    var last_used_test_css_class_wrap   = null;                                 // last used css-class for test_cell_wrap
     var columnFilters                   = {};                                   // aktuelle Filter-Kriterien der Daten
     var sort_pfeil_width                = 12;                                   // Breite des Sort-Pfeils im Column-Header
     this.force_height_calculation       = false;                                // true aktiviert Neuberechnung der Grid-Höhe

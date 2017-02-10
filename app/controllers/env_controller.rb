@@ -54,9 +54,11 @@ class EnvController < ApplicationController
     write_to_client_info_store(:last_used_menu_caption,     'Start')
     write_to_client_info_store(:last_used_menu_hint,        t(:menu_env_index_hint, :default=>"Start of application without connect to database"))
 
+    @panorama_session_key = rand(10000000)                                      # Unique key to distinguish multiple tabs or windows of one browser instance
+
   rescue Exception=>e
     Rails.logger.error("#{e.message}")
-    set_current_database(nil) if !cookies['client_key'].nil?                     # Sicherstellen, dass bei naechstem Aufruf neuer Einstieg (nur wenn client_info_store bereits initialisiert ist)
+    set_current_database(nil) if !cookies['client_key'].nil?                    # Sicherstellen, dass bei naechstem Aufruf neuer Einstieg (nur wenn client_info_store bereits initialisiert ist)
     raise e                                                                     # Werfen der Exception
   end
 

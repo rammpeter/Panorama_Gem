@@ -194,5 +194,130 @@ public
     end
   end
 
+  def format_sql(sql_text)
+    return sql_text if sql_text["\n"]                                           # SQL is already linefeed-formatted
+
+    sql = sql_text.clone
+
+    # Line feed at keywords
+    pos = 0
+    while pos < sql.length
+      cmp_str = sql[pos, 25].upcase                                             # Compare sql beginning at pos, next 25 chars
+
+      [                                                                         # Process array with searches and stepwidth
+          [ '\(SELECT\s'              , 6],
+          [ '\s+SELECT\s'             , 6],
+          [ '\s+FROM\s'               , 5],
+          [ '\s+LEFT +OUTER +JOIN\s'  , 15],
+          [ '\s+LEFT +JOIN\s'         , 9],
+          [ '\s+JOIN\s'               , 4],
+          [ '\s+WHERE\s'              , 5],
+          [ '\s+GROUP\s+BY'           , 8],
+          [ '\s+ORDER\s+BY'           , 8],
+          [ '\s+CASE\s+'              , 4],
+          [ '\s+WHEN\s+'              , 4],
+          [ '\s+ELSE\s+'              , 4],
+          [ '\s+UNION\s+'             , 5],
+      ].each do |c|
+        if cmp_str.match("^#{c[0]}")
+          sql.insert(pos+1, "\n")
+          pos += c[1]
+        end
+      end
+      pos+=1                                                                    # Compare next char
+    end
+
+    # Hierarchy-depth
+
+    pos = 0
+    comment = false
+    depth = 0
+    while pos < sql.length
+
+      comment = true  if sql[pos, 2] == '/*'
+      comment = false if sql[pos, 2] == '*/'
+
+      unless comment
+        if sql[pos] == '('
+          depth += 1
+        end
+        if sql[pos] == ')'
+          depth -= 1
+        end
+      end
+
+      if pos == 0 || sql[pos-1] == "\n"                                       # New line indent
+        cmp_str = sql[pos, sql.length-pos].upcase                                 # Compare sql beginning at pos
+
+
+        max_line_length = 80                                                  # Check maximum line length
+        # Wrap line at AND
+        next_new_line_pos = cmp_str.index("\n")
+        if (next_new_line_pos && next_new_line_pos > max_line_length) || ( next_new_line_pos.nil? && cmp_str.length >= max_line_length )
+          rev_str = cmp_str[0, max_line_length].reverse
+          lf_pos = rev_str.index(/\sDNA\s/)                                   # Look for last AND before max_line_length
+          unless lf_pos.nil?                                                  # AND found before max_new_line_pos
+            sql.insert(pos+max_line_length-lf_pos-4, "\n")
+          else                                                                # Comma not found before max_new_line_pos
+            lf_pos = cmp_str.index(/\sAND\s/, max_line_length)                # look for next comma after max_line_length
+            if !lf_pos.nil? && (next_new_line_pos.nil? || lf_pos < next_new_line_pos)
+              sql.insert(pos+lf_pos+1, "\n")
+            end
+          end
+        end
+
+        # Wrap line at maximum length
+        next_new_line_pos = cmp_str.index("\n")
+        if (next_new_line_pos && next_new_line_pos > max_line_length) || ( next_new_line_pos.nil? && cmp_str.length >= max_line_length )
+          rev_str = cmp_str[0, max_line_length].reverse
+          lf_pos = rev_str.index(/[,]/)                                       # Look for last comma before max_line_length
+          unless lf_pos.nil?                                                  # Comma found before max_new_line_pos
+            sql.insert(pos+max_line_length-lf_pos, "\n")
+            while sql[pos+max_line_length-lf_pos+1] == ' ' do                 # remove leading blanks from new line
+              sql.slice!(pos+max_line_length-lf_pos+1)
+            end
+
+          else                                                                # Comma not found before max_new_line_pos
+            lf_pos = cmp_str.index(/[,]/, max_line_length)                    # look for next comma after max_line_length
+            if !lf_pos.nil? && (next_new_line_pos.nil? || lf_pos < next_new_line_pos)
+              sql.insert(pos+lf_pos, "\n")
+              while sql[pos+lf_pos+1] == ' ' do                               # remove leading blanks from new line
+                sql.slice!(pos+lf_pos+1)
+              end
+            end
+          end
+        end
+
+
+        # indent normal content
+        if  cmp_str.index("SELECT\s") != 0 &&
+            cmp_str.index("FROM\s"  ) != 0 &&
+            cmp_str.index("JOIN\s"  ) != 0 &&
+            cmp_str.index("UNION\s" ) != 0 &&
+            cmp_str.index("LEFT\s"  ) != 0 &&
+            cmp_str.index("OUTER\s" ) != 0 &&
+            cmp_str.index("WHERE\s" ) != 0 &&
+            cmp_str.index("WITH\s"  ) != 0 &&
+            cmp_str.index("GROUP\s" ) != 0 &&
+            cmp_str.index("ORDER\s" ) != 0
+          sql.insert(pos, '    ')
+          pos += 4
+        end
+
+        # Indent hierarchy
+        depth.downto(1) do
+          sql.insert(pos, '    ')
+          pos += 4
+        end
+      end
+
+      pos+=1                                                                    # Compare next char
+    end
+
+
+
+
+    "/* single line SQL-text formatted by Panorama */\n#{sql}"
+  end
 
 end
