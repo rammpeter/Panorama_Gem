@@ -32,7 +32,7 @@ end
 
 <table border="0">
   <tr>
-    <td valign="top"><pre id="<%= "#{@table_id_prefix}_sql" %>" class="monospace" style="overflow-y: auto;"><%= convert_word_wrap_comma(@sql_statement) %></pre></td>
+    <td valign="top"><pre id="<%= "#{@table_id_prefix}_sql" %>" class="monospace" style="overflow-y: auto;"><%= convert_word_wrap_comma(format_sql(@sql_statement)) %></pre></td>
     <td valign="top">
       <table  id="<%= "#{@table_id_prefix}_right_table" %>" border="1" style="font-size:small;">
         <tr><th>Name</th><th>Total</th><th>Per Exec.</th></tr>

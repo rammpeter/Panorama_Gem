@@ -229,9 +229,12 @@ public
 
     # Hierarchy-depth
 
-    pos = 0
-    comment = false
-    depth = 0
+    pos         = 0
+    comment     = false
+    depth       = 0
+    with_active = false
+    with_started= false
+
     while pos < sql.length
 
       comment = true  if sql[pos, 2] == '/*'
@@ -246,11 +249,27 @@ public
         end
       end
 
-      if pos == 0 || sql[pos-1] == "\n"                                       # New line indent
-        cmp_str = sql[pos, sql.length-pos].upcase                                 # Compare sql beginning at pos
+      if with_active && with_started && depth == 0                              # end / switch to next with block
+        next_new_line_pos = sql.index("\n", pos)                                # Position of next newline
+        lf_pos = sql.index(/[,]/, pos)                                          # look for next comma
+        if !lf_pos.nil? && sql[lf_pos+1] != "\n" &&                             # next comma not followed by newline
+            (next_new_line_pos.nil? || lf_pos < next_new_line_pos)              # comma before next newline
+          sql.insert(lf_pos+1, "\n")
+          while sql[lf_pos+2] == ' ' do                                         # remove leading blanks from new line
+            sql.slice!(lf_pos+2)
+          end
+          with_started = false                                                  # only one linefeed per WITH-select
+        end
+      end
 
+      if pos == 0 || sql[pos-1] == "\n"                                         # New line indent
+        cmp_str = sql[pos, sql.length-pos].upcase                               # Compare sql beginning at pos
 
-        max_line_length = 80                                                  # Check maximum line length
+        with_active = true  if cmp_str.index("WITH\s"  ) == 0                   # WITH-block active
+        with_active = false if cmp_str.index("SELECT\s") == 0 && depth == 0     # First SELECT after WITH at base depth ends WITH-Block
+        with_started = true if with_active && depth > 0                         # mark start of first with block
+
+        max_line_length = 80                                                    # Check maximum line length
         # Wrap line at AND
         next_new_line_pos = cmp_str.index("\n")
         if (next_new_line_pos && next_new_line_pos > max_line_length) || ( next_new_line_pos.nil? && cmp_str.length >= max_line_length )
@@ -258,10 +277,12 @@ public
           lf_pos = rev_str.index(/\sDNA\s/)                                   # Look for last AND before max_line_length
           unless lf_pos.nil?                                                  # AND found before max_new_line_pos
             sql.insert(pos+max_line_length-lf_pos-4, "\n")
+            cmp_str = sql[pos, sql.length-pos].upcase                         # Refresh Compare sql beginning at pos for next comparison
           else                                                                # Comma not found before max_new_line_pos
             lf_pos = cmp_str.index(/\sAND\s/, max_line_length)                # look for next comma after max_line_length
             if !lf_pos.nil? && (next_new_line_pos.nil? || lf_pos < next_new_line_pos)
               sql.insert(pos+lf_pos+1, "\n")
+              cmp_str = sql[pos, sql.length-pos].upcase                         # Refresh Compare sql beginning at pos for next comparison
             end
           end
         end
@@ -276,7 +297,6 @@ public
             while sql[pos+max_line_length-lf_pos+1] == ' ' do                 # remove leading blanks from new line
               sql.slice!(pos+max_line_length-lf_pos+1)
             end
-
           else                                                                # Comma not found before max_new_line_pos
             lf_pos = cmp_str.index(/[,]/, max_line_length)                    # look for next comma after max_line_length
             if !lf_pos.nil? && (next_new_line_pos.nil? || lf_pos < next_new_line_pos)
@@ -299,7 +319,8 @@ public
             cmp_str.index("WHERE\s" ) != 0 &&
             cmp_str.index("WITH\s"  ) != 0 &&
             cmp_str.index("GROUP\s" ) != 0 &&
-            cmp_str.index("ORDER\s" ) != 0
+            cmp_str.index("ORDER\s" ) != 0 &&
+            !(with_active && depth == 0)
           sql.insert(pos, '    ')
           pos += 4
         end

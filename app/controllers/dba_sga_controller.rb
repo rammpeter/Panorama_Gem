@@ -198,12 +198,14 @@ class DbaSgaController < ApplicationController
            ", sql_id].concat where_values
     if sql.nil? && object_status
       sql = fill_sql_sga_stat(modus, instance, sql_id, nil, child_number, parsing_schema_name)
-      sql[:warning_message] = "No SQL found with Object_Status='#{object_status}' in #{modus}. Filter Object_Status is supressed now." if sql
+      add_statusbar_message("No SQL found with Object_Status='#{object_status}' in #{modus}. Filter Object_Status is supressed now.")
     end
     if sql.nil? && parsing_schema_name
       sql = fill_sql_sga_stat(modus, instance, sql_id, object_status, child_number, nil)
-      sql[:warning_message] = "No SQL found with Parsing_Schema_Name='#{parsing_schema_name}' in #{modus}. Filter Parsing_Schema_Name is supressed now." if sql
+      add_statusbar_message("No SQL found with Parsing_Schema_Name='#{parsing_schema_name}' in #{modus}. Filter Parsing_Schema_Name is supressed now.")
     end
+
+    return nil if sql.nil?
 
     if modus == "GV$SQL"
       sql[:child_count] = 1                                                    # not from DB
@@ -509,7 +511,7 @@ class DbaSgaController < ApplicationController
 
     if @sql
       @sql_monitor_sessions = sql_monitor_session_count(@instance, @sql_id, @sql.plan_hash_value)
-      render_partial :list_sql_detail_sql_id_childno, (defined?(@list_sql_sga_stat_msg) ? {:status_bar_message => my_html_escape(@list_sql_sga_stat_msg)} : {})
+      render_partial :list_sql_detail_sql_id_childno
     else
       show_popup_message("#{t(:dba_sga_list_sql_detail_sql_id_childno_no_hit_msg, :default=>'No record found in GV$SQL for')} SQL_ID='#{@sql_id}', Instance=#{@instance}, Child_Number=#{@child_number}")
     end
@@ -517,6 +519,8 @@ class DbaSgaController < ApplicationController
 
   # Details auf Ebene SQL_ID kumuliert über Child-Cursoren
   def list_sql_detail_sql_id
+    @status_message = ''                                                       # Initialization
+
     @instance = prepare_param_instance
     @sql_id   = params[:sql_id]
     @object_status= params[:object_status]
@@ -546,7 +550,7 @@ class DbaSgaController < ApplicationController
     @instance = @sqls[0].inst_id                                                # ab hier kann es nur Records einer Instance geben
 
     if @sqls.count == 1     # Nur einen Child-Cursor gefunden, dann direkt weiterleiten an Anzeige auf Child-Ebene
-      @list_sql_sga_stat_msg = "Nur ein Child-Record gefunden in gv$SQL, daher gleich direkte Anzeige auf Child-Ebene"
+      add_statusbar_message("Nur ein Child-Record gefunden in gv$SQL, daher gleich direkte Anzeige auf Child-Ebene")
       params[:instance]     = @instance
       params[:child_number] = @sqls[0].child_number
       list_sql_detail_sql_id_childno  # Anzeige der Child-Info
@@ -570,12 +574,11 @@ class DbaSgaController < ApplicationController
 
     #@plans = get_sga_execution_plan('GV$SQLArea', @sql_id, @instance, sql_child_info.min_child_number, sql_child_info.min_child_address, false) if @sql_child_info.plan_count == 1 # Nur anzeigen wenn eindeutig immer der selbe plan
 
-    @status_message = nil
     if @sql_child_info.plan_count > 1
       @status_message = "Multiple different execution plans exist for this SQL-ID!\nPlease select one SQL child number for exact execution plan of this child cursor."
     end
 
-    render_partial :list_sql_detail_sql_id, (@status_message ? {:status_bar_message => my_html_escape(@status_message)} : {})
+    render_partial :list_sql_detail_sql_id, (@status_message.length > 0 ? {:status_bar_message => my_html_escape(@status_message)} : {})
   end
 
   def list_sql_shared_cursor

@@ -54,6 +54,8 @@ class ApplicationController < ActionController::Base
   def begin_request
     ConnectionHolder.init_connection_for_new_request(controller_name, action_name)  # Register new request for delayed connection to Oracle DB with first SQL execution
 
+    @statusbar_message = ''                                                     # manipulation only by add_statusbar_message
+
     begin
       if get_locale
         I18n.locale = get_locale                                                # fuer laufende Action Sprache aktivieren
@@ -157,6 +159,16 @@ protected
       else
         raise "show_popup_message: unsupported format #{response_format}"
     end
+  end
+
+  def add_statusbar_message(message)
+    if @statusbar_message.length > 0
+      @statusbar_message << "\n"
+      @statusbar_message << message
+    else
+      @statusbar_message = message
+    end
+
   end
 
 end
