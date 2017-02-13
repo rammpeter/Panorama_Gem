@@ -27,6 +27,9 @@
 "use strict";
 
 
+
+
+
 // global gültige Variable im js, wird von EnvController.setDatabase gesetzt entsprechend der Spracheinstellung
 var session_locale = "en";
 var indicator_call_stack_depth = 0;                                             // only last returning ajax call is closing indicator
