@@ -41,9 +41,7 @@
     }
 
     function filter_collapsed_item_rows(item) {
-        if (item['hidden'])
-            return false;
-        return true;
+        return !item['hidden'];
     }
 
 </script>
