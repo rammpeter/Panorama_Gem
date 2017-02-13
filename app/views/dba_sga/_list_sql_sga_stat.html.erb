@@ -41,6 +41,7 @@ end
         <% else %>
             <tr title="<%= t(:dba_sga_list_sql_sga_stat_child_count_hint, :default=>'Number of child cursors')%>"> <td>Child-cursors</td><td align="center"><%= @sql.child_count %></td>        </tr>
         <% end %>
+        <tr title="<%= t(:dba_sga_list_sql_sga_stat_opt_env_hint, :default=>'Hash value over optimizer environment') %>">            <td>Optimizer Env Hash-Value</td><td align="center"><%= @sql.optimizer_env_hash_value %></td>        </tr>
         <tr title="Module of parsing session">            <td>Parsing module</td><td align="center">
           <%=
             @update_area_module = get_unique_area_id
@@ -65,7 +66,6 @@ end
           %>
           <div id='<%= @update_area_action %>'></div>
         </td>        </tr>
-        <tr title="<%= t(:dba_sga_list_sql_sga_stat_opt_env_hint, :default=>'Hash value over optimizer environment') %>">            <td>Optimizer Env Hash-Value</td><td align="center"><%= @sql.optimizer_env_hash_value %></td>        </tr>
         <tr title="<%= t(:dba_sga_list_sql_sga_stat_object_state_hint, :default=>'Object status of SQL') %>">            <td>Object status</td><td align="center"><%= @sql.object_status %></td>        </tr>
         <tr title="<%= "#{t(:dba_sga_list_sql_sga_stat_plsql_hint, :default=>'Program name and line number if SQL is executed within PL/SQL')}\nType=#{@sql.program_type}\nLast DDL=#{localeDateTime(@sql.program_last_ddl_time)}" %>">            <td><%= t(:dba_sga_list_sql_sga_stat_plsql_caption, :default=>'PL/SQL program / line') %></td><td align="center"><%= "#{@sql.program_name} : #{fn(@sql.program_lineno)}" %></td>        </tr>
         <tr title="<%= t(:dba_sga_list_sql_sga_stat_first_load_hint, :default=>'First occurrence of SQL in SGA') %>">            <td>First Load Time</td><td align="center"><%= @sql.first_load_time %></td>        </tr>
@@ -76,7 +76,7 @@ end
       </table>
 
        <table id="<%= "#{@table_id_prefix}_right_table" %>" border="1" width="100%" style="font-size:small;">
-         <tr><th>Name</th><th>Total</th><th>Per Exec.</th></tr>
+         <tr><th>Metric-Name</th><th>Total</th><th>Per Exec.</th></tr>
          <%= show_single_value("Executions", @sql.executions,0, "Number of executions") %>
          <%= show_both_values("Parse calls", @sql.parse_calls,0, "Number of parse calls", true) %>
          <%= show_both_values("Fetches ", @sql.fetches, 0, "Number of fetches (Avg. #{@sql.rows_processed/@sql.fetches rescue nil} rows per fetch)")%>
