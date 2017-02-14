@@ -42,6 +42,7 @@ module ActiveSessionHistoryHelper
       @session_statistics_key_rules_hash["PQ"]              = {:sql => "DECODE(s.QC_Instance_ID, NULL, 'NO', s.Instance_Number||':'||s.Session_ID||', '||s.Session_Serial_No)",  :sql_alias => "pq",  :Name => 'Parallel query',  :Title => 'PQ instance and session if executed in parallel query (NO if not executed in parallel or session is PQ-coordinator)' }
       @session_statistics_key_rules_hash["Session-Type"]    = {:sql => "SUBSTR(s.Session_Type,1,1)", :sql_alias => "session_type",              :Name => 'S-T',          :Title      => "Session-type: (F)OREGROUND or (B)ACKGROUND" }
       @session_statistics_key_rules_hash["Plan-Hash-Value"] = {:sql => "s.SQL_Plan_Hash_Value", :sql_alias => "plan_hash_value",  :Name => 'Plan-Hash-Value', :Title => "Plan hash value, uniquely identifies execution plan of SQL" }
+      @session_statistics_key_rules_hash['Remote-Instance'] = {:sql => "s.Remote_Instance_No",   :sql_alias => 'remote_instance',   :Name => 'R. I.',       :Title      => "Remote instance identifier that will serve the block that this session is waiting for.\nThis information is only available if the session was waiting for cluster events." } if get_db_version >= "11.2"
     end
     @session_statistics_key_rules_hash
   end
