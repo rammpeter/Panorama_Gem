@@ -325,8 +325,7 @@ function check_menu_width() {
     var total_width = jQuery('body').width();
 
     var matches = menu_width + tns_width < total_width-10;
-    var sf_small_ul_element = jQuery('.sf-small-ul');
-    var menu_shrinked = sf_small_ul_element.length > 0;
+    var menu_shrinked = jQuery('.sf-small-ul').length > 0;
     var menu_content;
 
     if (!matches && !menu_shrinked) {     // menu einklappen
@@ -334,10 +333,10 @@ function check_menu_width() {
         menu_content = menu_ul.html();
         var newMenu = jQuery('<li><a class="sf-with-ul" href="#">Menu<span class="sf-sub-indicator"></span></a><ul class="sf-small-ul"></ul></li>');
         menu_ul.html(newMenu);
-        sf_small_ul_element.html(menu_content);
+        jQuery('.sf-small-ul').html(menu_content);
     }
     if (matches && menu_shrinked) { // menu ausklappen
-        menu_content = sf_small_ul_element.html();
+        menu_content = jQuery('.sf-small-ul').html();
         menu_ul.html(menu_content);
         menu_ul.data('unshrinked_menu_width', main_menu.width());    // erneut die neue Breite merken (evtl. erstmals ausgeklappt)
     }
