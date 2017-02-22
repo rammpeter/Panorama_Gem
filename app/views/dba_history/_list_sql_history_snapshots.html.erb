@@ -76,12 +76,12 @@ caption << (ajax_form(:controller => :dba_history, :action        => :list_sql_h
                                       :update_area   => @prev_update_area,                   # Update_area des letzten Aufrufes wiederverwenden
                               ) do
   form_content = ''
-  form_content << "<span title='RAC-Instance\nYou can change this filter value or empty this field to disable the filter'>Instance"
+  form_content << "<span title=\"RAC-Instance. You can change this filter value or empty this field to disable the filter\">Instance"
   form_content << text_field_tag(:instance, @instance, :size=>4)
   form_content << '</span>'
 
   form_content << '&nbsp;&nbsp;&nbsp;'
-  form_content << "<span title='Parsing schema name\nYou can change this filter value or empty this field to disable the filter'>Schema "
+  form_content << "<span title=\"Parsing schema name. You can change this filter value or empty this field to disable the filter\">Schema "
   form_content << text_field_tag(:parsing_schema_name, @parsing_schema_name, :size=>10)
   form_content << '</span>'
 
