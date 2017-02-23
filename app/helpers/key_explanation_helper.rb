@@ -1,5 +1,32 @@
 # encoding: utf-8
 module KeyExplanationHelper
+  @@switchover_status = nil
+  def explain_switchover_status(value)
+    unless @@switchover_status
+      @@switchover_status = {
+          'NOT ALLOWED'           => "On a primary database, this status indicates that there are no valid and enabled standby databases. On a standby database, this status indicates that a switchover request has not been received from the primary database.",
+          'SESSIONS ACTIVE'       => "The database has active sessions. On a physical standby database, the WITH SESSION SHUTDOWN SQL clause must be specified to perform a role transition while in this state. On a logical standby database, a role transition can be performed while in this state, but the role transition will not complete until all current transactions have committed.",
+          'SWITCHOVER PENDING'    => "On a physical standby database, this status indicates that a switchover request has been received from the primary database and is being processed. A physical standby database cannot switch to the primary role while in this transient state.",
+          'SWITCHOVER LATENT'     => "On a physical standby database, this status indicates that a switchover request was pending, but the original primary database has been switched back to the primary role.",
+          'TO PRIMARY'            => "The database is ready to switch to the primary role.",
+          'TO STANDBY'            => "The database is ready to switch to either the physical or logical standby role.",
+          'TO LOGICAL STANDBY'    => "The database has received a data dictionary from a logical standby database and is ready to switch to the logical standby role.",
+          'RECOVERY NEEDED'       => "On a physical standby database, this status indicates that additional redo must be applied before the database can switch to the primary role.",
+          'PREPARING SWITCHOVER'  => "On a primary database, this status indicates that a data dictionary is being received from a logical standby database in preparation for switching to the logical standby role. On a logical standby database, this status indicates that the data dictionary has been sent to the primary database and other standby databases.",
+          'PREPARING DICTIONARY'  => "On a logical standby database, this status indicates that the data dictionary is being sent to the primary database and other standby databases in preparation for switching to the primary role.",
+          'FAILED DESTINATION'    => "On a primary database, this status indicates that one or more standby destinations are in an error state.",
+          'RESOLVABLE GAP'        => "On a primary database, this status indicates that one or more standby databases have a redo gap that can be automatically resolved by fetching the missing redo from the primary database or from another standby database.",
+          'UNRESOLVABLE GAP'      => "On a primary database, this status indicates that one or more standby databases have a redo gap that cannot be automatically resolved by fetching the missing redo from the primary database or from another standby database.",
+          'LOG SWITCH GAP'        => "On a primary database, this status indicates that one or more standby databases are missing redo due to a recent log switch.",
+      }
+    end
+    result = @@switchover_status[value]
+    if result.nil?
+      "... no explanation available yet for switchover-status #{value}"
+    else
+      result
+    end
+  end
 
   @@data_access = nil # Cache
   def explain_data_access(operation_options)
@@ -246,7 +273,6 @@ module KeyExplanationHelper
           'enq: ID - contention' => 'Lock held to prevent other processes from performing controlfile transaction while NID is running',
           'enq: IL - contention' => 'Synchronizes accesses to internal label data structures',
           'enq: IM - contention for blr' => 'Serializes block recovery for IMU txn',
-          'enq: IR - contention' => 'Synchronizes instance recovery',
           'enq: IR - contention' => 'Synchronizes parallel instance recovery and shutdown immediate',
           'enq: IS - contention' => 'Enqueue used to synchronize instance state changes',
           'enq: IT - contention' => "Synchronizes accesses to a temp object's metadata",
@@ -475,7 +501,6 @@ module KeyExplanationHelper
   def pack_from_feature(feature) 
     retval = {
         'Active Data Guard - Real-Time Query on Physical Standby'           => 'Active Data Guard',
-        'Active Data Guard - Real-Time Query on Physical Standby'           => 'Active Data Guard',
         'ADDM'                                                              => 'Diagnostics Pack',
         'ADVANCED Index Compression'                                        => 'Advanced Compression',
         'Advanced Index Compression'                                        => 'Advanced Compression',
@@ -490,14 +515,9 @@ module KeyExplanationHelper
         'AWR Baseline Template'                                             => 'Diagnostics Pack',
         'AWR Report'                                                        => 'Diagnostics Pack',
         'Backup Encryption'                                                 => 'Advanced Security',
-        'Backup Encryption'                                                 => 'Advanced Security',
-        'Backup HIGH Compression'                                           => 'Advanced Compression',
         'Backup HIGH Compression'                                           => 'Advanced Compression',
         'Backup LOW Compression'                                            => 'Advanced Compression',
-        'Backup LOW Compression'                                            => 'Advanced Compression',
         'Backup MEDIUM Compression'                                         => 'Advanced Compression',
-        'Backup MEDIUM Compression'                                         => 'Advanced Compression',
-        'Backup ZLIB Compression'                                           => 'Advanced Compression',
         'Backup ZLIB Compression'                                           => 'Advanced Compression',
         'Baseline Adaptive Thresholds'                                      => 'Diagnostics Pack',
         'Baseline Static Computations'                                      => 'Diagnostics Pack',
@@ -505,9 +525,7 @@ module KeyExplanationHelper
         'Database Replay: Workload Capture'                                 => 'Real Application Testing',
         'Database Replay: Workload Replay'                                  => 'Real Application Testing',
         'Data Guard'                                                        => 'Advanced Compression',
-        'Data Guard'                                                        => 'Advanced Compression',
         'Data Masking Pack'                                                 => 'Data Masking Pack',
-        'Data Mining'                                                       => 'Advanced Analytics',
         'Data Mining'                                                       => 'Advanced Analytics',
         'Data Redaction'                                                    => 'Advanced Security',
         'Diagnostic Pack'                                                   => 'Diagnostics Pack',
@@ -517,15 +535,11 @@ module KeyExplanationHelper
         'EM Performance Page'                                               => 'Diagnostics Pack',
         'EM Standalone Provisioning and Patch Automation Pack'              => '.Provisioning and Patch Automation Pack',
         'Encrypted Tablespaces'                                             => 'Advanced Security',
-        'Encrypted Tablespaces'                                             => 'Advanced Security',
         'Exadata'                                                           => '.Exadata',
-        'Flashback Data Archive'                                            => 'Advanced Compression',
-        'Flashback Data Archive'                                            => 'Advanced Compression',
         'Flashback Data Archive'                                            => 'Advanced Compression',
         'Gateways'                                                          => '.Database Gateway',
         'Global Data Services'                                              => 'Active Data Guard',
         'GoldenGate'                                                        => '.GoldenGate',
-        'HeapCompression'                                                   => 'Advanced Compression',
         'HeapCompression'                                                   => 'Advanced Compression',
         'Heat Map'                                                          => 'Advanced Compression',
         'Hybrid Columnar Compression Row Level Locking'                     => 'Advanced Compression',
@@ -534,13 +548,11 @@ module KeyExplanationHelper
         'In-Memory Aggregation'                                             => 'Database In-Memory',
         'In-Memory Column Store'                                            => 'Database In-Memory',
         'Label Security'                                                    => 'Label Security',
-        'Label Security'                                                    => 'Label Security',
         'LOB'                                                               => :Default,
         'Locally Managed Tablespaces (system)'                              => :Default,
         'Materialized Views (User)'                                         => :Default,
         'Object'                                                            => :Default,
         'Oracle Advanced Network Compression Service'                       => 'Advanced Compression',
-        'Oracle Database Vault'                                             => 'Database Vault',
         'Oracle Database Vault'                                             => 'Database Vault',
         'Oracle Multitenant'                                                => 'Multitenant',
         'Oracle Pluggable Databases'                                        => 'Multitenant',
