@@ -353,6 +353,7 @@ class DbaController < ApplicationController
         (Bytes/1024) KByte,                                     
         Status,                                                 
         TO_CHAR(First_Time,'#{sql_datetime_second_mask}') StartTime,
+        (Next_Time - First_Time) * 86400 Log_Switch_Interval_Secs,
         Members, Archived
       FROM gV$LOG
       WHERE Inst_ID = Thread#  -- im gv$-View werden jeweils die Logs der anderen Instanzen noch einmal in jeder Instance mit Thread# getzeigt, dies verhindert die Dopplung
