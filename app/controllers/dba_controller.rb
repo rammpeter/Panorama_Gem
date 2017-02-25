@@ -377,8 +377,10 @@ class DbaController < ApplicationController
 
     @redologs = sql_select_iterator ["\
       SELECT /* Panorama-Tool Ramm */ x.*,
-             x.LogSwitches * x.Members * x.Avg_Size_MB LogWrites_MB
-      FROM   (SELECT ss.Begin_Interval_Time, l.*,
+             x.LogSwitches * x.Members * x.Avg_Size_MB LogWrites_MB,
+             CASE WHEN x.Snapshot_Secs > 0 AND x.LogSwitches IS NOT NULL AND x.LogSwitches > 0 THEN x.Snapshot_Secs / x.LogSwitches END Avg_Secs_Between_LogSwitches
+      FROM   (SELECT ss.Begin_Interval_Time, ss.End_Interval_Time, l.*,
+                     (CAST(ss.End_Interval_Time AS DATE)-CAST(ss.Begin_interval_Time AS DATE))*86400 Snapshot_Secs,
                      l.MaxSequenceNo - LAG(l.MaxSequenceNo, 1, l.MaxSequenceNo) OVER (PARTITION BY l.Instance_Number ORDER BY ss.Begin_Interval_Time) LogSwitches
               FROM   (
                       SELECT DBID, Snap_ID, Instance_Number, COUNT(*) Log_Number,
