@@ -101,12 +101,17 @@ class EnvController < ApplicationController
       @version_info = sql_select_all "SELECT /* Panorama Tool Ramm */ Banner FROM V$Version"
       @database_info = sql_select_first_row "SELECT /* Panorama Tool Ramm */ Name, Platform_name, Created FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
 
+      client_info = sql_select_first_row "SELECT sys_context('USERENV', 'NLS_DATE_LANGUAGE') || '_' || sys_context('USERENV', 'NLS_TERRITORY') NLS_Lang FROM DUAL"
+
       @version_info << ({:banner => "Platform: #{@database_info.platform_name}" }.extend SelectHashHelper)
 
       @version_info.each {|vi| vi[:client_info] = nil }                         # each row should have this column defined
       @version_info[0][:client_info] = "JDBC connect string = \"#{jdbc_thin_url}\""                                                                           if @version_info.count > 0
       @version_info[1][:client_info] = "JDBC driver version = \"#{ConnectionHolder.get_jdbc_driver_version}\""                                                if @version_info.count > 1
       @version_info[2][:client_info] = "Client time zone = \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}"  if @version_info.count > 2
+      @version_info[3][:client_info] = "Client NLS setting = \"#{client_info.nls_lang}\""                                                                        if @version_info.count > 3
+
+
 
       @instance_data = sql_select_all ["SELECT /* Panorama Tool Ramm */ gi.*, i.Instance_Number Instance_Connected,
                                                       (SELECT n.Value FROM gv$NLS_Parameters n WHERE n.Inst_ID = gi.Inst_ID AND n.Parameter='NLS_CHARACTERSET') NLS_CharacterSet,

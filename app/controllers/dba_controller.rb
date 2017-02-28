@@ -392,7 +392,7 @@ class DbaController < ApplicationController
                              MAX(Sequence#)                                     MaxSequenceNo
                       FROM   DBA_Hist_Log
                       WHERE  DBID = ?
-                      AND Instance_Number = Thread#  -- im gv$-View werden jeweils die Logs der anderen Instanzen noch einmal in jeder Instance mit Thread# getzeigt, dies verhindert die Dopplung
+                      AND Instance_Number = Thread#  -- im gv$-View werden jeweils die Logs der anderen Instanzen noch einmal in jeder Instance mit Thread# gezeigt, dies verhindert die Dopplung
                       GROUP BY DBID, Snap_ID, Instance_Number
                      ) l
               JOIN   DBA_Hist_Snapshot ss ON ss.DBID=l.DBID AND ss.Snap_ID=l.Snap_ID AND ss.Instance_Number=l.Instance_Number
