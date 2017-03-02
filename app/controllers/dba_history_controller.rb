@@ -158,6 +158,7 @@ class DbaHistoryController < ApplicationController
     @owner          = params[:owner]
     @object_name    = params[:object_name]
     @subobject_name = params[:subobject_name]
+    @subobject_name = nil if @subobject_name == ''
     min_snap_id     = params[:min_snap_id]
     max_snap_id     = params[:max_snap_id]
 
