@@ -194,7 +194,7 @@ public
     end
   end
 
-  def format_sql(sql_text)
+  def format_sql(sql_text, window_width)
     return sql_text if sql_text["\n"] || sql_text.length < 100                  # SQL is already linefeed-formatted or too small
 
     sql = sql_text.clone
@@ -237,6 +237,8 @@ public
     depth       = 0
     with_active = false
     with_started= false
+    max_line_length = window_width.to_i / 15                                # Check maximum line length
+    max_line_length = 80 if max_line_length.nil? || max_line_length == 0
 
     while pos < sql.length
 
@@ -272,7 +274,6 @@ public
         with_active = false if cmp_str.index("SELECT\s") == 0 && depth == 0     # First SELECT after WITH at base depth ends WITH-Block
         with_started = true if with_active && depth > 0                         # mark start of first with block
 
-        max_line_length = 80                                                    # Check maximum line length
         # Wrap line at AND
         next_new_line_pos = cmp_str.index("\n")
         if (next_new_line_pos && next_new_line_pos > max_line_length) || ( next_new_line_pos.nil? && cmp_str.length >= max_line_length )
@@ -295,14 +296,14 @@ public
         if (next_new_line_pos && next_new_line_pos > max_line_length) || ( next_new_line_pos.nil? && cmp_str.length >= max_line_length )
           rev_str = cmp_str[0, max_line_length].reverse
           lf_pos = rev_str.index(/[,]/)                                       # Look for last comma before max_line_length
-          unless lf_pos.nil?                                                  # Comma found before max_new_line_pos
+          if !lf_pos.nil? && lf_pos < max_line_length                         # Comma found before max_new_line_pos, but not on current pos
             sql.insert(pos+max_line_length-lf_pos, "\n")
             while sql[pos+max_line_length-lf_pos+1] == ' ' do                 # remove leading blanks from new line
               sql.slice!(pos+max_line_length-lf_pos+1)
             end
           else                                                                # Comma not found before max_new_line_pos
             lf_pos = cmp_str.index(/[,]/, max_line_length)                    # look for next comma after max_line_length
-            if !lf_pos.nil? && (next_new_line_pos.nil? || lf_pos < next_new_line_pos)
+            if !lf_pos.nil? && lf_pos > 0 && (next_new_line_pos.nil? || lf_pos < next_new_line_pos) # next comma foubd, but nor in current pos
               sql.insert(pos+lf_pos, "\n")
               while sql[pos+lf_pos+1] == ' ' do                               # remove leading blanks from new line
                 sql.slice!(pos+lf_pos+1)

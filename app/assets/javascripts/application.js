@@ -237,7 +237,7 @@ function ajax_html(update_area, controller, action, payload, options){
                 }
             }
         },
-        url: controller+'/'+action,
+        url: controller+'/'+action+'?window_width='+jQuery(window).width(),
         data: payload
     });
 }

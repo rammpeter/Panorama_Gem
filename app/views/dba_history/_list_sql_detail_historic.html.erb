@@ -30,9 +30,9 @@ end
 
 <%= render_page_caption("#{t(:dba_history_list_sql_detail_historic_caption, :default=>'Statement details from')} DBA_Hist_SQLStat #{@sql.first_occurrence ? localeDateTime(@sql.first_occurrence) : @time_selection_start} #{t(:until, :default=>'until')} #{@sql.last_occurrence ? localeDateTime(@sql.last_occurrence) : @time_selection_end} : Instance = #{@instance}, SQL-ID = '#{@sql_id}'", get_recall_params_info_for_render_page_caption) %>
 
-<table id="<%= "#{@table_id_prefix}_main" %>" border="0">
+<table id="<%= "#{@table_id_prefix}_main" %>" border="0" >
   <tr>
-    <td valign="top"><pre id="<%= "#{@table_id_prefix}_sql" %>" class="monospace" style="overflow-y: auto;"><%= convert_word_wrap_comma(format_sql(@sql_statement)) %></pre></td>
+    <td valign="top" ><pre id="<%= "#{@table_id_prefix}_sql" %>" class="monospace" style="overflow-y: auto;"><%= convert_word_wrap_comma(format_sql(@sql_statement, params[:window_width])) %></pre></td>
     <td valign="top">
       <table  id="<%= "#{@table_id_prefix}_right_single_table" %>" border="1" width="100%" style="font-size:small;">
         <tr title="Parsing schema name">            <td>Parsing schema name</td><td align="center"><%= @sql.min_parsing_schema_name %></td>        </tr>
@@ -239,6 +239,9 @@ column_options = [
 </div>
 
 <script type="application/javascript">
+    // ensure no line break heppens due to vertical scrollbar
+    jQuery("#<%= @table_id_prefix %>_sql").width(jQuery("#<%= @table_id_prefix %>_sql").width()+20);
+
   // set height of sql (left column) to height of right column
   jQuery("#<%= "#{@table_id_prefix}_sql" %>").height(jQuery("#<%= "#{@table_id_prefix}_right_single_table"%>").height() + jQuery("#<%= "#{@table_id_prefix}_right_table"%>").height());
 

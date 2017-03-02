@@ -563,6 +563,21 @@ class DbaSgaController < ApplicationController
     @sql_profiles          = get_sql_profiles(@sql)
     @sql_plan_baselines    = get_sql_plan_baselines(@sql)
     @sql_outlines          = get_sql_outlines(@sql)
+
+    # Bindevariablen des Cursors
+    @binds = sql_select_all ["\
+      SELECT /* Panorama-Tool Ramm */ Name, Position, DataType_String, Last_Captured,
+             CASE DataType_String
+               WHEN 'TIMESTAMP' THEN TO_CHAR(ANYDATA.AccessTimestamp(Value_AnyData), '#{sql_datetime_minute_mask}')
+             ELSE Value_String END Value_String,
+             Child_Number,
+             NLS_CHARSET_NAME(Character_SID) Character_Set, Precision, Scale, Max_Length
+      FROM   gv$SQL_Bind_Capture c
+      WHERE  Inst_ID = ?
+      AND    SQL_ID  = ?
+      ORDER BY Child_Number, Position
+      ", @instance, @sql_id]
+
     @open_cursors          = get_open_cursor_count(@instance, @sql_id)
     @sql_monitor_sessions  = sql_monitor_session_count(@instance, @sql_id)
 
