@@ -46,9 +46,12 @@ class DbaGeneralTest < Capybara::Rails::TestCase
   end
 
   test "DB-Locks / Blocking locks historic" do
+    login_and_menu_call('DBA general', 'DB-Locks', 'menu_active_session_history_show_blocking_locks_historic')
+    page.must_have_content 'Blocking Locks from DBA_Hist_Active_Sess_History'
+
+
+
   end
 
-
-
-
-
+  
+end
