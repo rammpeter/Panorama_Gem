@@ -1,10 +1,9 @@
 <% if @dist_locks.length >0 %>
-  <h3>Pending thwo-phase commits (DBA_2PC_Pending)</h3>
   <%
     column_options =
       [
         {:caption=>"Local Transaction",  :data=>proc{|rec| rec.local_tran_id },                        :title=>"Local Transaction-ID"},
-        {:caption=>"Global Transaction", :data=>proc{|rec| rec.global_tran_id },                       :title=>"Global Transaction-ID"},
+        {:caption=>"Global Transaction", :data=>proc{|rec| rec.global_tran_id },                       :title=>"Global Transaction-ID\nThis ID can be used to manually commit the pending transaction by executing as SYSDBA:\nCOMMIT FORCE '<global transaction id>';"},
         {:caption=>"State",              :data=>proc{|rec| rec.state },                                :title=>"Status"},
         {:caption=>"Mixed",              :data=>proc{|rec| rec.mixed },                                :title=>""},
         {:caption=>"Advice",             :data=>proc{|rec| rec.advice },                               :title=>""},
@@ -20,7 +19,11 @@
       ]
 
   %>
-  <%= gen_slickgrid(@dist_locks, column_options) %>
+  <%= gen_slickgrid(@dist_locks, column_options, {
+        :caption =>  "Pending two-phase commits (DBA_2PC_Pending), see mouseover hint for column global transaction",
+        :max_height=>450
+      })
+  %>
 <% end %>
 
 <%
