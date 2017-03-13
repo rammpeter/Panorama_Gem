@@ -462,10 +462,11 @@
   dba_show_locks_all_locks_hint:                            Alle Locks anlisten? Sonst AE- und PS-Locks unterdrücken.
   dba_show_locks_max_result_size_caption:                   max. anzuzeigen
   dba_show_locks_max_result_size_hint:                      Limitierung auf maximale Anzahl Zeilen des Resultates der Abfrage
-  dba_show_locks_submit_dml_caption:                        DML-Locks komplett
-  dba_show_locks_submit_dml_hint:                           Alle DML-Locks (Data Manipulation) anzeigen
+  dba_show_locks_submit_dml_caption:                        DML-Locks (alle)
+  dba_show_locks_submit_dml_hint:                           Alle DML-Locks (Data Manipulation Locks) anzeigen
   dba_show_locks_submit_blocking_hint:                      Blockierende DML-Locks (Data Manipulation Locks) anzeigen
   dba_show_locks_submit_ddl_hint:                           Blockierende DDL-Locks (Data Definition Locks) anzeigen
+  dba_show_locks_submit_pending_2phase_hint:                Pending two-phase commits anzeigen (aus DBA_2PC_Pending)
 
   dba_show_segment_statistics_sample_hint:                  Statistik-Wert innerhalb der Sample-Dauer
   dba_show_segment_statistics_total_hint:                   Statistik-Wert global sei Instance-Start

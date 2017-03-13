@@ -3,6 +3,31 @@ class DbaController < ApplicationController
 
   include DbaHelper
 
+  def show_locks
+    @dml_count = sql_select_first_row "
+      SELECT COUNT(*) DML_Count, SUM(CASE WHEN s.LockWait IS NOT NULL AND l.Request != 0 THEN 1 ELSE 0 END) Blocking_DML_Count
+      FROM   gv$Lock l
+      JOIN   gv$session s ON s.Inst_ID = l.Inst_ID AND s.SID = l.SID
+      WHERE  s.type          = 'USER'
+      AND    l.Type NOT IN ('AE', 'PS')
+    "
+
+    @ddl_count = sql_select_one "SELECT /* Panorama-Tool Ramm */ COUNT(*)
+                                FROM  dba_kgllock w,
+                                      dba_kgllock h
+                                WHERE   (((h.kgllkmod != 0)     and (h.kgllkmod != 1)
+                                and     ((h.kgllkreq = 0) or (h.kgllkreq = 1)))
+                                and     (((w.kgllkmod = 0) or (w.kgllkmod= 1))
+                                and     ((w.kgllkreq != 0) and (w.kgllkreq != 1))))
+                                and     w.kgllktype             = h.kgllktype
+                                and     w.kgllkhdl              = h.kgllkhdl
+    "
+
+    @pending_2pc_count = sql_select_one "SELECT COUNT(*) FROM DBA_2PC_Pending"
+
+    render_partial
+  end
+
   def list_dml_locks
     show_all_locks = params[:show_all_locks]
     
@@ -80,17 +105,6 @@ class DbaController < ApplicationController
 
     # Entfernen der ueberzaehligen Zeilen des Results
     @dml_locks.delete_at(@dml_locks.length-1) while @dml_locks.length > @max_result_size 
-
-    @dist_locks = sql_select_all "\
-      SELECT /* Panorama-Tool Ramm */
-             Local_Tran_ID,
-             Global_tran_ID,
-             State, Mixed, Advice, Tran_Comment,
-             Fail_Time, Force_Time, Retry_Time,
-             OS_User, OS_Terminal, Host, DB_User,
-             Commit# Commit_No
-      FROM   DBA_2PC_Pending"
-
 
     render_partial :list_dml_locks
   end # list_dml_locks
@@ -193,6 +207,20 @@ class DbaController < ApplicationController
     }
 
     render_partial :list_blocking_dml_locks
+  end
+
+  def list_pending_two_phase_commits
+    @dist_locks = sql_select_all "\
+      SELECT /* Panorama-Tool Ramm */
+             Local_Tran_ID,
+             Global_tran_ID,
+             State, Mixed, Advice, Tran_Comment,
+             Fail_Time, Force_Time, Retry_Time,
+             OS_User, OS_Terminal, Host, DB_User,
+             Commit# Commit_No
+      FROM   DBA_2PC_Pending"
+
+    render_partial
   end
 
   def convert_to_rowid
