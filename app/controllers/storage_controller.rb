@@ -13,9 +13,12 @@ class StorageController < ApplicationController
              NVL(free.MBFree,0)             MBFree,
              f.FileSize-NVL(free.MBFree,0)  MBUsed,
              (f.FileSize-NVL(free.MBFree,0))/f.FileSize*100 PctUsed,
-             t.Allocation_Type,
-             t.Segment_Space_Management,
+             t.Status, t.Contents, t.Logging, t.Force_Logging, t.Extent_Management,
+             t.Allocation_Type, t.Plugged_In,
+             t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
              f.AutoExtensible
+             #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
+             #{ ", t.Def_InMemory" if get_db_version >= '12.1'}
       FROM  DBA_Tablespaces t
       LEFT OUTER JOIN
             (
@@ -41,9 +44,12 @@ class StorageController < ApplicationController
              NVL(f.MBTotal,0)-NVL(s.Used_Blocks,0)*t.Block_Size/1048576 MBFree,
              NVL(s.Used_Blocks,0)*t.Block_Size/1048576 MBUsed,
              (NVL(s.Used_Blocks,0)*t.Block_Size/1048576)/NVL(f.MBTotal,0)*100 PctUsed,
-             t.Allocation_Type,
-             t.Segment_Space_Management,
+             t.Status, t.Contents, t.Logging, t.Force_Logging, t.Extent_Management,
+             t.Allocation_Type, t.Plugged_In,
+             t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
              f.AutoExtensible
+             #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
+             #{ ", t.Def_InMemory" if get_db_version >= '12.1'}
       FROM  DBA_Tablespaces t
       LEFT OUTER JOIN (SELECT Tablespace_Name, SUM(Bytes)/1048576 MBTotal, SUM(Bytes)/SUM(Blocks) BlockSize,
                               CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible
@@ -68,9 +74,19 @@ class StorageController < ApplicationController
              0                          MBFree,
              SUM(Bytes*Members)/1048576 MBUsed,
              100                        PctUsed,
+             NULL                       Status,
+             'REDO-LOG'                 Contents,
+             NULL                       Logging,
+             NULL                       Force_Logging,
+             NULL                       Extent_Management,
              NULL                       Allocation_Type,
+             NULL                       Plugged_In,
              NULL                       Segment_Space_Management,
+             NULL                       Def_Tab_Compression,
+             NULL                       Bigfile,
              NULL                       AutoExtensible
+             #{ ", NULL Encrypted, NULL Compress_For" if get_db_version >= '11.2'}
+             #{ ", NULL Def_InMemory" if get_db_version >= '12.1'}
       FROM   gv$Log
       GROUP BY Inst_ID
       ORDER BY 4 DESC NULLS LAST

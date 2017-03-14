@@ -61,10 +61,22 @@ column_options =
   {:caption=>"MB Used",             :data=>proc{|rec| link_mb_used(rec) },              :title=>"Genutzter Platz des Tablespaces in MB",    :align=>:right},
   {:caption=>"MB Free",             :data=>proc{|rec| formattedNumber(rec.mbfree)},     :title=>"Freier Platz des Tablespaces in MB",       :align=>:right},
   {:caption=>"% used",              :data=>proc{|rec| formattedNumber(rec.pctused,1)},  :title=>"Prozentuale Auslastung",                   :align=>:right},
+  {:caption=>"Status",              :data=>proc{|rec| rec.status}},
+  {:caption=>"Content",             :data=>proc{|rec| rec.contents}},
+  {:caption=>"Logging",             :data=>proc{|rec| rec.logging}},
+  {:caption=>"Force L.",            :data=>proc{|rec| rec.force_logging}},
+  {:caption=>"Extent mgmt.",        :data=>proc{|rec| rec.extent_management},           :title=>'Extent management'},
   {:caption=>"Allocation Type",     :data=>proc{|rec| rec.allocation_type}},
-  {:caption=>"Segment Space Mgmt.", :data=>proc{|rec| rec.segment_space_management}},
-  {:caption=>"Auto ext.",           :data=>proc{|rec| rec.autoextensible},              :title=>"Auto-Extensible ?"},
+  {:caption=>"Pl. in",              :data=>proc{|rec| rec.plugged_in},                  :title=>'Indicates whether the tablespace is plugged in '},
+  {:caption=>"Segment Space Mgmt.", :data=>proc{|rec| rec.segment_space_management},    :title=>'Indicates whether the free and used segment space in the tablespace is managed using free lists (MANUAL) or bitmaps (AUTO)'}
 ]
+  column_options << {:caption=>"Def. table compression", :data=>proc{|rec| rec.def_tab_compression},      :title=>'Indicates whether default table compression is enabled (ENABLED) or not (DISABLED)', :data_title=>proc{|rec| get_db_version >= '11.2' ? "%t\nCompress For = #{rec.compress_for}" : "%t"}}
+  column_options << {:caption=>'Big file',            :data=>proc{|rec| rec.bigfile},                     :title=>'Indicates whether the tablespace is a bigfile tablespace (YES) or a smallfile tablespace (NO)'}
+  column_options << {:caption=>"Auto ext.",           :data=>proc{|rec| rec.autoextensible},              :title=>"Auto-Extensible ?"}
+  column_options << {:caption=>'Encrypt.',            :data=>proc{|rec| rec.encrypted},                   :title=>"Indicates whether the tablespace is encrypted"} if get_db_version >= '11.2'
+  column_options << {:caption=>'Def. in memory',      :data=>proc{|rec| rec.def_inmemory},                :title=>"Indicates whether the In-Memory Column Store (IM column store) is by default enabled (ENABLED) or disabled (DISABLED) for tables in this tablespace"} if get_db_version >= '12.1'
+
+
 
 %>
 
