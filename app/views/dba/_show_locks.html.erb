@@ -13,25 +13,25 @@
   </div>
 
   <div class="float_left"> 
-  <%= submit_tag("#{fn(@dml_count.dml_count)} #{t(:dba_show_locks_submit_dml_caption, :default=>'DML-locks (all)')}", :title =>t(:dba_show_locks_submit_dml_hint, :default=>"show all DML-locks (Data Manipulation Locks)") ) %>
+  <%= submit_tag("#{fn(@dml_count.dml_count)} #{t(:dba_show_locks_submit_dml_caption, :default=>'DML-locks (all)')}", :title =>t(:dba_show_locks_submit_dml_hint, :default=>"show all DML-locks (Data Manipulation Locks)"), :id=>:button_dml_locks ) %>
   </div>
 <% end  %>
 
   <div class="float_left">
     <%= ajax_form(:controller => :dba, :action=>"list_blocking_dml_locks", :update_area => @update_area) do %>
-      <%= submit_tag "#{fn(@dml_count.blocking_dml_count)} Blocking DML-Locks", :title =>t(:dba_show_locks_submit_blocking_hint, :default=>"show blocking DML-locks (data manipulation locks)") %>
+      <%= submit_tag "#{fn(@dml_count.blocking_dml_count)} Blocking DML-Locks", :title =>t(:dba_show_locks_submit_blocking_hint, :default=>"show blocking DML-locks (data manipulation locks)"), :id=>:button_blocking_dml_locks  %>
     <% end %>
   </div>
 
   <div class="float_left">
     <%= ajax_form(:controller => :dba, :action=>"list_ddl_locks", :update_area => @update_area) do %>
-      <%= submit_tag "#{fn(@ddl_count)} Blocking DDL-Locks", :title =>t(:dba_show_locks_submit_ddl_hint, :default=>"show blocking DDL-locks (data definition locks)") %>
+      <%= submit_tag "#{fn(@ddl_count)} Blocking DDL-Locks", :title =>t(:dba_show_locks_submit_ddl_hint, :default=>"show blocking DDL-locks (data definition locks)"), :id=>:button_blocking_ddl_locks  %>
     <% end %>
   </div>
 
   <div class="float_left">
     <%= ajax_form(:controller => :dba, :action=>:list_pending_two_phase_commits, :update_area => @update_area) do %>
-        <%= submit_tag "#{fn(@pending_2pc_count)} Pending two-phase commits", :title =>t(:dba_show_locks_submit_pending_2phase_hint, :default=>"Show pending two-phase commits (from DBA_2PC_Pending)") %>
+        <%= submit_tag "#{fn(@pending_2pc_count)} Pending two-phase commits", :title =>t(:dba_show_locks_submit_pending_2phase_hint, :default=>"Show pending two-phase commits (from DBA_2PC_Pending)"), :id=>:button_2pc  %>
     <% end %>
   </div>
 

@@ -17,7 +17,7 @@ class DbaGeneralTest < Capybara::Rails::TestCase
     login_and_menu_call('DBA general', 'DB-Locks', 'menu_dba_show_locks')
     page.must_have_content 'List current locks of different types'
 
-    page.click_button 'DML-locks complete'
+    page.click_button 'button_dml_locks'
     wait_for_ajax
     page.must_have_content 'DML Database locks (from GV$Lock)'
 
@@ -34,13 +34,17 @@ class DbaGeneralTest < Capybara::Rails::TestCase
     page.first(:xpath, "//div[contains(@class, 'slick-inner-cell') and contains(@row, '0') and contains(@column, 'col3')]").first('a').click
     wait_for_ajax
 
-    page.click_button 'Blocking DML-Locks'
+    page.click_button 'button_blocking_dml_locks'
     wait_for_ajax
     page.must_have_content 'Blocking DML-Locks from gv$Lock'
 
-    page.click_button 'Blocking DDL-Locks'
+    page.click_button 'button_blocking_ddl_locks'
     wait_for_ajax
     page.must_have_content 'Blocking DDL-Locks in Library Cache (from DBA_KGLLock)'
+
+    page.click_button 'button_2pc'
+    wait_for_ajax
+    page.must_have_content 'Pending two-phase commits '
 
     # save_and_open_screenshot  # cannot work at headless server
   end
