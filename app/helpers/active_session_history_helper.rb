@@ -7,6 +7,14 @@ module ActiveSessionHistoryHelper
     # Regelwerk zur Verwendung der jeweiligen Gruppierungen und Verdichtungskriterien
     if !defined?(@session_statistics_key_rules_hash) || @session_statistics_key_rules_hash.nil?
       @session_statistics_key_rules_hash = {}
+
+      # Performant access on gv$SQLArea ist unfortunately not possible here
+      sql_id_info_sql = "(SELECT TO_CHAR(SUBSTR(t.SQL_Text,1,40))
+                          FROM   DBA_Hist_SQLText t
+                          WHERE  t.DBID=s.DBID AND t.SQL_ID=s.SQL_ID AND RowNum < 2
+                         )"
+
+
       @session_statistics_key_rules_hash["Instance"]    = {:sql => "s.Instance_Number",   :sql_alias => "instance_number",    :Name => 'Inst.',         :Title => 'RAC-Instance' }
       @session_statistics_key_rules_hash["Con-ID"]      = {:sql => "s.Con_ID",            :sql_alias => "con_id",             :Name => 'Con.-ID',       :Title => 'Container-ID for pluggable database' } if get_current_database[:cdb]
       if get_db_version >= "11.2"
@@ -16,7 +24,7 @@ module ActiveSessionHistoryHelper
       end
       @session_statistics_key_rules_hash["Transaction"]     = {:sql => "RawToHex(s.XID)",     :sql_alias => "transaction",        :Name => 'Tx.',           :Title => 'Transaction-ID' } if get_db_version >= "11.2"
       @session_statistics_key_rules_hash["User"]            = {:sql => "u.UserName",          :sql_alias => "username",           :Name => "User",          :Title => "User" }
-      @session_statistics_key_rules_hash["SQL-ID"]          = {:sql => "s.SQL_ID",            :sql_alias => "sql_id",             :Name => 'SQL-ID',        :Title => 'SQL-ID', :info_sql  => "(SELECT SUBSTR(t.SQL_Text,1,40) FROM DBA_Hist_SQLText t WHERE t.DBID=s.DBID AND t.SQL_ID=s.SQL_ID AND RowNum < 2)", :info_caption => "SQL-Text (first chars)" }
+      @session_statistics_key_rules_hash["SQL-ID"]          = {:sql => "s.SQL_ID",            :sql_alias => "sql_id",             :Name => 'SQL-ID',        :Title => 'SQL-ID', :info_sql  => sql_id_info_sql, :info_caption => "SQL-Text (first chars)" }
       @session_statistics_key_rules_hash["SQL Exec-ID"]     = {:sql => "s.SQL_Exec_ID",       :sql_alias => "sql_exec_id",        :Name => 'SQL Exec-ID',   :Title => 'SQL Execution ID', :info_sql  => "MIN(SQL_Exec_Start)", :info_caption => "Exec. start time"} if get_db_version >= "11.2"
       @session_statistics_key_rules_hash["Operation"]       = {:sql => "RTRIM(s.SQL_Plan_Operation||' '||s.SQL_Plan_Options)", :sql_alias => "operation", :Name => 'Operation', :Title => 'Operation of explain plan line' } if get_db_version >= "11.2"
       @session_statistics_key_rules_hash["Entry-PL/SQL"]    = {:sql => "peo.Object_Type||CASE WHEN peo.Owner IS NOT NULL THEN ' ' END||peo.Owner||CASE WHEN peo.Object_Name IS NOT NULL THEN '.' END||peo.Object_Name||CASE WHEN peo.Procedure_Name IS NOT NULL THEN '.' END||peo.Procedure_Name",
