@@ -34,7 +34,7 @@ module KeyExplanationHelper
       @@data_access = {
         'JOIN FILTER CREATE'                  => 'Create bloom filter based on data from previous operation.\nBloom filter allows to exactly state that a value does not exist in an result.\nThis created filter is used at an operation JOIN FILTER USE with same object name to filter out (not all) rows that will not match the join condition.',
         'JOIN FILTER USE'                     => 'Usage of bloom filter to filter out (not all) rows that will not match the join condition. Used bloom filter data was created by operation JOIN FILTER CREATE with same object name.\nBloom filter allows to exactly state that a value does not exist in an result.',
-        'OPTIMIZER STATISTICS GATHERING'      => "Automatic gathering of statistics for tables and indexes.\nMay double run time of load processes (e.g. CREATE TABLE AS SELECT) in worst case!\nTo disable automatic gathering:\nUse CREATE TABLE AS SELECT /*+ NO_GATHER_OPTIMIZER_STATISTICS */ ... or\nALTER SESSION SET \"_optimizer_gather_stats_on_load\"=FALSE;",
+        'OPTIMIZER STATISTICS GATHERING'      => "Automatic gathering of statistics for tables and indexes.\nMay double run time of load processes (e.g. CREATE TABLE AS SELECT) in worst case!\nTo disable automatic gathering:\n- Use optimizer hint like CREATE TABLE AS SELECT /*+ NO_GATHER_OPTIMIZER_STATISTICS */ ... or\n- ALTER SESSION SET \"_optimizer_gather_stats_on_load\"=FALSE;",
         'STATISTICS COLLECTOR'                => 'Collecting statistics for adaptive plan feature',
         'TABLE ACCESS STORAGE FULL'           => 'Table full scan on EXADATA storage cell',
       }
