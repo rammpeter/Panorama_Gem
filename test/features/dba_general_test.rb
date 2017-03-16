@@ -22,7 +22,7 @@ class DbaGeneralTest < Capybara::Rails::TestCase
     page.must_have_content 'DML Database locks (from GV$Lock)'
 
     # click first row column "SID/SN" in grid
-    page.find(:xpath, "//div[contains(@class, 'slick-cell') and contains(@class, 'l0') and contains(@class, 'r0')]").first('a').click
+    page.first(:xpath, "//div[contains(@class, 'slick-cell') and contains(@class, 'l0') and contains(@class, 'r0')]").first('a').click
     wait_for_ajax
     page.must_have_content 'Details for session SID='
 
