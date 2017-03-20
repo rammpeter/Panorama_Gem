@@ -1,0 +1,42 @@
+<%
+  @update_area = get_unique_area_id
+
+  column_options =
+      [
+          {:caption=>'Cell name',             :data=>proc{|rec| rec.cellname},                                :title=>"IP-address / cell name"},
+          {:caption=>'Disk name',             :data=>proc{|rec| rec.diskname},                                :title=>"Name of disk"},
+          {:caption=>'Disk type',             :data=>proc{|rec| rec.disktype},                                :title=>"Type of disk"},
+          {:caption=>'LUNs',                  :data=>proc{|rec| rec.luns},                                    },
+          {:caption=>'Model',                 :data=>proc{|rec| rec.makemodel},                               },
+          {:caption=>'Firmware',              :data=>proc{|rec| rec.physicalfirmware},                        },
+          {:caption=>'Insert time',           :data=>proc{|rec| rec.physicalinserttime},                      :title=>"Physical insert time"},
+          {:caption=>'Serial no.',            :data=>proc{|rec| rec.physicalserial},                          },
+          {:caption=>'Size (GB)',             :data=>proc{|rec| fn(rec.physicalsize.to_i/(1024*1024*1024),1)},           :title=>"Physical size in GB", :align=>:right},
+          {:caption=>'Slot',                  :data=>proc{|rec| rec.slotnumber},                              :title=>"Slot number"},
+          {:caption=>'Status',                :data=>proc{|rec| rec.status},                                  :title=>"Status"},
+          {:caption=>'ID',                    :data=>proc{|rec| rec.id},                                      },
+          {:caption=>'Key 500',               :data=>proc{|rec| rec.key_500},                                 },
+          {:caption=>'Pred. fail status',     :data=>proc{|rec| rec.predfailstatus},                          },
+          {:caption=>'Poor perf. status',     :data=>proc{|rec| rec.poorperfstatus},                          },
+          {:caption=>'WT caching status',     :data=>proc{|rec| rec.wtcachingstatus},                         },
+          {:caption=>'Peer fail status',      :data=>proc{|rec| rec.peerfailstatus},                          },
+          {:caption=>'Critical status',       :data=>proc{|rec| rec.criticalstatus},                          },
+          {:caption=>'Err. cmd. timeout count', :data=>proc{|rec| fn rec.errcmdtimeoutcount},                 :align=>:right},
+          {:caption=>'Err. hard read count',  :data=>proc{|rec| fn rec.errhardreadcount},                     :align=>:right},
+          {:caption=>'Err. hard write count', :data=>proc{|rec| fn rec.errhardwritecount},                    :align=>:right},
+          {:caption=>'Err. media count',      :data=>proc{|rec| fn rec.errmediacount},                        :align=>:right},
+          {:caption=>'Err. other count',      :data=>proc{|rec| fn rec.errothercount},                        :align=>:right},
+          {:caption=>'Err. seek count',       :data=>proc{|rec| fn rec.errseekcount},                         :align=>:right},
+          {:caption=>'Sector remap count',    :data=>proc{|rec| fn rec.sectorremapcount},                     :align=>:right},
+      ]
+
+%>
+
+<%= gen_slickgrid(@disks, column_options, {
+    :max_height => 450,
+    :caption => "EXADATA cell physical disks"
+
+}) %>
+
+<div id="<%= @update_area %>">
+</div>

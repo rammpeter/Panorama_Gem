@@ -103,6 +103,7 @@ class DbaSgaController < ApplicationController
               when "ElapsedTimePerExecute"then "s.ELAPSED_TIME/DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS) DESC"
               when "ElapsedTimeTotal"     then "s.ELAPSED_TIME DESC"
               when "ExecutionCount"       then "s.Executions DESC"
+              when 'ParseCalls'           then 's.Parse_Calls DESC'
               when "RowsProcessed"        then "s.Rows_Processed DESC"
               when "ExecsPerDisk"         then "s.Executions/DECODE(s.Disk_Reads,0,1,s.Disk_Reads) DESC"
               when "BufferGetsPerRow"     then "s.Buffer_Gets/DECODE(s.Rows_Processed,0,1,s.Rows_Processed) DESC"
@@ -118,6 +119,7 @@ class DbaSgaController < ApplicationController
           when "ElapsedTimePerExecute"then "ELAPSED_TIME_SECS_PER_EXECUTE DESC"
           when "ElapsedTimeTotal"     then "ELAPSED_TIME_SECS DESC"
           when "ExecutionCount"       then "Executions DESC"
+          when 'ParseCalls'           then 'Parse_Calls DESC'
           when "RowsProcessed"        then "Rows_Processed DESC"
           when "ExecsPerDisk"         then "Executions/DECODE(Disk_Reads,0,1,Disk_Reads) DESC"
           when "BufferGetsPerRow"     then "Buffer_Gets/DECODE(Rows_Processed,0,1,Rows_Processed) DESC"

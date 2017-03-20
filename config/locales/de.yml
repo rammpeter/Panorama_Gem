@@ -251,6 +251,7 @@
   dba_history_show_sql_area_historic_filter_hint:               Filter-string muss in betrachteten SQL-Statements enthalten sein. Wildcards (%,_) können benutzt werden. (optional)
   dba_history_show_sql_area_historic_max_result_count_caption:  Anzahl Treffer
   dba_history_show_sql_area_historic_max_result_count_hint:     Einschränkung der Treffermenge auf max. Anzahl Zeilen (nach Sortierung nach gewähltem Kriterium)
+  dba_history_show_sql_area_historic_sorted_by_hint:            Resultat in absteigender Folge sortiert nach diesem Kriterium
   dba_history_show_sql_area_historic_submit_caption:            SQL anzeigen
   dba_history_show_sql_area_historic_submit_hint:               Anlistung der SQL nach Suchkriterien
 
@@ -452,8 +453,8 @@
   dba_sga_show_sql_area_filter_hint:                        Filter-string muss in betrachteten SQL-Statements enthalten sein. Wildcards (%,_) können benutzt werden. (optional)
   dba_sga_show_sql_area_max_result_count_caption:           Anzahl Treffer
   dba_sga_show_sql_area_max_result_count_hint:              Einschränkung der Treffermenge auf max. Anzahl Zeilen (nach Sortierung)
-  dba_sga_show_sql_area_sort_last_active_hint:              Sortiert nach Zeitpunkt der letzten Ausführung des SQL
-  dba_sga_show_sql_area_sort_memory_hint:                   Sortiert nach Größe des allokierten Speichers in der SGA
+  dba_sga_show_sql_area_sort_last_active_hint:              Zeitpunkt der letzten Ausführung
+  dba_sga_show_sql_area_sort_memory_hint:                   Größe des Speichers in der SGA
   dba_sga_show_sql_area_submit_caption:                     SQL anzeigen
   dba_sga_show_sql_area_submit_hint:                        Anlistung der SQL nach Suchkriterien
 
@@ -1461,6 +1462,8 @@
   menu_storage_storage_summary_hint:                        Übersicht über Plattenspeicher-/Tablespace-Nutzung
   menu_storage_table_dependency_caption:                    Table-Abhängigkeiten
   menu_storage_table_dependency_hint:                       Mittelbare und unmittelbare referentielle Abhängigkeiten von Tabellen
+  menu_storage_exadata_specific_caption:                    EXADATA-spezifisch
+  menu_storage_exadata_specific_cell_server_hint:           Konfiguration der EXADATA-Cell-Server
   menu_storage_temp_usage_historic_hint:                    Historische Auslastung des TEMP-Tablespace
 
   menu_storage_undo_history_caption:                        UNDO-Nutzung historisch

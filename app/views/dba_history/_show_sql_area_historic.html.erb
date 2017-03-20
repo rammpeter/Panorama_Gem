@@ -13,57 +13,35 @@
     Filter
     <%= text_field_tag(:filter, "", :size=>30) %>
   </div>
+
   <div class="float_left" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
     Instance
     <%= text_field_tag(:instance, read_from_client_info_store(:instance), :size=>1) %>
   </div>
+
   <div class="float_left" title="<%= t(:sqlid_optional_filter_hint, :default=>'Filter on specific SQL-ID (optional, wildcards (%,_) can be used)') %>">
     SQL-ID
     <%= text_field_tag(:sql_id, "", :size=>14) %>
   </div>
+
+  <div class="float_left" title="<%= t(:dba_history_show_sql_area_historic_sorted_by_hint, :default=>'Result sorted in ascending order by this criteria') %>">
+    <%= t(:sorted_by, :default=>'Sorted by') %>
+    <select name="topSort">
+      <option value="ElapsedTimePerExecute"     >Elapsed time per execute</option>
+      <option value="ElapsedTimeTotal" selected >Elapsed time total</option>
+      <option value="ExecutionCount"            >Total number of executions</option>
+      <option value="ParseCalls"                >Total number of parse calls</option>
+      <option value="RowsProcessed"             >Number of rows processed</option>
+      <option value="ExecsPerDisk"              >Number of executions per disk-read</option>
+      <option value="BufferGetsPerRow"          >Buffer gets per result-row</option>
+      <option value="CPUTime"                   >CPU-time total</option>
+      <option value="BufferGets"                >Buffer Gets total</option>
+      <option value="ClusterWaits"              >Cluster wait time total</option>
+    </select>
+  </div>
+
   <div class="float_left">
     <%= submit_tag(t(:dba_history_show_sql_area_historic_submit_caption, :default=>'Show SQL'), :title => t(:dba_history_show_sql_area_historic_submit_hint, :default=>'Show SQL statements according to filter conditions')) %>
-  </div>
-  <div style="clear: both;">
-    <fieldset>
-      <legend> <%= t(:sorted_by, :default=>'Sorted by') %></legend>
-      <div class="float_left">
-        <%= radio_button_tag(:topSort, :ElapsedTimePerExecute, true) %>
-        Elapsed Time per execute
-      </div>
-      <div class="float_left">
-        <%= radio_button_tag(:topSort, :ElapsedTimeTotal, false) %>
-        Elapsed Time total
-      </div>
-      <div class="float_left">
-        <%= radio_button_tag(:topSort, :ExecutionCount, false) %>
-        total Executions
-      </div>
-      <div class="float_left">
-        <%= radio_button_tag(:topSort, :RowsProcessed, false) %>
-        RowsProcessed
-      </div>
-      <div class="float_left">
-        <%= radio_button_tag(:topSort, :ExecsPerDisk, false) %>
-        Executions per Disk-Read
-      </div>
-      <div class="float_left">
-        <%= radio_button_tag(:topSort, :BufferGetsPerRow, false) %>
-        Buffer gets per result-row
-      </div>
-      <div class="float_left">
-        <%= radio_button_tag(:topSort, :CPUTime, false) %>
-        CPU-Time total
-      </div>
-      <div class="float_left">
-        <%= radio_button_tag(:topSort, :BufferGets, false) %>
-        Buffer Gets total
-      </div>
-      <div class="float_left">
-        <%= radio_button_tag(:topSort, :ClusterWaits, false) %>
-        Cluster waits total
-      </div>
-    </fieldset>
   </div>
 <% end %>
 <div id="list_sql_historic_area" style="float:left; width:100%;">

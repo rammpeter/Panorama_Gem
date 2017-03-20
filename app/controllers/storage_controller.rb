@@ -581,5 +581,101 @@ class StorageController < ApplicationController
     render_partial
   end
 
+  def list_exadata_cell_server
+    @cell_servers = sql_select_all "\
+      SELECT /* Panorama-Tool Ramm */
+             c.CellName,
+             CAST(extract(xmltype(confval), '/cli-output/cell/name/text()')                 AS VARCHAR2(200)) Cell_Name,
+             CAST(extract(xmltype(confval), '/cli-output/cell/cellVersion/text()')          AS VARCHAR2(200)) Cell_Version,
+             CAST(extract(xmltype(confval), '/cli-output/cell/cpuCount/text()')             AS VARCHAR2(200)) CPU_Count,
+             CAST(extract(xmltype(confval), '/cli-output/cell/memoryGB/text()')             AS VARCHAR2(200)) memoryGB,
+             CAST(extract(xmltype(confval), '/cli-output/cell/diagHistoryDays/text()')      AS VARCHAR2(200)) diagHistoryDays,
+             CAST(extract(xmltype(confval), '/cli-output/cell/flashCacheMode/text()')       AS VARCHAR2(200)) flashCacheMode,
+             CAST(extract(xmltype(confval), '/cli-output/cell/interconnectCount/text()')    AS VARCHAR2(200)) interconnectCount,
+             CAST(extract(xmltype(confval), '/cli-output/cell/kernelVersion/text()')        AS VARCHAR2(200)) kernelVersion,
+             CAST(extract(xmltype(confval), '/cli-output/cell/makeModel/text()')            AS VARCHAR2(200)) makeModel,
+             CAST(extract(xmltype(confval), '/cli-output/cell/notificationMethod/text()')   AS VARCHAR2(200)) notificationMethod,
+             CAST(extract(xmltype(confval), '/cli-output/cell/notificationPolicy/text()')   AS VARCHAR2(200)) notificationPolicy,
+             CAST(extract(xmltype(confval), '/cli-output/cell/snmpSubscriber/text()')       AS VARCHAR2(1000)) snmpSubscriber,
+             CAST(extract(xmltype(confval), '/cli-output/cell/status/text()')               AS VARCHAR2(200)) status,
+             CAST(extract(xmltype(confval), '/cli-output/cell/upTime/text()')               AS VARCHAR2(200)) upTime,
+             CAST(extract(xmltype(confval), '/cli-output/cell/temperatureReading/text()')   AS VARCHAR2(200)) temperatureReading,
+             d.total_gb_FlashDisk, d.total_gb_HardDisk, d.num_FlashDisks, d.num_HardDisks
+      FROM   v$Cell_Config c
+      JOIN   (SELECT /*+ NO_MERGE */ cellname,
+                     ROUND(SUM(CASE WHEN diskType = 'FlashDisk' THEN physicalsize END/1024/1024/1024)) total_gb_FlashDisk,
+                     ROUND(SUM(CASE WHEN diskType = 'HardDisk'  THEN physicalsize END/1024/1024/1024)) total_gb_HardDisk,
+                     SUM(CASE WHEN diskType = 'FlashDisk'  THEN 1 END) num_FlashDisks,
+                     SUM(CASE WHEN diskType = 'HardDisk'  THEN 1 END) num_HardDisks
+              FROM   (
+                      SELECT /*+ NO_MERGE */
+                             c.cellname,
+                             CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/name/text()')                          AS VARCHAR2(100)) diskname,
+                             CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/diskType/text()')                      AS VARCHAR2(100)) diskType,
+                             CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/physicalSize/text()')                  AS VARCHAR2(100)) physicalSize
+                      FROM   v$cell_config c,
+                             TABLE(XMLSEQUENCE(EXTRACT(XMLTYPE(c.confval), '/cli-output/physicaldisk'))) v
+                      WHERE  c.conftype = 'PHYSICALDISKS'
+                     )
+              GROUP BY cellname
+             ) d ON d.CellName = c.CellName
+      WHERE  c.ConfType = 'CELL'
+      ORDER BY c.CellName
+    "
+    render_partial
+  end
+
+  def list_exadata_cell_physical_disk
+    where_string = ''
+    where_values = []
+
+    if params[:cellname]
+      where_string << " AND CellName = ?"
+      where_values << params[:cellname]
+    end
+
+    if params[:disktype]
+      where_string << " AND DiskType = ?"
+      where_values << params[:disktype]
+    end
+
+    @disks = sql_select_all ["\
+      SELECT /* Panorama-Tool Ramm */ *
+      FROM   (SELECT /*+ NO_MERGE */
+                      c.cellname
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/name/text()')                          AS VARCHAR2(20)) diskname
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/diskType/text()')                      AS VARCHAR2(20)) diskType
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/luns/text()')                          AS VARCHAR2(20)) luns
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/makeModel/text()')                     AS VARCHAR2(50)) makeModel
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/physicalFirmware/text()')              AS VARCHAR2(20)) physicalFirmware
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/physicalInsertTime/text()')            AS VARCHAR2(30)) physicalInsertTime
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/physicalSerial/text()')                AS VARCHAR2(20)) physicalSerial
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/physicalSize/text()')                  AS VARCHAR2(20)) physicalSize
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/slotNumber/text()')                    AS VARCHAR2(30)) slotNumber
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/status/text()')                        AS VARCHAR2(20)) status
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/id/text()')                            AS VARCHAR2(20)) id
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/key_500/text()')                       AS VARCHAR2(20)) key_500
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/predfailStatus/text()')                AS VARCHAR2(20)) predfailStatus
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/poorPerfStatus/text()')                AS VARCHAR2(20)) poorPerfStatus
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/wtCachingStatus/text()')               AS VARCHAR2(20)) wtCachingStatus
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/peerFailStatus/text()')                AS VARCHAR2(20)) peerFailStatus
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/criticalStatus/text()')                AS VARCHAR2(20)) criticalStatus
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/errCmdTimeoutCount/text()')            AS VARCHAR2(20)) errCmdTimeoutCount
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/errHardReadCount/text()')              AS VARCHAR2(20)) errHardReadCount
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/errHardWriteCount/text()')             AS VARCHAR2(20)) errHardWriteCount
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/errMediaCount/text()')                 AS VARCHAR2(20)) errMediaCount
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/errOtherCount/text()')                 AS VARCHAR2(20)) errOtherCount
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/errSeekCount/text()')                  AS VARCHAR2(20)) errSeekCount
+                    , CAST(EXTRACTVALUE(VALUE(v), '/physicaldisk/sectorRemapCount/text()')              AS VARCHAR2(20)) sectorRemapCount
+              FROM   v$cell_config c,
+                     TABLE(XMLSEQUENCE(EXTRACT(XMLTYPE(c.confval), '/cli-output/physicaldisk'))) v
+              WHERE  c.conftype = 'PHYSICALDISKS'
+             )
+      WHERE 1=1
+      #{where_string}
+    "].concat(where_values)
+
+    render_partial
+  end
 
 end

@@ -107,8 +107,15 @@ module MenuHelper
                 {:class=> 'item', :caption=>t(:menu_historic_caption, :default=> 'Historic'),      :controller=>:active_session_history ,  :action=>:show_temp_usage_historic,    :hint=>t(:menu_storage_temp_usage_historic_hint, :default=> 'Historic usage of TEMP tablespace'), :min_db_version => '11.2' },
             ]
             },
-            {:class=> 'item', :caption=>t(:menu_sga_pga_object_by_file_and_block_caption, :default=> 'Object by file and block no.'),      :controller=> 'dba_schema',     :action=> 'show_object_nach_file_und_block',  :hint=>t(:menu_sga_pga_object_by_file_and_block_hint, :default=> 'Determine object-name by file- and block-no.') },
-            ]
+            ].
+            concat( isExadata? ? [
+                { :class=> 'menu', :caption=> t(:menu_storage_exadata_specific_caption, :default=>'EXADATA-specific'), :content=>[
+                    {:class=> 'item', :caption=>'Cell server config',            :controller=>:storage,     :action=>:list_exadata_cell_server,        :hint=>t(:menu_storage_exadata_specific_cell_server_hint, :default=>'Configuration of exadata cell server') },
+                    {:class=> 'item', :caption=>'Cell server physical disks',    :controller=>:storage,     :action=>:list_exadata_cell_physical_disk, :hint=>'Physical disks of exadata cell server' },
+                ]
+                }
+            ] : []).
+            concat([{:class=> 'item', :caption=>t(:menu_sga_pga_object_by_file_and_block_caption, :default=> 'Object by file and block no.'),      :controller=> 'dba_schema',     :action=> 'show_object_nach_file_und_block',  :hint=>t(:menu_sga_pga_object_by_file_and_block_hint, :default=> 'Determine object-name by file- and block-no.') }])
         },
         { :class=> 'menu', :caption=>t(:menu_io_caption, :default=> 'I/O analysis'), :content=>[
             {:class=> 'item', :caption=>t(:menu_io_iostat_detail_caption, :default=> 'I/O-Stat detail history'),         :controller=> 'io',             :action=> 'show_iostat_detail_history',  :hint=>t(:menu_io_iostat_detail_hint, :default=> 'I/O history based on DBA_Hist_IOStat_Detail') , :min_db_version => '11.1'  },
@@ -205,6 +212,10 @@ module MenuHelper
                             SELECT 1 FROM All_Views WHERE View_Name = 'UT_SEG_SPACE_IN_TBS_V'
                            )"
                   ) > 0
+  end
+
+  def isExadata?
+    get_db_version >= '11.2' && sql_select_one("SELECT COUNT(*) FROM (SELECT cellname FROM v$Cell_Config GROUP BY CellName)") > 0
   end
 
   # Test ob Controller die Aktion definiert hat, Controller-Name mit _ statt CamelCase

@@ -101,9 +101,16 @@ class EnvController < ApplicationController
       @version_info = sql_select_all "SELECT /* Panorama Tool Ramm */ Banner FROM V$Version"
       @database_info = sql_select_first_row "SELECT /* Panorama Tool Ramm */ Name, Platform_name, Created, dbtimezone FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
 
+
       client_info = sql_select_first_row "SELECT sys_context('USERENV', 'NLS_DATE_LANGUAGE') || '_' || sys_context('USERENV', 'NLS_TERRITORY') NLS_Lang FROM DUAL"
 
       @version_info << ({:banner => "Platform: #{@database_info.platform_name}" }.extend SelectHashHelper)
+
+      if get_db_version >= '11.2'
+        exadata_info = sql_select_first_row "SELECT COUNT(*) Cell_Count FROM (SELECT cellname FROM v$Cell_Config GROUP BY CellName)"
+        @version_info << ({:banner => "Machine: EXADATA with #{exadata_info.cell_count} storage cell server" }.extend SelectHashHelper) if exadata_info.cell_count > 0
+      end
+
       @version_info << ({:banner => "DB timezone offset: #{@database_info.dbtimezone}" }.extend SelectHashHelper)
 
       @version_info.each {|vi| vi[:client_info] = nil }                         # each row should have this column defined
