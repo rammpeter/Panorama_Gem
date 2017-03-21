@@ -99,7 +99,7 @@ class EnvController < ApplicationController
 
       # Data for DB versions
       @version_info = sql_select_all "SELECT /* Panorama Tool Ramm */ Banner FROM V$Version"
-      @database_info = sql_select_first_row "SELECT /* Panorama Tool Ramm */ Name, Platform_name, Created, dbtimezone FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
+      @database_info = sql_select_first_row "SELECT /* Panorama Tool Ramm */ Name, Platform_name, Created, dbtimezone, SYSDATE FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
 
 
       client_info = sql_select_first_row "SELECT sys_context('USERENV', 'NLS_DATE_LANGUAGE') || '_' || sys_context('USERENV', 'NLS_TERRITORY') NLS_Lang FROM DUAL"
@@ -111,9 +111,9 @@ class EnvController < ApplicationController
         @version_info << ({:banner => "Machine: EXADATA with #{exadata_info.cell_count} storage cell server" }.extend SelectHashHelper) if exadata_info.cell_count > 0
       end
 
-      @version_info << ({:banner => "DB timezone offset: #{@database_info.dbtimezone}" }.extend SelectHashHelper)
+      @version_info << ({:banner => "DB timezone offset: #{@database_info.dbtimezone}", :client_info=>"SYSDATE = '#{localeDateTime(@database_info.sysdate)}'" }.extend SelectHashHelper)
 
-      @version_info.each {|vi| vi[:client_info] = nil }                         # each row should have this column defined
+      @version_info.each {|vi| vi[:client_info] = nil if vi[:client_info].nil? }                         # each row should have this column defined
       @version_info[0][:client_info] = "JDBC connect string = \"#{jdbc_thin_url}\""                                                                           if @version_info.count > 0
       @version_info[1][:client_info] = "JDBC driver version = \"#{ConnectionHolder.get_jdbc_driver_version}\""                                                if @version_info.count > 1
       @version_info[2][:client_info] = "Client time zone = \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}"  if @version_info.count > 2

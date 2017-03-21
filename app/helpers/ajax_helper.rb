@@ -83,7 +83,6 @@ module AjaxHelper
 
   end
 
-
   # Ajax-Link definieren mit Indikator-Anzeige während Ausführung
   # Parameter:
   #   caption:      String
@@ -108,11 +107,7 @@ module AjaxHelper
       options << " #{key}=\"#{value}\""
     end
 
-    json_data = my_html_escape(
-        data
-            .to_json
-            .gsub(/"/, '\"')                                                    # Escape double quotes in JSON string
-    )
+    json_data =  my_html_escape( data.to_json.gsub(/\\"/, '"+String.fromCharCode(34)+"') )    # Escape possible double quotes in strings to JS code
 
     "<a href=\"#\" onclick=\"ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{json_data}, { element: this}); return false; \"  #{options}>#{my_html_escape(caption)}</a>".html_safe
   end # ajax_link
@@ -142,11 +137,7 @@ module AjaxHelper
     raise 'ajax_link: key=:action missing in parameter url'       unless url[:action]
     raise 'ajax_link: key=:update_area missing in parameter url'  unless url[:update_area]
 
-    json_data = my_html_escape(
-        data
-            .to_json
-            .gsub(/"/, '\"')                                                    # Escape double quotes in JSON string
-    )
+    json_data =  my_html_escape( data.to_json.gsub(/\\"/, '"+String.fromCharCode(34)+"') )    # Escape possible double quotes in strings to JS code
 
     #"jQuery.ajax({method: \"POST\", url: \"#{url_for(url)}\", data: #{json_data}});"
     "ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{json_data})".html_safe
