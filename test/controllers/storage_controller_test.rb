@@ -68,4 +68,31 @@ class StorageControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  test "exadata with xhr: true" do
+    post :list_exadata_cell_server, :params => { :format=>:html}
+    assert_response :success
+
+    post :list_exadata_cell_server, :params => { :format=>:html, :cellname=>'Hugo'}
+    assert_response :success
+
+    post :list_exadata_cell_physical_disk, :params => { :format=>:html}
+    assert_response :success
+
+    post :list_exadata_cell_physical_disk, :params => { :format=>:html, :cellname=>'Hugo', :disktype=>'HardDisk'}
+    assert_response :success
+
+    post :list_exadata_cell_cell_disk, :params => { :format=>:html}
+    assert_response :success
+
+    post :list_exadata_cell_cell_disk, :params => { :format=>:html, :cellname=>'Hugo', :disktype=>'HardDisk', :physical_disk_id=>'Hugo'}
+    assert_response :success
+
+    post :list_exadata_cell_grid_disk, :params => { :format=>:html}
+    assert_response :success
+
+    post :list_exadata_cell_grid_disk, :params => { :format=>:html, :cellname=>'Hugo', :disktype=>'HardDisk', :physical_disk_id=>'Hugo', :cell_disk_name=>'Hugo'}
+    assert_response :success
+  end
+
+
 end

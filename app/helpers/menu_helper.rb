@@ -111,7 +111,9 @@ module MenuHelper
             concat( isExadata? ? [
                 { :class=> 'menu', :caption=> t(:menu_storage_exadata_specific_caption, :default=>'EXADATA-specific'), :content=>[
                     {:class=> 'item', :caption=>'Cell server config',            :controller=>:storage,     :action=>:list_exadata_cell_server,        :hint=>t(:menu_storage_exadata_specific_cell_server_hint, :default=>'Configuration of exadata cell server') },
-                    {:class=> 'item', :caption=>'Cell server physical disks',    :controller=>:storage,     :action=>:list_exadata_cell_physical_disk, :hint=>'Physical disks of exadata cell server' },
+                    {:class=> 'item', :caption=>'Cell server physical disks',    :controller=>:storage,     :action=>:list_exadata_cell_physical_disk,  :hint=>'List physical disks of exadata cell server' },
+                    {:class=> 'item', :caption=>'Cell server cell disks',        :controller=>:storage,     :action=>:list_exadata_cell_cell_disk,      :hint=>'List configured cell disks of exadata cell server' },
+                    {:class=> 'item', :caption=>'Cell server grid disks',        :controller=>:storage,     :action=>:list_exadata_cell_grid_disk,      :hint=>'List configured grid disks of exadata cell server' },
                 ]
                 }
             ] : []).
