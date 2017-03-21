@@ -8,7 +8,7 @@
                         :disktype        => 'HardDisk',
                         :update_area     => @update_area
                        },
-                :title=>"Show info for single hard disks")
+                :title=>"Show info for single hard disks of this cell server")
   end
 
   def link_flashdisks(rec, value)
@@ -19,6 +19,24 @@
                         :update_area     => @update_area
                        },
                 :title=>"Show info for single flash disks")
+  end
+
+  def link_cell_disk(rec, value)
+    ajax_link(value, {
+                        :action           => :list_exadata_cell_cell_disk,
+                        :cellname         => rec.cellname,
+                        :update_area      => @update_area
+                       },
+                :title=>"Show info for configured cell disks for this cell server")
+  end
+
+  def link_grid_disk(rec, value)
+    ajax_link(value, {
+                        :action           => :list_exadata_cell_grid_disk,
+                        :cellname         => rec.cellname,
+                        :update_area      => @update_area
+                       },
+                :title=>"Show info for configured grid disks for this cell server")
   end
 
   column_options =
@@ -32,6 +50,12 @@
           {:caption=>'Physical size hard disk (GB)', :data=>proc{|rec| fn rec.total_gb_harddisk},             :title=>"Total physical capacity of hard disks in GB", :align=>:right},
           {:caption=>'Flash disks',            :data=>proc{|rec| link_flashdisks(rec, rec.num_flashdisks)},   :title=>"Number of hard disks in storage cell", :align=>:right},
           {:caption=>'Physical size flash disk (GB)', :data=>proc{|rec| fn rec.total_gb_flashdisk},           :title=>"Total physical capacity of flash disks in GB", :align=>:right},
+          {:caption=>'Cell disk count',       :data=>proc{|rec| link_cell_disk(rec, fn(rec.cd_cell_disk_count))},     :title=>"Number of configured cell disks", :align=>:right},
+          {:caption=>'Cell disk size (GB)',   :data=>proc{|rec| fn(rec.cd_disk_size.to_i/(1024*1024*1024),1)},        :title=>"Summarized cell disk size in GB", :align=>:right},
+          {:caption=>'Cell disk free space (GB)',   :data=>proc{|rec| fn(rec.cd_freespace.to_i/(1024*1024*1024),1)},  :title=>"Summarized cell disk free space in GB", :align=>:right},
+          {:caption=>'Cell disk error count', :data=>proc{|rec| fn rec.cd_errorcount},                                :title=>"Sum over configured cell disks", :align=>:right},
+          {:caption=>'Grid disk count',       :data=>proc{|rec| link_grid_disk(rec, fn(rec.gd_grid_disk_count))},     :title=>"Number of configured grid disks", :align=>:right},
+          {:caption=>'Grid disk size (GB)',   :data=>proc{|rec| fn(rec.gd_disk_size.to_i/(1024*1024*1024),1)},        :title=>"Summarized grid disk size in GB", :align=>:right},
           {:caption=>'Diag. history days',    :data=>proc{|rec| rec.diaghistorydays},                         :title=>"Retention period of diagnostic data in /var/log/oracle", :align=>:right},
           {:caption=>'Flash cache mode',      :data=>proc{|rec| rec.flashcachemode},                          :title=>"Flash cache mode"},
           {:caption=>'IC count',              :data=>proc{|rec| fn rec.interconnectcount},                    :title=>"Number of interconnects", :align=>:right},
