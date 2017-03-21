@@ -108,9 +108,13 @@ module AjaxHelper
       options << " #{key}=\"#{value}\""
     end
 
-    json_data = data.to_json
+    json_data = my_html_escape(
+        data
+            .to_json
+            .gsub(/"/, '\"')                                                    # Escape double quotes in JSON string
+    )
 
-    "<a href=\"#\" onclick=\"ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{my_html_escape(json_data)}, { element: this}); return false; \"  #{options}>#{my_html_escape(caption)}</a>".html_safe
+    "<a href=\"#\" onclick=\"ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{json_data}, { element: this}); return false; \"  #{options}>#{my_html_escape(caption)}</a>".html_safe
   end # ajax_link
 
   # Ajax-Link definieren mit Indikator-Anzeige während Ausführung
@@ -138,7 +142,11 @@ module AjaxHelper
     raise 'ajax_link: key=:action missing in parameter url'       unless url[:action]
     raise 'ajax_link: key=:update_area missing in parameter url'  unless url[:update_area]
 
-    json_data = data.to_json
+    json_data = my_html_escape(
+        data
+            .to_json
+            .gsub(/"/, '\"')                                                    # Escape double quotes in JSON string
+    )
 
     #"jQuery.ajax({method: \"POST\", url: \"#{url_for(url)}\", data: #{json_data}});"
     "ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{json_data})".html_safe
