@@ -390,7 +390,7 @@ function SlickGridExtended(container_id, options){
                 // Zwei table für umgebrochene Zeichenbreite
                 '<div  class="slick-inner-cell" id="' + test_cell_wrap_id + '" style="visibility:hidden; position:absolute; z-index: -1; width:1px; padding: 0; margin: 0; word-wrap: normal;"></div>' +
                 '</div>'+
-                '<div id="'+test_cell_header_id+'" class="ui-state-default slick-header-column slick-header-sortable"   style="visibility:hidden; position:absolute; z-index: -1; width:1px; padding: 0; margin: 0; word-wrap: normal;">'+
+                '<div id="'+test_cell_header_id+'" class="ui-state-default slick-header-column slick-header-sortable"   style="visibility:hidden; position:absolute; z-index: -1; width:1px; height: 1px; padding: 0; margin: 0; word-wrap: normal;">'+
                 '</div>'
         );
 
@@ -596,7 +596,9 @@ function SlickGridExtended(container_id, options){
             else
                 this.gridContainer.css('width', current_grid_width);  // Gesamtes Grid auf die Breite des Parents setzen
         }
-        jQuery('#caption_'+this.gridContainer.attr('id')).css('width', this.gridContainer.width()); // Breite des Caption-Divs auf Breite des Grid setzen
+        if (this.gridContainer.width() > 0){
+            jQuery('#caption_'+this.gridContainer.attr('id')).css('width', this.gridContainer.width()); // Breite des Caption-Divs auf Breite des Grid setzen
+        }
 
         // horizontalen Scrollbar setzen / löschen
         var horizontal_scrollbar_width = 0;
@@ -624,11 +626,13 @@ function SlickGridExtended(container_id, options){
             for (var col_index in columns) {
                 var column = columns[col_index];
 
-                thiz.js_test_cell_header.innerHTML = column['name'];
-                thiz.js_test_cell_header.style.width = column['width']+'px';
+                if (column['header_wrap_height'] > options['headerHeight']){    // Check only if max. height of header cell may increase options['headerHeight']
+                    thiz.js_test_cell_header.innerHTML = column['name'];
+                    thiz.js_test_cell_header.style.width = column['width']+'px';
 
-                if (thiz.js_test_cell_header.scrollHeight > options['headerHeight']){
-                    options['headerHeight'] = thiz.js_test_cell_header.scrollHeight;
+                    if (thiz.js_test_cell_header.scrollHeight > options['headerHeight']){
+                        options['headerHeight'] = thiz.js_test_cell_header.scrollHeight;
+                    }
                 }
             }
         }
@@ -1041,18 +1045,13 @@ function SlickGridExtended(container_id, options){
             init_column(column, 'position',     col_index);
 
             thiz.js_test_cell_header.style.width = '';
-//            thiz.js_test_cell_header.style.width = '1000px';
             thiz.js_test_cell_header.innerHTML = column['name'];
             column['header_nowrap_width']  = thiz.js_test_cell_header.scrollWidth + sort_pfeil_width;   // genutzt für Test auf Umbruch des Headers, dann muss Höhe der Header-Zeile angepasst werden
 
             thiz.js_test_cell_header.style.width = '1px';
             column['max_wrap_width']      = thiz.js_test_cell_header.scrollWidth + sort_pfeil_width;    // min. Breite mit Umbruch muss trotzdem noch den Sort-Pfeil darstellen können
+            column['header_wrap_height']  = thiz.js_test_cell_header.scrollHeight;                      // max. height of header cell if all words are wrapped
 
-            //test_header.html(column['name']);                                   // Test-Zelle mit zu messendem Inhalt belegen
-            //column['header_nowrap_width']  = test_header.prop("scrollWidth");   // genutzt für Test auf Umbruch des Headers, dann muss Höhe der Header-Zeile angepasst werden
-
-            //test_header_wrap.html(column['name']);
-            //column['max_wrap_width']      = test_header_wrap.prop("scrollWidth");  // min. Breite mit Umbruch muss trotzdem noch den Sort-Pfeil darstellen können
 
             column['max_nowrap_width']    = column['max_wrap_width'];           // Normbreite der Spalte mit Mindestbreite des Headers initialisieren (lieber Header umbrechen als Zeilen einer anderen Spalte)
         }

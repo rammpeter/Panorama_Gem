@@ -3,7 +3,7 @@
 
 def link_column_detail(rec, value)
   ajax_link(value, {
-            :action     => "list_sql_detail_historic",
+            :action     => :list_sql_detail_historic,
             :dbid       => get_dbid,
             :instance   => @instance,
             :sql_id     => @sql_id,
