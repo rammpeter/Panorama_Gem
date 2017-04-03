@@ -28,7 +28,6 @@ class SpecAdditionsTest < Capybara::Rails::TestCase
     # Click "Do selection"
     page.first(:xpath, "//input[contains(@type, 'submit') and contains(@name, 'commit_exec')]").click
     wait_for_ajax
-    page.must_have_content 'r_constraint_name'
 
   end
 
