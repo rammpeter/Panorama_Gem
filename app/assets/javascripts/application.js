@@ -57,6 +57,9 @@ function useIndicator(url){
         return url.indexOf(exclude_url) != -1;
     }
 
+    if (url == undefined)
+        return true;
+
     return  (!(
         exclude_action_hit('env/repeat_last_menu_action') ||
         exclude_action_hit('dba_history/getSQL_ShortText')
@@ -192,18 +195,25 @@ function expand_sql_id_hint(id, sql_id){
 //   xhr:           jqXHR object
 //   target:        dom-id if target for html-response
 function process_ajax_success(data, xhr, target, options){
-    options = options || {};
+    try {
+        options = options || {};
 
-    if (!options.retain_status_message){                                        // hide status bar not suppressed
-        hide_status_bar();
+        if (!options.retain_status_message) {                                        // hide status bar not suppressed
+            hide_status_bar();
+        }
+
+        if (xhr.getResponseHeader("content-type").indexOf("text/html") >= 0) {
+            $('#' + target).html(data);                                               // render html in target dom-element
+        } else if (xhr.getResponseHeader("content-type").indexOf("text/javascript") >= 0) {
+            eval(data);                                                             // Execute as javascript
+        } else {
+            alert("Unsupported content type in ajax response: " + xhr.getResponseHeader("content-type"));
+        }
     }
-
-    if (xhr.getResponseHeader("content-type").indexOf("text/html") >= 0){
-        $('#'+target).html(data);                                               // render html in target dom-element
-    } else if (xhr.getResponseHeader("content-type").indexOf("text/javascript") >= 0){
-        eval(data);                                                             // Execute as javascript
-    } else {
-        alert("Unsupported content type in ajax response: "+xhr.getResponseHeader("content-type"));
+    catch(err) {
+        indicator_call_stack_depth = 0;                                         // reset indicator regardless of error
+        hideIndicator();
+        throw(err);
     }
 }
 

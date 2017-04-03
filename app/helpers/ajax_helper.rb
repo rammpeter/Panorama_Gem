@@ -123,28 +123,6 @@ module AjaxHelper
     end
   end
 
-
-  # absetzen eines Ajax-Calls aus Javascript
-  def js_ajax_post_call(url)
-    data = {}
-
-    # update_area should pe passed to server
-    url.each do |key, value|
-      data[key] = value if key != :controller && key != :action
-    end
-
-    raise 'ajax_link: key=:controller missing in parameter url'   unless url[:controller]
-    raise 'ajax_link: key=:action missing in parameter url'       unless url[:action]
-    raise 'ajax_link: key=:update_area missing in parameter url'  unless url[:update_area]
-
-    json_data =  my_html_escape( data.to_json.gsub(/\\"/, '"+String.fromCharCode(34)+"') )    # Escape possible double quotes in strings to JS code
-
-    #"jQuery.ajax({method: \"POST\", url: \"#{url_for(url)}\", data: #{json_data}});"
-    "ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{json_data})".html_safe
-  end
-
-
-
   # Erzeugen eines Links aus den konkreten Wait-Parametern mit aktueller Erläuterung sowie link auf aufwendige Erklärung
   def link_wait_params(instance, event, p1, p1text, p1raw, p2, p2text, p2raw, p3, p3text, p3raw, unique_div_identifier)
       (""+  # Wenn kein String als erster Operand, funktioniert html_safe nicht auf Result !!!
