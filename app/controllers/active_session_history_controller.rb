@@ -422,8 +422,16 @@ class ActiveSessionHistoryController < ApplicationController
   end
 
   def refresh_time_selection
-    params[:groupfilter][:time_selection_start] = params[:time_selection_start] if params[:time_selection_start]
-    params[:groupfilter][:time_selection_end]   = params[:time_selection_end]   if params[:time_selection_end]
+    if params[:time_selection_start]
+      params[:groupfilter][:time_selection_start] = params[:time_selection_start]
+      params[:groupfilter].delete(:Min_Snap_ID)                                 # remove corresponding Snap_ID-Filter if time-selection may have changed
+    end
+
+    if params[:time_selection_end]
+      params[:groupfilter][:time_selection_end]   = params[:time_selection_end]
+      params[:groupfilter].delete(:Max_Snap_ID)                                 # remove corresponding Snap_ID-Filter if time-selection may have changed
+    end
+
     params[:groupfilter].each do |key, value|
       params[:groupfilter].delete(key) if params[key] && params[key]=='' && key!='time_selection_start' && key!='time_selection_end' # Element aus groupfilter loeschen, dass namentlich im param-Hash genannt ist
       params[:groupfilter][key] = params[key] if params[key] && params[key]!=''
