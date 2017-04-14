@@ -110,8 +110,8 @@
           <th><%= t :login_lang_caption, :default=>"Language" %></th>
           <td align="center">
             <!-- Wechsel der Sprache und neu laden der gesamten Seite -->
-            <img src="assets/british-flag-small.gif" style="cursor:pointer; height: 16pt" title="Set language to english"   onclick="jQuery.ajax({type: 'POST', url: 'env/set_locale', data: {locale: 'en'}});">
-            <img src="assets/german-flag-small.gif"  style="cursor:pointer; height: 16pt" title="Setze Sprache auf deutsch" onclick="jQuery.ajax({type: 'POST', url: 'env/set_locale', data: {locale: 'de'}});">
+            <img src="assets/british-flag-small.gif" style="border-width:3px; border-color: <%= get_locale == 'en' ? 'gray' : '#eee' %>; border-style: <%= get_locale == 'en' ? 'outset' : 'solid' %>; cursor:pointer; height: 16pt" title="Set language to english"   onclick="jQuery.ajax({type: 'POST', url: 'env/set_locale', data: {locale: 'en'}});">
+            <img src="assets/german-flag-small.gif"  style="border-width:3px; border-color: <%= get_locale == 'de' ? 'gray' : '#eee' %>; border-style: <%= get_locale == 'de' ? 'outset' : 'solid' %>; cursor:pointer; height: 16pt" title="Setze Sprache auf deutsch" onclick="jQuery.ajax({type: 'POST', url: 'env/set_locale', data: {locale: 'de'}});">
           </td>
         </tr>
         <tr>
