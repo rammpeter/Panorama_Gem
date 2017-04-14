@@ -309,9 +309,29 @@ The operations below that execution plan line are not really executed in paralle
                       ",
             :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') }]
         },
+        {
+            :name  => t(:dragnet_helper_134_name, :default=>'Problematic usage of parallel query for short running SQLs (Current SGA)'),
+            :desc  => t(:dragnet_helper_134_desc, :default=>'For short running SQL the effort for starting parallel query processes is often higher than for excuting the SQL iteself.
+Additional problems may be caused by the limited amount of PQ-processes for frequently executed SQLs.
+Therfore for SQLs with runtime in seconds or less you should always avoid using parallel query.
+This selection considers SQLs in the current SGA'),
+            :sql=> "SELECT Inst_ID, SQL_ID, Parsing_Schema_Name, Executions, Elapsed_Time/1000000 Elapsed_Time_Secs,
+                           CASE WHEN Executions > 0 THEN ROUND(Elapsed_Time/1000000/Executions, 5) END Elapsed_Time_Secs_per_Exec,
+                           Px_Servers_Executions,
+                           CASE WHEN Executions > 0 THEN ROUND(Px_Servers_Executions/Executions) END PQ_per_Exec,
+                           First_Load_Time, Last_Active_Time, Elapsed_Time, SQL_Text
+                    FROM   gv$SQLArea
+                    WHERE  PX_Servers_Executions > 0
+                    AND    Elapsed_Time / 1000000 / CASE WHEN Executions > 0 THEN Executions ELSE 1 END < ?
+                    AND    UPPER(SQL_FullText) NOT LIKE '%GV$%'
+                    AND    Parsing_Schema_Name NOT IN ('SYS')
+                    ORDER BY PX_Servers_Executions DESC",
+            :parameter=>[{:name=>t(:dragnet_helper_134_param_1_name, :default=>'Maximum runtime per execution in seconds'), :size=>8, :default=>5, :title=>t(:dragnet_helper_134_param_1_hint, :default=>'Maximum runtime per execution in seconds for consideration in result') }]
+        },
 
     ]
   end # problems_with_parallel_query
 
 
 end
+

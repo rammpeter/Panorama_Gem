@@ -20,7 +20,7 @@ class SpecAdditionsTest < Capybara::Rails::TestCase
     wait_for_ajax
     page.must_have_content 'Protection of colums with foreign key references by index can be necessary for'
 
-    # Click "Show SQL"
+    # Click "Show SQL"                                       ^
     page.first(:xpath, "//input[contains(@type, 'submit') and contains(@name, 'commit_show')]").click
     wait_for_ajax
     page.must_have_content 'FROM   DBA_Constraints Ref'
