@@ -780,7 +780,7 @@ class ActiveSessionHistoryController < ApplicationController
 
     params[:groupfilter][:DBID]                  = prepare_param_dbid
     params[:groupfilter][:Instance]              =  @instance if @instance
-    params[:groupfilter][:Idle_Wait1]            = 'PX Deq Credit: send blkd'
+    # params[:groupfilter][:Idle_Wait1]            = 'PX Deq Credit: send blkd'    # Sessions in idle wait should be considered for TEMP usage
     params[:groupfilter][:time_selection_start]  = @time_selection_start
     params[:groupfilter][:time_selection_end]    = @time_selection_end
 
