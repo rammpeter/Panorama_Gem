@@ -17,11 +17,11 @@
 <%= render :partial => 'list_groupfilter' %>
 
 <%
-   def link_samples(rec)
+   def link_period_detail(rec, value)
      groupfilter = @groupfilter.clone
-     groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :minutes)
-     groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+60, :minutes)
-     ajax_link(fn(rec.sample_count),
+     groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :seconds)
+     groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+1, :seconds)
+     ajax_link(value,
                              {:action        => :list_temp_usage_historic,
                               :groupfilter   => groupfilter,
                               :time_groupby  => @time_groupby,
@@ -35,8 +35,8 @@
 
    def link_single_rows(rec)
      groupfilter = @groupfilter.clone
-     groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :minutes)
-     groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+60, :minutes)
+     groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :seconds)
+     groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+1, :seconds)
      ajax_link(fn(rec.sample_count),
                              {:action        => :list_session_statistic_historic_single_record,
                               :groupfilter   => groupfilter,
@@ -50,8 +50,8 @@
 
    def link_wait_time(rec)
      groupfilter = @groupfilter.clone
-     groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :minutes)
-     groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+60, :minutes)
+     groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :seconds)
+     groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+1, :seconds)
      ajax_link(fn(rec.time_waited_secs),
                              {:action        => :list_session_statistic_historic_grouping,
                               :groupfilter   => groupfilter,
@@ -64,9 +64,8 @@
 
    column_options =
     [
-        {:caption=>'Start time',                                    :data=>proc{|rec| localeDateTime(rec.start_sample_time)},       :title=>'Start of time group', :data_title=>proc{|rec| "%t: End of time group = #{rec.end_sample_time}" }, :plot_master_time=>true },
+        {:caption=>'Start time',                                    :data=>proc{|rec| link_period_detail(rec, localeDateTime(rec.start_sample_time))},       :title=>'Start of time group', :data_title=>proc{|rec| "%t: End of time group = #{rec.end_sample_time}" }, :plot_master_time=>true },
         {:caption=>'Samples (ASH)',                                 :data=>proc{|rec| link_single_rows(rec)},                       :title=>'Number of ASH sample rows in time period of group',       :align=>'right'},
-        {:caption=>'Samples (TEMP)',                                :data=>proc{|rec| link_samples(rec)},                           :title=>'Number of ASH sample rows in time period of group',       :align=>'right'},
         {:caption=>'Total Time waited',                             :data=>proc{|rec| link_wait_time(rec) },                        :title=>'Total time waited over all active sessions in time slice in seconds (sample-cycle(1/10 seconds) * samples)', :align=>"right", :show_pct_hint=>true},
         {:caption=>'Max. PGA allocated MB (only active sessions)',  :data=>proc{|rec| fn(rec.max_sum_pga_allocated)},               :title=>'Maximum allocated PGA in MB at one time in time slice by all sessions in active state',   :align=>'right'},
         {:caption=>'Max. PGA allocated MB (fuzzy time related)',    :data=>proc{|rec| fn(rec.max_sum_pga_floating)},                :title=>"Maximum allocated PGA in MB at one time plus/minus #{@fuzzy_seconds} seconds in time slice.\nMaximum values plus/minus #{@fuzzy_seconds} seconds are considered to bypass the inaccuracy due to resource claiming by inactive sessions\n(that are not recorded by active session history).",   :align=>'right'},
