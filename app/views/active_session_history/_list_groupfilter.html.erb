@@ -8,6 +8,14 @@
    @time_selection_start_id = "time_selection_start_#{get_unique_area_id}"
    @time_selection_end_id   = "time_selection_end_#{get_unique_area_id}"
 
+   # Ensure @group_filter_addition is Array
+   if defined?(@group_filter_addition) && !@group_filter_addition.nil?
+     @group_filter_addition = [@group_filter_addition] if @group_filter_addition.class != Array
+   else
+     @group_filter_addition = []
+   end
+
+
    def strip_groupfilter                                                        # Groupfilter reduzieren um problematische Filter
      groupfilter = @groupfilter.clone
      groupfilter.delete("Min_Snap_ID")                                         # Da sich anndere Kriterien geändert haben, kann diese Grenze nicht mehr stimmen
@@ -34,9 +42,9 @@
         end
         form_content << "<th title=\"#{t(:active_session_history_list_group_filter_filter_hint, :default=>'Current active filter conditions for selection')}\">Start time</th>"
         form_content << "<th title=\"#{t(:active_session_history_list_group_filter_filter_hint, :default=>'Current active filter conditions for selection')}\">End time</th>"
-        if defined?(@group_filter_addition) && !@group_filter_addition.nil?
+        @group_filter_addition.each do |ga|
           form_content << "<th>"
-          form_content << @group_filter_addition_header
+          form_content << ga[:header]
           form_content << "</th>"
         end
 
@@ -56,8 +64,8 @@
         form_content << text_field_tag(:time_selection_end,   @groupfilter[:time_selection_end]  , :size=>20, :id=>@time_selection_end_id,   :title => "#{t(:time_selection_end_hint, :default=>'End of considered time period in format')} '#{human_datetime_minute_mask}'")
         form_content << "</td><td>"
 
-        if defined?(@group_filter_addition) && !@group_filter_addition.nil?
-          form_content << @group_filter_addition
+        @group_filter_addition.each do |ga|
+          form_content << ga[:content]
           form_content << "</td><td>"
         end
 

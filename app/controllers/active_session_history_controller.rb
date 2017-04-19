@@ -820,7 +820,9 @@ class ActiveSessionHistoryController < ApplicationController
     @result= sql_select_iterator ["WITH
       #{"procs AS (SELECT /*+ NO_MERGE */ Object_ID, SubProgram_ID, Object_Type, Owner, Object_Name, Procedure_name FROM DBA_Procedures)," if  @global_where_string['peo.'] ||  @global_where_string['po.']}
       samples AS (
-        SELECT CAST (Sample_Time+INTERVAL '0.5' SECOND AS DATE) Sample_Time,
+        SELECT
+               -- CAST (Sample_Time+INTERVAL '0.5' SECOND AS DATE) Sample_Time,
+               CAST (Sample_Time AS DATE) Sample_Time,
                s.Instance_Number, s.Session_ID, s.Session_Serial_No,
                s.Sample_Cycle,                -- Gewichtete Zeit in der Annahme, dass Wait aktiv für die Dauer des Samples war (und daher vom Snapshot gesehen wurde)
                s.PGA_Allocated,
@@ -843,7 +845,6 @@ class ActiveSessionHistoryController < ApplicationController
                             #{"LEFT OUTER JOIN DBA_Data_Files        f   ON f.File_ID = s.Current_File_No" if @global_where_string['f.']}
         WHERE  1=1
         #{@global_where_string}
-        --GROUP BY CAST(Sample_Time+INTERVAL '0.5' SECOND AS DATE)    -- Auf Ebene eines Samples reduzieren
       )
       SELECT /*+ ORDERED Panorama-Tool Ramm */
              MIN(s.Sample_Time)   Start_Sample_Time,

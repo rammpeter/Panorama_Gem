@@ -1,17 +1,29 @@
 <% @update_area = get_unique_area_id %>
 
 <%
-   @header = "TEMP and PGA usage by sessions in status \"ACTIVE\"<br/><br/>Total size of all temp files = #{fn @total_temp_mb} MB"
-   @repeat_action = :list_temp_usage_historic
+  @header = "TEMP and PGA usage by sessions in status \"ACTIVE\"<br/><br/>Total size of all temp files = #{fn @total_temp_mb} MB"
+  @repeat_action = :list_temp_usage_historic
 
-   @group_filter_addition_header = t(:grouping, :default=>'Grouping')
-   @group_filter_addition =  "<span title=\"#{t(:grouping_hint, :default=>'Group listing by attribute')}\">"
-   @group_filter_addition << '<select name="time_groupby">'
-   temp_historic_grouping_options.each do |key, value|
-     @group_filter_addition  << "<option value=\"#{key}\" #{"selected='selected'" if key.to_sym==@time_groupby}>#{value}</option>"
-   end
-   @group_filter_addition << "</select>"
-   @group_filter_addition << "</span>"
+  @group_filter_addition = []
+
+  @group_filter_addition << {
+      :header  => 'Fuzzy seconds',
+      :content =>  text_field_tag(:fuzzy_seconds, @fuzzy_seconds, :size=>3, :style=>'text-align: right')
+  }
+
+  grouping_content =  "<span title=\"#{t(:grouping_hint, :default=>'Group listing by attribute')}\">"
+  grouping_content << '<select name="time_groupby">'
+  temp_historic_grouping_options.each do |key, value|
+    grouping_content  << "<option value=\"#{key}\" #{"selected='selected'" if key.to_sym==@time_groupby}>#{value}</option>"
+  end
+  grouping_content << "</select>"
+  grouping_content << "</span>"
+
+  @group_filter_addition << {
+      :header  => t(:grouping, :default=>'Grouping'),
+      :content => grouping_content
+  }
+
 %>
 
 <%= render :partial => 'list_groupfilter' %>

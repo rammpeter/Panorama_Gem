@@ -13,15 +13,18 @@
    @header = "Active Sesson History:<br/>#{t(:active_session_history_list_session_statistic_historic_single_record_caption, :default=>'Single snapshot records for')}: "
    @repeat_action = :list_session_statistic_historic_single_record
 
-   @group_filter_addition_header = t(:grouping, :default=>'Grouping')
-   @group_filter_addition =  "<span title=\"#{t(:grouping_hint, :default=>'Group listing by attribute')}\">"
-   @group_filter_addition << '<select name="time_groupby">'
+   grouping_content =  "<span title=\"#{t(:grouping_hint, :default=>'Group listing by attribute')}\">"
+   grouping_content << '<select name="time_groupby">'
    grouping_options.each do |key, value|
-     @group_filter_addition  << "<option value=\"#{key}\" #{"selected='selected'" if key.to_sym==@time_groupby}>#{value[:name]}</option>"
+     grouping_content  << "<option value=\"#{key}\" #{"selected='selected'" if key.to_sym==@time_groupby}>#{value[:name]}</option>"
    end
-   @group_filter_addition << "</select>"
-   @group_filter_addition << "</span>"
+   grouping_content << "</select>"
+   grouping_content << "</span>"
 
+   @group_filter_addition = {
+       :header  => t(:grouping, :default=>'Grouping'),
+       :content => grouping_content
+   }
 
 %>
 
