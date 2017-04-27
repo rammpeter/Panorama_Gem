@@ -1,0 +1,1 @@
+27.04.2017 http-Requests kommen nicht zurück unter Oracle-Linux 6.5 (panorama.osp-dd.de), wenn jruby-jars 9.1.8.0 verwendet werden. Zurück auf 9.1.7.0 löste das Problem
