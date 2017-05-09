@@ -643,6 +643,17 @@ function SlickGridExtended(container_id, options){
             trace_log(caller+": call grid.setColumns because columns_changed==true");
             this.grid.setColumns(columns);                                               // Setzen der veränderten Spaltenweiten am slickGrid, löst onScroll-Ereignis aus mit wiederholtem aufruf dieser Funktion, daher erst am Ende setzen
             // dieser Aufruf von this.grid.setColumns(columns); setzt bei Setup erstmalig die Spaltenbreiten, so dass erst danach reale Bemessung der rowHeight möglich wird
+
+            // now ensure that all column headers really fit reg. height (there is a ratio between browsers header widths and values in column['width'] !!! )
+            var increase_header_height = false;
+            this.gridContainer.find('.slick-header-columns').children().each(function(){
+               if (this.scrollHeight > this.clientHeight){
+                   options['headerHeight'] = this.scrollHeight;
+                   increase_header_height = true;
+               }
+            });
+            if (increase_header_height)
+                this.grid.setColumns(columns);                                               // Activate changed header height in grid
         }
 
         //############### Ab hier Berechnen der Zeilenhöhen ##############
@@ -737,6 +748,10 @@ function SlickGridExtended(container_id, options){
             trace_log(caller+": call grid.setColumns because height calculation forced");
             this.grid.setColumns(columns);                                      // Setzen der veränderten Spaltenweiten am slickGrid, löst onScroll-Ereignis aus mit evtl. wiederholtem aufruf dieser Funktion, daher erst am Ende setzen
         }
+
+
+
+
         trace_log(caller+": end calculate_current_grid_column_widths");
     };
 
