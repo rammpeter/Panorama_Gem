@@ -1,1 +1,26 @@
 27.04.2017 http-Requests kommen nicht zurück unter Oracle-Linux 6.5 (panorama.osp-dd.de), wenn jruby-jars 9.1.8.0 verwendet werden. Zurück auf 9.1.7.0 löste das Problem
+
+01.05.2017
+problem with Marshal in Rails 5.0.2
+
+$ rails c
+Loading development environment (Rails 5.0.2)
+>> Marshal.load(Marshal.dump("my secret data"))
+NoMethodError: undefined method `call' for nil:NilClass
+Looks like it might be something we're doing since just using jirb works:
+
+$ jirb
+>> Marshal.load(Marshal.dump("my secret data"))
+=> "my secret data"
+A workaround for the moment is to use JSON as the serializer if that's okay, e.g:
+
+$ rails c
+>> salt = SecureRandom.random_bytes(64)
+>> key = ActiveSupport::KeyGenerator.new('password').generate_key(salt, 32)
+>> crypt = ActiveSupport::MessageEncryptor.new(key, serializer: JSON)
+>> encrypted_data = crypt.encrypt_and_sign('my secret data')
+>> crypt.decrypt_and_verify(encrypted_data)
+=> "my secret data"
+
+Turns out this is a known bug that's fixed in the upcoming 9.1.9.0 release of jRuby - see jruby/jruby#4526
+
