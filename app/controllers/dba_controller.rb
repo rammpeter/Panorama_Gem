@@ -726,7 +726,8 @@ Solution: Execute as user 'SYS':
                   SYSDATE - (s.Last_Call_Et/86400) Last_Call,
                   s.Logon_Time, p.spID,
                   c.AUTHENTICATION_TYPE
-                  #{", c.Client_CharSet, c.Client_Connection, c.Client_OCI_Library, c.Client_Version, c.Client_Driver, s.SQL_Exec_ID" if get_db_version >= "11.2" }
+                  #{", c.Client_CharSet, c.Client_Connection, c.Client_OCI_Library, c.Client_Version, c.Client_Driver" if get_db_version >= "11.2" }
+                  #{", s.SQL_Exec_Start, s.SQL_Exec_ID, s.Prev_Exec_Start, s.Prev_Exec_ID" if get_db_version >= '11.1' }
            FROM   GV$Session s
            JOIN   GV$process p                       ON p.Addr = s.pAddr AND p.Inst_ID = s.Inst_ID
            LEFT OUTER JOIN (SELECT Inst_ID, SID#{', Serial#' if get_db_version >= '11.2'}, AUTHENTICATION_TYPE
@@ -745,6 +746,26 @@ Solution: Execute as user 'SYS':
       @dbsession = @dbsessions[0]
       @current_sql  = get_sga_sql_statement(@instance, @dbsession.sql_id)       if @dbsession.sql_id
       @previous_sql = get_sga_sql_statement(@instance, @dbsession.prev_sql_id)  if @dbsession.prev_sql_id
+
+      @sql_data = [
+          {:caption           => "Aktuelles SQL-Statement",
+           :sql_id            => @dbsession.sql_id,
+           :sql_child_number  => @dbsession.sql_child_number,
+           :sql_text          => (@current_sql.html_safe if @current_sql)
+          },
+          {:caption           => "Vorheriges SQL-Statement",
+           :sql_id            => @dbsession.prev_sql_id,
+           :sql_child_number  => @dbsession.prev_child_number,
+           :sql_text          => (@previous_sql.html_safe if @previous_sql)
+          }
+      ]
+
+      if get_db_version >= '11.1'
+        @sql_data[0][:sql_exec_start] = @dbsession.sql_exec_start
+        @sql_data[0][:sql_exec_id]    = @dbsession.sql_exec_id
+        @sql_data[1][:sql_exec_start] = @dbsession.prev_exec_start
+        @sql_data[1][:sql_exec_id]    = @dbsession.prev_exec_id
+      end
     end
 
     @pq_coordinator = sql_select_all ["SELECT s.Inst_ID, s.SID, s.Serial# SerialNo,
