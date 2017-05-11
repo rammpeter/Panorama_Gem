@@ -1474,7 +1474,10 @@
   menu_storage_table_dependency_hint:                       Mittelbare und unmittelbare referentielle Abhängigkeiten von Tabellen
   menu_storage_exadata_specific_caption:                    EXADATA-spezifisch
   menu_storage_exadata_specific_cell_server_hint:           Konfiguration der EXADATA-Cell-Server
-  menu_storage_temp_usage_historic_hint:                    Historische Auslastung des TEMP-Tablespace
+  menu_storage_temp_usage_historic_ash_caption:             Historisch aus ASH
+  menu_storage_temp_usage_historic_ash_hint:                Historische Auslastung des TEMP-Tablespace aus Active Session History (bis auf Sampling jede Sekunde)
+  menu_storage_temp_usage_historic_sysmetric_caption:       Historisch aus SysMetric (AWR)
+  menu_storage_temp_usage_historic_sysmetric_hint:          Historische Auslastung des TEMP-Tablespace aus System Metric der AWR-Snapshots (bis auf Sampling jede Minute)
 
   menu_storage_undo_history_caption:                        UNDO-Nutzung historisch
   menu_storage_undo_history_hint:                           Historische Nutzung von UNDO-Space

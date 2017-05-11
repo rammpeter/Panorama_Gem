@@ -104,7 +104,8 @@ module MenuHelper
             {:class=> 'item', :caption=> t(:menu_storage_table_dependency_caption, :default=>'Table-dependencies'),         :controller=> 'table_dependencies',  :action=> 'show_frame',            :hint=> t(:menu_storage_table_dependency_hint, :default=>'Direct and indirect referential dependencies of tables')},
             { :class=> 'menu', :caption=> 'Temp usage', :content=>[
                 {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),                  :controller=>:storage,     :action=>:temp_usage,        :hint=>t(:menu_dba_temp_usage_hint, :default=>'Current usage of TEMP-tablespace') },
-                {:class=> 'item', :caption=>t(:menu_historic_caption, :default=> 'Historic'),      :controller=>:active_session_history ,  :action=>:show_temp_usage_historic,    :hint=>t(:menu_storage_temp_usage_historic_hint, :default=> 'Historic usage of TEMP tablespace'), :min_db_version => '11.2' },
+                {:class=> 'item', :caption=>t(:menu_storage_temp_usage_historic_sysmetric_caption, :default=> 'Historic from SysMetric'),      :controller=>:storage ,  :action=>:show_temp_usage_sysmetric_historic,    :hint=>t(:menu_storage_temp_usage_historic_sysmetric_hint, :default=> 'Historic usage of TEMP tablespace from system metrics of AWR snapshots (down to sampling once per minute)'), :min_db_version => '11.2' },
+                {:class=> 'item', :caption=>t(:menu_storage_temp_usage_historic_ash_caption, :default=> 'Historic from ASH'),      :controller=>:active_session_history ,  :action=>:show_temp_usage_historic,    :hint=>t(:menu_storage_temp_usage_historic_ash_hint, :default=> 'Historic usage of TEMP tablespace from Active Session History (down to sampling once per second)'), :min_db_version => '11.2' },
             ]
             },
             ].
