@@ -1001,7 +1001,6 @@ class StorageController < ApplicationController
 
   def list_temp_usage_sysmetric_historic
     save_session_time_selection
-    @instance = prepare_param_instance
 
     recs = sql_select_all ["
       SELECT *
@@ -1048,7 +1047,6 @@ class StorageController < ApplicationController
     @temp_usage = []
     temp_usage.each do |key, value|
       @temp_usage << value
-puts value
     end
 
     render_partial

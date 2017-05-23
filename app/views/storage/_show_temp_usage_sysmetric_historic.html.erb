@@ -6,11 +6,6 @@
 
     <%= include_start_end_timepicker %>
 
-    <div class="float_left" title="Filter on RAC-Instance (optional)">
-      Instance
-      <%= text_field_tag(:instance, "", :size=>1) %>
-    </div>
-
     <div class="float_left">
       <%= submit_tag('Show', :title => 'Show historic TEMP usage') %>
     </div>
