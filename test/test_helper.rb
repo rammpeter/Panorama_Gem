@@ -17,6 +17,17 @@ require File.expand_path("../../lib/test_helpers/capybara_test_helper.rb", __FIL
 # to be shown.
 Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 
+# Suppress the following error:
+# ArgumentError: wrong number of arguments (1 for 0)
+# aggregated_results at /home/ramm/.rvm/gems/jruby-9.1.7.0/gems/railties-5.0.1/lib/rails/test_unit/minitest_plugin.rb:597
+# report at /home/ramm/.rvm/gems/jruby-9.1.7.0/gems/minitest-5.10.2/lib/minitest.rb:597
+# each at org/jruby/RubyArray.java:1733
+# report at /home/ramm/.rvm/gems/jruby-9.1.7.0/gems/minitest-5.10.2/lib/minitest.rb:687
+# run at /home/ramm/.rvm/gems/jruby-9.1.7.0/gems/minitest-5.10.2/lib/minitest.rb:141
+# run at /home/ramm/.rvm/gems/jruby-9.1.7.0/gems/railties-5.0.1/lib/rails/test_unit/minitest_plugin.rb:73
+# block in autorun at /home/ramm/.rvm/gems/jruby-9.1.7.0/gems/minitest-5.10.2/lib/minitest.rb:63
+# rake aborted!
+Minitest::Reporters.use!
 
 # Load fixtures from the engine
 #if ActiveSupport::TestCase.respond_to?(:fixture_path=)

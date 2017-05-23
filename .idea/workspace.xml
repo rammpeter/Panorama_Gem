@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" afterPath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/controllers/storage_controller_test.rb" afterPath="$PROJECT_DIR$/test/controllers/storage_controller_test.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/test_helper.rb" afterPath="$PROJECT_DIR$/test/test_helper.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -158,11 +157,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="storage_controller_test.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="storage_controller_test.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/controllers/storage_controller_test.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="1032">
               <caret line="96" column="12" lean-forward="true" selection-start-line="96" selection-start-column="12" selection-end-line="96" selection-end-column="12" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test_helper.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/test/test_helper.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="450">
+              <caret line="30" column="0" lean-forward="true" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -210,7 +219,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/views/storage/_tablespace_usage.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba/_show_locks.html.erb" />
         <option value="$PROJECT_DIR$/app/helpers/key_explanation_helper.rb" />
         <option value="$PROJECT_DIR$/test/features/dba_general_test.rb" />
@@ -261,6 +269,7 @@
         <option value="$PROJECT_DIR$/app/controllers/storage_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/storage/_show_temp_usage_sysmetric_historic.html.erb" />
         <option value="$PROJECT_DIR$/test/controllers/storage_controller_test.rb" />
+        <option value="$PROJECT_DIR$/test/test_helper.rb" />
       </list>
     </option>
   </component>
@@ -1359,14 +1368,7 @@
       <workItem from="1495092423916" duration="13577000" />
       <workItem from="1495450642986" duration="3014000" />
       <workItem from="1495485706620" duration="2502000" />
-      <workItem from="1495525347612" duration="1523000" />
-    </task>
-    <task id="LOCAL-00875" summary="Show redo log interval">
-      <created>1488035894329</created>
-      <option name="number" value="00875" />
-      <option name="presentableId" value="LOCAL-00875" />
-      <option name="project" value="LOCAL" />
-      <updated>1488035894329</updated>
+      <workItem from="1495525347612" duration="2133000" />
     </task>
     <task id="LOCAL-00876" summary="Show redo log interval historic">
       <created>1488045355933</created>
@@ -1704,7 +1706,14 @@
       <option name="project" value="LOCAL" />
       <updated>1495539104569</updated>
     </task>
-    <option name="localTasksCounter" value="924" />
+    <task id="LOCAL-00924" summary="Test TEMP">
+      <created>1495539585020</created>
+      <option name="number" value="00924" />
+      <option name="presentableId" value="LOCAL-00924" />
+      <option name="project" value="LOCAL" />
+      <updated>1495539585020</updated>
+    </task>
+    <option name="localTasksCounter" value="925" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1740,7 +1749,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1335617000" />
+    <option name="totallyTimeSpent" value="1336227000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1753,13 +1762,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="135" y="50" width="2225" height="1361" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16032982" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.10280374" sideWeight="0.49529782" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="1.0" sideWeight="0.26378447" order="9" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26645768" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2532189" sideWeight="0.49028212" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.37756714" sideWeight="0.73621553" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.37756714" sideWeight="0.73621553" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16032982" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18882175" sideWeight="0.4952343" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32999372" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -1795,7 +1805,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="explain wait events" />
     <MESSAGE value="Test hardened" />
     <MESSAGE value="Exadata storage cell info" />
     <MESSAGE value="Escape double quotes in JSON" />
@@ -1820,7 +1829,8 @@
     <MESSAGE value="Reconstruct TEMP-Usage from system metrics, Rails 5.1.1" />
     <MESSAGE value="Remain on Rails 5.0.1" />
     <MESSAGE value="TEMP without instance filter" />
-    <option name="LAST_COMMIT_MESSAGE" value="TEMP without instance filter" />
+    <MESSAGE value="Test TEMP" />
+    <option name="LAST_COMMIT_MESSAGE" value="Test TEMP" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1906,7 +1916,6 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/.rvm/gems/jruby-9.1.8.0/gems/activesupport-5.0.2/lib/active_support/notifications/instrumenter.rb" />
     <entry file="file://$USER_HOME$/.rvm/gems/jruby-9.1.8.0/gems/actionview-5.0.2/lib/action_view/rendering.rb" />
     <entry file="file://$USER_HOME$/.rvm/gems/jruby-9.1.8.0/gems/actionpack-5.0.2/lib/action_controller/metal.rb" />
     <entry file="file://$USER_HOME$/.rvm/gems/jruby-9.1.8.0/gems/actionpack-5.0.2/lib/action_dispatch/journey/router.rb" />
@@ -2190,6 +2199,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1032">
           <caret line="96" column="12" lean-forward="true" selection-start-line="96" selection-start-column="12" selection-end-line="96" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/test_helper.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="450">
+          <caret line="30" column="0" lean-forward="true" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
           <folding />
         </state>
       </provider>
