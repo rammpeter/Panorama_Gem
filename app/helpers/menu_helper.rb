@@ -105,7 +105,7 @@ module MenuHelper
             { :class=> 'menu', :caption=> 'Temp usage', :content=>[
                 {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),                  :controller=>:storage,     :action=>:temp_usage,        :hint=>t(:menu_dba_temp_usage_hint, :default=>'Current usage of TEMP-tablespace') },
                 {:class=> 'item', :caption=>t(:menu_storage_temp_usage_historic_sysmetric_caption, :default=> 'Historic from SysMetric'),      :controller=>:storage ,  :action=>:show_temp_usage_sysmetric_historic,    :hint=>t(:menu_storage_temp_usage_historic_sysmetric_hint, :default=> 'Historic usage of TEMP tablespace from system metrics of AWR snapshots (down to sampling once per minute)'), :min_db_version => '11.2' },
-                {:class=> 'item', :caption=>t(:menu_storage_temp_usage_historic_ash_caption, :default=> 'Historic from ASH'),      :controller=>:active_session_history ,  :action=>:show_temp_usage_historic,    :hint=>t(:menu_storage_temp_usage_historic_ash_hint, :default=> 'Historic usage of TEMP tablespace from Active Session History (down to sampling once per second)'), :min_db_version => '11.2' },
+                {:class=> 'item', :caption=>t(:menu_storage_temp_usage_historic_ash_caption, :default=> 'Historic from ASH'),      :controller=>:active_session_history ,  :action=>:show_temp_usage_historic,    :hint=>t(:menu_storage_temp_usage_historic_ash_hint, :default=> 'Historic usage of TEMP tablespace by active sessions from Active Session History (down to sampling once per second)'), :min_db_version => '11.2' },
             ]
             },
             ].
@@ -147,7 +147,9 @@ module MenuHelper
             },
             { :class=> 'menu', :caption=>t(:menu_sga_pga_pga_statistics_caption, :default=> 'PGA-statistics'), :content=>[
                   {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),                  :controller=> 'dba_pga',     :action=> 'show_pga_stat_current',        :hint=>t(:menu_sga_pga_pga_statistics_current_hint, :default=> 'Show current PGA-usage') },
-                {:class=> 'item', :caption=>t(:menu_historic_caption, :default=> 'Historic'),                  :controller=> 'dba_pga',     :action=> 'show_pga_stat_historic',        :hint=>t(:menu_sga_pga_pga_statistics_historic_hint, :default=> 'Show historic PGA-usage') },
+                  {:class=> 'item', :caption=>t(:menu_sga_pga_pga_statistics_dba_hist_historic_caption, :default=> 'Historic from DBA_Hist_PGAStat'),                  :controller=> 'dba_pga',     :action=> 'show_pga_stat_historic',        :hint=>t(:menu_sga_pga_pga_statistics_historic_hint, :default=> 'Historic usage of PGA memory from DBA_Hist_PGAStat') },
+                  {:class=> 'item', :caption=>t(:menu_sga_pga_pga_statistics_ash_historic_caption, :default=> 'Historic from ASH'),      :controller=>:active_session_history ,  :action=>:show_pga_usage_historic,    :hint=>t(:menu_sga_pga_pga_statistics_ash_historic_hint, :default=> 'Historic usage of PGA memory by active sessions from Active Session History (down to sampling once per second)'), :min_db_version => '11.2' },
+
                 ]
             },
             { :class=> 'menu', :caption=> 'Result Cache (from 11g)', :content=>[

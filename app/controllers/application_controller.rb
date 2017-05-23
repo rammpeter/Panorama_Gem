@@ -45,7 +45,11 @@ class ApplicationController < ActionController::Base
     end
 
 
-    render :partial =>'application/error_message', :status=>500
+    if performed?                                                               # Render already called in action?, Suppress DoubleRenderError
+      Rails.logger.error "Exception #{@exception.message} raised!\nAction has already rendered, so error cannot be shown as HTML-result with status 500"
+    else
+      render :partial =>'application/error_message', :status=>500
+    end
 
     #raise exception   # Standard-Behandlung der Exceptions
   end

@@ -1,8 +1,8 @@
 <% @update_area = get_unique_area_id %>
 
-<div class="page_caption">Historic TEMP usage <%= t(:from, :default=>'from')%> DBA_Hist_Active_Sess_History <%= t(:and, :default=>'and')%> gv$Active_Session_History (Show TEMP-usage by active sessions only)</div>
+<div class="page_caption">Historic PGA usage <%= t(:from, :default=>'from')%> DBA_Hist_Active_Sess_History <%= t(:and, :default=>'and')%> gv$Active_Session_History (Show PGA-usage by active sessions only)</div>
 
-<%= ajax_form(:controller=>:active_session_history, :action=>:first_list_temp_usage_historic, :update_area=>@update_area) do %>
+<%= ajax_form(:controller=>:active_session_history, :action=>:first_list_pga_usage_historic, :update_area=>@update_area) do %>
 
     <%= include_start_end_timepicker %>
 
@@ -34,13 +34,13 @@
 
 
     <div class="float_left">
-      <%= submit_tag('Show', :title => 'Show historic TEMP usage') %>
+      <%= submit_tag('Show', :title => 'Show historic PGA usage') %>
     </div>
 <% end %>
 <div id="<%= @update_area %>" style="clear: both; width:100%; ">
-  <%= my_html_escape(t(:active_session_history_show_temp_usage_historic_caution, :default=>"
+  <%= my_html_escape(t(:active_session_history_show_pga_usage_historic_caution, :default=>"
 
-Caution: This function shows used TEMP-tablespace only for sessions that were active (recorded by ASH)!
+Caution: This function shows used PGA-memory only for sessions that were active (recorded by ASH)!
 By enlargement of consideration window (input field \"fuzzy seconds\") it is possible for one sample timestamp to consider also TEMP-usage of sessions,
 that were active in the time period +/- x seconds.")).html_safe %>
 </div>

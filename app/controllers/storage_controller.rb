@@ -999,6 +999,59 @@ class StorageController < ApplicationController
     render_partial
   end
 
+  def list_temp_usage_sysmetric_historic
+    save_session_time_selection
+    @instance = prepare_param_instance
 
+    recs = sql_select_all ["
+      SELECT *
+      FROM   (
+              SELECT x.*, TRUNC(Group_Time+30/86400, 'MI') Normalized_Begin_Time
+              FROM   (
+                      SELECT Inst_ID Instance_Number, Begin_Time Group_Time, Begin_Time, End_Time, Value
+                      FROM gv$SysMetric_History
+                      WHERE  Metric_Name = 'Temp Space Used'
+                      AND    End_Time   >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
+                      AND    Begin_Time <= TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+                      UNION ALL
+                      SELECT s.Instance_Number, ss.Begin_Interval_Time Group_Time, s.Begin_Time, s.End_Time, s.MaxVal Value
+                      FROM   (SELECT /*+ NO_MERGE */ ss.DBID, ss.Instance_Number, ss.Snap_ID, ss.Begin_Interval_Time, ss.End_Interval_Time
+                              FROM   DBA_Hist_Snapshot ss
+                              JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Begin_Time) First_SGA_Time FROM gv$SysMetric_History GROUP BY Inst_ID) t ON t.Inst_ID = ss.Instance_Number /* use only for period not considered by gv$SysMetric_History */
+                              WHERE  End_Interval_Time   >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
+                              AND    Begin_Interval_Time <= TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+                              AND    ss.Begin_Interval_Time < t.First_SGA_Time
+                              AND    ss.DBID = ?
+                             ) ss
+                      JOIN   DBA_Hist_SysMetric_Summary s ON s.DBID = ss.DBID AND s.Instance_Number = ss.Instance_Number AND s.Snap_ID = ss.Snap_ID
+                      WHERE  s.Metric_Name = 'Temp Space Used'
+                     ) x
+             )
+      ORDER BY Normalized_Begin_Time, Instance_Number
+      ", @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end, get_dbid
+    ]
+
+    temp_usage = {}
+    @instances = {}
+    recs.each do |r|
+      @instances[r.instance_number] = true
+      temp_usage[r.normalized_begin_time]                                 = {:normalized_begin_time => r.normalized_begin_time, :total => 0} unless temp_usage[r.normalized_begin_time]
+      temp_usage[r.normalized_begin_time][:total]                         += r.value
+      temp_usage[r.normalized_begin_time][:min_begin_time]                = r.begin_time if temp_usage[r.normalized_begin_time][:min_begin_time].nil? || temp_usage[r.normalized_begin_time][:min_begin_time] > r.begin_time
+      temp_usage[r.normalized_begin_time][:max_end_time]                  = r.end_time   if temp_usage[r.normalized_begin_time][:max_end_time].nil?   || temp_usage[r.normalized_begin_time][:max_end_time]   < r.end_time
+      temp_usage[r.normalized_begin_time][r.instance_number]              = {} unless temp_usage[r.normalized_begin_time][r.instance_number]
+      temp_usage[r.normalized_begin_time][r.instance_number][:value]      = r.value
+      temp_usage[r.normalized_begin_time][r.instance_number][:begin_time] = r.begin_time
+      temp_usage[r.normalized_begin_time][r.instance_number][:end_time]   = r.end_time
+    end
+
+    @temp_usage = []
+    temp_usage.each do |key, value|
+      @temp_usage << value
+puts value
+    end
+
+    render_partial
+  end
 
 end

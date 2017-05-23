@@ -142,6 +142,18 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
     end
   end
 
+  test "list_pga_usage_historic with xhr: true" do
+    if get_db_version >= "11.2"
+      session_statistics_key_rules.each do |outer_filter, value|
+        # Iteration über Gruppierungskriterien
+        temp_historic_grouping_options.each do |time_groupby, inner_value|
+          add_filter = {outer_filter => bind_value_from_key_rule(outer_filter)}
+          post :list_pga_usage_historic, :params => {:format=>:html, :time_groupby=>time_groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
+          assert_response :success
+        end
+      end
+    end
+  end
 
   test "show_prepared_active_session_history with xhr: true" do
     post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>1, :sql_id=>@sga_sql_id }

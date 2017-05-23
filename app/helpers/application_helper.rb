@@ -249,11 +249,15 @@ module ApplicationHelper
   end
 
   # Maskieren von html-special chars incl. NewLine
-  def my_html_escape(org_value)
+  def my_html_escape(org_value, line_feed_to_br=true)
     '' if org_value.nil?
+
+    retval =
     ERB::Util.html_escape(org_value).   # Standard-Escape kann kein NewLine-><BR>
-      gsub(/\n/, '<br>').  # Alle vorkommenden NewLine ersetzen
       gsub(/\r/, '')      # Alle vorkommenden CR ersetzen, führt sonst bei Javascript zu Error String not closed
+
+    retval = retval.gsub(/\n/, '<br>') if line_feed_to_br  # Alle vorkommenden NewLine ersetzen
+    retval
   end
 
   # Ermitteln prozentualen Anteil
