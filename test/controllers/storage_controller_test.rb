@@ -94,5 +94,9 @@ class StorageControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  test "temp with xhr: true" do
+    post :list_temp_usage_sysmetric_historic, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end}
+    assert_response :success
+  end
 
-end
+  end
