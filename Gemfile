@@ -18,6 +18,7 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 group :test do
   gem "chromedriver-helper"
   gem "minitest-rails-capybara"
+  gem "minitest-reporters"
 
   gem "capybara"
   #gem "capybara-webkit"
