@@ -170,8 +170,8 @@
       <file leaf-file-name="test_helper.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test/test_helper.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="450">
-              <caret line="30" column="0" lean-forward="true" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
+            <state relative-caret-position="150">
+              <caret line="10" column="28" lean-forward="false" selection-start-line="10" selection-start-column="28" selection-end-line="10" selection-end-column="28" />
               <folding />
             </state>
           </provider>
@@ -1368,14 +1368,7 @@
       <workItem from="1495092423916" duration="13577000" />
       <workItem from="1495450642986" duration="3014000" />
       <workItem from="1495485706620" duration="2502000" />
-      <workItem from="1495525347612" duration="2133000" />
-    </task>
-    <task id="LOCAL-00876" summary="Show redo log interval historic">
-      <created>1488045355933</created>
-      <option name="number" value="00876" />
-      <option name="presentableId" value="LOCAL-00876" />
-      <option name="project" value="LOCAL" />
-      <updated>1488045355933</updated>
+      <workItem from="1495525347612" duration="2239000" />
     </task>
     <task id="LOCAL-00877" summary="List client NLS settings">
       <created>1488269120158</created>
@@ -1713,7 +1706,14 @@
       <option name="project" value="LOCAL" />
       <updated>1495539585020</updated>
     </task>
-    <option name="localTasksCounter" value="925" />
+    <task id="LOCAL-00925" summary="Fix Minitest error">
+      <created>1495541062686</created>
+      <option name="number" value="00925" />
+      <option name="presentableId" value="LOCAL-00925" />
+      <option name="project" value="LOCAL" />
+      <updated>1495541062686</updated>
+    </task>
+    <option name="localTasksCounter" value="926" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1749,7 +1749,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1336227000" />
+    <option name="totallyTimeSpent" value="1336333000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1805,7 +1805,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Test hardened" />
     <MESSAGE value="Exadata storage cell info" />
     <MESSAGE value="Escape double quotes in JSON" />
     <MESSAGE value="Escape double quotes in JSON per JS" />
@@ -1830,7 +1829,8 @@
     <MESSAGE value="Remain on Rails 5.0.1" />
     <MESSAGE value="TEMP without instance filter" />
     <MESSAGE value="Test TEMP" />
-    <option name="LAST_COMMIT_MESSAGE" value="Test TEMP" />
+    <MESSAGE value="Fix Minitest error" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix Minitest error" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2205,8 +2205,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/test_helper.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
-          <caret line="30" column="0" lean-forward="true" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
+        <state relative-caret-position="150">
+          <caret line="10" column="28" lean-forward="false" selection-start-line="10" selection-start-column="28" selection-end-line="10" selection-end-column="28" />
           <folding />
         </state>
       </provider>

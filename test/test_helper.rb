@@ -8,6 +8,8 @@ require "rails/test_help"
 
 require 'fileutils'
 
+require "minitest/reporters"
+
 # Load own helpers
 require File.expand_path("../../lib/test_helpers/oracle_connection_test_helper.rb", __FILE__)       # requires config/environment.rb loaded
 require File.expand_path("../../lib/test_helpers/menu_test_helper.rb", __FILE__)
