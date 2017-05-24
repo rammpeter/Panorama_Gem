@@ -1007,13 +1007,13 @@ class StorageController < ApplicationController
       FROM   (
               SELECT x.*, TRUNC(Group_Time+30/86400, 'MI') Normalized_Begin_Time
               FROM   (
-                      SELECT Inst_ID Instance_Number, Begin_Time Group_Time, Begin_Time, End_Time, Value
+                      SELECT Inst_ID Instance_Number, Begin_Time Group_Time, Begin_Time, End_Time, Value/(1024*1024) Value_MB
                       FROM gv$SysMetric_History
                       WHERE  Metric_Name = 'Temp Space Used'
                       AND    End_Time   >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
                       AND    Begin_Time <= TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                       UNION ALL
-                      SELECT s.Instance_Number, ss.Begin_Interval_Time Group_Time, s.Begin_Time, s.End_Time, s.MaxVal Value
+                      SELECT s.Instance_Number, ss.Begin_Interval_Time Group_Time, s.Begin_Time, s.End_Time, s.MaxVal/(1024*1024) Value_MB
                       FROM   (SELECT /*+ NO_MERGE */ ss.DBID, ss.Instance_Number, ss.Snap_ID, ss.Begin_Interval_Time, ss.End_Interval_Time
                               FROM   DBA_Hist_Snapshot ss
                               JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Begin_Time) First_SGA_Time FROM gv$SysMetric_History GROUP BY Inst_ID) t ON t.Inst_ID = ss.Instance_Number /* use only for period not considered by gv$SysMetric_History */
@@ -1034,18 +1034,43 @@ class StorageController < ApplicationController
     @instances = {}
     recs.each do |r|
       @instances[r.instance_number] = true
-      temp_usage[r.normalized_begin_time]                                 = {:normalized_begin_time => r.normalized_begin_time, :total => 0} unless temp_usage[r.normalized_begin_time]
-      temp_usage[r.normalized_begin_time][:total]                         += r.value
+      temp_usage[r.normalized_begin_time]                                 = {:normalized_begin_time => r.normalized_begin_time, :total_used => 0, :total_allocated => 0} unless temp_usage[r.normalized_begin_time]
+      temp_usage[r.normalized_begin_time][:total_used]                    += r.value_mb
       temp_usage[r.normalized_begin_time][:min_begin_time]                = r.begin_time if temp_usage[r.normalized_begin_time][:min_begin_time].nil? || temp_usage[r.normalized_begin_time][:min_begin_time] > r.begin_time
       temp_usage[r.normalized_begin_time][:max_end_time]                  = r.end_time   if temp_usage[r.normalized_begin_time][:max_end_time].nil?   || temp_usage[r.normalized_begin_time][:max_end_time]   < r.end_time
       temp_usage[r.normalized_begin_time][r.instance_number]              = {} unless temp_usage[r.normalized_begin_time][r.instance_number]
-      temp_usage[r.normalized_begin_time][r.instance_number][:value]      = r.value
+      temp_usage[r.normalized_begin_time][r.instance_number][:value_used] = r.value_mb
       temp_usage[r.normalized_begin_time][r.instance_number][:begin_time] = r.begin_time
       temp_usage[r.normalized_begin_time][r.instance_number][:end_time]   = r.end_time
     end
 
+    alloc_recs = sql_select_all ["
+      SELECT TRUNC(ss.Begin_Interval_Time+30/86400, 'MI') Normalized_Begin_Time, st.Instance_Number, ss.Begin_Interval_Time, ss.End_Interval_Time, st.Value/(1024*1024) Value_MB
+      FROM   DBA_Hist_SysStat st
+      JOIN   DBA_hist_SnapShot ss ON ss.DBID = st.DBID AND ss.Instance_Number = st.Instance_Number AND ss.Snap_ID = st.Snap_ID
+      WHERE  st.Stat_ID = 280471097 /* temp space allocated (bytes) */
+      AND    ss.End_Interval_Time   >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
+      AND    ss.Begin_Interval_Time <= TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+      AND    ss.DBID = ?
+      ORDER BY 1,2
+      ", @time_selection_start, @time_selection_end, get_dbid]
+
+    alloc_recs.each do |a|
+      @instances[a.instance_number] = true
+      temp_usage[a.normalized_begin_time]                                           = {:normalized_begin_time => a.normalized_begin_time, :total_used => 0, :total_allocated => 0} unless temp_usage[a.normalized_begin_time]
+      temp_usage[a.normalized_begin_time][:total_allocated]                         += a.value_mb
+      temp_usage[a.normalized_begin_time][:min_begin_interval_time]                = a.begin_interval_time if temp_usage[a.normalized_begin_time][:min_begin_interval_time].nil? || temp_usage[a.normalized_begin_time][:min_begin_interval_time] > a.begin_interval_time
+      temp_usage[a.normalized_begin_time][:max_end_interval_time]                  = a.end_interval_time   if temp_usage[a.normalized_begin_time][:max_end_interval_time].nil?   || temp_usage[a.normalized_begin_time][:max_end_interval_time]   < a.end_interval_time
+      temp_usage[a.normalized_begin_time][a.instance_number]                        = {} unless temp_usage[a.normalized_begin_time][a.instance_number]
+      temp_usage[a.normalized_begin_time][a.instance_number][:value_allocated]      = a.value_mb
+      temp_usage[a.normalized_begin_time][a.instance_number][:begin_interval_time]  = a.begin_interval_time
+      temp_usage[a.normalized_begin_time][a.instance_number][:end_interval_time]    = a.end_interval_time
+    end
+
+    # Convert Hash to Array
     @temp_usage = []
     temp_usage.each do |key, value|
+      value[:total_allocated] = nil if value[:total_allocated] == 0             # don't show 0 if no sample available for this timestamp
       @temp_usage << value
     end
 

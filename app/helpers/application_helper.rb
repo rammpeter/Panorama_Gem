@@ -509,6 +509,12 @@ module ApplicationHelper
   # Setzen einer neutralen Connection nach Abarbeitung des Requests, damit frühzeitiger Connect bei Beginn der Verarbeitung eines Requests nicht gegen die DB des letzten Requests geht
   def set_dummy_db_connection
     ConnectionHolder.establish_connection(:adapter  => 'nulldb')
+  rescue Exception=>ex
+    if ex.class == Java::JavaSql::SQLRecoverableException                       # Error disconnecting previous connection
+      Rails.logger.error "Exception #{ex.class.name} raised at set_dummy_db_connection"
+    else
+      raise ex
+    end
   end
 
   # Rendern des Templates für Action, optionale mit Angabe des Partial-Namens wenn von Action abweicht

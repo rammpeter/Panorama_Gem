@@ -1,6 +1,6 @@
 <% @update_area = get_unique_area_id %>
 
-<div class="page_caption">Historic TEMP usage <%= t(:from, :default=>'from')%> DBA_Hist_SysMetric_Summary <%= t(:and, :default=>'and')%> gv$SysMetric_History</div>
+<div class="page_caption">Historic TEMP usage <%= t(:from, :default=>'from')%> DBA_Hist_SysMetric_Summary <%= t(:and, :default=>'and')%> gv$SysMetric_History <%= t(:and, :default=>'and')%> DBA_Hist_SysStat</div>
 
 <%= ajax_form(:controller=>:storage, :action=>:list_temp_usage_sysmetric_historic, :update_area=>@update_area) do %>
 
