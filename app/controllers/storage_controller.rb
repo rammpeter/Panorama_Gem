@@ -560,6 +560,8 @@ class StorageController < ApplicationController
         SELECT /* Panorama-Tool Ramm */ t.INST_ID,
         s.SID,
         s.Serial# SerialNo,
+        NVL(s.SQL_ID, s.Prev_SQL_ID) SQL_ID,
+        NVL(s.SQL_Child_Number, s.Prev_Child_Number) Child_Number,
         s.UserName,
         s.Status,
         s.OSUser,

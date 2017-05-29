@@ -47,6 +47,7 @@
     [
       {:caption=>"I",           :data=>proc{|rec| rec.inst_id },                              :title=>"RAC-Instance"},
       {:caption=>"SID, SN",     :data=>proc{|rec| link_column_sid(rec) },                     :title=>"SID, Serial-Number"},
+      {:caption=>'SQL-ID',      :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.sql_id, rec.child_number) },                     :title=>"SQL-ID of current or last executed SQL"},
       {:caption=>"User",        :data=>proc{|rec| rec.username },                             :title=>"DB-User-Name"},
       {:caption=>"Status",      :data=>proc{|rec| rec.status },                               :title=>"Session-Status"},
       {:caption=>"OS-User",     :data=>proc{|rec| rec.osuser },                               :title=>"OS-User-Name"},
