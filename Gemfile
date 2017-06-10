@@ -11,7 +11,8 @@ gemspec
 # your gem to rubygems.org.
 
 
-gem 'activerecord-nulldb-adapter', :git => 'http://github.com/mnoack/nulldb', :branch =>'rails5'
+# Specific path for nulldb not nbecessary from rel. 0.3.7
+#gem 'activerecord-nulldb-adapter', :git => 'http://github.com/mnoack/nulldb', :branch =>'rails5'
 
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 

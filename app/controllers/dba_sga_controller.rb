@@ -1454,7 +1454,8 @@ class DbaSgaController < ApplicationController
       show_popup_message "No data found in gv$SQL_Monitor for Instance=#{@instance}, SID=#{@sid}, Serial#=#{@serialno}, SQL-ID='#{@sql_id}', SQL_Exec_ID=#{@sql_exec_id}"
     else
       @button_id = get_unique_area_id
-      render_partial(:start_sql_monitor_in_new_window, :additional_javascript_string => "jQuery('##{@button_id}').click();")
+      #render_partial(:start_sql_monitor_in_new_window, :additional_javascript_string => "jQuery('##{@button_id}').click();")
+      render_partial :start_sql_monitor_in_new_window
     end
   end
 

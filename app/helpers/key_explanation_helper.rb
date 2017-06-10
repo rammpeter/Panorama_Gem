@@ -38,7 +38,7 @@ module KeyExplanationHelper
         'OPTIMIZER STATISTICS GATHERING'      => "Automatic gathering of statistics for tables and indexes.\nMay double run time of load processes (e.g. CREATE TABLE AS SELECT) in worst case!\nTo disable automatic gathering:\n- Use optimizer hint like CREATE TABLE AS SELECT /*+ NO_GATHER_OPTIMIZER_STATISTICS */ ... or\n- ALTER SESSION SET \"_optimizer_gather_stats_on_load\"=FALSE;",
         'PX SEND QC (RANDOM)'                 => "Takes the result of the following line and sends it to the Query Coordinator.\nWhen they send their results to the Query Coordinator,\nthe order they send the result is not important.\nHence, it is random.",
         'STATISTICS COLLECTOR'                => 'Collecting statistics for adaptive plan feature',
-        'TABLE ACCESS STORAGE FULL'           => 'Table full scan on EXADATA storage cell',
+        'TABLE ACCESS STORAGE FULL'           =>  "Table full scan on EXADATA storage cell.\nAccess predicates contains conditions that are filtered at Exadata storage cell server before transferring result to database server.\nFilter predicates contains conditions that are filtered at database server after consuming result from cell servers.",
       }
     end
     result = @@data_access[operation_options.strip]
