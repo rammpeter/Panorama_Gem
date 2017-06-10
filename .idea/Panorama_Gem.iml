@@ -487,7 +487,7 @@
     <orderEntry type="library" scope="PROVIDED" name="activejob (v5.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="activemodel (v5.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="activerecord (v5.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="activerecord-nulldb-adapter (v0.3.3@aa36e3, RVM: jruby-9.1.7.0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="activerecord-nulldb-adapter (v0.3.7, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="activerecord-oracle_enhanced-adapter (v1.7.11, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="activesupport (v5.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="addressable (v2.5.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
