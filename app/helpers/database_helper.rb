@@ -195,6 +195,7 @@ public
   end
 
   def format_sql(sql_text, window_width)
+    return nil if sql_text.nil?
     return sql_text if sql_text["\n"] || sql_text.length < 100                  # SQL is already linefeed-formatted or too small
 
     sql = sql_text.clone
