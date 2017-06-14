@@ -59,6 +59,18 @@
      )
   end
 
+   def link_extents(rec)
+     ajax_link(fn(rec.extents),
+                {:controller    => :storage,
+                 :action        => :list_object_extents,
+                 :owner         => rec.owner,
+                 :segment_name  => rec.index_name,
+                 :update_area   => @update_area,
+                },
+                :title=>"List distribution of storage extents for index. Caution: Execution may last some time!"
+    )
+   end
+
    column_options =
            [
                    {:caption=> 'Name',             :data=>proc{|rec| rec.index_name},                                     :title=> 'Name of index'},
@@ -72,6 +84,7 @@
                    {:caption=> 'Max Trans',        :data=>proc{|rec| fn(rec.subpartition_max_trans ? rec.subpartition_max_trans : (rec.partition_max_trans ? rec.partition_max_trans : rec.max_trans))},               :title=> 'Maximum number of transactions in transaction list of db block', :align=>:right},
                    {:caption=> 'Rows',             :data=>proc{|rec| link_current_index_stats(rec, fn(rec.num_rows))},    :title=> 'Number of rows calculated by last analyze run', :align=>:right},
                    {:caption=> 'Size (MB)',        :data=>proc{|rec| fn(rec.size_mb, 2)},                                 :title=> 'Current object size in megabytes', :align=>:right},
+                   {:caption=> 'Extents',          :data=>proc{|rec| link_extents(rec)},                                  :title=> 'Number of extents (from DBA_Segments)', :align=>:right},
                    {:caption=> 'B',                :data=>proc{|rec| fn(rec.blevel)},                                     :title=> "B*-Tree level (depth of the index from its root block to its leaf blocks).\nA depth of 0 indicates that the root block and leaf block are the same.", :align=>:right},
                    {:caption=> 'Leaf blocks',      :data=>proc{|rec| link_current_index_stats(rec, fn(rec.leaf_blocks))}, :title=> 'Number of leaf blocks in the index calculated by last analyze run', :align=>:right},
                    {:caption=> 'Distinct',         :data=>proc{|rec| fn(rec.distinct_keys)},                              :title=> 'Number of distinct keys in the index calculated by last analyze run', :align=>:right, :data_title=>proc{|rec| "%t, #{fn(rec.num_rows.to_f/rec.distinct_keys, 1) rescue nil} rows per key" }},

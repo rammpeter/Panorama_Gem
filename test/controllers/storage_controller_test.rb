@@ -10,6 +10,7 @@ class StorageControllerTest < ActionController::TestCase
     time_selection_start  = time_selection_end-10000
     @time_selection_end = time_selection_end.strftime("%d.%m.%Y %H:%M")
     @time_selection_start = time_selection_start.strftime("%d.%m.%Y %H:%M")
+    @tablespace_name = sql_select_one "SELECT MIN(Tablespace_Name) FROM DBA_Tablespaces"
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
@@ -99,4 +100,12 @@ class StorageControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  test "extents with xhr: true" do
+    post :list_free_extents, :params => { :format=>:html, :tablespace => @tablespace_name}
+    assert_response :success
+
+    post :list_object_extents, :params => { :format=>:html, :owner => 'sys', :segment_name => 'obj$'}
+    assert_response :success
   end
+
+end

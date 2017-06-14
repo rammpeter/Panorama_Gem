@@ -283,12 +283,19 @@ class DbaSchemaController < ApplicationController
     end
 
     @attribs = sql_select_all ["SELECT t.*, o.Created, o.Last_DDL_Time, o.Object_ID Table_Object_ID,
-                                       m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments
+                                       m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments,
+                                       s.Size_MB_Table, s.Blocks Segment_Blocks, s.Extents
                                 FROM DBA_Tables t
                                 LEFT OUTER JOIN DBA_Objects o ON o.Owner = t.Owner AND o.Object_Name = t.Table_Name AND o.Object_Type = 'TABLE'
                                 LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
+                                LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(Bytes)/(1024*1024) Size_MB_Table,
+                                                                        SUM(Blocks) Blocks, SUM(Extents) Extents
+                                                 FROM   DBA_Segments
+                                                 WHERE  Owner = ? AND Segment_Name = ?
+                                                 GROUP BY Owner, Segment_Name
+                                                ) s ON s.Owner = t.Owner AND s.Segment_name = t.Table_Name
                                 WHERE t.Owner = ? AND t.Table_Name = ?
-                               ", @owner, @table_name]
+                               ", @owner, @table_name, @owner, @table_name]
 
     @comment = sql_select_one ["SELECT Comments FROM DBA_Tab_Comments WHERE Owner = ? AND Table_Name = ?", @owner, @table_name]
 
@@ -549,10 +556,7 @@ class DbaSchemaController < ApplicationController
                  SELECT /*+ Panorama Ramm */ i.*, p.Partition_Number, sp.SubPartition_Number, Partition_TS_Name, SubPartition_TS_Name,
                         Partition_Status, SubPartition_Status, Partition_Pct_Free, SubPartition_Pct_Free,
                         Partition_Ini_Trans, SubPartition_Ini_Trans, Partition_Max_Trans, SubPartition_Max_Trans,
-                        (SELECT SUM(Bytes)/(1024*1024)
-                         FROM   DBA_Segments s
-                         WHERE  s.Owner = i.Owner AND s.Segment_Name = i.Index_Name
-                        ) Size_MB,
+                        s.Size_MB, s.Extents,
                         DECODE(bitand(io.flags, 65536), 0, 'NO', 'YES') Monitoring,
                         DECODE(bitand(ou.flags, 1), 0, 'NO', NULL, 'Unknown', 'YES') Used,
                         ou.start_monitoring, ou.end_monitoring,
@@ -561,6 +565,10 @@ class DbaSchemaController < ApplicationController
                  JOIN   DBA_Users   u  ON u.UserName  = i.owner
                  JOIN   sys.Obj$    o  ON o.Owner# = u.User_ID AND o.Name = i.Index_Name
                  JOIN   sys.Ind$    io ON io.Obj# = o.Obj#
+                 LEFT OUTER JOIN (SELECT Owner, Segment_Name, SUM(Bytes)/(1024*1024) Size_MB, SUM(Extents) Extents
+                                  FROM   DBA_Segments s
+                                  GROUP BY Owner, Segment_Name
+                                 ) s ON s.Owner = i.Owner AND s.Segment_Name = i.Index_Name
                  LEFT OUTER JOIN DBA_Objects do ON do.Owner = i.Owner AND do.Object_Name = i.Index_Name AND do.Object_Type = 'INDEX'
                  LEFT OUTER JOIN sys.object_usage ou ON ou.Obj# = o.Obj#
                  LEFT OUTER JOIN (SELECT ii.Index_Name, COUNT(*) Partition_Number,

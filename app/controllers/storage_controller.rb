@@ -1079,4 +1079,66 @@ class StorageController < ApplicationController
     render_partial
   end
 
+  def list_free_extents
+    where_string = ''
+    where_values = []
+    @filter      = ''
+
+
+    if params[:tablespace]
+      where_string << " AND Tablespace_Name = ?"
+      where_values << params[:tablespace]
+      @filter << " Tablespace='#{params[:tablespace]}'"
+    end
+
+    @free_exts = sql_select_all ["
+      SELECT Categ, SUM(Size_KB) Size_KB, COUNT(*) Num,
+             CASE
+               WHEN Categ='64K'  THEN 64
+               WHEN Categ='1M'   THEN 1024
+               WHEN Categ='8M'   THEN 8*1024
+               WHEN Categ='64M'  THEN 64*1024
+               WHEN Categ='256M' THEN 256*1024
+             END Extent_Size_KB
+      FROM   (
+              SELECT Tablespace_Name, Bytes/1024 Size_KB,
+                     CASE
+                          WHEN Bytes < 1024*1024      THEN '64K'
+                          WHEN Bytes < 8*1024*1024    THEN '1M'
+                          WHEN Bytes < 64*1024*1024   THEN '8M'
+                          WHEN Bytes < 256*1024*1024  THEN '64M'
+                     ELSE '256M'
+                     END Categ,
+                     CASE
+                          WHEN Bytes < 1024*1024      THEN 1
+                          WHEN Bytes < 8*1024*1024    THEN 2
+                          WHEN Bytes < 64*1024*1024   THEN 3
+                          WHEN Bytes < 256*1024*1024  THEN 4
+                     ELSE 5
+                     END Categ_Sort
+              FROM   DBA_Free_Space
+              WHERE 1=1 #{where_string}
+             )
+      GROUP BY Categ, Categ_Sort
+      ORDER BY Categ_Sort"].concat(where_values)
+
+    render_partial
+  end
+
+  def list_object_extents
+    @owner        = params[:owner]
+    @segment_name = params[:segment_name]
+
+    @extents = sql_select_all ["\
+      SELECT Bytes/1024 Extent_Size_KB, COUNT(*) Extent_Count, SUM(Bytes)/1024 Total_Size_KB
+      FROM   DBA_Extents
+      WHERE  Owner        = ?
+      AND    Segment_Name = ?
+      GROUP BY Bytes
+      ORDER BY Bytes
+    ", @owner, @segment_name]
+
+    render_partial
+  end
+
 end

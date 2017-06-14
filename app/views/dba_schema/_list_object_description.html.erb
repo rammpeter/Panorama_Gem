@@ -120,6 +120,18 @@ column_options =
                      :title=>"Count current number of rows in Table. CAUTION: May be long running!")+"<br><div id=\"#{update_area}\"></div>".html_safe
    end
 
+   def link_extents(rec)
+     ajax_link(fn(rec.extents),
+                {:controller    => :storage,
+                 :action        => :list_object_extents,
+                 :owner         => @owner,
+                 :segment_name  => @table_name,
+                 :update_area   => @update_area,
+                },
+                :title=>"List distribution of storage extents for table. Caution: Execution may last some time!"
+    )
+   end
+
 
    column_options =
 [
@@ -128,9 +140,10 @@ column_options =
   {:caption=> 'Ini Trans',        :data=>proc{|rec| fn(rec.ini_trans)},                    :title=> 'Number of initial entries in transaction list of db block', :align=>:right},
   {:caption=> 'Max Trans',        :data=>proc{|rec| fn(rec.max_trans)},                    :title=> 'Maximum number of transactions in transaction list of db block', :align=>:right},
   {:caption=> 'Rows',             :data=>proc{|rec| link_real_num_rows(rec)},              :title=> 'Number of rows calculated by last analyze run', :align=>:right},
-  {:caption=> 'Size (MB) Table',  :data=>proc{|rec| fn(@size_mb_table, 2)},                :title=> 'Current table size in megabytes', :align=>:right},
+  {:caption=> 'Size (MB) Table',  :data=>proc{|rec| fn(rec.size_mb_table, 2)},             :title=> 'Current table size in megabytes', :align=>:right},
   {:caption=> 'Size (MB) Total',  :data=>proc{|rec| fn(@size_mb_total, 2)},                :title=> 'Current total size in megabytes (includes table, indexes, LOBs)', :align=>:right},
-  {:caption=> 'Blocks',           :data=>proc{|rec| fn(rec.blocks)},                       :title=> 'Number of allocated blocks calculated by last analyze run', :align=>:right},
+  {:caption=> 'Extents',          :data=>proc{|rec| link_extents(rec)},                    :title=> 'Number of extents (from DBA_Segments)', :align=>:right},
+  {:caption=> 'Blocks',           :data=>proc{|rec| fn(rec.segment_blocks)},               :title=> 'Number of allocated blocks (from DBA_Segments)', :align=>:right},
   {:caption=> 'Empty',            :data=>proc{|rec| fn(rec.empty_blocks)},                 :title=> 'Number of empty (never used) blocks calculated by last analyze run', :align=>:right},
   {:caption=> 'Avg. Space',       :data=>proc{|rec| fn(rec.avg_space)},                    :title=> 'Average amount of free space, in bytes, in a data block allocated to the table calculated by last analyze run', :align=>:right},
   {:caption=> 'Chained',          :data=>proc{|rec| fn(rec.chain_cnt)},                    :title=> 'Number of chained rows calculated by last analyze run', :align=>:right},

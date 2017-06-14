@@ -44,10 +44,25 @@ column_options =
                           :tablespace   => {:name => rec.tablespace_name},
                           :update_area  => @update_area,
                          },
-                 :title=>t(:storage_tablespace_usage_tablespaces_link_hint, :default=>'Show objects of tablespace')
+                 :title=>t(:storage_tablespace_usage_tablespaces_link_hint, :default=>'Show objects of this tablespace with their sizes')
      )
     else
       fn rec.mbused
+    end
+  end
+
+  def link_mb_free(rec)
+    if rec.contents == 'PERMANENT'
+      ajax_link(fn(rec.mbfree),
+                         {:controller   => :storage,
+                          :action       => :list_free_extents,
+                          :tablespace   => rec.tablespace_name,
+                          :update_area  => @update_area,
+                         },
+                 :title=>t(:storage_tablespace_usage_tablespaces_mbfree_hint, :default=>"Show free extents of tablespace and their size distribution.\nAllows you to evaluate fragmentation of free extents of this tablespace.")
+     )
+    else
+      fn rec.mbfree
     end
   end
 
@@ -59,7 +74,7 @@ column_options =
   {:caption=>"Blocksize",           :data=>proc{|rec| formattedNumber(rec.blocksize)},  :title=>t(:storage_tablespace_usage_tablespace_blocksize_hint, :default=>'Blocksize of tablespace in Bytes'),        :align=>:right},
   {:caption=>"MB Total",            :data=>proc{|rec| formattedNumber(rec.mbtotal)},    :title=>"Größe des Tablespace gesamt in MB",        :align=>:right},
   {:caption=>"MB Used",             :data=>proc{|rec| link_mb_used(rec) },              :title=>"Genutzter Platz des Tablespaces in MB",    :align=>:right},
-  {:caption=>"MB Free",             :data=>proc{|rec| formattedNumber(rec.mbfree)},     :title=>"Freier Platz des Tablespaces in MB",       :align=>:right},
+  {:caption=>"MB Free",             :data=>proc{|rec| link_mb_free(rec)},               :title=>"Freier Platz des Tablespaces in MB",       :align=>:right},
   {:caption=>"% used",              :data=>proc{|rec| formattedNumber(rec.pctused,1)},  :title=>"Prozentuale Auslastung",                   :align=>:right},
   {:caption=>"Status",              :data=>proc{|rec| rec.status}},
   {:caption=>"Content",             :data=>proc{|rec| rec.contents}},

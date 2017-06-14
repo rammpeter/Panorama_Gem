@@ -1,0 +1,21 @@
+<%
+  @update_area = get_unique_area_id
+
+  column_options =
+      [
+          {:caption=>'Max. extent size',                        :data=>proc{|rec| rec.categ},                                   :title=>"Maximum size of an extent creatable in this group"},
+          {:caption=>'Avaialble free space (MB)',               :data=>proc{|rec| fn(rec.size_kb.to_f/1024, 2)},                :title=>"Available free space in MB for extent creation within this size group", :align=>:right},
+          {:caption=>'Possible number of extents to allocate',  :data=>proc{|rec| fn(rec.size_kb/rec.extent_size_kb) rescue nil},                :title=>"Number of extents that are possible to allocate in free space", :data_title=>proc{|rec| "Number of extents with size=#{rec.categ} that are possible to allocate within this free space"}, :align=>:right},
+
+      ]
+
+%>
+
+<%= gen_slickgrid(@free_exts, column_options, {
+    :max_height => 450, :width=>:auto,
+    :caption => "Free extents from DBA_Free_Space#{" for#{@filter}" if @filter.length > 0}"
+
+}) %>
+
+<div id="<%= @update_area %>">
+</div>
