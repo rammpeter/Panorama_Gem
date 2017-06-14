@@ -4,29 +4,8 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="Ignore .idea">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/.rakeTasks" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/encodings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Development__Panorama_Gem.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/IRB_console__Panorama_Gem.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Production__Panorama_Gem.xml" />
+    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Rails_console__Panorama_Gem.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Run_test__SpecAdditionsTest___Panorama_Gem.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Run_test__dba_controller_test___Panorama_Gem.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Test_10_2.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Test_11_2.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Test_12_1.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Test_12_2_CDB.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Test_12_2_PDB.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/spec__Panorama_Gem.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/test_DB_Locks___current__Panorama_Gem.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/test__Panorama_Gem.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/runConfigurations/test_exadata_with_xhr__true__Panorama_Gem.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Panorama_Gem.iws" />
@@ -1371,14 +1350,7 @@
       <workItem from="1497091743075" duration="2384000" />
       <workItem from="1497209872342" duration="23000" />
       <workItem from="1497361887609" duration="9932000" />
-      <workItem from="1497436388313" duration="99000" />
-    </task>
-    <task id="LOCAL-00887" summary="Test + key exlanation">
-      <created>1489498783030</created>
-      <option name="number" value="00887" />
-      <option name="presentableId" value="LOCAL-00887" />
-      <option name="project" value="LOCAL" />
-      <updated>1489498783030</updated>
+      <workItem from="1497436388313" duration="120000" />
     </task>
     <task id="LOCAL-00888" summary="Test + key exlanation">
       <created>1489499579998</created>
@@ -1716,7 +1688,14 @@
       <option name="project" value="LOCAL" />
       <updated>1497435522827</updated>
     </task>
-    <option name="localTasksCounter" value="936" />
+    <task id="LOCAL-00936" summary="Idea checked in">
+      <created>1497436503422</created>
+      <option name="number" value="00936" />
+      <option name="presentableId" value="LOCAL-00936" />
+      <option name="project" value="LOCAL" />
+      <updated>1497436503422</updated>
+    </task>
+    <option name="localTasksCounter" value="937" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1752,7 +1731,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1377154000" />
+    <option name="totallyTimeSpent" value="1377175000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1807,7 +1786,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Switch to jruby 9.1.8" />
     <MESSAGE value="List TEMP usage including idle waits" />
     <MESSAGE value="Restrict fuzzy values to considered time period" />
     <MESSAGE value="Show values limited by seconds" />
@@ -1832,7 +1810,8 @@
     <MESSAGE value="Evaluate extents and free space in tablespace" />
     <MESSAGE value="Version ++" />
     <MESSAGE value="Ignore .idea" />
-    <option name="LAST_COMMIT_MESSAGE" value="Ignore .idea" />
+    <MESSAGE value="Idea checked in" />
+    <option name="LAST_COMMIT_MESSAGE" value="Idea checked in" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
