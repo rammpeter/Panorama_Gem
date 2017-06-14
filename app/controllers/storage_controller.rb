@@ -1092,35 +1092,64 @@ class StorageController < ApplicationController
     end
 
     @free_exts = sql_select_all ["
-      SELECT Categ, SUM(Size_KB) Size_KB, COUNT(*) Num,
-             CASE
-               WHEN Categ='64K'  THEN 64
-               WHEN Categ='1M'   THEN 1024
-               WHEN Categ='8M'   THEN 8*1024
-               WHEN Categ='64M'  THEN 64*1024
-               WHEN Categ='256M' THEN 256*1024
-             END Extent_Size_KB
-      FROM   (
-              SELECT Tablespace_Name, Bytes/1024 Size_KB,
-                     CASE
-                          WHEN Bytes < 1024*1024      THEN '64K'
-                          WHEN Bytes < 8*1024*1024    THEN '1M'
-                          WHEN Bytes < 64*1024*1024   THEN '8M'
-                          WHEN Bytes < 256*1024*1024  THEN '64M'
-                     ELSE '256M'
-                     END Categ,
-                     CASE
-                          WHEN Bytes < 1024*1024      THEN 1
-                          WHEN Bytes < 8*1024*1024    THEN 2
-                          WHEN Bytes < 64*1024*1024   THEN 3
-                          WHEN Bytes < 256*1024*1024  THEN 4
-                     ELSE 5
-                     END Categ_Sort
-              FROM   DBA_Free_Space
-              WHERE 1=1 #{where_string}
+      WITH FRows AS (
+              SELECT x.*,
+                     TRUNC(Size_KB/64)            Extents_64K_Fit,
+                     TRUNC(Size_KB/1024)          Extents_1M_Fit,
+                     TRUNC(Size_KB/(8*1024))      Extents_8M_Fit,
+                     TRUNC(Size_KB/(64*1024))     Extents_64M_Fit,
+                     TRUNC(Size_KB/(256*1024))    Extents_256M_Fit
+              FROM  (
+                    SELECT w.*,
+                           CASE
+                             WHEN Categ='64K'  THEN 64
+                             WHEN Categ='1M'   THEN 1024
+                             WHEN Categ='8M'   THEN 8*1024
+                             WHEN Categ='64M'  THEN 64*1024
+                             WHEN Categ='256M' THEN 256*1024
+                           END Extent_Size_KB
+                    FROM   (
+                            SELECT Tablespace_Name, Bytes/1024 Size_KB,
+                                   CASE
+                                        WHEN Bytes < 1024*1024      THEN '64K'
+                                        WHEN Bytes < 8*1024*1024    THEN '1M'
+                                        WHEN Bytes < 64*1024*1024   THEN '8M'
+                                        WHEN Bytes < 256*1024*1024  THEN '64M'
+                                   ELSE '256M'
+                                   END Categ,
+                                   CASE
+                                        WHEN Bytes < 1024*1024      THEN 1
+                                        WHEN Bytes < 8*1024*1024    THEN 2
+                                        WHEN Bytes < 64*1024*1024   THEN 3
+                                        WHEN Bytes < 256*1024*1024  THEN 4
+                                   ELSE 5
+                                   END Categ_Sort
+                            FROM   DBA_Free_Space
+                            WHERE 1=1 #{where_string}
+                           ) w
+                    ) x
+      ),
+      Fits AS (SELECT /*+ NO_MRGE */ c.Categ,
+                      SUM(CASE
+                      WHEN c.Categ = '64K'  THEN Extents_64K_Fit
+                      WHEN c.Categ = '1M'   THEN Extents_1M_Fit
+                      WHEN c.Categ = '8M'   THEN Extents_8M_Fit
+                      WHEN c.Categ = '64M'  THEN Extents_64M_Fit
+                      WHEN c.Categ = '256M' THEN Extents_256M_Fit
+                     END) Number_Fits
+              FROM   FRows
+              CROSS JOIN (SELECT '64K' Categ FROM DUAL UNION ALL SELECT '1M' FROM DUAL UNION ALL SELECT '8M' FROM DUAL UNION ALL SELECT '64M' FROM DUAL UNION ALL SELECT '256M' FROM Dual) c
+              GROUP BY c.Categ
              )
-      GROUP BY Categ, Categ_Sort
-      ORDER BY Categ_Sort"].concat(where_values)
+      SELECT y.*, f.Number_fits, f.Number_fits*Extent_Size_KB/1024 MB_Available_to_Create
+      FROM   (
+              SELECT Categ, Categ_Sort, Extent_Size_KB,  SUM(Size_KB) Size_KB, COUNT(*) Chunk_Num
+              FROM  FRows  y
+              GROUP BY Categ, Categ_Sort, Extent_Size_KB
+             ) y
+      JOIN  Fits f ON f.Categ = y.Categ
+      ORDER BY Categ_Sort
+      "].concat(where_values)
 
     render_partial
   end
