@@ -111,6 +111,11 @@ class EnvController < ApplicationController
         @version_info << ({:banner => "Machine: EXADATA with #{exadata_info.cell_count} storage cell server" }.extend SelectHashHelper) if exadata_info.cell_count > 0
       end
 
+      if get_db_version >= '12.1'
+        oracle_home = sql_select_one "SELECT SYS_CONTEXT ('USERENV','ORACLE_HOME') FROM DUAL"
+        @version_info << ({:banner => "ORACLE_HOME: '#{oracle_home}'" }.extend SelectHashHelper)
+      end
+
       @version_info << ({:banner => "DB timezone offset: #{@database_info.dbtimezone}", :client_info=>"SYSDATE = '#{localeDateTime(@database_info.sysdate)}'" }.extend SelectHashHelper)
 
       @version_info.each {|vi| vi[:client_info] = nil if vi[:client_info].nil? }                         # each row should have this column defined
