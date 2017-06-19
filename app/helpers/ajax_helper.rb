@@ -221,7 +221,7 @@ module AjaxHelper
   def link_object_description(update_area, owner, segment_name, print_value=nil, object_type=nil)
     owner         = owner.upcase        if owner
     segment_name  = segment_name.upcase if segment_name
-    print_value = "#{owner}.#{segment_name}" unless print_value
+    print_value = "#{owner}#{'.' if owner && owner != ''}#{segment_name}" unless print_value
     ajax_link(print_value, {
                :controller   => :dba_schema,
                :action       => :list_object_description,

@@ -37,6 +37,7 @@ module KeyExplanationHelper
         'LOAD AS SELECT (HYBRID TSM/HWMB)'    => "This is a hybrid solution that combines the beneficial characteristics of temp segment merge and high water mark brokering.",
         'OPTIMIZER STATISTICS GATHERING'      => "Automatic gathering of statistics for tables and indexes.\nMay double run time of load processes (e.g. CREATE TABLE AS SELECT) in worst case!\nTo disable automatic gathering:\n- Use optimizer hint like CREATE TABLE AS SELECT /*+ NO_GATHER_OPTIMIZER_STATISTICS */ ... or\n- ALTER SESSION SET \"_optimizer_gather_stats_on_load\"=FALSE;",
         'PX SEND QC (RANDOM)'                 => "Takes the result of the following line and sends it to the Query Coordinator.\nWhen they send their results to the Query Coordinator,\nthe order they send the result is not important.\nHence, it is random.",
+        'REMOTE'                              => "Access remote database per DB-link.\nExecute Sub-select shown in column 'OTHER' on remote database.",
         'STATISTICS COLLECTOR'                => 'Collecting statistics for adaptive plan feature',
         'TABLE ACCESS STORAGE FULL'           =>  "Table full scan on EXADATA storage cell.\nAccess predicates contains conditions that are filtered at Exadata storage cell server before transferring result to database server.\nFilter predicates contains conditions that are filtered at database server after consuming result from cell servers.",
       }

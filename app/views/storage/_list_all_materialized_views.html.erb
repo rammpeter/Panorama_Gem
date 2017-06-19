@@ -1,17 +1,6 @@
 <%
 @update_area = get_unique_area_id
 
-
-def link_text(rec, value)
-  ajax_link(value, {
-                          :action          => :list_mview_query_text,
-                          :owner           => rec.owner,
-                          :name            => rec.mview_name,
-                          :update_area     => @update_area
-                         },
-                  :title=>"Show query text of materialized view")
-end
-
 def link_real_num_rows(rec)
   update_area = "list_materialized_view_logs_#{(rec.owner+rec.mview_name).hash}"
   ajax_link(rec.num_rows ? fn(rec.num_rows) : "[No analyze]", {

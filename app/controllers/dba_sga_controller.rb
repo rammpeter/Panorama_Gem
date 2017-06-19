@@ -330,7 +330,7 @@ class DbaSgaController < ApplicationController
                  'PARALLEL_TO_SERIAL',            'P > S',
                  Other_Tag
                 ) Parallel_Short,
-          Other_Tag, Other_XML,
+          Other_Tag, Other_XML, Other,
           Depth, Access_Predicates, Filter_Predicates, Projection, p.temp_Space/(1024*1024) Temp_Space_MB, Distribution,
           ID, Parent_ID, Executions, p.Search_Columns,
           Last_Starts, Starts, Last_Output_Rows, Output_Rows, Last_CR_Buffer_Gets, CR_Buffer_Gets,

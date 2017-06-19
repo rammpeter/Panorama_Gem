@@ -365,20 +365,7 @@ class StorageController < ApplicationController
       ", @mview_id]
 
     respond_to do |format|
-      format.html {render :html => "<pre>#{my_html_escape text}</pre>"}
-    end
-  end
-
-  def list_mview_query_text
-    text = sql_select_one ["\
-      SELECT m.query
-      FROM   sys.dba_mviews m
-      WHERE  Owner      = ?
-      AND    MView_Name = ?
-      ", params[:owner], params[:name]]
-
-    respond_to do |format|
-      format.html {render :html => "<pre>#{my_html_escape text}</pre>"}
+      format.html {render :html => render_yellow_pre(text)}
     end
   end
 
