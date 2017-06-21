@@ -59,9 +59,6 @@ class StorageControllerTest < ActionController::TestCase
     get :list_registered_mview_query_text, :params => { :format=>:html, :mview_id=>1, :update_area=>:hugo  }
     assert_response :success;
 
-    get :list_mview_query_text, :params => { :format=>:html, :owner=>"Hugo", :name=>"Hugo", :update_area=>:hugo  }
-    assert_response :success;
-
     get :list_real_num_rows, :params => { :format=>:html, :owner=>"sys", :name=>"obj$", :update_area=>:hugo  } # sys.user$ requires extra rights compared to SELECT ANY DICTIONARY in 12c
     assert_response :success;
 
