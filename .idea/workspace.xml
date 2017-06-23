@@ -6,7 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/controllers/storage_controller_test.rb" afterPath="$PROJECT_DIR$/test/controllers/storage_controller_test.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" afterPath="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/active_session_history/_list_session_statistic_historic_grouping_table_def.html.erb" afterPath="$PROJECT_DIR$/app/views/active_session_history/_list_session_statistic_historic_grouping_table_def.html.erb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -108,12 +109,49 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="storage_controller_test.rb" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/test/controllers/storage_controller_test.rb">
+      <file leaf-file-name="_list_session_statistic_historic_grouping_table_def.html.erb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/views/active_session_history/_list_session_statistic_historic_grouping_table_def.html.erb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="264">
-              <caret line="61" column="0" lean-forward="false" selection-start-line="61" selection-start-column="0" selection-end-line="61" selection-end-column="0" />
+            <state relative-caret-position="333">
+              <caret line="173" column="13" lean-forward="false" selection-start-line="173" selection-start-column="13" selection-end-line="173" selection-end-column="13" />
+              <folding>
+                <element signature="e#8686#8816#0#ruby" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="slickgrid_helper.rb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/helpers/slickgrid_helper.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="173">
+              <caret line="65" column="33" lean-forward="false" selection-start-line="65" selection-start-column="20" selection-end-line="65" selection-end-column="33" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="slickgrid_extended.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="262">
+              <caret line="1461" column="23" lean-forward="false" selection-start-line="1461" selection-start-column="23" selection-end-line="1461" selection-end-column="23" />
+              <folding>
+                <marker date="1498132664000" expanded="true" signature="16132:16161" ph="..." />
+                <marker date="1498132664000" expanded="true" signature="17096:17142" ph="..." />
+                <marker date="1498132664000" expanded="true" signature="17227:17311" ph="..." />
+                <marker date="1498132664000" expanded="true" signature="17461:17474" ph="..." />
+                <marker date="1498132664000" expanded="true" signature="17934:17944" ph="..." />
+                <marker date="1498132664000" expanded="true" signature="20948:21048" ph="..." />
+                <marker date="1498132664000" expanded="true" signature="21094:21136" ph="..." />
+                <marker date="1498132664000" expanded="true" signature="21307:21410" ph="..." />
+                <marker date="1498132664000" expanded="true" signature="21575:21691" ph="..." />
+                <marker date="1498132664000" expanded="true" signature="42228:42241" ph="..." />
+                <marker date="1498132664000" expanded="true" signature="42388:42401" ph="..." />
+                <marker date="1498132664000" expanded="true" signature="42862:42872" ph="..." />
+                <marker date="1498132664000" expanded="true" signature="62086:62125" ph="..." />
+                <marker date="1498132664000" expanded="true" signature="80900:81406" ph="..." />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -122,7 +160,7 @@
         <entry file="file://$PROJECT_DIR$/app/views/help/version_history.html">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="15">
-              <caret line="1" column="0" lean-forward="true" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+              <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -132,9 +170,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>headerHeight</find>
-      <find>column['width']</find>
-      <find>width</find>
       <find>headerColumnWidthDiff</find>
       <find>scrollH</find>
       <find>get_db_version</find>
@@ -162,6 +197,9 @@
       <find>DB time</find>
       <find>link_text</find>
       <find>other</find>
+      <find>list_mview_query_text</find>
+      <find>pct</find>
+      <find>show_pct_hint</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -170,7 +208,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/test/features/spec_additions_test.rb" />
         <option value="$PROJECT_DIR$/app/helpers/dragnet/problems_with_parallel_query_helper.rb" />
         <option value="$PROJECT_DIR$/app/views/layouts/application.html.erb" />
         <option value="/Volumes/Macintosh HD/Users/ramm/Temp/t1.sql" />
@@ -180,7 +217,6 @@
         <option value="$PROJECT_DIR$/doc/BUG_REPORT.txt" />
         <option value="$PROJECT_DIR$/test/dummy/log/development.log" />
         <option value="$PROJECT_DIR$/app/views/io/_list_groupfilter.html.erb" />
-        <option value="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" />
         <option value="$PROJECT_DIR$/app/controllers/dba_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/dba/_list_session_details.html.erb" />
         <option value="$PROJECT_DIR$/app/views/active_session_history/_show_temp_usage_historic.html.erb" />
@@ -221,6 +257,8 @@
         <option value="$PROJECT_DIR$/app/views/help/version_history.html" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/test/controllers/storage_controller_test.rb" />
+        <option value="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" />
+        <option value="$PROJECT_DIR$/app/views/active_session_history/_list_session_statistic_historic_grouping_table_def.html.erb" />
       </list>
     </option>
   </component>
@@ -238,10 +276,10 @@
     <option name="CUSTOM_FILTER" />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="255" />
-    <option name="y" value="86" />
-    <option name="width" value="2213" />
-    <option name="height" value="1354" />
+    <option name="x" value="47" />
+    <option name="y" value="23" />
+    <option name="width" value="1633" />
+    <option name="height" value="1027" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -1322,14 +1360,7 @@
       <workItem from="1497361887609" duration="9932000" />
       <workItem from="1497436388313" duration="8964000" />
       <workItem from="1497531092536" duration="4956000" />
-      <workItem from="1497899259646" duration="3901000" />
-    </task>
-    <task id="LOCAL-00894" summary="Exadata storage cell info">
-      <created>1490092739915</created>
-      <option name="number" value="00894" />
-      <option name="presentableId" value="LOCAL-00894" />
-      <option name="project" value="LOCAL" />
-      <updated>1490092739915</updated>
+      <workItem from="1497899259646" duration="6092000" />
     </task>
     <task id="LOCAL-00895" summary="Exadata storage cell info">
       <created>1490094616203</created>
@@ -1667,7 +1698,14 @@
       <option name="project" value="LOCAL" />
       <updated>1497902083592</updated>
     </task>
-    <option name="localTasksCounter" value="943" />
+    <task id="LOCAL-00943" summary="Unnecessary test">
+      <created>1498029697813</created>
+      <option name="number" value="00943" />
+      <option name="presentableId" value="LOCAL-00943" />
+      <option name="project" value="LOCAL" />
+      <updated>1498029697813</updated>
+    </task>
+    <option name="localTasksCounter" value="944" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1703,7 +1741,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1394876000" />
+    <option name="totallyTimeSpent" value="1397067000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1715,17 +1753,17 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="255" y="86" width="2213" height="1354" extended-state="0" />
+    <frame x="47" y="23" width="1633" height="1027" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14601566" sideWeight="0.60566705" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19924575" sideWeight="0.60271645" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.10280374" sideWeight="0.49529782" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32724383" sideWeight="0.4762136" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.44206008" sideWeight="0.4762136" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="1.0" sideWeight="0.26378447" order="9" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26645768" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36802575" sideWeight="0.73621553" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.36802575" sideWeight="0.73621553" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2532189" sideWeight="0.49028212" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14601566" sideWeight="0.39433295" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19924575" sideWeight="0.39728352" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18882175" sideWeight="0.4952343" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27442652" sideWeight="0.79514563" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32999372" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -1759,7 +1797,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Groupfilter additions as Array" />
     <MESSAGE value="Version++" />
     <MESSAGE value="bugreport" />
     <MESSAGE value="Fix groupfilter for I/O-Lists" />
@@ -1784,7 +1821,8 @@
     <MESSAGE value="Real allocatable number of extents in TS" />
     <MESSAGE value="Real allocatable number of extents in TS, Fix Grouping in ASH single records, Show ORACLE_HOME in start page" />
     <MESSAGE value="Show column other of explain plan with remote SQL" />
-    <option name="LAST_COMMIT_MESSAGE" value="Show column other of explain plan with remote SQL" />
+    <MESSAGE value="Unnecessary test" />
+    <option name="LAST_COMMIT_MESSAGE" value="Unnecessary test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1816,7 +1854,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="ruby-line">
           <url>file://$PROJECT_DIR$/app/views/active_session_history/_list_session_statistic_historic_grouping_table_def.html.erb</url>
-          <line>244</line>
+          <line>251</line>
           <option name="timeStamp" value="308" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="ruby-line">
@@ -1870,27 +1908,6 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/views/active_session_history/_list_pga_usage_historic.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="915">
-          <caret line="87" column="0" lean-forward="false" selection-start-line="87" selection-start-column="0" selection-end-line="87" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.rvm/gems/jruby-9.1.9.0/gems/bundler-1.15.0/lib/bundler/runtime.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="253">
-          <caret line="81" column="0" lean-forward="false" selection-start-line="81" selection-start-column="0" selection-end-line="81" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/dba_controller.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="411">
-          <caret line="280" column="26" lean-forward="false" selection-start-line="280" selection-start-column="26" selection-end-line="280" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/test_helper.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="465">
@@ -2107,6 +2124,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2580">
           <caret line="175" column="46" lean-forward="false" selection-start-line="175" selection-start-column="46" selection-end-line="175" selection-end-column="46" />
+          <folding>
+            <element signature="e#5914#6303#1" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -2223,7 +2243,15 @@
     <entry file="file://$PROJECT_DIR$/app/views/help/version_history.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="15">
-          <caret line="1" column="0" lean-forward="true" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+          <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/controllers/storage_controller_test.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="518">
+          <caret line="61" column="0" lean-forward="false" selection-start-line="61" selection-start-column="0" selection-end-line="61" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -2236,11 +2264,44 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/controllers/storage_controller_test.rb">
+    <entry file="file://$PROJECT_DIR$/app/helpers/slickgrid_helper.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="61" column="0" lean-forward="false" selection-start-line="61" selection-start-column="0" selection-end-line="61" selection-end-column="0" />
+        <state relative-caret-position="173">
+          <caret line="65" column="33" lean-forward="false" selection-start-line="65" selection-start-column="20" selection-end-line="65" selection-end-column="33" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="262">
+          <caret line="1461" column="23" lean-forward="false" selection-start-line="1461" selection-start-column="23" selection-end-line="1461" selection-end-column="23" />
+          <folding>
+            <marker date="1498132664000" expanded="true" signature="16132:16161" ph="..." />
+            <marker date="1498132664000" expanded="true" signature="17096:17142" ph="..." />
+            <marker date="1498132664000" expanded="true" signature="17227:17311" ph="..." />
+            <marker date="1498132664000" expanded="true" signature="17461:17474" ph="..." />
+            <marker date="1498132664000" expanded="true" signature="17934:17944" ph="..." />
+            <marker date="1498132664000" expanded="true" signature="20948:21048" ph="..." />
+            <marker date="1498132664000" expanded="true" signature="21094:21136" ph="..." />
+            <marker date="1498132664000" expanded="true" signature="21307:21410" ph="..." />
+            <marker date="1498132664000" expanded="true" signature="21575:21691" ph="..." />
+            <marker date="1498132664000" expanded="true" signature="42228:42241" ph="..." />
+            <marker date="1498132664000" expanded="true" signature="42388:42401" ph="..." />
+            <marker date="1498132664000" expanded="true" signature="42862:42872" ph="..." />
+            <marker date="1498132664000" expanded="true" signature="62086:62125" ph="..." />
+            <marker date="1498132664000" expanded="true" signature="80900:81406" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/active_session_history/_list_session_statistic_historic_grouping_table_def.html.erb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="333">
+          <caret line="173" column="13" lean-forward="false" selection-start-line="173" selection-start-column="13" selection-end-line="173" selection-end-column="13" />
+          <folding>
+            <element signature="e#8686#8816#0#ruby" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
