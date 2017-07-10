@@ -6,9 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/env_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/env_controller.rb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" afterPath="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/locales/de.yml" afterPath="$PROJECT_DIR$/config/locales/de.yml" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -143,16 +141,16 @@
       <file leaf-file-name="_list_management_pack_license.html.erb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="421">
-              <caret line="32" column="149" lean-forward="false" selection-start-line="32" selection-start-column="149" selection-end-line="32" selection-end-column="149" />
+            <state relative-caret-position="258">
+              <caret line="22" column="13" lean-forward="true" selection-start-line="22" selection-start-column="13" selection-end-line="22" selection-end-column="13" />
               <folding>
                 <element signature="n#t(:env_list_management_pack_license_caption, :default=&gt;'Usage of Oracle management packs by Panorama')#0;n#!!top" expanded="true" />
                 <element signature="n#t(:env_list_management_pack_license_dp_hint, :default=&gt;&quot;Panorama will access Oracle's 'Diagnostic Pack' if you choose this option\\nbut doesn't access Oracle's 'Tuning Pack'.\\nAvailable only for Enterprise Edition, not for Standard Edition&quot;)#0;n#!!top" expanded="true" />
                 <element signature="e#1400#1488#0#ruby" expanded="true" />
                 <element signature="n#t(:env_list_management_pack_license_tp_hint, :default=&gt;&quot;Panorama will access Oracle's 'Diagnostic Pack' and 'Tuning Pack' if you choose this option.\\nAvailable only for Enterprise Edition, not for Standard Edition&quot;)#0;n#!!top" expanded="true" />
                 <element signature="e#2314#2419#0#ruby" expanded="true" />
-                <element signature="n#t(:env_list_management_pack_license_none_hint, :default=&gt;&quot;Panorama will not access Oracle's 'Diagnostic Pack' or 'Tuning Pack' if you choose this option.\\nAs an alternative, own historic data produced by process \\&quot;Panorama-Sampler\\&quot; may be used.\\nThis function \\&quot;Panorama-Sampler\\&quot; is still in development, coming soon.\\n\\&quot;Panorama-Sampler\\&quot; will be available for Standard- and Enterprise-Edition.&quot;)#0;n#!!top" expanded="true" />
-                <element signature="e#3273#3368#0#ruby" expanded="true" />
+                <element signature="n#t(:env_list_management_pack_license_none_hint, :default=&gt;&quot;Panorama will not access Oracle's 'Diagnostic Pack' or 'Tuning Pack' if you choose this option.\\nAs an alternative, own historic data produced by process \\&quot;Panorama-Sampler\\&quot; may be used.\\nThis function \\&quot;Panorama-Sampler\\&quot; is still in development, coming soon.\\n\\&quot;Panorama-Sampler\\&quot; will become available for Standard- and Enterprise-Edition.&quot;)#0;n#!!top" expanded="true" />
+                <element signature="e#3277#3372#0#ruby" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -1411,14 +1409,7 @@
       <workItem from="1499377710132" duration="522000" />
       <workItem from="1499429544460" duration="1243000" />
       <workItem from="1499460389850" duration="31000" />
-      <workItem from="1499689640390" duration="5435000" />
-    </task>
-    <task id="LOCAL-00896" summary="Escape double quotes in JSON">
-      <created>1490104080855</created>
-      <option name="number" value="00896" />
-      <option name="presentableId" value="LOCAL-00896" />
-      <option name="project" value="LOCAL" />
-      <updated>1490104080855</updated>
+      <workItem from="1499689640390" duration="6122000" />
     </task>
     <task id="LOCAL-00897" summary="Escape double quotes in JSON per JS">
       <created>1490111325153</created>
@@ -1756,7 +1747,14 @@
       <option name="project" value="LOCAL" />
       <updated>1498251211480</updated>
     </task>
-    <option name="localTasksCounter" value="945" />
+    <task id="LOCAL-00945" summary="Panorama-Sampler choice">
+      <created>1499698652466</created>
+      <option name="number" value="00945" />
+      <option name="presentableId" value="LOCAL-00945" />
+      <option name="project" value="LOCAL" />
+      <updated>1499698652466</updated>
+    </task>
+    <option name="localTasksCounter" value="946" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1792,7 +1790,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1404465000" />
+    <option name="totallyTimeSpent" value="1405152000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1848,7 +1846,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="bugreport" />
     <MESSAGE value="Fix groupfilter for I/O-Lists" />
     <MESSAGE value="Check if header values fit reg. height" />
     <MESSAGE value="Show exec start and exec-id in session details" />
@@ -1873,7 +1870,8 @@
     <MESSAGE value="Show column other of explain plan with remote SQL" />
     <MESSAGE value="Unnecessary test" />
     <MESSAGE value="Show minutes and hours in mouseover hint" />
-    <option name="LAST_COMMIT_MESSAGE" value="Show minutes and hours in mouseover hint" />
+    <MESSAGE value="Panorama-Sampler choice" />
+    <option name="LAST_COMMIT_MESSAGE" value="Panorama-Sampler choice" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2335,16 +2333,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="421">
-          <caret line="32" column="149" lean-forward="false" selection-start-line="32" selection-start-column="149" selection-end-line="32" selection-end-column="149" />
+        <state relative-caret-position="258">
+          <caret line="22" column="13" lean-forward="true" selection-start-line="22" selection-start-column="13" selection-end-line="22" selection-end-column="13" />
           <folding>
             <element signature="n#t(:env_list_management_pack_license_caption, :default=&gt;'Usage of Oracle management packs by Panorama')#0;n#!!top" expanded="true" />
             <element signature="n#t(:env_list_management_pack_license_dp_hint, :default=&gt;&quot;Panorama will access Oracle's 'Diagnostic Pack' if you choose this option\\nbut doesn't access Oracle's 'Tuning Pack'.\\nAvailable only for Enterprise Edition, not for Standard Edition&quot;)#0;n#!!top" expanded="true" />
             <element signature="e#1400#1488#0#ruby" expanded="true" />
             <element signature="n#t(:env_list_management_pack_license_tp_hint, :default=&gt;&quot;Panorama will access Oracle's 'Diagnostic Pack' and 'Tuning Pack' if you choose this option.\\nAvailable only for Enterprise Edition, not for Standard Edition&quot;)#0;n#!!top" expanded="true" />
             <element signature="e#2314#2419#0#ruby" expanded="true" />
-            <element signature="n#t(:env_list_management_pack_license_none_hint, :default=&gt;&quot;Panorama will not access Oracle's 'Diagnostic Pack' or 'Tuning Pack' if you choose this option.\\nAs an alternative, own historic data produced by process \\&quot;Panorama-Sampler\\&quot; may be used.\\nThis function \\&quot;Panorama-Sampler\\&quot; is still in development, coming soon.\\n\\&quot;Panorama-Sampler\\&quot; will be available for Standard- and Enterprise-Edition.&quot;)#0;n#!!top" expanded="true" />
-            <element signature="e#3273#3368#0#ruby" expanded="true" />
+            <element signature="n#t(:env_list_management_pack_license_none_hint, :default=&gt;&quot;Panorama will not access Oracle's 'Diagnostic Pack' or 'Tuning Pack' if you choose this option.\\nAs an alternative, own historic data produced by process \\&quot;Panorama-Sampler\\&quot; may be used.\\nThis function \\&quot;Panorama-Sampler\\&quot; is still in development, coming soon.\\n\\&quot;Panorama-Sampler\\&quot; will become available for Standard- and Enterprise-Edition.&quot;)#0;n#!!top" expanded="true" />
+            <element signature="e#3277#3372#0#ruby" expanded="true" />
           </folding>
         </state>
       </provider>

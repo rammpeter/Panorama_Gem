@@ -25,7 +25,7 @@
         <%= label_tag(:management_pack_license_diagnostic_and_tuning_pack, t(:env_list_management_pack_license_tp_caption, :default=>'Diagnostic Pack and Tuning Pack are licensed'))%>
       </div>
 
-      <div class="float_left" title="<%= t(:env_list_management_pack_license_none_hint, :default=>"Panorama will not access Oracle's 'Diagnostic Pack' or 'Tuning Pack' if you choose this option.\nAs an alternative, own historic data produced by process \"Panorama-Sampler\" may be used.\nThis function \"Panorama-Sampler\" is still in development, coming soon.\n\"Panorama-Sampler\" will be available for Standard- and Enterprise-Edition.") %>">
+      <div class="float_left" title="<%= t(:env_list_management_pack_license_none_hint, :default=>"Panorama will not access Oracle's 'Diagnostic Pack' or 'Tuning Pack' if you choose this option.\nAs an alternative, own historic data produced by process \"Panorama-Sampler\" may be used.\nThis function \"Panorama-Sampler\" is still in development, coming soon.\n\"Panorama-Sampler\" will become available for Standard- and Enterprise-Edition.") %>">
         <%= radio_button_tag(:management_pack_license, :none, get_current_database[:management_pack_license] == :none,
                              :onclick=>"ajax_html('#{params[:update_area]}', 'env', 'set_management_pack_license', {management_pack_license: 'none', update_area: '#{params[:update_area]}'} );"
             )
