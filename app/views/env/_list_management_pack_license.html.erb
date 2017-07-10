@@ -7,28 +7,30 @@
   <div class="fieldset_input_outer">
     <fieldset class="fieldset_input">
     <legend><%= t(:env_list_management_pack_license_legend, :default=>'Licensing of management packs for your current database') %></legend>
-      <div class="float_left" title="<%= t(:env_list_management_pack_license_dp_hint, :default=>"Panorama will access Oracle's 'Diagnostic Pack' if you choose this option\nbut doesn't access Oracle's 'Tuning Pack'") %>">
+      <div class="float_left" title="<%= t(:env_list_management_pack_license_dp_hint, :default=>"Panorama will access Oracle's 'Diagnostic Pack' if you choose this option\nbut doesn't access Oracle's 'Tuning Pack'.\nAvailable only for Enterprise Edition, not for Standard Edition") %>">
         <%= radio_button_tag(:management_pack_license, :diagnostic_pack, get_current_database[:management_pack_license] == :diagnostic_pack,
-                             :onclick=>"ajax_html('#{params[:update_area]}', 'env', 'set_management_pack_license', {management_pack_license: 'diagnostic_pack', update_area: '#{params[:update_area]}'} );"
+                             :onclick=>"ajax_html('#{params[:update_area]}', 'env', 'set_management_pack_license', {management_pack_license: 'diagnostic_pack', update_area: '#{params[:update_area]}'} );",
+                             :disabled => @edition != :enterprise
             )
         %>
-        <%= t(:env_list_management_pack_license_dp_caption, :default=>'Diagnostic Pack is licensed')%>
+        <%= label_tag(:management_pack_license_diagnostic_pack, t(:env_list_management_pack_license_dp_caption, :default=>'Diagnostic Pack is licensed'))%>
       </div>
 
-      <div class="float_left" title="<%= t(:env_list_management_pack_license_tp_hint, :default=>"Panorama will access Oracle's 'Diagnostic Pack' and 'Tuning Pack' if you choose this option") %>">
+      <div class="float_left" title="<%= t(:env_list_management_pack_license_tp_hint, :default=>"Panorama will access Oracle's 'Diagnostic Pack' and 'Tuning Pack' if you choose this option.\nAvailable only for Enterprise Edition, not for Standard Edition") %>">
         <%= radio_button_tag(:management_pack_license, :diagnostic_and_tuning_pack, get_current_database[:management_pack_license] == :diagnostic_and_tuning_pack,
-                             :onclick=>"ajax_html('#{params[:update_area]}', 'env', 'set_management_pack_license', {management_pack_license: 'diagnostic_and_tuning_pack', update_area: '#{params[:update_area]}'} ); "
+                             :onclick=>"ajax_html('#{params[:update_area]}', 'env', 'set_management_pack_license', {management_pack_license: 'diagnostic_and_tuning_pack', update_area: '#{params[:update_area]}'} ); ",
+                             :disabled => @edition != :enterprise
             )
         %>
-        <%= t(:env_list_management_pack_license_tp_caption, :default=>'Diagnostic Pack and Tuning Pack are licensed')%>
+        <%= label_tag(:management_pack_license_diagnostic_and_tuning_pack, t(:env_list_management_pack_license_tp_caption, :default=>'Diagnostic Pack and Tuning Pack are licensed'))%>
       </div>
 
-      <div class="float_left" title="<%= t(:env_list_management_pack_license_none_hint, :default=>"Panorama will not access Oracle's 'Diagnostic Pack' or 'Tuning Pack' if you choose this option") %>">
+      <div class="float_left" title="<%= t(:env_list_management_pack_license_none_hint, :default=>"Panorama will not access Oracle's 'Diagnostic Pack' or 'Tuning Pack' if you choose this option.\nAs an alternative, own historic data produced by process \"Panorama-Sampler\" may be used.\nThis function \"Panorama-Sampler\" is still in development, coming soon.\n\"Panorama-Sampler\" will be available for Standard- and Enterprise-Edition.") %>">
         <%= radio_button_tag(:management_pack_license, :none, get_current_database[:management_pack_license] == :none,
                              :onclick=>"ajax_html('#{params[:update_area]}', 'env', 'set_management_pack_license', {management_pack_license: 'none', update_area: '#{params[:update_area]}'} );"
             )
         %>
-        <%= t(:env_list_management_pack_license_none_caption, :default=>'No management packs are licensed')%>
+        <%= label_tag(:management_pack_license_none, t(:env_list_management_pack_license_none_caption, :default=>'No management packs are licensed'))%>
       </div>
     </fieldset>
   </div>
