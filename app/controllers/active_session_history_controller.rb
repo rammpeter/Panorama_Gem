@@ -68,7 +68,7 @@ class ActiveSessionHistoryController < ApplicationController
       FROM   (SELECT /*+ NO_MERGE ORDERED */
                      10 Sample_Cycle, Instance_Number, #{get_ash_default_select_list}
               FROM   DBA_Hist_Active_Sess_History s
-              LEFT OUTER JOIN   (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
+              LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
               WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
               #{@dba_hist_where_string}
               UNION ALL
@@ -291,7 +291,7 @@ class ActiveSessionHistoryController < ApplicationController
       FROM   (SELECT /*+ NO_MERGE ORDERED */
                      10 Sample_Cycle, Instance_Number, #{get_ash_default_select_list}
               FROM   DBA_Hist_Active_Sess_History s
-              LEFT OUTER JOIN   (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
+              LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
               WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen */
               #{@dba_hist_where_string}
               UNION ALL
@@ -364,7 +364,7 @@ class ActiveSessionHistoryController < ApplicationController
       FROM   (SELECT /*+ NO_MERGE ORDERED */
                      10 Sample_Cycle, DBID, Instance_Number, Snap_ID, #{get_ash_default_select_list}
               FROM   DBA_Hist_Active_Sess_History s
-              LEFT OUTER JOIN   (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
+              LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
               WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
               #{@dba_hist_where_string}
               UNION ALL
@@ -460,7 +460,7 @@ class ActiveSessionHistoryController < ApplicationController
                                              #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
                                              p2, p2Text, Wait_Time, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Module, Action
                                       FROM   DBA_Hist_Active_Sess_History h
-                                      LEFT OUTER JOIN   (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = h.Instance_Number
+                                      LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = h.Instance_Number
                                       WHERE  (v.Min_Sample_Time IS NULL OR h.Sample_Time < v.Min_Sample_Time)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen  */
                                       AND    h.DBID = ?
                                       AND    h.Snap_ID BETWEEN ? AND ?
@@ -635,7 +635,7 @@ class ActiveSessionHistoryController < ApplicationController
                                      Snap_ID, Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2'}
                                      p2, p2Text, Wait_Time, Time_Waited, Current_Obj#, SQL_ID, SQL_Child_Number, User_ID, Event, Module, Action
                               FROM   DBA_Hist_Active_Sess_History h
-                              LEFT OUTER JOIN   (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = h.Instance_Number
+                              LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = h.Instance_Number
                               WHERE  (v.Min_Sample_Time IS NULL OR h.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
                               AND    h.DBID = ?
                               AND    h.Snap_ID BETWEEN ? AND ?
@@ -829,7 +829,7 @@ class ActiveSessionHistoryController < ApplicationController
         FROM   (SELECT /*+ NO_MERGE ORDERED */
                        DBID, 10 Sample_Cycle, Instance_Number, #{get_ash_default_select_list}
                 FROM   DBA_Hist_Active_Sess_History s
-                LEFT OUTER JOIN   (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
+                LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
                 WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen */
                 AND    s.Temp_Space_Allocated > 0
                 #{@dba_hist_where_string}
@@ -951,7 +951,7 @@ class ActiveSessionHistoryController < ApplicationController
         FROM   (SELECT /*+ NO_MERGE ORDERED */
                        DBID, 10 Sample_Cycle, Instance_Number, #{get_ash_default_select_list}
                 FROM   DBA_Hist_Active_Sess_History s
-                LEFT OUTER JOIN   (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
+                LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
                 WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen */
                 #{@dba_hist_where_string}
                 UNION ALL
