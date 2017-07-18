@@ -6,11 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Gemfile" afterPath="$PROJECT_DIR$/Gemfile" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/helpers/application_helper.rb" afterPath="$PROJECT_DIR$/app/helpers/application_helper.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/helpers/database_helper.rb" afterPath="$PROJECT_DIR$/app/helpers/database_helper.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/env/_start_page.html.erb" afterPath="$PROJECT_DIR$/app/views/env/_start_page.html.erb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/dummy/config/environments/development.rb" afterPath="$PROJECT_DIR$/test/dummy/config/environments/development.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -102,6 +98,16 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="75">
+              <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="oracle_enhanced_adapter.rb" pinned="false" current-in-tab="false">
         <entry file="file://$USER_HOME$/.rvm/gems/jruby-9.1.7.0/gems/activerecord-oracle_enhanced-adapter-1.7.11/lib/active_record/connection_adapters/oracle_enhanced_adapter.rb">
           <provider selected="true" editor-type-id="text-editor">
@@ -132,7 +138,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="application_helper.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="application_helper.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/helpers/application_helper.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="285">
@@ -167,16 +173,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="115">
               <caret line="21" column="0" lean-forward="false" selection-start-line="21" selection-start-column="0" selection-end-line="21" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Gemfile" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Gemfile">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="19" column="0" lean-forward="false" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -283,7 +279,6 @@
         <option value="$PROJECT_DIR$/app/controllers/dba_sga_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_detail_execution_plan.html.erb" />
         <option value="$PROJECT_DIR$/app/views/help/version_history.html" />
-        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/test/controllers/storage_controller_test.rb" />
         <option value="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" />
         <option value="$PROJECT_DIR$/app/views/active_session_history/_list_session_statistic_historic_grouping_table_def.html.erb" />
@@ -298,6 +293,7 @@
         <option value="$PROJECT_DIR$/test/dummy/config/database.yml" />
         <option value="$PROJECT_DIR$/app/helpers/application_helper.rb" />
         <option value="$PROJECT_DIR$/test/dummy/config/environments/development.rb" />
+        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
       </list>
     </option>
   </component>
@@ -1481,14 +1477,7 @@
       <workItem from="1499377710132" duration="522000" />
       <workItem from="1499429544460" duration="1243000" />
       <workItem from="1499460389850" duration="31000" />
-      <workItem from="1499689640390" duration="19308000" />
-    </task>
-    <task id="LOCAL-00899" summary="Suppress slickgrid header with width=0">
-      <created>1490264477191</created>
-      <option name="number" value="00899" />
-      <option name="presentableId" value="LOCAL-00899" />
-      <option name="project" value="LOCAL" />
-      <updated>1490264477191</updated>
+      <workItem from="1499689640390" duration="19475000" />
     </task>
     <task id="LOCAL-00900" summary="format first_load_time and last_load_time">
       <created>1490710574350</created>
@@ -1826,7 +1815,14 @@
       <option name="project" value="LOCAL" />
       <updated>1500203138907</updated>
     </task>
-    <option name="localTasksCounter" value="948" />
+    <task id="LOCAL-00948" summary="Switch from processes to threads (try)">
+      <created>1500405048115</created>
+      <option name="number" value="00948" />
+      <option name="presentableId" value="LOCAL-00948" />
+      <option name="project" value="LOCAL" />
+      <updated>1500405048115</updated>
+    </task>
+    <option name="localTasksCounter" value="949" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1862,7 +1858,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1418338000" />
+    <option name="totallyTimeSpent" value="1418505000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1918,7 +1914,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Check if header values fit reg. height" />
     <MESSAGE value="Show exec start and exec-id in session details" />
     <MESSAGE value="Reconstruct TEMP-Usage from system metrics" />
     <MESSAGE value="Reconstruct TEMP-Usage from system metrics, Rails 5.1.1" />
@@ -1943,7 +1938,8 @@
     <MESSAGE value="Show minutes and hours in mouseover hint" />
     <MESSAGE value="Panorama-Sampler choice" />
     <MESSAGE value="Ensure grouping first by NO_MERGE for filter on gv$Active_Session_History" />
-    <option name="LAST_COMMIT_MESSAGE" value="Ensure grouping first by NO_MERGE for filter on gv$Active_Session_History" />
+    <MESSAGE value="Switch from processes to threads (try)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Switch from processes to threads (try)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2170,14 +2166,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="518">
           <caret line="61" column="0" lean-forward="false" selection-start-line="61" selection-start-column="0" selection-end-line="61" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2443,6 +2431,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="285">
           <caret line="693" column="39" lean-forward="false" selection-start-line="693" selection-start-column="39" selection-end-line="693" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
           <folding />
         </state>
       </provider>
