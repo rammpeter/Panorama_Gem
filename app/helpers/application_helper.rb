@@ -673,6 +673,8 @@ module ApplicationHelper
     # Mapping auf sql_select_iterator
 
     result = []
+
+Rails.logger.info "sql_select_all Thread #{Thread.current.object_id} (#{Thread.list.count}) Conn: #{ConnectionHolder.connection.object_id} #{ConnectionHolder.connection.instance_variable_get(:@config)[:url]}"
     sql_select_iterator(sql, modifier, query_name).each do |r|
       result << r
     end
@@ -684,9 +686,13 @@ module ApplicationHelper
   # Parameter: sql = String mit Statement oder Array mit Statement und Bindevariablen
   #            modifier = proc für Anwendung auf die fertige Row
   def sql_select_iterator(sql, modifier=nil, query_name = 'sql_select_iterator')
+
+
     ConnectionHolder.check_for_open_connection(self)                            # ensure opened Oracle-connection
     transformed_sql = PackLicense.filter_sql_for_pack_license(sql, get_current_database[:management_pack_license])  # Check for lincense violation and possible statement transformation
     stmt, binds = sql_prepare_binds(transformed_sql)   # Transform SQL and split SQL and binds
+Rails.logger.info "sql_select_iterator Thread #{Thread.current.object_id} (#{Thread.list.count}) Conn: #{ConnectionHolder.connection.object_id} #{ConnectionHolder.connection.instance_variable_get(:@config)[:url]}"
+sleep 5
     SqlSelectIterator.new(translate_sql(stmt), binds, modifier, get_current_database[:query_timeout], query_name)      # kann per Aufruf von each die einzelnen Records liefern
   end
 

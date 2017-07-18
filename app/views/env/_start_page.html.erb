@@ -66,7 +66,6 @@
        column_options << {:caption=>'Application root clone',   :data=>proc{|rec| rec.application_root_clone},          :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
        column_options << {:caption=>'Proxy PDB',                :data=>proc{|rec| rec.proxy_pdb},                       :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
        column_options << {:caption=>'Local UNDO',               :data=>proc{|rec| rec.local_undo},                      :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
-       column_options << {:caption=>'Local UNDO',               :data=>proc{|rec| rec.local_undo},                      :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
        column_options << {:caption=>'Creation time',            :data=>proc{|rec| localeDateTime(rec.creation_time)},   :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
        column_options << {:caption=>'PDB count',                :data=>proc{|rec| fn rec.pdb_count},                    :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
        column_options << {:caption=>'Audit files size',         :data=>proc{|rec| fn rec.audit_files_size},             :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'

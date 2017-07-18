@@ -73,7 +73,6 @@ public
       else
         Rails.logger.info "Using already connected database: URL='#{jdbc_thin_url}' User='#{get_current_database[:user]}'"
       end
-
     else
       raise "Native ruby (RUBY_ENGINE=#{RUBY_ENGINE}) is no longer supported! Please use JRuby runtime environment! Call contact for support request if needed."
     end
