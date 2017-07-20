@@ -39,16 +39,10 @@ module ApplicationHelper
   end
 
   private
-  @@cached_encrypted_client_key = nil
-  @@cached_decrypted_client_key = nil
 
   # Ausliefern des client-Keys
-  def get_cached_client_key
-    if @@cached_encrypted_client_key.nil? || @@cached_decrypted_client_key.nil? || @@cached_encrypted_client_key != cookies['client_key']        # gecachten Wert neu belegen bei anderem Cookie-Inhalt
-      @@cached_decrypted_client_key = Encryption.decrypt_value(cookies['client_key'], cookies['client_salt'])                                    # Merken des entschlüsselten Cookies in Memory, wirft ActiveSupport::MessageVerifier::InvalidSignature wenn cookies['client_key'] == nil
-      @@cached_encrypted_client_key = cookies['client_key']                                                                                      # Merken des verschlüsselten Cookies für Vergleich bei nächstem Zugriff
-    end
-    @@cached_decrypted_client_key
+  def get_decrypted_client_key
+      Encryption.decrypt_value(cookies['client_key'], cookies['client_salt'])                                    # wirft ActiveSupport::MessageVerifier::InvalidSignature wenn cookies['client_key'] == nil
   rescue ActiveSupport::MessageVerifier::InvalidSignature => e
     Rails.logger.error("Exception '#{e.message}' raised while decrypting cookies['client_key'] (#{cookies['client_key']})")
     if cookies['client_key'].nil?
@@ -63,7 +57,7 @@ module ApplicationHelper
   public
   # Schreiben eines client-bezogenen Wertes in serverseitigen Cache
   def write_to_client_info_store(key, value)
-    cached_client_key = get_cached_client_key                                   # ausserhalb des Exception-Handlers, da evtl. ActiveSupport::MessageVerifier::InvalidSignature bereits in get_cached_client_key gefangen wird
+    cached_client_key = get_decrypted_client_key                                   # ausserhalb des Exception-Handlers, da evtl. ActiveSupport::MessageVerifier::InvalidSignature bereits in get_cached_client_key gefangen wird
     begin
       full_hash = get_client_info_store.read(cached_client_key)                 # Kompletten Hash aus Cache auslesen
       full_hash = {} if full_hash.nil? || full_hash.class != Hash               # Neustart wenn Struktur nicht passt
@@ -77,7 +71,7 @@ module ApplicationHelper
 
   # Lesen eines client-bezogenen Wertes aus serverseitigem Cache
   def read_from_client_info_store(key)
-    full_hash = get_client_info_store.read(get_cached_client_key)               # Auslesen des kompletten Hashes aus Cache
+    full_hash = get_client_info_store.read(get_decrypted_client_key)               # Auslesen des kompletten Hashes aus Cache
     return nil if full_hash.nil? || full_hash.class != Hash                     # Abbruch wenn Struktur nicht passt
     full_hash[key]
   end
