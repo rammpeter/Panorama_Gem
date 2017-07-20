@@ -71,7 +71,7 @@ class ApplicationController < ActionController::Base
 
     # Ausschluss von Methoden, die keine DB-Connection bebötigen
     # Präziser before_filter mit Test auf controller
-    if (controller_name == 'env' && ['index', 'get_tnsnames_records', 'set_locale', 'set_dbid', 'set_database_by_params', 'set_database_by_id'].include?(action_name) ) ||
+    if (controller_name == 'env' && ['index', 'get_tnsnames_records', 'set_locale', 'set_database_by_params', 'set_database_by_id'].include?(action_name) ) ||
               (controller_name == 'usage' && ['info', 'detail_sum', 'single_record', 'ip_info'].include?(action_name) ) ||
               (controller_name == 'help' && ['overview', 'version_history'].include?(action_name) )
       return
@@ -82,7 +82,7 @@ class ApplicationController < ActionController::Base
       raise 'No current DB connect info set! Please reconnect to DB!' unless current_database
       set_connection_info_for_request(current_database)
     rescue StandardError => e                                                   # Problem bei Zugriff auf verschlüsselte Cookies
-      Rails.logger.error "Error '#{e.message}' occured in ApplicationController.open_connnection"
+      Rails.logger.error "Error '#{e.message}' occured in ApplicationController.begin_request"
       raise "Error '#{e.message}' occured. Please close browser session and start again!"
     end
 

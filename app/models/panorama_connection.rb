@@ -118,7 +118,7 @@ class PanoramaConnection
   # Ensure initialized values if thread is reused
   def self.reset_thread_local_attributes
     Thread.current[:panorama_connection_app_info_set] = nil
-    #Thread.current[:panorama_connection_connect_info] = nil  # Repeated test requests will fail if reset this info here
+    Thread.current[:panorama_connection_connect_info] = nil
   end
 
   # Release connection at the end of request to mark free in pool or destroy
@@ -310,7 +310,7 @@ class PanoramaConnection
           :privilege  => Thread.current[:panorama_connection_connect_info][:privilege],
           :cursor_sharing => :exact             # oracle_enhanced_adapter setzt cursor_sharing per Default auf force
       )
-      Rails.logger.info "New database connection created: URL='#{jdbc_thin_url}' User='#{Thread.current[:panorama_connection_connect_info][:user]}' Pool size=#{@@connection_pool.count}"
+      Rails.logger.info "New database connection created: URL='#{jdbc_thin_url}' User='#{Thread.current[:panorama_connection_connect_info][:user]}' Pool size=#{@@connection_pool.count+1}"
 
       @@connection_pool_mutex.synchronize do
         @@connection_pool << {
