@@ -1,8 +1,7 @@
 # encoding: utf-8
 
 #require 'menu_extension_helper'
-require 'connection_holder'
-
+require 'panorama_connection'
 require 'key_explanation_helper'
 require 'ajax_helper'
 require 'diagram_helper'
@@ -46,7 +45,7 @@ module ApplicationHelper
   # Ausliefern des client-Keys
   def get_cached_client_key
     if @@cached_encrypted_client_key.nil? || @@cached_decrypted_client_key.nil? || @@cached_encrypted_client_key != cookies['client_key']        # gecachten Wert neu belegen bei anderem Cookie-Inhalt
-      @@cached_decrypted_client_key = database_helper_decrypt_value(cookies['client_key'])                                                       # Merken des entschlüsselten Cookies in Memory, wirft ActiveSupport::MessageVerifier::InvalidSignature wenn cookies['client_key'] == nil
+      @@cached_decrypted_client_key = Encryption.decrypt_value(cookies['client_key'], cookies['client_salt'])                                    # Merken des entschlüsselten Cookies in Memory, wirft ActiveSupport::MessageVerifier::InvalidSignature wenn cookies['client_key'] == nil
       @@cached_encrypted_client_key = cookies['client_key']                                                                                      # Merken des verschlüsselten Cookies für Vergleich bei nächstem Zugriff
     end
     @@cached_decrypted_client_key
@@ -506,17 +505,6 @@ module ApplicationHelper
 
   public
 
-  # Setzen einer neutralen Connection nach Abarbeitung des Requests, damit frühzeitiger Connect bei Beginn der Verarbeitung eines Requests nicht gegen die DB des letzten Requests geht
-  def set_dummy_db_connection
-    ConnectionHolder.establish_connection(:adapter  => 'nulldb')
-  rescue Exception=>ex
-    if ex.class == Java::JavaSql::SQLRecoverableException                       # Error disconnecting previous connection
-      Rails.logger.error "Exception #{ex.class.name} raised at set_dummy_db_connection"
-    else
-      raise ex
-    end
-  end
-
   # Rendern des Templates für Action, optionale mit Angabe des Partial-Namens wenn von Action abweicht
   # options support:
   #    :additional_javascript_string  = js-text
@@ -617,39 +605,13 @@ module ApplicationHelper
     }
   end
 
-  private
-
-  def sql_prepare_binds(sql)
-    binds = []
-    if sql.class == Array
-      stmt =sql[0].clone      # Kopieren, da im Stmt nachfolgend Ersetzung von ? durch :A1 .. :A<n> durchgeführt wird
-      # Aufbereiten SQL: Ersetzen Bind-Aliases
-      bind_index = 0
-      while stmt['?']                   # Iteration über Binds
-        bind_index = bind_index + 1
-        bind_alias = ":A#{bind_index}"
-        stmt['?'] = bind_alias          # Ersetzen ? durch Host-Variable
-        unless sql[bind_index]
-          raise "bind value at position #{bind_index} is NULL for '#{bind_alias}' in binds-array for sql: #{stmt}"
-        end
-        raise "bind value at position #{bind_index} missing for '#{bind_alias}' in binds-array for sql: #{stmt}" if sql.count <= bind_index
-        binds << ActiveRecord::Relation::QueryAttribute.new(bind_alias, sql[bind_index], ActiveRecord::Type::Value.new)   # Ab Rails 5
-        # binds << [ ActiveRecord::ConnectionAdapters::Column.new(bind_alias, nil, ActiveRecord::Type::Value.new), sql[bind_index]] # Neu ab Rails 4.2.0, Abstrakter Typ muss angegeben werden
-      end
-    else
-      if sql.class == String
-        stmt = sql
-      else
-        raise "Unsupported Parameter-Class '#{sql.class.name}' for parameter sql of sql_select_all(sql)"
-      end
-    end
-    [stmt, binds]
-  end
-
-  # Translate text in SQL-statement
-  def translate_sql(stmt)
-    stmt.gsub!(/\n[ \n]*\n/, "\n")                                                  # Remove empty lines in SQL-text
-    stmt
+  # Accessed by PanoramaConnection within request
+  def set_connection_info_for_request(current_database)
+    PanoramaConnection.set_connection_info_for_request(current_database.merge(
+        :client_salt              => cookies['client_salt'],
+        :current_controller_name  => controller_name,
+        :current_action_name      => action_name
+    ))
   end
 
   public
@@ -658,27 +620,7 @@ module ApplicationHelper
   #            modifier = proc für Anwendung auf die fertige Row
   # return Array of Hash mit Columns des Records
   def sql_select_all(sql, modifier=nil, query_name = 'sql_select_all')   # Parameter String mit SQL oder Array mit SQL und Bindevariablen
-    #### alte standalone-Lösung
-    # stmt, binds = sql_prepare_binds(sql)
-    # result = ConnectionHolder.connection().select_all(stmt, 'sql_select_all', binds)
-    # result.each do |h|
-    #   h.each do |key, value|
-    #     h[key] = value.strip if value.class == String   # Entfernen eines eventuellen 0x00 am Ende des Strings, dies führt zu Fehlern im Internet Explorer
-    #   end
-    #   h.extend SelectHashHelper    # erlaubt, dass Element per Methode statt als Hash-Element zugegriffen werden können
-    #   modifier.call(h) unless modifier.nil?             # Anpassen der Record-Werte
-    # end
-    # result.to_ary                                                               # Ab Rails 4 ist result nicht mehr vom Typ Array, sondern ActiveRecord::Result
-
-    # Mapping auf sql_select_iterator
-
-    result = []
-
-Rails.logger.info "sql_select_all Thread #{Thread.current.object_id} (#{Thread.list.count}) Conn: #{ConnectionHolder.connection.object_id} #{ConnectionHolder.connection.instance_variable_get(:@config)[:url]}"
-    sql_select_iterator(sql, modifier, query_name).each do |r|
-      result << r
-    end
-    result
+    PanoramaConnection.sql_select_all(sql, modifier, query_name)
   end
 
   # Analog sql_select all, jedoch return ResultIterator mit each-Method
@@ -686,29 +628,17 @@ Rails.logger.info "sql_select_all Thread #{Thread.current.object_id} (#{Thread.l
   # Parameter: sql = String mit Statement oder Array mit Statement und Bindevariablen
   #            modifier = proc für Anwendung auf die fertige Row
   def sql_select_iterator(sql, modifier=nil, query_name = 'sql_select_iterator')
-
-
-    ConnectionHolder.check_for_open_connection(self)                            # ensure opened Oracle-connection
-    transformed_sql = PackLicense.filter_sql_for_pack_license(sql, get_current_database[:management_pack_license])  # Check for lincense violation and possible statement transformation
-    stmt, binds = sql_prepare_binds(transformed_sql)   # Transform SQL and split SQL and binds
-Rails.logger.info "sql_select_iterator Thread #{Thread.current.object_id} (#{Thread.list.count}) Conn: #{ConnectionHolder.connection.object_id} #{ConnectionHolder.connection.instance_variable_get(:@config)[:url]}"
-sleep 5
-    SqlSelectIterator.new(translate_sql(stmt), binds, modifier, get_current_database[:query_timeout], query_name)      # kann per Aufruf von each die einzelnen Records liefern
+    PanoramaConnection.sql_select_iterator(sql, modifier, query_name)
   end
-
 
   # Select genau erste Zeile
   def sql_select_first_row(sql, query_name = 'sql_select_first_row')
-    result = sql_select_all(sql, nil, query_name)
-    return nil if result.empty?
-    result[0]     #.extend SelectHashHelper      # Erweitern Hash um Methodenzugriff auf Elemente
+    PanoramaConnection.sql_select_first_row(sql, query_name)
   end
 
   # Select genau einen Wert der ersten Zeile des Result
   def sql_select_one(sql, query_name = 'sql_select_one')
-    result = sql_select_first_row(sql, query_name)
-    return nil unless result
-    result.first[1]           # Value des Key/Value-Tupels des ersten Elememtes im Hash
+    PanoramaConnection.sql_select_one(sql, query_name)
   end
 
 

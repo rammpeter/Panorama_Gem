@@ -1,4 +1,5 @@
 # requires config/environment.rb loaded a'la: require File.expand_path("../../test/dummy/config/environment.rb", __FILE__)
+require 'encryption'
 
 class ActiveSupport::TestCase
   include ApplicationHelper
@@ -16,6 +17,14 @@ class ActiveSupport::TestCase
   # Sicherstellen, dass immer auf ein aktuelles Sessin-Objekt zurückgegriffern werden kann
   def session
     @session
+  end
+
+  def controller_name                                                           # Dummy to fulfill requirements of set_connection_info_for_request
+    'oracle_connection_test_helper.rb'
+  end
+
+  def action_name                                                               # Dummy to fulfill requirements of set_connection_info_for_request
+    'Test'
   end
 
   #def cookies
@@ -54,12 +63,14 @@ class ActiveSupport::TestCase
 
 
     # Passwort verschlüsseln in session
-    current_database[:password] = database_helper_encrypt_value(test_config["test_password"])
+    current_database[:password] = Encryption.encrypt_value(test_config["test_password"], cookies['client_salt'])
     write_to_client_info_store(:current_database, current_database)
 
 
     # puts "Test for #{ENV['DB_VERSION']} with #{database.user}/#{database.password}@#{database.host}:#{database.port}:#{database.sid}"
-    open_oracle_connection                                                      # Connection zur Test-DB aufbauen, um Parameter auszulesen
+    # TODO Sollte so nicht mehr notwendig sein
+    #open_oracle_connection                                                      # Connection zur Test-DB aufbauen, um Parameter auszulesen
+    set_connection_info_for_request(current_database)
     read_initial_db_values                                                      # evtl. Exception tritt erst beim ersten Zugriff auf
 
     # DBID is set at first request after login normally

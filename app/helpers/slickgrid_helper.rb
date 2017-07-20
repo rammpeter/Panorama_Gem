@@ -186,7 +186,7 @@ module SlickgridHelper
       true if Float(object) rescue false
     end
 
-    raise "gen_slickgrid: Parameter-Type #{data.class.name} found for parameter data, but Array expected" unless data.class == Array || data.class == SqlSelectIterator
+    raise "gen_slickgrid: Parameter-Type #{data.class.name} found for parameter data, but Array or SqlSelectIterator expected" unless ['Array', 'PanoramaConnection::SqlSelectIterator'].include? data.class.name
     raise "gen_slickgrid: Parameter-Type #{column_options.class.name} found for parameter column_options, but Array expected"  unless column_options.class == Array
 
     # Defaults für global_options

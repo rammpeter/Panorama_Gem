@@ -1,6 +1,7 @@
 # hold open SQL-Cursor and iterate over SQL-result without storing whole result in Array
 # Peter Ramm, 02.03.2016
 
+=begin
 require 'active_record/connection_adapters/oracle_enhanced/connection'
 require 'active_record/connection_adapters/oracle_enhanced_adapter'
 
@@ -92,7 +93,7 @@ class SqlSelectIterator
 
   def each(&block)
     # Execute SQL and call block for every record of result
-    ConnectionHolder.connection.iterate_query(@stmt, @query_name, @binds, @modifier, @query_timeout, &block)
+    ConnectionHolder.get_connection.iterate_query(@stmt, @query_name, @binds, @modifier, @query_timeout, &block)
   rescue Exception => e
     bind_text = ''
     @binds.each do |b|
@@ -107,3 +108,4 @@ class SqlSelectIterator
 
 end
 
+=end

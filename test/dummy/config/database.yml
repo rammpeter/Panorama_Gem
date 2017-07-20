@@ -76,9 +76,9 @@ test_12.1_SE:
 test_12.2_PDB:
   adapter: nulldb
 
-  test_url:      jdbc:oracle:thin:@140.86.9.99:1521/pdb1.a195079.oraclecloud.internal
-  test_username: panorama_test
-  test_password: Ddcwovsfanax12#
+  test_url:      jdbc:oracle:thin:@localhost:1521/orclpdb1
+  test_username: system
+  test_password: oracle
 
 
 test_12.2_CDB:

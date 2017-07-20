@@ -17,7 +17,7 @@ class EnvControllerTest <  ActionDispatch::IntegrationTest
 
   test "should connect to test-db with xhr: true" do
     database = get_current_database
-    database[:password] = database_helper_decrypt_value(database[:password])
+    database[:password] = Encryption.decrypt_value(database[:password], cookies['client_salt'])
 
     # Test with new login parameters
     database[:save_login] = '1'                                                 # String insted of bool like for connect with saved credentials
@@ -70,14 +70,11 @@ class EnvControllerTest <  ActionDispatch::IntegrationTest
 
 
   test "Diverses with xhr: true" do
-
-
     post '/env/list_dbids', :params => {:format=>:html, :update_area=>:hugo}
     assert_response :success
 
     post '/env/set_dbid', :params => {:format=>:html, :dbid =>get_dbid, :update_area=>:hugo }  # Alten Wert erneut setzen um andere Tests nicht zu gefährden
     assert_response :success
-
   end
 
   test "Startup_Without_Ajax" do

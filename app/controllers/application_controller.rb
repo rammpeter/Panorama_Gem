@@ -26,7 +26,8 @@ class ApplicationController < ActionController::Base
 
   # Abfangen aller Exceptions während Verarbeitung von Controller-Actions
   def global_exception_handler(exception)
-    close_connection  # Umsetzen der Connection auf NullDB bei Auftreten von Exception während Verarbeitung (after_Filter wird nicht mehr durchlaufen)
+    PanoramaConnection.destroy_connection                                       # Ensure next requests gets new database connection after exception
+    PanoramaConnection.reset_thread_local_attributes
 
     @exception = exception                                                      # Sichtbarkeit im template
     @request   = request
@@ -56,8 +57,6 @@ class ApplicationController < ActionController::Base
 
   # Ausführung vor jeden Request
   def begin_request
-    ConnectionHolder.init_connection_for_new_request(controller_name, action_name)  # Register new request for delayed connection to Oracle DB with first SQL execution
-
     @statusbar_message = ''                                                     # manipulation only by add_statusbar_message
 
     begin
@@ -80,6 +79,8 @@ class ApplicationController < ActionController::Base
 
     begin
       current_database = read_from_client_info_store(:current_database)
+      raise 'No current DB connect info set! Please reconnect to DB!' unless current_database
+      set_connection_info_for_request(current_database)
     rescue StandardError => e                                                   # Problem bei Zugriff auf verschlüsselte Cookies
       Rails.logger.error "Error '#{e.message}' occured in ApplicationController.open_connnection"
       raise "Error '#{e.message}' occured. Please close browser session and start again!"
@@ -106,25 +107,16 @@ class ApplicationController < ActionController::Base
     rescue Exception => e
       Rails.logger.warn("#### ApplicationController.begin_request: #{t(:application_helper_usage_error, :default=>'Exception while writing in')} #{filename}: #{e.message}")
     end
-
-  rescue Exception
-    set_dummy_db_connection                                                     # Sicherstellen, dass für nächsten Request gültige Connection existiert
-    raise # "Error while connecting to #{database_helper_raw_tns}"              # Explizit anzeige des Connect-Problemes als Popup-Message
   end
 
   # Aktivitäten nach Requestbearbeitung
   def after_request
-    # Letzte Connection offen lassen
-    # close_connection   # Sicherstellen, dass naechster Request nicht mit der aktuellen Connection einfach weiter macht
+    PanoramaConnection.release_connection                                       # Free DB connection
+    PanoramaConnection.reset_thread_local_attributes
   end
-
-  # Ausfüherung nach jedem Request ohne Ausnahme
-  def close_connection
-    set_dummy_db_connection
-  end
-
 
 protected
+
   # Ausgabe der Meldungen einer Exception
   def alert_exception(exception, header='', format=:js)
     if exception

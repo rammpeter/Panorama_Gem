@@ -119,8 +119,8 @@ class EnvController < ApplicationController
       @version_info << ({:banner => "DB timezone offset: #{@database_info.dbtimezone}", :client_info=>"SYSDATE = '#{localeDateTime(@database_info.sysdate)}'" }.extend SelectHashHelper)
 
       @version_info.each {|vi| vi[:client_info] = nil if vi[:client_info].nil? }                         # each row should have this column defined
-      @version_info[0][:client_info] = "JDBC connect string = \"#{jdbc_thin_url}\""                                                                           if @version_info.count > 0
-      @version_info[1][:client_info] = "JDBC driver version = \"#{ConnectionHolder.get_jdbc_driver_version}\""                                                if @version_info.count > 1
+      @version_info[0][:client_info] = "JDBC connect string = \"#{PanoramaConnection.jdbc_thin_url}\""                                                                           if @version_info.count > 0
+      @version_info[1][:client_info] = "JDBC driver version = \"#{PanoramaConnection.get_jdbc_driver_version}\""                                                if @version_info.count > 1
       @version_info[2][:client_info] = "Client time zone = \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}"  if @version_info.count > 2
       @version_info[3][:client_info] = "Client NLS setting = \"#{client_info.nls_lang}\""                                                                        if @version_info.count > 3
 
@@ -202,7 +202,7 @@ class EnvController < ApplicationController
   # Aufgerufen aus dem Anmelde-Dialog für DB mit Angabe der Login-Info
   def set_database_by_params
     # Passwort sofort verschlüsseln als erstes und nur in verschlüsselter Form in session-Hash speichern
-    params[:database][:password]  = database_helper_encrypt_value(params[:database][:password])
+    params[:database][:password]  =  Encryption.encrypt_value(params[:database][:password], cookies['client_salt'])
 
     #set_I18n_locale(params[:database][:locale])  # locale is set directly before, use this
     set_database(true)
@@ -280,7 +280,6 @@ class EnvController < ApplicationController
                                    "
           }
         end
-        set_dummy_db_connection
         return
       end
       # Alternative settings for connection if connect with current_database[:modus] == 'tns' does not work
@@ -302,7 +301,6 @@ class EnvController < ApplicationController
                                    "
           }
         end
-        set_dummy_db_connection
         return
       end
       if params[:database][:authorization]== nil || params[:database][:authorization]!="meyer"
@@ -312,13 +310,14 @@ class EnvController < ApplicationController
                                    "
           }
         end
-        set_dummy_db_connection
         return
       end
     end
 
     set_current_database(current_database)                                      # Persist current database setting in cache
+    set_connection_info_for_request(current_database)                           # Pin connection info for following request
     current_database = nil                                                      # Diese Variable nicht mehr verwenden ab jetzt, statt dessen get_current_database verwenden
+
 
     # First SQL execution opens Oracle-Connection
 
@@ -328,40 +327,33 @@ class EnvController < ApplicationController
         begin
           sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"    # Connect with TNS-Alias has second try if does not function
         rescue Exception => e                                                   # Switch to host/port/sid instead
-          Rails.logger.error "Error connecting to database: URL='#{jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
+          Rails.logger.error "Error connecting to database: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
           Rails.logger.error e.message
           e.backtrace.each do |bt|
             Rails.logger.error bt
           end
 
           set_current_database(get_current_database.merge({:modus => 'host', :tns => get_host_tns(get_current_database)}))
-          Rails.logger.info "Second try to connect with host/port/sid instead of TNS-alias: URL='#{jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
+          Rails.logger.info "Second try to connect with host/port/sid instead of TNS-alias: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
           sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"    # Connect with host/port/sid as second try if does not function
         end
       else
         sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"      # Connect with host/port/sid should function at first try
       end
     rescue Exception => e
-      Rails.logger.error "Error connecting to database: URL='#{jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
+      Rails.logger.error "Error connecting to database: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
       Rails.logger.error e.message
       e.backtrace.each do |bt|
         Rails.logger.error bt
       end
 
-      set_dummy_db_connection
       respond_to do |format|
-#        format.html {render :html => "#{t(:env_connect_error, :default=>'Error connecting to database')}: <br/>
-#                                                                      #{e.message}<br/><br/>
-#                                                                      URL:  '#{jdbc_thin_url}'<br/>
-#                                                                      Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}
-#                                                                      <script type='text/javascript'>$('#login_dialog').effect('shake', { times:3 }, 100);</script>
-#                                                                     ".html_safe
         format.js {render :js => "show_status_bar_message('#{
                                           my_html_escape("#{
 t(:env_connect_error, :default=>'Error connecting to database')}:
 #{e.message}
 
-JDBC URL:  '#{jdbc_thin_url}'
+JDBC URL:  '#{PanoramaConnection.jdbc_thin_url}'
 Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}
 
                                                          ")
@@ -374,7 +366,7 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
     end
 
     # Merken interner DB-Name und ohne erneuten DB-Zugriff
-    set_current_database(get_current_database.merge( { :database_name => ConnectionHolder.current_database_name } ))
+    set_current_database(get_current_database.merge( { :database_name => sql_select_one("SELECT SYS_CONTEXT('userenv', 'db_name') FROM dual")  } ))
     write_connection_to_last_logins
 
     initialize_unique_area_id                                                   # Zaehler für eindeutige IDs ruecksetzen
@@ -414,15 +406,7 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
                                 "
       }
     end
-  rescue Exception=>e
-    set_dummy_db_connection                                                     # Rückstellen auf neutrale DB
-    raise e
   end
-
-
-
-
-
 
   # Rendern des zugehörigen Templates, wenn zugehörige Action nicht selbst existiert
   def render_menu_action
@@ -499,7 +483,7 @@ public
   def list_management_pack_license
     @control_management_pack_access = read_control_management_pack_access       # ab Oracle 11 belegt
     @edition = :enterprise                                                      # default assumption
-    @edition = :standard if sql_select_one("SELECT COUNT(*) FROM v$version WHERE Banner like '%Standard Edition%'") > 0
+    @edition = :standard if PanoramaConnection.sql_select_one("SELECT COUNT(*) FROM v$version WHERE Banner like '%Standard Edition%'") > 0
 
     render_partial :list_management_pack_license
   end

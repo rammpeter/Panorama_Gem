@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 require "zlib"
-#require 'database_helper'
+require 'encryption'
 
 module EnvHelper
   include DatabaseHelper
@@ -89,7 +89,7 @@ module EnvHelper
   def initialize_client_key_cookie
     if cookies['client_key']
       begin
-        database_helper_decrypt_value(cookies['client_key'])                    # Test client_key-Cookie for possible decryption
+        Encryption.decrypt_value(cookies['client_key'], cookies['client_salt']) # Test client_key-Cookie for possible decryption
       rescue Exception => e
         Rails.logger.error("Exception #{e.message} while database_helper_decrypt_value(cookies['client_key'])")
         cookies.delete('client_key')                                            # Verwerfen des nicht entschlüsselbaren Cookies
@@ -104,8 +104,8 @@ module EnvHelper
         new_client_key = rand(10000000)
         unless get_client_info_store.exist?(new_client_key)                     # Dieser Key wurde noch nie genutzt
           # Salt immer mit belegen bei Vergabe des client_key, da es genutzt wird zur Verschlüsselung des Client_Key im cookie
-          cookies['client_salt'] = { :value => rand(10000000000),                              :expires => 1.year.from_now }  # Lokaler Schlüsselbestandteil im Browser-Cookie des Clients, der mit genutzt wird zur Verschlüsselung der auf Server gespeicherten Login-Daten
-          cookies['client_key']  = { :value => database_helper_encrypt_value(new_client_key),  :expires => 1.year.from_now }
+          cookies['client_salt'] = { :value => rand(10000000000),                                                 :expires => 1.year.from_now }  # Lokaler Schlüsselbestandteil im Browser-Cookie des Clients, der mit genutzt wird zur Verschlüsselung der auf Server gespeicherten Login-Daten
+          cookies['client_key']  = { :value => Encryption.encrypt_value(new_client_key, cookies['client_salt']),  :expires => 1.year.from_now }
           get_client_info_store.write(new_client_key, 1)                        # Marker fuer Verwendung des Client-Keys
           break
         end

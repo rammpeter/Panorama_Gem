@@ -1020,7 +1020,7 @@ Solution: Execute as user 'SYS':
     
   def show_explain_plan
     statement = params[:statement].rstrip.gsub(/;$/, "")       # führendes Semikolon entfernen
-    ConnectionHolder.connection.execute "EXPLAIN PLAN SET Statement_ID='Panorama' FOR " + statement
+    PanoramaConnection.sql_execute "EXPLAIN PLAN SET Statement_ID='Panorama' FOR " + statement
     @plans = sql_select_iterator ["\
         SELECT /* Panorama-Tool Ramm */
           Operation, Options, Object_Owner, Object_Name, Optimizer,
@@ -1032,7 +1032,7 @@ Solution: Execute as user 'SYS':
         ]
 
     render_partial :list_explain_plan
-    ConnectionHolder.connection.execute "DELETE FROM Plan_Table WHERE STatement_ID='Panorama'"
+    PanoramaConnection.sql_execute "DELETE FROM Plan_Table WHERE STatement_ID='Panorama'"
   end
   
   
@@ -1083,7 +1083,7 @@ Solution: Execute as user 'SYS':
     end # get_values
 
     # Sicherstellen, dass SQL-Sortierung analog der Sortierung in Ruby erfolgt
-    ConnectionHolder.connection.execute "ALTER SESSION SET NLS_SORT=BINARY"
+    PanoramaConnection.sql_execute "ALTER SESSION SET NLS_SORT=BINARY"
 
     @header = params[:statistic_name][:statistic_name]
 
@@ -1101,8 +1101,9 @@ Solution: Execute as user 'SYS':
     if sampletime == 0    # Kein Sample gewünscht
       data2 = data1       # selbes Result noch einmal verwenden
     else
-      sleep sampletime     
-      ConnectionHolder.connection.clear_query_cache # Result-Caching Ausschalten für wiederholten Zugriff
+      sleep sampletime
+      # raw JDBC connection does not cache results
+      # PanoramaConnection.get_connection.clear_query_cache # Result-Caching Ausschalten für wiederholten Zugriff
       data2 = get_values    # Snapshot nach SampleTime
     end
     @data = []            # Leeres Array für Result

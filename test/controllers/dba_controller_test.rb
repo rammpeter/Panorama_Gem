@@ -12,6 +12,7 @@ class DbaControllerTest < ActionController::TestCase
     time_selection_start  = time_selection_end-10000
     @time_selection_end = time_selection_end.strftime("%d.%m.%Y %H:%M")
     @time_selection_start = time_selection_start.strftime("%d.%m.%Y %H:%M")
+    @DBA_KGLLOCK_exists = sql_select_one("select COUNT(*) from dba_views where view_name='DBA_KGLLOCK' ")
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
@@ -20,7 +21,7 @@ class DbaControllerTest < ActionController::TestCase
   end
 
 
-  test "dba with xhr: true"       do
+  test "redologs with xhr: true"       do
     get  :show_redologs, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
 
@@ -28,17 +29,22 @@ class DbaControllerTest < ActionController::TestCase
     assert_response :success
     post :list_redologs_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :update_area=>:hugo }
     assert_response :success
+  end
 
+  test "locks with xhr: true"       do
     post :list_dml_locks, :params => {:format=>:html }
     assert_response :success
 
-
-    if sql_select_one("select COUNT(*) from dba_views where view_name='DBA_KGLLOCK' ") > 0      # Nur Testen wenn View auch existiert
+    if @DBA_KGLLOCK_exists > 0      # Nur Testen wenn View auch existiert
       post :list_ddl_locks, :format=>:html;  assert_response :success
     end
 
     post :list_blocking_dml_locks, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
+  end
+
+  test "dba with xhr: true"       do
+
 
     post :list_sessions, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
