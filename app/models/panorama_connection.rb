@@ -147,7 +147,7 @@ class PanoramaConnection
     @@connection_pool.each do |conn|
       if conn[:jdbc_connection] == destroy_conn
         config = conn[:jdbc_connection].instance_variable_get(:@config)
-        Rails.logger.info "Database connection destroyed: URL='#{config[:url]}' User='#{config[:username]}' Last used=#{conn[:last_used_time]}"
+        Rails.logger.info "Database connection destroyed: URL='#{config[:url]}' User='#{config[:username]}' Last used=#{conn[:last_used_time]} Pool size=#{@@connection_pool.count}"
         begin
           conn[:jdbc_connection].logoff
         rescue Exception => e
@@ -273,7 +273,7 @@ class PanoramaConnection
             !conn[:used_in_thread] &&
             connection_config[:url] == jdbc_thin_url &&
             connection_config[:username] == Thread.current[:panorama_connection_connect_info][:user]
-          Rails.logger.info "Using existing database connection from pool: URL='#{jdbc_thin_url}' User='#{Thread.current[:panorama_connection_connect_info][:user]}' Last used=#{conn[:last_used_time]}"
+          Rails.logger.info "Using existing database connection from pool: URL='#{jdbc_thin_url}' User='#{Thread.current[:panorama_connection_connect_info][:user]}' Last used=#{conn[:last_used_time]} Pool size=#{@@connection_pool.count}"
           conn[:used_in_thread] = true                                          # Mark as used in pool and leave loop
           conn[:last_used_time] = Time.now                                      # Reset ast used time
           retval = conn[:jdbc_connection]
@@ -310,7 +310,7 @@ class PanoramaConnection
           :privilege  => Thread.current[:panorama_connection_connect_info][:privilege],
           :cursor_sharing => :exact             # oracle_enhanced_adapter setzt cursor_sharing per Default auf force
       )
-      Rails.logger.info "New database connection created: URL='#{jdbc_thin_url}' User='#{Thread.current[:panorama_connection_connect_info][:user]}'"
+      Rails.logger.info "New database connection created: URL='#{jdbc_thin_url}' User='#{Thread.current[:panorama_connection_connect_info][:user]}' Pool size=#{@@connection_pool.count}"
 
       @@connection_pool_mutex.synchronize do
         @@connection_pool << {
