@@ -262,7 +262,7 @@ class PanoramaConnection
     end
   end
 
-  # get existing free connection from pool or create new one
+  # get existing free connection from pool or create new connection
   def self.retrieve_from_pool_or_create_new_connection
     retval = nil
     @@connection_pool_mutex.synchronize do
@@ -285,7 +285,7 @@ class PanoramaConnection
       raise "Native ruby (RUBY_ENGINE=#{RUBY_ENGINE}) is no longer supported! Please use JRuby runtime environment! Call contact for support request if needed." if !defined?(RUBY_ENGINE) || RUBY_ENGINE != "jruby"
 
       # Shrink connection pool / reuse connection from pool if size exceeds limit
-      if @@connection_pool.count >= MAX_CONNECTION_POOL_SIZE
+      while @@connection_pool.count >= MAX_CONNECTION_POOL_SIZE
         # find oldest idle connection and free it
         @@connection_pool_mutex.synchronize do
           idle_conns =  @@connection_pool.select {|e| !e[:used_in_thread] }.sort { |a, b| a[:last_used_time] <=> b[:last_used_time] }
