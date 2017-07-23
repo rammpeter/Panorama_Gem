@@ -391,16 +391,15 @@ module ApplicationHelper
 
 
 
-  @@block_classes = nil
   # Schnell zu selektierende Information zu Wait-Event-Parametern
   def quick_wait_params_info(event, p1, p1text, p1raw, p2, p2text, p2raw, p3, p3text, p3raw)
     def get_wait_stat_class_name(id)  # Ermitteln WaitStat aus x. Position nach Class-ID
       return '' unless id
       id = id.to_i
-      unless @@block_classes           # Klassenvariable einmalig mit Daten befüllen wenn leer
-        @@block_classes = {}
+      unless @block_classes           # Klassenvariable einmalig mit Daten befüllen wenn leer
+        @block_classes = {}
         sql_select_all('SELECT /* Panorama-Tool Ramm */ RowNum, class ClassName FROM v$WaitStat').each do |w|
-          @@block_classes[w.rownum.to_i] = w.classname
+          @block_classes[w.rownum.to_i] = w.classname
         end
       end
 
@@ -411,7 +410,7 @@ module ApplicationHelper
         id = id - (undo_segment-1)*2 # Verbleibende ID 17, 18
         addition = "Undo-Segment=#{undo_segment}"
       end
-      "Block-Class=#{id} (#{@@block_classes[id]}) #{addition}"
+      "Block-Class=#{id} (#{@block_classes[id]}) #{addition}"
     end
 
 
