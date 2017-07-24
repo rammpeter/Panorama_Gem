@@ -57,9 +57,7 @@ class ActiveSupport::TestCase
 
     # Config im Cachestore ablegen
     # Sicherstellen, dass ApplicationHelper.get_cached_client_key nicht erneut den client_key entschlüsseln will
-    @@cached_encrypted_client_key = '100'
-    @@cached_decrypted_client_key = '100'
-    cookies[:client_key]          = '100'
+    initialize_client_key_cookie
 
 
     # Passwort verschlüsseln in session
