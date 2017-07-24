@@ -45,6 +45,7 @@ module ApplicationHelper
       Encryption.decrypt_value(cookies['client_key'], cookies['client_salt'])                                    # wirft ActiveSupport::MessageVerifier::InvalidSignature wenn cookies['client_key'] == nil
   rescue ActiveSupport::MessageVerifier::InvalidSignature => e
     Rails.logger.error("Exception '#{e.message}' raised while decrypting cookies['client_key'] (#{cookies['client_key']})")
+    log_exception_backtrace(e, 20)
     if cookies['client_key'].nil?
       raise("Your browser does not allow cookies for this URL!\nPlease enable usage of browser cookies for this URL and reload the page.")
     else
@@ -572,6 +573,15 @@ module ApplicationHelper
   # Alias-Bezeichnung für Alle in Combobox
   def all_dropdown_selector_name
     "[ #{t(:all, :default=>'All')} ]"
+  end
+
+  def log_exception_backtrace(exception, line_number_limit=nil)
+    Rails.logger.error "Stack-Trace for exception: #{exception.message}"
+    curr_line_no=0
+    exception.backtrace.each do |bt|
+      Rails.logger.error bt if line_number_limit.nil? || curr_line_no < line_number_limit # report First x lines of stacktrace in log
+      curr_line_no += 1
+    end
   end
 
   # Ausgabe des Textes auf Panel

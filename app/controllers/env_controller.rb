@@ -160,12 +160,7 @@ class EnvController < ApplicationController
       end
     rescue Exception => e
       Rails.logger.error "Exception: #{e.message}"
-      curr_line_no=0
-      e.backtrace.each do |bt|
-        Rails.logger.error bt if curr_line_no < 20                                # report First 20 lines of stacktrace in log
-        curr_line_no += 1
-      end
-
+      log_exception_backtrace(e, 20)
       raise "Your user is missing SELECT-right on gv$Instance, gv$Database.\nPlease ensure that your user has granted SELECT ANY DICTIONARY.\nPanorama is not usable with this user account!\n\n #{e.message}"
     end
 
