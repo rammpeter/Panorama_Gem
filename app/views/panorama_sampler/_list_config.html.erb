@@ -1,12 +1,30 @@
 <%
   @update_area = get_unique_area_id
 
+  def render_action_buttons(rec)
+    "<div style=\"float:left\">#{
+    ajax_submit('Edit', {
+        :update_area => @update_area,
+        :action      => :show_edit_config_form,
+        :id          => rec[:id]
+    }, :title => 'Add new database config'
+    )}</div><div>#{
+    ajax_submit('Delete', {
+        :update_area => :content_for_layout,
+        :action      => :delete_config,
+        :id          => rec[:id]
+    }, :title => 'Delete configuration record',
+        :onclick=>"return confirm('Delete config entry with ID = #{rec[:id]} ?');return false;"
+    )}</div>"
+  end
+
   column_options =
   [
     {:caption=>'ID',                  :data=>proc{|rec| rec[:id]},                  :title=>"Unique identifier", :align=>:right},
     {:caption=>'Config. name',        :data=>proc{|rec| rec[:name]},                :title=>"Name / description for configuration"},
     {:caption=>'Username',            :data=>proc{|rec| rec[:username]},            :title=>"Name of user to store Panorama's tables for workload recording"},
     {:caption=>"Snapshot retention",  :data=>proc{|rec| rec[:snapshot_retention]},  :title=>"Delay between snapshots in minutes"},
+    {:caption=>'Action',              :data=>proc{|rec| render_action_buttons(rec) } },
   ]
 
 %>

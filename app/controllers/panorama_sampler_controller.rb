@@ -50,10 +50,18 @@ class PanoramaSamplerController < ApplicationController
           :password           => params[:password],
           :snapshot_retention => params[:snapshot_retention].to_i,
       }
-      x = 5
     end
     if params[:modus] == 'edit'
       configs = []
+    end
+    write_current_sampler_config(configs)
+    list_config
+  end
+
+  def delete_config
+    configs = read_current_sampler_config
+    configs.each_index do |i|
+      configs.delete_at(i) if configs[i][:id] == params[:id].to_i
     end
     write_current_sampler_config(configs)
     list_config

@@ -1,6 +1,12 @@
 <div class="page_caption"><%= @modus==:new ? 'Add new' : 'Edit' %> Panorama-Sampler configuration</div>
 
-<%= ajax_form(:controller => :panorama_sampler, :action => :save_config, :update_area => :content_for_layout, :modus => @modus) do %>
+<%= ajax_form(
+        :controller   => :panorama_sampler,
+        :action       => :save_config,
+        :update_area  => :content_for_layout,
+        :modus        => @modus,
+        :id           => @config[:id]
+    ) do %>
 
   <table>
     <tr>
