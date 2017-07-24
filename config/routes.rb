@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
 
+  get 'panorama_sampler/show_config'
+
   # define routes as controller/action
   # Rails.logger.info "Panorama_Gem/config/routes.rb: Setting routes for every controller action"
   EnvController.routing_actions("#{__dir__}/../app/controllers").each do |r|

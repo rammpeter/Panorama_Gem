@@ -184,6 +184,9 @@ module MenuHelper
                 [{:class=> 'item', :caption=> 'Wachstum von Objekten',           :controller=> 'addition',                 :action=> 'show_object_increase',     :hint=> 'Wachstum von Objekten in gegebenem Zeitraum'}] : []
         ).concat(
             [{:class=> 'item', :caption=> t(:menu_addition_exec_with_given_parameters_caption, :default=>'Execute with given parameters') ,           :controller=> 'addition',                 :action=> 'show_recall_params',     :hint=>t(:menu_addition_exec_with_given_parameters_hint, :default=>'Execute one of Panoramas functions directly with given parameters') }]
+        ).concat(
+            showPanoramaSampler ?
+                [{:class=> 'item', :caption=> 'Panorama-Sampler config',      :controller=> 'panorama_sampler',   :action=> 'show_config',     :hint=> t(:menu_addition_panorama_sampler_config_hint, :default=>'Configure target databases for Panorama-Sampler')}] : []
         )
     },
     ]
@@ -217,6 +220,10 @@ module MenuHelper
                             SELECT 1 FROM All_Views WHERE View_Name = 'UT_SEG_SPACE_IN_TBS_V'
                            )"
                   ) > 0
+  end
+
+  def showPanoramaSampler
+    !EngineConfig.config.panorama_sampler_master_password.nil?
   end
 
   def isExadata?

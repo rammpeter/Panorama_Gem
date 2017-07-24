@@ -7,6 +7,9 @@ class EngineConfig < Rails::Application
   config.panorama_var_home = "."
   config.panorama_var_home = ENV['PANORAMA_VAR_HOME'] if ENV['PANORAMA_VAR_HOME']
 
+  # Password for access on Panorama-Sampler config: Panorama-Sampler and his menu are activated if password is not empty
+  config.panorama_sampler_master_password = ENV['PANORAMA_SAMPLER_MASTER_PASSWORD']  ? ENV['PANORAMA_SAMPLER_MASTER_PASSWORD'] : nil
+
   # Textdatei zur Erfassung der Panorama-Nutzung
   # Sicherstellen, dass die Datei ausserhalb der Applikation zu liegen kommt und Deployment der Applikation überlebt durch Definition von ENV['PANORAMA_VAR_HOME']
   config.usage_info_filename = "#{config.panorama_var_home}/Usage.log"

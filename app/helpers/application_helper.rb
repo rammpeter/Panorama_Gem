@@ -45,7 +45,7 @@ module ApplicationHelper
       Encryption.decrypt_value(cookies['client_key'], cookies['client_salt'])                                    # wirft ActiveSupport::MessageVerifier::InvalidSignature wenn cookies['client_key'] == nil
   rescue ActiveSupport::MessageVerifier::InvalidSignature => e
     Rails.logger.error("Exception '#{e.message}' raised while decrypting cookies['client_key'] (#{cookies['client_key']})")
-    log_exception_backtrace(e, 20)
+    #log_exception_backtrace(e, 20)
     if cookies['client_key'].nil?
       raise("Your browser does not allow cookies for this URL!\nPlease enable usage of browser cookies for this URL and reload the page.")
     else

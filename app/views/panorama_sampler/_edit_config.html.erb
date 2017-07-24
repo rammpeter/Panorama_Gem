@@ -1,0 +1,36 @@
+<div class="page_caption"><%= @modus==:new ? 'Add new' : 'Edit' %> Panorama-Sampler configuration</div>
+
+<%= ajax_form(:controller => :panorama_sampler, :action => :save_config, :update_area => :content_for_layout, :modus => @modus) do %>
+
+  <table>
+    <tr>
+      <td>ID</td>
+      <td align="right"><%= text_field_tag(:id, @config[:id], :disabled => true, :style => "text-align: right;", :title=>'Unique identifier for config entry') %></td>
+    </tr>
+
+    <tr>
+      <td>Config name</td>
+      <td><%= text_field_tag(:name, @config[:name], :size=>50, :title=>"Name / description for configuration") %></td>
+    </tr>
+
+    <tr>
+      <td>Username</td>
+      <td><%= text_field_tag(:username, @config[:username], :size=>50, :title=>"Name of user to store Panorama's tables for workload recording") %></td>
+    </tr>
+
+    <tr>
+      <td>Password</td>
+      <td><%= password_field_tag(:password, @config[:password], :size=>50, :title=>"Password of user to store Panorama's tables for workload recording") %></td>
+    </tr>
+
+    <tr>
+      <td>Snapshot retention</td>
+      <td align="right"><%= text_field_tag(:snapshot_retention, @config[:snapshot_retention], :style => "text-align: right;", :title=>'Delay between snapshots in minutes') %></td>
+    </tr>
+
+
+  </table>
+  <%= submit_tag('Test connection', :title =>"Test connection to configured database" ) %>
+  <%= submit_tag('Save', :title =>"Save configuration data" ) %>
+
+<% end %>

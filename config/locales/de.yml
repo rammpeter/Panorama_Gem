@@ -460,6 +460,12 @@
   dba_sga_list_sql_shared_cursor_hint:                      Für detaillierte Aussagen bitte diese Description nachschlagen
   dba_sga_list_sql_shared_cursor_reason_hint:               Ein oder mehrere Hinterungsgründe für Nichtnutzung Shared Cursor
 
+  dba_sga_show_object_usage_caption:                        Suche nach das Objekt nutzenden (referenzierenden) SQL-Statements (GV$SQL_Plan)
+  dba_sga_show_object_usage_object_owner_hint:              Schema-Name des Objektes (optional)
+  dba_sga_show_object_usage_object_name_hint:               Name des Objektes (optional mit "%" als Wildcard)
+  dba_sga_show_object_usage_submit_caption:                 SQLs suchen
+  dba_sga_show_object_usage_submit_hint:                    das Objekt nutzende SQLs anzeigen
+
   dba_sga_show_sga_components_caption:                      Anzeige der Memory-Verbraucher der SGA
   dba_sga_show_sga_components_submit_caption:               Anzeige der Memory-Komponenten
   dba_sga_show_sga_components_submit_hint:                  Anlistung der Memory-Komponenten der SGA
@@ -1431,6 +1437,7 @@
   menu_addition_dragnet_hint:                               Rasterfahndung nach Performance-Bottlenecks
   menu_addition_exec_with_given_parameters_caption:         Ausführung mit gegebenen Parametern
   menu_addition_exec_with_given_parameters_hint:            Ausführung einer Funktion von Panorama direkt mit gegebenen Parametern
+  menu_addition_panorama_sampler_config_hint:               Konfiguration der Ziel-Datenbanken für Panorama-Sampler
 
   menu_current_caption:                                     Aktuell
 
