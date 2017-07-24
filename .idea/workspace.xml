@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" afterPath="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -15,6 +15,7 @@
     <ignored path="test/dummy/Usage.log" />
     <ignored path="Usage.log" />
     <ignored path=".idea/runConfigurations/Rails_console__Panorama_Gem.xml" />
+    <ignored path="test/dummy/public/assets/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -132,11 +133,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
-              <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
+            <state relative-caret-position="60">
+              <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
               <folding />
             </state>
           </provider>
@@ -152,7 +153,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="application_helper.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="application_helper.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/helpers/application_helper.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="355">
@@ -292,9 +293,9 @@
         <option value="$PROJECT_DIR$/app/controllers/application_controller.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_connection.rb" />
         <option value="$PROJECT_DIR$/app/controllers/env_controller.rb" />
-        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" />
         <option value="$PROJECT_DIR$/app/helpers/application_helper.rb" />
+        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
       </list>
     </option>
   </component>
@@ -1454,14 +1455,7 @@
       <workItem from="1500497612300" duration="21792000" />
       <workItem from="1500566115548" duration="6778000" />
       <workItem from="1500576281481" duration="3364000" />
-      <workItem from="1500580043875" duration="6378000" />
-    </task>
-    <task id="LOCAL-00909" summary="Restrict fuzzy values to considered time period">
-      <created>1492597942237</created>
-      <option name="number" value="00909" />
-      <option name="presentableId" value="LOCAL-00909" />
-      <option name="project" value="LOCAL" />
-      <updated>1492597942237</updated>
+      <workItem from="1500580043875" duration="6507000" />
     </task>
     <task id="LOCAL-00910" summary="Show values limited by seconds">
       <created>1492603318844</created>
@@ -1799,7 +1793,14 @@
       <option name="project" value="LOCAL" />
       <updated>1500887010460</updated>
     </task>
-    <option name="localTasksCounter" value="958" />
+    <task id="LOCAL-00958" summary="Initialize client cookie for test">
+      <created>1500889850086</created>
+      <option name="number" value="00958" />
+      <option name="presentableId" value="LOCAL-00958" />
+      <option name="project" value="LOCAL" />
+      <updated>1500889850086</updated>
+    </task>
+    <option name="localTasksCounter" value="959" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1835,7 +1836,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1483278000" />
+    <option name="totallyTimeSpent" value="1483407000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1891,7 +1892,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Fix Minitest error + require" />
     <MESSAGE value="Version" />
     <MESSAGE value="Show TEMP space allocated" />
     <MESSAGE value="Show TEMP space allocated and used" />
@@ -1916,7 +1916,8 @@
     <MESSAGE value="No class variable for wait stats. May differ between versions." />
     <MESSAGE value="Reduce session pool to target size, not only minus one" />
     <MESSAGE value="Log exception stacktrace if decryption fails" />
-    <option name="LAST_COMMIT_MESSAGE" value="Log exception stacktrace if decryption fails" />
+    <MESSAGE value="Initialize client cookie for test" />
+    <option name="LAST_COMMIT_MESSAGE" value="Initialize client cookie for test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2339,14 +2340,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/env_controller.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="380">
@@ -2383,6 +2376,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="355">
           <caret line="92" column="16" lean-forward="true" selection-start-line="92" selection-start-column="16" selection-end-line="92" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
           <folding />
         </state>
       </provider>
