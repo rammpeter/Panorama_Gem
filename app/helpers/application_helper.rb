@@ -60,10 +60,10 @@ module ApplicationHelper
   def write_to_client_info_store(key, value)
     cached_client_key = get_decrypted_client_key                                   # ausserhalb des Exception-Handlers, da evtl. ActiveSupport::MessageVerifier::InvalidSignature bereits in get_cached_client_key gefangen wird
     begin
-      full_hash = get_client_info_store.read(cached_client_key)                 # Kompletten Hash aus Cache auslesen
+      full_hash = EngineConfig.get_client_info_store.read(cached_client_key)                 # Kompletten Hash aus Cache auslesen
       full_hash = {} if full_hash.nil? || full_hash.class != Hash               # Neustart wenn Struktur nicht passt
       full_hash[key] = value                                                    # Wert in Hash verankern
-      get_client_info_store.write(cached_client_key, full_hash)                 # Überschreiben des kompletten Hashes im Cache
+      EngineConfig.get_client_info_store.write(cached_client_key, full_hash)                 # Überschreiben des kompletten Hashes im Cache
     rescue Exception =>e
       Rails.logger.error("Exception '#{e.message}' raised while writing file store at '#{EngineConfig.config.client_info_filename}'")
       raise "Exception '#{e.message}' while writing file store at '#{EngineConfig.config.client_info_filename}'"
@@ -72,7 +72,7 @@ module ApplicationHelper
 
   # Lesen eines client-bezogenen Wertes aus serverseitigem Cache
   def read_from_client_info_store(key)
-    full_hash = get_client_info_store.read(get_decrypted_client_key)               # Auslesen des kompletten Hashes aus Cache
+    full_hash = EngineConfig.get_client_info_store.read(get_decrypted_client_key)               # Auslesen des kompletten Hashes aus Cache
     return nil if full_hash.nil? || full_hash.class != Hash                     # Abbruch wenn Struktur nicht passt
     full_hash[key]
   end

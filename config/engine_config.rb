@@ -17,6 +17,23 @@ class EngineConfig < Rails::Application
   # File-Store für ActiveSupport::Cache::FileStore
   config.client_info_filename = "#{config.panorama_var_home}/client_info.store"
 
+  @@client_store_mutex = Mutex.new
+  def self.get_client_info_store
+    if !defined?($login_client_store) || $login_client_store.nil?
+      @@client_store_mutex.synchronize do                                       # Ensure that only one thread is allowed to process
+        if !defined?($login_client_store) || $login_client_store.nil?
+          $login_client_store = ActiveSupport::Cache::FileStore.new(EngineConfig.config.client_info_filename)
+          Rails.logger.info("Local directory for client-info store is #{EngineConfig.config.client_info_filename}")
+          @@client_store_mutex = nil                                            # Free mutex that will never be used
+        end
+      end
+    end
+    $login_client_store
+  rescue Exception =>e
+    raise "Exception '#{e.message}' while creating file store at '#{EngineConfig.config.client_info_filename}'"
+  end
+
+
   # -- begin rails3 relikt
   # Configure the default encoding used in templates for Ruby 1.9.
   #config.encoding = "utf-8"

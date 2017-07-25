@@ -8,7 +8,7 @@ class PanoramaSamplerController < ApplicationController
   end
 
   def list_config
-    @sampler_config = read_current_sampler_config
+    @sampler_config = PanoramaSamplerConfig.get_cloned_config_array
     render_partial :list_config
   end
 
@@ -30,63 +30,36 @@ class PanoramaSamplerController < ApplicationController
 
   def show_new_config_form
     @modus = :new
-    @config = {:id => get_max_id+1, :snapshot_retention => 60}
+    @config = {:id => PanoramaSamplerConfig.get_max_id+1, :snapshot_retention => 60}
     render_partial :edit_config
   end
 
   def show_edit_config_form
     @modus = :edit
-    @config = x
+    @config = PanoramaSamplerConfig.get_cloned_config_entry(params[:id].to_i)
     render_partial :edit_config
   end
 
   def save_config
-    configs = read_current_sampler_config
+    config_entry = {
+        :id                 => params[:id].to_i,
+        :name               => params[:name],
+        :username           => params[:username],
+        :password           => params[:password],
+        :snapshot_retention => params[:snapshot_retention].to_i,
+    }
+
     if params[:modus] == 'new'
-      configs << {
-          :id                 => params[:id].to_i,
-          :name               => params[:name],
-          :username           => params[:username],
-          :password           => params[:password],
-          :snapshot_retention => params[:snapshot_retention].to_i,
-      }
+      PanoramaSamplerConfig.add_config_entry(config_entry)
     end
     if params[:modus] == 'edit'
-      configs = []
+      PanoramaSamplerConfig.modify_config_entry(config_entry)
     end
-    write_current_sampler_config(configs)
     list_config
   end
 
   def delete_config
-    configs = read_current_sampler_config
-    configs.each_index do |i|
-      configs.delete_at(i) if configs[i][:id] == params[:id].to_i
-    end
-    write_current_sampler_config(configs)
+    PanoramaSamplerConfig.delete_config_entry(params[:id])
     list_config
-  end
-
-  private
-  # Config for current master password
-  def read_current_sampler_config
-    retval = get_client_info_store.read("panorama_sampler_master_config_#{EngineConfig.config.panorama_sampler_master_password.hash}")
-    retval = [] if retval.nil?
-    retval
-  end
-
-  def write_current_sampler_config(config)
-    get_client_info_store.write("panorama_sampler_master_config_#{EngineConfig.config.panorama_sampler_master_password.hash}", config)
-  rescue Exception =>e
-    Rails.logger.error("Exception '#{e.message}' raised while writing file store at '#{EngineConfig.config.client_info_filename}'")
-    raise "Exception '#{e.message}' while writing file store at '#{EngineConfig.config.client_info_filename}'"
-  end
-
-  def get_max_id
-    retval = 0
-    read_current_sampler_config.each do |c|
-      retval = c[:id] if c[:id] > retval
-    end
-    retval
   end
 end

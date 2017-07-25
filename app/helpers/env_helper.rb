@@ -102,11 +102,11 @@ module EnvHelper
       while loop_count < MAX_NEW_KEY_TRIES
         loop_count = loop_count+1
         new_client_key = rand(10000000)
-        unless get_client_info_store.exist?(new_client_key)                     # Dieser Key wurde noch nie genutzt
+        unless EngineConfig.get_client_info_store.exist?(new_client_key)                     # Dieser Key wurde noch nie genutzt
           # Salt immer mit belegen bei Vergabe des client_key, da es genutzt wird zur Verschlüsselung des Client_Key im cookie
           cookies['client_salt'] = { :value => rand(10000000000),                                                 :expires => 1.year.from_now }  # Lokaler Schlüsselbestandteil im Browser-Cookie des Clients, der mit genutzt wird zur Verschlüsselung der auf Server gespeicherten Login-Daten
           cookies['client_key']  = { :value => Encryption.encrypt_value(new_client_key, cookies['client_salt']),  :expires => 1.year.from_now }
-          get_client_info_store.write(new_client_key, 1)                        # Marker fuer Verwendung des Client-Keys
+          EngineConfig.get_client_info_store.write(new_client_key, 1)                        # Marker fuer Verwendung des Client-Keys
           break
         end
       end
