@@ -41,6 +41,18 @@ class PanoramaSamplerController < ApplicationController
   end
 
   def save_config
+    if params[:commit] == 'Save'
+      store_config
+    else
+      check_connection
+    end
+  end
+
+  def check_connection
+    show_popup_message('Check_Connection')
+  end
+
+  def store_config
     config_entry = {
         :id                 => params[:id].to_i,
         :name               => params[:name],

@@ -380,6 +380,7 @@ function show_popup_message(message){
     // create div for dialog at body if not exists
     if (!msg_div.length){
         jQuery('body').append('<div id="'+div_id+'"></div>');
+        msg_div = jQuery('#'+div_id);
     }
     msg_div
         .html(message)
