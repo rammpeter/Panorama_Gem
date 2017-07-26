@@ -22,7 +22,8 @@
   [
     {:caption=>'ID',                  :data=>proc{|rec| rec[:id]},                  :title=>"Unique identifier", :align=>:right},
     {:caption=>'Config. name',        :data=>proc{|rec| rec[:name]},                :title=>"Name / description for configuration"},
-    {:caption=>'Username',            :data=>proc{|rec| rec[:username]},            :title=>"Name of user to store Panorama's tables for workload recording"},
+    {:caption=>'TNS config',          :data=>proc{|rec| rec[:tns]},                 :title=>"TNS-alias or connect string"},
+    {:caption=>'Username',            :data=>proc{|rec| rec[:user]},                :title=>"Name of user to store Panorama's tables for workload recording"},
     {:caption=>"Snapshot retention",  :data=>proc{|rec| rec[:snapshot_retention]},  :title=>"Delay between snapshots in minutes"},
     {:caption=>'Action',              :data=>proc{|rec| render_action_buttons(rec) } },
   ]

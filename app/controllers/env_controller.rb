@@ -64,12 +64,17 @@ class EnvController < ApplicationController
 
   # Auffüllen SELECT mit OPTION aus tns-Records
   def get_tnsnames_records
-    tnsnames = read_tnsnames
+    tnsnames      = read_tnsnames
+    target_object = params[:target_object]
+    selected      = params[:selected]
 
-    result = ''
+    result = "jQuery('##{params[:target_object]}_tns').replaceWith(\"<select id='#{target_object}_tns' name='#{target_object}[tns]' style='width: 95%;'>"
+
     tnsnames.keys.sort.each do |key|
-      result << "jQuery('#database_tns').append('<option value=\"#{key}\">'+rpad('#{key}', 180, 'database_tns')+'&nbsp;&nbsp;#{tnsnames[key][:hostName]} : #{tnsnames[key][:port]} : #{tnsnames[key][:sidName]}</value>');\n"
+#      result << "<option value=\"#{key}\">'+rpad('#{key}', 180, 'database_tns')+'&nbsp;&nbsp;#{tnsnames[key][:hostName]} : #{tnsnames[key][:port]} : #{tnsnames[key][:sidName]}</value>');\n"
+      result << "<option #{"selected='selected' " if key==selected}value='#{key}'>#{key}&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;#{tnsnames[key][:hostName]} : #{tnsnames[key][:port]} : #{tnsnames[key][:sidName]}</option>"
     end
+    result << "</select>\");"
 
     respond_to do |format|
       format.js {render :js => result }
@@ -236,16 +241,6 @@ class EnvController < ApplicationController
     end
   end
 
-  def get_host_tns(current_database)                                            # JDBC-URL for host/port/sid
-    sid_separator = case current_database[:sid_usage].to_sym
-                      when :SID then          ':'
-                      when :SERVICE_NAME then '/'
-                      else raise "Unknown value '#{current_database[:sid_usage]}' for :sid_usage"
-                    end
-    connect_prefix = current_database[:sid_usage].to_sym==:SERVICE_NAME ? '//' : ''                 # only for service name // is needed at first
-    "#{connect_prefix}#{current_database[:host]}:#{current_database[:port]}#{sid_separator}#{current_database[:sid]}"   # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
-  end
-
   public
 
   # Erstes Anmelden an DB
@@ -283,7 +278,7 @@ class EnvController < ApplicationController
       current_database[:sid]        = tns_record[:sidName]
       current_database[:sid_usage]  = tns_record[:sidUsage]
     else # Host, Port, SID auswerten
-      current_database[:tns]       = get_host_tns(current_database)             # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
+      current_database[:tns]       = PanoramaConnection.get_host_tns(current_database)             # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
     end
 
     # Temporaerer Schutz des Produktionszuganges bis zur Implementierung LDAP-Autorisierung    
@@ -328,7 +323,7 @@ class EnvController < ApplicationController
             Rails.logger.error bt
           end
 
-          set_current_database(get_current_database.merge({:modus => 'host', :tns => get_host_tns(get_current_database)}))
+          set_current_database(get_current_database.merge({:modus => 'host', :tns => PanoramaConnection.get_host_tns(get_current_database)}))
           Rails.logger.info "Second try to connect with host/port/sid instead of TNS-alias: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
           sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"    # Connect with host/port/sid as second try if does not function
         end

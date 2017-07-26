@@ -6,6 +6,7 @@ require 'active_record/connection_adapters/oracle_enhanced/connection'
 require 'active_record/connection_adapters/oracle_enhanced_adapter'
 require 'active_record/connection_adapters/oracle_enhanced/quoting'
 require 'encryption'
+require 'pack_license'
 
 # Helper-class to allow usage of method "type_cast"
 class TypeMapper < ActiveRecord::ConnectionAdapters::AbstractAdapter
@@ -158,6 +159,16 @@ class PanoramaConnection
     end
   end
 
+  def self.get_host_tns(current_database)                                            # JDBC-URL for host/port/sid
+    sid_separator = case current_database[:sid_usage].to_sym
+                      when :SID then          ':'
+                      when :SERVICE_NAME then '/'
+                      else raise "Unknown value '#{current_database[:sid_usage]}' for :sid_usage"
+                    end
+    connect_prefix = current_database[:sid_usage].to_sym==:SERVICE_NAME ? '//' : ''                 # only for service name // is needed at first
+    "#{connect_prefix}#{current_database[:host]}:#{current_database[:port]}#{sid_separator}#{current_database[:sid]}"   # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
+  end
+
   def self.jdbc_thin_url
     unless Thread.current[:panorama_connection_connect_info]
       raise 'No current DB connect info set! Please reconnect to DB!'
@@ -207,7 +218,8 @@ class PanoramaConnection
   #            modifier = proc für Anwendung auf die fertige Row
   def self.sql_select_iterator(sql, modifier=nil, query_name = 'sql_select_iterator')
     check_for_open_connection                                                   # ensure opened Oracle-connection
-    transformed_sql = PackLicense.filter_sql_for_pack_license(sql, Thread.current[:panorama_connection_connect_info][:management_pack_license])  # Check for lincense violation and possible statement transformation
+    management_pack_license = Thread.current[:panorama_connection_connect_info][:management_pack_license]
+    transformed_sql = PackLicense.filter_sql_for_pack_license(sql, management_pack_license)  # Check for lincense violation and possible statement transformation
     stmt, binds = sql_prepare_binds(transformed_sql)   # Transform SQL and split SQL and binds
     SqlSelectIterator.new(translate_sql(stmt), binds, modifier, Thread.current[:panorama_connection_connect_info][:query_timeout], query_name)      # kann per Aufruf von each die einzelnen Records liefern
   end

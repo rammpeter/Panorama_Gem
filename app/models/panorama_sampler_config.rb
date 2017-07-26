@@ -28,20 +28,42 @@ class PanoramaSamplerConfig
     retval
   end
 
+  #
+  def self.encryt_password(native_password)
+    Encryption.encrypt_value(native_password, EngineConfig.config.panorama_sampler_master_password) # Encrypt password with master_password
+  end
+
+  def self.validate_entry(entry, mode)
+    raise "Password is mandatory" if (entry[:password].nil? || entry[:password] == '') && mode == :add
+  end
+
+  # Modify some content after edit
+  def self.prepare_saved_entry(entry)
+    entry[:tns]      = PanoramaConnection.get_host_tns(entry) if entry[:modus].to_sym == :host
+    if entry[:password].nil? || entry[:password] == ''
+      entry[:password] = encryt_password(entry[:password])                      # Encrypt password with master_password
+    end
+  end
+
   def self.add_config_entry(entry)
+    validate_entry(entry, :add)
     @@config_access_mutex.synchronize do
       get_config_array.each do |c|
         raise "ID #{entry[:id]} is already used" if c[:id] == entry[:id]        # Ensure unique IDs
       end
-      get_config_array << entry                                                 # Ensures initialization
+      get_config_array << prepare_saved_entry(entry)                            # Ensures initialization
       write_config_array_to_store
     end
   end
 
   def self.modify_config_entry(entry)
+    validate_entry(entry, :edit)
+    if entry[:password].nil? || entry[:password] == ''
+      entry.delete(:password)                                                   # Preserve previous password at merge
+    end
     @@config_access_mutex.synchronize do
       org_entry = get_config_entry_by_id(entry[:id])
-      org_entry.merge!(entry)
+      org_entry.merge!(prepare_saved_entry(entry))
       write_config_array_to_store
     end
   end
@@ -83,8 +105,7 @@ class PanoramaSamplerConfig
     get_config_array.each do |c|
       return c if c[:id] == p_id
     end
-    raise "No Panorama-Sampler config found for ID=#{p_id}"
+    raise "No Panorama-Sampler config found for ID=#{p_id} class='#{p_id.class}'"
   end
-
 
 end

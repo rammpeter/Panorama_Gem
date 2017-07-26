@@ -10,28 +10,72 @@
 
   <table>
     <tr>
-      <td>ID</td>
-      <td align="right" title="Unique identifier for config entry"><%= @config[:id] %></td>
+      <th>ID</th>
+      <td align="center" title="Unique identifier for config entry"><%= @config[:id] %></td>
     </tr>
 
     <tr>
-      <td>Config name</td>
-      <td><%= text_field_tag(:name, @config[:name], :size=>50, :title=>"Name / description for configuration") %></td>
+      <th>Config name</th>
+      <td align="center"><%= text_field_tag(:config_name, @config[:name], :name=>'config[name]', :style=>"width:95%;", :title=>"Name / description for configuration") %></td>
     </tr>
 
     <tr>
-      <td>Username</td>
-      <td><%= text_field_tag(:username, @config[:username], :size=>50, :title=>"Name of user to store Panorama's tables for workload recording") %></td>
+      <th>DB identification mode</th>
+      <td align="center">
+        <div title="Select mode for identification of database">
+          <%= radio_button_tag(:config_modus, :tns,  true,  {:name=>'config[modus]', :onclick => "jQuery('.edit_config_tns').css('display', '');     jQuery('.edit_config_host').css('display', 'none');" }) %>TNS-Names
+          <%= radio_button_tag(:config_modus, :host, false, {:name=>'config[modus]', :onclick => "jQuery('.edit_config_tns').css('display', 'none'); jQuery('.edit_config_host').css('display', '');" }) %>Host, Port, SID/Service-Name
+        </div>
+      </td>
+    </tr>
+
+    <tr class="edit_config_tns">
+      <th title="<%= t :login_tns_hint, :default=>"Choose Oracle TNS-Alias (from tnsnames.ora at server side)" %>">TNS-Alias</th>
+      <% @tnsnames = read_tnsnames %>
+      <td align="center">
+        <div title="<%= t(:login_tns_hint, :default=>"Choose Oracle TNS-Alias (from tnsnames.ora at server side)") %>">
+          <div id="config_tns"></div> <!-- Befuellung geschieht durch Ajax-Call auf env/get_tnsnames_records -->
+        </div>
+      </td>
+    </tr>
+
+    <tr class="edit_config_host" style="display: none">
+      <th title="Host-name. Übersteuert TNS-Alias wenn belegt">Host</th>
+      <td align="center"><%= text_field_tag(:config_host, @config[:host], :name=>'config[host]', :style=>"width:95%;", :title=>t(:login_database_host_hint, :default=>"hostname or IP adress") ) %></td>
+    </tr>
+
+    <tr class="edit_config_host" style="display: none">
+      <th>Port</th>
+      <td align="center"><%= text_field_tag(:config_port, @config[:port], :name=>'config[port]', :style=>"width:95%;", :title=>"Port-Nummer" ) %></td>
+    </tr>
+
+    <tr class="edit_config_host" style="display: none">
+      <th>SID/Service</th>
+      <td align="center">
+        <div title="<%= t(:login_sid_service_title, :default=>"Interpret value as SID or Service-Name?") %>">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
+          <%= radio_button_tag('config_sid_usage', :SID,          true,  {:name=>'config[sid_usage]'}) %>SID
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <%= radio_button_tag('config_sid_usage', :SERVICE_NAME, false, {:name=>'config[sid_usage]'}) %>Service-Name
+        </div>
+        <div style="padding-top: 5px;">
+          <%= text_field_tag(:config_sid, @config[:sid], :name=>'config[sid]', :style=>"width:95%;", :title=>t(:login_database_sid_hint, :default=>"SID or service name of database")) %>
+        </div>
+      </td>
     </tr>
 
     <tr>
-      <td>Password</td>
-      <td><%= password_field_tag(:password, @config[:password], :size=>50, :title=>"Password of user to store Panorama's tables for workload recording") %></td>
+      <th>Username</th>
+      <td align="center"><%= text_field_tag(:config_user, @config[:user], :name=>'config[user]', :style=>"width:95%;", :title=>"Name of user to store Panorama's tables for workload recording") %></td>
     </tr>
 
     <tr>
-      <td>Snapshot retention</td>
-      <td align="right"><%= text_field_tag(:snapshot_retention, @config[:snapshot_retention], :style => "text-align: right;", :title=>'Delay between snapshots in minutes') %></td>
+      <th>Password</th>
+      <td align="center"><%= password_field_tag(:config_password, @config[:password], :name=>'config[password]', :style=>"width:95%;", :title=>"Password of user to store Panorama's tables for workload recording.\nPassword is changed only if new password entered here.\nLeave empty to preserve existing password.") %></td>
+    </tr>
+
+    <tr>
+      <th>Snapshot retention</th>
+      <td align="center"><%= text_field_tag(:snapshot_retention, @config[:snapshot_retention], :style => "width:95%; text-align: right;", :title=>'Delay between snapshots in minutes') %></td>
     </tr>
 
 
@@ -40,3 +84,11 @@
   <%= submit_tag('Save', :title =>"Save configuration data" ) %>
 
 <% end %>
+
+<script type="text/javascript">
+    if ('<%= @config[:modus] %>' == 'host')
+        jQuery('#config_modus_host').click();
+    if ('<%= @config[:sid_usage] %>' == 'SERVICE_NAME')
+        jQuery('#config_sid_usage_SERVICE_NAME').click();
+    jQuery.ajax({type: 'GET', url:'env/get_tnsnames_records?target_object=config&selected=<%= @config[:tns] %>', async: false});
+</script>

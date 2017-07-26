@@ -37,6 +37,7 @@ class PanoramaSamplerController < ApplicationController
   def show_edit_config_form
     @modus = :edit
     @config = PanoramaSamplerConfig.get_cloned_config_entry(params[:id].to_i)
+    @config[:password] = nil                                                    # Password set ony if changed
     render_partial :edit_config
   end
 
@@ -49,17 +50,28 @@ class PanoramaSamplerController < ApplicationController
   end
 
   def check_connection
-    show_popup_message('Check_Connection')
+    config_entry        = params[:config].to_unsafe_h.symbolize_keys
+    config_entry[:id]   = params[:id].to_i
+
+    org_entry = PanoramaSamplerConfig.get_cloned_config_entry(config_entry[:id])
+    if org_entry.nil?                                                           # entry not yet saved
+      org_entry = PanoramaSamplerConfig.prepare_saved_entry(config_entry)
+    else                                                                        # entry already exists
+      org_entry.merge!(PanoramaSamplerConfig.prepare_saved_entry(config_entry))
+    end
+
+    dbid = WorkerThread.check_connection(org_entry)
+    if dbid.nil?
+      show_popup_message('Connect not successful, see Panorama-Log for details')
+    else
+      add_statusbar_message('Connect successful')
+      store_config                                                              # add or modify entry in persistence
+    end
   end
 
   def store_config
-    config_entry = {
-        :id                 => params[:id].to_i,
-        :name               => params[:name],
-        :username           => params[:username],
-        :password           => params[:password],
-        :snapshot_retention => params[:snapshot_retention].to_i,
-    }
+    config_entry      = params[:config].to_unsafe_h.symbolize_keys
+    config_entry[:id] = params[:id].to_i
 
     if params[:modus] == 'new'
       PanoramaSamplerConfig.add_config_entry(config_entry)

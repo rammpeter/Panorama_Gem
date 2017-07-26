@@ -512,6 +512,12 @@ module ApplicationHelper
     render_internal(params[:update_area], controller_name, partial_name, options)
   end
 
+  # Add string to status-bar-message
+  def add_statusbar_message(message)
+    @statusbar_message << "\n" if @statusbar_message.length > 0
+    @statusbar_message << message
+  end
+
   # Eigentliche Durchführung des renderns, auch genutzt von env_controller.render_menu_action
   def render_internal(update_area, controller, partial, options = {})
     raise "render_internal: options should of class Hash, not #{options.class}" unless options.class == Hash
