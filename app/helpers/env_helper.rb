@@ -106,14 +106,17 @@ module EnvHelper
           # Salt immer mit belegen bei Vergabe des client_key, da es genutzt wird zur Verschlüsselung des Client_Key im cookie
           cookies['client_salt'] = { :value => rand(10000000000),                                                 :expires => 1.year.from_now }  # Lokaler Schlüsselbestandteil im Browser-Cookie des Clients, der mit genutzt wird zur Verschlüsselung der auf Server gespeicherten Login-Daten
           cookies['client_key']  = { :value => Encryption.encrypt_value(new_client_key, cookies['client_salt']),  :expires => 1.year.from_now }
-          EngineConfig.get_client_info_store.write(new_client_key, 1)                        # Marker fuer Verwendung des Client-Keys
+          client_store = EngineConfig.get_client_info_store
+          client_store.write(new_client_key, 1)                        # Marker fuer Verwendung des Client-Keys
           break
         end
       end
       raise "Cannot create client key after #{MAX_NEW_KEY_TRIES} tries" if loop_count >= MAX_NEW_KEY_TRIES
     else
-      cookies['client_salt'] = { :value => cookies['client_salt'], :expires => 1.year.from_now }    # Timeout neu setzen bei Benutzung
-      cookies['client_key']  = { :value => cookies['client_key'],  :expires => 1.year.from_now }    # Timeout neu setzen bei Benutzung
+      if cookies.class.name != 'Rack::Test::CookieJar'                          # Don't set Hash for cookies in test because it becomes String like ' { :value => 100, :expires => ... }'
+        cookies['client_salt'] = { :value => cookies['client_salt'], :expires => 1.year.from_now }    # Timeout neu setzen bei Benutzung
+        cookies['client_key']  = { :value => cookies['client_key'],  :expires => 1.year.from_now }    # Timeout neu setzen bei Benutzung
+      end
     end
   end
 

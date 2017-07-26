@@ -85,6 +85,11 @@ class ActiveSupport::TestCase
     #FileUtils.rm_rf(Application.config.client_info_filename)
 
     #initialize_client_key_cookie                                                # Ensure browser cookie for client_key exists
+
+    # 2017/07/26 cookies are reset in ActionDispatch::IntegrationTest if using initialize_client_key_cookie
+    cookies['client_salt'] = 100
+    cookies['client_key']  = Encryption.encrypt_value(100, cookies['client_salt'])
+
     connect_oracle_db
     sql_row = sql_select_first_row "SELECT /* Panorama-Tool Ramm */ SQL_ID, Child_Number, Parsing_Schema_Name
                                           FROM   v$SQL

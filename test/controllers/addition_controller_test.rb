@@ -2,7 +2,7 @@
 require 'test_helper'
 
 
-class AdditionControllerTest < ActionController::TestCase
+class AdditionControllerTest < ActionDispatch::IntegrationTest
   include MenuHelper
 
   setup do
@@ -29,7 +29,7 @@ class AdditionControllerTest < ActionController::TestCase
   end
 
   test "blocking_locks_history with xhr: true" do
-    post :list_blocking_locks_history, :params => { :format=>:html,
+    post '/addition/list_blocking_locks_history', :params => { :format=>:html,
          :time_selection_start =>"01.01.2011 00:00",
          :time_selection_end =>"01.01.2011 01:00",
          :timeslice =>"10",
@@ -37,7 +37,7 @@ class AdditionControllerTest < ActionController::TestCase
          :update_area=>:hugo } if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
 
-    post :list_blocking_locks_history, :params => { :format=>:html,
+    post '/addition/list_blocking_locks_history', :params => { :format=>:html,
          :time_selection_start =>"01.01.2011 00:00",
          :time_selection_end =>"01.01.2011 01:00",
          :timeslice =>'10',
@@ -45,7 +45,7 @@ class AdditionControllerTest < ActionController::TestCase
          :update_area=>:hugo } if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
 
-    post :list_blocking_locks_history_hierarchy_detail, :params => { :format=>:html,
+    post '/addition/list_blocking_locks_history_hierarchy_detail', :params => { :format=>:html,
          :blocking_instance => 1,
          :blocking_sid => 1,
          :blocking_serialno => 1,
@@ -56,7 +56,7 @@ class AdditionControllerTest < ActionController::TestCase
 
 
   test "db_cache_historic with xhr: true" do
-    post :list_db_cache_historic, :params => { :format=>:html,
+    post '/addition/list_db_cache_historic', :params => { :format=>:html,
          :time_selection_start =>"01.01.2011 00:00",
          :time_selection_end =>"01.01.2011 01:00",
          :instance  => "1",
@@ -64,7 +64,7 @@ class AdditionControllerTest < ActionController::TestCase
          :update_area=>:hugo } if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
 
-    get :list_db_cache_historic_detail, :params => { :format=>:html,
+    get '/addition/list_db_cache_historic_detail', :params => { :format=>:html,
         :time_selection_start =>"01.01.2011 00:00",
         :time_selection_end =>"01.01.2011 01:00",
         :instance  => 1,
@@ -73,7 +73,7 @@ class AdditionControllerTest < ActionController::TestCase
         :update_area=>:hugo  } if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
 
-    get :list_db_cache_historic_snap, :params => { :format=>:html,
+    get '/addition/list_db_cache_historic_snap', :params => { :format=>:html,
         :snapshotts =>"01.01.2011 00:00",
         :instance  => "1",
         :update_area=>:hugo } if ENV['DB_VERSION'] >= '11.2'
@@ -81,7 +81,7 @@ class AdditionControllerTest < ActionController::TestCase
   end
 
   test "object_increase with xhr: true" do
-    get :show_object_increase, :format=>:html    if ENV['DB_VERSION'] >= '11.2'
+    get '/addition/show_object_increase', :format=>:html    if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
   end
 
@@ -89,17 +89,17 @@ class AdditionControllerTest < ActionController::TestCase
     if showObjectIncrease                                                     # Nur Testen wenn Tabelle(n) auch existieren
       ['Segment_Type', 'Tablespace_Name', 'Owner'].each do |gruppierung_tag|
         [{:detail=>1}, {:timeline=>1}].each do |submit_tag|
-          post :list_object_increase,  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
+          post '/addition/list_object_increase',  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
                                         :tablespace=>{"name"=>"[Alle]"}, "schema"=>{"name"=>"[Alle]"}, :gruppierung=>{"tag"=>gruppierung_tag}, :update_area=>:hugo }.merge(submit_tag)
           }
           assert_response :success
 
-          post :list_object_increase,  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
+          post '/addition/list_object_increase',  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
                                         :tablespace=>{"name"=>'USERS'}, "schema"=>{"name"=>"[Alle]"}, :gruppierung=>{"tag"=>gruppierung_tag}, :update_area=>:hugo }.merge(submit_tag)
           }
           assert_response :success
 
-          post :list_object_increase,  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
+          post '/addition/list_object_increase',  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
                                         :tablespace=>{"name"=>"[Alle]"}, "schema"=>{"name"=>'SYS'}, :gruppierung=>{"tag"=>gruppierung_tag}, :update_area=>:hugo }.merge(submit_tag)
           }
           assert_response :success
@@ -109,7 +109,7 @@ class AdditionControllerTest < ActionController::TestCase
   end
 
   test "object_increase_timeline with xhr: true" do
-    get :list_object_increase_object_timeline, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :owner=>'Hugo', :name=>'Hugo', :update_area=>:hugo  }
+    get '/addition/list_object_increase_object_timeline', :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :owner=>'Hugo', :name=>'Hugo', :update_area=>:hugo  }
     assert_response :success
   end
 
