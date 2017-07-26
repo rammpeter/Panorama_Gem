@@ -73,7 +73,10 @@ module ApplicationHelper
   # Lesen eines client-bezogenen Wertes aus serverseitigem Cache
   def read_from_client_info_store(key)
     full_hash = EngineConfig.get_client_info_store.read(get_decrypted_client_key)               # Auslesen des kompletten Hashes aus Cache
-    return nil if full_hash.nil? || full_hash.class != Hash                     # Abbruch wenn Struktur nicht passt
+    if full_hash.nil? || full_hash.class != Hash                                # Abbruch wenn Struktur nicht passt
+      Rails.logger.error "Key '#{key}' not found in ApplicationHelper.read_from_client_info_store"
+      return nil
+    end
     full_hash[key]
   end
 

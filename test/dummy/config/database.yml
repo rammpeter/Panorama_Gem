@@ -77,8 +77,8 @@ test_12.2_PDB:
   adapter: nulldb
 
   test_url:      jdbc:oracle:thin:@localhost:1521/orclpdb1
-  test_username: system
-  test_password: oracle
+  test_username: panorama_test
+  test_password: panorama_test
 
 
 test_12.2_CDB:

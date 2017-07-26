@@ -83,10 +83,12 @@ class AdditionControllerTest < ActionController::TestCase
   test "object_increase with xhr: true" do
     get :show_object_increase, :format=>:html    if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
+  end
 
-    ['Segment_Type', 'Tablespace_Name', 'Owner'].each do |gruppierung_tag|
-      [{:detail=>1}, {:timeline=>1}].each do |submit_tag|
-        if showObjectIncrease                                                     # Nur Testen wenn Tabelle(n) auch existieren
+  test "list_object_increase with xhr: true" do
+    if showObjectIncrease                                                     # Nur Testen wenn Tabelle(n) auch existieren
+      ['Segment_Type', 'Tablespace_Name', 'Owner'].each do |gruppierung_tag|
+        [{:detail=>1}, {:timeline=>1}].each do |submit_tag|
           post :list_object_increase,  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
                                         :tablespace=>{"name"=>"[Alle]"}, "schema"=>{"name"=>"[Alle]"}, :gruppierung=>{"tag"=>gruppierung_tag}, :update_area=>:hugo }.merge(submit_tag)
           }
@@ -104,7 +106,9 @@ class AdditionControllerTest < ActionController::TestCase
         end
       end
     end
+  end
 
+  test "object_increase_timeline with xhr: true" do
     get :list_object_increase_object_timeline, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :owner=>'Hugo', :name=>'Hugo', :update_area=>:hugo  }
     assert_response :success
   end
