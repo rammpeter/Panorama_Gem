@@ -62,9 +62,11 @@ class PanoramaSamplerController < ApplicationController
 
     dbid = WorkerThread.check_connection(org_entry)
     if dbid.nil?
-      show_popup_message('Connect not successful, see Panorama-Log for details')
+      show_popup_message("Connect to '#{config_entry[:name]}' not successful, see Panorama-Log for details")
     else
-      add_statusbar_message('Connect successful')
+      add_statusbar_message("Connect to '#{config_entry[:name]}' successful")
+      params[:config][:dbid] = dbid
+      params[:config][:last_successful_connect] = Time.now
       store_config                                                              # add or modify entry in persistence
     end
   end

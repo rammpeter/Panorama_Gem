@@ -41,8 +41,11 @@ class PanoramaSamplerConfig
   def self.prepare_saved_entry(entry)
     entry[:tns]      = PanoramaConnection.get_host_tns(entry) if entry[:modus].to_sym == :host
     if entry[:password].nil? || entry[:password] == ''
+      entry.delete(:password)                                                   # Preserve previous password at merge
+    else
       entry[:password] = encryt_password(entry[:password])                      # Encrypt password with master_password
     end
+    entry
   end
 
   def self.add_config_entry(entry)
@@ -58,9 +61,6 @@ class PanoramaSamplerConfig
 
   def self.modify_config_entry(entry)
     validate_entry(entry, :edit)
-    if entry[:password].nil? || entry[:password] == ''
-      entry.delete(:password)                                                   # Preserve previous password at merge
-    end
     @@config_access_mutex.synchronize do
       org_entry = get_config_entry_by_id(entry[:id])
       org_entry.merge!(prepare_saved_entry(entry))
