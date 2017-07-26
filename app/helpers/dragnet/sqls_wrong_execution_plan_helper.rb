@@ -57,32 +57,37 @@ Listed statements should be checked for use of hash join instead.
 This statement executes only for current (login) RAC-instance. Please execute separate for every RAC-instance (due to extremly large runtimes accessing GV$-tables).'),
             :sql=>  "SELECT /* DB-Tools Ramm Nested Loop auf grossen Tabellen */ * FROM (
                       SELECT /*+ PARALLEL(p,2) PARALLEL(s,2) */
-                             s.SQL_FullText, p.SQL_ID, p.Plan_Hash_Value, p.operation, p.Object_Type,  p.options, p.Object_Name,
+                             s.SQL_FullText, p.Inst_ID, p.SQL_ID, p.Plan_Hash_Value, p.operation, p.Object_Type,  p.options, p.Object_Name,
                              ROUND(s.Elapsed_Time/1000000) Elapsed_Secs, s.Executions, s.Rows_Processed,
                              ROUND(s.Rows_Processed/DECODE(s.Executions,0,1,s.Executions),2) Rows_Per_Execution,
                              CASE WHEN p.Object_Type = 'TABLE' THEN (SELECT /*+ NO_MERGE */ Num_Rows FROM DBA_Tables t WHERE t.Owner=p.Object_Owner AND t.Table_Name=p.Object_Name)
                                   WHEN p.Object_Type LIKE 'INDEX%' THEN (SELECT /*+ NO_MERGE */ Num_Rows FROM DBA_Indexes i WHERE i.Owner=p.Object_Owner AND i.Index_Name=p.Object_Name)
                              END Num_Rows
                       FROM   (
-                              WITH Plan AS (SELECT /*+ MATERIALIZE  */
-                                                   p.SQL_ID, p.Plan_Hash_Value, p.Operation, p.Options, p.Object_Type, p.Object_Owner, p.Object_Name, p.ID, p.Parent_ID
-                                            FROM   V$SQL_Plan p
+                              WITH Plan AS (SELECT /*+ NO_MERGE MATERIALIZE  */
+                                                   p.Inst_ID, p.SQL_ID, p.Plan_Hash_Value, p.Operation, p.Options, p.Object_Type, p.Object_Owner, p.Object_Name, p.ID, p.Parent_ID
+                                            FROM   GV$SQL_Plan p
+                                            JOIN   Gv$SQL s ON s.Inst_ID = p.Inst_ID AND s.SQL_ID = p.SQL_ID AND s.Plan_Hash_Value = p.Plan_Hash_Value
+                                            WHERE  s.Rows_Processed/DECODE(s.Executions,0,1,s.Executions) > ?
                                            )
-                              SELECT /*+ NO_MERGE PARALLEL(pnl,4) PARALLEL(pt1,4) PARALLEL(pf,4) PARALLEL(pt2,4)*/ DISTINCT pnl.SQL_ID, pnl.Plan_Hash_Value,
+                              SELECT /*+ NO_MERGE PARALLEL(pnl,4) PARALLEL(pt1,4) PARALLEL(pf,4) PARALLEL(pt2,4)*/ DISTINCT pnl.Inst_ID, pnl.SQL_ID, pnl.Plan_Hash_Value,
                                      CASE WHEN pt1.Operation IN ('TABLE ACCESS', 'INDEX') THEN pt1.Operation    ELSE pt2.Operation    END Operation,
                                      CASE WHEN pt1.Operation IN ('TABLE ACCESS', 'INDEX') THEN pt1.Object_Type  ELSE pt2.Object_Type  END Object_Type,
                                      CASE WHEN pt1.Operation IN ('TABLE ACCESS', 'INDEX') THEN pt1.Options      ELSE pt2.Options      END Options,
                                      CASE WHEN pt1.Operation IN ('TABLE ACCESS', 'INDEX') THEN pt1.Object_Owner ELSE pt2.Object_Owner END Object_Owner,
                                      CASE WHEN pt1.Operation IN ('TABLE ACCESS', 'INDEX') THEN pt1.Object_Name  ELSE pt2.Object_Name  END Object_Name
                               FROM   Plan pnl -- Nested Loop-Zeile
-                              JOIN   Plan pt1  ON  pt1.SQL_ID          = pnl.SQL_ID       -- zweite Zeile unter Nested Loop (iterativer Zugriff)
+                              JOIN   Plan pt1  ON  pt1.Inst_ID         = pnl.Inst_ID
+                                               AND pt1.SQL_ID          = pnl.SQL_ID       -- zweite Zeile unter Nested Loop (iterativer Zugriff)
                                                AND pt1.Plan_Hash_Value = pnl.Plan_Hash_Value
                                                AND pt1.Parent_ID       = pnl.ID
-                              JOIN   Plan pf  ON  pf.SQL_ID          = pt1.SQL_ID         -- erste Zeile unter Nested Loop (Datenherkunft)
+                              JOIN   Plan pf  ON  pf.Inst_ID         = pt1.Inst_ID
+                                              AND pf.SQL_ID          = pt1.SQL_ID         -- erste Zeile unter Nested Loop (Datenherkunft)
                                               AND pf.Plan_Hash_Value = pt1.Plan_Hash_Value
                                               AND pf.Parent_ID       = pnl.ID
                                               AND pf.ID              < pt1.ID        -- 1. ID ist Herkunft, 2. ID ist Iteration
-                              LEFT OUTER JOIN Plan pt2  ON  pt2.SQL_ID          = pnl.SQL_ID -- zweite Ebene der zweiten Zeile unter nested Loop
+                              LEFT OUTER JOIN Plan pt2  ON  pt2.Inst_ID         = pnl.Inst_ID
+                                                        AND pt2.SQL_ID          = pnl.SQL_ID -- zweite Ebene der zweiten Zeile unter nested Loop
                                                         AND pt2.Plan_Hash_Value = pnl.Plan_Hash_Value
                                                         AND pt2.Parent_ID       = pt1.ID
                               WHERE  pnl.Operation = 'NESTED LOOPS'
@@ -91,9 +96,9 @@ This statement executes only for current (login) RAC-instance. Please execute se
                                      )
                               AND    pt1.Operation NOT IN ('HASH JOIN', 'NESTED LOOPS', 'VIEW', 'MERGE JOIN', 'PX BLOCK')
                              ) p
-                      JOIN   v$SQL s         ON  s.SQL_ID             = p.SQL_ID
+                      JOIN   gv$SQL s        ON  s.Inst_ID            = p.Inst_ID
+                                             AND s.SQL_ID             = p.SQL_ID
                                              AND s.Plan_Hash_Value    = p.Plan_Hash_Value
-                                             AND s.Rows_Processed/DECODE(s.Executions,0,1,s.Executions) > ? -- Schwellwert fuer mgl. Ineffizienz NestedLoop
                       )
                       ORDER BY Rows_Per_Execution*Num_Rows DESC NULLS LAST",
             :parameter=>[{:name=> t(:dragnet_helper_93_param_1_name, :default=>'Minimum number of rows processed / execution'), :size=>8, :default=>100000, :title=> t(:dragnet_helper_93_param_1_hint, :default=>'Minimum number of rows processed / execution as threshold for possible inefficieny of nested loop')}]
