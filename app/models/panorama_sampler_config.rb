@@ -22,7 +22,7 @@ class PanoramaSamplerConfig
     retval = 0
     @@config_access_mutex.synchronize do
       get_config_array.each do |c|
-        retval = c[:id] if c[:id] > retval
+        retval = c[:id] if c[:id] && c[:id] > retval
       end
     end
     retval
@@ -39,7 +39,10 @@ class PanoramaSamplerConfig
 
   # Modify some content after edit
   def self.prepare_saved_entry(entry)
-    entry[:tns]      = PanoramaConnection.get_host_tns(entry) if entry[:modus].to_sym == :host
+    entry[:tns]                 = PanoramaConnection.get_host_tns(entry) if entry[:modus].to_sym == :host
+    entry[:id]                  = entry[:id].to_i
+    entry[:snapshot_retention]  = entry[:snapshot_retention].to_i
+
     if entry[:password].nil? || entry[:password] == ''
       entry.delete(:password)                                                   # Preserve previous password at merge
     else
