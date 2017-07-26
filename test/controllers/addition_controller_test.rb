@@ -81,7 +81,7 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "object_increase with xhr: true" do
-    get '/addition/show_object_increase', :format=>:html    if ENV['DB_VERSION'] >= '11.2'
+    get '/addition/show_object_increase',  :params => {:format=>:html}    if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
   end
 

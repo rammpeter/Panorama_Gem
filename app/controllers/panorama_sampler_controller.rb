@@ -1,10 +1,6 @@
 class PanoramaSamplerController < ApplicationController
   def show_config
-    if read_from_client_info_store(:encrypted_panorama_sampler_master_password)
-      list_config
-    else
-      request_master_password
-    end
+    request_master_password
   end
 
   def list_config
