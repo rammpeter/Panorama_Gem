@@ -619,7 +619,8 @@ Solution: Execute as user 'SYS':
         s.Status,
         s.SQL_ID,
         s.SQL_Child_Number,
-        s.Inst_ID,                                                                                                                        
+        s.Inst_ID,
+        #{"s.Con_ID," if get_current_database[:cdb]}
         s.UserName,                 
         s.Client_Info,
         s.Module, s.Action,

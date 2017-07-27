@@ -16,7 +16,7 @@ module ActiveSessionHistoryHelper
 
 
       @session_statistics_key_rules_hash["Instance"]    = {:sql => "s.Instance_Number",   :sql_alias => "instance_number",    :Name => 'Inst.',         :Title => 'RAC-Instance' }
-      @session_statistics_key_rules_hash["Con-ID"]      = {:sql => "s.Con_ID",            :sql_alias => "con_id",             :Name => 'Con.-ID',       :Title => 'Container-ID for pluggable database' } if get_current_database[:cdb]
+      @session_statistics_key_rules_hash["Con-ID"]      = {:sql => "s.Con_ID",            :sql_alias => "con_id",             :Name => 'Con.-ID',       :Title => 'Container-ID for pluggable database', :info_sql=>"DECODE(s.Con_ID, 1, 'CDB$ROOT', (SELECT /*+ NO_MERGE */ i.PDB_Name FROM DBA_PDBs i WHERE i.Con_ID=s.Con_ID))", :info_caption=>'Container name' } if get_current_database[:cdb]
       if get_db_version >= "11.2"
         @session_statistics_key_rules_hash["Session/Sn."] = {:sql => "DECODE(s.QC_instance_ID, NULL, s.Session_ID||', '||s.Session_Serial_No, s.QC_Session_ID||', '||s.QC_Session_Serial#)",        :sql_alias => "session_sn",        :Name => 'Session / Sn.',    :Title => 'Session-ID, SerialNo. (if executed in parallel query this is SID/sn of PQ-coordinator session)',  :info_sql  => "MIN(s.Session_Type)", :info_caption => "Session-Type" }
       else
