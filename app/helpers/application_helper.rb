@@ -38,24 +38,6 @@ module ApplicationHelper
     raise "Exception '#{e.message}' while creating file store at '#{EngineConfig.config.client_info_filename}'"
   end
 
-  private
-
-  # Ausliefern des client-Keys
-  def get_decrypted_client_key
-      Encryption.decrypt_value(cookies['client_key'], cookies['client_salt'])                                    # wirft ActiveSupport::MessageVerifier::InvalidSignature wenn cookies['client_key'] == nil
-  rescue ActiveSupport::MessageVerifier::InvalidSignature => e
-    Rails.logger.error("Exception '#{e.message}' raised while decrypting cookies['client_key'] (#{cookies['client_key']})")
-    #log_exception_backtrace(e, 20)
-    if cookies['client_key'].nil?
-      raise("Your browser does not allow cookies for this URL!\nPlease enable usage of browser cookies for this URL and reload the page.")
-    else
-      cookies.delete('client_key')                                               # Verwerfen des nicht entschlüsselbaren Cookies
-      cookies.delete('client_salt')
-      raise "Exception '#{e.message}' while decrypting your client key from browser cookie. \nPlease try again."
-    end
-  end
-
-  public
   # Schreiben eines client-bezogenen Wertes in serverseitigen Cache
   def write_to_client_info_store(key, value)
     cached_client_key = get_decrypted_client_key                                   # ausserhalb des Exception-Handlers, da evtl. ActiveSupport::MessageVerifier::InvalidSignature bereits in get_cached_client_key gefangen wird
@@ -433,74 +415,11 @@ module ApplicationHelper
     result
   end
 
-
-  private
-    # Ermitteln Kurztext per DB aus SQL-ID
-    def get_sql_shorttext_by_sql_id(sql_id)
-      # erster Versuch direkt aus SGA zu lesen
-      sqls = sql_select_all ["\
-                 SELECT /*+ Panorama-Tool Ramm */ SUBSTR(SQL_FullText, 1, 150) SQL_Text
-                 FROM   v$SQLArea
-                 WHERE  SQL_ID = ?",
-                 sql_id]
-
-      if sqls.size == 0  # Wenn nicht gefunden, dann in AWR-History suchen
-        sqls = sql_select_all ["\
-                   SELECT /*+ Panorama-Tool Ramm */ SUBSTR(SQL_Text, 1, 150) SQL_Text
-                   FROM   DBA_Hist_SQLText
-                   WHERE  DBID   = ?
-                   AND    SQL_ID = ?",
-                   get_dbid, sql_id]
-      end
-
-      if sqls.size == 0
-        "< Kein SQL-Text zu ermitteln füer SQL-ID='#{sql_id}' >"
-      else
-        sqls[0].sql_text
-      end
-    end # get_sql_shorttext_by_sql_id
-
-  public
   # Cachen von gekürzten SQL-Texten zu SQL-ID's
   def get_cached_sql_shorttext_by_sql_id(sql_id)
     # optional Lebensdauer des Caches mit Option  :expires_in => 5.minutes setzen
     Rails.cache.fetch("SQLShortText_#{sql_id}") {get_sql_shorttext_by_sql_id(sql_id)}
   end
-
-  protected
-
-  def get_sga_sql_statement(instance, sql_id)  # Ermittlung formatierter SQL-Text
-
-    def get_sga_sql_statement_internal(instance, sql_id)
-      statement = sql_select_one(["\
-        SELECT /* Panorama-Tool Ramm */ SQL_FullText
-        FROM   GV$SQLArea
-        WHERE  SQL_ID  = ?
-        AND    Inst_ID = ?
-        ",
-          sql_id, instance, sql_id, instance
-        ])
-      statement
-    end
-
-    raise 'Parameter instance should not be nil' unless instance
-    raise 'Parameter sql_id should not be nil' unless sql_id
-
-    sql_statement = get_sga_sql_statement_internal(instance, sql_id)
-    if sql_statement == '' # Nichts gefunden
-      instances = sql_select_all 'SELECT Inst_ID FROM GV$Instance'
-      instances.each do |i|
-        if sql_statement == '' # Auf anderer Instance suchen, solange nicht gefunden
-          sql_statement = get_sga_sql_statement_internal(i.inst_id, sql_id)
-          sql_statement = "[Instance=#{i.inst_id}] #{sql_statement}" unless sql_statement == '' # abweichende Instance mit in Text aufnehmen
-        end
-      end
-    end
-    sql_statement
-  end
-
-
-  public
 
   # Rendern des Templates für Action, optionale mit Angabe des Partial-Namens wenn von Action abweicht
   # options support:
@@ -513,12 +432,6 @@ module ApplicationHelper
 
     partial_name = self.action_name if partial_name.nil?
     render_internal(params[:update_area], controller_name, partial_name, options)
-  end
-
-  # Add string to status-bar-message
-  def add_statusbar_message(message)
-    @statusbar_message << "\n" if @statusbar_message.length > 0
-    @statusbar_message << message
   end
 
   # Eigentliche Durchführung des renderns, auch genutzt von env_controller.render_menu_action
@@ -626,7 +539,6 @@ module ApplicationHelper
     ))
   end
 
-  public
   # Helper fuer Ausführung SQL-Select-Query,
   # Parameter: sql = String mit Statement oder Array mit Statement und Bindevariablen
   #            modifier = proc für Anwendung auf die fertige Row
@@ -653,6 +565,79 @@ module ApplicationHelper
     PanoramaConnection.sql_select_one(sql, query_name)
   end
 
+  ####################################### only protected and private methods from here #####################################
+  protected
+  def get_sga_sql_statement(instance, sql_id)  # Ermittlung formatierter SQL-Text
 
+    def get_sga_sql_statement_internal(instance, sql_id)
+      statement = sql_select_one(["\
+        SELECT /* Panorama-Tool Ramm */ SQL_FullText
+        FROM   GV$SQLArea
+        WHERE  SQL_ID  = ?
+        AND    Inst_ID = ?
+        ",
+                                  sql_id, instance, sql_id, instance
+                                 ])
+      statement
+    end
+
+    raise 'Parameter instance should not be nil' unless instance
+    raise 'Parameter sql_id should not be nil' unless sql_id
+
+    sql_statement = get_sga_sql_statement_internal(instance, sql_id)
+    if sql_statement == '' # Nichts gefunden
+      instances = sql_select_all 'SELECT Inst_ID FROM GV$Instance'
+      instances.each do |i|
+        if sql_statement == '' # Auf anderer Instance suchen, solange nicht gefunden
+          sql_statement = get_sga_sql_statement_internal(i.inst_id, sql_id)
+          sql_statement = "[Instance=#{i.inst_id}] #{sql_statement}" unless sql_statement == '' # abweichende Instance mit in Text aufnehmen
+        end
+      end
+    end
+    sql_statement
+  end
+
+
+  ######################################## only private methods from here ######################################
+  private
+  # Ermitteln Kurztext per DB aus SQL-ID
+  def get_sql_shorttext_by_sql_id(sql_id)
+    # erster Versuch direkt aus SGA zu lesen
+    sqls = sql_select_all ["\
+                 SELECT /*+ Panorama-Tool Ramm */ SUBSTR(SQL_FullText, 1, 150) SQL_Text
+                 FROM   v$SQLArea
+                 WHERE  SQL_ID = ?",
+                           sql_id]
+
+    if sqls.size == 0  # Wenn nicht gefunden, dann in AWR-History suchen
+      sqls = sql_select_all ["\
+                   SELECT /*+ Panorama-Tool Ramm */ SUBSTR(SQL_Text, 1, 150) SQL_Text
+                   FROM   DBA_Hist_SQLText
+                   WHERE  DBID   = ?
+                   AND    SQL_ID = ?",
+                             get_dbid, sql_id]
+    end
+
+    if sqls.size == 0
+      "< Kein SQL-Text zu ermitteln füer SQL-ID='#{sql_id}' >"
+    else
+      sqls[0].sql_text
+    end
+  end # get_sql_shorttext_by_sql_id
+
+  # Ausliefern des client-Keys
+  def get_decrypted_client_key
+    Encryption.decrypt_value(cookies['client_key'], cookies['client_salt'])                                    # wirft ActiveSupport::MessageVerifier::InvalidSignature wenn cookies['client_key'] == nil
+  rescue ActiveSupport::MessageVerifier::InvalidSignature => e
+    Rails.logger.error("Exception '#{e.message}' raised while decrypting cookies['client_key'] (#{cookies['client_key']})")
+    #log_exception_backtrace(e, 20)
+    if cookies['client_key'].nil?
+      raise("Your browser does not allow cookies for this URL!\nPlease enable usage of browser cookies for this URL and reload the page.")
+    else
+      cookies.delete('client_key')                                               # Verwerfen des nicht entschlüsselbaren Cookies
+      cookies.delete('client_salt')
+      raise "Exception '#{e.message}' while decrypting your client key from browser cookie. \nPlease try again."
+    end
+  end
 
 end

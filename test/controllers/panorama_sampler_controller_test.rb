@@ -44,15 +44,27 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "save_config with xhr: true" do
-    get '/panorama_sampler/save_config',  :params => {:format=>:html, :commit=>'Save',
-        :config => @config_entry_without_id.merge({:id => PanoramaSamplerConfig.get_max_id + 1, :name => "New Test-Config" })
-    }
-    assert_response :success
+    ['Save', 'Test connection'].each do |button|                                # Simulate pressed button "Save" or "Test connection"
+      ['Existing', 'New'].each do |mode|                                        # Simulate change of existing or new record
+        ['Right', 'Wrong'].each do |right|                                      # Valid or invalid connection info
+          id = mode=='New' ? PanoramaSamplerConfig.get_max_id + 1 : PanoramaSamplerConfig.get_max_id
+          config = @config_entry_without_id.clone
+          response_format = :html                                                        # Default
+          config[:user] = 'blabla' if right == 'Wrong'                          # Force connect error or not
+          response_format = :js if right == 'Wrong' && button == 'Test connection'  # Popup-Dialog per JS expected
 
-    get '/panorama_sampler/save_config',  :params => {:format=>:html, :commit=>'Test connection',
-                                                      :config => @config_entry_without_id.merge({:id => PanoramaSamplerConfig.get_max_id + 1, :name => "New Test-Config" })
-    }
-    assert_response :success
+          get '/panorama_sampler/save_config',
+              :params => {
+                  :format => response_format,
+                  :commit => button,
+                  :id     => id,
+                  :config => config
+              }
+          assert_response :success
+
+        end
+      end
+    end
   end
 
   test "delete_config with xhr: true" do

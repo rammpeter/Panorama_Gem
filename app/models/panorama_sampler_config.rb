@@ -18,6 +18,10 @@ class PanoramaSamplerConfig
     end
   end
 
+  def self.config_entry_exists?(p_id)
+    !get_config_entry_by_id_or_nil(p_id).nil?
+  end
+
   def self.get_max_id
     retval = 0
     @@config_access_mutex.synchronize do
@@ -105,10 +109,19 @@ class PanoramaSamplerConfig
 
   #  Call inside Mutex.synchronize only
   def self.get_config_entry_by_id(p_id)
+    retval = get_config_entry_by_id_or_nil(p_id)
+    if retval.nil?
+      raise "No Panorama-Sampler config found for ID=#{p_id} class='#{p_id.class}'"
+    end
+    retval
+  end
+
+  #  Call inside Mutex.synchronize only
+  def self.get_config_entry_by_id_or_nil(p_id)
     get_config_array.each do |c|
       return c if c[:id] == p_id
     end
-    raise "No Panorama-Sampler config found for ID=#{p_id} class='#{p_id.class}'"
+    return nil
   end
 
 end

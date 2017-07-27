@@ -115,7 +115,14 @@ class ApplicationController < ActionController::Base
     PanoramaConnection.reset_thread_local_attributes
   end
 
-protected
+  # Add string to status-bar-message
+  def add_statusbar_message(message)
+    @statusbar_message << "\n" if @statusbar_message.length > 0
+    @statusbar_message << message
+  end
+
+  ####################################### only protected and private methods from here #####################################
+  protected
 
   # Ausgabe der Meldungen einer Exception
   def alert_exception(exception, header='', format=:js)
@@ -157,14 +164,6 @@ protected
     end
   end
 
-  def add_statusbar_message(message)
-    if @statusbar_message.length > 0
-      @statusbar_message << "\n"
-      @statusbar_message << message
-    else
-      @statusbar_message = message
-    end
 
-  end
 
 end

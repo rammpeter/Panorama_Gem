@@ -38,44 +38,27 @@ class PanoramaSamplerController < ApplicationController
   end
 
   def save_config
-    if params[:commit] == 'Save'
-      store_config
-    else
-      check_connection
-    end
-  end
-
-  def check_connection
     config_entry        = params[:config].to_unsafe_h.symbolize_keys
     config_entry[:id]   = params[:id].to_i
 
-    org_entry = PanoramaSamplerConfig.get_cloned_config_entry(config_entry[:id])
-    if org_entry.nil?                                                           # entry not yet saved
-      org_entry = PanoramaSamplerConfig.prepare_saved_entry(config_entry)
-    else                                                                        # entry already exists
-      org_entry.merge!(PanoramaSamplerConfig.prepare_saved_entry(config_entry))
-    end
+    dbid = test_connection(config_entry)
 
-    dbid = WorkerThread.check_connection(org_entry)
-    if dbid.nil?
-      show_popup_message("Connect to '#{config_entry[:name]}' not successful, see Panorama-Log for details")
-    else
-      add_statusbar_message("Connect to '#{config_entry[:name]}' successful")
-      params[:config][:dbid] = dbid
-      params[:config][:last_successful_connect] = Time.now
-      store_config                                                              # add or modify entry in persistence
+    if params[:commit] == 'Save'
+      store_config(config_entry)
+    else                                                                        # Check connection pressed
+      if dbid.nil?
+        show_popup_message("Connect to '#{config_entry[:name]}' not successful, see Panorama-Log for details")
+      else
+        store_config(config_entry)                                                # add or modify entry in persistence
+      end
     end
   end
 
-  def store_config
-    config_entry      = params[:config].to_unsafe_h.symbolize_keys
-    config_entry[:id] = params[:id].to_i
-
-    if params[:modus] == 'new'
-      PanoramaSamplerConfig.add_config_entry(config_entry)
-    end
-    if params[:modus] == 'edit'
+  def store_config(config_entry)
+    if PanoramaSamplerConfig.config_entry_exists?(config_entry[:id])
       PanoramaSamplerConfig.modify_config_entry(config_entry)
+    else
+      PanoramaSamplerConfig.add_config_entry(config_entry)
     end
     list_config
   end
@@ -83,5 +66,20 @@ class PanoramaSamplerController < ApplicationController
   def delete_config
     PanoramaSamplerConfig.delete_config_entry(params[:id])
     list_config
+  end
+
+  private
+  # Test connection and store result in entry, return DBID or nil in cse of connect error
+  def test_connection(config_entry)
+    if PanoramaSamplerConfig.config_entry_exists?(config_entry[:id])            # entry already saved?
+      org_entry = PanoramaSamplerConfig.get_cloned_config_entry(config_entry[:id])  # Test with copy
+      org_entry.merge!(PanoramaSamplerConfig.prepare_saved_entry(config_entry))
+    else                                                                        # entry already exists
+      org_entry = PanoramaSamplerConfig.prepare_saved_entry(config_entry)
+    end
+
+    dbid = WorkerThread.check_connection(org_entry, self)
+    params[:config] = org_entry                                                 # Ensure that modified config is stored instead of dialog entry
+    dbid
   end
 end
