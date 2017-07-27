@@ -4,7 +4,6 @@ class WorkerThread
   # Check if connection may function and return DBID aof database
   def self.check_connection(sampler_config, controller)
     thread = Thread.new{WorkerThread.new(sampler_config).check_connection_internal(sampler_config, controller)}
-    thread.join
     result = thread.value
     result
   rescue Exception => e

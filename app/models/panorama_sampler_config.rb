@@ -41,7 +41,7 @@ class PanoramaSamplerConfig
     raise "Password is mandatory" if (entry[:password].nil? || entry[:password] == '') && mode == :add
   end
 
-  # Modify some content after edit
+  # Modify some content after edit and before storage
   def self.prepare_saved_entry(entry)
     entry[:tns]                 = PanoramaConnection.get_host_tns(entry) if entry[:modus].to_sym == :host
     entry[:id]                  = entry[:id].to_i
@@ -55,22 +55,24 @@ class PanoramaSamplerConfig
     entry
   end
 
+  # add new entry (parameter already prepared)
   def self.add_config_entry(entry)
     validate_entry(entry, :add)
     @@config_access_mutex.synchronize do
       get_config_array.each do |c|
         raise "ID #{entry[:id]} is already used" if c[:id] == entry[:id]        # Ensure unique IDs
       end
-      get_config_array << prepare_saved_entry(entry)                            # Ensures initialization
+      get_config_array << entry
       write_config_array_to_store
     end
   end
 
+  # modify entry (parameter already prepared)
   def self.modify_config_entry(entry)
     validate_entry(entry, :edit)
     @@config_access_mutex.synchronize do
       org_entry = get_config_entry_by_id(entry[:id])
-      org_entry.merge!(prepare_saved_entry(entry))
+      org_entry.merge!(entry)
       write_config_array_to_store
     end
   end

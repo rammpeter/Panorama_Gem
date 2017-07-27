@@ -18,6 +18,10 @@
     )}</div>"
   end
 
+  def error_style(rec)
+    "background-color:coral;" if rec[:last_successful_connect].nil? || (rec[:last_successful_connect] && rec[:last_error_time] && rec[:last_error_time] > rec[:last_successful_connect])
+  end
+
   column_options =
   [
     {:caption=>'ID',                  :data=>proc{|rec| rec[:id]},                                        :title=>"Unique identifier", :align=>:right},
@@ -25,8 +29,10 @@
     {:caption=>'TNS config',          :data=>proc{|rec| rec[:tns]},                                       :title=>"TNS-alias or connect string"},
     {:caption=>'Username',            :data=>proc{|rec| rec[:user]},                                      :title=>"Name of user to store Panorama's tables for workload recording"},
     {:caption=>'DBID',                :data=>proc{|rec| rec[:dbid]},                                      :title=>"Unique database identifier (v$Database.DBID)"},
-    {:caption=>'Last connect',        :data=>proc{|rec| localeDateTime(rec[:last_successful_connect])},   :title=>"Last successful connect to database"},
     {:caption=>"Snapshot retention",  :data=>proc{|rec| rec[:snapshot_retention]},                        :title=>"Delay between snapshots in minutes", :align=>:right},
+    {:caption=>'Last connect time',   :data=>proc{|rec| localeDateTime(rec[:last_successful_connect])},   :title=>"Timestamp of last successful connect to database"},
+    {:caption=>'Last error time',     :data=>proc{|rec| localeDateTime(rec[:last_error_time])},           :title=>"Timestamp of last connect- or execution-error", :data_style=>proc{|rec| error_style(rec)}},
+    {:caption=>'Last error message',  :data=>proc{|rec| rec[:last_error_message]},                        :title=>"Last message of connect- or execution-error", :data_title=>proc{|rec| "%t\n#{rec[:last_error_message]}"}, :data_style=>proc{|rec| error_style(rec)}, :max_wrap_width=>60},
     {:caption=>'Action',              :data=>proc{|rec| render_action_buttons(rec) },                     :title=>"Execute action for this record" },
   ]
 

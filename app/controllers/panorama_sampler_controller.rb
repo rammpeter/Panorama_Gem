@@ -41,13 +41,15 @@ class PanoramaSamplerController < ApplicationController
     config_entry        = params[:config].to_unsafe_h.symbolize_keys
     config_entry[:id]   = params[:id].to_i
 
+    config_entry = PanoramaSamplerConfig.prepare_saved_entry(config_entry)
+
     dbid = test_connection(config_entry)
 
     if params[:commit] == 'Save'
       store_config(config_entry)
     else                                                                        # Check connection pressed
       if dbid.nil?
-        show_popup_message("Connect to '#{config_entry[:name]}' not successful, see Panorama-Log for details")
+        show_popup_message("Connect to '#{config_entry[:name]}' not successful!\nException: #{config_entry[:last_error_message]}\nSee Panorama-Log for further details")
       else
         store_config(config_entry)                                                # add or modify entry in persistence
       end
@@ -73,13 +75,10 @@ class PanoramaSamplerController < ApplicationController
   def test_connection(config_entry)
     if PanoramaSamplerConfig.config_entry_exists?(config_entry[:id])            # entry already saved?
       org_entry = PanoramaSamplerConfig.get_cloned_config_entry(config_entry[:id])  # Test with copy
-      org_entry.merge!(PanoramaSamplerConfig.prepare_saved_entry(config_entry))
-    else                                                                        # entry already exists
-      org_entry = PanoramaSamplerConfig.prepare_saved_entry(config_entry)
+      config_entry.replace(org_entry.merge(config_entry))                       # Replace content, but preserve object
     end
 
-    dbid = WorkerThread.check_connection(org_entry, self)
-    params[:config] = org_entry                                                 # Ensure that modified config is stored instead of dialog entry
+    dbid = WorkerThread.check_connection(config_entry, self)                    # Writes back some state in config_entry
     dbid
   end
 end
