@@ -620,7 +620,7 @@ Solution: Execute as user 'SYS':
         s.SQL_ID,
         s.SQL_Child_Number,
         s.Inst_ID,
-        #{"s.Con_ID," if get_current_database[:cdb]}
+        #{"s.Con_ID, con.Name Container_Name, " if get_current_database[:cdb]}
         s.UserName,                 
         s.Client_Info,
         s.Module, s.Action,
@@ -706,6 +706,7 @@ Solution: Execute as user 'SYS':
               FROM   gv$Sort_Usage
               GROUP BY Inst_ID, Session_Addr
              ) temp ON temp.Inst_ID = s.Inst_ID AND temp.Session_Addr = s.sAddr
+      #{"LEFT OUTER JOIN gv$Containers con ON con.Inst_ID=s.Inst_ID AND con.Con_ID=s.Con_ID" if get_current_database[:cdb]}
       LEFT OUTER JOIN gv$Session_Wait w ON w.Inst_ID = s.Inst_ID AND w.SID = s.SID
       WHERE 1=1 #{where_string}
       ORDER BY 1 ASC"].concat(where_values)
@@ -720,7 +721,7 @@ Solution: Execute as user 'SYS':
     @update_area = params[:update_area]
 
     @dbsessions =  sql_select_all ["\
-           SELECT s.SQL_ID, s.Prev_SQL_ID, RawToHex(s.SAddr) SAddr,
+           SELECT s.SQL_ID, s.Prev_SQL_ID, RawToHex(s.SAddr) SAddr, #{"s.Con_ID, con.Name Container_Name, " if get_current_database[:cdb]}
                   s.SQL_Child_Number, s.Prev_Child_Number,
                   s.Status, s.Client_Info, s.Module, s.Action, s.AudSID,
                   s.UserName, s.Machine, s.OSUser, s.Process, s.Program,
@@ -738,6 +739,7 @@ Solution: Execute as user 'SYS':
                             #{' AND Serial#=?' if get_db_version >= '11.2' }
                             AND    RowNum < 2         /* Verdichtung da fuer jede Zeile des Network_Banners ein Record in GV$Session_Connect_Info existiert */
                            ) c ON c.Inst_ID = s.Inst_ID AND c.SID = s.SID #{'AND c.Serial# = s.Serial#'  if get_db_version >= '11.2' }
+           #{"LEFT OUTER JOIN gv$Containers con ON con.Inst_ID=s.Inst_ID AND con.Con_ID=s.Con_ID" if get_current_database[:cdb]}
            WHERE  s.Inst_ID=? AND s.SID=? AND s.Serial#=?",
            @instance, @sid].concat( get_db_version >= "11.2" ? [@serialno] : [] ).concat([@instance, @sid, @serialno])
     @dbsession    = nil

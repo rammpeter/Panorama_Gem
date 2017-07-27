@@ -1,5 +1,5 @@
 <div style="clear:both; padding: 5px;"></div>
-<%= render_page_caption("#{t(:dba_list_session_details_caption, :default=>'Details for session')} SID=#{@sid}, Serial#=#{@serialno}, Instance=#{@instance}, #{localeDateTime(Time.now)}", get_recall_params_info_for_render_page_caption) %>
+<%= render_page_caption("#{t(:dba_list_session_details_caption, :default=>'Details for session')} SID=#{@sid}, Serial#=#{@serialno}, Instance=#{@instance}, #{"CDB=#{@dbsessions[0].con_id} (#{@dbsessions[0].container_name}), " if get_current_database[:cdb]}#{localeDateTime(Time.now)}", get_recall_params_info_for_render_page_caption) %>
 
 <% @prev_update_area = @update_area
    @update_area = get_unique_area_id
@@ -29,7 +29,7 @@ column_options << {:caption=>'Client version',      :data=>proc{|rec| rec.client
 column_options << {:caption=>'Client driver',       :data=>proc{|rec| rec.client_driver},      :title=>'Client driver name'} if get_db_version >= '11.2'
 
 %>
-<%= gen_slickgrid(@dbsessions, column_options, {:caption=>"Details for session SID=#{@sid}, Serial#=#{@serialno}, Instance=#{@instance}" }) %>
+<%= gen_slickgrid(@dbsessions, column_options) %>
 
 <% if @pq_coordinator.count > 0 # Betrachete Session ist ein PQ-Slave, dann Info zum Coordinator hinzufügen %>
     <%
