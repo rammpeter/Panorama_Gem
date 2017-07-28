@@ -473,7 +473,9 @@ public
   def list_management_pack_license
     @control_management_pack_access = read_control_management_pack_access       # ab Oracle 11 belegt
     @edition = :enterprise                                                      # default assumption
-    @edition = :standard if PanoramaConnection.sql_select_one("SELECT COUNT(*) FROM v$version WHERE Banner like '%Standard Edition%'") > 0
+
+    # Some times Standard Edition is named in v$version, some times it is called only "Oracle Database 12c Release 12.1.0.1.0 - 64bit Production"
+    @edition = :standard if !PanoramaConnection.sql_select_one("SELECT COUNT(*) FROM v$version WHERE Banner like '%Enterprise Edition%'") > 0
 
     render_partial :list_management_pack_license
   end
