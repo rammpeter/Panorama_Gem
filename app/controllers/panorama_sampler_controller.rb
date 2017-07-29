@@ -26,7 +26,7 @@ class PanoramaSamplerController < ApplicationController
 
   def show_new_config_form
     @modus = :new
-    @config = {:id => PanoramaSamplerConfig.get_max_id+1, :snapshot_retention => 60}
+    @config = {:id => PanoramaSamplerConfig.get_max_id+1, :active=>true, :snapshot_cycle => 60, :snapshot_retention => 32}
     render_partial :edit_config
   end
 
@@ -38,8 +38,9 @@ class PanoramaSamplerController < ApplicationController
   end
 
   def save_config
-    config_entry        = params[:config].to_unsafe_h.symbolize_keys
-    config_entry[:id]   = params[:id].to_i
+    config_entry          = params[:config].to_unsafe_h.symbolize_keys
+    config_entry[:id]     = params[:id].to_i
+    config_entry[:active] = config_entry[:active] == '1'
 
     config_entry = PanoramaSamplerConfig.prepare_saved_entry(config_entry)
 

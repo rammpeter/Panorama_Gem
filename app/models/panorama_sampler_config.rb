@@ -37,14 +37,19 @@ class PanoramaSamplerConfig
     Encryption.encrypt_value(native_password, EngineConfig.config.panorama_sampler_master_password) # Encrypt password with master_password
   end
 
-  def self.validate_entry(entry, mode)
-    raise "Password is mandatory" if (entry[:password].nil? || entry[:password] == '') && mode == :add
+  def self.validate_entry(entry)
+    raise "Password is mandatory" if (entry[:password].nil? || entry[:password] == '')
+    if entry[:snapshot_cycle] <=0 || 60 % entry[:snapshot_cycle] != 0 || entry[:snapshot_cycle] % 5 != 0
+      raise "Snapshot cycle must be a multiple of 5 minutes\nand divisible without remainder from 60 minutes\ne.g. 5, 10, 15, 20, 30 or 60 minutes"
+    end
+    raise "Snapshot retention must be >= 1 day" if entry[:snapshot_cycle].to_i < 1
   end
 
   # Modify some content after edit and before storage
   def self.prepare_saved_entry(entry)
     entry[:tns]                 = PanoramaConnection.get_host_tns(entry) if entry[:modus].to_sym == :host
     entry[:id]                  = entry[:id].to_i
+    entry[:snapshot_cycle]      = entry[:snapshot_cycle].to_i
     entry[:snapshot_retention]  = entry[:snapshot_retention].to_i
 
     if entry[:password].nil? || entry[:password] == ''
@@ -57,7 +62,7 @@ class PanoramaSamplerConfig
 
   # add new entry (parameter already prepared)
   def self.add_config_entry(entry)
-    validate_entry(entry, :add)
+    validate_entry(entry)
     @@config_access_mutex.synchronize do
       get_config_array.each do |c|
         raise "ID #{entry[:id]} is already used" if c[:id] == entry[:id]        # Ensure unique IDs
@@ -69,10 +74,10 @@ class PanoramaSamplerConfig
 
   # modify entry (parameter already prepared)
   def self.modify_config_entry(entry)
-    validate_entry(entry, :edit)
     @@config_access_mutex.synchronize do
       org_entry = get_config_entry_by_id(entry[:id])
-      org_entry.merge!(entry)
+      validate_entry(org_entry.merge(entry))                                    # Validate resulting merged entry
+      org_entry.merge!(entry)                                                   # Do real merge if validation passed
       write_config_array_to_store
     end
   end
@@ -86,6 +91,14 @@ class PanoramaSamplerConfig
     end
   end
 
+  # Set error state
+  def self.set_error_message(id, message)
+    PanoramaSamplerConfig.modify_config_entry({
+                                                  :id                 => @sampler_config[:id],
+                                                  :last_error_time    => Time.now,
+                                                  :last_error_message => message
+                                              })
+  end
   private
 
   def self.client_info_store_key

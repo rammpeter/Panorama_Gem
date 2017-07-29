@@ -15,6 +15,11 @@
     </tr>
 
     <tr>
+      <th>Active</th>
+      <td align="center"><%= check_box_tag(:config_active, 1, @config[:active], :name=>'config[active]', :title=>"Active-state, sampling occurs for active configurations only") %></td>
+    </tr>
+
+    <tr>
       <th>Config name</th>
       <td align="center"><%= text_field_tag(:config_name, @config[:name], :name=>'config[name]', :style=>"width:95%;", :title=>"Name / description for configuration") %></td>
     </tr>
@@ -74,10 +79,14 @@
     </tr>
 
     <tr>
-      <th>Snapshot retention</th>
-      <td align="center"><%= text_field_tag(:snapshot_retention, @config[:snapshot_retention], :style => "width:95%; text-align: right;", :title=>'Delay between snapshots in minutes') %></td>
+      <th>Snapshot cycle (minutes)</th>
+      <td align="center"><%= text_field_tag(:config_snapshot_cycle, @config[:snapshot_cycle], :name=>'config[snapshot_cycle]', :style => "width:95%; text-align: right;", :title=>'Delay between snapshots in minutes') %></td>
     </tr>
 
+    <tr>
+      <th>Snapshot retention (days)</th>
+      <td align="center"><%= text_field_tag(:config_snapshot_retention, @config[:snapshot_retention], :name=>'config[snapshot_retention]', :style => "width:95%; text-align: right;", :title=>'Retention time for snapshot data in days before deletion') %></td>
+    </tr>
 
   </table>
   <%= submit_tag('Test connection', :title =>"Test connection to configured database" ) %>
