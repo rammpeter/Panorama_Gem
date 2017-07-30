@@ -45,6 +45,12 @@ class WorkerThread
       controller.add_statusbar_message("Trial connect to '#{@sampler_config[:name]}' not successful, see Panorama-Log for details")
       @sampler_config[:last_error_time] = Time.now
     else
+      owner_exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Users WHERE UserName = ?", @sampler_config[:owner].upcase]
+      raise "Schema-owner #{@sampler_config[:owner]} does not exists in database" if owner_exists == 0
+
+      PanoramaConnection.sql_execute "CREATE TABLE #{@sampler_config[:owner]}.Panorama_Resource_Test(ID NUMBER)"
+      PanoramaConnection.sql_execute "DROP TABLE #{@sampler_config[:owner]}.Panorama_Resource_Test"
+
       controller.add_statusbar_message("Trial connect to '#{@sampler_config[:name]}' successful")
       @sampler_config[:dbid] = dbid
       @sampler_config[:last_successful_connect] = Time.now
@@ -67,10 +73,11 @@ class WorkerThread
       return
     end
 
-    @@active_snashots[ @sampler_config[:id]] = true                             # Create semaphore for thread, begin processing
+    @@active_snashots[@sampler_config[:id]] = true                              # Create semaphore for thread, begin processing
     db_time = PanoramaConnection.sql_select_one "SELECT SYSDATE FROM Dual"
     PanoramaSamplerConfig.modify_config_entry({:id => @sampler_config[:id], :last_successful_connect => Time.now }) # Set after first successful SQL
-    PanoramaSamplerStructureCheck.do_check(@sampler_config)
+    PanoramaSamplerStructureCheck.do_check(@sampler_config)                     # Check data structure preconditions
+    PanoramaSamplerSampling.do_sampling(@sampler_config)                        # Do Sampling (without active session history)
 
     @@active_snashots.delete(@sampler_config[:id])                              # Remove semaphore
   rescue Exception => e

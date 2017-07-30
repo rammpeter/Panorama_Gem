@@ -30,14 +30,19 @@ class PackLicense
 
   # Filter SQL string for unlicensed Table Access
   def filter_sql_string_for_pack_license(sql)
+
     case @license_type
       when :diagnostic_pack then
         check_for_tuning_pack_usage(sql)
       when :none then
         check_for_diagnostic_pack_usage(sql)
         check_for_tuning_pack_usage(sql)
+      when :panorama_sampler then
+        sql = PanoramaSamplerStructureCheck.transform_sql_for_sampler(sql)
+        check_for_diagnostic_pack_usage(sql)
+        check_for_tuning_pack_usage(sql)
     end
-     sql
+    sql
   end
 
   private
@@ -68,6 +73,7 @@ class PackLicense
 
   public
 
+  # raise Exception if SQL contains content violating missing diagnostic pack license
   def check_for_diagnostic_pack_usage(sql)
     allowed_array = [
         'DBA_HIST_BLOCKING_LOCKS',                                              # private table
@@ -110,7 +116,7 @@ class PackLicense
     end
   end
 
-
+  # raise Exception if SQL contains content violating missing tuning pack license
   def check_for_tuning_pack_usage(sql)
     allowed_array = []
 

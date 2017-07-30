@@ -70,12 +70,17 @@
 
     <tr>
       <th>Username</th>
-      <td align="center"><%= text_field_tag(:config_user, @config[:user], :name=>'config[user]', :style=>"width:95%;", :title=>"Name of user to store Panorama's tables for workload recording") %></td>
+      <td align="center"><%= text_field_tag(:config_user, @config[:user], :name=>'config[user]', :style=>"width:95%;", :title=>"Name of user to connect to database for workload recording") %></td>
     </tr>
 
     <tr>
       <th>Password</th>
       <td align="center"><%= password_field_tag(:config_password, @config[:password], :name=>'config[password]', :style=>"width:95%;", :title=>"Password of user to store Panorama's tables for workload recording.\nPassword is changed only if new password entered here.\nLeave empty to preserve existing password.") %></td>
+    </tr>
+
+    <tr>
+      <th>Schema owner</th>
+      <td align="center"><%= text_field_tag(:config_owner, @config[:owner], :name=>'config[owner]', :style=>"width:95%;", :title=>"Name of user/schema to store Panorama's tables for workload recording.\nConnection user must have rights to create objects in this schema.\nNeed to define only if different from connection username.") %></td>
     </tr>
 
     <tr>

@@ -143,7 +143,33 @@ class PanoramaConnection
     Thread.current[:panorama_connection_jdbc_connection] = nil
   end
 
+  def self.instance_number
+    fill_connection_info_fields unless Thread.current[:instance_number]
+    Thread.current[:instance_number]
+  end
+
+  def self.db_version
+    fill_connection_info_fields unless Thread.current[:db_version]
+    Thread.current[:db_version]
+  end
+
+  def self.dbid
+    fill_connection_info_fields unless Thread.current[:dbid]
+    Thread.current[:dbid]
+  end
+
   private
+  # Read some info for connection from database
+  def self.fill_connection_info_fields
+    raise "PanoramaConnection.fill_connection_info_fields called on thread before execution of PanoramaConnection.set_connection_info_for_request" unless Thread.current[:panorama_connection_connect_info]
+    instance_data = sql_select_first_row "SELECT Instance_Number, Version FROM v$Instance"
+    Thread.current[:instance_number]  = instance_data.instance_number
+    Thread.current[:db_version]       = instance_data.version
+
+    database_data = sql_select_first_row "SELECT DBID FROM v$Database"
+    Thread.current[:dbid]             = database_data.dbid
+  end
+
   def self.destroy_connection_in_mutexed_pool(destroy_conn)
     @@connection_pool.each do |conn|
       if conn[:jdbc_connection] == destroy_conn
@@ -251,8 +277,16 @@ class PanoramaConnection
   end
 
   def self.sql_execute(sql, query_name = 'sql_execute')
-    raise 'binds are not yet supported for sql_execute' if sql.class != String
-    get_connection.exec_update(sql, query_name, [])
+    # raise 'binds are not yet supported for sql_execute' if sql.class != String
+
+
+    check_for_open_connection                                                   # ensure opened Oracle-connection
+    management_pack_license = Thread.current[:panorama_connection_connect_info][:management_pack_license]
+    transformed_sql = PackLicense.filter_sql_for_pack_license(sql, management_pack_license)  # Check for lincense violation and possible statement transformation
+    stmt, binds = sql_prepare_binds(transformed_sql)   # Transform SQL and split SQL and binds
+    # TODO: query_timeout berücksichtigen
+    #SqlSelectIterator.new(translate_sql(stmt), binds, modifier, Thread.current[:panorama_connection_connect_info][:query_timeout], query_name)      # kann per Aufruf von each die einzelnen Records liefern
+    get_connection.exec_update(stmt, query_name, binds)
   end
 
 

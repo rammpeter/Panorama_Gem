@@ -51,6 +51,7 @@ class PanoramaSamplerConfig
     entry[:id]                  = entry[:id].to_i
     entry[:snapshot_cycle]      = entry[:snapshot_cycle].to_i
     entry[:snapshot_retention]  = entry[:snapshot_retention].to_i
+    entry[:owner]               = entry[:user] if entry[:owner].nil? || entry[:owner] == ''             # User is default for owner
 
     if entry[:password].nil? || entry[:password] == ''
       entry.delete(:password)                                                   # Preserve previous password at merge

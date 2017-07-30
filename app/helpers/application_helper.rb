@@ -101,7 +101,7 @@ module ApplicationHelper
     @buffered_current_database
   end
 
-  def set_cached_dbid(dbid)
+  def set_cached_dbid(dbid)                                                     # Current or previous DBID of connected database
     @buffered_dbid = nil
     write_to_client_info_store(:dbid, dbid.to_i)
   end
@@ -156,11 +156,6 @@ module ApplicationHelper
       '[Keine]'
     end
   end 
-
-  # ID der Instance auf der der User angemeldet ist
-  def current_instance_number
-    sql_select_one 'SELECT Instance_Number FROM v$Instance'
-  end
 
   def formattedNumber(number,                 # Auszugebende Zahl (Integer oder Float)
                       decimalCount=0,         # Anzahl Dezimalstellen

@@ -8,6 +8,8 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
 
     @config_entry_without_id                      = get_current_database
     @config_entry_without_id[:password]           = Encryption.decrypt_value(@config_entry_without_id[:password], cookies['client_salt'])
+    @config_entry_without_id[:owner]              = @config_entry_without_id[:user] # Default
+    @config_entry_without_id[:snapshot_cycle]     = 20
     @config_entry_without_id[:snapshot_retention] = 60
 
     if PanoramaSamplerConfig.get_max_id < 100
@@ -46,12 +48,13 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
   test "save_config with xhr: true" do
     ['Save', 'Test connection'].each do |button|                                # Simulate pressed button "Save" or "Test connection"
       ['Existing', 'New'].each do |mode|                                        # Simulate change of existing or new record
-        ['Right', 'Wrong'].each do |right|                                      # Valid or invalid connection info
+        ['Right', 'Wrong', 'System'].each do |right|                            # Valid or invalid connection info
           id = mode=='New' ? PanoramaSamplerConfig.get_max_id + 1 : PanoramaSamplerConfig.get_max_id
           config = @config_entry_without_id.clone
           response_format = :html                                                        # Default
           config[:user] = 'blabla' if right == 'Wrong'                          # Force connect error or not
-          response_format = :js if right == 'Wrong' && button == 'Test connection'  # Popup-Dialog per JS expected
+          config[:owner] = 'system' if right == 'System'
+          response_format = :js if (right == 'Wrong' || right == 'System') && button == 'Test connection'  # Popup-Dialog per JS expected
 
           get '/panorama_sampler/save_config',
               :params => {
