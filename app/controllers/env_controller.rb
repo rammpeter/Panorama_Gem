@@ -322,7 +322,7 @@ class EnvController < ApplicationController
           e.backtrace.each do |bt|
             Rails.logger.error bt
           end
-
+          PanoramaConnection.destroy_connection                                 # Remove Connection from pool, should allocate new connection in next call
           set_current_database(get_current_database.merge({:modus => 'host', :tns => PanoramaConnection.get_host_tns(get_current_database)}))
           Rails.logger.info "Second try to connect with host/port/sid instead of TNS-alias: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
           sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"    # Connect with host/port/sid as second try if does not function
@@ -336,6 +336,7 @@ class EnvController < ApplicationController
       e.backtrace.each do |bt|
         Rails.logger.error bt
       end
+      PanoramaConnection.destroy_connection                                 # Remove Connection from pool, should allocate new connection in next call
 
       respond_to do |format|
         format.js {render :js => "show_status_bar_message('#{
