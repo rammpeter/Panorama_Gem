@@ -26,7 +26,7 @@ class DbaSgaControllerTest < ActionController::TestCase
                "ClusterWaits"
     ]
 
-    @object_id = sql_select_one "SELECT objd FROM v$BH WHERE RowNum < 2"
+    @object_id = sql_select_one "SELECT Object_ID FROM DBA_Objects WHERE Object_Name = 'OBJ$'"
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
