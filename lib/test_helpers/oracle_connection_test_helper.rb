@@ -91,12 +91,10 @@ class ActiveSupport::TestCase
     cookies['client_key']  = Encryption.encrypt_value(100, cookies['client_salt'])
 
     connect_oracle_db
-    sql_row = sql_select_first_row "SELECT /* Panorama-Tool Ramm */ SQL_ID, Child_Number, Parsing_Schema_Name
-                                          FROM   v$SQL
-                                          WHERE  RowNum < 2"
+    sql_row = sql_select_first_row "SELECT SQL_ID, Child_Number, Parsing_Schema_Name FROM v$sql WHERE SQL_ID IN (SELECT SQL_ID from v$sql_plan WHERE Object_Name = 'OBJ$') AND Object_Status = 'VALID' ORDER BY Executions DESC"
     @sga_sql_id = sql_row.sql_id
     @sga_child_number = sql_row.child_number
-    @sga_parsing_schema_Name = sql_row.parsing_schema_name
+    @sga_parsing_schema_name = sql_row.parsing_schema_name
     db_session = sql_select_first_row "select Inst_ID, SID, Serial# SerialNo, RawToHex(Saddr)Saddr FROM gV$Session s WHERE SID=UserEnv('SID')  AND Inst_ID = USERENV('INSTANCE')"
     @instance = db_session.inst_id
     @sid      = db_session.sid
