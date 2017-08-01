@@ -708,7 +708,7 @@ class DbaSgaController < ApplicationController
 
   def list_db_cache_content
     @instance        = prepare_param_instance
-    raise "Instance muss belegt sein" unless @instance
+    raise PopupMessageException.new("Instance must be set") unless @instance
     @show_partitions = params[:show_partitions]
     @sysdate = (sql_select_all "SELECT SYSDATE FROM DUAL")[0].sysdate
     @db_cache_global_sums = sql_select_all ["
@@ -1153,7 +1153,7 @@ class DbaSgaController < ApplicationController
   # List cache-Entries of object
   def list_db_cache_by_object_id
     @object_row = sql_select_first_row ['SELECT * FROM DBA_Objects WHERE Object_ID=?', params[:object_id]]
-    raise "No object found in DBA_Objects for Object_ID=#{params[:object_id]}" unless @object_row
+    raise PopupMessageException.new("No object found in DBA_Objects for Object_ID=#{params[:object_id]}") unless @object_row
 
     @caches = sql_select_all ["
       SELECT x.Inst_ID,
@@ -1418,7 +1418,7 @@ class DbaSgaController < ApplicationController
                                             HAVING SUM(DECODE(Process_Name, 'ora', 1, 0)) > 0 /* mindestens ein Record muss Process_Name = ora haben */
                                           "].concat(where_values)
 
-    raise "No records found in gv$SQL_Monitor for SQL-ID='#{@sql_id}'#{", Instance=#{@instance}" if @instance}#{", Plan-Hash-Value=#{@plan_hash_value}" if @plan_hash_value}" if @sql_monitor_records.count == 0
+    raise PopupMessageException.new("No records found in gv$SQL_Monitor for SQL-ID='#{@sql_id}'#{", Instance=#{@instance}" if @instance}#{", Plan-Hash-Value=#{@plan_hash_value}" if @plan_hash_value}") if @sql_monitor_records.count == 0
 
     if @sql_monitor_records.count == 1
       params[:instance]   = @sql_monitor_records[0].inst_id

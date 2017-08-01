@@ -364,7 +364,7 @@ class DbaController < ApplicationController
       show_popup_message "Error accessing data for RowID='#{rowid}'\n\n#{e.message}"
       return
     end
-    raise "Keine Daten gefunden für SQL: #{pkey_sql}" if pkey_vals.length == 0
+    raise PopupMessageException.new("No data found for SQL: #{pkey_sql}") if pkey_vals.length == 0
 
     result = "#{t(:table, :default=>'table')} #{table_name}, PKey (#{pkey_cols}) = '#{pkey_vals[0].line}'"
 

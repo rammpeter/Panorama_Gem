@@ -55,12 +55,16 @@ class WorkerThread
       @sampler_config[:dbid] = dbid
       @sampler_config[:last_successful_connect] = Time.now
     end
+    PanoramaConnection.release_connection                                       # Free DB connection in Pool
+    PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
     dbid
   rescue Exception => e
     Rails.logger.error "Exception #{e.message} raised in WorkerThread.check_connection_internal"
     controller.add_statusbar_message("Trial connect to '#{@sampler_config[:name]}' not successful!\nExcpetion: #{e.message}\nFor details see Panorama-Log for details")
     @sampler_config[:last_error_time]    = Time.now
     @sampler_config[:last_error_message] = e.message
+    PanoramaConnection.release_connection                                       # Free DB connection in Pool
+    PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
     raise e
   end
 
@@ -80,11 +84,16 @@ class WorkerThread
     PanoramaSamplerSampling.do_sampling(@sampler_config)                        # Do Sampling (without active session history)
 
     @@active_snashots.delete(@sampler_config[:id])                              # Remove semaphore
+
+    PanoramaConnection.release_connection                                       # Free DB connection in Pool
+    PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
   rescue Exception => e
     @@active_snashots.delete(@sampler_config[:id])                              # Remove semaphore
     Rails.logger.error("Error #{e.message} during WorkerThread.create_snapshot_internal for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]})")
     log_exception_backtrace(e, 20)
     PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Error #{e.message} during WorkerThread.create_snapshot_internal")
+    PanoramaConnection.release_connection                                       # Free DB connection in Pool
+    PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
   end
 
 end

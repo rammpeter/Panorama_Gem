@@ -1833,8 +1833,8 @@ FROM (
 
     end
 
-    raise "No AWR snapshots are found for your database / instance!" if @min_snap_id.nil? || @max_snap_id.nil?
-    raise "Only one or less AWR snapshots found for time period '#{time_selection_start}' until '#{time_selection_end}' and instance=#{instance}." if @min_snap_id >= @max_snap_id
+    raise PopupMessageException.new("No AWR snapshots are found for your database / instance!") if @min_snap_id.nil? || @max_snap_id.nil?
+    raise PopupMessageException.new("Only one or less AWR snapshots found for time period '#{time_selection_start}' until '#{time_selection_end}' and instance=#{instance}.") if @min_snap_id >= @max_snap_id
   end
 
   public

@@ -402,7 +402,7 @@ class StorageController < ApplicationController
           SELECT /*+ PARALLEL_INDEX(l,2) */ COUNT(#{expr})
           FROM   #{table_owner}.#{table_name} l"]
       else
-        raise "Unsupported object type '#{object_type}'"
+        raise PopupMessageException.new("Unsupported object type '#{object_type}'")
     end
 
     respond_to do |format|

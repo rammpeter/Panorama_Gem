@@ -422,6 +422,7 @@ module ApplicationHelper
   #    :additional_javascript_string  = js-text
   #    :status_bar_message            = html-text
   #    :hide_status_bar               = true
+  #    :controller                    = controller for partial
 
   def render_partial(partial_name = nil, options = {})
     raise "render_partial: options should of class Hash, not #{options.class}" unless options.class == Hash
@@ -455,10 +456,12 @@ module ApplicationHelper
         #                                                    }'); #{additional_javascript_string}"
       }
       format.html {
+        partial_controller_name = options[:controller] ? options[:controller] : controller
+
         if additional_javascript_string.nil?
-          render(:partial=>"#{controller}/#{partial}")                          # don't store rendered document as string
+          render(:partial=>"#{partial_controller_name}/#{partial}")                          # don't store rendered document as string
         else
-          rendered_document = render_to_string :partial=>"#{controller}/#{partial}"
+          rendered_document = render_to_string :partial=>"#{partial_controller_name}/#{partial}"
           rendered_document << "<script type='text/javascript'>#{additional_javascript_string}</script>".html_safe
           render :html => rendered_document
         end

@@ -57,7 +57,7 @@ class DbaWaitsController < ApplicationController
     
     data1 = get_values(filter)    # Snapshot vor SampleTime
     sampletime = params[:sample_length].to_i
-    raise "Sampletime muss > 0 sein " if sampletime <= 0    # Kein Sample gewünscht
+    raise PopupMessageException.new("Sampletime muss > 0 sein ") if sampletime <= 0    # Kein Sample gewünscht
     sleep sampletime
     # raw JDBC connection does not cache results
     # PanoramaConnection.get_connection.clear_query_cache # Result-Caching Ausschalten für wiederholten Zugriff

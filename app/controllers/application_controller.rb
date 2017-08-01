@@ -41,18 +41,19 @@ class ApplicationController < ActionController::Base
 
     curr_line_no=0
     @exception.backtrace.each do |bt|
-      Rails.logger.error bt if curr_line_no < 20                                # report First 20 lines of stacktrace in log
+      Rails.logger.error bt if curr_line_no < 40                                # report First x lines of stacktrace in log
       curr_line_no += 1
     end
-
 
     if performed?                                                               # Render already called in action?, Suppress DoubleRenderError
       Rails.logger.error "Exception #{@exception.message} raised!\nAction has already rendered, so error cannot be shown as HTML-result with status 500"
     else
-      render :partial =>'application/error_message', :status=>500
+      if @exception.class == PopupMessageException
+        render :partial =>'application/popup_exception_message', :status=>500   # Show message only without status etc.
+      else
+        render :partial =>'application/error_message', :status=>500
+      end
     end
-
-    #raise exception   # Standard-Behandlung der Exceptions
   end
 
   # Ausführung vor jeden Request
@@ -79,14 +80,14 @@ class ApplicationController < ActionController::Base
 
     begin
       current_database = read_from_client_info_store(:current_database)
-      raise 'No current DB connect info set! Please reconnect to DB!' unless current_database
+      raise PopupMessageException.new('No current DB connect info set! Please reconnect to DB!') unless current_database
       set_connection_info_for_request(current_database)
     rescue StandardError => e                                                   # Problem bei Zugriff auf verschlüsselte Cookies
       Rails.logger.error "Error '#{e.message}' occured in ApplicationController.begin_request"
       raise "Error '#{e.message}' occured. Please close browser session and start again!"
     end
 
-    raise t(:application_connection_no_db_choosen, :default=> 'No DB choosen! Please connect to DB by link in right upper corner. (Browser-cookies are required)') if current_database.nil?
+    raise PopupMessageException.new(t(:application_connection_no_db_choosen, :default=> 'No DB choosen! Please connect to DB by link in right upper corner. (Browser-cookies are required)')) if current_database.nil?
 
     current_database.symbolize_keys! if current_database.class.name == 'Hash'   # Sicherstellen, dass Keys wirklich symbole sind. Bei Nutzung Engine in App erscheinen Keys als Strings
 

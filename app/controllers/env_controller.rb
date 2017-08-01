@@ -166,7 +166,7 @@ class EnvController < ApplicationController
     rescue Exception => e
       Rails.logger.error "Exception: #{e.message}"
       log_exception_backtrace(e, 20)
-      raise "Your user is missing SELECT-right on gv$Instance, gv$Database.\nPlease ensure that your user has granted SELECT ANY DICTIONARY.\nPanorama is not usable with this user account!\n\n #{e.message}"
+      raise PopupMessageException.new("Your user is missing SELECT-right on gv$Instance, gv$Database.\nPlease ensure that your user has granted SELECT ANY DICTIONARY.\nPanorama is not usable with this user account!\n\n #{e.message}", e)
     end
 
     @dictionary_access_problem = true unless select_any_dictionary?(@dictionary_access_msg)
@@ -365,7 +365,13 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
     # Set management pack according to 'control_management_pack_access' only after DB selects,
     # Until now get_current_database[:management_pack_license] is nil for first time login, so no management pack license is violated until now
     # User has to acknowlede management pack licensing at next screen
-    set_current_database(get_current_database.merge( {:management_pack_license  => init_management_pack_license(get_current_database) } ))
+    begin
+      set_current_database(get_current_database.merge( {:management_pack_license  => init_management_pack_license(get_current_database) } ))
+    rescue Exception => e
+      Rails.logger.error "Error during init_management_pack_license: #{e.message}"
+
+      raise PopupMessageException.new("Your user needs SELECT ANY DICTIONARY or equivalent rights to login to Panorama!", e)
+    end
 
 
     timepicker_regional = ""
@@ -479,6 +485,11 @@ public
     @edition = :standard if !(PanoramaConnection.sql_select_one("SELECT COUNT(*) FROM v$version WHERE Banner like '%Enterprise Edition%'") > 0)
 
     render_partial :list_management_pack_license
+  rescue Exception => e
+    Rails.logger.error "Error during list_management_pack_license: #{e.message}"
+    set_current_database(get_current_database.merge( {:management_pack_license  => :none } ))
+    add_statusbar_message("Cannot read managament pack licensing state from database!\nAssuming no management pack license exists.\n#{e.message}")
+    start_page
   end
 
   def set_management_pack_license

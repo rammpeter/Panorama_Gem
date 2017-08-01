@@ -229,7 +229,7 @@ class DbaSchemaController < ApplicationController
       when "TABLE", "TABLE PARTITION", "TABLE SUBPARTITION", "MATERIALIZED VIEW"
         if @object_name[0,12] == "SYS_IOT_OVER"
           res = sql_select_first_row ["SELECT Owner Table_Owner, Object_Name Table_Name FROM DBA_Objects WHERE Object_ID=TO_NUMBER(?)", @object_name[13,10]]
-          raise "Segment #{@owner}.#{@object_name} is not known table type" unless res
+          raise PopupMessageException.new("Segment #{@owner}.#{@object_name} is not known table type") unless res
           @owner      = res.table_owner
           @table_name = res.table_name
         else
@@ -250,7 +250,7 @@ class DbaSchemaController < ApplicationController
             return
           when 'TABLE'
           else
-            raise "Segment #{@owner}.#{@object_name} is of unsupported type #{res.table_type}"
+            raise PopupMessageException.new("Segment #{@owner}.#{@object_name} is of unsupported type #{res.table_type}")
         end
       when "LOB"
         res = sql_select_first_row ["SELECT Owner Table_Owner, Object_Name Table_Name FROM DBA_Objects WHERE Object_ID=TO_NUMBER(?)", @object_name[7,10]]
@@ -279,7 +279,7 @@ class DbaSchemaController < ApplicationController
         list_cluster(@owner, @object_name)
         return
       else
-        raise "Segment #{@owner}.#{@object_name} is of unsupported type #{object.object_type}"
+        raise PopupMessageException.new("Segment #{@owner}.#{@object_name} is of unsupported type #{object.object_type}")
     end
 
     @attribs = sql_select_all ["SELECT t.*, o.Created, o.Last_DDL_Time, o.Object_ID Table_Object_ID,
