@@ -295,6 +295,11 @@ class PanoramaConnection
     Thread.current[:panorama_connection_jdbc_connection]
   end
 
+  def self.get_config
+    raise "PanoramaConnection.get_config: Thread.current[:panorama_connection_connect_info] = nil" if Thread.current[:panorama_connection_connect_info].nil?
+    Thread.current[:panorama_connection_connect_info]
+  end
+
   private
   # ensure that Oracle-Connection exists and DBMS__Application_Info is executed
   def self.check_for_open_connection

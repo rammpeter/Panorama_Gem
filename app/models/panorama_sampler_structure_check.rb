@@ -44,14 +44,44 @@ class PanoramaSamplerStructureCheck
           ],
           primary_key: ['DBID', 'Snap_ID', 'Instance_Number'],
           indexes: [ {index_name: 'Panorama_Snapshot_MaxID_IX', columns: ['DBID', 'Instance_Number'] } ]
-      }
+      },
+      {
+          table_name: 'Panorama_Active_Sess_History',
+          columns: [
+              { column_name:  'Snap_ID',                        column_type:  'NUMBER',     not_null: true },
+              { column_name:  'DBID',                           column_type:  'NUMBER',     not_null: true },
+              { column_name:  'Instance_Number',                column_type:  'NUMBER',     not_null: true  },
+              { column_name:  'Begin_Interval_Time',            column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
+              { column_name:  'End_Interval_Time',              column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
+              { column_name:  'Con_ID',                         column_type:  'NUMBER' },
+          ],
+          primary_key: ['DBID', 'Snap_ID', 'Instance_Number'],
+          indexes: [ {index_name: 'Panorama_Snapshot_MaxID_IX', columns: ['DBID', 'Instance_Number'] } ]
+      },
 
   ]
 
   # Replace
   def self.transform_sql_for_sampler(org_sql)
     sql = org_sql.clone
+    up_sql = sql.upcase
+    start_index = up_sql.index('DBA_HIST')
+    while start_index
+#      Rails.logger.info "######################### #{start_index} #{sql[start_index, sql.length-start_index]}"
+      @@tables.each do |table|                                                  # Check if table might be replaced by Panorama-Sampler
+        if table[:table_name].upcase == up_sql[start_index, table[:table_name].length].gsub(/DBA_HIST/, 'PANORAMA')
+          sql   .insert(start_index, "#{PanoramaConnection.get_config[:panorama_sampler_schema]}.")       # Add schema name before table_name
+          up_sql.insert(start_index, "#{PanoramaConnection.get_config[:panorama_sampler_schema]}.")       # Increase size synchronously with sql
+          start_index += PanoramaConnection.get_config[:panorama_sampler_schema].length+1                 # Increase Pointer by schemaname
+          7.downto(0) do |pos|                                                                            # Copy replacement table_name char by char into sql (DBA_HIST -> Panorama)
+            sql[start_index+pos] = table[:table_name][pos]
+          end
+        end
+      end
 
+
+      start_index = up_sql.index('DBA_HIST', start_index + 8)                   # Look for next occurrence
+    end
     sql
   end
 

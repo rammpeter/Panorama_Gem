@@ -2,6 +2,7 @@ class PanoramaSamplerSampling
 
   include ExceptionHelper
 
+
   def self.do_sampling(sampler_config)
     PanoramaSamplerSampling.new(sampler_config).do_sampling_internal
   end
@@ -26,8 +27,11 @@ class PanoramaSamplerSampling
       begin_interval_time = last_snap.end_interval_time
     end
 
-    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_Snapshot (Snap_ID, DBID, Instance_Number, Begin_Interval_Time, End_Interval_Time
-                                    ) VALUES (?, ?, ?, ?, SYSDATE)",  @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, begin_interval_time]
+    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_Snapshot (Snap_ID, DBID, Instance_Number, Begin_Interval_Time, End_Interval_Time#{", Con_ID" if PanoramaConnection.db_version >= '12.1'}
+                                    ) VALUES (?, ?, ?, ?, SYSDATE#{", ?" if PanoramaConnection.db_version >= '12.1'})",  @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, begin_interval_time].concat(
+        PanoramaConnection.db_version >= '12.1' ? [0] : []
+    )
   end
+
 
 end

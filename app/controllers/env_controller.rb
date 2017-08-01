@@ -258,7 +258,7 @@ class EnvController < ApplicationController
     current_database = params[:database]                                        # Puffern in lokaler Variable, bevor in client_info-Cache geschrieben wird
     current_database[:save_login] = current_database[:save_login] == '1' if called_from_set_database_by_params # Store as bool instead of number fist time after login
 
-    @show_management_plan_choice =  current_database[:management_pack_license].nil?          # show choice for management pack if first login to database or stored login does not contain the choice
+    @show_management_pack_choice =  current_database[:management_pack_license].nil?          # show choice for management pack if first login to database or stored login does not contain the choice
 
     if current_database[:modus] == 'tns'                                        # TNS-Alias auswerten
       tns_records = read_tnsnames                                               # Hash mit Attributen aus tnsnames.ora für gesuchte DB
@@ -361,6 +361,17 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
     write_connection_to_last_logins
 
     initialize_unique_area_id                                                   # Zaehler für eindeutige IDs ruecksetzen
+
+    # Detect existence of Panorama_Sampler
+    panorama_sampler_data = sql_select_all "SELECT Owner FROM All_Tables WHERE Table_Name = 'PANORAMA_SNAPSHOT'"
+    if panorama_sampler_data.count == 1
+      set_current_database(get_current_database.merge( { :panorama_sampler_schema => panorama_sampler_data[0].owner}))
+      add_statusbar_message "Panorama-Sampler history exists in schema '#{panorama_sampler_data[0].owner}'.\nPanorama will access Panorama-Sampler's data instead of AWR if you don't have Enterprise Edition with Diagnostics Pack licensed"
+    end
+
+    if panorama_sampler_data.count > 1
+      add_statusbar_message "Multiple schemas (#{panorama_sampler_data.count}) contain Panorama-Sampler data!\nTo access Panorama-Sampler history please ensure that only one schema contains Panorama-Sampler's table like 'PANORAMA_SNAPSHOT'"
+    end
 
     # Set management pack according to 'control_management_pack_access' only after DB selects,
     # Until now get_current_database[:management_pack_license] is nil for first time login, so no management pack license is violated until now

@@ -35,10 +35,7 @@ class PackLicense
       when :diagnostic_pack then
         check_for_tuning_pack_usage(sql)
       when :none then
-        check_for_diagnostic_pack_usage(sql)
-        check_for_tuning_pack_usage(sql)
-      when :panorama_sampler then
-        sql = PanoramaSamplerStructureCheck.transform_sql_for_sampler(sql)
+        sql = PanoramaSamplerStructureCheck.transform_sql_for_sampler(sql) if PanoramaConnection.get_config[:panorama_sampler_schema]
         check_for_diagnostic_pack_usage(sql)
         check_for_tuning_pack_usage(sql)
     end
@@ -62,7 +59,7 @@ class PackLicense
         table_name = table_name[0, table_name.index(',')] if table_name[',']    # Tablename ends at ....
         table_name = table_name[0, table_name.index('(')] if table_name['(']    # Tablename ends at ....
         table_name = table_name[0, table_name.index(')')] if table_name[')']    # Tablename ends at ....
-        raise "Access denied on table #{table_name} because of missing license for Oracle #{pack_name} Pack"
+        raise PopupMessageException.new("Access denied on table #{table_name} because of missing license for Oracle #{pack_name} Pack")
       end
       sql_up = sql_up[search_string.length, sql_up.length]                      # Step n chars next to lookup next match
     end
