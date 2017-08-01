@@ -55,7 +55,7 @@ class DbaSgaControllerTest < ActionController::TestCase
   end
 
   test "list_sql_detail_sql_id_childno with xhr: true" do
-    get :list_sql_detail_sql_id_childno, :params => {:format=>:html, :instance => "1", :sql_id => @sga_sql_id, :update_area=>:hugo  }
+    get :list_sql_detail_sql_id_childno, :params => {:format=>:html, :instance => "1", :sql_id => @sga_sql_id, child_number: @sga_child_number, :update_area=>:hugo  }
     assert_response :success
   end
 
