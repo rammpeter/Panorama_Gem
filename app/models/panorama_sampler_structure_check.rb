@@ -46,17 +46,24 @@ class PanoramaSamplerStructureCheck
           indexes: [ {index_name: 'Panorama_Snapshot_MaxID_IX', columns: ['DBID', 'Instance_Number'] } ]
       },
       {
-          table_name: 'Panorama_Active_Sess_History',
+          table_name: 'Panorama_Log',
           columns: [
               { column_name:  'Snap_ID',                        column_type:  'NUMBER',     not_null: true },
               { column_name:  'DBID',                           column_type:  'NUMBER',     not_null: true },
-              { column_name:  'Instance_Number',                column_type:  'NUMBER',     not_null: true  },
-              { column_name:  'Begin_Interval_Time',            column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
-              { column_name:  'End_Interval_Time',              column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
+              { column_name:  'Instance_Number',                column_type:  'NUMBER',     not_null: true },
+              { column_name:  'Group#',                         column_type:  'NUMBER',     not_null: true },
+              { column_name:  'Thread#',                        column_type:  'NUMBER',     not_null: true },
+              { column_name:  'Sequence#',                      column_type:  'NUMBER',     not_null: true },
+              { column_name:  'Bytes',                          column_type:  'NUMBER' },
+              { column_name:  'Members',                        column_type:  'NUMBER' },
+              { column_name:  'Archived',                       column_type:  'VARCHAR2', precision: 3 },
+              { column_name:  'Status',                         column_type:  'VARCHAR2', precision: 16 },
+              { column_name:  'First_Change#',                  column_type:  'NUMBER' },
+              { column_name:  'First_Time',                     column_type:  'DATE' },
+              { column_name:  'Con_DBID',                       column_type:  'NUMBER' },
               { column_name:  'Con_ID',                         column_type:  'NUMBER' },
           ],
-          primary_key: ['DBID', 'Snap_ID', 'Instance_Number'],
-          indexes: [ {index_name: 'Panorama_Snapshot_MaxID_IX', columns: ['DBID', 'Instance_Number'] } ]
+          primary_key: ['DBID', 'Snap_ID', 'Instance_Number', 'Group#', 'Thread#', 'Sequence#', 'Con_DBID']
       },
 
   ]
@@ -107,7 +114,7 @@ class PanoramaSamplerStructureCheck
   def check_table(table)
     exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Tables WHERE Owner = ? AND Table_Name = ?", @sampler_config[:owner].upcase, table[:table_name].upcase]
     if exists == 0
-      ############# Check Table
+      ############# Check Table existence
       log "Table #{table[:table_name]} does not exist"
       sql = "CREATE TABLE #{@sampler_config[:owner]}.#{table[:table_name]} ("
       table[:columns].each do |column|
@@ -118,25 +125,53 @@ class PanoramaSamplerStructureCheck
       log(sql)
       PanoramaConnection.sql_execute(sql)
       log "Table #{table[:table_name]} created"
-
     end
+
+    ############ Check columns
+    table[:columns].each do |column|
+      exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Tab_Columns WHERE Owner = ? AND Table_Name = ? AND Column_Name = ?", @sampler_config[:owner].upcase, table[:table_name].upcase, column[:column_name].upcase]
+      if exists == 0                                                            # Column does not exists
+        sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} ADD ("
+        sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]}"
+        sql << ")"
+        log(sql)
+        PanoramaConnection.sql_execute(sql)
+      end
+    end
+
 
     ############ Check Primary Key
     if table[:primary_key]
       pk_name = "#{table[:table_name][0,27]}_PK"
-      ########### Check PK-Index
-      exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Indexes WHERE Owner = ? AND Table_Name = ? AND Index_Name = ?", @sampler_config[:owner].upcase, table[:table_name].upcase, pk_name.upcase]
-      if exists == 0
-        sql = "CREATE INDEX #{@sampler_config[:owner]}.#{pk_name} ON #{@sampler_config[:owner]}.#{table[:table_name]}("
-        table[:primary_key].each do |pk|
-          sql << "#{pk},"
+      exists_pk = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Constraints WHERE Owner = ? AND Table_Name = ? AND Constraint_Type='P'", @sampler_config[:owner].upcase, table[:table_name].upcase]
+
+      if exists_pk > 0
+        ########### Check columns of primary key
+        table[:primary_key].each_index do |index|
+          column = table[:primary_key][index]
+          exists = PanoramaConnection.sql_select_one [" SELECT COUNT(*)
+                                                      FROM All_Cons_Columns cc
+                                                      JOIN All_Constraints c ON c.Owner = cc.Owner AND c.Table_Name = cc.Table_Name AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'P'
+                                                      WHERE cc.Owner = ? AND cc.Table_Name = ? AND cc.Column_Name = ? AND cc.Position = ?
+                                                    ", @sampler_config[:owner].upcase, table[:table_name].upcase, column.upcase, index+1]
+          if exists == 0
+            sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} DROP CONSTRAINT #{pk_name}"
+            log(sql)
+            PanoramaConnection.sql_execute(sql)
+
+            sql = "DROP INDEX #{@sampler_config[:owner]}.#{pk_name}"
+            log(sql)
+            PanoramaConnection.sql_execute(sql)
+            break
+          end
         end
-        sql[(sql.length) - 1] = ' '                                               # remove last ,
-        sql << ") PCTFREE 10"
-        log(sql)
-        PanoramaConnection.sql_execute(sql)
       end
-      ########PK-Constraint
+
+
+      ########### Check PK-Index existence
+      check_index(table[:table_name], pk_name, table[:primary_key])
+
+      ######## Check existence of PK-Constraint
       exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Constraints WHERE Owner = ? AND Table_Name = ? AND Constraint_Type='P'", @sampler_config[:owner].upcase, table[:table_name].upcase]
       if exists == 0
         sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} ADD CONSTRAINT #{pk_name} PRIMARY KEY ("
@@ -149,23 +184,44 @@ class PanoramaSamplerStructureCheck
         PanoramaConnection.sql_execute(sql)
       end
     end
+
     ############ Check Indexes
     if table[:indexes]
       table[:indexes].each do |index|
-        exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Indexes WHERE Owner = ? AND Table_Name = ? AND Index_Name = ?", @sampler_config[:owner].upcase, table[:table_name].upcase, index[:index_name].upcase]
-        if exists == 0
-          sql = "CREATE INDEX #{@sampler_config[:owner]}.#{index[:index_name]} ON #{@sampler_config[:owner]}.#{table[:table_name]}("
-          index[:columns].each do |column|
-            sql << "#{column},"
-          end
-          sql[(sql.length) - 1] = ' '                                               # remove last ,
-          sql << ") PCTFREE 10"
-          log(sql)
-          PanoramaConnection.sql_execute(sql)
-        end
+        check_index(table[:table_name], index[:index_name], index[:columns])
       end
     end
 
   end
 
+  def check_index(table_name, index_name, columns)
+    exists_index = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Indexes WHERE Owner = ? AND Table_Name = ? AND Index_Name = ?", @sampler_config[:owner].upcase, table_name.upcase, index_name.upcase]
+    if exists_index > 0
+      ########### Check columns of index
+      columns.each_index do |i|
+        column = columns[i]
+        exists = PanoramaConnection.sql_select_one [" SELECT COUNT(*) FROM All_Ind_Columns WHERE Table_Owner = ? AND Table_Name = ? AND Index_Name = ? AND Column_Name = ? AND Column_Position = ?
+                                                    ", @sampler_config[:owner].upcase, table_name.upcase, index_name.upcase, column.upcase, i+1]
+        if exists == 0
+          sql = "DROP INDEX #{@sampler_config[:owner]}.#{index_name}"
+          log(sql)
+          PanoramaConnection.sql_execute(sql)
+          break
+        end
+      end
+    end
+
+    ########### Check existence of index
+    exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Indexes WHERE Owner = ? AND Table_Name = ? AND Index_Name = ?", @sampler_config[:owner].upcase, table_name.upcase, index_name.upcase]
+    if exists == 0
+      sql = "CREATE INDEX #{@sampler_config[:owner]}.#{index_name} ON #{@sampler_config[:owner]}.#{table_name}("
+      columns.each do |column|
+        sql << "#{column},"
+      end
+      sql[(sql.length) - 1] = ' '                                               # remove last ,
+      sql << ") PCTFREE 10"
+      log(sql)
+      PanoramaConnection.sql_execute(sql)
+    end
+  end
 end

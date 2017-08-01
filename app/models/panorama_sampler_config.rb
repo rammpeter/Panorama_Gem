@@ -96,7 +96,7 @@ class PanoramaSamplerConfig
   # Set error state
   def self.set_error_message(id, message)
     PanoramaSamplerConfig.modify_config_entry({
-                                                  :id                 => @sampler_config[:id],
+                                                  :id                 => id,
                                                   :last_error_time    => Time.now,
                                                   :last_error_message => message
                                               })
