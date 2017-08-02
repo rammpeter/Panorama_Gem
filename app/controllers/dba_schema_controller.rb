@@ -971,6 +971,10 @@ class DbaSchemaController < ApplicationController
     render_partial
   end
 
+  def show_unified_audit_trail
+    render_partial
+  end
+
   private
   def audit_mode_xml?
     sql_select_one("SELECT Value FROM v$Parameter WHERE Name = 'audit_trail'")['XML'] != nil
