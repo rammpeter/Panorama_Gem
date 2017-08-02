@@ -17,7 +17,9 @@ require File.expand_path("../../lib/test_helpers/capybara_test_helper.rb", __FIL
 
 # Filter out Minitest backtrace while allowing backtrace from other libraries
 # to be shown.
-Minitest.backtrace_filter = Minitest::BacktraceFilter.new
+
+# Ramm, auskommentiert 02.08.2017
+#Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 
 # Suppress the following error:
 # ArgumentError: wrong number of arguments (1 for 0)
@@ -77,12 +79,14 @@ class ActiveSupport::TestCase
   end
 
   def prepare_panorama_sampler_thread_db_config
+    EngineConfig.config.panorama_sampler_master_password = 'hugo'
+
     test_config = PanoramaTestConfig.test_config
 
     sampler_config = create_prepared_database_config(test_config)
 
     sampler_config[:id]                      = 1
-    sampler_config[:client_salt]             = ''                               # not necessary for test
+    sampler_config[:client_salt]             = EngineConfig.config.panorama_sampler_master_password  # identic doubled like WorkerThread.initialized
     sampler_config[:management_pack_license] = :none                            # assume no management packs are licensed
     sampler_config[:privilege]               = 'normal'
     sampler_config[:query_timeout]           = 20                               # single test should not last longer
@@ -93,7 +97,7 @@ class ActiveSupport::TestCase
     sampler_config[:snapshot_cycle]         = 0                                 # Snapshot should start immediate
     sampler_config[:snapshot_retention]     = 1
 
-    EngineConfig.config.panorama_sampler_master_password = 'hugo'
+
     if PanoramaSamplerConfig.get_cloned_config_array[1]
       PanoramaSamplerConfig.modify_config_entry(sampler_config)
     else
