@@ -42,6 +42,10 @@ class PackLicense
     sql
   end
 
+  def self.replace_dba_hist_in_html_for_panorama_sampler!(rendered_html)
+    rendered_html.gsub!(/DBA_HIST/i, 'Panorama')
+  end
+
   private
   def check_existence_in_sql(sql, search_string, allowed_array, pack_name)
     sql_up = sql.upcase

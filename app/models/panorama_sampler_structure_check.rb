@@ -68,7 +68,7 @@ class PanoramaSamplerStructureCheck
 
   ]
 
-  # Replace
+  # Replace DBA_Hist in SQL with corresponding Panorama-Sampler table
   def self.transform_sql_for_sampler(org_sql)
     sql = org_sql.clone
     up_sql = sql.upcase
@@ -90,6 +90,14 @@ class PanoramaSamplerStructureCheck
       start_index = up_sql.index('DBA_HIST', start_index + 8)                   # Look for next occurrence
     end
     sql
+  end
+
+  # Replace DBA_Hist tablename in HTML-templates with corresponding Panorama-Sampler table and schema
+  def self.adjust_table_name(org_table_name)
+    return org_table_name if PanoramaConnection.get_config[:panorama_sampler_schema].nil?   # Sampler not active
+    replacement = replacement_table(org_table_name)
+    return org_table_name if replacement.nil?
+    "#{PanoramaConnection.get_config[:panorama_sampler_schema]}.#{replacement}" # Table replaced by sampler
   end
 
   # Check existence of DBA_Hist-alternative in Panorama

@@ -1,6 +1,6 @@
 <% @update_area = get_unique_area_id %>
 
-<div class="page_caption">Historic redo log info from DBA_Hist_Log</div>
+<div class="page_caption">Historic redo log info from <%= PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Log') %></div>
 
 
 <%= ajax_form(:controller => :dba, :action => :list_redologs_historic, :update_area => @update_area) do %>
