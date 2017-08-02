@@ -378,6 +378,7 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
     # User has to acknowlede management pack licensing at next screen
     begin
       set_current_database(get_current_database.merge( {:management_pack_license  => init_management_pack_license(get_current_database) } ))
+      set_current_database(get_current_database.merge( {:edition => PanoramaConnection.edition } ))
     rescue Exception => e
       Rails.logger.error "Error during init_management_pack_license: #{e.message}"
 
@@ -490,11 +491,6 @@ public
 
   def list_management_pack_license
     @control_management_pack_access = read_control_management_pack_access       # ab Oracle 11 belegt
-    @edition = :enterprise                                                      # default assumption
-
-    # Some times Standard Edition is named in v$version, some times it is called only "Oracle Database 12c Release 12.1.0.1.0 - 64bit Production"
-    @edition = :standard if !(PanoramaConnection.sql_select_one("SELECT COUNT(*) FROM v$version WHERE Banner like '%Enterprise Edition%'") > 0)
-
     render_partial :list_management_pack_license
   rescue Exception => e
     Rails.logger.error "Error during list_management_pack_license: #{e.message}"

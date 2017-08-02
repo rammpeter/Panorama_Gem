@@ -89,7 +89,7 @@ column_options =
   column_options << {:caption=>'Big file',            :data=>proc{|rec| rec.bigfile},                     :title=>'Indicates whether the tablespace is a bigfile tablespace (YES) or a smallfile tablespace (NO)'}
   column_options << {:caption=>"Auto ext.",           :data=>proc{|rec| rec.autoextensible},              :title=>"Auto-Extensible ?"}
   column_options << {:caption=>'Encrypt.',            :data=>proc{|rec| rec.encrypted},                   :title=>"Indicates whether the tablespace is encrypted"} if get_db_version >= '11.2'
-  column_options << {:caption=>'Def. in memory',      :data=>proc{|rec| rec.def_inmemory},                :title=>"Indicates whether the In-Memory Column Store (IM column store) is by default enabled (ENABLED) or disabled (DISABLED) for tables in this tablespace"} if get_db_version >= '12.1'
+  column_options << {:caption=>'Def. in memory',      :data=>proc{|rec| rec.def_inmemory},                :title=>"Indicates whether the In-Memory Column Store (IM column store) is by default enabled (ENABLED) or disabled (DISABLED) for tables in this tablespace"} if get_db_version >= '12.1' && PanoramaConnection.edition == :enterprise
 
 
 

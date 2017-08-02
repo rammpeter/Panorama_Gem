@@ -389,6 +389,14 @@ class PanoramaConnection
     stmt
   end
 
+  # Determine Entreprise or Standard Edition
+  def self.edition
+    if Thread.current[:panorama_connection_connect_info][:edition].nil?
+      Thread.current[:panorama_connection_connect_info][:edition] = :enterprise # Default
+      Thread.current[:panorama_connection_connect_info][:edition] = :standard if !(sql_select_one("SELECT COUNT(*) FROM v$version WHERE Banner like '%Enterprise Edition%'") > 0)
+    end
+    Thread.current[:panorama_connection_connect_info][:edition]
+  end
 
   class SqlSelectIterator
 
