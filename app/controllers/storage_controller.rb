@@ -49,7 +49,7 @@ class StorageController < ApplicationController
              t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
              f.AutoExtensible
              #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
-             #{ ", t.Def_InMemory" if get_db_version >= '12.1'}
+             #{ ", t.Def_InMemory" if get_db_version >= '12.1' && PanoramaConnection.edition == :enterprise}
       FROM  DBA_Tablespaces t
       LEFT OUTER JOIN (SELECT Tablespace_Name, SUM(Bytes)/1048576 MBTotal, SUM(Bytes)/SUM(Blocks) BlockSize,
                               CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible
@@ -86,7 +86,7 @@ class StorageController < ApplicationController
              NULL                       Bigfile,
              NULL                       AutoExtensible
              #{ ", NULL Encrypted, NULL Compress_For" if get_db_version >= '11.2'}
-             #{ ", NULL Def_InMemory" if get_db_version >= '12.1'}
+             #{ ", NULL Def_InMemory" if get_db_version >= '12.1'  && PanoramaConnection.edition == :enterprise}
       FROM   gv$Log
       GROUP BY Inst_ID
       ORDER BY 4 DESC NULLS LAST
