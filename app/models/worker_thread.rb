@@ -17,8 +17,8 @@ class WorkerThread
   def self.create_snapshot(sampler_config)
     thread = Thread.new{WorkerThread.new(sampler_config).create_snapshot_internal}
   rescue Exception => e
-    Rails.logger.error "Exception #{e.message} raised in WorkerThread.create_snapshot"
-    raise e
+    Rails.logger.error "Exception #{e.message} raised in WorkerThread.create_snapshot for config-ID=#{sampler_config[:id]}"
+    # raise e               # Don't raise exception because it should not stop calling job processing
   end
 
   ############################### inner implementation ###############################
@@ -99,9 +99,11 @@ class WorkerThread
       PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Error #{e.message} during WorkerThread.create_snapshot_internal")
       PanoramaConnection.release_connection                                       # Free DB connection in Pool
       PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
+      raise e
     rescue Exception => x
       Rails.logger.error "WorkerThread.create_snapshot_internal: Exception #{x.message} in exception handler"
       log_exception_backtrace(x, 40)
+      raise x
     end
   end
 

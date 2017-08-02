@@ -417,6 +417,14 @@ module ApplicationHelper
     Rails.cache.fetch("SQLShortText_#{sql_id}") {get_sql_shorttext_by_sql_id(sql_id)}
   end
 
+  # Add string to status-bar-message
+  def add_statusbar_message(message)
+    @statusbar_message = '' if !defined?(@statusbar_message) || @statusbar_message.nil?
+    @statusbar_message << "\n" if @statusbar_message.length > 0
+    @statusbar_message << message
+  end
+
+
   # Rendern des Templates für Action, optionale mit Angabe des Partial-Namens wenn von Action abweicht
   # options support:
   #    :additional_javascript_string  = js-text
@@ -435,7 +443,7 @@ module ApplicationHelper
   def render_internal(update_area, controller, partial, options = {})
     raise "render_internal: options should of class Hash, not #{options.class}" unless options.class == Hash
 
-    if @statusbar_message.length > 0
+    if defined?(@statusbar_message) && !@statusbar_message.nil? && @statusbar_message.length > 0
       if options[:status_bar_message]
         options[:status_bar_message] = "#{options[:status_bar_message]}\n#{my_html_escape(@statusbar_message)}"
       else

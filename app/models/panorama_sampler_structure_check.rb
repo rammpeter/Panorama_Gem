@@ -5,6 +5,10 @@ class PanoramaSamplerStructureCheck
     PanoramaSamplerStructureCheck.new(sampler_config).do_check_internal
   end
 
+  def self.remove_tables(sampler_config)
+    PanoramaSamplerStructureCheck.new(sampler_config).remove_tables_internal
+  end
+
   def initialize(sampler_config)
     @sampler_config = sampler_config
   end
@@ -114,6 +118,19 @@ class PanoramaSamplerStructureCheck
   def do_check_internal
     @@tables.each do |table|
       check_table(table)
+    end
+  end
+
+  def remove_tables_internal
+    @@tables.each do |table|
+      exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Tables WHERE Owner = ? AND Table_Name = ?", @sampler_config[:owner].upcase, table[:table_name].upcase]
+      if exists > 0
+        ############# Drop Table
+        sql = "DROP TABLE #{@sampler_config[:owner]}.#{table[:table_name]}"
+        log(sql)
+        PanoramaConnection.sql_execute(sql)
+        log "Table #{table[:table_name]} dropped"
+      end
     end
   end
 
@@ -232,4 +249,5 @@ class PanoramaSamplerStructureCheck
       PanoramaConnection.sql_execute(sql)
     end
   end
+
 end

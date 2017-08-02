@@ -76,6 +76,35 @@ class ActiveSupport::TestCase
     showDbCacheMenu           # belegt dba_hist_cache_objects_owner]
   end
 
+  def prepare_panorama_sampler_thread_db_config
+    test_config = PanoramaTestConfig.test_config
+
+    sampler_config = create_prepared_database_config(test_config)
+
+    sampler_config[:id]                      = 1
+    sampler_config[:client_salt]             = ''                               # not necessary for test
+    sampler_config[:management_pack_license] = :none                            # assume no management packs are licensed
+    sampler_config[:privilege]               = 'normal'
+    sampler_config[:query_timeout]           = 20                               # single test should not last longer
+
+    sampler_config[:password] = Encryption.encrypt_value(test_config["test_password"], sampler_config[:client_salt])
+
+    sampler_config[:owner] = sampler_config[:user]                              # assume owner = connected user for test
+    sampler_config[:snapshot_cycle]         = 0                                 # Snapshot should start immediate
+    sampler_config[:snapshot_retention]     = 1
+
+    EngineConfig.config.panorama_sampler_master_password = 'hugo'
+    if PanoramaSamplerConfig.get_cloned_config_array[1]
+      PanoramaSamplerConfig.modify_config_entry(sampler_config)
+    else
+      PanoramaSamplerConfig.add_config_entry(sampler_config)
+    end
+
+    PanoramaConnection.set_connection_info_for_request(sampler_config)
+
+    sampler_config
+  end
+
 end
 
 class PanoramaTestConfig

@@ -31,34 +31,37 @@ class ActiveSupport::TestCase
   #  {:client_key => 100 }
   #end
 
+  def create_prepared_database_config(test_config)
+    db_config = {}
+    test_url = test_config['test_url'].split(":")
+    db_config[:modus]        = 'host'
+
+    db_config[:host]         = test_url[3].delete "@"
+    if test_url[4]['/']                                                         # Service_Name
+      db_config[:port]       = test_url[4].split('/')[0]
+      db_config[:sid]        = test_url[4].split('/')[1]
+
+      db_config[:sid_usage]  = :SERVICE_NAME
+    else                                                                        # SID
+      db_config[:port]       = test_url[4]
+      db_config[:sid]        = test_url[5]
+      db_config[:sid_usage]  = :SID
+    end
+
+    db_config[:user]         = test_config["test_username"]
+    db_config[:tns]          = test_config['test_url'].split('@')[1]     # Alles nach jdbc:oracle:thin@
+    db_config[:management_pack_license] = :diagnostic_and_tuning_pack    # Allow access on management packs
+
+    db_config
+  end
 
   # Method shared with Panorama children
   def connect_oracle_db_internal(test_config)
-    test_url = test_config['test_url'].split(":")
-
-    current_database = {}
-    current_database[:modus]        = 'host'
-
-    current_database[:host]         = test_url[3].delete "@"
-    if test_url[4]['/']                                                         # Service_Name
-      current_database[:port]       = test_url[4].split('/')[0]
-      current_database[:sid]        = test_url[4].split('/')[1]
-
-      current_database[:sid_usage]  = :SERVICE_NAME
-    else                                                                        # SID
-      current_database[:port]       = test_url[4]
-      current_database[:sid]        = test_url[5]
-      current_database[:sid_usage]  = :SID
-    end
-
-    current_database[:user]         = test_config["test_username"]
-    current_database[:tns]          = test_config['test_url'].split('@')[1]     # Alles nach jdbc:oracle:thin@
-    current_database[:management_pack_license] = :diagnostic_and_tuning_pack    # Allow access on management packs
+    current_database = create_prepared_database_config(test_config)
 
     # Config im Cachestore ablegen
     # Sicherstellen, dass ApplicationHelper.get_cached_client_key nicht erneut den client_key entschlüsseln will
     initialize_client_key_cookie
-
 
     # Passwort verschlüsseln in session
     current_database[:password] = Encryption.encrypt_value(test_config["test_password"], cookies['client_salt'])

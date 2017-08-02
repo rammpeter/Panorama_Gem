@@ -25,7 +25,7 @@ class PanoramaSamplerSampling
 
     if last_snap.nil?                                                           # First access
       @snap_id = 1
-      begin_interval_time = (sql_select_one "SELECT SYSDATE FROM Dual") - (@sampler_config[:snapshot_cyle]).minutes
+      begin_interval_time = (PanoramaConnection.sql_select_one "SELECT SYSDATE FROM Dual") - (@sampler_config[:snapshot_cycle]).minutes
     else
       @snap_id            = last_snap.snap_id + 1
       begin_interval_time = last_snap.end_interval_time

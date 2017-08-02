@@ -58,8 +58,6 @@ class ApplicationController < ActionController::Base
 
   # Ausführung vor jeden Request
   def begin_request
-    @statusbar_message = ''                                                     # manipulation only by add_statusbar_message
-
     begin
       if get_locale
         I18n.locale = get_locale                                                # fuer laufende Action Sprache aktivieren
@@ -114,12 +112,6 @@ class ApplicationController < ActionController::Base
   def after_request
     PanoramaConnection.release_connection                                       # Free DB connection
     PanoramaConnection.reset_thread_local_attributes
-  end
-
-  # Add string to status-bar-message
-  def add_statusbar_message(message)
-    @statusbar_message << "\n" if @statusbar_message.length > 0
-    @statusbar_message << message
   end
 
   ####################################### only protected and private methods from here #####################################
