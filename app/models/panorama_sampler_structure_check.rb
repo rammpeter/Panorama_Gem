@@ -9,6 +9,10 @@ class PanoramaSamplerStructureCheck
     PanoramaSamplerStructureCheck.new(sampler_config).remove_tables_internal
   end
 
+  def self.tables
+    @@tables
+  end
+
   def initialize(sampler_config)
     @sampler_config = sampler_config
   end
@@ -112,6 +116,17 @@ class PanoramaSamplerStructureCheck
       return table[:table_name]  if table[:table_name].upcase == search_table_name
     end
     nil
+  end
+
+  def self.has_column?(table_name, column_name)
+    @@tables.each do |table|
+      if table[:table_name].upcase == table_name.upcase                         # table exists
+        table[:columns].each do |column|
+          return true if column[:column_name].upcase == column_name.upcase
+        end
+      end
+    end
+    false
   end
 
   # Check data structures

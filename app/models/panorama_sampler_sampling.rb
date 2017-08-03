@@ -46,6 +46,17 @@ class PanoramaSamplerSampling
   end
 
   def do_housekeeping_internal
+    snapshots_to_delete = PanoramaConnection.sql_select_all ["SELECT Snap_ID FROM Panorama_Snapshot WHERE DBID = ? AND Begin_Interval_Time < SYSDATE - ?", PanoramaConnection.dbid, @sampler_config[:snapshot_retention]]
+
+    # Delete from tables with columns DBID and SNAP_ID
+    snapshots_to_delete.each do |snapshot|
+      PanoramaSamplerStructureCheck.tables.each do |table|
+        if PanoramaSamplerStructureCheck.has_column?(table[:table_name], 'Snap_ID')
+          PanoramaConnection.sql_execute ["DELETE FROM #{@sampler_config[:owner]}.#{table[:table_name]} WHERE DBID = ? AND Snap_ID <= ?", PanoramaConnection.dbid, snapshot.snap_id]
+        end
+      end
+    end
+    # Delete from tables without columns DBID and SNAP_ID
 
   end
 
