@@ -135,7 +135,7 @@ class EnvController < ApplicationController
                                                       (SELECT n.Value FROM gv$NLS_Parameters n WHERE n.Inst_ID = gi.Inst_ID AND n.Parameter='NLS_CHARACTERSET') NLS_CharacterSet,
                                                       (SELECT n.Value FROM gv$NLS_Parameters n WHERE n.Inst_ID = gi.Inst_ID AND n.Parameter='NLS_NCHAR_CHARACTERSET') NLS_NChar_CharacterSet,
                                                       (SELECT p.Value FROM GV$Parameter p WHERE p.Inst_ID = gi.Inst_ID AND LOWER(p.Name) = 'cpu_count') CPU_Count,
-                                                      d.Open_Mode, d.Protection_Mode, d.Protection_Level, d.Switchover_Status, d.Dataguard_Broker, d.Force_Logging,
+                                                      d.DBID, d.Open_Mode, d.Protection_Mode, d.Protection_Level, d.Switchover_Status, d.Dataguard_Broker, d.Force_Logging,
                                                       ws.Snap_Interval_Minutes, ws.Snap_Retention_Days
                                                       #{", CDB" if get_db_version >= '12.1'}
                                                FROM  GV$Instance gi
@@ -459,7 +459,8 @@ public
   end
 
   def list_dbids
-    if PackLicense.diagnostic_pack_licensed?(get_current_database[:management_pack_license])
+    set_new_dbid = true                                                         # Set DBID of current connected database if not choosen different one from history
+    if PackLicense.diagnostic_pack_licensed?(get_current_database[:management_pack_license])    # Check for historic DBIDs requires access on diagnostics pack
 
       @dbids = sql_select_all ["SELECT s.DBID, MIN(Begin_Interval_Time) Min_TS, MAX(End_Interval_Time) Max_TS,
                                          (SELECT MIN(DB_Name) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) DB_Name,
@@ -471,14 +472,13 @@ public
                                   GROUP BY s.DBID
                                   ORDER BY MIN(Begin_Interval_Time)"]
 
-      set_new_dbid = true
       @dbids.each do |d|
         set_new_dbid = false if get_dbid == d.dbid                                # Reuse alread set dbid because it is valid
       end
-      set_cached_dbid(sql_select_one("SELECT /* Panorama Tool Ramm */ DBID FROM v$Database")) if set_new_dbid # dbid has not been set or is not valid
     else
       @dbids = nil
     end
+    set_cached_dbid(sql_select_one("SELECT /* Panorama Tool Ramm */ DBID FROM v$Database")) if set_new_dbid # dbid has not been set before or is not valid, necessary to retain the already choosen DBID at new login
 
     render_partial :list_dbids
   end

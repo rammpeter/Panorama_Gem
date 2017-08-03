@@ -12,6 +12,7 @@
 
 <% column_options =
        [
+           {:caption=>'DBID',          :data=>proc{|rec| rec.dbid },                           :title=>"Unique identifier for this database"},
            {:caption=>"Instance",      :data=>proc{|rec| "#{rec.instance_number}#{" (*)" if rec.instance_connected && @instance_data.length >1}" },       :title=>"Instance number, (*) for connecting instance"},
            {:caption=>"Name",          :data=>proc{|rec| rec.instance_name },                  :title=>"Instance name"},
            {:caption=>"Hostname",      :data=>proc{|rec| rec.host_name },                      :title=>"Last startup time of instance"},
