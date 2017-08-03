@@ -40,7 +40,7 @@ class PanoramaSamplerSampling
     ## DBA_Hist_Log
     PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_Log (Snap_ID, DBID, Instance_Number, Group#, Thread#, Sequence#, Bytes, Members, Archived, Status, First_Change#, First_Time#{", Con_DBID, Con_ID" if PanoramaConnection.db_version >= '12.1'}
                                     ) SELECT ?, ?, ?,
-                                             Group#, Thread#, Sequence#, Bytes, Members, Archived, Status, First_Change#, First_Time, ?#{PanoramaConnection.db_version >= '12.1' ? ", Con_ID" : "0"}
+                                             Group#, Thread#, Sequence#, Bytes, Members, Archived, Status, First_Change#, First_Time, ?#{PanoramaConnection.db_version >= '12.1' ? ", Con_ID" : ", 0"}
                                       FROM   v$Log
                                     ",  @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, PanoramaConnection.dbid]
   end
