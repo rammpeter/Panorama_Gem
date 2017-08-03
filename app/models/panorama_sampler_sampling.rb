@@ -34,9 +34,8 @@ class PanoramaSamplerSampling
 
     ## DBA_Hist_Snapshot
     PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_Snapshot (Snap_ID, DBID, Instance_Number, Begin_Interval_Time, End_Interval_Time#{", Con_ID" if PanoramaConnection.db_version >= '12.1'}
-                                    ) VALUES (?, ?, ?, ?, SYSDATE#{", ?" if PanoramaConnection.db_version >= '12.1'})",  @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, begin_interval_time].concat(
-        PanoramaConnection.db_version >= '12.1' ? [0] : []
-    )
+                                    ) VALUES (?, ?, ?, ?, SYSDATE#{", ?" if PanoramaConnection.db_version >= '12.1'})",
+                                    @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, begin_interval_time].concat(PanoramaConnection.db_version >= '12.1' ? [0] : [])
 
     ## DBA_Hist_Log
     PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_Log (Snap_ID, DBID, Instance_Number, Group#, Thread#, Sequence#, Bytes, Members, Archived, Status, First_Change#, First_Time,
@@ -62,7 +61,8 @@ class PanoramaSamplerSampling
                                                                                               OPTIMIZED_PHYSICAL_READS_TOTAL, OPTIMIZED_PHYSICAL_READS_DELTA, CELL_UNCOMPRESSED_BYTES_TOTAL, CELL_UNCOMPRESSED_BYTES_DELTA, IO_OFFLOAD_RETURN_BYTES_TOTAL, IO_OFFLOAD_RETURN_BYTES_DELTA,
                                                                                               BIND_DATA,
                                                                                               Con_DBID #{", Con_ID" if PanoramaConnection.db_version >= '12.1'}
-                                    ) SELECT  ?, ?, ?, s.SQL_ID, s.Plan_Hash_Value, s.OPTIMIZER_COST, s.OPTIMIZER_MODE, s.OPTIMIZER_ENV_HASH_VALUE, s.SHARABLE_MEM,
+                                    ) SELECT  /*+ INDEX(p, PANORAMA_SQLSTAT_PK) PUSH_PRED(ms) OPT_PARAM('_push_join_predicate' 'TRUE')  */
+                                              ?, ?, ?, s.SQL_ID, s.Plan_Hash_Value, s.OPTIMIZER_COST, s.OPTIMIZER_MODE, s.OPTIMIZER_ENV_HASH_VALUE, s.SHARABLE_MEM,
                                               s.LOADED_VERSIONS, s.VERSION_COUNT, s.MODULE, s.ACTION, s.SQL_PROFILE, s.FORCE_MATCHING_SIGNATURE, s.PARSING_SCHEMA_ID, s.PARSING_SCHEMA_NAME, s.PARSING_USER_ID,
                                               s.Fetches,                            s.Fetches                         - NVL(p.Fetches_Total, 0),
                                               s.End_Of_Fetch_Count,                 s.End_Of_Fetch_Count              - NVL(p.End_Of_Fetch_Count_Total,0),
@@ -95,11 +95,39 @@ class PanoramaSamplerSampling
                                               #{"s.IO_Cell_Offload_Returned_Bytes,  s.IO_Cell_Offload_Returned_Bytes  - NVL(p.IO_Offload_Return_Bytes_Total, 0),"   if PanoramaConnection.db_version >= '12.2'}
                                               s.Bind_Data,
                                               ? #{PanoramaConnection.db_version >= '12.1' ? ", s.Con_ID" : ", 0"}
+                                      FROM   --v$SQLArea s
+                                             (SELECT SQL_ID, Plan_Hash_Value, #{"Con_ID, " if PanoramaConnection.db_version >= '12.1' } MAX(Optimizer_Cost) Optimizer_Cost, MAX(Optimizer_Mode) Optimizer_Mode, MAX(Optimizer_Env_Hash_Value) Optimizer_Env_Hash_Value,
+                                                     SUM(SHARABLE_MEM) SHARABLE_MEM, SUM(LOADED_VERSIONS) LOADED_VERSIONS, COUNT(*) VERSION_COUNT, MAX(Module) Module, MAX(Action) Action, MAX(SQL_PROFILE) SQL_PROFILE, MAX(FORCE_MATCHING_SIGNATURE) FORCE_MATCHING_SIGNATURE,
+                                                     MAX(PARSING_SCHEMA_ID) PARSING_SCHEMA_ID, MAX(PARSING_SCHEMA_NAME) PARSING_SCHEMA_NAME, MAX(PARSING_USER_ID) PARSING_USER_ID,
+                                                     SUM(Fetches) Fetches, SUM(End_Of_Fetch_Count) End_Of_Fetch_Count, SUM(Sorts) Sorts, SUM(Executions) Executions, SUM(PX_Servers_Executions) PX_Servers_Executions, SUM(Loads) Loads, SUM(Invalidations) Invalidations,
+                                                     SUM(Parse_Calls) Parse_Calls, SUM(Disk_Reads) Disk_Reads, SUM(Buffer_Gets) Buffer_Gets, SUM(Rows_Processed) Rows_Processed, SUM(CPU_Time) CPU_Time, SUM(Elapsed_Time) Elapsed_Time, SUM(User_IO_Wait_Time) User_IO_Wait_Time,
+                                                     SUM(Cluster_Wait_Time) Cluster_Wait_Time, SUM(Application_Wait_Time) Application_Wait_Time, SUM(Concurrency_Wait_Time) Concurrency_Wait_Time, SUM(Direct_Writes) Direct_Writes, SUM(PLSQL_Exec_Time) PLSQL_Exec_Time, SUM(Java_Exec_Time) Java_Exec_Time,
+                                                     #{"SUM(IO_CELL_OFFLOAD_ELIGIBLE_BYTES) IO_CELL_OFFLOAD_ELIGIBLE_BYTES, SUM(IO_Interconnect_Bytes) IO_Interconnect_Bytes," if PanoramaConnection.db_version >= '12.1'}
+                                                     SUM(Physical_Read_Requests) Physical_Read_Requests, SUM(Physical_Read_Bytes) Physical_Read_Bytes, SUM(Physical_Write_Requests) Physical_Write_Requests, SUM(Physical_Write_Bytes) Physical_Write_Bytes,
+                                                     #{"SUM(Optimized_Phy_Read_Requests) Optimized_Phy_Read_Requests, SUM(IO_Cell_Uncompressed_Bytes) IO_Cell_Uncompressed_Bytes,"  if PanoramaConnection.db_version >= '12.1'}
+                                                     #{"SUM(IO_Cell_Offload_Returned_Bytes) IO_Cell_Offload_Returned_Bytes,"  if PanoramaConnection.db_version >= '12.2'}
+                                                     MAX(Bind_Data) Bind_Data, MAX(Last_Active_Time) Last_Active_Time
+                                              FROM   v$SQL
+                                              GROUP BY SQL_ID, Plan_Hash_Value #{", Con_ID" if PanoramaConnection.db_version >= '12.1' }
+                                              --WHERE
+                                             ) s
+                                      LEFT OUTER JOIN  (SELECT MAX(Snap_ID) Max_Snap_ID, DBID, Instance_Number, SQL_ID, Plan_Hash_Value, Con_DBID
+                                                        FROM   Panorama_SQLStat
+                                                        GROUP BY DBID, Instance_Number, SQL_ID, Plan_Hash_Value, Con_DBID
+                                                       ) ms ON ms.DBID=? AND ms.Instance_Number=? AND ms.SQL_ID=s.SQL_ID AND ms.Plan_Hash_Value=s.Plan_Hash_Value AND ms.Con_DBID=?
+                                      LEFT OUTER JOIN Panorama_SQLStat p ON  p.DBID=? AND p.Snap_ID=ms.Max_Snap_ID AND p.Instance_Number=? AND p.SQL_ID=s.SQL_ID AND p.Plan_Hash_Value=s.Plan_Hash_Value AND p.Con_DBID=?
+                                      WHERE s.Last_Active_Time > ?
+                                    ",  @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, con_dbid, PanoramaConnection.dbid, PanoramaConnection.instance_number, con_dbid, PanoramaConnection.dbid,  PanoramaConnection.instance_number, con_dbid, begin_interval_time]
+
+    ## DBA_Hist_SQLText
+    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_SQLText (DBID, SQL_ID, SQL_Text, Command_Type, Con_DBID, Con_ID)
+                                      SELECT ?, s.SQL_ID, s.SQL_FullText, s.Command_Type,
+                                              ? #{PanoramaConnection.db_version >= '12.1' ? ", s.Con_ID" : ", 0"}
                                       FROM   v$SQLArea s
-                                      LEFT OUTER JOIN Panorama_SQLStat p ON p.DBID=? AND p.Snap_ID=? AND p.Instance_Number=? AND p.SQL_ID=s.SQL_ID AND p.Plan_Hash_Value=s.Plan_Hash_Value AND p.Con_DBID=?
-                                      WHERE p.SQL_ID IS NULL OR
-                                            NVL(p.Executions_Total, 0) != NVL(s.Executions, 0)
-                                    ",  @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, con_dbid,  PanoramaConnection.dbid, @snap_id-1, PanoramaConnection.instance_number, con_dbid]
+                                      LEFT OUTER JOIN Panorama_SQLText p ON p.DBID=? AND p.SQL_ID=s.SQL_ID AND p.Con_DBID=?
+                                      WHERE p.SQL_ID IS NULL
+                                    ",  PanoramaConnection.dbid, con_dbid, PanoramaConnection.dbid, con_dbid]
+
   end
 
   def do_housekeeping_internal

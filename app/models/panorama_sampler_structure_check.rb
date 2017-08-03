@@ -160,8 +160,22 @@ class PanoramaSamplerStructureCheck
           primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'SQL_ID', 'PLAN_HASH_VALUE', 'CON_DBID'],
           indexes: [ {index_name: 'Panorama_SQLStat_SQLID_IX', columns: ['SQL_ID', 'DBID', 'CON_DBID'] } ]
       },
+      {
+          table_name: 'Panorama_SQLText',
+          columns: [
+              { column_name:  'DBID',                           column_type:  'NUMBER',     not_null: true },
+              { column_name:  'SQL_ID',                         column_type:  'VARCHAR2',   not_null: true, precision: 13  },
+              { column_name:  'SQL_Text',                       column_type:  'CLOB'    },
+              { column_name:  'Command_Type',                   column_type:  'NUMBER'    },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER' },
+              { column_name:  'Con_ID',                         column_type:  'NUMBER' },
+          ],
+          primary_key: ['DBID', 'SQL_ID', 'Con_DBID'],
+      },
+  ]
 
 =begin
+
 Generator-Selects:
 
 ######### Structure
@@ -183,7 +197,6 @@ ORDER BY Column_ID
 
 =end
 
-  ]
 
   # Replace DBA_Hist in SQL with corresponding Panorama-Sampler table
   def self.transform_sql_for_sampler(org_sql)
