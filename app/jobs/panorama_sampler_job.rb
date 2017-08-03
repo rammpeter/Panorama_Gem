@@ -17,9 +17,11 @@ class PanoramaSamplerJob < ApplicationJob
     # Iterate over PanoramaSampler entries
     PanoramaSamplerConfig.get_cloned_config_array.each do |config|
       if config[:active]
-        if config[:last_snapshot_time].nil? || config[:last_snapshot_time]+(config[:snapshot_cycle]).minutes <= snapshot_time
-          PanoramaSamplerConfig.modify_config_entry({id: config[:id], last_snapshot_time: snapshot_time})
+        if (config[:last_snapshot_start].nil? || config[:last_snapshot_start]+(config[:snapshot_cycle]).minutes <= snapshot_time) && # snapshot_cycle expired ?
+            snapshot_time.strftime('%M').to_i % config[:snapshot_cycle] == 0    # exact startup time at full hour + x*snapshot_cycle
+          PanoramaSamplerConfig.modify_config_entry({id: config[:id], last_snapshot_start: snapshot_time})
           WorkerThread.create_snapshot(config)
+          PanoramaSamplerConfig.modify_config_entry({id: config[:id], last_snapshot_end: Time.now})
         end
       end
     end

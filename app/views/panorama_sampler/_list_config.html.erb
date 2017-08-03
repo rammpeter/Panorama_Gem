@@ -27,6 +27,10 @@
     "background-color:coral;" if rec[:last_successful_connect].nil? || (rec[:last_successful_connect] && rec[:last_error_time] && rec[:last_error_time] > rec[:last_successful_connect])
   end
 
+  def snapshot_duration(rec)
+    fn(rec[:last_snapshot_end] - rec[:last_snapshot_start]) if rec[:last_snapshot_end] && rec[:last_snapshot_start]
+  end
+
   column_options =
   [
     {:caption=>'ID',                  :data=>proc{|rec| rec[:id]},                                        :title=>"Unique identifier", :align=>:right,                            :data_style=>proc{|rec| default_style(rec)}},
@@ -38,7 +42,8 @@
     {:caption=>'DBID',                :data=>proc{|rec| rec[:dbid]},                                      :title=>"Unique database identifier (v$Database.DBID)",                 :data_style=>proc{|rec| default_style(rec)}},
     {:caption=>"Snapshot cycle",      :data=>proc{|rec| rec[:snapshot_cycle]},                            :title=>"Delay between snapshots in minutes", :align=>:right,           :data_style=>proc{|rec| default_style(rec)}},
     {:caption=>"Snapshot retention",  :data=>proc{|rec| rec[:snapshot_retention]},                        :title=>"Retention time for snapshot data in days before deletion", :align=>:right, :data_style=>proc{|rec| default_style(rec)}},
-    {:caption=>'Last snapshot time',  :data=>proc{|rec| localeDateTime(rec[:last_snapshot_time])},        :title=>"Timestamp of last snapshot start",                             :data_style=>proc{|rec| default_style(rec)}},
+    {:caption=>'Last snapshot time',  :data=>proc{|rec| localeDateTime(rec[:last_snapshot_start])},       :title=>"Timestamp of last snapshot start",                             :data_style=>proc{|rec| default_style(rec)}, :data_title=>proc{|rec| "%t\nLast snapshot ended at #{localeDateTime(rec[:last_snapshot_end])}"}},
+    {:caption=>'Last snapshot duration',:data=>proc{|rec| snapshot_duration(rec)},                        :title=>"Duration in seconds of last snapshot creation",                :align=>:right, :data_style=>proc{|rec| default_style(rec)}},
     {:caption=>'Last connect time',   :data=>proc{|rec| localeDateTime(rec[:last_successful_connect])},   :title=>"Timestamp of last successful connect to this database",        :data_style=>proc{|rec| default_style(rec)}},
     {:caption=>'Last error time',     :data=>proc{|rec| localeDateTime(rec[:last_error_time])},           :title=>"Timestamp of last connect- or execution-error", :data_style=>proc{|rec| default_style(rec, error_style(rec))}},
     {:caption=>'Last error message',  :data=>proc{|rec| rec[:last_error_message]},                        :title=>"Last message of connect- or execution-error", :data_title=>proc{|rec| "%t\n#{rec[:last_error_message]}"}, :data_style=>proc{|rec| default_style(rec, error_style(rec))}, :max_wrap_width=>60},

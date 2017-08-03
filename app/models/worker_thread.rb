@@ -72,8 +72,8 @@ class WorkerThread
   # Create snapshot in database
   def create_snapshot_internal
     if @@active_snashots[ @sampler_config[:id]]
-      Rails.logger.error("Previous snapshot creation not yet finshed for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]})")
-      PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Previous snapshot creation not yet finshed, no snapshot created")
+      Rails.logger.error("Previous snapshot creation not yet finshed for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]}), no snapshot created! Restart Panorama server if this problem persists.")
+      PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Previous snapshot creation not yet finshed, no snapshot created! Restart Panorama server if this problem persists.")
       return
     end
 
