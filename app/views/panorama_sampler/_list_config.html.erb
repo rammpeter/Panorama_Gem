@@ -33,7 +33,7 @@
 
   column_options =
   [
-    {:caption=>'ID',                  :data=>proc{|rec| rec[:id]},                                        :title=>"Unique identifier", :align=>:right,                            :data_style=>proc{|rec| default_style(rec)}},
+    {:caption=>'ID',                  :data=>proc{|rec| rec[:id]},                                        :title=>"Unique identifier for config entry", :align=>:right,           :data_style=>proc{|rec| default_style(rec)}},
     {:caption=>'A.',                  :data=>proc{|rec| rec[:active] ? 'Y' : 'N'},                        :title=>"Active-state, sampling occurs for active configurations only", :data_style=>proc{|rec| default_style(rec)}},
     {:caption=>'Config. name',        :data=>proc{|rec| rec[:name]},                                      :title=>"Name / description for configuration",                         :data_style=>proc{|rec| default_style(rec)}},
     {:caption=>'TNS config',          :data=>proc{|rec| rec[:tns]},                                       :title=>"TNS-alias or connect string",                                  :data_style=>proc{|rec| default_style(rec)}},

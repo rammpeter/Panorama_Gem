@@ -73,6 +73,115 @@ class PanoramaSamplerStructureCheck
           ],
           primary_key: ['DBID', 'Snap_ID', 'Instance_Number', 'Group#', 'Thread#', 'Sequence#', 'Con_DBID']
       },
+      {
+          table_name: 'Panorama_SQLStat',
+          columns: [
+              { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
+              { column_name:  'SQL_ID',                         column_type:   'VARCHAR2',  not_null: true, precision: 13 },
+              { column_name:  'PLAN_HASH_VALUE',                column_type:   'NUMBER',    not_null: true },
+              { column_name:  'OPTIMIZER_COST',                 column_type:   'NUMBER' },
+              { column_name:  'OPTIMIZER_MODE',                 column_type:   'VARCHAR2',  precision: 10 },
+              { column_name:  'OPTIMIZER_ENV_HASH_VALUE',       column_type:   'NUMBER' },
+              { column_name:  'SHARABLE_MEM',                   column_type:   'NUMBER' },
+              { column_name:  'LOADED_VERSIONS',                column_type:   'NUMBER' },
+              { column_name:  'VERSION_COUNT',                  column_type:   'NUMBER' },
+              { column_name:  'MODULE',                         column_type:   'VARCHAR2',  precision: 64 },
+              { column_name:  'ACTION',                         column_type:   'VARCHAR2',  precision: 64 },
+              { column_name:  'SQL_PROFILE',                    column_type:   'VARCHAR2',  precision: 64 },
+              { column_name:  'FORCE_MATCHING_SIGNATURE',       column_type:   'NUMBER' },
+              { column_name:  'PARSING_SCHEMA_ID',              column_type:   'NUMBER' },
+              { column_name:  'PARSING_SCHEMA_NAME',            column_type:   'VARCHAR2',  precision: 128 },
+              { column_name:  'PARSING_USER_ID',                column_type:   'NUMBER' },
+              { column_name:  'FETCHES_TOTAL',                  column_type:   'NUMBER' },
+              { column_name:  'FETCHES_DELTA',                  column_type:   'NUMBER' },
+              { column_name:  'END_OF_FETCH_COUNT_TOTAL',       column_type:   'NUMBER' },
+              { column_name:  'END_OF_FETCH_COUNT_DELTA',       column_type:   'NUMBER' },
+              { column_name:  'SORTS_TOTAL',                    column_type:   'NUMBER' },
+              { column_name:  'SORTS_DELTA',                    column_type:   'NUMBER' },
+              { column_name:  'EXECUTIONS_TOTAL',               column_type:   'NUMBER' },
+              { column_name:  'EXECUTIONS_DELTA',               column_type:   'NUMBER' },
+              { column_name:  'PX_SERVERS_EXECS_TOTAL',         column_type:   'NUMBER' },
+              { column_name:  'PX_SERVERS_EXECS_DELTA',         column_type:   'NUMBER' },
+              { column_name:  'LOADS_TOTAL',                    column_type:   'NUMBER' },
+              { column_name:  'LOADS_DELTA',                    column_type:   'NUMBER' },
+              { column_name:  'INVALIDATIONS_TOTAL',            column_type:   'NUMBER' },
+              { column_name:  'INVALIDATIONS_DELTA',            column_type:   'NUMBER' },
+              { column_name:  'PARSE_CALLS_TOTAL',              column_type:   'NUMBER' },
+              { column_name:  'PARSE_CALLS_DELTA',              column_type:   'NUMBER' },
+              { column_name:  'DISK_READS_TOTAL',               column_type:   'NUMBER' },
+              { column_name:  'DISK_READS_DELTA',               column_type:   'NUMBER' },
+              { column_name:  'BUFFER_GETS_TOTAL',              column_type:   'NUMBER' },
+              { column_name:  'BUFFER_GETS_DELTA',              column_type:   'NUMBER' },
+              { column_name:  'ROWS_PROCESSED_TOTAL',           column_type:   'NUMBER' },
+              { column_name:  'ROWS_PROCESSED_DELTA',           column_type:   'NUMBER' },
+              { column_name:  'CPU_TIME_TOTAL',                 column_type:   'NUMBER' },
+              { column_name:  'CPU_TIME_DELTA',                 column_type:   'NUMBER' },
+              { column_name:  'ELAPSED_TIME_TOTAL',             column_type:   'NUMBER' },
+              { column_name:  'ELAPSED_TIME_DELTA',             column_type:   'NUMBER' },
+              { column_name:  'IOWAIT_TOTAL',                   column_type:   'NUMBER' },
+              { column_name:  'IOWAIT_DELTA',                   column_type:   'NUMBER' },
+              { column_name:  'CLWAIT_TOTAL',                   column_type:   'NUMBER' },
+              { column_name:  'CLWAIT_DELTA',                   column_type:   'NUMBER' },
+              { column_name:  'APWAIT_TOTAL',                   column_type:   'NUMBER' },
+              { column_name:  'APWAIT_DELTA',                   column_type:   'NUMBER' },
+              { column_name:  'CCWAIT_TOTAL',                   column_type:   'NUMBER' },
+              { column_name:  'CCWAIT_DELTA',                   column_type:   'NUMBER' },
+              { column_name:  'DIRECT_WRITES_TOTAL',            column_type:   'NUMBER' },
+              { column_name:  'DIRECT_WRITES_DELTA',            column_type:   'NUMBER' },
+              { column_name:  'PLSEXEC_TIME_TOTAL',             column_type:   'NUMBER' },
+              { column_name:  'PLSEXEC_TIME_DELTA',             column_type:   'NUMBER' },
+              { column_name:  'JAVEXEC_TIME_TOTAL',             column_type:   'NUMBER' },
+              { column_name:  'JAVEXEC_TIME_DELTA',             column_type:   'NUMBER' },
+              { column_name:  'IO_OFFLOAD_ELIG_BYTES_TOTAL',    column_type:   'NUMBER' },
+              { column_name:  'IO_OFFLOAD_ELIG_BYTES_DELTA',    column_type:   'NUMBER' },
+              { column_name:  'IO_INTERCONNECT_BYTES_TOTAL',    column_type:   'NUMBER' },
+              { column_name:  'IO_INTERCONNECT_BYTES_DELTA',    column_type:   'NUMBER' },
+              { column_name:  'PHYSICAL_READ_REQUESTS_TOTAL',   column_type:   'NUMBER' },
+              { column_name:  'PHYSICAL_READ_REQUESTS_DELTA',   column_type:   'NUMBER' },
+              { column_name:  'PHYSICAL_READ_BYTES_TOTAL',      column_type:   'NUMBER' },
+              { column_name:  'PHYSICAL_READ_BYTES_DELTA',      column_type:   'NUMBER' },
+              { column_name:  'PHYSICAL_WRITE_REQUESTS_TOTAL',  column_type:   'NUMBER' },
+              { column_name:  'PHYSICAL_WRITE_REQUESTS_DELTA',  column_type:   'NUMBER' },
+              { column_name:  'PHYSICAL_WRITE_BYTES_TOTAL',     column_type:   'NUMBER' },
+              { column_name:  'PHYSICAL_WRITE_BYTES_DELTA',     column_type:   'NUMBER' },
+              { column_name:  'OPTIMIZED_PHYSICAL_READS_TOTAL', column_type:   'NUMBER' },
+              { column_name:  'OPTIMIZED_PHYSICAL_READS_DELTA', column_type:   'NUMBER' },
+              { column_name:  'CELL_UNCOMPRESSED_BYTES_TOTAL',  column_type:   'NUMBER' },
+              { column_name:  'CELL_UNCOMPRESSED_BYTES_DELTA',  column_type:   'NUMBER' },
+              { column_name:  'IO_OFFLOAD_RETURN_BYTES_TOTAL',  column_type:   'NUMBER' },
+              { column_name:  'IO_OFFLOAD_RETURN_BYTES_DELTA',  column_type:   'NUMBER' },
+              { column_name:  'BIND_DATA',                      column_type:   'RAW',       precision: 2000 },
+              { column_name:  'FLAG',                           column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER' },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },
+          ],
+          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'SQL_ID', 'PLAN_HASH_VALUE', 'CON_DBID'],
+          indexes: [ {index_name: 'Panorama_SQLStat_SQLID_IX', columns: ['SQL_ID', 'DBID', 'CON_DBID'] } ]
+      },
+
+=begin
+Generator-Selects:
+
+######### Structure
+SELECT '              { column_name:  '''||Column_Name||''',     column_type:   '''||Data_Type||''''||
+       CASE WHEN Nullable = 'N' THEN ', not_null: true' END ||
+       CASE WHEN (Data_Type != 'NUMBER' OR Data_Length != 22) THEN ', precision: '||Data_Length  END ||
+       ' },'
+FROM   DBA_Tab_Columns
+WHERE  Table_Name = 'DBA_HIST_SQLSTAT'
+ORDER BY Column_ID
+;
+
+######### Field-List
+SELECT Column_Name||','
+FROM   DBA_Tab_Columns
+WHERE  Table_Name = 'DBA_HIST_SQLSTAT'
+ORDER BY Column_ID
+;
+
+=end
 
   ]
 
@@ -111,6 +220,7 @@ class PanoramaSamplerStructureCheck
   # Check existence of DBA_Hist-alternative in Panorama
   def self.replacement_table(dba_hist_tablename)
     search_table_name = dba_hist_tablename.upcase
+    return nil if dba_hist_tablename.length < 8
     search_table_name['DBA_HIST'] = 'PANORAMA'
     @@tables.each do |table|
       return table[:table_name]  if table[:table_name].upcase == search_table_name
