@@ -19,7 +19,9 @@ class PanoramaSamplerConfig
   end
 
   def self.config_entry_exists?(p_id)
-    !get_config_entry_by_id_or_nil(p_id).nil?
+    @@config_access_mutex.synchronize do
+      return !get_config_entry_by_id_or_nil(p_id).nil?
+    end
   end
 
   def self.get_max_id

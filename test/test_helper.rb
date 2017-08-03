@@ -98,7 +98,7 @@ class ActiveSupport::TestCase
     sampler_config[:snapshot_retention]     = 1
 
 
-    if PanoramaSamplerConfig.get_cloned_config_array[1]
+    if PanoramaSamplerConfig.config_entry_exists?(sampler_config[:id])
       PanoramaSamplerConfig.modify_config_entry(sampler_config)
     else
       PanoramaSamplerConfig.add_config_entry(sampler_config)
