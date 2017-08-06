@@ -69,7 +69,7 @@ class Capybara::Rails::TestCase
     wait_for_ajax                                                               # Wait until start_page is loaded
 
     if page.html['please choose your management pack license'] && page.html['Usage of Oracle management packs by Panorama']
-      page.find_by_id('management_pack_license_diagnostic_and_tuning_pack').set(true)
+      page.find_by_id('management_pack_license_diagnostics_and_tuning_pack').set(true)
       click_button('Acknowledge and proceed')
       wait_for_ajax                                                               # Wait until start_page is loaded
     end

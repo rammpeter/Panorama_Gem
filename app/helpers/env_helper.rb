@@ -19,8 +19,8 @@ module EnvHelper
   def init_management_pack_license(current_database)
     if current_database[:management_pack_license].nil?                          # not already set, calculate initial value
       control_management_pack_access = read_control_management_pack_access
-      return :diagnostic_and_tuning_pack  if control_management_pack_access['TUNING']
-      return :diagnostic_pack             if control_management_pack_access['DIAGNOSTIC']
+      return :diagnostics_and_tuning_pack  if control_management_pack_access['TUNING']
+      return :diagnostics_pack             if control_management_pack_access['DIAGNOSTIC']
       return :none
     end
     return current_database[:management_pack_license]                           # Use old value if already set

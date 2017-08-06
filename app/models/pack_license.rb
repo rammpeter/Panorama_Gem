@@ -1,17 +1,17 @@
 class PackLicense
 
   def initialize(license_type)
-    license_type = :none unless [:diagnostic_pack, :diagnostic_and_tuning_pack, :none].include?(license_type)   # Assume at login startup that no management pack is licensed until user has acknowledged the selection
+    license_type = :none unless [:diagnostics_pack, :diagnostics_and_tuning_pack, :none].include?(license_type)   # Assume at login startup that no management pack is licensed until user has acknowledged the selection
     @license_type = license_type
 
   end
 
-  def self.diagnostic_pack_licensed?(license_type)
-    !license_type.nil? && (license_type.to_sym == :diagnostic_pack || license_type.to_sym == :diagnostic_and_tuning_pack)
+  def self.diagnostics_pack_licensed?(license_type)
+    !license_type.nil? && (license_type.to_sym == :diagnostics_pack || license_type.to_sym == :diagnostics_and_tuning_pack)
   end
 
   def self.tuning_pack_licensed?(license_type)
-    license_type.to_sym == :diagnostic_and_tuning_pack
+    license_type.to_sym == :diagnostics_and_tuning_pack
   end
 
   # Filter SQL string or array for unlicensed Table Access
@@ -32,11 +32,11 @@ class PackLicense
   def filter_sql_string_for_pack_license(sql)
 
     case @license_type
-      when :diagnostic_pack then
+      when :diagnostics_pack then
         check_for_tuning_pack_usage(sql)
       when :none then
         sql = PanoramaSamplerStructureCheck.transform_sql_for_sampler(sql) if PanoramaConnection.get_config[:panorama_sampler_schema]
-        check_for_diagnostic_pack_usage(sql)
+        check_for_diagnostics_pack_usage(sql)
         check_for_tuning_pack_usage(sql)
     end
     sql
@@ -75,7 +75,7 @@ class PackLicense
   public
 
   # raise Exception if SQL contains content violating missing diagnostic pack license
-  def check_for_diagnostic_pack_usage(sql)
+  def check_for_diagnostics_pack_usage(sql)
     allowed_array = [
         'DBA_HIST_BLOCKING_LOCKS',                                              # private table
         'DBA_HIST_CACHE_OBJECTS',                                               # private table

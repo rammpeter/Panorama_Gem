@@ -50,7 +50,13 @@ class ActiveSupport::TestCase
 
     db_config[:user]         = test_config["test_username"]
     db_config[:tns]          = test_config['test_url'].split('@')[1]     # Alles nach jdbc:oracle:thin@
-    db_config[:management_pack_license] = :diagnostic_and_tuning_pack    # Allow access on management packs
+
+    if ENV['MANAGEMENT_PACK_LICENCSE']
+      raise "Wrong environment value MANAGEMENT_PACK_LICENCSE=#{ENV['MANAGEMENT_PACK_LICENCSE']}" if !['diagnostics_pack', 'diagnostics_and_tuning_pack'].include?(ENV['MANAGEMENT_PACK_LICENCSE'])
+      db_config[:management_pack_license] = ENV['MANAGEMENT_PACK_LICENCSE'].to_sym
+    else
+      db_config[:management_pack_license] = :diagnostics_and_tuning_pack  # Allow access on management packs, Default if nothing else specified
+    end
 
     db_config
   end

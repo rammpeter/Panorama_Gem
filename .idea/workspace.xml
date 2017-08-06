@@ -4,9 +4,15 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
+    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="Fix WHERE-clause">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/env_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/env_controller.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/helpers/env_helper.rb" afterPath="$PROJECT_DIR$/app/helpers/env_helper.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/pack_license.rb" afterPath="$PROJECT_DIR$/app/models/pack_license.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" afterPath="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/test_helpers/capybara_test_helper.rb" afterPath="$PROJECT_DIR$/lib/test_helpers/capybara_test_helper.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" afterPath="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb" afterPath="$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -59,6 +65,7 @@
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__dba_controller_test___Panorama_Gem.coverage" NAME="Run test 'dba_controller_test': Panorama_Gem Coverage Results" MODIFIED="1500570358153" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_list_object_increase_with_xhr__true__Panorama_Gem.coverage" NAME="test_list_object_increase_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1501067752088" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_list_sql_detail_sql_id_childno_with_xhr__true__Panorama_Gem.coverage" NAME="test_list_sql_detail_sql_id_childno_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1501570154031" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
+    <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__DbaHistoryControllerTest___Panorama_Gem.coverage" NAME="Run test 'DbaHistoryControllerTest': Panorama_Gem Coverage Results" MODIFIED="1502043679951" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__WorkerThreadTest___Panorama_Gem.coverage" NAME="Run test 'WorkerThreadTest': Panorama_Gem Coverage Results" MODIFIED="1501684361801" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_refresh_time_selection__Panorama_Gem.coverage" NAME="test_refresh_time_selection: Panorama_Gem Coverage Results" MODIFIED="1430309876024" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_list_temp_usage_historic__Panorama_Gem.coverage" NAME="test_list_temp_usage_historic: Panorama_Gem Coverage Results" MODIFIED="1447692580676" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
@@ -113,17 +120,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="panorama_sampler_sampling.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="309">
-              <caret line="135" column="144" lean-forward="true" selection-start-line="135" selection-start-column="53" selection-end-line="135" selection-end-column="144" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="dba_history_controller.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="dba_history_controller.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/controllers/dba_history_controller.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="182">
@@ -133,71 +130,41 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="panorama_connection.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/models/panorama_connection.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-141">
-              <caret line="101" column="6" lean-forward="false" selection-start-line="101" selection-start-column="6" selection-end-line="101" selection-end-column="6" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="panorama_sampler_structure_check.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="510">
-              <caret line="173" column="0" lean-forward="false" selection-start-line="163" selection-start-column="0" selection-end-line="173" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="test_helper.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/test_helper.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="173">
-              <caret line="87" column="0" lean-forward="false" selection-start-line="87" selection-start-column="0" selection-end-line="87" selection-end-column="0" />
+            <state relative-caret-position="225">
+              <caret line="74" column="18" lean-forward="false" selection-start-line="74" selection-start-column="18" selection-end-line="74" selection-end-column="18" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="pamorama_sampler_structure_check_test.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/models/pamorama_sampler_structure_check_test.rb">
+      <file leaf-file-name="dba_history_controller_test.rb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="18" column="0" lean-forward="false" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
+            <state relative-caret-position="135">
+              <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="dba_sga_controller.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/controllers/dba_sga_controller.rb">
+      <file leaf-file-name="oracle_connection_test_helper.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="371">
-              <caret line="197" column="82" lean-forward="false" selection-start-line="197" selection-start-column="67" selection-end-line="197" selection-end-column="82" />
+            <state relative-caret-position="112">
+              <caret line="48" column="7" lean-forward="true" selection-start-line="48" selection-start-column="7" selection-end-line="48" selection-end-column="7" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="panorama_sampler_sampling_test.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/models/panorama_sampler_sampling_test.rb">
+      <file leaf-file-name="application_helper.rb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/helpers/application_helper.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="210">
-              <caret line="14" column="3" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="14" selection-end-column="3" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="test.log" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/dummy/log/test.log">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="302">
+              <caret line="531" column="6" lean-forward="false" selection-start-line="531" selection-start-column="6" selection-end-line="531" selection-end-column="6" />
               <folding />
             </state>
           </provider>
@@ -217,11 +184,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>db_vers</find>
-      <find>Thread.current[:panorama_connection_connect_info]get</find>
-      <find>panorama_sampler_schema</find>
-      <find>sql_u</find>
-      <find>dba_hist_log</find>
       <find>passw</find>
       <find>render_pa</find>
       <find>render_part</find>
@@ -243,9 +205,14 @@
       <find>add_config_entry</find>
       <find>config_entry_exists?</find>
       <find>parse_calls</find>
-      <find>Last_Load_Time</find>
       <find>DBMS_SQLTUNE.SQLTEXT_TO_SIGNATURE</find>
       <find>GROUP BY s.DBID, s.SQL_ID, s.Parsing_Schema_Name</find>
+      <find>Last_Load_Time</find>
+      <find>diagnosti</find>
+      <find>diagnostic_pack</find>
+      <find>diagnos</find>
+      <find>diagnostic</find>
+      <find>diagnostic_and</find>
       <find>where_string_aussen</find>
     </findStrings>
     <replaceStrings>
@@ -258,7 +225,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/test/controllers/addition_controller_test.rb" />
         <option value="$PROJECT_DIR$/app/helpers/dragnet/sqls_wrong_execution_plan_helper.rb" />
         <option value="$PROJECT_DIR$/test/dummy/log/development.log" />
         <option value="$PROJECT_DIR$/test/models/panorama_sampler_config_test.rb" />
@@ -268,21 +234,17 @@
         <option value="$PROJECT_DIR$/app/views/application/_error_message.html.erb" />
         <option value="$PROJECT_DIR$/app/helpers/exception_helper.rb" />
         <option value="$PROJECT_DIR$/app/controllers/panorama_sampler_controller.rb" />
-        <option value="$PROJECT_DIR$/app/helpers/env_helper.rb" />
         <option value="$PROJECT_DIR$/test/controllers/panorama_sampler_controller_test.rb" />
         <option value="$PROJECT_DIR$/test/controllers/dba_sga_controller_test.rb" />
-        <option value="$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb" />
         <option value="$PROJECT_DIR$/app/models/popup_message_exception.rb" />
         <option value="$PROJECT_DIR$/app/views/application/_popup_exception_message.html.erb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_controller.rb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_pga_controller.rb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_sga_controller.rb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_waits_controller.rb" />
-        <option value="$PROJECT_DIR$/app/models/pack_license.rb" />
         <option value="$PROJECT_DIR$/app/views/dba/_list_redologs_historic.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba/_show_redologs_historic.html.erb" />
         <option value="$PROJECT_DIR$/app/views/panorama_sampler/_edit_config.html.erb" />
-        <option value="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" />
         <option value="$PROJECT_DIR$/test/models/panorama_sampler_sampling_test.rb" />
         <option value="$PROJECT_DIR$/app/controllers/application_controller.rb" />
         <option value="$PROJECT_DIR$/app/helpers/application_helper.rb" />
@@ -290,7 +252,6 @@
         <option value="$PROJECT_DIR$/app/models/panorama_connection.rb" />
         <option value="$PROJECT_DIR$/app/views/storage/_tablespace_usage.html.erb" />
         <option value="$PROJECT_DIR$/app/controllers/storage_controller.rb" />
-        <option value="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" />
         <option value="$PROJECT_DIR$/config/locales/de.yml" />
         <option value="$PROJECT_DIR$/app/controllers/dba_schema_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_schema/_show_unified_audit_trail.html.erb" />
@@ -309,6 +270,12 @@
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" />
         <option value="$PROJECT_DIR$/app/models/worker_thread.rb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
+        <option value="$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb" />
+        <option value="$PROJECT_DIR$/app/helpers/env_helper.rb" />
+        <option value="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" />
+        <option value="$PROJECT_DIR$/app/models/pack_license.rb" />
+        <option value="$PROJECT_DIR$/lib/test_helpers/capybara_test_helper.rb" />
+        <option value="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" />
       </list>
     </option>
   </component>
@@ -440,6 +407,13 @@
               <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
               <item name="app" type="462c0819:PsiDirectoryNode" />
               <item name="views" type="462c0819:PsiDirectoryNode" />
+              <item name="env" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
+              <item name="app" type="462c0819:PsiDirectoryNode" />
+              <item name="views" type="462c0819:PsiDirectoryNode" />
               <item name="layouts" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -459,6 +433,12 @@
               <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
               <item name="lib" type="462c0819:PsiDirectoryNode" />
               <item name="panorama_gem" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
+              <item name="lib" type="462c0819:PsiDirectoryNode" />
+              <item name="test_helpers" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
@@ -556,7 +536,36 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Test::Unit/Shoulda/Minitest.Run test 'PanoramaSamplerStructureCheckTest': Panorama_Gem">
+  <component name="RunManager" selected="Test::Unit/Shoulda/Minitest.Run test 'DbaHistoryControllerTest': Panorama_Gem">
+    <configuration name="Run test 'DbaHistoryControllerTest': Panorama_Gem" type="TestUnitRunConfigurationType" factoryName="Test::Unit/Shoulda/Minitest" temporary="true">
+      <predefined_log_file id="RUBY_TESTUNIT" enabled="true" />
+      <module name="Panorama_Gem" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="RUBY_ARGS" VALUE="-e $stdout.sync=true;$stderr.sync=true;load($0=ARGV.shift) -Itest" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="WORK DIR" VALUE="$MODULE_DIR$" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="SHOULD_USE_SDK" VALUE="false" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="ALTERN_SDK_NAME" VALUE="" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="myPassParentEnvs" VALUE="true" />
+      <envs>
+        <env name="RAILS_ENV" value="test" />
+        <env name="JRUBY_OPTS" value="-X+O" />
+      </envs>
+      <EXTENSION ID="BundlerRunConfigurationExtension" bundleExecEnabled="false" />
+      <EXTENSION ID="JRubyRunConfigurationExtension" NailgunExecEnabled="false" />
+      <EXTENSION ID="RubyCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" track_test_folders="true" runner="rcov">
+        <COVERAGE_PATTERN ENABLED="true">
+          <PATTERN REGEXPS="/.rvm/" INCLUDED="false" />
+        </COVERAGE_PATTERN>
+      </EXTENSION>
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TESTS_FOLDER_PATH" VALUE="" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_SCRIPT_PATH" VALUE="$MODULE_DIR$/test/controllers/dba_history_controller_test.rb" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_FILE_MASK" VALUE="" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_METHOD_NAME" VALUE="" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_TEST_TYPE" VALUE="TEST_SCRIPT" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="DRB" VALUE="false" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="ZEUS" VALUE="false" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="SPRING" VALUE="false" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="RUNNER_OPTIONS" VALUE="" />
+    </configuration>
     <configuration name="Run test 'EnvControllerTest': Panorama_Gem" type="TestUnitRunConfigurationType" factoryName="Test::Unit/Shoulda/Minitest" temporary="true">
       <predefined_log_file id="RUBY_TESTUNIT" enabled="true" />
       <module name="Panorama_Gem" />
@@ -578,35 +587,6 @@
       </EXTENSION>
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TESTS_FOLDER_PATH" VALUE="" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_SCRIPT_PATH" VALUE="$MODULE_DIR$/test/controllers/env_controller_test.rb" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_FILE_MASK" VALUE="" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_METHOD_NAME" VALUE="" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_TEST_TYPE" VALUE="TEST_SCRIPT" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="DRB" VALUE="false" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="ZEUS" VALUE="false" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="SPRING" VALUE="false" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="RUNNER_OPTIONS" VALUE="" />
-    </configuration>
-    <configuration name="Run test 'PanoramaSamplerSamplingTest': Panorama_Gem" type="TestUnitRunConfigurationType" factoryName="Test::Unit/Shoulda/Minitest" temporary="true">
-      <predefined_log_file id="RUBY_TESTUNIT" enabled="true" />
-      <module name="Panorama_Gem" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="RUBY_ARGS" VALUE="-e $stdout.sync=true;$stderr.sync=true;load($0=ARGV.shift) -Itest" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="WORK DIR" VALUE="$MODULE_DIR$" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="SHOULD_USE_SDK" VALUE="false" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="ALTERN_SDK_NAME" VALUE="" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="myPassParentEnvs" VALUE="true" />
-      <envs>
-        <env name="RAILS_ENV" value="test" />
-        <env name="JRUBY_OPTS" value="-X+O" />
-      </envs>
-      <EXTENSION ID="BundlerRunConfigurationExtension" bundleExecEnabled="false" />
-      <EXTENSION ID="JRubyRunConfigurationExtension" NailgunExecEnabled="false" />
-      <EXTENSION ID="RubyCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" track_test_folders="true" runner="rcov">
-        <COVERAGE_PATTERN ENABLED="true">
-          <PATTERN REGEXPS="/.rvm/" INCLUDED="false" />
-        </COVERAGE_PATTERN>
-      </EXTENSION>
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TESTS_FOLDER_PATH" VALUE="" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_SCRIPT_PATH" VALUE="$MODULE_DIR$/test/models/panorama_sampler_sampling_test.rb" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_FILE_MASK" VALUE="" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_METHOD_NAME" VALUE="" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_TEST_TYPE" VALUE="TEST_SCRIPT" />
@@ -928,19 +908,19 @@
       <item index="11" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_DB-Locks_/_current: Panorama_Gem" />
       <item index="12" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_exadata_with_xhr:_true: Panorama_Gem" />
       <item index="13" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'SpecAdditionsTest': Panorama_Gem" />
-      <item index="14" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'PanoramaSamplerSamplingTest': Panorama_Gem" />
-      <item index="15" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'WorkerThreadTest': Panorama_Gem" />
-      <item index="16" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'EnvControllerTest': Panorama_Gem" />
-      <item index="17" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_check_connection: Panorama_Gem" />
-      <item index="18" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'PanoramaSamplerStructureCheckTest': Panorama_Gem" />
+      <item index="14" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'WorkerThreadTest': Panorama_Gem" />
+      <item index="15" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'EnvControllerTest': Panorama_Gem" />
+      <item index="16" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_check_connection: Panorama_Gem" />
+      <item index="17" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'PanoramaSamplerStructureCheckTest': Panorama_Gem" />
+      <item index="18" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'DbaHistoryControllerTest': Panorama_Gem" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'PanoramaSamplerStructureCheckTest': Panorama_Gem" />
-        <item index="1" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'WorkerThreadTest': Panorama_Gem" />
-        <item index="2" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_check_connection: Panorama_Gem" />
-        <item index="3" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'EnvControllerTest': Panorama_Gem" />
-        <item index="4" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'PanoramaSamplerSamplingTest': Panorama_Gem" />
+        <item index="0" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'DbaHistoryControllerTest': Panorama_Gem" />
+        <item index="1" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'PanoramaSamplerStructureCheckTest': Panorama_Gem" />
+        <item index="2" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'WorkerThreadTest': Panorama_Gem" />
+        <item index="3" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_check_connection: Panorama_Gem" />
+        <item index="4" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'EnvControllerTest': Panorama_Gem" />
       </list>
     </recent_temporary>
   </component>
@@ -1076,14 +1056,7 @@
       <workItem from="1501324374884" duration="36701000" />
       <workItem from="1501517122968" duration="2000" />
       <workItem from="1501517780235" duration="4387000" />
-      <workItem from="1501572939326" duration="88180000" />
-    </task>
-    <task id="LOCAL-00954" summary="No class variable for wait stats. May differ between versions.">
-      <created>1500810328382</created>
-      <option name="number" value="00954" />
-      <option name="presentableId" value="LOCAL-00954" />
-      <option name="project" value="LOCAL" />
-      <updated>1500810328382</updated>
+      <workItem from="1501572939326" duration="90075000" />
     </task>
     <task id="LOCAL-00955" summary="Reduce session pool to target size, not only minus one">
       <created>1500811537671</created>
@@ -1421,10 +1394,23 @@
       <option name="project" value="LOCAL" />
       <updated>1502038602563</updated>
     </task>
-    <option name="localTasksCounter" value="1003" />
+    <task id="LOCAL-01003" summary="Fix WHERE-clause">
+      <created>1502043387121</created>
+      <option name="number" value="01003" />
+      <option name="presentableId" value="LOCAL-01003" />
+      <option name="project" value="LOCAL" />
+      <updated>1502043387122</updated>
+    </task>
+    <option name="localTasksCounter" value="1004" />
     <servers />
   </component>
   <component name="TestHistory">
+    <history-entry file="Run_test_'DbaHistoryControllerTest'__Panorama_Gem - 2017.08.06 at 20h 18m 26s.xml">
+      <configuration name="Run test 'DbaHistoryControllerTest': Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
+    </history-entry>
+    <history-entry file="Run_test_'DbaHistoryControllerTest'__Panorama_Gem - 2017.08.06 at 20h 22m 47s.xml">
+      <configuration name="Run test 'DbaHistoryControllerTest': Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
+    </history-entry>
     <history-entry file="Run_test_'PanoramaSamplerStructureCheckTest'__Panorama_Gem - 2017.08.03 at 10h 24m 12s.xml">
       <configuration name="Run test 'PanoramaSamplerStructureCheckTest': Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
     </history-entry>
@@ -1446,18 +1432,12 @@
     <history-entry file="Run_test_'WorkerThreadTest'__Panorama_Gem - 2017.08.02 at 16h 33m 07s.xml">
       <configuration name="Run test 'WorkerThreadTest': Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
     </history-entry>
-    <history-entry file="test_check_connection__Panorama_Gem - 2017.08.02 at 16h 14m 06s.xml">
-      <configuration name="test_check_connection: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="test_check_connection__Panorama_Gem - 2017.08.02 at 16h 31m 42s.xml">
-      <configuration name="test_check_connection: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
-    </history-entry>
     <history-entry file="test_check_connection__Panorama_Gem - 2017.08.02 at 16h 32m 23s.xml">
       <configuration name="test_check_connection: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1710464000" />
+    <option name="totallyTimeSpent" value="1712359000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1472,18 +1452,18 @@
     <frame x="56" y="23" width="1624" height="1027" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.28508216" sideWeight="0.840625" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.28508216" sideWeight="0.8396226" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.10204082" sideWeight="0.49529782" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4419152" sideWeight="0.4762136" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31330472" sideWeight="0.2250316" order="9" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.43133047" sideWeight="0.3261694" order="9" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26645768" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2488226" sideWeight="0.6800165" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24785408" sideWeight="0.67383057" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2532189" sideWeight="0.49028212" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.43171114" sideWeight="0.7262593" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.28508216" sideWeight="0.159375" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.43133047" sideWeight="0.7225032" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.28508216" sideWeight="0.16037735" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18882175" sideWeight="0.4952343" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27812895" sideWeight="0.3464837" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31330472" sideWeight="0.7749684" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31330472" sideWeight="0.7749684" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32967034" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -1620,14 +1600,19 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="ruby-line">
           <url>file://$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb</url>
-          <line>99</line>
+          <line>105</line>
           <option name="timeStamp" value="775" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="ruby-line">
+          <url>file://$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb</url>
+          <line>36</line>
+          <option name="timeStamp" value="852" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="852" />
+      <option name="time" value="853" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="IrbRunConfigurationType">
@@ -1657,30 +1642,6 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/controllers/help_controller.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-29">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/io_controller.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="292">
-          <caret line="22" column="9" lean-forward="false" selection-start-line="22" selection-start-column="4" selection-end-line="22" selection-end-column="9" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/table_dependencies_controller.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/usage_controller.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="292">
@@ -1755,14 +1716,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/pack_license.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="207">
-          <caret line="37" column="133" lean-forward="false" selection-start-line="37" selection-start-column="78" selection-end-line="37" selection-end-column="133" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/dba/_list_redologs_historic.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="315">
@@ -1819,14 +1772,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="484">
-          <caret line="60" column="0" lean-forward="true" selection-start-line="59" selection-start-column="0" selection-end-line="60" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/panorama_sampler/_edit_config.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="851">
@@ -1858,17 +1803,6 @@
         <state relative-caret-position="285">
           <caret line="20" column="0" lean-forward="false" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="26" column="0" lean-forward="false" selection-start-line="26" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
-          <folding>
-            <element signature="n#t(:env_list_management_pack_license_caption, :default=&gt;'Usage of Oracle management packs by Panorama')#0;n#!!top" expanded="false" />
-            <element signature="n#t(:env_list_management_pack_license_dp_hint, :default=&gt;&quot;Panorama will access Oracle's 'Diagnostic Pack' if you choose this option\\nbut doesn't access Oracle's 'Tuning Pack'.\\nAvailable only for Enterprise Edition, not for Standard Edition&quot;)#0;n#!!top" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1915,22 +1849,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/helpers/env_helper.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="9" lean-forward="false" selection-start-line="15" selection-start-column="9" selection-end-line="15" selection-end-column="9" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/helpers/application_helper.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="152">
-          <caret line="103" column="15" lean-forward="false" selection-start-line="103" selection-start-column="6" selection-end-line="103" selection-end-column="21" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/env/_start_page.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="510">
@@ -1939,14 +1857,6 @@
             <element signature="e#27#80#1#ruby" expanded="false" />
             <element signature="e#109#141#1#ruby" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/env_controller.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="206">
-          <caret line="137" column="56" lean-forward="false" selection-start-line="137" selection-start-column="56" selection-end-line="137" selection-end-column="56" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1998,14 +1908,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/test_helper.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="173">
-          <caret line="87" column="0" lean-forward="false" selection-start-line="87" selection-start-column="0" selection-end-line="87" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/models/pamorama_sampler_structure_check_test.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="270">
@@ -2043,10 +1945,10 @@
         <state relative-caret-position="457">
           <caret line="51" column="0" lean-forward="false" selection-start-line="51" selection-start-column="0" selection-end-line="51" selection-end-column="0" />
           <folding>
-            <element signature="e#968#1063#0#ruby" expanded="true" />
-            <element signature="e#1500#1613#0#ruby" expanded="true" />
-            <element signature="e#1811#1922#0#ruby" expanded="true" />
-            <element signature="e#2946#3052#0#ruby" expanded="true" />
+            <element signature="e#968#1063#0#ruby" expanded="false" />
+            <element signature="e#1500#1613#0#ruby" expanded="false" />
+            <element signature="e#1811#1922#0#ruby" expanded="false" />
+            <element signature="e#2946#3052#0#ruby" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -2075,10 +1977,90 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/test/controllers/dba_pga_controller_test.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/test_helper.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="74" column="18" lean-forward="false" selection-start-line="74" selection-start-column="18" selection-end-line="74" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/helpers/application_helper.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="302">
+          <caret line="531" column="6" lean-forward="false" selection-start-line="531" selection-start-column="6" selection-end-line="531" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="242">
+          <caret line="47" column="74" lean-forward="false" selection-start-line="47" selection-start-column="74" selection-end-line="47" selection-end-column="74" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/models/pack_license.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="13" column="39" lean-forward="false" selection-start-line="13" selection-start-column="39" selection-end-line="13" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/helpers/env_helper.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="160">
+          <caret line="29" column="92" lean-forward="false" selection-start-line="29" selection-start-column="62" selection-end-line="29" selection-end-column="92" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/env_controller.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="145">
+          <caret line="462" column="153" lean-forward="false" selection-start-line="462" selection-start-column="143" selection-end-line="462" selection-end-column="153" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/dba_history_controller.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="182">
           <caret line="274" column="36" lean-forward="false" selection-start-line="274" selection-start-column="36" selection-end-line="274" selection-end-column="36" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/test_helpers/capybara_test_helper.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="203">
+          <caret line="62" column="54" lean-forward="true" selection-start-line="62" selection-start-column="54" selection-end-line="62" selection-end-column="54" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="112">
+          <caret line="48" column="7" lean-forward="true" selection-start-line="48" selection-start-column="7" selection-end-line="48" selection-end-column="7" />
           <folding />
         </state>
       </provider>
