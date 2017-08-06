@@ -39,10 +39,10 @@ class PanoramaSamplerSampling
 
     ## DBA_Hist_Log
     PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_Log (Snap_ID, DBID, Instance_Number, Group#, Thread#, Sequence#, Bytes, Members, Archived, Status, First_Change#, First_Time,
-                                                                                          Con_DBID #{", Con_ID" if PanoramaConnection.db_version >= '12.1'}
+                                                                                          Con_DBID, Con_ID
                                     ) SELECT ?, ?, ?,
                                              Group#, Thread#, Sequence#, Bytes, Members, Archived, Status, First_Change#, First_Time,
-                                             ? #{", Con_ID" if PanoramaConnection.db_version >= '12.1'}
+                                             ? #{PanoramaConnection.db_version >= '12.1' ? ", s.Con_ID" : ", 0"}
                                       FROM   v$Log
                                     ",  @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, con_dbid]
 
@@ -62,9 +62,11 @@ class PanoramaSamplerSampling
                                                                                               #{"IO_INTERCONNECT_BYTES_TOTAL, IO_INTERCONNECT_BYTES_DELTA," if PanoramaConnection.db_version >= '12.1'}
                                                                                               PHYSICAL_READ_REQUESTS_TOTAL, PHYSICAL_READ_REQUESTS_DELTA, PHYSICAL_READ_BYTES_TOTAL, PHYSICAL_READ_BYTES_DELTA,
                                                                                               PHYSICAL_WRITE_REQUESTS_TOTAL, PHYSICAL_WRITE_REQUESTS_DELTA, PHYSICAL_WRITE_BYTES_TOTAL, PHYSICAL_WRITE_BYTES_DELTA,
-                                                                                              OPTIMIZED_PHYSICAL_READS_TOTAL, OPTIMIZED_PHYSICAL_READS_DELTA, CELL_UNCOMPRESSED_BYTES_TOTAL, CELL_UNCOMPRESSED_BYTES_DELTA, IO_OFFLOAD_RETURN_BYTES_TOTAL, IO_OFFLOAD_RETURN_BYTES_DELTA,
+                                                                                              #{"OPTIMIZED_PHYSICAL_READS_TOTAL, OPTIMIZED_PHYSICAL_READS_DELTA, "  if PanoramaConnection.db_version >= '12.1'}
+                                                                                              #{"CELL_UNCOMPRESSED_BYTES_TOTAL, CELL_UNCOMPRESSED_BYTES_DELTA, "    if PanoramaConnection.db_version >= '12.1'}
+                                                                                              #{"IO_OFFLOAD_RETURN_BYTES_TOTAL, IO_OFFLOAD_RETURN_BYTES_DELTA, "    if PanoramaConnection.db_version >= '12.2'}
                                                                                               BIND_DATA,
-                                                                                              Con_DBID #{", Con_ID" if PanoramaConnection.db_version >= '12.1'}
+                                                                                              Con_DBID, Con_ID
                                     ) SELECT  /*+ INDEX(p, PANORAMA_SQLSTAT_PK) PUSH_PRED(ms) OPT_PARAM('_push_join_predicate' 'TRUE')  */
                                               ?, ?, ?, s.SQL_ID, s.Plan_Hash_Value, s.OPTIMIZER_COST, s.OPTIMIZER_MODE, s.OPTIMIZER_ENV_HASH_VALUE, s.SHARABLE_MEM,
                                               s.LOADED_VERSIONS, s.VERSION_COUNT, s.MODULE, s.ACTION, s.SQL_PROFILE, s.FORCE_MATCHING_SIGNATURE, s.PARSING_SCHEMA_ID, s.PARSING_SCHEMA_NAME, s.PARSING_USER_ID,
