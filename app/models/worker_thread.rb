@@ -65,7 +65,7 @@ class WorkerThread
     @sampler_config[:last_error_message] = e.message
     PanoramaConnection.release_connection                                       # Free DB connection in Pool
     PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
-    raise e
+    raise e if ENV['RAILS_ENV'] != 'test'                                       # don't log this exception in test.log
   end
 
   @@active_snashots = {}
