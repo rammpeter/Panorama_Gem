@@ -325,7 +325,6 @@ class DbaHistoryController < ApplicationController
                  ) snap
           JOIN   DBA_Hist_SQLStat s   ON s.DBID=snap.DBID AND s.Instance_Number=snap.Instance_Number AND s.Snap_ID BETWEEN snap.Start_Snap_ID AND snap.End_Snap_ID
           JOIN   DBA_Hist_Snapshot ss ON ss.DBID=s.DBID   AND ss.Instance_Number=s.Instance_Number   AND ss.Snap_ID = s.Snap_ID -- konkreter Snapshot des SQL
-          WHERE  1=1
           #{where_string_innen}
           GROUP BY s.DBID, s.SQL_ID, s.Parsing_Schema_Name #{', s.Instance_Number' if groupby_instance}
            ) s

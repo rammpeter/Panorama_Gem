@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/worker_thread.rb" afterPath="$PROJECT_DIR$/app/models/worker_thread.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -123,11 +123,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="dba_history_controller.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="dba_history_controller.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/controllers/dba_history_controller.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="589">
-              <caret line="327" column="20" lean-forward="false" selection-start-line="327" selection-start-column="20" selection-end-line="327" selection-end-column="20" />
+            <state relative-caret-position="434">
+              <caret line="327" column="0" lean-forward="false" selection-start-line="327" selection-start-column="0" selection-end-line="327" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -203,11 +203,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="worker_thread.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="worker_thread.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/models/worker_thread.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="413">
-              <caret line="104" column="66" lean-forward="false" selection-start-line="104" selection-start-column="66" selection-end-line="104" selection-end-column="66" />
+            <state relative-caret-position="353">
+              <caret line="100" column="100" lean-forward="true" selection-start-line="100" selection-start-column="100" selection-end-line="100" selection-end-column="100" />
               <folding />
             </state>
           </provider>
@@ -305,10 +305,10 @@
         <option value="$PROJECT_DIR$/test/models/pamorama_sampler_structure_check_test.rb" />
         <option value="$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
-        <option value="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_history/_list_sql_history_snapshots.html.erb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" />
         <option value="$PROJECT_DIR$/app/models/worker_thread.rb" />
+        <option value="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
       </list>
     </option>
   </component>
@@ -1076,14 +1076,7 @@
       <workItem from="1501324374884" duration="36701000" />
       <workItem from="1501517122968" duration="2000" />
       <workItem from="1501517780235" duration="4387000" />
-      <workItem from="1501572939326" duration="87471000" />
-    </task>
-    <task id="LOCAL-00952" summary="set_dbid in begin_request">
-      <created>1500579169302</created>
-      <option name="number" value="00952" />
-      <option name="presentableId" value="LOCAL-00952" />
-      <option name="project" value="LOCAL" />
-      <updated>1500579169303</updated>
+      <workItem from="1501572939326" duration="87834000" />
     </task>
     <task id="LOCAL-00953" summary="Reduce class variables due to threadsafe">
       <created>1500580229172</created>
@@ -1421,7 +1414,14 @@
       <option name="project" value="LOCAL" />
       <updated>1501851461662</updated>
     </task>
-    <option name="localTasksCounter" value="1001" />
+    <task id="LOCAL-01001" summary="Test reduce fake exception output">
+      <created>1502038225664</created>
+      <option name="number" value="01001" />
+      <option name="presentableId" value="LOCAL-01001" />
+      <option name="project" value="LOCAL" />
+      <updated>1502038225664</updated>
+    </task>
+    <option name="localTasksCounter" value="1002" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1457,7 +1457,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1709755000" />
+    <option name="totallyTimeSpent" value="1710118000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1513,7 +1513,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Speedup dragnet selection" />
     <MESSAGE value="Test sampler_controller" />
     <MESSAGE value="Test sampler_controller, CDB-name in active session history" />
     <MESSAGE value="Test sampler_controller, CDB-name in active session history and session" />
@@ -1538,7 +1537,8 @@
     <MESSAGE value="DAB_Hist_SQLStat covered" />
     <MESSAGE value="DAB_Hist_SQLStat fixed" />
     <MESSAGE value="DAB_Hist_SQLStat grouped from v$SQL" />
-    <option name="LAST_COMMIT_MESSAGE" value="DAB_Hist_SQLStat grouped from v$SQL" />
+    <MESSAGE value="Test reduce fake exception output" />
+    <option name="LAST_COMMIT_MESSAGE" value="Test reduce fake exception output" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2038,14 +2038,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/dba_history_controller.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="589">
-          <caret line="327" column="20" lean-forward="false" selection-start-line="327" selection-start-column="20" selection-end-line="327" selection-end-column="20" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/dba_history/_list_sql_history_snapshots.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="457">
@@ -2077,8 +2069,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/models/worker_thread.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="413">
-          <caret line="104" column="66" lean-forward="false" selection-start-line="104" selection-start-column="66" selection-end-line="104" selection-end-column="66" />
+        <state relative-caret-position="353">
+          <caret line="100" column="100" lean-forward="true" selection-start-line="100" selection-start-column="100" selection-end-line="100" selection-end-column="100" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/dba_history_controller.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="434">
+          <caret line="327" column="0" lean-forward="false" selection-start-line="327" selection-start-column="0" selection-end-line="327" selection-end-column="0" />
           <folding />
         </state>
       </provider>
