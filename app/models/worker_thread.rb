@@ -95,14 +95,14 @@ class WorkerThread
     begin
       @@active_snashots.delete(@sampler_config[:id])                              # Remove semaphore
       Rails.logger.error("Error #{e.message} during WorkerThread.create_snapshot_internal for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]})")
-      log_exception_backtrace(e, 20)
+      log_exception_backtrace(e, 20) if ENV['RAILS_ENV'] != 'test'
       PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Error #{e.message} during WorkerThread.create_snapshot_internal")
       PanoramaConnection.release_connection                                       # Free DB connection in Pool
       PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
       raise e
     rescue Exception => x
       Rails.logger.error "WorkerThread.create_snapshot_internal: Exception #{x.message} in exception handler"
-      log_exception_backtrace(x, 40)
+      log_exception_backtrace(x, 40) if ENV['RAILS_ENV'] != 'test'
       raise x
     end
   end
