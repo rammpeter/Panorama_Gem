@@ -102,7 +102,7 @@ class WorkerThread
       raise e
     rescue Exception => x
       Rails.logger.error "WorkerThread.create_snapshot_internal: Exception #{x.message} in exception handler"
-      log_exception_backtrace(x, 40) if ENV['RAILS_ENV'] != 'test'
+      log_exception_backtrace(x, 40)
       raise x
     end
   end

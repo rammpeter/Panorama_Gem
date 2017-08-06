@@ -42,7 +42,7 @@ class PanoramaSamplerSampling
                                                                                           Con_DBID #{", Con_ID" if PanoramaConnection.db_version >= '12.1'}
                                     ) SELECT ?, ?, ?,
                                              Group#, Thread#, Sequence#, Bytes, Members, Archived, Status, First_Change#, First_Time,
-                                             ? #{PanoramaConnection.db_version >= '12.1' ? ", Con_ID" : ", 0"}
+                                             ? #{", Con_ID" if PanoramaConnection.db_version >= '12.1'}
                                       FROM   v$Log
                                     ",  @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, con_dbid]
 
