@@ -126,8 +126,8 @@
       <file leaf-file-name="dba_history_controller.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/controllers/dba_history_controller.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="434">
-              <caret line="327" column="0" lean-forward="false" selection-start-line="327" selection-start-column="0" selection-end-line="327" selection-end-column="0" />
+            <state relative-caret-position="182">
+              <caret line="274" column="36" lean-forward="false" selection-start-line="274" selection-start-column="36" selection-end-line="274" selection-end-column="36" />
               <folding />
             </state>
           </provider>
@@ -217,7 +217,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>raise</find>
       <find>db_vers</find>
       <find>Thread.current[:panorama_connection_connect_info]get</find>
       <find>panorama_sampler_schema</find>
@@ -243,10 +242,11 @@
       <find>is already used</find>
       <find>add_config_entry</find>
       <find>config_entry_exists?</find>
-      <find>GROUP BY s.DBID, s.SQL_ID, s.Parsing_Schema_Name</find>
       <find>parse_calls</find>
       <find>Last_Load_Time</find>
       <find>DBMS_SQLTUNE.SQLTEXT_TO_SIGNATURE</find>
+      <find>GROUP BY s.DBID, s.SQL_ID, s.Parsing_Schema_Name</find>
+      <find>where_string_aussen</find>
     </findStrings>
     <replaceStrings>
       <replace>dLast_Load_Time</replace>
@@ -1076,14 +1076,7 @@
       <workItem from="1501324374884" duration="36701000" />
       <workItem from="1501517122968" duration="2000" />
       <workItem from="1501517780235" duration="4387000" />
-      <workItem from="1501572939326" duration="87834000" />
-    </task>
-    <task id="LOCAL-00953" summary="Reduce class variables due to threadsafe">
-      <created>1500580229172</created>
-      <option name="number" value="00953" />
-      <option name="presentableId" value="LOCAL-00953" />
-      <option name="project" value="LOCAL" />
-      <updated>1500580229173</updated>
+      <workItem from="1501572939326" duration="88180000" />
     </task>
     <task id="LOCAL-00954" summary="No class variable for wait stats. May differ between versions.">
       <created>1500810328382</created>
@@ -1421,7 +1414,14 @@
       <option name="project" value="LOCAL" />
       <updated>1502038225664</updated>
     </task>
-    <option name="localTasksCounter" value="1002" />
+    <task id="LOCAL-01002" summary="Fix WHERE-clause">
+      <created>1502038602563</created>
+      <option name="number" value="01002" />
+      <option name="presentableId" value="LOCAL-01002" />
+      <option name="project" value="LOCAL" />
+      <updated>1502038602563</updated>
+    </task>
+    <option name="localTasksCounter" value="1003" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1457,7 +1457,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1710118000" />
+    <option name="totallyTimeSpent" value="1710464000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1513,7 +1513,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Test sampler_controller" />
     <MESSAGE value="Test sampler_controller, CDB-name in active session history" />
     <MESSAGE value="Test sampler_controller, CDB-name in active session history and session" />
     <MESSAGE value="Test expanded" />
@@ -1538,7 +1537,8 @@
     <MESSAGE value="DAB_Hist_SQLStat fixed" />
     <MESSAGE value="DAB_Hist_SQLStat grouped from v$SQL" />
     <MESSAGE value="Test reduce fake exception output" />
-    <option name="LAST_COMMIT_MESSAGE" value="Test reduce fake exception output" />
+    <MESSAGE value="Fix WHERE-clause" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix WHERE-clause" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2077,8 +2077,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/dba_history_controller.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="434">
-          <caret line="327" column="0" lean-forward="false" selection-start-line="327" selection-start-column="0" selection-end-line="327" selection-end-column="0" />
+        <state relative-caret-position="182">
+          <caret line="274" column="36" lean-forward="false" selection-start-line="274" selection-start-column="36" selection-end-line="274" selection-end-column="36" />
           <folding />
         </state>
       </provider>

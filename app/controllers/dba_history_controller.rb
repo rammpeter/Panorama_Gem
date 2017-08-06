@@ -272,7 +272,7 @@ class DbaHistoryController < ApplicationController
       where_values << sql_id
     end
     if filter
-      where_string_aussen << " AND UPPER(SQL_TEXT) LIKE UPPER('%'||?||'%')"
+      where_string_aussen << " WHERE UPPER(SQL_TEXT) LIKE UPPER('%'||?||'%')"
       where_values << filter
     end
     where_values << maxResultCount if maxResultCount
