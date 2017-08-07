@@ -41,17 +41,109 @@ class PanoramaSamplerStructureCheck
 =end
   @@tables = [
       {
-          table_name: 'Panorama_Snapshot',
+          table_name: 'Panorama_Active_Sess_History',
           columns: [
               { column_name:  'Snap_ID',                        column_type:  'NUMBER',     not_null: true },
               { column_name:  'DBID',                           column_type:  'NUMBER',     not_null: true },
               { column_name:  'Instance_Number',                column_type:  'NUMBER',     not_null: true  },
-              { column_name:  'Begin_Interval_Time',            column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
-              { column_name:  'End_Interval_Time',              column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
+              { column_name:  'SAMPLE_ID',                      column_type:  'NUMBER',     not_null: true },
+              { column_name:  'SAMPLE_TIME',                    column_type:  'TIMESTAMP',  not_null: true, precision: 3 },
+              { column_name:  'SESSION_ID',                     column_type:  'NUMBER',     not_null: true },
+              { column_name:  'SESSION_SERIAL#',                column_type:  'NUMBER' },
+              { column_name:  'SESSION_TYPE',                   column_type:  'VARCHAR2',  precision: 10 },
+              { column_name:  'FLAGS',                          column_type:  'NUMBER' },
+              { column_name:  'USER_ID',                        column_type:  'NUMBER' },
+              { column_name:  'SQL_ID',                         column_type:  'VARCHAR2', precision: 13 },
+              { column_name:  'IS_SQLID_CURRENT',               column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'SQL_CHILD_NUMBER',               column_type:  'NUMBER' },
+              { column_name:  'SQL_OPCODE',                     column_type:  'NUMBER' },
+              { column_name:  'SQL_OPNAME',                     column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'FORCE_MATCHING_SIGNATURE',       column_type:  'NUMBER' },
+              { column_name:  'TOP_LEVEL_SQL_ID',               column_type:  'VARCHAR2', precision: 13 },
+              { column_name:  'TOP_LEVEL_SQL_OPCODE',           column_type:  'NUMBER' },
+              { column_name:  'SQL_PLAN_HASH_VALUE',            column_type:  'NUMBER' },
+              { column_name:  'SQL_PLAN_LINE_ID',               column_type:  'NUMBER' },
+              { column_name:  'SQL_PLAN_OPERATION',             column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'SQL_PLAN_OPTIONS',               column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'SQL_EXEC_ID',                    column_type:  'NUMBER' },
+              { column_name:  'SQL_EXEC_START',                 column_type:  'DATE' },
+              { column_name:  'PLSQL_ENTRY_OBJECT_ID',          column_type:  'NUMBER' },
+              { column_name:  'PLSQL_ENTRY_SUBPROGRAM_ID',      column_type:  'NUMBER' },
+              { column_name:  'PLSQL_OBJECT_ID',                column_type:  'NUMBER' },
+              { column_name:  'PLSQL_SUBPROGRAM_ID',            column_type:  'NUMBER' },
+              { column_name:  'QC_INSTANCE_ID',                 column_type:  'NUMBER' },
+              { column_name:  'QC_SESSION_ID',                  column_type:  'NUMBER' },
+              { column_name:  'QC_SESSION_SERIAL#',             column_type:  'NUMBER' },
+              { column_name:  'PX_FLAGS',                       column_type:  'NUMBER' },
+              { column_name:  'EVENT',                          column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'EVENT_ID',                       column_type:  'NUMBER' },
+              { column_name:  'SEQ#',                           column_type:  'NUMBER' },
+              { column_name:  'P1TEXT',                         column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'P1',                             column_type:  'NUMBER' },
+              { column_name:  'P2TEXT',                         column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'P2',                             column_type:  'NUMBER' },
+              { column_name:  'P3TEXT',                         column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'P3',                             column_type:  'NUMBER' },
+              { column_name:  'WAIT_CLASS',                     column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'WAIT_CLASS_ID',                  column_type:  'NUMBER' },
+              { column_name:  'WAIT_TIME',                      column_type:  'NUMBER' },
+              { column_name:  'SESSION_STATE',                  column_type:  'VARCHAR2', precision: 7 },
+              { column_name:  'TIME_WAITED',                    column_type:  'NUMBER' },
+              { column_name:  'BLOCKING_SESSION_STATUS',        column_type:  'VARCHAR2', precision: 11 },
+              { column_name:  'BLOCKING_SESSION',               column_type:  'NUMBER' },
+              { column_name:  'BLOCKING_SESSION_SERIAL#',       column_type:  'NUMBER' },
+              { column_name:  'BLOCKING_INST_ID',               column_type:  'NUMBER' },
+              { column_name:  'BLOCKING_HANGCHAIN_INFO',        column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'CURRENT_OBJ#',                   column_type:  'NUMBER' },
+              { column_name:  'CURRENT_FILE#',                  column_type:  'NUMBER' },
+              { column_name:  'CURRENT_BLOCK#',                 column_type:  'NUMBER' },
+              { column_name:  'CURRENT_ROW#',                   column_type:  'NUMBER' },
+              { column_name:  'TOP_LEVEL_CALL#',                column_type:  'NUMBER' },
+              { column_name:  'TOP_LEVEL_CALL_NAME',            column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'CONSUMER_GROUP_ID',              column_type:  'NUMBER' },
+              { column_name:  'XID',                            column_type:  'RAW', precision: 8 },
+              { column_name:  'REMOTE_INSTANCE#',               column_type:  'NUMBER' },
+              { column_name:  'TIME_MODEL',                     column_type:  'NUMBER' },
+              { column_name:  'IN_CONNECTION_MGMT',             column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'IN_PARSE',                       column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'IN_HARD_PARSE',                  column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'IN_SQL_EXECUTION',               column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'IN_PLSQL_EXECUTION',             column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'IN_PLSQL_RPC',                   column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'IN_PLSQL_COMPILATION',           column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'IN_JAVA_EXECUTION',              column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'IN_BIND',                        column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'IN_CURSOR_CLOSE',                column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'IN_SEQUENCE_LOAD',               column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'CAPTURE_OVERHEAD',               column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'REPLAY_OVERHEAD',                column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'IS_CAPTURED',                    column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'IS_REPLAYED',                    column_type:  'VARCHAR2', precision: 1 },
+              { column_name:  'SERVICE_HASH',                   column_type:  'NUMBER' },
+              { column_name:  'PROGRAM',                        column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'MODULE',                         column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'ACTION',                         column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'CLIENT_ID',                      column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'MACHINE',                        column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'PORT',                           column_type:  'NUMBER' },
+              { column_name:  'ECID',                           column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'DBREPLAY_FILE_ID',               column_type:  'NUMBER' },
+              { column_name:  'DBREPLAY_CALL_COUNTER',          column_type:  'NUMBER' },
+              { column_name:  'TM_DELTA_TIME',                  column_type:  'NUMBER' },
+              { column_name:  'TM_DELTA_CPU_TIME',              column_type:  'NUMBER' },
+              { column_name:  'TM_DELTA_DB_TIME',               column_type:  'NUMBER' },
+              { column_name:  'DELTA_TIME',                     column_type:  'NUMBER' },
+              { column_name:  'DELTA_READ_IO_REQUESTS',         column_type:  'NUMBER' },
+              { column_name:  'DELTA_WRITE_IO_REQUESTS',        column_type:  'NUMBER' },
+              { column_name:  'DELTA_READ_IO_BYTES',            column_type:  'NUMBER' },
+              { column_name:  'DELTA_WRITE_IO_BYTES',           column_type:  'NUMBER' },
+              { column_name:  'DELTA_INTERCONNECT_IO_BYTES',    column_type:  'NUMBER' },
+              { column_name:  'PGA_ALLOCATED',                  column_type:  'NUMBER' },
+              { column_name:  'TEMP_SPACE_ALLOCATED',           column_type:  'NUMBER' },
+              { column_name:  'Con_DBID',                       column_type:  'NUMBER' },
               { column_name:  'Con_ID',                         column_type:  'NUMBER' },
           ],
-          primary_key: ['DBID', 'Snap_ID', 'Instance_Number'],
-          indexes: [ {index_name: 'Panorama_Snapshot_MaxID_IX', columns: ['DBID', 'Instance_Number'] } ]
+          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'SAMPLE_ID', 'SESSION_ID', 'Con_DBID'],
       },
       {
           table_name: 'Panorama_Log',
@@ -72,6 +164,19 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Con_ID',                         column_type:  'NUMBER' },
           ],
           primary_key: ['DBID', 'Snap_ID', 'Instance_Number', 'Group#', 'Thread#', 'Sequence#', 'Con_DBID']
+      },
+      {
+          table_name: 'Panorama_Snapshot',
+          columns: [
+              { column_name:  'Snap_ID',                        column_type:  'NUMBER',     not_null: true },
+              { column_name:  'DBID',                           column_type:  'NUMBER',     not_null: true },
+              { column_name:  'Instance_Number',                column_type:  'NUMBER',     not_null: true  },
+              { column_name:  'Begin_Interval_Time',            column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
+              { column_name:  'End_Interval_Time',              column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
+              { column_name:  'Con_ID',                         column_type:  'NUMBER' },
+          ],
+          primary_key: ['DBID', 'Snap_ID', 'Instance_Number'],
+          indexes: [ {index_name: 'Panorama_Snapshot_MaxID_IX', columns: ['DBID', 'Instance_Number'] } ]
       },
       {
           table_name: 'Panorama_SQLStat',
@@ -181,7 +286,7 @@ Generator-Selects:
 ######### Structure
 SELECT '              { column_name:  '''||Column_Name||''',     column_type:   '''||Data_Type||''''||
        CASE WHEN Nullable = 'N' THEN ', not_null: true' END ||
-       CASE WHEN (Data_Type != 'NUMBER' OR Data_Length != 22) THEN ', precision: '||Data_Length  END ||
+       CASE WHEN (Data_Type != 'NUMBER' OR Data_Length != 22) AND Data_Type NOT IN ('DATE') THEN ', precision: '||Data_Length  END ||
        ' },'
 FROM   DBA_Tab_Columns
 WHERE  Table_Name = 'DBA_HIST_SQLSTAT'
@@ -288,6 +393,14 @@ ORDER BY Column_ID
       log(sql)
       PanoramaConnection.sql_execute(sql)
       log "Table #{table[:table_name]} created"
+    end
+
+    ############ Check table privileges
+    exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM ALL_TAB_PRIVS WHERE Table_Schema = ? AND Table_Name = ? AND Privilege = 'SELECT'  AND Grantee = 'PUBLIC'", @sampler_config[:owner].upcase, table[:table_name].upcase]
+    if exists == 0                                                            # Column does not exists
+      sql = "GRANT SELECT ON #{@sampler_config[:owner]}.#{table[:table_name]} TO PUBLIC"
+      log(sql)
+      PanoramaConnection.sql_execute(sql)
     end
 
     ############ Check columns

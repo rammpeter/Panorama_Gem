@@ -94,6 +94,8 @@ module ApplicationHelper
     @buffered_current_database = nil                                            # lokalen Cache verwerfen
     current_database[:query_timeout] = current_database[:query_timeout].to_i if !current_database.nil?
     write_to_client_info_store(:current_database, current_database)
+
+    set_connection_info_for_request(current_database)                           # Pin connection info for following request
   end
 
   def get_current_database

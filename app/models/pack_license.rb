@@ -1,7 +1,7 @@
 class PackLicense
 
   def initialize(license_type)
-    license_type = :none unless [:diagnostics_pack, :diagnostics_and_tuning_pack, :none].include?(license_type)   # Assume at login startup that no management pack is licensed until user has acknowledged the selection
+    license_type = :none unless [:diagnostics_pack, :diagnostics_and_tuning_pack, :panorama_sampler, :none].include?(license_type)   # Assume at login startup that no management pack is licensed until user has acknowledged the selection
     @license_type = license_type
 
   end
@@ -34,8 +34,12 @@ class PackLicense
     case @license_type
       when :diagnostics_pack then
         check_for_tuning_pack_usage(sql)
+      when :panorama_sampler then
+        raise "config[:panorama_sampler_schema] must be defined if config[:management_pack_license] == :panorama_sampler" if PanoramaConnection.get_config[:panorama_sampler_schema].nil?
+        sql = PanoramaSamplerStructureCheck.transform_sql_for_sampler(sql)
+        check_for_diagnostics_pack_usage(sql)
+        check_for_tuning_pack_usage(sql)
       when :none then
-        sql = PanoramaSamplerStructureCheck.transform_sql_for_sampler(sql) if PanoramaConnection.get_config[:panorama_sampler_schema]
         check_for_diagnostics_pack_usage(sql)
         check_for_tuning_pack_usage(sql)
     end

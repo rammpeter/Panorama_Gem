@@ -305,7 +305,6 @@ class EnvController < ApplicationController
     end
 
     set_current_database(current_database)                                      # Persist current database setting in cache
-    set_connection_info_for_request(current_database)                           # Pin connection info for following request
     current_database = nil                                                      # Diese Variable nicht mehr verwenden ab jetzt, statt dessen get_current_database verwenden
 
 
@@ -364,14 +363,28 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
 
     # Detect existence of Panorama_Sampler
     panorama_sampler_data = sql_select_all "SELECT Owner FROM All_Tables WHERE Table_Name = 'PANORAMA_SNAPSHOT'"
-    if panorama_sampler_data.count == 1
-      set_current_database(get_current_database.merge( { :panorama_sampler_schema => panorama_sampler_data[0].owner}))
-      add_statusbar_message "Panorama-Sampler history exists in schema '#{panorama_sampler_data[0].owner}'.\nPanorama will access Panorama-Sampler's data instead of AWR if you don't have Enterprise Edition with Diagnostics Pack licensed"
+    if panorama_sampler_data.count > 0
+      panorama_sampler_owner = nil                                                # not yet known
+
+      if panorama_sampler_data.count == 1
+        panorama_sampler_owner = panorama_sampler_data[0].owner
+      end
+
+      if panorama_sampler_data.count > 1
+        panorama_sampler_owner = PanoramaSamplerConfig.sampler_schema_for_dbid(get_dbid)
+        if panorama_sampler_owner.nil?
+          add_statusbar_message "Multiple schemas (#{panorama_sampler_data.count}) contain Panorama-Sampler data!\nTo access Panorama-Sampler history please ensure that only one schema contains Panorama-Sampler's table like 'PANORAMA_SNAPSHOT'\nor use the Panorama-Server that does sampling itself."
+        end
+      end
+
+      if panorama_sampler_owner
+        set_current_database(get_current_database.merge( { :panorama_sampler_schema => panorama_sampler_owner}))
+        add_statusbar_message "Panorama-Sampler history exists in schema '#{panorama_sampler_owner}'.\nPanorama will access Panorama-Sampler's data instead of AWR if you don't have Enterprise Edition with Diagnostics Pack licensed"
+      end
     end
 
-    if panorama_sampler_data.count > 1
-      add_statusbar_message "Multiple schemas (#{panorama_sampler_data.count}) contain Panorama-Sampler data!\nTo access Panorama-Sampler history please ensure that only one schema contains Panorama-Sampler's table like 'PANORAMA_SNAPSHOT'"
-    end
+
+
 
     # Set management pack according to 'control_management_pack_access' only after DB selects,
     # Until now get_current_database[:management_pack_license] is nil for first time login, so no management pack license is violated until now

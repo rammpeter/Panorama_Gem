@@ -24,6 +24,13 @@ class PanoramaSamplerConfig
     end
   end
 
+  def self.sampler_schema_for_dbid(dbid)
+    get_cloned_config_array.each do |entry|
+      return entry[:owner] if entry[:dbid] == dbid
+    end
+    nil
+  end
+
   def self.get_max_id
     retval = 0
     @@config_access_mutex.synchronize do
