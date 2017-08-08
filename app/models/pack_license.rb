@@ -6,12 +6,17 @@ class PackLicense
 
   end
 
-  def self.diagnostics_pack_licensed?(license_type)
-    !license_type.nil? && (license_type.to_sym == :diagnostics_pack || license_type.to_sym == :diagnostics_and_tuning_pack)
+  def self.diagnostics_pack_licensed?
+    license_type = PanoramaConnection.get_config[:management_pack_license].to_sym
+    license_type == :diagnostics_pack || license_type == :diagnostics_and_tuning_pack
   end
 
-  def self.tuning_pack_licensed?(license_type)
-    license_type.to_sym == :diagnostics_and_tuning_pack
+  def self.tuning_pack_licensed?
+    PanoramaConnection.get_config[:management_pack_license].to_sym == :diagnostics_and_tuning_pack
+  end
+
+  def self.panorama_sampler_active?
+    PanoramaConnection.get_config[:management_pack_license].to_sym == :panorama_sampler
   end
 
   # Filter SQL string or array for unlicensed Table Access
@@ -142,6 +147,7 @@ class PackLicense
         'DBMS_SQLTUNE.SELECT_WORKLOAD_REPOSITORY',
         'DBMS_SQLTUNE.UNPACK_STGTAB_SQLSET',
         'DBMS_SQLTUNE.UPDATE_SQLSET',
+        'GV$SQL_MONITOR',
         'V$SQL_MONITOR',
         'V_$SQL_MONITOR',
         'V$SQL_PLAN_MONITOR',

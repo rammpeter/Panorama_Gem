@@ -142,7 +142,7 @@ class EnvController < ApplicationController
                                                CROSS JOIN  v$Database d
                                                LEFT OUTER JOIN v$Instance i ON i.Instance_Number = gi.Instance_Number
                                                #{
-      if PackLicense.diagnostics_pack_licensed?(get_current_database[:management_pack_license])
+      if PackLicense.diagnostics_pack_licensed?
         "LEFT OUTER JOIN (SELECT DBID, MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM DBA_Hist_WR_Control GROUP BY DBID) ws ON ws.DBID = d.DBID"
       else
         "CROSS JOIN (SELECT NULL Snap_Interval_Minutes, NULL Snap_Retention_Days FROM DUAL) ws"
@@ -473,7 +473,7 @@ public
 
   def list_dbids
     set_new_dbid = true                                                         # Set DBID of current connected database if not choosen different one from history
-    if PackLicense.diagnostics_pack_licensed?(get_current_database[:management_pack_license])    # Check for historic DBIDs requires access on diagnostics pack
+    if PackLicense.diagnostics_pack_licensed? || PackLicense.panorama_sampler_active?  # Check for historic DBIDs requires access on diagnostics pack
 
       @dbids = sql_select_all ["SELECT s.DBID, MIN(Begin_Interval_Time) Min_TS, MAX(End_Interval_Time) Max_TS,
                                          (SELECT MIN(DB_Name) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) DB_Name,

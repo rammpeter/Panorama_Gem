@@ -813,12 +813,15 @@ Solution: Execute as user 'SYS':
             ", @instance, @sid, @serialno, @instance, @sid, @serialno]
 
     begin       # Test, ob Daten für Session in gv$SQL_Monitor existieren, Problem: Kann Nutzung der Option Tuning Pack aktivieren, wenn diese nicht per Init-Parameter 'control_management_pack_access' deaktiviert ist
-      @sql_monitor_exists = sql_select_one ["SELECT 1
-                                             FROM   gv$SQL_Monitor
-                                             WHERE  Inst_ID         = ?
-                                             AND    SID             = ?
-                                             AND    Session_Serial# = ?
-                                            ", @instance, @sid, @serialno]
+      @sql_monitor_exists = false
+      if PackLicense.tuning_pack_licensed?(get_current_database[:management_pack_license])
+        @sql_monitor_exists = sql_select_one ["SELECT 1
+                                               FROM   gv$SQL_Monitor
+                                               WHERE  Inst_ID         = ?
+                                               AND    SID             = ?
+                                               AND    Session_Serial# = ?
+                                              ", @instance, @sid, @serialno]
+      end
     rescue
       @sql_monitor_exists = false
     end
