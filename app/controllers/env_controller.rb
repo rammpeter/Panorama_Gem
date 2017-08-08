@@ -142,7 +142,7 @@ class EnvController < ApplicationController
                                                CROSS JOIN  v$Database d
                                                LEFT OUTER JOIN v$Instance i ON i.Instance_Number = gi.Instance_Number
                                                #{
-      if PackLicense.diagnostics_pack_licensed?
+      if PackLicense.diagnostics_pack_licensed?  || PackLicense.panorama_sampler_active?
         "LEFT OUTER JOIN (SELECT DBID, MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM DBA_Hist_WR_Control GROUP BY DBID) ws ON ws.DBID = d.DBID"
       else
         "CROSS JOIN (SELECT NULL Snap_Interval_Minutes, NULL Snap_Retention_Days FROM DUAL) ws"

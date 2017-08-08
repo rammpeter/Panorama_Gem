@@ -168,6 +168,19 @@ class PanoramaSamplerSampling
                                       WHERE p.SQL_ID IS NULL
                                     ",  PanoramaConnection.dbid, con_dbid, PanoramaConnection.dbid, con_dbid]
 
+
+    ## DBA_Hist_WR_Control
+    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_WR_Control (DBID, SNAP_INTERVAL, RETENTION, Con_ID)
+                                      SELECT ?, NUMTODSINTERVAL(?, 'MINUTE'), NUMTODSINTERVAL(?, 'DAY')
+                                              #{PanoramaConnection.db_version >= '12.1' ? ", Con_ID" : ", 0"}
+                                      FROM   v$Instance
+                                      WHERE  NOT EXISTS (SELECT 1 FROM #{@sampler_config[:owner]}.Panorama_WR_Control WHERE DBID = ?)
+                                    ",  PanoramaConnection.dbid, @sampler_config[:snapshot_cycle], @sampler_config[:snapshot_retention], PanoramaConnection.dbid]   # Create record if not exists
+    PanoramaConnection.sql_execute ["UPDATE #{@sampler_config[:owner]}.Panorama_WR_Control SET SNAP_INTERVAL = NUMTODSINTERVAL(?, 'MINUTE'),
+                                                                                               RETENTION = NUMTODSINTERVAL(?, 'DAY'),
+                                                                                               Con_ID = (SELECT  #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"} FROM   v$Instance)
+                                     WHERE DBID = ?
+                                    ",  @sampler_config[:snapshot_cycle], @sampler_config[:snapshot_retention], PanoramaConnection.dbid]
   end
 
   def do_housekeeping_internal

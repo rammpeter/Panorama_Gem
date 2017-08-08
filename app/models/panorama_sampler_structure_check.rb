@@ -299,6 +299,17 @@ class PanoramaSamplerStructureCheck
           ],
           primary_key: ['DBID', 'SQL_ID', 'Con_DBID'],
       },
+      {
+          table_name: 'Panorama_WR_Control',
+          columns: [
+              { column_name:  'DBID',                           column_type:   'NUMBER',                        not_null: true },
+              { column_name:  'SNAP_INTERVAL',                  column_type:   'INTERVAL DAY(5) TO SECOND(1)',  not_null: true},
+              { column_name:  'RETENTION',                      column_type:   'INTERVAL DAY(5) TO SECOND(1)',  not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
+          primary_key: ['DBID'],
+      },
+
+
   ]
 
 =begin
@@ -426,9 +437,10 @@ ORDER BY Column_ID
     end
 
     ############ Check columns
+    table_columns = PanoramaConnection.sql_select_all ["SELECT Column_Name FROM All_Tab_Columns WHERE Owner = ? AND Table_Name = ? ORDER BY Column_ID", @sampler_config[:owner].upcase, table[:table_name].upcase]
+
     table[:columns].each do |column|
-      exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Tab_Columns WHERE Owner = ? AND Table_Name = ? AND Column_Name = ?", @sampler_config[:owner].upcase, table[:table_name].upcase, column[:column_name].upcase]
-      if exists == 0                                                            # Column does not exists
+      if !table_columns.include?({ 'column_name' => column[:column_name].upcase})  # Column does not exists in Array
         sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} ADD ("
         sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]}"
         sql << ")"
@@ -436,7 +448,6 @@ ORDER BY Column_ID
         PanoramaConnection.sql_execute(sql)
       end
     end
-
 
     ############ Check Primary Key
     if table[:primary_key]
