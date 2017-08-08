@@ -6,14 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/env_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/env_controller.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/helpers/application_helper.rb" afterPath="$PROJECT_DIR$/app/helpers/application_helper.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/helpers/env_helper.rb" afterPath="$PROJECT_DIR$/app/helpers/env_helper.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/pack_license.rb" afterPath="$PROJECT_DIR$/app/models/pack_license.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/panorama_sampler_config.rb" afterPath="$PROJECT_DIR$/app/models/panorama_sampler_config.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" afterPath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" afterPath="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/locales/de.yml" afterPath="$PROJECT_DIR$/config/locales/de.yml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_area.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_area.html.erb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -172,11 +165,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="application_helper.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="application_helper.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/helpers/application_helper.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="221">
               <caret line="473" column="36" lean-forward="false" selection-start-line="473" selection-start-column="30" selection-end-line="473" selection-end-column="36" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="_list_sql_area.html.erb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_area.html.erb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="645">
+              <caret line="43" column="0" lean-forward="false" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -227,7 +230,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/helpers/dragnet/sqls_wrong_execution_plan_helper.rb" />
         <option value="$PROJECT_DIR$/test/dummy/log/development.log" />
         <option value="$PROJECT_DIR$/test/models/panorama_sampler_config_test.rb" />
         <option value="$PROJECT_DIR$/app/helpers/active_session_history_helper.rb" />
@@ -278,6 +280,7 @@
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_config.rb" />
         <option value="$PROJECT_DIR$/app/controllers/env_controller.rb" />
+        <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_area.html.erb" />
       </list>
     </option>
   </component>
@@ -404,6 +407,13 @@
               <item name="app" type="462c0819:PsiDirectoryNode" />
               <item name="views" type="462c0819:PsiDirectoryNode" />
               <item name="application" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
+              <item name="app" type="462c0819:PsiDirectoryNode" />
+              <item name="views" type="462c0819:PsiDirectoryNode" />
+              <item name="dba_sga" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
@@ -1060,14 +1070,7 @@
       <workItem from="1501517122968" duration="2000" />
       <workItem from="1501517780235" duration="4387000" />
       <workItem from="1501572939326" duration="94240000" />
-      <workItem from="1502104819808" duration="9344000" />
-    </task>
-    <task id="LOCAL-00961" summary="Next step Panorama-Sampler">
-      <created>1500928889525</created>
-      <option name="number" value="00961" />
-      <option name="presentableId" value="LOCAL-00961" />
-      <option name="project" value="LOCAL" />
-      <updated>1500928889525</updated>
+      <workItem from="1502104819808" duration="9900000" />
     </task>
     <task id="LOCAL-00962" summary="Next step Panorama-Sampler">
       <created>1500974793436</created>
@@ -1405,7 +1408,14 @@
       <option name="project" value="LOCAL" />
       <updated>1502049523576</updated>
     </task>
-    <option name="localTasksCounter" value="1010" />
+    <task id="LOCAL-01010" summary="New management pack state :panorama_sampler">
+      <created>1502125004305</created>
+      <option name="number" value="01010" />
+      <option name="presentableId" value="LOCAL-01010" />
+      <option name="project" value="LOCAL" />
+      <updated>1502125004306</updated>
+    </task>
+    <option name="localTasksCounter" value="1011" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1441,7 +1451,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1725868000" />
+    <option name="totallyTimeSpent" value="1726424000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1454,6 +1464,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="218" y="54" width="2342" height="1348" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19826087" sideWeight="0.45442536" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.10204082" sideWeight="0.49529782" order="7" side_tool="false" content_ui="tabs" />
@@ -1465,7 +1476,7 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19826087" sideWeight="0.54557467" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18882175" sideWeight="0.4952343" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27812895" sideWeight="0.3464837" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.39584997" sideWeight="0.75869566" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.39584997" sideWeight="0.75869566" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32967034" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4419152" sideWeight="0.4762136" order="11" side_tool="false" content_ui="tabs" />
@@ -1496,7 +1507,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="WorkerThread for PanoramaSampler, Test fixed" />
     <MESSAGE value="Remove Connection from pool after Error" />
     <MESSAGE value="Robust Test" />
     <MESSAGE value="PopupMessageException new" />
@@ -1521,7 +1531,8 @@
     <MESSAGE value="Suppress exception trace in test.log" />
     <MESSAGE value="Allow none management pack in test" />
     <MESSAGE value="Fix error in sampling log (Con_ID)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix error in sampling log (Con_ID)" />
+    <MESSAGE value="New management pack state :panorama_sampler" />
+    <option name="LAST_COMMIT_MESSAGE" value="New management pack state :panorama_sampler" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1667,13 +1678,6 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/views/dba/_list_redologs_historic.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="21" column="121" lean-forward="true" selection-start-line="21" selection-start-column="55" selection-end-line="21" selection-end-column="121" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/dba/_show_redologs_historic.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="30">
@@ -1819,6 +1823,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="371">
           <caret line="197" column="82" lean-forward="false" selection-start-line="197" selection-start-column="67" selection-end-line="197" selection-end-column="82" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1957,11 +1962,11 @@
         <state relative-caret-position="427">
           <caret line="39" column="155" lean-forward="false" selection-start-line="39" selection-start-column="155" selection-end-line="39" selection-end-column="155" />
           <folding>
-            <element signature="n#t(:env_list_management_pack_license_legend, :default=&gt;'Licensing of management packs for your current database')#0;n#!!top" expanded="true" />
-            <element signature="e#801#1041#0#ruby" expanded="true" />
-            <element signature="e#2783#3195#0#ruby" expanded="true" />
-            <element signature="n#t(:env_list_management_pack_license_none_hint, :default=&gt;&quot;Panorama will not access Oracle's 'Diagnostic Pack' or 'Tuning Pack' if you choose this option.&quot;)#0;n#!!top" expanded="true" />
-            <element signature="e#4377#4472#0#ruby" expanded="true" />
+            <element signature="n#t(:env_list_management_pack_license_legend, :default=&gt;'Licensing of management packs for your current database')#0;n#!!top" expanded="false" />
+            <element signature="e#801#1041#0#ruby" expanded="false" />
+            <element signature="e#2783#3195#0#ruby" expanded="false" />
+            <element signature="n#t(:env_list_management_pack_license_none_hint, :default=&gt;&quot;Panorama will not access Oracle's 'Diagnostic Pack' or 'Tuning Pack' if you choose this option.&quot;)#0;n#!!top" expanded="false" />
+            <element signature="e#4377#4472#0#ruby" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -2058,6 +2063,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="221">
           <caret line="473" column="36" lean-forward="false" selection-start-line="473" selection-start-column="30" selection-end-line="473" selection-end-column="36" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_area.html.erb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="645">
+          <caret line="43" column="0" lean-forward="false" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
           <folding />
         </state>
       </provider>
