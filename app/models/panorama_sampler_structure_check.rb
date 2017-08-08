@@ -456,14 +456,14 @@ ORDER BY Column_ID
 
       if exists_pk > 0
         ########### Check columns of primary key
-        table[:primary_key].each_index do |index|
-          column = table[:primary_key][index]
-          exists = PanoramaConnection.sql_select_one [" SELECT COUNT(*)
+        existing_pk_columns = PanoramaConnection.sql_select_all ["SELECT cc.Column_Name, cc.Position
                                                       FROM All_Cons_Columns cc
                                                       JOIN All_Constraints c ON c.Owner = cc.Owner AND c.Table_Name = cc.Table_Name AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'P'
-                                                      WHERE cc.Owner = ? AND cc.Table_Name = ? AND cc.Column_Name = ? AND cc.Position = ?
-                                                    ", @sampler_config[:owner].upcase, table[:table_name].upcase, column.upcase, index+1]
-          if exists == 0
+                                                      WHERE cc.Owner = ? AND cc.Table_Name = ?
+                                                    ", @sampler_config[:owner].upcase, table[:table_name].upcase]
+        table[:primary_key].each_index do |index|
+          column = table[:primary_key][index]
+          if !existing_pk_columns.include?({'column_name' => column.upcase, 'position' => index+1}) || existing_pk_columns.count != table[:primary_key].count
             sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} DROP CONSTRAINT #{pk_name}"
             log(sql)
             PanoramaConnection.sql_execute(sql)
@@ -507,11 +507,12 @@ ORDER BY Column_ID
     exists_index = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Indexes WHERE Owner = ? AND Table_Name = ? AND Index_Name = ?", @sampler_config[:owner].upcase, table_name.upcase, index_name.upcase]
     if exists_index > 0
       ########### Check columns of index
+      existing_index_columns = PanoramaConnection.sql_select_all ["SELECT Column_Name, Column_Position FROM All_Ind_Columns WHERE Table_Owner = ? AND Table_Name = ? AND Index_Name = ?
+                                                                  ", @sampler_config[:owner].upcase, table_name.upcase, index_name.upcase]
+
       columns.each_index do |i|
         column = columns[i]
-        exists = PanoramaConnection.sql_select_one [" SELECT COUNT(*) FROM All_Ind_Columns WHERE Table_Owner = ? AND Table_Name = ? AND Index_Name = ? AND Column_Name = ? AND Column_Position = ?
-                                                    ", @sampler_config[:owner].upcase, table_name.upcase, index_name.upcase, column.upcase, i+1]
-        if exists == 0
+        if !existing_index_columns.include?({'column_name' => column.upcase, 'column_position' => i+1}) || existing_index_columns.count != columns.count
           sql = "DROP INDEX #{@sampler_config[:owner]}.#{index_name}"
           log(sql)
           PanoramaConnection.sql_execute(sql)
