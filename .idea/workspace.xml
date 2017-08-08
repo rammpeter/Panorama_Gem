@@ -4,9 +4,9 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
+    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="Single test for dba">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_area.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_area.html.erb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/controllers/dba_controller_test.rb" afterPath="$PROJECT_DIR$/test/controllers/dba_controller_test.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -175,11 +175,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_list_sql_area.html.erb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="_list_sql_area.html.erb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_area.html.erb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="645">
               <caret line="43" column="0" lean-forward="false" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="dba_controller_test.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/test/controllers/dba_controller_test.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="632">
+              <caret line="104" column="0" lean-forward="false" selection-start-line="104" selection-start-column="0" selection-end-line="104" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -230,7 +240,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/test/dummy/log/development.log" />
         <option value="$PROJECT_DIR$/test/models/panorama_sampler_config_test.rb" />
         <option value="$PROJECT_DIR$/app/helpers/active_session_history_helper.rb" />
         <option value="$PROJECT_DIR$/app/views/dba/_list_sessions.html.erb" />
@@ -281,6 +290,7 @@
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_config.rb" />
         <option value="$PROJECT_DIR$/app/controllers/env_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_area.html.erb" />
+        <option value="$PROJECT_DIR$/test/controllers/dba_controller_test.rb" />
       </list>
     </option>
   </component>
@@ -1070,14 +1080,7 @@
       <workItem from="1501517122968" duration="2000" />
       <workItem from="1501517780235" duration="4387000" />
       <workItem from="1501572939326" duration="94240000" />
-      <workItem from="1502104819808" duration="9900000" />
-    </task>
-    <task id="LOCAL-00962" summary="Next step Panorama-Sampler">
-      <created>1500974793436</created>
-      <option name="number" value="00962" />
-      <option name="presentableId" value="LOCAL-00962" />
-      <option name="project" value="LOCAL" />
-      <updated>1500974793436</updated>
+      <workItem from="1502104819808" duration="10767000" />
     </task>
     <task id="LOCAL-00963" summary="Next step Panorama-Sampler, Popup at first call now">
       <created>1500975822261</created>
@@ -1415,7 +1418,14 @@
       <option name="project" value="LOCAL" />
       <updated>1502125004306</updated>
     </task>
-    <option name="localTasksCounter" value="1011" />
+    <task id="LOCAL-01011" summary="Suppress warning not initialized">
+      <created>1502172938226</created>
+      <option name="number" value="01011" />
+      <option name="presentableId" value="LOCAL-01011" />
+      <option name="project" value="LOCAL" />
+      <updated>1502172938226</updated>
+    </task>
+    <option name="localTasksCounter" value="1012" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1451,7 +1461,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1726424000" />
+    <option name="totallyTimeSpent" value="1727291000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1466,20 +1476,20 @@
     <frame x="218" y="54" width="2342" height="1348" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19826087" sideWeight="0.45442536" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19826087" sideWeight="0.4542857" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.10204082" sideWeight="0.49529782" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.39584997" sideWeight="0.24130435" order="9" side_tool="true" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.44134077" sideWeight="0.47434783" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.44134077" sideWeight="0.52565217" order="9" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26645768" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.45251396" sideWeight="0.6673913" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2532189" sideWeight="0.49028212" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.43133047" sideWeight="0.71112514" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19826087" sideWeight="0.54557467" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19826087" sideWeight="0.54571426" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18882175" sideWeight="0.4952343" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27812895" sideWeight="0.3464837" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.39584997" sideWeight="0.75869566" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39584997" sideWeight="0.75869566" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32967034" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4419152" sideWeight="0.4762136" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
@@ -1507,8 +1517,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Remove Connection from pool after Error" />
-    <MESSAGE value="Robust Test" />
     <MESSAGE value="PopupMessageException new" />
     <MESSAGE value="Panorama-Sampler tablename exchange" />
     <MESSAGE value="Panorama_Hist_Log created" />
@@ -1532,7 +1540,9 @@
     <MESSAGE value="Allow none management pack in test" />
     <MESSAGE value="Fix error in sampling log (Con_ID)" />
     <MESSAGE value="New management pack state :panorama_sampler" />
-    <option name="LAST_COMMIT_MESSAGE" value="New management pack state :panorama_sampler" />
+    <MESSAGE value="Suppress warning not initialized" />
+    <MESSAGE value="Single test for dba" />
+    <option name="LAST_COMMIT_MESSAGE" value="Single test for dba" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1678,13 +1688,6 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/views/dba/_show_redologs_historic.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="58" lean-forward="true" selection-start-line="2" selection-start-column="58" selection-end-line="2" selection-end-column="58" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/controllers/dragnet_controller_test.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="165">
@@ -1845,6 +1848,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="225">
           <caret line="74" column="18" lean-forward="false" selection-start-line="74" selection-start-column="18" selection-end-line="74" selection-end-column="18" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2071,6 +2075,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="645">
           <caret line="43" column="0" lean-forward="false" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/controllers/dba_controller_test.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="632">
+          <caret line="104" column="0" lean-forward="false" selection-start-line="104" selection-start-column="0" selection-end-line="104" selection-end-column="0" />
           <folding />
         </state>
       </provider>

@@ -43,18 +43,15 @@ class DbaControllerTest < ActionController::TestCase
     assert_response :success
   end
 
-  test "dba with xhr: true"       do
-
-
+  test "list_sessions with xhr: true" do
     post :list_sessions, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
 
     post :list_sessions, :params => {:format=>:html, :onlyActive=>1, :showOnlyUser=>1, :instance=>1, :filter=>'hugo', :object_owner=>'SYS', :object_name=>'HUGO', :update_area=>:hugo }
     assert_response :success
+  end
 
-    get :list_waits_per_event, :params => {:format=>:html, :event=>"db file sequential read", :instance=>"1", :update_area=>"hugo" }
-    assert_response :success
-
+  test "show_session_detail with xhr: true" do
     get  :show_session_detail, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
     assert_response :success
 
@@ -81,23 +78,28 @@ class DbaControllerTest < ActionController::TestCase
 
     post :show_session_details_waits_object, :params => {:format=>:html, :event=>"db file sequential read", :update_area=>:hugo }
     assert_response :success
+  end
 
-    post  :show_explain_plan, :params => {:format=>:html, :statement => "SELECT SYSDATE FROM DUAL", :update_area=>:hugo }
-    assert_response :success
-
+  test "show_session_waits with xhr: true" do
     get  :show_session_waits, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
     #test "show_application" do get  :show_application, :applexec_id => "0";  assert_response :success; end
     #test "show_segment_statistics" do get  :show_segment_statistics;  assert_response :success; end
-
-    get  :segment_stat, :params => {:format=>:html, :update_area=>:hugo }
-    assert_response :success
-
-#    get :oracle_parameter, :format=>:html
-#    assert_response :success
   end
 
+    test "list_waits_per_event with xhr: true" do
+    get :list_waits_per_event, :params => {:format=>:html, :event=>"db file sequential read", :instance=>"1", :update_area=>"hugo" }
+    assert_response :success
+  end
 
+  test "show_explain_plan with xhr: true"       do
+    post  :show_explain_plan, :params => {:format=>:html, :statement => "SELECT SYSDATE FROM DUAL", :update_area=>:hugo }
+    assert_response :success
+  end
 
+  test "segment_stat with xhr: true"       do
+    get  :segment_stat, :params => {:format=>:html, :update_area=>:hugo }
+    assert_response :success
+  end
 
 end
