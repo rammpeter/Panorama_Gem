@@ -235,7 +235,7 @@ class DbaSgaController < ApplicationController
   end
 
   def sql_monitor_session_count(instance, sql_id, plan_hash_value = nil)
-    if get_db_version >= "11.1"
+    if get_db_version >= "11.1" && PackLicense.tuning_pack_licensed?
       where_string = ''
       where_values = []
 

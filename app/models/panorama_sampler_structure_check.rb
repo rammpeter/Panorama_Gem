@@ -146,6 +146,28 @@ class PanoramaSamplerStructureCheck
           primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'SAMPLE_ID', 'SESSION_ID', 'Con_DBID'],
       },
       {
+          table_name: 'Panorama_DB_Cache_Advice',
+          columns: [
+              { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
+              { column_name:  'BPID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'BUFFERS_FOR_ESTIMATE',           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'NAME',                           column_type:   'VARCHAR2',  precision: 20 },
+              { column_name:  'BLOCK_SIZE',                     column_type:   'NUMBER' },
+              { column_name:  'ADVICE_STATUS',                  column_type:   'VARCHAR2',  precision: 3 },
+              { column_name:  'SIZE_FOR_ESTIMATE',              column_type:   'NUMBER' },
+              { column_name:  'SIZE_FACTOR',                    column_type:   'NUMBER' },
+              { column_name:  'PHYSICAL_READS',                 column_type:   'NUMBER' },
+              { column_name:  'BASE_PHYSICAL_READS',            column_type:   'NUMBER' },
+              { column_name:  'ACTUAL_PHYSICAL_READS',          column_type:   'NUMBER' },
+              { column_name:  'ESTD_PHYSICAL_READ_TIME',        column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER' },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },
+          ],
+          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'BPID', 'BUFFERS_FOR_ESTIMATE', 'CON_DBID'],
+      },
+      {
           table_name: 'Panorama_Log',
           columns: [
               { column_name:  'Snap_ID',                        column_type:  'NUMBER',     not_null: true },
