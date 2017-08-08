@@ -16,7 +16,7 @@
                                :disabled => PanoramaConnection.edition != :enterprise
               )
           %>
-          <%= label_tag(:management_pack_license_diagnostics_pack, t(:env_list_management_pack_license_dp_caption, :default=>'Diagnostic Pack is licensed'))%>
+          <%= label_tag(:management_pack_license_diagnostics_pack, t(:env_list_management_pack_license_dp_caption, :default=>'Use licensed Diagnostics Pack'))%>
         </div>
 
         <div class="float_left" title="<%= t(:env_list_management_pack_license_tp_hint, :default=>"Panorama will access Oracle's 'Diagnostic Pack' and 'Tuning Pack' if you choose this option.\nAvailable only for Enterprise Edition, not for Standard Edition") %>">
@@ -25,7 +25,7 @@
                                :disabled => PanoramaConnection.edition != :enterprise
               )
           %>
-          <%= label_tag(:management_pack_license_diagnostics_and_tuning_pack, t(:env_list_management_pack_license_tp_caption, :default=>'Diagnostic Pack and Tuning Pack are licensed'))%>
+          <%= label_tag(:management_pack_license_diagnostics_and_tuning_pack, t(:env_list_management_pack_license_tp_caption, :default=>'Use licensed Diagnostics Pack and Tuning Pack'))%>
         </div>
 
     <% end %>

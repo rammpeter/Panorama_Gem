@@ -1364,7 +1364,7 @@
   env_licensing_header:                                     Lizensierung
   env_licensing_panorama_statement:                         Panorama steht frei zur Nutzung unter den Bedingungen der
   env_list_management_pack_license_caption:                 Nutzung der Oracle Management Packs durch Panorama
-  env_list_management_pack_license_dp_caption:              Diagnostic Pack ist lizensiert
+  env_list_management_pack_license_dp_caption:              Nutze das lizensierte Diagnostics Pack
   env_list_management_pack_license_dp_hint: |-
     Panorama wird Oracle's 'Diagnostic Pack' nutzen wenn diese Option gewählt ist
     aber nicht Oracle's 'Tuning Pack' nutzen.
@@ -1381,7 +1381,7 @@
     "Panorama-Sampler" wird verfügbar sein für Standard- und Enterprise-Edition
 
   env_list_management_pack_license_setting:                 Der Init-Parameter der aktuellen Datenbank
-  env_list_management_pack_license_tp_caption:              Diagnostic Pack und Tuning Pack sind lizensiert
+  env_list_management_pack_license_tp_caption:              Nutze die lizensierten Diagnostics Pack und Tuning Pack
   env_list_management_pack_license_tp_hint: |-
     Panorama wird Oracle's 'Diagnostic Pack' und 'Tuning Pack' nutzen wenn diese Option gewählt ist.
     Nur verfügbar für Enterprise Edition, nicht für Standard Edition

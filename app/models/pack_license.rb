@@ -128,7 +128,20 @@ class PackLicense
     # Packages Tables etc. belonging to tuning pack
     test_array = [
         'DBMS_ADVISOR',                                                         # DIAGNOSTIC PACK if advisor_name => ADDM OR task_name LIKE ADDM% TUNING PACK - where advisor_name => SQL Tuning Advisor
-        'DBMS_SQLTUNE',
+        'DBMS_SQLTUNE.ADD_SQLSET_REFERENCE',                                    # Only this methods are part of Tuning Pack
+        'DBMS_SQLTUNE.CAPTURE_CURSOR_CACHE_SQLSETS',
+        'DBMS_SQLTUNE.CREATE_SQLSET',
+        'DBMS_SQLTUNE.CREATE_STGTAB_SQLSET',
+        'DBMS_SQLTUNE.DELETE_SQLSET',
+        'DBMS_SQLTUNE.DROP_SQLSET',
+        'DBMS_SQLTUNE.LOAD_SQLSET',
+        'DBMS_SQLTUNE.PACK_STGTAB_SQLSET',
+        'DBMS_SQLTUNE.REMOVE_SQLSET_REFERENCE',
+        'DBMS_SQLTUNE.SELECT_CURSOR_CACHE',
+        'DBMS_SQLTUNE.SELECT_SQLSET',
+        'DBMS_SQLTUNE.SELECT_WORKLOAD_REPOSITORY',
+        'DBMS_SQLTUNE.UNPACK_STGTAB_SQLSET',
+        'DBMS_SQLTUNE.UPDATE_SQLSET',
         'V$SQL_MONITOR',
         'V_$SQL_MONITOR',
         'V$SQL_PLAN_MONITOR',
