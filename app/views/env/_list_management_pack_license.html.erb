@@ -84,13 +84,14 @@
 
       column_options =
           [
-              {:caption=> 'S',                :data=>proc{|rec| selected(rec)},                 :title=> 'The selected schema is used for Panorama-Sampler workload data'},
-              {:caption=> 'Schema',           :data=>proc{|rec| link_select(rec)},              :title=> 'Schema of your database containing Panorama-Sampler workload data'},
-              {:caption=> 'First snapshot',   :data=>proc{|rec| localeDateTime(rec.min_time)},  :title=> 'Start of first snapshot recorded in this Panorama-Sampler schema'},
-              {:caption=> 'Last snapshot',    :data=>proc{|rec| localeDateTime(rec.max_time)},   :title=> 'End of last snapshot recorded in this Panorama-Sampler schema'},
-          #   {:caption=> 'Instances',        :data=>proc{|rec| fn(rec.instances)},             :title=> 'Number of RAC-instances', :align=>:right},
-          #   {:caption=> 'AWR interval',     :data=>proc{|rec| fn(rec.snap_interval_minutes)}, :title=> 'AWR snapshot interval in minutes', :align=>:right},
-          #   {:caption=> 'AWR retention',    :data=>proc{|rec| fn(rec.snap_retention_days)},   :title=> 'AWR retention time for snapshots in days', :align=>:right},
+              {:caption=> 'S',                  :data=>proc{|rec| selected(rec)},                     :title=> 'The selected schema is used for Panorama-Sampler workload data'},
+              {:caption=> 'Schema',             :data=>proc{|rec| link_select(rec)},                  :title=> 'Schema of your database containing Panorama-Sampler workload data'},
+              {:caption=> 'Last DBID',          :data=>proc{|rec| rec.last_dbid},                     :title=> 'DBID of last recorded snapshot in this schema'},
+              {:caption=> 'First snapshot',     :data=>proc{|rec| localeDateTime(rec[:min_time])},    :title=> 'Start of first snapshot recorded in this Panorama-Sampler schema for this DBID'},
+              {:caption=> 'Last snapshot',      :data=>proc{|rec| localeDateTime(rec[:max_time])},    :title=> 'End of last snapshot recorded in this Panorama-Sampler schema for this DBID'},
+              {:caption=> 'Instances',          :data=>proc{|rec| fn(rec.instances)},                 :title=> 'Number of RAC-instances for the last recorded DBID', :align=>:right},
+              {:caption=> 'Snapshot interval',  :data=>proc{|rec| fn(rec[:snap_interval])},           :title=> "Panorama-Sampler's snapshot interval in minutes",                   :align=>:right},
+              {:caption=> 'Snapshot retention', :data=>proc{|rec| fn(rec[:snap_retention])},          :title=> "Panorama-Sampler's snapshot retention time for snapshots in days",  :align=>:right},
           ]
 
     %>

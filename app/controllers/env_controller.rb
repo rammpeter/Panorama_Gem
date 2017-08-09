@@ -506,9 +506,16 @@ public
     if PackLicense.panorama_sampler_active?
       @panorama_sampler_data = PanoramaSamplerStructureCheck.panorama_sampler_schemas
       @panorama_sampler_data.each do |ps|
-        ps_val = sql_select_first_row "SELECT MIN(Begin_Interval_Time) Min_Time, MAX(End_Interval_Time) Max_Time FROM #{ps.owner}.PANORAMA_SNAPSHOT"
-        ps[:min_time] = ps_val.min_time
-        ps[:max_time] = ps_val.max_time
+        last_dbid = sql_select_one "SELECT MAX(DBID) KEEP (DENSE_RANK LAST ORDER BY End_Interval_Time) FROM #{ps.owner}.PANORAMA_SNAPSHOT"
+        instances = sql_select_one ["SELECT COUNT(DISTINCT Instance_Number) FROM #{ps.owner}.PANORAMA_SNAPSHOT WHERE DBID = ?", last_dbid]
+        ps_val = sql_select_first_row ["SELECT MIN(Begin_Interval_Time) Min_Time, MAX(End_Interval_Time) Max_Time FROM #{ps.owner}.PANORAMA_SNAPSHOT WHERE DBID = ?", last_dbid]
+        ps_wr = sql_select_first_row ["SELECT MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM #{ps.owner}.PANORAMA_WR_Control WHERE DBID = ?", get_dbid]
+        ps[:last_dbid]      = last_dbid
+        ps[:instances]      = instances
+        ps[:min_time]       = ps_val.min_time if ps_val
+        ps[:max_time]       = ps_val.max_time if ps_val
+        ps[:snap_interval]  = ps_wr.snap_interval_minutes if ps_wr
+        ps[:snap_retention] = ps_wr.snap_retention_days   if ps_wr
       end
     end
 
@@ -517,7 +524,7 @@ public
     Rails.logger.error "Error during list_management_pack_license: #{e.message}"
     set_current_database(get_current_database.merge( {:management_pack_license  => :none } ))
     add_statusbar_message("Cannot read managament pack licensing state from database!\nAssuming no management pack license exists.\n#{e.message}")
-    start_page
+    start_page                                                                  # Assuming this is the first call at statup and not included from start_page
   end
 
   def set_management_pack_license
