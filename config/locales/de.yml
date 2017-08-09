@@ -1368,7 +1368,7 @@
   env_list_management_pack_license_dp_hint: |-
     Panorama wird Oracle's 'Diagnostic Pack' nutzen wenn diese Option gewählt ist
     aber nicht Oracle's 'Tuning Pack' nutzen.
-    Nur verfügbar für Enterprise Edition, nicht für Standard Edition
+    Diese Option kann nur gewählt werden für Enterprise Edition (nicht Standard Edition) wenn laut init-Paremeter control_management_pack das Diagnostics Pack lizensiert ist.
   env_list_management_pack_license_legend:                  Lizensierung von Management-Packs für die aktuelle Datenbank
   env_list_management_pack_license_none_caption:            Es sind keine Management Packs lizensiert
   env_list_management_pack_license_none_hint: |-
@@ -1377,14 +1377,14 @@
   env_list_management_pack_license_panorama_sampler_hint: |-
     Panorama nutzt seine eigene aufgezeichnete Workload-Historie, die durch den Prozess "Panorama-Sampler" erzeugt wird.
     Es wird weder Oracle's 'Diagnostic Pack' noch 'Tuning Pack' nutzen wenn diese Option gewählt ist.
-    Die Funktion befindet sich aktuell in Entwicklung, kommt demnächst.
-    "Panorama-Sampler" wird verfügbar sein für Standard- und Enterprise-Edition
+    Die Funktion "Panorama-Sampler" ist verfügbar für alle Datenbank-Editionen einschliesslich Standard-Edition.
+    Die Option kann nur gewählt werden, wenn Panorama-Sampler für diese Datenbank-Instanz aktiviert wurde.
 
   env_list_management_pack_license_setting:                 Der Init-Parameter der aktuellen Datenbank
   env_list_management_pack_license_tp_caption:              Nutze die lizensierten Diagnostics Pack und Tuning Pack
   env_list_management_pack_license_tp_hint: |-
     Panorama wird Oracle's 'Diagnostic Pack' und 'Tuning Pack' nutzen wenn diese Option gewählt ist.
-    Nur verfügbar für Enterprise Edition, nicht für Standard Edition
+    Diese Option kann nur gewählt werden für Enterprise Edition (nicht Standard Edition) wenn laut init-Paremeter control_management_pack das Diagnostics und Tuning Pack lizensiert ist.
 
   env_set_database_select_any_dictionary_msg:               Dem DB-User %{user} fehlt das Recht 'SELECT ANY DICTIONARY'!<br>Viele FUnktionen von Panorama werden evtl. nicht nutzbar sein!<br>
   env_set_database_xmem_line1:                              DB-User %{user} hat kein Leserecht auf X$%{table_name_suffix} ! Damit sind sehr wenige Funktionen von Panorama nicht nutzbar!

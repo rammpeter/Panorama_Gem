@@ -27,13 +27,9 @@ module EnvHelper
     return current_database[:management_pack_license]                           # Use old value if already set
   end
 
-  def read_control_management_pack_access
+  def read_control_management_pack_access                                       # returns either NONE | DIAGNOSTIC | DIAGNOSTIC+TUNING
     sql_select_one "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"  # ab Oracle 11 belegt
   end
-
-
-
-
 
   # Einlesen last_logins aus client_info-store
   def read_last_logins
