@@ -79,7 +79,6 @@ class Capybara::Rails::TestCase
   # previous arguments are captions of submenus for hover to open submenu
   def login_and_menu_call(*args)
     login_until_menu
-page.save_and_open_page
 
     args.each_index do |i|
       if i < args.length-1                                                      # SubMenu
