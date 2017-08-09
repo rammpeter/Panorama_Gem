@@ -319,6 +319,8 @@ class DbaSgaController < ApplicationController
       where_values << @child_address
     end
 
+    @include_ash_in_sql = get_db_version >= "11.2" && (PackLicense.diagnostics_pack_licensed? || PackLicense.panorama_sampler_active?)
+
     @plans = sql_select_all ["\
         SELECT /* Panorama-Tool Ramm */
           Operation, Options, Object_Owner, Object_Name, Object_Type, Object_Alias, QBlock_Name, p.Timestamp, p.Optimizer,
@@ -341,7 +343,7 @@ class DbaSgaController < ApplicationController
           NVL(t.Last_Analyzed, i.Last_Analyzed) Last_Analyzed,
           (SELECT SUM(Bytes)/(1024*1024) FROM DBA_Segments s WHERE s.Owner=p.Object_Owner AND s.Segment_Name=p.Object_Name) MBytes
           #{", a.DB_Time_Seconds, a.CPU_Seconds, a.Waiting_Seconds, a.Read_IO_Requests, a.Write_IO_Requests,
-               a.IO_Requests, a.Read_IO_Bytes, a.Write_IO_Bytes, a.Interconnect_IO_Bytes, a.Min_Sample_Time, a.Max_Sample_Time, a.Max_Temp_ASH_MB, a.Max_PGA_ASH_MB, a.Max_PQ_Sessions " if get_db_version >= "11.2"}
+               a.IO_Requests, a.Read_IO_Bytes, a.Write_IO_Bytes, a.Interconnect_IO_Bytes, a.Min_Sample_Time, a.Max_Sample_Time, a.Max_Temp_ASH_MB, a.Max_PGA_ASH_MB, a.Max_PQ_Sessions " if @include_ash_in_sql}
         FROM  gV$SQL_Plan_Statistics_All p
         LEFT OUTER JOIN DBA_Tables  t ON t.Owner=p.Object_Owner AND t.Table_Name=p.Object_Name
         LEFT OUTER JOIN DBA_Indexes i ON i.Owner=p.Object_Owner AND i.Index_Name=p.Object_Name
@@ -384,13 +386,13 @@ class DbaSgaController < ApplicationController
                                     )
                              GROUP BY SQL_Plan_Line_ID, SQL_Plan_Hash_Value
                  ) a ON a.SQL_Plan_Line_ID = p.ID AND a.SQL_Plan_Hash_Value = p.Plan_Hash_Value
-          " if get_db_version >= "11.2"}
+          " if @include_ash_in_sql}
         WHERE SQL_ID  = ?
         AND   Inst_ID = ?
         AND   Child_Number = ?
         #{where_string}
         ORDER BY ID"
-        ].concat(get_db_version >= "11.2" ? [@sql_id, @instance].concat((@modus == 'GV$SQL' && @restrict_ash_to_child) ? [@child_number] : []) : []).concat([@sql_id, @instance, @child_number]).concat(where_values)
+        ].concat(@include_ash_in_sql ? [@sql_id, @instance].concat((@modus == 'GV$SQL' && @restrict_ash_to_child) ? [@child_number] : []) : []).concat([@sql_id, @instance, @child_number]).concat(where_values)
 
     @additional_ash_message = nil
     if @modus == 'GV$SQL' && @restrict_ash_to_child

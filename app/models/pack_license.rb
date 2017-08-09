@@ -122,7 +122,7 @@ class PackLicense
     ]
 
     test_array.each do |t|
-      check_existence_in_sql(sql, t, allowed_array, 'Diagnostic')
+      check_existence_in_sql(sql, t, allowed_array, 'Diagnostics')
     end
   end
 

@@ -119,8 +119,12 @@ class PanoramaSamplerConfig
   # get array initialized from session store. Call inside Mutex.synchronize only
   def self.get_config_array
     if @@config_array.nil?
-      @@config_array = EngineConfig.get_client_info_store.read(client_info_store_key)
-      @@config_array = [] if @@config_array.nil?
+      if EngineConfig.config.panorama_sampler_master_password.nil?
+        @@config_array = []                                                     # No config to read if master password is not given
+      else
+        @@config_array = EngineConfig.get_client_info_store.read(client_info_store_key)
+        @@config_array = [] if @@config_array.nil?
+      end
     end
     @@config_array
   end

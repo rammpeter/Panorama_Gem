@@ -119,7 +119,7 @@ module AjaxHelper
   #   html_options: Hash
   def ajax_submit(caption, url, html_options)
     ajax_form(url) do
-      html_options['data-disable-with']=false
+      #html_options['data-disable-with']=false
       submit_tag caption, html_options
     end
   end

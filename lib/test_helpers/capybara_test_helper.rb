@@ -14,7 +14,7 @@ class Capybara::Rails::TestCase
       # puts "After #{loop_count} seconds: indicator_call_stack_depth = #{page.evaluate_script('indicator_call_stack_depth')}"
     end
     if loop_count == timeout_secs
-      raise "Timeout raise in wait_for_ajax after #{loop_count} seconds"
+      Rails.logger.error "############ Timeout raised in wait_for_ajax after #{loop_count} seconds, indicator_call_stack_depth=#{page.evaluate_script('indicator_call_stack_depth') }"
     end
   end
 
@@ -79,6 +79,7 @@ class Capybara::Rails::TestCase
   # previous arguments are captions of submenus for hover to open submenu
   def login_and_menu_call(*args)
     login_until_menu
+page.save_and_open_page
 
     args.each_index do |i|
       if i < args.length-1                                                      # SubMenu

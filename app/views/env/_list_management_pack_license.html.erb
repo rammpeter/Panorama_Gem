@@ -11,7 +11,7 @@
       <div class="float_left" title="<%= t(:env_list_management_pack_license_dp_hint, :default=>"Panorama will access Oracle's 'Diagnostic Pack' if you choose this option\nbut doesn't access Oracle's 'Tuning Pack'.\nYou can choose this option only if you have Enterprise Edition (not Standard Edition) and init-parameter control_management_pack includes Diagnostics Pack license") %>">
         <%= radio_button_tag(:management_pack_license, :diagnostics_pack, get_current_database[:management_pack_license] == :diagnostics_pack,
                              :onclick=>"ajax_html('#{params[:update_area]}', 'env', 'set_management_pack_license', {management_pack_license: 'diagnostics_pack', update_area: '#{params[:update_area]}'} );",
-                             :disabled => PanoramaConnection.edition != :enterprise || !control_management_pack_access['DIAGNOSTIC']
+                             :disabled => PanoramaConnection.edition != :enterprise || !@control_management_pack_access['DIAGNOSTIC']
             )
         %>
         <%= label_tag(:management_pack_license_diagnostics_pack, t(:env_list_management_pack_license_dp_caption, :default=>'Use licensed Diagnostics Pack'))%>
@@ -20,7 +20,7 @@
       <div class="float_left" title="<%= t(:env_list_management_pack_license_tp_hint, :default=>"Panorama will access Oracle's 'Diagnostic Pack' and 'Tuning Pack' if you choose this option.\nYou can choose this option only if you have Enterprise Edition (not Standard Edition) and init-parameter control_management_pack includes Diagnostics and Tuning Pack license") %>">
         <%= radio_button_tag(:management_pack_license, :diagnostics_and_tuning_pack, get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack,
                              :onclick=>"ajax_html('#{params[:update_area]}', 'env', 'set_management_pack_license', {management_pack_license: 'diagnostics_and_tuning_pack', update_area: '#{params[:update_area]}'} ); ",
-                             :disabled => PanoramaConnection.edition != :enterprise || !control_management_pack_access['TUNING']
+                             :disabled => PanoramaConnection.edition != :enterprise || !@control_management_pack_access['TUNING']
             )
         %>
         <%= label_tag(:management_pack_license_diagnostics_and_tuning_pack, t(:env_list_management_pack_license_tp_caption, :default=>'Use licensed Diagnostics Pack and Tuning Pack'))%>
