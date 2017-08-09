@@ -142,7 +142,7 @@ class EnvController < ApplicationController
                                                CROSS JOIN  v$Database d
                                                LEFT OUTER JOIN v$Instance i ON i.Instance_Number = gi.Instance_Number
                                                #{
-      if PackLicense.diagnostics_pack_licensed?  || PackLicense.panorama_sampler_active?
+      if PackLicense.diagnostics_pack_licensed?
         "LEFT OUTER JOIN (SELECT DBID, MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM DBA_Hist_WR_Control GROUP BY DBID) ws ON ws.DBID = d.DBID"
       else
         "CROSS JOIN (SELECT NULL Snap_Interval_Minutes, NULL Snap_Retention_Days FROM DUAL) ws"
@@ -166,7 +166,7 @@ class EnvController < ApplicationController
     rescue Exception => e
       Rails.logger.error "Exception: #{e.message}"
       log_exception_backtrace(e, 20)
-      raise PopupMessageException.new("Your user is missing SELECT-right on gv$Instance, gv$Database.\nPlease ensure that your user has granted SELECT ANY DICTIONARY.\nPanorama is not usable with this user account!\n\n #{e.message}", e)
+      raise PopupMessageException.new("Your user is missing SELECT-right on gv$Instance, gv$Database.<br/>Please ensure that your user has granted SELECT ANY DICTIONARY.<br/>Panorama is not usable with this user account!\n\n".html_safe, e)
     end
 
     @dictionary_access_problem = true unless select_any_dictionary?(@dictionary_access_msg)
@@ -362,7 +362,7 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
     initialize_unique_area_id                                                   # Zaehler für eindeutige IDs ruecksetzen
 
     # Detect existence of Panorama_Sampler
-    panorama_sampler_data = sql_select_all "SELECT Owner FROM All_Tables WHERE Table_Name = 'PANORAMA_SNAPSHOT'"
+    panorama_sampler_data = PanoramaSamplerStructureCheck.panorama_sampler_schemas
     if panorama_sampler_data.count > 0
       panorama_sampler_owner = nil                                                # not yet known
 
@@ -371,10 +371,8 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
       end
 
       if panorama_sampler_data.count > 1
-        panorama_sampler_owner = PanoramaSamplerConfig.sampler_schema_for_dbid(get_dbid)
-        if panorama_sampler_owner.nil?
-          add_statusbar_message "Multiple schemas (#{panorama_sampler_data.count}) contain Panorama-Sampler data!\nTo access Panorama-Sampler history please ensure that only one schema contains Panorama-Sampler's table like 'PANORAMA_SNAPSHOT'\nor use the Panorama-Server that does sampling itself."
-        end
+        panorama_sampler_owner = PanoramaSamplerConfig.sampler_schema_for_dbid(get_dbid)  # Look at sampler config for the right owner
+        panorama_sampler_owner = panorama_sampler_data[0].owner if panorama_sampler_owner.nil?  # Take the first of multiple if not known who is the right one
       end
 
       if panorama_sampler_owner
@@ -504,6 +502,16 @@ public
 
   def list_management_pack_license
     @control_management_pack_access = read_control_management_pack_access       # ab Oracle 11 belegt
+
+    if PackLicense.panorama_sampler_active?
+      @panorama_sampler_data = PanoramaSamplerStructureCheck.panorama_sampler_schemas
+      @panorama_sampler_data.each do |ps|
+        ps_val = sql_select_first_row "SELECT MIN(Begin_Interval_Time) Min_Time, MAX(End_Interval_Time) Max_Time FROM #{ps.owner}.PANORAMA_SNAPSHOT"
+        ps[:min_time] = ps_val.min_time
+        ps[:max_time] = ps_val.max_time
+      end
+    end
+
     render_partial :list_management_pack_license
   rescue Exception => e
     Rails.logger.error "Error during list_management_pack_license: #{e.message}"
@@ -515,6 +523,11 @@ public
   def set_management_pack_license
     persist_management_pack_license(params[:management_pack_license])
     list_management_pack_license
+  end
+
+  def set_panorama_sampler_schema
+    set_current_database(get_current_database.merge( { :panorama_sampler_schema => params[:schema]}))
+    start_page
   end
 
   # repeat last called menu action

@@ -13,6 +13,18 @@ class PanoramaSamplerStructureCheck
     @@tables
   end
 
+  # Schemas with valid Panorama-Sampler structures for start
+  def self.panorama_sampler_schemas
+    PanoramaConnection.sql_select_all "SELECT Owner
+                                       FROM   All_Tab_Columns
+                                       WHERE  Table_Name IN ('PANORAMA_SNAPSHOT', 'PANORAMA_WR_CONTROL')
+                                       AND    Column_Name IN ('SNAP_ID', 'DBID', 'INSTANCE_NUMBER', 'BEGIN_INTERVAL_TIME', 'END_INTERVAL_TIME',
+                                                              'SNAP_INTERVAL', 'RETENTION')
+                                       GROUP BY Owner
+                                       HAVING COUNT(*) = 8 /* DBID exists in both tables */
+                                      "
+  end
+
   def initialize(sampler_config)
     @sampler_config = sampler_config
   end
