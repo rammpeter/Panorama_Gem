@@ -120,6 +120,9 @@ class PanoramaConnection
   def self.reset_thread_local_attributes
     Thread.current[:panorama_connection_app_info_set] = nil
     Thread.current[:panorama_connection_connect_info] = nil
+    Thread.current[:instance_number]                  = nil
+    Thread.current[:db_version]                       = nil
+    Thread.current[:dbid]                             = nil
   end
 
   # Release connection at the end of request to mark free in pool or destroy

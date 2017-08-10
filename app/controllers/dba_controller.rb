@@ -1274,9 +1274,7 @@ Solution: Execute as user 'SYS':
   end
 
   def show_dba_autotask_jobs
-    @tasks = sql_select_iterator 'SELECT Client_Name, Status, Consumer_Group, Client_Tag, Priority_Override, Attributes, Window_Group, Service_name
-                             FROM   DBA_AutoTask_Client'
-
+    @tasks = sql_select_iterator 'SELECT * FROM   DBA_AutoTask_Client'
     render_partial
   end
 
