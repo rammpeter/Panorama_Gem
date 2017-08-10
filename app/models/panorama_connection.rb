@@ -311,7 +311,14 @@ class PanoramaConnection
     end
 
     if Thread.current[:panorama_connection_app_info_set].nil?                   # dbms_application_info not yet set in thread
-      set_application_info
+      begin
+        set_application_info
+      rescue Exception => e
+        Rails.logger.error "Error '#{e.message}' in PanoramaConnection.check_for_open_connection! Drop connection and look for next one from pool"
+        destroy_connection                                                      # Remove erroneous connection from pool
+        Thread.current[:panorama_connection_jdbc_connection] = retrieve_from_pool_or_create_new_connection  # get new connection from pool or create
+        set_application_info                                                    # Set application info again and throw exception if error persists
+      end
       Thread.current[:panorama_connection_app_info_set] = true
     end
   end
@@ -383,7 +390,6 @@ class PanoramaConnection
     Thread.current[:panorama_connection_jdbc_connection].exec_update("call dbms_application_info.set_Module('Panorama', :action)", nil,
                                   [ActiveRecord::Relation::QueryAttribute.new(':action', "#{Thread.current[:panorama_connection_connect_info][:current_controller_name]}/#{Thread.current[:panorama_connection_connect_info][:current_action_name]}", ActiveRecord::Type::Value.new)]
     )
-
   end
 
   # Translate text in SQL-statement

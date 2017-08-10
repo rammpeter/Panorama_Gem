@@ -21,6 +21,7 @@
            {:caption=>"Character-Set", :data=>proc{|rec| rec.nls_characterset },               :title=>"Character set of database", :data_title=>proc{|rec| "%t: NChar_Character_Set=#{rec.nls_nchar_characterset}"}},
            {:caption=>"Instance-Role", :data=>proc{|rec| rec["instance_role"] },                  :title=>"Instance role for data guard"},
            {:caption=>"CPU-Count",     :data=>proc{|rec| rec.cpu_count },                      :title=>"Number of CPUs counted for instance"},
+           {:caption=>"Resource manager plan", :data=>proc{|rec| rec.resource_manager_plan },  :title=>"Resource manager plan that is currently active.\nEmpty if resource manager is deactivated."},
            {:caption=>"Protection mode", :data=>proc{|rec| rec.protection_mode },              :title=>"Protection mode currently in effect for the database.\nLook at DB-parameter \"log_archive_dest_n\" to recognize what sync-mode is used for standby configuration (SYNC or NOSYNC, AFFIRM or NOAFFIRM).",  :data_title=>proc{|rec| "%t\nProtection level = #{rec.protection_level}"}},
            {:caption=>"Switchover status", :data=>proc{|rec| rec.switchover_status },          :title=>"Indicates whether switchover is allowed", :data_title=>proc{|rec| "%t\n#{explain_switchover_status(rec.switchover_status)}"}  },
            {:caption=>"DG broker",     :data=>proc{|rec| rec.dataguard_broker },               :title=>"Indicates whether the Data Guard configuration is being managed by the broker (ENABLED) or not (DISABLED)"},
