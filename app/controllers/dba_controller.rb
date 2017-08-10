@@ -1274,11 +1274,37 @@ Solution: Execute as user 'SYS':
   end
 
   def show_dba_autotask_jobs
-    @tasks = sql_select_iterator 'SELECT * FROM   DBA_AutoTask_Client'
+    @windows = sql_select_iterator "SELECT * from DBA_AUTOTASK_WINDOW_CLIENTS"
+
+    @tasks = sql_select_iterator "SELECT a.*,
+                                         EXTRACT(HOUR FROM Mean_Job_Duration)*3600              + EXTRACT(MINUTE FROM Mean_Job_Duration)*60             + EXTRACT(SECOND FROM Mean_Job_Duration)            Mean_Job_Duration_Secs,
+                                         EXTRACT(HOUR FROM Mean_Job_CPU)*3600                   + EXTRACT(MINUTE FROM Mean_Job_CPU)*60                  + EXTRACT(SECOND FROM Mean_Job_CPU)                 Mean_Job_CPU_Secs,
+                                         EXTRACT(HOUR FROM TOTAL_CPU_LAST_7_DAYS)*3600          + EXTRACT(MINUTE FROM TOTAL_CPU_LAST_7_DAYS)*60         + EXTRACT(SECOND FROM TOTAL_CPU_LAST_7_DAYS)        TOTAL_CPU_LAST_7_DAYS_Secs,
+                                         EXTRACT(HOUR FROM TOTAL_CPU_LAST_30_DAYS)*3600         + EXTRACT(MINUTE FROM TOTAL_CPU_LAST_30_DAYS)*60        + EXTRACT(SECOND FROM TOTAL_CPU_LAST_30_DAYS)       TOTAL_CPU_LAST_30_DAYS_Secs,
+                                         EXTRACT(HOUR FROM MAX_DURATION_LAST_7_DAYS)*3600       + EXTRACT(MINUTE FROM MAX_DURATION_LAST_7_DAYS)*60      + EXTRACT(SECOND FROM MAX_DURATION_LAST_7_DAYS)     MAX_DURATION_LAST_7_DAYS_Secs,
+                                         EXTRACT(HOUR FROM MAX_DURATION_LAST_30_DAYS)*3600      + EXTRACT(MINUTE FROM MAX_DURATION_LAST_30_DAYS)*60     + EXTRACT(SECOND FROM MAX_DURATION_LAST_30_DAYS)    MAX_DURATION_LAST_30_DAYS_Secs,
+                                         EXTRACT(HOUR FROM WINDOW_DURATION_LAST_7_DAYS)*3600    + EXTRACT(MINUTE FROM WINDOW_DURATION_LAST_7_DAYS)*60   + EXTRACT(SECOND FROM WINDOW_DURATION_LAST_7_DAYS)  WINDOW_DURATION_7_DAYS_Secs,
+                                         EXTRACT(HOUR FROM WINDOW_DURATION_LAST_30_DAYS)*3600   + EXTRACT(MINUTE FROM WINDOW_DURATION_LAST_30_DAYS)*60  + EXTRACT(SECOND FROM WINDOW_DURATION_LAST_30_DAYS) WINDOW_DURATION_30_DAYS_Secs,
+                                         j.Job_Runs
+                                  FROM   DBA_AutoTask_Client a
+                                  JOIN   (SELECT Client_Name, COUNT(*) Job_Runs
+                                          FROM   DBA_AUTOTASK_JOB_HISTORY
+                                          GROUP BY Client_Name
+                                         ) j ON j.Client_Name = a.Client_Name
+                                 "
     render_partial
   end
 
-
+  def list_dba_autotask_job_runs
+    @client_name =  params[:client_name]
+    @job_runs = sql_select_iterator ["SELECT j.*,
+                                             EXTRACT(HOUR FROM Window_Duration)*3600  + EXTRACT(MINUTE FROM Window_Duration)*60   + EXTRACT(SECOND FROM Window_Duration)  Window_Duration_Secs,
+                                             EXTRACT(HOUR FROM Job_Duration)*3600     + EXTRACT(MINUTE FROM Job_Duration)*60      + EXTRACT(SECOND FROM Job_Duration)     Job_Duration_Secs
+                                      FROM   DBA_Autotask_Job_History j
+                                      WHERE Client_Name = ? ORDER BY Job_Start_Time DESC
+                                     ", @client_name]
+    render_partial
+  end
 
   def list_database_triggers
     @triggers = sql_select_iterator "SELECT * FROM dba_triggers where base_object_type LIKE 'DATABASE%' ORDER BY Triggering_Event, Trigger_Name"
