@@ -1,8 +1,8 @@
 class PanoramaSamplerStructureCheck
   include ExceptionHelper
 
-  def self.do_check(sampler_config)
-    PanoramaSamplerStructureCheck.new(sampler_config).do_check_internal
+  def self.do_check(sampler_config, only_ash_tables)
+    PanoramaSamplerStructureCheck.new(sampler_config).do_check_internal(only_ash_tables)
   end
 
   def self.remove_tables(sampler_config)
@@ -403,9 +403,11 @@ ORDER BY Column_ID
   end
 
   # Check data structures
-  def do_check_internal
+  def do_check_internal(only_ash_tables)
+    ash_tables = ['Panorama_Active_Sess_History'.upcase]
+
     @@tables.each do |table|
-      check_table(table)
+      check_table(table) if (only_ash_tables && ash_tables.include?(table[:table_name].upcase)) ||  (!only_ash_tables && !ash_tables.include?(table[:table_name].upcase))
     end
   end
 

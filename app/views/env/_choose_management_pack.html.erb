@@ -8,7 +8,7 @@
           ajax_html('<%= @update_area_management_pack_license %>', 'env', 'list_management_pack_license', {update_area: "<%= @update_area_management_pack_license %>"});
       </script>
       <div id="<%= @update_area_management_pack_license %>"></div>
-
+      <br/>
       <%= submit_tag(t(:env_choose_managent_pack_license_submit_caption, :default=>"Acknowledge and proceed"), :title => t(:env_choose_managent_pack_license_submit_hint, :default=>"Acknowledge your choosen management pack license for this database and proceed")) %>
   <% end %>
 <% else %>

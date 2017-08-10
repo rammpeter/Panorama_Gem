@@ -11,6 +11,10 @@ class PanoramaSamplerSampling
     PanoramaSamplerSampling.new(sampler_config).do_housekeeping_internal
   end
 
+  def self.run_ash_daemon(sampler_config)
+    PanoramaSamplerSampling.new(sampler_config).run_ash_daemon_internal
+  end
+
   def initialize(sampler_config)
     @sampler_config = sampler_config
   end
@@ -196,6 +200,15 @@ class PanoramaSamplerSampling
     end
     # Delete from tables without columns DBID and SNAP_ID
 
+  end
+
+  def run_ash_daemon_internal
+    PanoramaConnection.sql_execute ["
+      DECLARE
+      BEGIN
+        DBMS_LOCK.SLEEP(1);
+      END;
+    "]
   end
 
 

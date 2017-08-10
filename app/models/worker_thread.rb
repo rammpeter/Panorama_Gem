@@ -15,7 +15,8 @@ class WorkerThread
 
   # Create snapshot for PanoramaSampler
   def self.create_snapshot(sampler_config)
-    thread = Thread.new{WorkerThread.new(sampler_config).create_snapshot_internal}
+    thread = Thread.new{WorkerThread.new(sampler_config).create_ash_sampler_daemon} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
+    thread = Thread.new{WorkerThread.new(sampler_config).create_snapshot_internal}  # Excute the snapshot and terminate
   rescue Exception => e
     Rails.logger.error "Exception #{e.message} raised in WorkerThread.create_snapshot for config-ID=#{sampler_config[:id]}"
     # raise e               # Don't raise exception because it should not stop calling job processing
@@ -81,8 +82,12 @@ class WorkerThread
 
     @@active_snashots[@sampler_config[:id]] = true                              # Create semaphore for thread, begin processing
     db_time = PanoramaConnection.sql_select_one "SELECT SYSDATE FROM Dual"
-    PanoramaSamplerConfig.modify_config_entry({:id => @sampler_config[:id], :last_successful_connect => Time.now }) # Set after first successful SQL
-    PanoramaSamplerStructureCheck.do_check(@sampler_config)                     # Check data structure preconditions
+    PanoramaSamplerConfig.modify_config_entry({
+                                                  :id                       => @sampler_config[:id],
+                                                  :last_successful_connect  => Time.now,
+                                                  :last_snapshot_instance   => PanoramaConnection.instance_number
+                                              }) # Set after first successful SQL
+    PanoramaSamplerStructureCheck.do_check(@sampler_config, false)              # Check data structure preconditions, but nor for ASH-tables
     PanoramaSamplerSampling.do_sampling(@sampler_config)                        # Do Sampling (without active session history)
     PanoramaSamplerSampling.do_housekeeping(@sampler_config)                    # Do housekeeping
 
@@ -106,5 +111,43 @@ class WorkerThread
       raise x
     end
   end
+
+  @@active_ash_daemons = {}
+  # Create snapshot in database
+  def create_ash_sampler_daemon
+    if @@active_ash_daemons[ @sampler_config[:id]]
+      Rails.logger.error("Previous ASH daemon not yet finshed for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]}), new ASH daemon for snapshot not started! Restart Panorama server if this problem persists.")
+      PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Previous ASH daemon not yet finshed, new ASH daemon for snapshot not started! Restart Panorama server if this problem persists.")
+      return
+    end
+
+    Rails.logger.info "Create new ASH daemon for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
+
+    @@active_ash_daemons[@sampler_config[:id]] = true                           # Create semaphore for thread, begin processing
+    db_time = PanoramaConnection.sql_select_one "SELECT SYSDATE FROM Dual"
+    PanoramaSamplerStructureCheck.do_check(@sampler_config, true)               # Check data structure preconditions, but only for ASH-tables
+    PanoramaSamplerSampling.run_ash_daemon(@sampler_config)                     # Start ASH daemon
+
+    # End activities after finishing snapshot
+    Rails.logger.info "ASH daemon terminated for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
+    @@active_ash_daemons.delete(@sampler_config[:id])                           # Remove semaphore
+    PanoramaConnection.release_connection                                       # Free DB connection in Pool
+    PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
+  rescue Exception => e
+    begin
+      @@active_ash_daemons.delete(@sampler_config[:id])                              # Remove semaphore
+      Rails.logger.error("Error #{e.message} during WorkerThread.create_ash_sampler_daemon for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]})")
+      log_exception_backtrace(e, 20) if ENV['RAILS_ENV'] != 'test'
+      PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Error #{e.message} during WorkerThread.create_ash_sampler_daemon")
+      PanoramaConnection.release_connection                                       # Free DB connection in Pool
+      PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
+      raise e
+    rescue Exception => x
+      Rails.logger.error "WorkerThread.create_ash_sampler_daemon: Exception #{x.message} in exception handler"
+      log_exception_backtrace(x, 40)
+      raise x
+    end
+  end
+
 
 end
