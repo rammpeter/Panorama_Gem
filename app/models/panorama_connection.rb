@@ -7,7 +7,7 @@ require 'active_record/connection_adapters/oracle_enhanced_adapter'
 require 'active_record/connection_adapters/oracle_enhanced/quoting'
 require 'encryption'
 require 'pack_license'
-require '../../app/helpers/select_hash_helper'
+require 'select_hash_helper'
 
 # Helper-class to allow usage of method "type_cast"
 class TypeMapper < ActiveRecord::ConnectionAdapters::AbstractAdapter

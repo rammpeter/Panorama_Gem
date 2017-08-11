@@ -121,7 +121,7 @@ class WorkerThread
       return
     end
 
-    Rails.logger.info "Create new ASH daemon for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
+    Rails.logger.info "#{Time.now}: Create new ASH daemon for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
 
     @@active_ash_daemons[@sampler_config[:id]] = true                           # Create semaphore for thread, begin processing
     db_time = PanoramaConnection.sql_select_one "SELECT SYSDATE FROM Dual"
@@ -129,7 +129,7 @@ class WorkerThread
     PanoramaSamplerSampling.run_ash_daemon(@sampler_config)                     # Start ASH daemon
 
     # End activities after finishing snapshot
-    Rails.logger.info "ASH daemon terminated for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
+    Rails.logger.info "#{Time.now}: ASH daemon terminated for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
     @@active_ash_daemons.delete(@sampler_config[:id])                           # Remove semaphore
     PanoramaConnection.release_connection                                       # Free DB connection in Pool
     PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool

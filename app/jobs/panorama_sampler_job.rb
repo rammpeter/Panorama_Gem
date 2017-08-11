@@ -1,18 +1,24 @@
 class PanoramaSamplerJob < ApplicationJob
+  include ExceptionHelper
+
   queue_as :default
 
-  MIN_SNAPSHOT_CYCLE=2
   def perform(*args)
 
+    min_snapshot_cycle = 60                                                     # at least every hour run job
+    PanoramaSamplerConfig.get_cloned_config_array.each do |config|
+      min_snapshot_cycle = config[:snapshot_cycle] if config[:snapshot_cycle] < min_snapshot_cycle  # Rerrun job at smallest snapshot cycle config
+    end
+
     # Wait until Time is at 5-minutes-bound
-    while Time.now.strftime('%M').to_i % MIN_SNAPSHOT_CYCLE != 0
+    while Time.now.strftime('%M').to_i % min_snapshot_cycle != 0
       sleep 1
     end
 
     snapshot_time = Time.now
 
-    # reschedule the job in 4 minutes
-    PanoramaSamplerJob.set(wait: (MIN_SNAPSHOT_CYCLE-0.2).minutes).perform_later    # Start 12 seconds before to ensure end of minute is hit exactly
+    # reschedule the job 12 seconds before next snapshot cycle
+    PanoramaSamplerJob.set(wait: (min_snapshot_cycle-0.2).minutes).perform_later    # Start 12 seconds before to ensure end of minute is hit exactly
 
     # Iterate over PanoramaSampler entries
     PanoramaSamplerConfig.get_cloned_config_array.each do |config|
@@ -25,5 +31,9 @@ class PanoramaSamplerJob < ApplicationJob
         end
       end
     end
+  rescue Exception => e
+    Rails.logger.error "Exception in PanoramaSamplerJob.perform:\n#{e.message}"
+    log_exception_backtrace(e, 40)
+    raise e
   end
 end

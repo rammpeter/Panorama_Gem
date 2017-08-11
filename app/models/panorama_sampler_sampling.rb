@@ -203,10 +203,29 @@ class PanoramaSamplerSampling
   end
 
   def run_ash_daemon_internal
+
+
     PanoramaConnection.sql_execute ["
       DECLARE
+        LastSampleTime DATE;
+
+        PROCEDURE CreateSample IS
+        BEGIN
+          NULL;
+        END;
+
       BEGIN
-        DBMS_LOCK.SLEEP(1);
+        -- Ensure that local database time controls end of PL/SQL-execution (allows different time zones between Panorama and DB)
+        --LastSampleTime := TRUNC(SYSDATE+#{@sampler_config[:snapshot_cycle]}/1440, 'MI')-1/86400;
+        LastSampleTime := SYSDATE+#{@sampler_config[:snapshot_cycle]}/1440 - 1/86400;
+
+        LOOP
+          CreateSample;
+          EXIT WHEN SYSDATE >= LastSampleTime;
+
+          -- Wait until current second ends
+
+        END LOOP;
       END;
     "]
   end
