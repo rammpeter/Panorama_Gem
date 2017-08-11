@@ -122,6 +122,7 @@ class PanoramaConnection
     Thread.current[:panorama_connection_app_info_set] = nil
     Thread.current[:panorama_connection_connect_info] = nil
     Thread.current[:instance_number]                  = nil
+    Thread.current[:con_id]                           = nil
     Thread.current[:db_version]                       = nil
     Thread.current[:dbid]                             = nil
   end
@@ -152,6 +153,12 @@ class PanoramaConnection
     Thread.current[:instance_number]
   end
 
+  # Container-ID for PDBs or 0
+  def self.con_id
+    fill_connection_info_fields unless Thread.current[:con_id]
+    Thread.current[:con_id]
+  end
+
   def self.db_version
     fill_connection_info_fields unless Thread.current[:db_version]
     Thread.current[:db_version]
@@ -172,6 +179,12 @@ class PanoramaConnection
 
     database_data = sql_select_first_row "SELECT DBID FROM v$Database"
     Thread.current[:dbid]             = database_data.dbid
+
+    if db_version >= '12.1'
+      Thread.current[:con_id] = sql_select_one "SELECT Con_ID FROM v$Session WHERE audsid = userenv('sessionid')" # Con_ID of connected session
+    else
+      Thread.current[:con_id] = 0
+    end
   end
 
   def self.destroy_connection_in_mutexed_pool(destroy_conn)

@@ -470,6 +470,10 @@ ORDER BY Column_ID
   # Replace DBA_Hist in SQL with corresponding Panorama-Sampler table
   def self.transform_sql_for_sampler(org_sql)
     sql = org_sql.clone
+
+    # fake gv$Active_Session_History in SQL so translation will hit it
+    sql.gsub!(/gv$Active_Session_History/i, 'DBA_HIST_V$Active_Sess_History')
+
     up_sql = sql.upcase
     start_index = up_sql.index('DBA_HIST')
     while start_index
@@ -523,7 +527,22 @@ ORDER BY Column_ID
 
   # Check data structures
   def do_check_internal(only_ash_tables)
-    ash_tables = ['Panorama_Active_Sess_History'.upcase]
+    ash_tables = ['Panorama_V$Active_Sess_History'.upcase]
+
+    @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config[:owner].upcase]
+    @ora_tab_privs    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM ALL_TAB_PRIVS WHERE Table_Schema = ?  AND Privilege = 'SELECT'  AND Grantee = 'PUBLIC'",  @sampler_config[:owner].upcase]
+    @ora_tab_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config[:owner].upcase]
+    @ora_tab_pkeys    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Constraints WHERE Owner = ? AND Constraint_Type='P'", @sampler_config[:owner].upcase]
+    @ora_tab_pk_cols  = PanoramaConnection.sql_select_all ["SELECT cc.Table_Name, cc.Column_Name, cc.Position
+                                                            FROM All_Cons_Columns cc
+                                                            JOIN All_Constraints c ON c.Owner = cc.Owner AND c.Table_Name = cc.Table_Name AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'P'
+                                                            WHERE cc.Owner = ?
+                                                          ", @sampler_config[:owner].upcase]
+    @ora_indexes      = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name FROM All_Indexes WHERE Owner = ?", @sampler_config[:owner].upcase]
+    @ora_ind_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Column_Name, Column_Position FROM All_Ind_Columns WHERE Table_Owner = ?", @sampler_config[:owner].upcase]
+
+
+
 
     @@tables.each do |table|
       check_table(table) if (only_ash_tables && ash_tables.include?(table[:table_name].upcase)) ||  (!only_ash_tables && !ash_tables.include?(table[:table_name].upcase))
@@ -531,9 +550,9 @@ ORDER BY Column_ID
   end
 
   def remove_tables_internal
+    ora_tables = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config[:owner].upcase]
     @@tables.each do |table|
-      exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Tables WHERE Owner = ? AND Table_Name = ?", @sampler_config[:owner].upcase, table[:table_name].upcase]
-      if exists > 0
+      if !ora_tables.include?({'table_name' => table[:table_name].upcase})
         ############# Drop Table
         sql = "DROP TABLE #{@sampler_config[:owner]}.#{table[:table_name]}"
         log(sql)
@@ -546,8 +565,7 @@ ORDER BY Column_ID
   private
 
   def check_table(table)
-    exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Tables WHERE Owner = ? AND Table_Name = ?", @sampler_config[:owner].upcase, table[:table_name].upcase]
-    if exists == 0
+    if !@ora_tables.include?({'table_name' => table[:table_name].upcase})
       ############# Check Table existence
       log "Table #{table[:table_name]} does not exist"
       sql = "CREATE TABLE #{@sampler_config[:owner]}.#{table[:table_name]} ("
@@ -562,18 +580,15 @@ ORDER BY Column_ID
     end
 
     ############ Check table privileges
-    exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM ALL_TAB_PRIVS WHERE Table_Schema = ? AND Table_Name = ? AND Privilege = 'SELECT'  AND Grantee = 'PUBLIC'", @sampler_config[:owner].upcase, table[:table_name].upcase]
-    if exists == 0                                                            # Column does not exists
+    if !@ora_tab_privs.include?({'table_name' => table[:table_name].upcase})                                                           # Column does not exists
       sql = "GRANT SELECT ON #{@sampler_config[:owner]}.#{table[:table_name]} TO PUBLIC"
       log(sql)
       PanoramaConnection.sql_execute(sql)
     end
 
     ############ Check columns
-    table_columns = PanoramaConnection.sql_select_all ["SELECT Column_Name FROM All_Tab_Columns WHERE Owner = ? AND Table_Name = ? ORDER BY Column_ID", @sampler_config[:owner].upcase, table[:table_name].upcase]
-
     table[:columns].each do |column|
-      if !table_columns.include?({ 'column_name' => column[:column_name].upcase})  # Column does not exists in Array
+      if !@ora_tab_columns.include?({'table_name' => table[:table_name].upcase, 'column_name' => column[:column_name].upcase})
         sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} ADD ("
         sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]}"
         sql << ")"
@@ -585,18 +600,14 @@ ORDER BY Column_ID
     ############ Check Primary Key
     if table[:primary_key]
       pk_name = "#{table[:table_name][0,27]}_PK"
-      exists_pk = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Constraints WHERE Owner = ? AND Table_Name = ? AND Constraint_Type='P'", @sampler_config[:owner].upcase, table[:table_name].upcase]
-
-      if exists_pk > 0
+      if @ora_tab_pkeys.include?({'table_name' => table[:table_name].upcase})   # PKey exists
         ########### Check columns of primary key
-        existing_pk_columns = PanoramaConnection.sql_select_all ["SELECT cc.Column_Name, cc.Position
-                                                      FROM All_Cons_Columns cc
-                                                      JOIN All_Constraints c ON c.Owner = cc.Owner AND c.Table_Name = cc.Table_Name AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'P'
-                                                      WHERE cc.Owner = ? AND cc.Table_Name = ?
-                                                    ", @sampler_config[:owner].upcase, table[:table_name].upcase]
+        existing_pk_columns_count = 0
+        @ora_tab_pk_cols.each {|pk| existing_pk_columns_count += 1 if pk.table_name == table[:table_name].upcase }
+
         table[:primary_key].each_index do |index|
           column = table[:primary_key][index]
-          if !existing_pk_columns.include?({'column_name' => column.upcase, 'position' => index+1}) || existing_pk_columns.count != table[:primary_key].count
+          if !@ora_tab_pk_cols.include?({'table_name' => table[:table_name].upcase, 'column_name' => column.upcase, 'position' => index+1}) || existing_pk_columns_count != table[:primary_key].count
             sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} DROP CONSTRAINT #{pk_name}"
             log(sql)
             PanoramaConnection.sql_execute(sql)
@@ -614,8 +625,7 @@ ORDER BY Column_ID
       check_index(table[:table_name], pk_name, table[:primary_key])
 
       ######## Check existence of PK-Constraint
-      exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Constraints WHERE Owner = ? AND Table_Name = ? AND Constraint_Type='P'", @sampler_config[:owner].upcase, table[:table_name].upcase]
-      if exists == 0
+      if !@ora_tab_pkeys.include?({'table_name' => table[:table_name].upcase})   # PKey does not exist
         sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} ADD CONSTRAINT #{pk_name} PRIMARY KEY ("
         table[:primary_key].each do |pk|
           sql << "#{pk},"
@@ -637,15 +647,16 @@ ORDER BY Column_ID
   end
 
   def check_index(table_name, index_name, columns)
-    exists_index = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Indexes WHERE Owner = ? AND Table_Name = ? AND Index_Name = ?", @sampler_config[:owner].upcase, table_name.upcase, index_name.upcase]
-    if exists_index > 0
+    if @ora_indexes.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase})  # Index exists
       ########### Check columns of index
-      existing_index_columns = PanoramaConnection.sql_select_all ["SELECT Column_Name, Column_Position FROM All_Ind_Columns WHERE Table_Owner = ? AND Table_Name = ? AND Index_Name = ?
-                                                                  ", @sampler_config[:owner].upcase, table_name.upcase, index_name.upcase]
+      existing_index_columns_count = 0
+      @ora_ind_columns.each do |col|
+        existing_index_columns_count += 1 if col.table_name == table_name.upcase && col.index_name == index_name.upcase
+      end
 
       columns.each_index do |i|
         column = columns[i]
-        if !existing_index_columns.include?({'column_name' => column.upcase, 'column_position' => i+1}) || existing_index_columns.count != columns.count
+        if !@ora_ind_columns.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase, 'column_name' => column.upcase, 'column_position' => i+1}) || existing_index_columns_count != columns.count
           sql = "DROP INDEX #{@sampler_config[:owner]}.#{index_name}"
           log(sql)
           PanoramaConnection.sql_execute(sql)
@@ -655,8 +666,7 @@ ORDER BY Column_ID
     end
 
     ########### Check existence of index
-    exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Indexes WHERE Owner = ? AND Table_Name = ? AND Index_Name = ?", @sampler_config[:owner].upcase, table_name.upcase, index_name.upcase]
-    if exists == 0
+    if !@ora_indexes.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase}) # Index does not exists
       sql = "CREATE INDEX #{@sampler_config[:owner]}.#{index_name} ON #{@sampler_config[:owner]}.#{table_name}("
       columns.each do |column|
         sql << "#{column},"

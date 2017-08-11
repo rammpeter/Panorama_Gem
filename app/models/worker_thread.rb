@@ -78,7 +78,7 @@ class WorkerThread
       return
     end
 
-    Rails.logger.info "Create new snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
+    Rails.logger.info "#{Time.now}: Create new snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
 
     @@active_snashots[@sampler_config[:id]] = true                              # Create semaphore for thread, begin processing
     db_time = PanoramaConnection.sql_select_one "SELECT SYSDATE FROM Dual"
@@ -92,7 +92,7 @@ class WorkerThread
     PanoramaSamplerSampling.do_housekeeping(@sampler_config)                    # Do housekeeping
 
     # End activities after finishing snapshot
-    Rails.logger.info "Finished creating new snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
+    Rails.logger.info "#{Time.now}: Finished creating new snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
     @@active_snashots.delete(@sampler_config[:id])                              # Remove semaphore
     PanoramaConnection.release_connection                                       # Free DB connection in Pool
     PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool

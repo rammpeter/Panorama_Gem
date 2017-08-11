@@ -10,8 +10,8 @@ class PanoramaSamplerJob < ApplicationJob
       min_snapshot_cycle = config[:snapshot_cycle] if config[:snapshot_cycle] < min_snapshot_cycle  # Rerrun job at smallest snapshot cycle config
     end
 
-    # Wait until Time is at 5-minutes-bound
-    while Time.now.strftime('%M').to_i % min_snapshot_cycle != 0
+    # Wait until Time is at bound of smallest snapshot_cycle and exatly at minute bound
+    while Time.now.strftime('%M').to_i % min_snapshot_cycle != 0 || Time.now.strftime('%S').to_i != 0
       sleep 1
     end
 
@@ -22,12 +22,15 @@ class PanoramaSamplerJob < ApplicationJob
 
     # Iterate over PanoramaSampler entries
     PanoramaSamplerConfig.get_cloned_config_array.each do |config|
-      if config[:active]
-        if (config[:last_snapshot_start].nil? || config[:last_snapshot_start]+(config[:snapshot_cycle]).minutes <= snapshot_time) && # snapshot_cycle expired ?
-            snapshot_time.strftime('%M').to_i % config[:snapshot_cycle] == 0    # exact startup time at full hour + x*snapshot_cycle
+      if config[:active] && (snapshot_time.strftime('%M').to_i % config[:snapshot_cycle] == 0  ||  # exact startup time at full hour + x*snapshot_cycle
+                             snapshot_time.strftime('%M').to_i == 0 && snapshot_time.strftime('%H') % config[:snapshot_cycle]/60 == 0)  # Full hour for snapshot cycle = n*hour
+        if config[:last_snapshot_start].nil? || (config[:last_snapshot_start]+(config[:snapshot_cycle]).minutes <= snapshot_time) && # snapshot_cycle expired ?
           PanoramaSamplerConfig.modify_config_entry({id: config[:id], last_snapshot_start: snapshot_time})
           WorkerThread.create_snapshot(config)
           PanoramaSamplerConfig.modify_config_entry({id: config[:id], last_snapshot_end: Time.now})
+        else
+          Rails.logger.error "#{Time.now}: Last snapshot start (#{config[:last_snapshot_start]}) not old enough to expire next snapshot after #{config[:snapshot_cycle]} minutes for ID=#{config[:id]} '#{config[:name]}'"
+          Rails.logger.error "May be sampling is done by multiple Panorama instances?"
         end
       end
     end
