@@ -1,5 +1,6 @@
 class PanoramaSamplerStructureCheck
   include ExceptionHelper
+  include PanoramaSampler::PackagePanoramaSamplerSnapshot
 
   def self.do_check(sampler_config, only_ash_tables)
     PanoramaSamplerStructureCheck.new(sampler_config).do_check_internal(only_ash_tables)
@@ -525,7 +526,7 @@ ORDER BY Column_ID
     false
   end
 
-  # Check data structures
+  # Check data structures, for ASH-Thread or snapshot thread
   def do_check_internal(only_ash_tables)
     ash_tables = ['Panorama_V$Active_Sess_History'.upcase]
 
@@ -541,11 +542,55 @@ ORDER BY Column_ID
     @ora_indexes      = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name FROM All_Indexes WHERE Owner = ?", @sampler_config[:owner].upcase]
     @ora_ind_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Column_Name, Column_Position FROM All_Ind_Columns WHERE Table_Owner = ?", @sampler_config[:owner].upcase]
 
-
-
-
     @@tables.each do |table|
       check_table(table) if (only_ash_tables && ash_tables.include?(table[:table_name].upcase)) ||  (!only_ash_tables && !ash_tables.include?(table[:table_name].upcase))
+    end
+
+    if only_ash_tables
+      # Check PL/SQL package
+
+      # Get Path to this model class as base for sql files
+      source_dir = Pathname(PanoramaSamplerStructureCheck.instance_method(:do_check_internal).source_location[0]).dirname.join('../helpers/panorama_sampler')
+
+      package_spec_file = "#{source_dir}/pack_panorama_sampler_spec.sql"
+      package_body_file = "#{source_dir}/pack_panorama_sampler_body.sql"
+
+      last_ddl_package = PanoramaConnection.sql_select_one [ "SELECT MIN(Last_DDL_Time)
+                                                            FROM   All_Objects
+                                                            WHERE  Object_Type IN ('PACKAGE', 'PACKAGE BODY')
+                                                            AND    Owner = ?
+                                                            AND    Object_Name = 'PANORAMA_SAMPLER'
+                                                           ", @sampler_config[:owner].upcase]
+      if last_ddl_package.nil? || last_ddl_package < File.ctime(package_spec_file) || last_ddl_package < File.ctime(package_body_file)
+        # Compile package
+        Rails.logger.info "Package #{@sampler_config[:owner].upcase}.PANORAMA_SAMPLER needs recompile"
+        package_spec = File.read(package_spec_file)
+        package_body = File.read(package_body_file)
+
+        package_spec.gsub!(/PANORAMA\./i, "#{@sampler_config[:owner].upcase}.")    # replace PANORAMA with the real owner
+        package_body.gsub!(/PANORAMA\./i, "#{@sampler_config[:owner].upcase}.")    # replace PANORAMA with the real owner
+        PanoramaConnection.sql_execute package_spec
+        PanoramaConnection.sql_execute package_body
+      end
+
+    else                                                                        # for snapshot thread
+      filename = PanoramaSampler::PackagePanoramaSamplerSnapshot.instance_method(:panorama_sampler_snapshot_spec).source_location[0]
+
+      last_ddl_package = PanoramaConnection.sql_select_one [ "SELECT MIN(Last_DDL_Time)
+                                                            FROM   All_Objects
+                                                            WHERE  Object_Type IN ('PACKAGE', 'PACKAGE BODY')
+                                                            AND    Owner = ?
+                                                            AND    Object_Name = 'PANORAMA_SAMPLER_SNAPSHOT'
+                                                           ", @sampler_config[:owner].upcase]
+      if last_ddl_package.nil? || last_ddl_package < File.ctime(filename)
+        # Compile package
+        Rails.logger.info "Package #{@sampler_config[:owner].upcase}.PANORAMA_SAMPLER_SNAPSHOT needs recompile"
+
+        PanoramaConnection.sql_execute panorama_sampler_snapshot_spec.gsub(/PANORAMA\./i, "#{@sampler_config[:owner].upcase}.") # replace PANORAMA with the real owner
+        PanoramaConnection.sql_execute panorama_sampler_snapshot_body.gsub(/PANORAMA\./i, "#{@sampler_config[:owner].upcase}.") # replace PANORAMA with the real owner
+      end
+
+
     end
   end
 

@@ -10,12 +10,15 @@ class PanoramaSamplerJob < ApplicationJob
       min_snapshot_cycle = config[:snapshot_cycle] if config[:snapshot_cycle] < min_snapshot_cycle  # Rerrun job at smallest snapshot cycle config
     end
 
-    # Wait until Time is at bound of smallest snapshot_cycle and exatly at minute bound
-    while Time.now.strftime('%M').to_i % min_snapshot_cycle != 0 || Time.now.strftime('%S').to_i != 0
-      sleep 1
+    snapshot_time = Time.now.round                                              # Cut subseconds
+    # Wait until Time is at bound of smallest snapshot_cycle and exactly at minute bound
+    while snapshot_time.strftime('%M').to_i % min_snapshot_cycle != 0 || snapshot_time.strftime('%S').to_i != 0
+      sleeptime = 1 - Time.now.nsec.to_f/1000000000
+      sleep sleeptime                                # sleep as long to match the next full second
+      # Rails.logger.info "Sleeping #{sleeptime} seconds"
+      snapshot_time = Time.now.round                                            # Cut subseconds
     end
-
-    snapshot_time = Time.now
+    # Rails.logger.info "Starting with snapshot_time=#{Time.now.iso8601(10)}"
 
     # reschedule the job 12 seconds before next snapshot cycle
     PanoramaSamplerJob.set(wait: (min_snapshot_cycle-0.2).minutes).perform_later    # Start 12 seconds before to ensure end of minute is hit exactly

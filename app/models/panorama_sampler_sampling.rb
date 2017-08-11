@@ -35,23 +35,8 @@ class PanoramaSamplerSampling
     end
 
     ## DBA_Hist_Active_Sess_History
-    PanoramaConnection.sql_execute [" DECLARE
-                                        v_Max_Sample_ID NUMBER;
-                                      BEGIN
-                                        SELECT MAX(Sample_ID) INTO v_Max_Sample_ID FROM Panorama_V$Active_Sess_History;
-                                        INSERT INTO Panorama_Active_Sess_History (
-                                          Snap_ID, DBID, Instance_Number, Sample_ID, Session_ID,
-                                          Con_DBID, Con_ID
-                                        ) SELECT
-                                          #{@snap_id}, #{PanoramaConnection.dbid}, Instance_Number, Sample_ID, Session_ID,
-                                          #{con_dbid}, Con_ID
-                                        FROM   Panorama_V$Active_Sess_History
-                                        WHERE  Sample_ID <= v_Max_Sample_ID
-                                        ;
-                                        DELETE FROM Panorama_V$Active_Sess_History WHERE Sample_ID <= v_Max_Sample_ID;
-                                        COMMIT;
-                                      END;
-                                    "]
+    PanoramaConnection.sql_execute [" BEGIN #{@sampler_config[:owner]}.Panorama_Sampler.Move_To_Snapshot_Table(?, ?, ?); END;",
+                                    @snap_id, PanoramaConnection.dbid, con_dbid]
 
     ## TODO: Con_DBID mit realen werten des Containers füllen, falls PDB-übergreifendes Sampling gewünscht wird
     ## DBA_Hist_DB_Cache_Advice
@@ -221,80 +206,11 @@ class PanoramaSamplerSampling
 
   end
 
+  # Run daemon, daeomon returns 1 second before next snapshot timestamp
   def run_ash_daemon_internal
-
-
-    PanoramaConnection.sql_execute ["
-      DECLARE
-        v_LastSampleTime  DATE;
-        v_Sample_ID       INTEGER;
-        v_Counter         INTEGER := 0;
-
-        TYPE AshType IS RECORD (
-          Sample_ID             NUMBER,
-          Session_ID            NUMBER
-        );
-        TYPE AshTableType IS TABLE OF AshType INDEX BY BINARY_INTEGER;
-        AshTable                AshTableType;
-        AshTable4Select         AshTableType;
-
-        PROCEDURE CreateSample IS
-        BEGIN
-          v_Sample_ID := v_Sample_ID + 1;
-          AshTable4Select.DELETE;
-          SELECT v_Sample_ID,
-                 s.SID
-          BULK COLLECT INTO AshTable4Select
-          FROM   v$Session s
-          WHERE  s.Status = 'ACTIVE'
-          AND    s.Wait_Class != 'Idle'
-          ;
-
-          FOR Idx IN 1 .. AshTable4Select.COUNT LOOP
-            AshTable(AshTable.COUNT+1) := AshTable4Select(Idx);
-          END LOOP;
-
-          v_Counter := v_Counter + 1;
-          IF v_Counter >= 10 THEN
-            v_Counter := 0;
-
-            FORALL Idx IN 1 .. AshTable.COUNT
-              INSERT INTO Panorama_V$Active_Sess_History (
-                Instance_Number, Sample_ID, Sample_Time, Session_ID,
-                Is_AWR_Sample,
-                Con_ID
-              ) VALUES (
-                #{PanoramaConnection.instance_number}, AshTable(Idx).Sample_ID, SYSTIMESTAMP, AshTable(Idx).Session_ID,
-                'N',
-                #{PanoramaConnection.con_id}
-              );
-            COMMIT;
-            AshTable.DELETE;
-          END IF;
-        END;
-
-      BEGIN
-        -- Ensure that local database time controls end of PL/SQL-execution (allows different time zones and some seconds delay between Panorama and DB)
-        -- but assumes that PL/SQL-Job is started at the exact second
-        v_LastSampleTime := SYSDATE+#{@sampler_config[:snapshot_cycle]}/1440 - 1/86400;
-        SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM Panorama_V$Active_Sess_History;
-
-        LOOP
-          CreateSample;
-          EXIT WHEN SYSDATE >= v_LastSampleTime;
-
-          -- Wait until current second ends
-          DBMS_LOCK.SLEEP(1-MOD(EXTRACT(SECOND FROM SYSTIMESTAMP), 1));
-
-        END LOOP;
-
-      EXCEPTION
-        WHEN OTHERS THEN
-          RAISE;
-      END;
-    "]
+    PanoramaConnection.sql_execute [" BEGIN #{@sampler_config[:owner]}.Panorama_Sampler.Run_Sampler_Daemon(?, ?, ?); END;",
+                                    @sampler_config[:snapshot_cycle], PanoramaConnection.instance_number, PanoramaConnection.con_id]
   end
-
 
   private
   def con_dbid
