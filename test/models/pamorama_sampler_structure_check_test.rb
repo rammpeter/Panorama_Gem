@@ -16,5 +16,4 @@ class PanoramaSamplerStructureCheckTest < ActiveSupport::TestCase
     assert_nil(PanoramaSamplerStructureCheck.replacement_table('Dummy'))
   end
 
-
 end

@@ -86,6 +86,7 @@ class ActiveSupport::TestCase
     sampler_config = create_prepared_database_config(test_config)
 
     sampler_config[:id]                      = 1
+    sampler_config[:name]                    = 'Test-Config'
     sampler_config[:client_salt]             = EngineConfig.config.panorama_sampler_master_password  # identic doubled like WorkerThread.initialized
     sampler_config[:management_pack_license] = :none                            # assume no management packs are licensed
     sampler_config[:privilege]               = 'normal'
@@ -94,7 +95,7 @@ class ActiveSupport::TestCase
     sampler_config[:password] = Encryption.encrypt_value(test_config["test_password"], sampler_config[:client_salt])
 
     sampler_config[:owner] = sampler_config[:user]                              # assume owner = connected user for test
-    sampler_config[:snapshot_cycle]         = 0                                 # Snapshot should start immediate
+    sampler_config[:snapshot_cycle]         = 1                                 # Snapshot should start immediate
     sampler_config[:snapshot_retention]     = 1
 
 

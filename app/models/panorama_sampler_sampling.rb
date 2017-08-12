@@ -35,7 +35,7 @@ class PanoramaSamplerSampling
     end
 
     ## DBA_Hist_Active_Sess_History
-    PanoramaConnection.sql_execute [" BEGIN #{@sampler_config[:owner]}.Panorama_Sampler.Move_To_Snapshot_Table(?, ?, ?); END;",
+    PanoramaConnection.sql_execute [" BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_Snapshot.Move_ASH_To_Snapshot_Table(?, ?, ?); END;",
                                     @snap_id, PanoramaConnection.dbid, con_dbid]
 
     ## TODO: Con_DBID mit realen werten des Containers füllen, falls PDB-übergreifendes Sampling gewünscht wird

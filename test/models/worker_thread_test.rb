@@ -17,6 +17,8 @@ class WorkerThreadTest < ActiveSupport::TestCase
 
   test "do_sampling" do
     PanoramaSamplerStructureCheck.remove_tables(@sampler_config)                # dedicated szeario
+    WorkerThread.new(@sampler_config).check_structure_synchron
+    WorkerThread.new(@sampler_config).create_ash_sampler_daemon
     WorkerThread.new(@sampler_config).create_snapshot_internal                  # Tables must be created before snapshot., first snapshot initialization called
 
     WorkerThread.new(@sampler_config).create_snapshot_internal                  # Tables already exists before snapshot

@@ -526,13 +526,27 @@ ORDER BY Column_ID
     false
   end
 
+  # Check if this table check belongs to ash or snapshot
+  def check_table_in_this_thread?(table_name, only_ash_tables)
+    ash_tables = ['Panorama_V$Active_Sess_History'.upcase]
+    (only_ash_tables && ash_tables.include?(table_name.upcase)) ||  (!only_ash_tables && !ash_tables.include?(table_name.upcase))
+  end
+
   # Check data structures, for ASH-Thread or snapshot thread
   def do_check_internal(only_ash_tables)
-    ash_tables = ['Panorama_V$Active_Sess_History'.upcase]
 
     @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config[:owner].upcase]
     @ora_tab_privs    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM ALL_TAB_PRIVS WHERE Table_Schema = ?  AND Privilege = 'SELECT'  AND Grantee = 'PUBLIC'",  @sampler_config[:owner].upcase]
+
+    @@tables.each do |table|
+      check_table_existence(table) if check_table_in_this_thread?(table[:table_name], only_ash_tables)
+    end
+
     @ora_tab_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config[:owner].upcase]
+    @@tables.each do |table|
+      check_table_columns(table) if check_table_in_this_thread?(table[:table_name], only_ash_tables)
+    end
+
     @ora_tab_pkeys    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Constraints WHERE Owner = ? AND Constraint_Type='P'", @sampler_config[:owner].upcase]
     @ora_tab_pk_cols  = PanoramaConnection.sql_select_all ["SELECT cc.Table_Name, cc.Column_Name, cc.Position
                                                             FROM All_Cons_Columns cc
@@ -541,9 +555,12 @@ ORDER BY Column_ID
                                                           ", @sampler_config[:owner].upcase]
     @ora_indexes      = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name FROM All_Indexes WHERE Owner = ?", @sampler_config[:owner].upcase]
     @ora_ind_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Column_Name, Column_Position FROM All_Ind_Columns WHERE Table_Owner = ?", @sampler_config[:owner].upcase]
+    @@tables.each do |table|
+      check_table_pkey(table) if check_table_in_this_thread?(table[:table_name], only_ash_tables)
+    end
 
     @@tables.each do |table|
-      check_table(table) if (only_ash_tables && ash_tables.include?(table[:table_name].upcase)) ||  (!only_ash_tables && !ash_tables.include?(table[:table_name].upcase))
+      check_table_indexes(table) if check_table_in_this_thread?(table[:table_name], only_ash_tables)
     end
 
     if only_ash_tables
@@ -595,21 +612,42 @@ ORDER BY Column_ID
   end
 
   def remove_tables_internal
+    packages = PanoramaConnection.sql_select_all [ "SELECT Object_Name
+                                                    FROM   All_Objects
+                                                    WHERE  Owner=? AND Object_Type = 'PACKAGE'
+                                                    AND    Object_Name IN ('PANORAMA_SAMPLER', 'PANORAMA_SAMPLER_SNAPSHOT', 'PANORAMA_SAMPLER_ASH')
+                                                   ", @sampler_config[:owner].upcase]
+    packages.each do |package|
+      PanoramaConnection.sql_execute("DROP PACKAGE #{@sampler_config[:owner]}.#{package.object_name}")
+    end
+
     ora_tables = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config[:owner].upcase]
     @@tables.each do |table|
-      if !ora_tables.include?({'table_name' => table[:table_name].upcase})
-        ############# Drop Table
-        sql = "DROP TABLE #{@sampler_config[:owner]}.#{table[:table_name]}"
-        log(sql)
-        PanoramaConnection.sql_execute(sql)
-        log "Table #{table[:table_name]} dropped"
+      if ora_tables.include?({'table_name' => table[:table_name].upcase})
+        begin
+          ############# Drop Table
+          sql = "DROP TABLE #{@sampler_config[:owner]}.#{table[:table_name]}"
+          log(sql)
+          PanoramaConnection.sql_execute(sql)
+          log "Table #{table[:table_name]} dropped"
+        rescue Exception => e
+          Rails.logger.error "Error #{e.message} dropping table #{@sampler_config[:owner]}.#{table[:table_name]}"
+          log_exception_backtrace(e, 40)
+          raise e
+        end
       end
     end
   end
 
   private
 
-  def check_table(table)
+  # Check if this table check belongs to ash or snapshot
+  def check_table_in_this_thread?(table_name, only_ash_tables)
+    ash_tables = ['Panorama_V$Active_Sess_History'.upcase]
+    (only_ash_tables && ash_tables.include?(table_name.upcase)) ||  (!only_ash_tables && !ash_tables.include?(table_name.upcase))
+  end
+
+  def check_table_existence(table)
     if !@ora_tables.include?({'table_name' => table[:table_name].upcase})
       ############# Check Table existence
       log "Table #{table[:table_name]} does not exist"
@@ -630,8 +668,9 @@ ORDER BY Column_ID
       log(sql)
       PanoramaConnection.sql_execute(sql)
     end
+  end
 
-    ############ Check columns
+  def check_table_columns(table)
     table[:columns].each do |column|
       if !@ora_tab_columns.include?({'table_name' => table[:table_name].upcase, 'column_name' => column[:column_name].upcase})
         sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} ADD ("
@@ -641,7 +680,9 @@ ORDER BY Column_ID
         PanoramaConnection.sql_execute(sql)
       end
     end
+  end
 
+  def check_table_pkey(table)
     ############ Check Primary Key
     if table[:primary_key]
       pk_name = "#{table[:table_name][0,27]}_PK"
@@ -681,8 +722,10 @@ ORDER BY Column_ID
         PanoramaConnection.sql_execute(sql)
       end
     end
+  end
 
-    ############ Check Indexes
+  def check_table_indexes(table)
+  ############ Check Indexes
     if table[:indexes]
       table[:indexes].each do |index|
         check_index(table[:table_name], index[:index_name], index[:columns])

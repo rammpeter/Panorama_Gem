@@ -12,9 +12,22 @@ END Panorama_Sampler_Snapshot;
     "
 CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_Snapshot IS
   PROCEDURE Move_ASH_To_Snapshot_Table(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
+    v_Max_Sample_ID NUMBER;
   BEGIN
-    NULL;
-  END;
+    SELECT MAX(Sample_ID) INTO v_Max_Sample_ID FROM Panorama_V$Active_Sess_History;
+    INSERT INTO Panorama_Active_Sess_History (
+      Snap_ID, DBID, Instance_Number, Sample_ID, Session_ID, Session_Type, Flags, User_ID, SQL_ID,
+      Con_DBID, Con_ID
+    ) SELECT p_Snap_ID, p_DBID, Instance_Number, Sample_ID, Session_ID, Session_Type, Flags, User_ID, SQL_ID,
+             p_Con_DBID, Con_ID
+      FROM   Panorama_V$Active_Sess_History
+      WHERE  Sample_ID <= v_Max_Sample_ID
+    ;
+    DELETE FROM Panorama_V$Active_Sess_History WHERE Sample_ID <= v_Max_Sample_ID;
+    COMMIT;
+  END Move_ASH_To_Snapshot_Table;
+
+
 END Panorama_Sampler_Snapshot;
     "
   end
