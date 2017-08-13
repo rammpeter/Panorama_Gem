@@ -1,3 +1,19 @@
+module PanoramaSampler::PackagePanoramaSamplerAsh
+  # PL/SQL-Package for snapshot creation
+  def panorama_sampler_ash_spec
+    "
+CREATE OR REPLACE Package panorama.Panorama_Sampler_ASH AS
+  -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
+
+
+  PROCEDURE Run_Sampler_Daemon(p_Snapshot_Cycle_Seconds IN NUMBER, p_Instance_Number IN NUMBER, p_Con_ID IN NUMBER, p_Next_Snapshot_Start_Seconds IN NUMBER);
+
+END Panorama_Sampler_ASH;
+    "
+  end
+
+  def panorama_sampler_ash_body
+    "
 -- Package for use by Panorama-Sampler
 CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
@@ -72,6 +88,7 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
       FROM   v$Session s
       LEFT OUTER JOIN v$SQLCommand c ON c.Command_Type = s.Command
       LEFT OUTER JOIN v$SQL sql ON sql.SQL_ID = s.SQL_ID AND sql.Child_Number = s.SQL_Child_Number
+      LEFT OUTER JOIN v$PX_Session pxs ON pxs.SID = s.SID AND pxs.Serial#=s.Serial#
       WHERE  s.Status = 'ACTIVE'
       AND    s.Wait_Class != 'Idle'
       AND    s.SID        != USERENV('SID')  -- dont record the own session that assumes always active this way
@@ -152,3 +169,8 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
     END Run_Sampler_Daemon;
 
 END Panorama_Sampler_ASH;
+    "
+  end
+
+
+end

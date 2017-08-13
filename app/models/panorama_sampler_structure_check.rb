@@ -1,5 +1,6 @@
 class PanoramaSamplerStructureCheck
   include ExceptionHelper
+  include PanoramaSampler::PackagePanoramaSamplerAsh
   include PanoramaSampler::PackagePanoramaSamplerSnapshot
 
   def self.do_check(sampler_config, only_ash_tables)
@@ -568,13 +569,12 @@ ORDER BY Column_ID
       # Check PL/SQL package
 
       # Get Path to this model class as base for sql files
-      source_dir = Pathname(PanoramaSamplerStructureCheck.instance_method(:do_check_internal).source_location[0]).dirname.join('../helpers/panorama_sampler')
+      # source_dir = Pathname(PanoramaSamplerStructureCheck.instance_method(:do_check_internal).source_location[0]).dirname.join('../helpers/panorama_sampler')
 
-      package_spec_file = "#{source_dir}/pack_panorama_sampler_ash_spec.sql"
-      package_body_file = "#{source_dir}/pack_panorama_sampler_ash_body.sql"
+      filename = PanoramaSampler::PackagePanoramaSamplerAsh.instance_method(:panorama_sampler_ash_spec).source_location[0]
 
-      create_or_check_package(package_spec_file, File.read(package_spec_file), 'PANORAMA_SAMPLER_ASH', :spec)
-      create_or_check_package(package_body_file, File.read(package_body_file), 'PANORAMA_SAMPLER_ASH', :body)
+      create_or_check_package(filename, panorama_sampler_ash_spec, 'PANORAMA_SAMPLER_ASH', :spec)
+      create_or_check_package(filename, panorama_sampler_ash_body, 'PANORAMA_SAMPLER_ASH', :body)
     else                                                                        # for snapshot thread
       filename = PanoramaSampler::PackagePanoramaSamplerSnapshot.instance_method(:panorama_sampler_snapshot_spec).source_location[0]
 
