@@ -473,7 +473,7 @@ ORDER BY Column_ID
     sql = org_sql.clone
 
     # fake gv$Active_Session_History in SQL so translation will hit it
-    sql.gsub!(/gv$Active_Session_History/i, 'DBA_HIST_V$Active_Sess_History')
+    sql.gsub!(/gv\$Active_Session_History/i, 'DBA_HIST_V$Active_Sess_History')
 
     up_sql = sql.upcase
     start_index = up_sql.index('DBA_HIST')
@@ -498,7 +498,7 @@ ORDER BY Column_ID
 
   # Replace DBA_Hist tablename in HTML-templates with corresponding Panorama-Sampler table and schema
   def self.adjust_table_name(org_table_name)
-    return org_table_name if PanoramaConnection.get_config[:panorama_sampler_schema].nil?   # Sampler not active
+    return org_table_name if PanoramaConnection.get_config[:management_pack_license] != :panorama_sampler   # Sampler not active
     replacement = replacement_table(org_table_name)
     return org_table_name if replacement.nil?
     "#{PanoramaConnection.get_config[:panorama_sampler_schema]}.#{replacement}" # Table replaced by sampler
@@ -569,45 +569,16 @@ ORDER BY Column_ID
       # Get Path to this model class as base for sql files
       source_dir = Pathname(PanoramaSamplerStructureCheck.instance_method(:do_check_internal).source_location[0]).dirname.join('../helpers/panorama_sampler')
 
-      package_spec_file = "#{source_dir}/pack_panorama_sampler_spec.sql"
-      package_body_file = "#{source_dir}/pack_panorama_sampler_body.sql"
+      package_spec_file = "#{source_dir}/pack_panorama_sampler_ash_spec.sql"
+      package_body_file = "#{source_dir}/pack_panorama_sampler_ash_body.sql"
 
-      last_ddl_package = PanoramaConnection.sql_select_one [ "SELECT MIN(Last_DDL_Time)
-                                                            FROM   All_Objects
-                                                            WHERE  Object_Type IN ('PACKAGE', 'PACKAGE BODY')
-                                                            AND    Owner = ?
-                                                            AND    Object_Name = 'PANORAMA_SAMPLER'
-                                                           ", @sampler_config[:owner].upcase]
-      if last_ddl_package.nil? || last_ddl_package < File.ctime(package_spec_file) || last_ddl_package < File.ctime(package_body_file)
-        # Compile package
-        Rails.logger.info "Package #{@sampler_config[:owner].upcase}.PANORAMA_SAMPLER needs recompile"
-        package_spec = File.read(package_spec_file)
-        package_body = File.read(package_body_file)
-
-        package_spec.gsub!(/PANORAMA\./i, "#{@sampler_config[:owner].upcase}.")    # replace PANORAMA with the real owner
-        package_body.gsub!(/PANORAMA\./i, "#{@sampler_config[:owner].upcase}.")    # replace PANORAMA with the real owner
-        PanoramaConnection.sql_execute package_spec
-        PanoramaConnection.sql_execute package_body
-      end
-
+      create_or_check_package(package_spec_file, File.read(package_spec_file), 'PANORAMA_SAMPLER_ASH', :spec)
+      create_or_check_package(package_body_file, File.read(package_body_file), 'PANORAMA_SAMPLER_ASH', :body)
     else                                                                        # for snapshot thread
       filename = PanoramaSampler::PackagePanoramaSamplerSnapshot.instance_method(:panorama_sampler_snapshot_spec).source_location[0]
 
-      last_ddl_package = PanoramaConnection.sql_select_one [ "SELECT MIN(Last_DDL_Time)
-                                                            FROM   All_Objects
-                                                            WHERE  Object_Type IN ('PACKAGE', 'PACKAGE BODY')
-                                                            AND    Owner = ?
-                                                            AND    Object_Name = 'PANORAMA_SAMPLER_SNAPSHOT'
-                                                           ", @sampler_config[:owner].upcase]
-      if last_ddl_package.nil? || last_ddl_package < File.ctime(filename)
-        # Compile package
-        Rails.logger.info "Package #{@sampler_config[:owner].upcase}.PANORAMA_SAMPLER_SNAPSHOT needs recompile"
-
-        PanoramaConnection.sql_execute panorama_sampler_snapshot_spec.gsub(/PANORAMA\./i, "#{@sampler_config[:owner].upcase}.") # replace PANORAMA with the real owner
-        PanoramaConnection.sql_execute panorama_sampler_snapshot_body.gsub(/PANORAMA\./i, "#{@sampler_config[:owner].upcase}.") # replace PANORAMA with the real owner
-      end
-
-
+      create_or_check_package(filename, panorama_sampler_snapshot_spec, 'PANORAMA_SAMPLER_SNAPSHOT', :spec)
+      create_or_check_package(filename, panorama_sampler_snapshot_body, 'PANORAMA_SAMPLER_SNAPSHOT', :body)
     end
   end
 
@@ -615,7 +586,7 @@ ORDER BY Column_ID
     packages = PanoramaConnection.sql_select_all [ "SELECT Object_Name
                                                     FROM   All_Objects
                                                     WHERE  Owner=? AND Object_Type = 'PACKAGE'
-                                                    AND    Object_Name IN ('PANORAMA_SAMPLER', 'PANORAMA_SAMPLER_SNAPSHOT', 'PANORAMA_SAMPLER_ASH')
+                                                    AND    Object_Name IN ('PANORAMA_SAMPLER_SNAPSHOT', 'PANORAMA_SAMPLER_ASH')
                                                    ", @sampler_config[:owner].upcase]
     packages.each do |package|
       PanoramaConnection.sql_execute("DROP PACKAGE #{@sampler_config[:owner]}.#{package.object_name}")
@@ -640,6 +611,35 @@ ORDER BY Column_ID
   end
 
   private
+
+  def get_package_obj(package_name, type)
+    PanoramaConnection.sql_select_first_row [ "SELECT Status, Last_DDL_Time
+                                               FROM   All_Objects
+                                               WHERE  Object_Type = ?
+                                               AND    Owner       = ?
+                                               AND    Object_Name = ?
+                                              ", (type == :spec ? 'PACKAGE' : 'PACKAGE BODY'), @sampler_config[:owner].upcase, package_name.upcase]
+  end
+
+  # type :spec or :body
+  def create_or_check_package(file_for_time_check, source_buffer, package_name, type)
+    package_obj = get_package_obj(package_name, type)
+
+    if package_obj.nil? || package_obj.last_ddl_time < File.ctime(file_for_time_check) || package_obj.status != 'VALID'
+      # Compile package
+      Rails.logger.info "Package #{'body ' if type==:body}#{@sampler_config[:owner].upcase}.#{package_name} needs #{package_obj.nil? ? 'creation' : 'recompile'}"
+      translated_source_buffer = source_buffer.gsub(/PANORAMA\./i, "#{@sampler_config[:owner].upcase}.")    # replace PANORAMA with the real owner
+      PanoramaConnection.sql_execute translated_source_buffer
+      package_obj = get_package_obj(package_name, type)                         # repeat check on ALL_Objects
+      if package_obj.status != 'VALID'
+        errors = PanoramaConnection.sql_select_all ["SELECT * FROM User_Errors WHERE Name = ? AND Type = ? ORDER BY Sequence", package_name.upcase, (type==:spec ? 'PACKAGE' : 'PACKAGE BODY')]
+        errors.each do |e|
+          Rails.logger.error "Line=#{e.line} position=#{e.position}: #{e.text}"
+        end
+        raise "Error compiling package #{'body ' if type==:body}#{@sampler_config[:owner].upcase}.#{package_name}. See previous lines"
+      end
+    end
+  end
 
   # Check if this table check belongs to ash or snapshot
   def check_table_in_this_thread?(table_name, only_ash_tables)

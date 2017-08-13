@@ -1,5 +1,5 @@
 -- Package for use by Panorama-Sampler
-CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler AS
+CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
   TYPE AshType IS RECORD (
     Sample_ID             NUMBER,
     Session_ID            NUMBER,
@@ -81,4 +81,4 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler AS
           RAISE;
     END Run_Sampler_Daemon;
 
-END Panorama_Sampler;
+END Panorama_Sampler_ASH;

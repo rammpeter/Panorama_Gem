@@ -208,7 +208,7 @@ class PanoramaSamplerSampling
 
   # Run daemon, daeomon returns 1 second before next snapshot timestamp
   def run_ash_daemon_internal
-    PanoramaConnection.sql_execute [" BEGIN #{@sampler_config[:owner]}.Panorama_Sampler.Run_Sampler_Daemon(?, ?, ?); END;",
+    PanoramaConnection.sql_execute [" BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_ASH.Run_Sampler_Daemon(?, ?, ?); END;",
                                     @sampler_config[:snapshot_cycle], PanoramaConnection.instance_number, PanoramaConnection.con_id]
   end
 
