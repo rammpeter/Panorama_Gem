@@ -28,7 +28,7 @@ class PanoramaSamplerStructureCheckTest < ActiveSupport::TestCase
   test 'transform_sql_for_sampler' do
     assert_equal(PanoramaSamplerStructureCheck.transform_sql_for_sampler("SELECT * FROM DBA_Hist_SQLStat").upcase,          "SELECT * FROM PANORAMA_TEST.PANORAMA_SQLSTAT")
     assert_equal(PanoramaSamplerStructureCheck.transform_sql_for_sampler("SELECT * FROM gv$Active_Session_History").upcase, "SELECT * FROM PANORAMA_TEST.PANORAMA_V$ACTIVE_SESS_HISTORY")
-    assert_equal(PanoramaSamplerStructureCheck.transform_sql_for_sampler("SELECT * FROM DBA_Hist_Hugo").upcase,             "SELECT * FROM PANORAMA_TEST.DBA_HIST_HUGO")
+    assert_equal(PanoramaSamplerStructureCheck.transform_sql_for_sampler("SELECT * FROM DBA_Hist_Hugo").upcase,             "SELECT * FROM DBA_HIST_HUGO")
   end
 
   test 'adjust_table_name' do
