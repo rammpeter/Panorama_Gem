@@ -42,7 +42,10 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
     PLSQL_ENTRY_OBJECT_ID     NUMBER,
     PLSQL_ENTRY_SUBPROGRAM_ID NUMBER,
     PLSQL_OBJECT_ID           NUMBER,
-    PLSQL_SUBPROGRAM_ID       NUMBER
+    PLSQL_SUBPROGRAM_ID       NUMBER,
+    QC_INSTANCE_ID            NUMBER,
+    QC_SESSION_ID             NUMBER,
+    QC_SESSION_SERIAL#        NUMBER
   );
   TYPE AshTableType IS TABLE OF AshType INDEX BY BINARY_INTEGER;
   AshTable                AshTableType;
@@ -83,15 +86,19 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
              s.PLSQL_ENTRY_OBJECT_ID,
              s.PLSQL_ENTRY_SUBPROGRAM_ID,
              s.PLSQL_OBJECT_ID,
-             s.PLSQL_SUBPROGRAM_ID
+             s.PLSQL_SUBPROGRAM_ID,
+             pxs.QCInst_ID,
+             pxs.QCSID,
+             pxs.QCSerial#
       BULK COLLECT INTO AshTable4Select
       FROM   v$Session s
-      LEFT OUTER JOIN v$SQLCommand c ON c.Command_Type = s.Command
-      LEFT OUTER JOIN v$SQL sql ON sql.SQL_ID = s.SQL_ID AND sql.Child_Number = s.SQL_Child_Number
+      LEFT OUTER JOIN v$SQLCommand c ON c.Command_Type = s.Command #{"AND c.Con_ID = s.Con_ID" if PanoramaConnection.db_version >= '12.1'}
+      LEFT OUTER JOIN v$SQL sql ON sql.SQL_ID = s.SQL_ID AND sql.Child_Number = s.SQL_Child_Number #{"AND sql.Con_ID = s.Con_ID" if PanoramaConnection.db_version >= '12.1'}
       LEFT OUTER JOIN v$PX_Session pxs ON pxs.SID = s.SID AND pxs.Serial#=s.Serial#
       WHERE  s.Status = 'ACTIVE'
       AND    s.Wait_Class != 'Idle'
       AND    s.SID        != USERENV('SID')  -- dont record the own session that assumes always active this way
+      #{"AND s.Con_ID = p_Con_ID" if PanoramaConnection.db_version >= '12.1'}
       ;
 
       FOR Idx IN 1 .. AshTable4Select.COUNT LOOP
@@ -110,6 +117,7 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
           SQL_PLAN_HASH_VALUE, SQL_PLAN_LINE_ID, SQL_PLAN_OPERATION, SQL_PLAN_OPTIONS,
           SQL_EXEC_ID, SQL_EXEC_START,
           PLSQL_ENTRY_OBJECT_ID, PLSQL_ENTRY_SUBPROGRAM_ID, PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID,
+          QC_INSTANCE_ID, QC_SESSION_ID, QC_SESSION_SERIAL#,
           Con_ID
         ) VALUES (
           p_Instance_Number, AshTable(Idx).Sample_ID, AshTable(Idx).Sample_Time, 'N', AshTable(Idx).Session_ID, AshTable(Idx).Session_Serial#,
@@ -118,6 +126,7 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
           AshTable(Idx).SQL_PLAN_HASH_VALUE, AshTable(Idx).SQL_PLAN_LINE_ID, AshTable(Idx).SQL_PLAN_OPERATION, AshTable(Idx).SQL_PLAN_OPTIONS,
           AshTable(Idx).SQL_EXEC_ID, AshTable(Idx).SQL_EXEC_START,
           AshTable(Idx).PLSQL_ENTRY_OBJECT_ID, AshTable(Idx).PLSQL_ENTRY_SUBPROGRAM_ID, AshTable(Idx).PLSQL_OBJECT_ID, AshTable(Idx).PLSQL_SUBPROGRAM_ID,
+          AshTable(Idx).QC_INSTANCE_ID, AshTable(Idx).QC_SESSION_ID, AshTable(Idx).QC_SESSION_SERIAL#,
           p_Con_ID
         );
         COMMIT;
