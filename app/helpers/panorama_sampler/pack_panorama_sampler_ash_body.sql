@@ -2,14 +2,31 @@
 CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
   TYPE AshType IS RECORD (
-    Sample_ID             NUMBER,
-    Sample_Time           TIMESTAMP(3),
-    Session_ID            NUMBER,
-    SESSION_SERIAL#       NUMBER,
-    Session_Type          VARCHAR2(10),
-    Flags                 NUMBER,
-    User_ID               NUMBER,
-    SQL_ID                VARCHAR2(13)
+    Sample_ID                 NUMBER,
+    Sample_Time               TIMESTAMP(3),
+    Session_ID                NUMBER,
+    SESSION_SERIAL#           NUMBER,
+    Session_Type              VARCHAR2(10),
+    Flags                     NUMBER,
+    User_ID                   NUMBER,
+    SQL_ID                    VARCHAR2(13),
+    Is_SQLID_Current          VARCHAR2(1),
+    SQL_CHILD_NUMBER          NUMBER,
+    SQL_OPCODE                NUMBER,
+    SQL_OpName                VARCHAR2(64),
+    FORCE_MATCHING_SIGNATURE  NUMBER,
+    TOP_LEVEL_SQL_ID          VARCHAR2(13),
+    TOP_LEVEL_SQL_OPCODE      NUMBER,
+    SQL_PLAN_HASH_VALUE       NUMBER,
+    SQL_PLAN_LINE_ID          NUMBER,
+    SQL_PLAN_OPERATION        VARCHAR2(64),
+    SQL_PLAN_OPTIONS          VARCHAR2(64),
+    SQL_EXEC_ID               NUMBER,
+    SQL_EXEC_START            DATE,
+    PLSQL_ENTRY_OBJECT_ID     NUMBER,
+    PLSQL_ENTRY_SUBPROGRAM_ID NUMBER,
+    PLSQL_OBJECT_ID           NUMBER,
+    PLSQL_SUBPROGRAM_ID       NUMBER
   );
   TYPE AshTableType IS TABLE OF AshType INDEX BY BINARY_INTEGER;
   AshTable                AshTableType;
@@ -33,12 +50,31 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
              s.Type,
              NULL,                -- Flags
              s.User#,
-             s.SQL_ID
+             s.SQL_ID,
+             'Y',                 -- TODO: Is_SQLID_Current ermitteln
+             s.SQL_Child_Number,
+             s.Command,           -- SQL_OpCode
+             c.Command_Name,      -- SQL_OpName
+             sql.FORCE_MATCHING_SIGNATURE,
+             NULL,                -- TODO: TOP_LEVEL_SQL_ID ermitteln
+             NULL,                -- TODO: TOP_LEVEL_SQL_OPCODE ermitteln
+             sql.PLAN_HASH_VALUE,
+             NULL,                -- TODO: SQL_PLAN_LINE_ID ermitteln
+             NULL,                -- TODO: SQL_PLAN_OPERATION ermitteln
+             NULL,                -- TODO SQL_PLAN_OPTIONS ermitteln
+             s.SQL_EXEC_ID,
+             s.SQL_EXEC_START,
+             s.PLSQL_ENTRY_OBJECT_ID,
+             s.PLSQL_ENTRY_SUBPROGRAM_ID,
+             s.PLSQL_OBJECT_ID,
+             s.PLSQL_SUBPROGRAM_ID
       BULK COLLECT INTO AshTable4Select
       FROM   v$Session s
+      LEFT OUTER JOIN v$SQLCommand c ON c.Command_Type = s.Command
+      LEFT OUTER JOIN v$SQL sql ON sql.SQL_ID = s.SQL_ID AND sql.Child_Number = s.SQL_Child_Number
       WHERE  s.Status = 'ACTIVE'
-             AND    s.Wait_Class != 'Idle'
-             AND    s.SID        != USERENV('SID')  -- dont record the own session that assumes always active this way
+      AND    s.Wait_Class != 'Idle'
+      AND    s.SID        != USERENV('SID')  -- dont record the own session that assumes always active this way
       ;
 
       FOR Idx IN 1 .. AshTable4Select.COUNT LOOP
@@ -52,13 +88,19 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
         FORALL Idx IN 1 .. AshTable.COUNT
         INSERT INTO Panorama_V$Active_Sess_History (
           Instance_Number, Sample_ID, Sample_Time, Is_AWR_Sample, Session_ID, Session_Serial#,
-          Session_Type, Flags, User_ID, SQL_ID,
-          Event_ID,
+          Session_Type, Flags, User_ID, SQL_ID, Is_SQLID_Current, SQL_Child_Number,
+          SQL_OpCode, SQL_OpName, FORCE_MATCHING_SIGNATURE, TOP_LEVEL_SQL_ID, TOP_LEVEL_SQL_OPCODE,
+          SQL_PLAN_HASH_VALUE, SQL_PLAN_LINE_ID, SQL_PLAN_OPERATION, SQL_PLAN_OPTIONS,
+          SQL_EXEC_ID, SQL_EXEC_START,
+          PLSQL_ENTRY_OBJECT_ID, PLSQL_ENTRY_SUBPROGRAM_ID, PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID,
           Con_ID
         ) VALUES (
           p_Instance_Number, AshTable(Idx).Sample_ID, AshTable(Idx).Sample_Time, 'N', AshTable(Idx).Session_ID, AshTable(Idx).Session_Serial#,
-          AshTable(Idx).Session_Type, AshTable(Idx).Flags, AshTable(Idx).User_ID, AshTable(Idx).SQL_ID,
-          p_Bulk_Size,
+          AshTable(Idx).Session_Type, AshTable(Idx).Flags, AshTable(Idx).User_ID, AshTable(Idx).SQL_ID, AshTable(Idx).Is_SQLID_Current, AshTable(Idx).SQL_Child_Number,
+          AshTable(Idx).SQL_OpCode, AshTable(Idx).SQL_OpName, AshTable(Idx).FORCE_MATCHING_SIGNATURE, AshTable(Idx).TOP_LEVEL_SQL_ID, AshTable(Idx).TOP_LEVEL_SQL_OPCODE,
+          AshTable(Idx).SQL_PLAN_HASH_VALUE, AshTable(Idx).SQL_PLAN_LINE_ID, AshTable(Idx).SQL_PLAN_OPERATION, AshTable(Idx).SQL_PLAN_OPTIONS,
+          AshTable(Idx).SQL_EXEC_ID, AshTable(Idx).SQL_EXEC_START,
+          AshTable(Idx).PLSQL_ENTRY_OBJECT_ID, AshTable(Idx).PLSQL_ENTRY_SUBPROGRAM_ID, AshTable(Idx).PLSQL_OBJECT_ID, AshTable(Idx).PLSQL_SUBPROGRAM_ID,
           p_Con_ID
         );
         COMMIT;
