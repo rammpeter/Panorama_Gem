@@ -11,8 +11,11 @@ class PanoramaSamplerSampling
     PanoramaSamplerSampling.new(sampler_config).do_housekeeping_internal
   end
 
-  def self.run_ash_daemon(sampler_config)
-    PanoramaSamplerSampling.new(sampler_config).run_ash_daemon_internal
+  def self.run_ash_daemon(sampler_config, snapshot_time)
+    PanoramaSamplerSampling.new(sampler_config).run_ash_daemon_internal(snapshot_time)
+  rescue Exception => e
+    # try second time to fix error ORA-04068 existing state of package has changed ...
+    PanoramaSamplerSampling.new(sampler_config).run_ash_daemon_internal(snapshot_time)
   end
 
   def initialize(sampler_config)
@@ -35,8 +38,7 @@ class PanoramaSamplerSampling
     end
 
     ## DBA_Hist_Active_Sess_History
-    PanoramaConnection.sql_execute [" BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_Snapshot.Move_ASH_To_Snapshot_Table(?, ?, ?); END;",
-                                    @snap_id, PanoramaConnection.dbid, con_dbid]
+    PanoramaConnection.sql_execute [" BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_Snapshot.Move_ASH_To_Snapshot_Table(?, ?, ?); END;", @snap_id, PanoramaConnection.dbid, con_dbid]
 
     ## TODO: Con_DBID mit realen werten des Containers füllen, falls PDB-übergreifendes Sampling gewünscht wird
     ## DBA_Hist_DB_Cache_Advice
@@ -207,9 +209,15 @@ class PanoramaSamplerSampling
   end
 
   # Run daemon, daeomon returns 1 second before next snapshot timestamp
-  def run_ash_daemon_internal
-    PanoramaConnection.sql_execute [" BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_ASH.Run_Sampler_Daemon(?, ?, ?); END;",
-                                    @sampler_config[:snapshot_cycle], PanoramaConnection.instance_number, PanoramaConnection.con_id]
+  def run_ash_daemon_internal(snapshot_time)
+    start_delay_from_snapshot = Time.now - snapshot_time
+    snapshot_cycle_seconds = @sampler_config[:snapshot_cycle] * 60
+    if start_delay_from_snapshot > 30                                           # ASH-daemon starts more than 30 seconds after snapshot due to structure-check before
+      snapshot_cycle_seconds -= start_delay_from_snapshot.to_i - 30             # Limit delay so that ASH-daemon terminates max. 30 seconds after next snapshot
+    end
+    next_snapshot_start_seconds = @sampler_config[:snapshot_cycle] * 60 - start_delay_from_snapshot # Number of seconds until next snapshot start
+    PanoramaConnection.sql_execute [" BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_ASH.Run_Sampler_Daemon(?, ?, ?, ?); END;",
+                                    snapshot_cycle_seconds, PanoramaConnection.instance_number, PanoramaConnection.con_id, next_snapshot_start_seconds]
   end
 
   private

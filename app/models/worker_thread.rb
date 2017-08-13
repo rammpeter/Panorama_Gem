@@ -5,7 +5,7 @@ class WorkerThread
   ############################### class methods as public interface ###############################
   # Check if connection may function and return DBID aof database
   def self.check_connection(sampler_config, controller)
-    thread = Thread.new{WorkerThread.new(sampler_config).check_connection_internal(controller)}
+    thread = Thread.new{WorkerThread.new(sampler_config, 'check_connection').check_connection_internal(controller)}
     result = thread.value
     result
   rescue Exception => e
@@ -14,18 +14,19 @@ class WorkerThread
   end
 
   # Create snapshot for PanoramaSampler
-  def self.create_snapshot(sampler_config)
-    WorkerThread.new(sampler_config).check_structure_synchron                   # Ensure existence of objects necessary for both Threads, synchron with job's thread
-    thread = Thread.new{WorkerThread.new(sampler_config).create_ash_sampler_daemon} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
-    thread = Thread.new{WorkerThread.new(sampler_config).create_snapshot_internal}  # Excute the snapshot and terminate
+  def self.create_snapshot(sampler_config, snapshot_time)
+    WorkerThread.new(sampler_config, 'check_structure_synchron').check_structure_synchron # Ensure existence of objects necessary for both Threads, synchron with job's thread
+    thread = Thread.new{WorkerThread.new(sampler_config, 'ash_sampler_daemon').create_ash_sampler_daemon(snapshot_time)} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
+    thread = Thread.new{WorkerThread.new(sampler_config, 'create_snapshot')   .create_snapshot_internal}  # Excute the snapshot and terminate
   rescue Exception => e
     Rails.logger.error "Exception #{e.message} raised in WorkerThread.create_snapshot for config-ID=#{sampler_config[:id]}"
+    log_exception_backtrace(e, 40)
     # raise e               # Don't raise exception because it should not stop calling job processing
   end
 
   ############################### inner implementation ###############################
 
-  def initialize(sampler_config)
+  def initialize(sampler_config, action_name)
     @sampler_config = sampler_config
 
     connection_config = sampler_config.clone                                    # Structure similar to database
@@ -34,6 +35,8 @@ class WorkerThread
     connection_config[:management_pack_license] = :none                         # assume no management packs are licensed
     connection_config[:privilege]               = 'normal'
     connection_config[:query_timeout]           = connection_config[:snapshot_cycle]*60+60 # 1 minute more than snapshot cycle
+    connection_config[:current_controller_name] = 'WorkerThread'
+    connection_config[:current_action_name]     = action_name
 
     PanoramaConnection.set_connection_info_for_request(connection_config)
 
@@ -106,7 +109,6 @@ class WorkerThread
     Rails.logger.info "#{Time.now}: Create new snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
 
     @@active_snashots[@sampler_config[:id]] = true                              # Create semaphore for thread, begin processing
-    db_time = PanoramaConnection.sql_select_one "SELECT SYSDATE FROM Dual"
     PanoramaSamplerConfig.modify_config_entry({
                                                   :id                       => @sampler_config[:id],
                                                   :last_successful_connect  => Time.now,
@@ -139,7 +141,13 @@ class WorkerThread
 
   @@active_ash_daemons = {}
   # Create snapshot in database
-  def create_ash_sampler_daemon
+  def create_ash_sampler_daemon(snapshot_time)
+    # Wait for end of previous ASH sampler daemon if not yet terminated
+    loop_count = 0
+    while @@active_ash_daemons[ @sampler_config[:id]] && loop_count < 600  # wait max. 60 seconds for previous ASH sampler daemon to terminate
+      sleep 0.1
+      loop_count += 1
+    end
     if @@active_ash_daemons[ @sampler_config[:id]]
       Rails.logger.error("Previous ASH daemon not yet finshed for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]}), new ASH daemon for snapshot not started! Restart Panorama server if this problem persists.")
       PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Previous ASH daemon not yet finshed, new ASH daemon for snapshot not started! Restart Panorama server if this problem persists.")
@@ -149,9 +157,8 @@ class WorkerThread
     Rails.logger.info "#{Time.now}: Create new ASH daemon for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
 
     @@active_ash_daemons[@sampler_config[:id]] = true                           # Create semaphore for thread, begin processing
-    db_time = PanoramaConnection.sql_select_one "SELECT SYSDATE FROM Dual"
     # Check data structure only for ASH-tables is already done in check_structure_synchron
-    PanoramaSamplerSampling.run_ash_daemon(@sampler_config)                     # Start ASH daemon
+    PanoramaSamplerSampling.run_ash_daemon(@sampler_config, snapshot_time)      # Start ASH daemon
 
     # End activities after finishing snapshot
     Rails.logger.info "#{Time.now}: ASH daemon terminated for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"

@@ -165,6 +165,7 @@ class PanoramaSamplerStructureCheck
               #{ column_name:  'DBOP_NAME',                      column_type:  'VARCHAR2', precision: 30 },
               #{ column_name:  'DBOP_EXEC_ID',                   column_type:  'NUMBER' },
           ],
+          primary_key: ['INSTANCE_NUMBER', 'SAMPLE_ID', 'SESSION_ID'],    # ensure that copying data into Panorama_Active_Sess_History does never rails PK-violation
       },
       {
           table_name: 'Panorama_Active_Sess_History',
@@ -629,6 +630,8 @@ ORDER BY Column_ID
       # Compile package
       Rails.logger.info "Package #{'body ' if type==:body}#{@sampler_config[:owner].upcase}.#{package_name} needs #{package_obj.nil? ? 'creation' : 'recompile'}"
       translated_source_buffer = source_buffer.gsub(/PANORAMA\./i, "#{@sampler_config[:owner].upcase}.")    # replace PANORAMA with the real owner
+      translated_source_buffer.gsub!(/COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME/, Time.now.to_s) # change source to provocate change of LAST_DDL_TIME
+
       PanoramaConnection.sql_execute translated_source_buffer
       package_obj = get_package_obj(package_name, type)                         # repeat check on ALL_Objects
       if package_obj.status != 'VALID'
