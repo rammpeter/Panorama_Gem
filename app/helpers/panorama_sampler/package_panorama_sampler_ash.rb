@@ -45,7 +45,17 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
     PLSQL_SUBPROGRAM_ID       NUMBER,
     QC_INSTANCE_ID            NUMBER,
     QC_SESSION_ID             NUMBER,
-    QC_SESSION_SERIAL#        NUMBER
+    QC_SESSION_SERIAL#        NUMBER,
+    PX_FLAGS                  NUMBER,
+    EVENT                     VARCHAR2(64),
+    EVENT_ID                  NUMBER,
+    SEQ#                      NUMBER,
+    P1TEXT                    VARCHAR2(64),
+    P1                        NUMBER,
+    P2TEXT                    VARCHAR2(64),
+    P2                        NUMBER,
+    P3TEXT                    VARCHAR2(64),
+    P3                        NUMBER
   );
   TYPE AshTableType IS TABLE OF AshType INDEX BY BINARY_INTEGER;
   AshTable                AshTableType;
@@ -89,7 +99,17 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
              s.PLSQL_SUBPROGRAM_ID,
              pxs.QCInst_ID,
              pxs.QCSID,
-             pxs.QCSerial#
+             pxs.QCSerial#,
+             NULL,                -- TODO: PX_FLAGS ermitteln
+             s.Event,
+             s.Event#,
+             s.SEQ#,
+             s.P1TEXT,
+             s.P1,
+             s.P2TEXT,
+             s.P2,
+             s.P3TEXT,
+             s.P3
       BULK COLLECT INTO AshTable4Select
       FROM   v$Session s
       LEFT OUTER JOIN v$SQLCommand c ON c.Command_Type = s.Command #{"AND c.Con_ID = s.Con_ID" if PanoramaConnection.db_version >= '12.1'}
@@ -117,7 +137,8 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
           SQL_PLAN_HASH_VALUE, SQL_PLAN_LINE_ID, SQL_PLAN_OPERATION, SQL_PLAN_OPTIONS,
           SQL_EXEC_ID, SQL_EXEC_START,
           PLSQL_ENTRY_OBJECT_ID, PLSQL_ENTRY_SUBPROGRAM_ID, PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID,
-          QC_INSTANCE_ID, QC_SESSION_ID, QC_SESSION_SERIAL#,
+          QC_INSTANCE_ID, QC_SESSION_ID, QC_SESSION_SERIAL#, PX_FLAGS, Event, Event_ID,
+          SEQ#, P1TEXT, P1, P2TEXT, P2, P3TEXT, P3,
           Con_ID
         ) VALUES (
           p_Instance_Number, AshTable(Idx).Sample_ID, AshTable(Idx).Sample_Time, 'N', AshTable(Idx).Session_ID, AshTable(Idx).Session_Serial#,
@@ -126,7 +147,8 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
           AshTable(Idx).SQL_PLAN_HASH_VALUE, AshTable(Idx).SQL_PLAN_LINE_ID, AshTable(Idx).SQL_PLAN_OPERATION, AshTable(Idx).SQL_PLAN_OPTIONS,
           AshTable(Idx).SQL_EXEC_ID, AshTable(Idx).SQL_EXEC_START,
           AshTable(Idx).PLSQL_ENTRY_OBJECT_ID, AshTable(Idx).PLSQL_ENTRY_SUBPROGRAM_ID, AshTable(Idx).PLSQL_OBJECT_ID, AshTable(Idx).PLSQL_SUBPROGRAM_ID,
-          AshTable(Idx).QC_INSTANCE_ID, AshTable(Idx).QC_SESSION_ID, AshTable(Idx).QC_SESSION_SERIAL#,
+          AshTable(Idx).QC_INSTANCE_ID, AshTable(Idx).QC_SESSION_ID, AshTable(Idx).QC_SESSION_SERIAL#, AshTable(Idx).PX_FLAGS, AshTable(Idx).Event, AshTable(Idx).Event_ID,
+          AshTable(Idx).SEQ#, AshTable(Idx).P1TEXT, AshTable(Idx).P1, AshTable(Idx).P2TEXT, AshTable(Idx).P2, AshTable(Idx).P3TEXT, AshTable(Idx).P3,
           p_Con_ID
         );
         COMMIT;
