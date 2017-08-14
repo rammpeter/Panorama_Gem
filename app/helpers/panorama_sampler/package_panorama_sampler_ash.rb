@@ -110,7 +110,7 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
         p_Counter := 0;
 
         FORALL Idx IN 1 .. AshTable.COUNT
-        INSERT INTO Panorama_V$Active_Sess_History (
+        INSERT INTO Internal_V$Active_Sess_History (
           Instance_Number, Sample_ID, Sample_Time, Is_AWR_Sample, Session_ID, Session_Serial#,
           Session_Type, Flags, User_ID, SQL_ID, Is_SQLID_Current, SQL_Child_Number,
           SQL_OpCode, SQL_OpName, FORCE_MATCHING_SIGNATURE, TOP_LEVEL_SQL_ID, TOP_LEVEL_SQL_OPCODE,
@@ -151,7 +151,7 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
       -- Ensure that local database time controls end of PL/SQL-execution (allows different time zones and some seconds delay between Panorama and DB)
       -- but assumes that PL/SQL-Job is started at the exact second
       v_LastSampleTime := SYSDATE + p_Snapshot_Cycle_Seconds/86400 - 1/86400;
-      SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM Panorama_V$Active_Sess_History;
+      SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM Internal_V$Active_Sess_History;
 
       LOOP
         v_Bulk_Size := 10; -- Number of seconds between persists/commits

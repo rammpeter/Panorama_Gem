@@ -55,7 +55,7 @@ class PanoramaSamplerStructureCheck
 =end
   @@tables = [
       {
-          table_name: 'Panorama_V$Active_Sess_History',
+          table_name: 'Internal_V$Active_Sess_History',
           columns: [
               { column_name:  'Instance_Number',                column_type:  'NUMBER',     not_null: true  },
               { column_name:  'SAMPLE_ID',                      column_type:  'NUMBER',     not_null: true },
@@ -169,7 +169,7 @@ class PanoramaSamplerStructureCheck
           primary_key: ['INSTANCE_NUMBER', 'SAMPLE_ID', 'SESSION_ID'],    # ensure that copying data into Panorama_Active_Sess_History does never rails PK-violation
       },
       {
-          table_name: 'Panorama_Active_Sess_History',
+          table_name: 'Internal_Active_Sess_History',
           columns: [
               { column_name:  'Snap_ID',                        column_type:  'NUMBER',     not_null: true },
               { column_name:  'DBID',                           column_type:  'NUMBER',     not_null: true },
@@ -470,6 +470,52 @@ ORDER BY Column_ID
 =end
 
 
+=begin
+  Expexted structure, should contain structure of highest Oracle version:
+ [
+     {
+         view_name: ,
+         view_select: ""
+     }
+ ]
+=end
+  # Dynamic declaration of views to allow adjustment to current database version
+  def view_deklaration
+    [
+        {
+            view_name: 'Panorama_V$Active_Sess_History',
+            view_select: "SELECT h.INSTANCE_NUMBER, h.SAMPLE_ID, h.SAMPLE_TIME, h.IS_AWR_SAMPLE, h.SESSION_ID, h.SESSION_SERIAL#, h.SESSION_TYPE, h.FLAGS, h.USER_ID, h.SQL_ID, h.IS_SQLID_CURRENT, h.SQL_CHILD_NUMBER,
+                                 h.SQL_OPCODE, h.SQL_OPNAME, h.FORCE_MATCHING_SIGNATURE, h.TOP_LEVEL_SQL_ID, h.TOP_LEVEL_SQL_OPCODE, h.SQL_PLAN_HASH_VALUE, h.SQL_PLAN_LINE_ID, h.SQL_PLAN_OPERATION, h.SQL_PLAN_OPTIONS,
+                                 h.SQL_EXEC_ID, h.SQL_EXEC_START, h.PLSQL_ENTRY_OBJECT_ID, h.PLSQL_ENTRY_SUBPROGRAM_ID, h.PLSQL_OBJECT_ID, h.PLSQL_SUBPROGRAM_ID, h.QC_INSTANCE_ID, h.QC_SESSION_ID, h.QC_SESSION_SERIAL#, h.PX_FLAGS,
+                                 h.EVENT, h.EVENT_ID, h.SEQ#, h.P1TEXT, h.P1, h.P2TEXT, h.P2, h.P3TEXT, h.P3,h.WAIT_CLASS, h.WAIT_CLASS_ID, h.WAIT_TIME, h.SESSION_STATE, h.TIME_WAITED,
+                                 h.BLOCKING_SESSION_STATUS, h.BLOCKING_SESSION, h.BLOCKING_SESSION_SERIAL#, h.BLOCKING_INST_ID, h.BLOCKING_HANGCHAIN_INFO, h.CURRENT_OBJ#, h.CURRENT_FILE#, h.CURRENT_BLOCK#, h.CURRENT_ROW#,
+                                 h.TOP_LEVEL_CALL#, h.TOP_LEVEL_CALL_NAME, h.CONSUMER_GROUP_ID, h.XID,h.REMOTE_INSTANCE#, h.TIME_MODEL, h.IN_CONNECTION_MGMT, h.IN_PARSE, h.IN_HARD_PARSE, h.IN_SQL_EXECUTION, h.IN_PLSQL_EXECUTION,
+                                 h.IN_PLSQL_RPC, h.IN_PLSQL_COMPILATION, h.IN_JAVA_EXECUTION, h.IN_BIND, h.IN_CURSOR_CLOSE, h.IN_SEQUENCE_LOAD, h.IN_INMEMORY_QUERY, h.IN_INMEMORY_POPULATE, h.IN_INMEMORY_PREPOPULATE, h.IN_INMEMORY_REPOPULATE,
+                                 h.IN_INMEMORY_TREPOPULATE, h.IN_TABLESPACE_ENCRYPTION, h.CAPTURE_OVERHEAD, h.REPLAY_OVERHEAD, h.IS_CAPTURED, h.IS_REPLAYED, h.SERVICE_HASH, h.PROGRAM,h.MODULE, h.ACTION, h.CLIENT_ID, h.MACHINE, h.PORT,
+                                 h.ECID, h.DBREPLAY_FILE_ID, h.DBREPLAY_CALL_COUNTER, h.TM_DELTA_TIME, h.TM_DELTA_CPU_TIME, h.TM_DELTA_DB_TIME, h.DELTA_TIME, h.DELTA_READ_IO_REQUESTS, h.DELTA_WRITE_IO_REQUESTS, h.DELTA_READ_IO_BYTES,
+                                 h.DELTA_WRITE_IO_BYTES, h.DELTA_INTERCONNECT_IO_BYTES, h.PGA_ALLOCATED, h.TEMP_SPACE_ALLOCATED, h.CON_ID
+                          FROM   Internal_V$Active_Sess_History h
+                         "
+        },
+        {
+            view_name: 'Panorama_Active_Sess_History',
+            view_select: "SELECT SNAP_ID, DBID, INSTANCE_NUMBER, CON_DBID, CON_ID, SAMPLE_ID, SAMPLE_TIME, SESSION_ID, SESSION_SERIAL#, SESSION_TYPE, FLAGS, USER_ID, SQL_ID, IS_SQLID_CURRENT, SQL_CHILD_NUMBER, SQL_OPCODE, SQL_OPNAME,
+                                 FORCE_MATCHING_SIGNATURE, TOP_LEVEL_SQL_ID, TOP_LEVEL_SQL_OPCODE, SQL_PLAN_HASH_VALUE, SQL_PLAN_LINE_ID, SQL_PLAN_OPERATION, SQL_PLAN_OPTIONS, SQL_EXEC_ID, SQL_EXEC_START, PLSQL_ENTRY_OBJECT_ID,
+                                 PLSQL_ENTRY_SUBPROGRAM_ID, PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID, QC_INSTANCE_ID, QC_SESSION_ID, QC_SESSION_SERIAL#, PX_FLAGS, EVENT, EVENT_ID, SEQ#, P1TEXT, P1, P2TEXT, P2, P3TEXT, P3, WAIT_CLASS,
+                                 WAIT_CLASS_ID, WAIT_TIME, SESSION_STATE, TIME_WAITED, BLOCKING_SESSION_STATUS, BLOCKING_SESSION, BLOCKING_SESSION_SERIAL#, BLOCKING_INST_ID, BLOCKING_HANGCHAIN_INFO, CURRENT_OBJ#, CURRENT_FILE#,
+                                 CURRENT_BLOCK#, CURRENT_ROW#, TOP_LEVEL_CALL#, TOP_LEVEL_CALL_NAME, CONSUMER_GROUP_ID, XID, REMOTE_INSTANCE#, TIME_MODEL, IN_CONNECTION_MGMT, IN_PARSE, IN_HARD_PARSE, IN_SQL_EXECUTION, IN_PLSQL_EXECUTION,
+                                 IN_PLSQL_RPC, IN_PLSQL_COMPILATION, IN_JAVA_EXECUTION, IN_BIND, IN_CURSOR_CLOSE, IN_SEQUENCE_LOAD, CAPTURE_OVERHEAD, REPLAY_OVERHEAD, IS_CAPTURED, IS_REPLAYED, SERVICE_HASH, PROGRAM, MODULE, ACTION, CLIENT_ID,
+                                 MACHINE, PORT, ECID, DBREPLAY_FILE_ID, DBREPLAY_CALL_COUNTER, TM_DELTA_TIME, TM_DELTA_CPU_TIME, TM_DELTA_DB_TIME, DELTA_TIME, DELTA_READ_IO_REQUESTS, DELTA_WRITE_IO_REQUESTS, DELTA_READ_IO_BYTES,
+                                 DELTA_WRITE_IO_BYTES, DELTA_INTERCONNECT_IO_BYTES, PGA_ALLOCATED, TEMP_SPACE_ALLOCATED, IN_INMEMORY_QUERY, IN_INMEMORY_POPULATE, IN_INMEMORY_PREPOPULATE, IN_INMEMORY_REPOPULATE, IN_INMEMORY_TREPOPULATE,
+                                 IN_TABLESPACE_ENCRYPTION
+                          FROM   Internal_Active_Sess_History
+                         "
+        },
+    ]
+  end
+
+
+
   # Replace DBA_Hist in SQL with corresponding Panorama-Sampler table
   def self.transform_sql_for_sampler(org_sql)
     sql = org_sql.clone
@@ -528,12 +574,6 @@ ORDER BY Column_ID
     false
   end
 
-  # Check if this table check belongs to ash or snapshot
-  def check_table_in_this_thread?(table_name, only_ash_tables)
-    ash_tables = ['Panorama_V$Active_Sess_History'.upcase]
-    (only_ash_tables && ash_tables.include?(table_name.upcase)) ||  (!only_ash_tables && !ash_tables.include?(table_name.upcase))
-  end
-
   # Check data structures, for ASH-Thread or snapshot thread
   def do_check_internal(only_ash_tables)
 
@@ -563,6 +603,14 @@ ORDER BY Column_ID
 
     @@tables.each do |table|
       check_table_indexes(table) if check_table_in_this_thread?(table[:table_name], only_ash_tables)
+    end
+
+
+    @ora_views        = PanoramaConnection.sql_select_all ["SELECT View_Name FROM All_Views WHERE Owner = ?",  @sampler_config[:owner].upcase]
+    @ora_view_texts   = PanoramaConnection.sql_select_all ["SELECT View_Name, Text FROM All_Views WHERE Owner = ?",  @sampler_config[:owner].upcase]
+    @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config[:owner].upcase]
+    view_deklaration.each do |view|
+      check_view(view) if check_view_in_this_thread?(view[:view_name], only_ash_tables)
     end
 
     if only_ash_tables
@@ -646,8 +694,13 @@ ORDER BY Column_ID
 
   # Check if this table check belongs to ash or snapshot
   def check_table_in_this_thread?(table_name, only_ash_tables)
-    ash_tables = ['Panorama_V$Active_Sess_History'.upcase]
+    ash_tables = ['Internal_V$Active_Sess_History'.upcase]
     (only_ash_tables && ash_tables.include?(table_name.upcase)) ||  (!only_ash_tables && !ash_tables.include?(table_name.upcase))
+  end
+
+  def check_view_in_this_thread?(view_name, only_ash_tables)
+    ash_views = ['Panorama_V$Active_Sess_History'.upcase]
+    (only_ash_tables && ash_views.include?(view_name.upcase)) ||  (!only_ash_tables && !ash_views.include?(view_name.upcase))
   end
 
   def check_table_existence(table)
@@ -666,11 +719,7 @@ ORDER BY Column_ID
     end
 
     ############ Check table privileges
-    if !@ora_tab_privs.include?({'table_name' => table[:table_name].upcase})                                                           # Column does not exists
-      sql = "GRANT SELECT ON #{@sampler_config[:owner]}.#{table[:table_name]} TO PUBLIC"
-      log(sql)
-      PanoramaConnection.sql_execute(sql)
-    end
+    check_object_privs(table[:table_name])                                      # check SELECT grant to PUBLIC
   end
 
   def check_table_columns(table)
@@ -768,5 +817,45 @@ ORDER BY Column_ID
       PanoramaConnection.sql_execute(sql)
     end
   end
+
+  # Check existence and structure of view
+  def check_view(view)
+    if @ora_tables.include?({'table_name' => view[:view_name].upcase})
+      sql = "DROP TABLE #{@sampler_config[:owner]}.#{view[:view_name]}"         # Remove table from previous releases with same name
+      log(sql)
+      PanoramaConnection.sql_execute(sql)
+    end
+
+    if @ora_views.include?({'view_name' => view[:view_name].upcase})            # View already exists
+      index = @ora_view_texts.find_index { |view_text| view_text.view_name ==  view[:view_name].upcase}
+      select = @ora_view_texts[index].text
+      if select != view[:view_select]                                             # Recreate view
+        sql = "DROP VIEW #{@sampler_config[:owner]}.#{view[:view_name]}"
+        log(sql)
+        PanoramaConnection.sql_execute(sql)
+        create_view(view)
+      end
+    else                                                                        # View dow not exist
+      create_view(view)
+    end
+    check_object_privs(view[:view_name])                                        # check SELECT grant to PUBLIC
+  end
+
+  def create_view(view)
+    sql = "CREATE VIEW #{@sampler_config[:owner]}.#{view[:view_name]} AS\n#{view[:view_select]}"
+    log(sql)
+    PanoramaConnection.sql_execute(sql)
+  end
+
+  def check_object_privs(object_name)
+    ############ Check table or view privileges
+    if !@ora_tab_privs.include?({'table_name' => object_name.upcase})
+      sql = "GRANT SELECT ON #{@sampler_config[:owner]}.#{object_name} TO PUBLIC"
+      log(sql)
+      PanoramaConnection.sql_execute(sql)
+    end
+
+  end
+
 
 end

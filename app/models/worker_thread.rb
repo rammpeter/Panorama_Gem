@@ -20,8 +20,7 @@ class WorkerThread
     thread = Thread.new{WorkerThread.new(sampler_config, 'create_snapshot')   .create_snapshot_internal}  # Excute the snapshot and terminate
   rescue Exception => e
     Rails.logger.error "Exception #{e.message} raised in WorkerThread.create_snapshot for config-ID=#{sampler_config[:id]}"
-    log_exception_backtrace(e, 40)
-    # raise e               # Don't raise exception because it should not stop calling job processing
+    raise e               # Don't raise exception because it should not stop calling job processing
   end
 
   ############################### inner implementation ###############################
