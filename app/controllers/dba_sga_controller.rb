@@ -30,12 +30,15 @@ class DbaSgaController < ApplicationController
 
   private
   def list_sql_area(modus)
-    @instance = prepare_param_instance
-    @sql_id = params[:sql_id]  =="" ? nil : params[:sql_id].strip
-    @filter = params[:filter]  =="" ? nil : params[:filter]
-    @sqls = fill_sql_area_list(modus, @instance,
-                          @filter,
-                          @sql_id,
+    instance = prepare_param_instance
+
+    @filters = {}
+    @filters[:instance] = instance            if instance
+    @filters[:username] = params[:username]   if params[:username]  && params[:username]  != ''
+    @filters[:sql_id]   = params[:sql_id]     if params[:sql_id]    && params[:sql_id]    != ''
+    @filters[:filter]   = params[:filter]     if params[:filter]    && params[:filter]    != ''
+
+    @sqls = fill_sql_area_list(modus, @filters,
                           params[:maxResultCount],
                           params[:topSort]
     )
@@ -43,24 +46,30 @@ class DbaSgaController < ApplicationController
     render_partial :list_sql_area
   end
 
-  def fill_sql_area_list(modus, instance, filter, sql_id, max_result_count, top_sort) # Wird angesprungen aus Vor-Methode
+  def fill_sql_area_list(modus, filters, max_result_count, top_sort) # Wird angesprungen aus Vor-Methode
     max_result_count = 100 unless max_result_count
     top_sort         = 'ElapsedTimeTotal' unless top_sort
 
     where_string = ""
     where_values = []
 
-    if instance
+    if filters[:instance]
       where_string << " AND s.Inst_ID = ?"
-      where_values << instance
+      where_values << filters[:instance]
     end
-    if filter
+
+    if filters[:username]
+      where_string << " AND u.UserName = UPPER(?)"
+      where_values << filters[:username]
+    end
+
+    if filters[:filter]
       where_string << " AND UPPER(SQL_FullText) LIKE UPPER('%'||?||'%')"
-      where_values << filter
+      where_values << filters[:filter]
     end
-    if sql_id
+    if filters[:sql_id]
       where_string << " AND s.SQL_ID LIKE '%'||?||'%'"
-      where_values << sql_id
+      where_values << filters[:sql_id]
     end
 
     where_values << max_result_count
@@ -111,7 +120,7 @@ class DbaSgaController < ApplicationController
               when "CPUTime"              then "s.CPU_Time DESC"
               when "BufferGets"           then "s.Buffer_gets DESC"
               when "ClusterWaits"         then "s.Cluster_Wait_Time DESC"
-              when "LastActive"           then "s.Last_Active_Time DESC"
+              when "LastActive"           then "s.Last_Active_Time DESC NULLS LAST"
               when "Memory"               then "s.SHARABLE_MEM+s.PERSISTENT_MEM+s.RUNTIME_MEM DESC"
             end} )
   WHERE ROWNUM < ?
@@ -127,7 +136,7 @@ class DbaSgaController < ApplicationController
           when "CPUTime"              then "CPU_Time_Secs DESC"
           when "BufferGets"           then "Buffer_gets DESC"
           when "ClusterWaits"         then "Cluster_Wait_Time_Secs DESC"
-          when "LastActive"           then "Last_Active_Time DESC"
+          when "LastActive"           then "Last_Active_Time DESC NULLS LAST"
           when "Memory"               then "SHARABLE_MEM+PERSISTENT_MEM+RUNTIME_MEM DESC"
         end}"
     ].concat(where_values)
@@ -535,8 +544,13 @@ class DbaSgaController < ApplicationController
     @con_id  = params[:con_id]
     @con_id  = nil if @con_id == ''
 
+    @filters = {
+        :instance => @instance,
+        :sql_id   => (params[:sql_id]   =="" ? nil : params[:sql_id].strip),
+    }
+
     # Liste der Child-Cursoren
-    @sqls = fill_sql_area_list("GV$SQL", @instance, nil, @sql_id, 100, nil)
+    @sqls = fill_sql_area_list("GV$SQL", @filters, 100, nil)
 
     if @sqls.count == 0
       show_popup_message "SQL-ID '#{@sql_id}' not found in GV$SQL for instance = #{@instance} !"

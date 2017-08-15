@@ -480,7 +480,7 @@ ORDER BY Column_ID
  ]
 =end
   # Dynamic declaration of views to allow adjustment to current database version
-  def view_deklaration
+  def self.view_declaration
     [
         {
             view_name: 'Panorama_V$Active_Sess_History',
@@ -524,10 +524,16 @@ ORDER BY Column_ID
     sql.gsub!(/gv\$Active_Session_History/i, 'DBA_HIST_V$Active_Sess_History')
 
     up_sql = sql.upcase
+
+    compare_objects = @@tables.clone                                            # Add tables to compare-objects
+    PanoramaSamplerStructureCheck.view_declaration.each do |view|                                             # Add views to compare-objects
+      compare_objects << { :table_name => view[:view_name]}
+    end
+
     start_index = up_sql.index('DBA_HIST')
     while start_index
 #      Rails.logger.info "######################### #{start_index} #{sql[start_index, sql.length-start_index]}"
-      @@tables.each do |table|                                                  # Check if table might be replaced by Panorama-Sampler
+      compare_objects.each do |table|                                                  # Check if table might be replaced by Panorama-Sampler
         if table[:table_name].upcase == up_sql[start_index, table[:table_name].length].gsub(/DBA_HIST/, 'PANORAMA')
           sql   .insert(start_index, "#{PanoramaConnection.get_config[:panorama_sampler_schema]}.")       # Add schema name before table_name
           up_sql.insert(start_index, "#{PanoramaConnection.get_config[:panorama_sampler_schema]}.")       # Increase size synchronously with sql
@@ -609,7 +615,7 @@ ORDER BY Column_ID
     @ora_views        = PanoramaConnection.sql_select_all ["SELECT View_Name FROM All_Views WHERE Owner = ?",  @sampler_config[:owner].upcase]
     @ora_view_texts   = PanoramaConnection.sql_select_all ["SELECT View_Name, Text FROM All_Views WHERE Owner = ?",  @sampler_config[:owner].upcase]
     @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config[:owner].upcase]
-    view_deklaration.each do |view|
+    PanoramaSamplerStructureCheck.view_declaration.each do |view|
       check_view(view) if check_view_in_this_thread?(view[:view_name], only_ash_tables)
     end
 

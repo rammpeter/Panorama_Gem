@@ -478,6 +478,7 @@
   dba_sga_show_sql_area_sort_memory_hint:                   Größe des Speichers in der SGA
   dba_sga_show_sql_area_submit_caption:                     SQL anzeigen
   dba_sga_show_sql_area_submit_hint:                        Anlistung der SQL nach Suchkriterien
+  dba_sga_show_sql_area_user_hint:                          Filter der Treffermenge auf Username beim Erzeugen des Child-Cursors
 
   dba_show_locks_caption:                                   Aktuell Locks verschiedener Typen anlisten
   dba_show_locks_all_locks_caption:                         Alle Locks

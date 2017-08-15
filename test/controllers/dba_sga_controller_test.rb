@@ -42,14 +42,32 @@ class DbaSgaControllerTest < ActionController::TestCase
 
   test "list_sql_area_sql_id with xhr: true" do
     @topSort.each do |ts|
-      post :list_sql_area_sql_id, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"", :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
+      post :list_sql_area_sql_id, :params => {:format=>:html, :maxResultCount=>"100", :topSort=>ts, :update_area=>:hugo }
+      assert_response :success
+
+      post :list_sql_area_sql_id, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"1", :topSort=>ts, :update_area=>:hugo }
+      assert_response :success
+
+      post :list_sql_area_sql_id, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"1", :username=>'hugo', :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
+      assert_response :success
+
+      post :list_sql_area_sql_id, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"1", :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
       assert_response :success
     end
   end
 
   test "list_sql_area_sql_id_childno with xhr: true" do
     @topSort.each do |ts|
-      post :list_sql_area_sql_id_childno, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"", :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
+      post :list_sql_area_sql_id_childno, :params => {:format=>:html, :maxResultCount=>"100", :topSort=>ts, :update_area=>:hugo }
+      assert_response :success
+
+      post :list_sql_area_sql_id_childno, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"1", :topSort=>ts, :update_area=>:hugo }
+      assert_response :success
+
+      post :list_sql_area_sql_id_childno, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"", :username=>'hugo', :topSort=>ts, :update_area=>:hugo }
+      assert_response :success
+
+      post :list_sql_area_sql_id_childno, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"", :username=>'hugo', :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
       assert_response :success
     end
   end
