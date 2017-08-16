@@ -6,11 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_ash.rb" afterPath="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_ash.rb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" afterPath="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" afterPath="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" afterPath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_area.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_area.html.erb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -134,8 +131,8 @@
       <file leaf-file-name="package_panorama_sampler_snapshot.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="205">
-              <caret line="72" column="4" lean-forward="false" selection-start-line="72" selection-start-column="4" selection-end-line="72" selection-end-column="4" />
+            <state relative-caret-position="165">
+              <caret line="175" column="16" lean-forward="false" selection-start-line="175" selection-start-column="16" selection-end-line="175" selection-end-column="16" />
               <folding />
             </state>
           </provider>
@@ -144,7 +141,7 @@
       <file leaf-file-name="panorama_sampler_structure_check.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="117">
+            <state relative-caret-position="260">
               <caret line="517" column="35" lean-forward="false" selection-start-line="517" selection-start-column="35" selection-end-line="517" selection-end-column="35" />
               <folding />
             </state>
@@ -154,8 +151,8 @@
       <file leaf-file-name="panorama_sampler_sampling.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="105">
-              <caret line="43" column="0" lean-forward="true" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
+            <state relative-caret-position="122">
+              <caret line="41" column="0" lean-forward="false" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -185,9 +182,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>managem</find>
-      <find>length</find>
-      <find>ALTER PACKAGE</find>
       <find>applica</find>
       <find>set_module</find>
       <find>ALTER</find>
@@ -213,13 +207,16 @@
       <find>p_condb</find>
       <find>@ora_tab_columns</find>
       <find>h.bid</find>
-      <find>vcuu</find>
       <find>conid</find>
+      <find>vcuu</find>
+      <find>?</find>
+      <find>i\.</find>
+      <find>TIMESTAMP</find>
     </findStrings>
     <replaceStrings>
       <replace>dLast_Load_Time</replace>
-      <replace>, h.</replace>
       <replace>,</replace>
+      <replace>, h.</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -1114,14 +1111,7 @@
       <workItem from="1501517780235" duration="4387000" />
       <workItem from="1501572939326" duration="94240000" />
       <workItem from="1502104819808" duration="35386000" />
-      <workItem from="1502276313484" duration="134329000" />
-    </task>
-    <task id="LOCAL-00991" summary="New menu entry audit trail">
-      <created>1501679942953</created>
-      <option name="number" value="00991" />
-      <option name="presentableId" value="LOCAL-00991" />
-      <option name="project" value="LOCAL" />
-      <updated>1501679942953</updated>
+      <workItem from="1502276313484" duration="136681000" />
     </task>
     <task id="LOCAL-00992" summary="Robust test">
       <created>1501684426701</created>
@@ -1459,7 +1449,14 @@
       <option name="project" value="LOCAL" />
       <updated>1502791872851</updated>
     </task>
-    <option name="localTasksCounter" value="1040" />
+    <task id="LOCAL-01040" summary="Ash sampling: move sampling to PL/SQL">
+      <created>1502884517423</created>
+      <option name="number" value="01040" />
+      <option name="presentableId" value="LOCAL-01040" />
+      <option name="project" value="LOCAL" />
+      <updated>1502884517423</updated>
+    </task>
+    <option name="localTasksCounter" value="1041" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1495,7 +1492,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1886239000" />
+    <option name="totallyTimeSpent" value="1888591000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1551,7 +1548,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Allow none management pack in test" />
     <MESSAGE value="Fix error in sampling log (Con_ID)" />
     <MESSAGE value="New management pack state :panorama_sampler" />
     <MESSAGE value="Suppress warning not initialized" />
@@ -1576,7 +1572,8 @@
     <MESSAGE value="Ash sampling: migrate tables to views" />
     <MESSAGE value="Ash sampling: next columns" />
     <MESSAGE value="Ash sampling: bugfix&#10;New filter UserName" />
-    <option name="LAST_COMMIT_MESSAGE" value="Ash sampling: bugfix&#10;New filter UserName" />
+    <MESSAGE value="Ash sampling: move sampling to PL/SQL" />
+    <option name="LAST_COMMIT_MESSAGE" value="Ash sampling: move sampling to PL/SQL" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2093,7 +2090,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="117">
+        <state relative-caret-position="260">
           <caret line="517" column="35" lean-forward="false" selection-start-line="517" selection-start-column="35" selection-end-line="517" selection-end-column="35" />
           <folding />
         </state>
@@ -2101,16 +2098,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="43" column="0" lean-forward="true" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
+        <state relative-caret-position="122">
+          <caret line="41" column="0" lean-forward="false" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="205">
-          <caret line="72" column="4" lean-forward="false" selection-start-line="72" selection-start-column="4" selection-end-line="72" selection-end-column="4" />
+        <state relative-caret-position="165">
+          <caret line="175" column="16" lean-forward="false" selection-start-line="175" selection-start-column="16" selection-end-line="175" selection-end-column="16" />
           <folding />
         </state>
       </provider>
