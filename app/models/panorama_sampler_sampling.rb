@@ -37,35 +37,17 @@ class PanoramaSamplerSampling
       begin_interval_time = last_snap.end_interval_time
     end
 
-    ## DBA_Hist_Active_Sess_History
-    PanoramaConnection.sql_execute [" BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_Snapshot.Move_ASH_To_Snapshot_Table(?, ?, ?); END;", @snap_id, PanoramaConnection.dbid, con_dbid]
+    ## DBA_Hist_Snapshot, must be the first atomic transaction to ensure that next snap_id is exactly incremented
+    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_Snapshot (Snap_ID, DBID, Instance_Number, Begin_Interval_Time, End_Interval_Time, Con_ID
+                                    ) VALUES (?, ?, ?, ?, SYSDATE, ?)",
+                                    @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, begin_interval_time, PanoramaConnection.con_id]
 
     ## TODO: Con_DBID mit realen werten des Containers füllen, falls PDB-übergreifendes Sampling gewünscht wird
-    ## DBA_Hist_DB_Cache_Advice
-    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_DB_Cache_Advice (SNAP_ID, DBID, INSTANCE_NUMBER, BPID, BUFFERS_FOR_ESTIMATE, NAME, BLOCK_SIZE, ADVICE_STATUS, SIZE_FOR_ESTIMATE,
-                                                                                                      SIZE_FACTOR, PHYSICAL_READS, BASE_PHYSICAL_READS, ACTUAL_PHYSICAL_READS, ESTD_PHYSICAL_READ_TIME, CON_DBID, CON_ID
-                                    ) SELECT ?, ?, ?,
-                                             ID, BUFFERS_FOR_ESTIMATE, Name, Block_Size, Advice_Status, SIZE_FOR_ESTIMATE, SIZE_FACTOR, ESTD_PHYSICAL_READS,
-                                             NULL, /* BASE_PHYSICAL_READS origin not yet known */
-                                             NULL, /* ACTUAL_PHYSICAL_READS origin not yet known */
-                                             #{PanoramaConnection.db_version >= '11.2' ? "ESTD_PHYSICAL_READ_TIME, " : "NULL, "}
-                                             ? #{PanoramaConnection.db_version >= '12.1' ? ", Con_ID" : ", 0"}
-                                      FROM   v$DB_Cache_Advice
-                                    ",  @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, con_dbid]
+    PanoramaConnection.sql_execute [" BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_Snapshot.Do_Snapshot(?, ?, ?, ?, ?); END;",
+                                    @snap_id, PanoramaConnection.instance_number, PanoramaConnection.dbid, con_dbid, PanoramaConnection.con_id]
 
-    ## DBA_Hist_Log
-    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_Log (Snap_ID, DBID, Instance_Number, Group#, Thread#, Sequence#, Bytes, Members, Archived, Status, First_Change#, First_Time,
-                                                                                          Con_DBID, Con_ID
-                                    ) SELECT ?, ?, ?,
-                                             Group#, Thread#, Sequence#, Bytes, Members, Archived, Status, First_Change#, First_Time,
-                                             ? #{PanoramaConnection.db_version >= '12.1' ? ", Con_ID" : ", 0"}
-                                      FROM   v$Log
-                                    ",  @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, con_dbid]
 
-    ## DBA_Hist_Snapshot
-    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_Snapshot (Snap_ID, DBID, Instance_Number, Begin_Interval_Time, End_Interval_Time#{", Con_ID" if PanoramaConnection.db_version >= '12.1'}
-                                    ) VALUES (?, ?, ?, ?, SYSDATE#{", ?" if PanoramaConnection.db_version >= '12.1'})",
-                                    @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, begin_interval_time].concat(PanoramaConnection.db_version >= '12.1' ? [0] : [])
+
 
 
     ## DBA_Hist_SQLStat

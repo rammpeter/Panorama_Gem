@@ -14,8 +14,8 @@
   column_options << {:caption=>'Con-ID',      :data=>proc{|rec| formattedNumber(rec.con_id)},                          :title=>"Container-ID for pluggable database"} if get_current_database[:cdb]
   column_options << {:caption=>"SQL-ID",      :data=>proc{|rec| link_column(rec, rec.sql_text)},                       :title=>"SQL-ID"}
   column_options << {:caption=>"SQL-Text",    :data=>proc{|rec| my_html_escape rec.sql_text},                          :title=>"SQL-Text", :data_title=>'SQL_ID=#{rec.sql_id} : #{my_html_escape(rec.full_sql_text.strip)}'}
-  column_options << {:caption=>"C",           :data=>proc{|rec| rec.child_number},                            :title=>"Child-Number", :data_title=>proc{|rec| "%t,\nChild-address = '#{rec.child_address}'"}} if @modus=="GV$SQL"
-  column_options << {:caption=>"C",           :data=>proc{|rec| rec.child_count},                             :title=>"Number of child cursors", :align=>:right} if @modus=="GV$SQLArea"
+  column_options << {:caption=>"C",           :data=>proc{|rec| rec.child_number},                                     :title=>"Child-Number", :data_title=>proc{|rec| "%t,\nChild-address = '#{rec.child_address}'"}} if @modus=="GV$SQL"
+  column_options << {:caption=>"C",           :data=>proc{|rec| rec.child_count},                                      :title=>"Number of child cursors", :align=>:right} if @modus=="GV$SQLArea"
   column_options << {:caption=>"P",           :data=>proc{|rec| rec.plans },                                           :title=>"Number of different execution plans in SGA of instance for this SQL_ID",  :align=>:right, :data_style=>proc{|rec| 'background-color:coral;' if rec.plans > 1 }  }
   column_options << {:caption=>"Plan hash value", :data=>proc{|rec| rec.plan_hash_value},                              :title=>"Plan hash value (unique hash value for execution plan)", :align=>:right}    if @modus=="GV$SQL"
   column_options << {:caption=>"Last active", :data=>proc{|rec| localeDateTime(rec.last_active_time)},                 :title=>"Last active time" }

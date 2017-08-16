@@ -55,7 +55,22 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
     P2TEXT                    VARCHAR2(64),
     P2                        NUMBER,
     P3TEXT                    VARCHAR2(64),
-    P3                        NUMBER
+    P3                        NUMBER,
+    WAIT_CLASS                VARCHAR2(64),
+    Wait_Class_ID             NUMBER,
+    Wait_Time                 NUMBER,
+    SESSION_STATE             VARCHAR2(7),
+    TIME_WAITED               NUMBER,
+    BLOCKING_SESSION_STATUS   VARCHAR2(11),
+    BLOCKING_SESSION          NUMBER,
+    BLOCKING_SESSION_SERIAL#  NUMBER,
+    BLOCKING_INST_ID          NUMBER,
+    BLOCKING_HANGCHAIN_INFO   VARCHAR2(1),
+    CURRENT_OBJ#              NUMBER,
+    CURRENT_FILE#             NUMBER,
+    CURRENT_Block#            NUMBER,
+    CURRENT_Row#              NUMBER,
+    TOP_LEVEL_CALL#           NUMBER
   );
   TYPE AshTableType IS TABLE OF AshType INDEX BY BINARY_INTEGER;
   AshTable                AshTableType;
@@ -109,7 +124,23 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
              s.P2TEXT,
              s.P2,
              s.P3TEXT,
-             s.P3
+             s.P3,
+             s.Wait_Class,
+             s.Wait_Class_ID,
+             DECODE(s.State, 'WAITING', 0, s.Wait_Time_Micro),    -- Wait_Time: Time waited on last wait event in ON CPU, 0 currently waiting
+             DECODE(s.State, 'WAITING', 'WAITING', 'ON CPU'),     -- Session_State
+             DECODE(s.State, 'WAITING', s.Wait_Time_Micro, 0),    -- Time_waited: Current wait time if in wait, 0 if ON CPU
+             s.BLOCKING_SESSION_STATUS,
+             s.BLOCKING_SESSION,
+             CASE WHEN Blocking_Session_Status = 'VALID' THEN (SELECT Serial# FROM gv$Session bs WHERE bs.Inst_ID=s.Blocking_Instance AND bs.SID=s.Blocking_Session)
+             END BLOCKING_SESSION_SERIAL#,
+             s.Blocking_Instance,
+             'N',                 -- BLOCKING_HANGCHAIN_INFO
+             s.Row_Wait_Obj#,     -- Current_Obj#
+             s.Row_Wait_File#,    -- Current_File#
+             s.Row_Wait_Block#,   -- Current_Block#
+             s.Row_Wait_Row#,     -- Current_Row#
+             #{PanoramaConnection.db_version >= '11.2' ?  "s.TOP_LEVEL_CALL#" : "NULL"  } -- Top_Level_Call#
       BULK COLLECT INTO AshTable4Select
       FROM   v$Session s
       LEFT OUTER JOIN v$SQLCommand c ON c.Command_Type = s.Command #{"AND c.Con_ID = s.Con_ID" if PanoramaConnection.db_version >= '12.1'}
@@ -138,7 +169,11 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
           SQL_EXEC_ID, SQL_EXEC_START,
           PLSQL_ENTRY_OBJECT_ID, PLSQL_ENTRY_SUBPROGRAM_ID, PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID,
           QC_INSTANCE_ID, QC_SESSION_ID, QC_SESSION_SERIAL#, PX_FLAGS, Event, Event_ID,
-          SEQ#, P1TEXT, P1, P2TEXT, P2, P3TEXT, P3,
+          SEQ#, P1TEXT, P1, P2TEXT, P2, P3TEXT, P3, Wait_Class, Wait_Class_ID, Wait_Time,
+          Session_State, Time_Waited, BLOCKING_SESSION_STATUS, BLOCKING_SESSION, BLOCKING_SESSION_SERIAL#,
+          BLOCKING_INST_ID, BLOCKING_HANGCHAIN_INFO,
+          Current_Obj#, Current_File#, Current_Block#, Current_Row#,
+          Top_Level_Call#,
           Con_ID
         ) VALUES (
           p_Instance_Number, AshTable(Idx).Sample_ID, AshTable(Idx).Sample_Time, 'N', AshTable(Idx).Session_ID, AshTable(Idx).Session_Serial#,
@@ -148,7 +183,11 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
           AshTable(Idx).SQL_EXEC_ID, AshTable(Idx).SQL_EXEC_START,
           AshTable(Idx).PLSQL_ENTRY_OBJECT_ID, AshTable(Idx).PLSQL_ENTRY_SUBPROGRAM_ID, AshTable(Idx).PLSQL_OBJECT_ID, AshTable(Idx).PLSQL_SUBPROGRAM_ID,
           AshTable(Idx).QC_INSTANCE_ID, AshTable(Idx).QC_SESSION_ID, AshTable(Idx).QC_SESSION_SERIAL#, AshTable(Idx).PX_FLAGS, AshTable(Idx).Event, AshTable(Idx).Event_ID,
-          AshTable(Idx).SEQ#, AshTable(Idx).P1TEXT, AshTable(Idx).P1, AshTable(Idx).P2TEXT, AshTable(Idx).P2, AshTable(Idx).P3TEXT, AshTable(Idx).P3,
+          AshTable(Idx).SEQ#, AshTable(Idx).P1TEXT, AshTable(Idx).P1, AshTable(Idx).P2TEXT, AshTable(Idx).P2, AshTable(Idx).P3TEXT, AshTable(Idx).P3, AshTable(Idx).Wait_Class, AshTable(Idx).Wait_Class_ID, AshTable(Idx).Wait_Time,
+          AshTable(Idx).Session_State, AshTable(Idx).Time_Waited, AshTable(Idx).BLOCKING_SESSION_STATUS, AshTable(Idx).BLOCKING_SESSION, AshTable(Idx).BLOCKING_SESSION_SERIAL#,
+          AshTable(Idx).BLOCKING_INST_ID, AshTable(Idx).BLOCKING_HANGCHAIN_INFO,
+          AshTable(Idx).Current_Obj#, AshTable(Idx).Current_File#, AshTable(Idx).Current_Block#, AshTable(Idx).Current_Row#,
+          AshTable(Idx).Top_Level_Call#,
           p_Con_ID
         );
         COMMIT;

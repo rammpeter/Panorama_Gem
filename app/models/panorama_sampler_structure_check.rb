@@ -115,7 +115,6 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CURRENT_BLOCK#',                 column_type:  'NUMBER' },
               { column_name:  'CURRENT_ROW#',                   column_type:  'NUMBER' },
               { column_name:  'TOP_LEVEL_CALL#',                column_type:  'NUMBER' },
-              { column_name:  'TOP_LEVEL_CALL_NAME',            column_type:  'VARCHAR2', precision: 64 },
               { column_name:  'CONSUMER_GROUP_ID',              column_type:  'NUMBER' },
               { column_name:  'XID',                            column_type:  'RAW', precision: 8 },
               { column_name:  'REMOTE_INSTANCE#',               column_type:  'NUMBER' },
@@ -162,7 +161,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'DELTA_INTERCONNECT_IO_BYTES',    column_type:  'NUMBER' },
               { column_name:  'PGA_ALLOCATED',                  column_type:  'NUMBER' },
               { column_name:  'TEMP_SPACE_ALLOCATED',           column_type:  'NUMBER' },
-              { column_name:  'Con_ID',                         column_type:  'NUMBER' },
+              { column_name:  'Con_ID',                         column_type:  'NUMBER', not_null: true  },
               #{ column_name:  'DBOP_NAME',                      column_type:  'VARCHAR2', precision: 30 },
               #{ column_name:  'DBOP_EXEC_ID',                   column_type:  'NUMBER' },
           ],
@@ -227,7 +226,6 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CURRENT_BLOCK#',                 column_type:  'NUMBER' },
               { column_name:  'CURRENT_ROW#',                   column_type:  'NUMBER' },
               { column_name:  'TOP_LEVEL_CALL#',                column_type:  'NUMBER' },
-              { column_name:  'TOP_LEVEL_CALL_NAME',            column_type:  'VARCHAR2', precision: 64 },
               { column_name:  'CONSUMER_GROUP_ID',              column_type:  'NUMBER' },
               { column_name:  'XID',                            column_type:  'RAW', precision: 8 },
               { column_name:  'REMOTE_INSTANCE#',               column_type:  'NUMBER' },
@@ -274,8 +272,8 @@ class PanoramaSamplerStructureCheck
               { column_name:  'DELTA_INTERCONNECT_IO_BYTES',    column_type:  'NUMBER' },
               { column_name:  'PGA_ALLOCATED',                  column_type:  'NUMBER' },
               { column_name:  'TEMP_SPACE_ALLOCATED',           column_type:  'NUMBER' },
-              { column_name:  'Con_DBID',                       column_type:  'NUMBER' },
-              { column_name:  'Con_ID',                         column_type:  'NUMBER' },
+              { column_name:  'Con_DBID',                       column_type:  'NUMBER',     not_null: true },
+              { column_name:  'Con_ID',                         column_type:  'NUMBER',     not_null: true },
           ],
           primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'SAMPLE_ID', 'SESSION_ID', 'Con_DBID'],
       },
@@ -296,7 +294,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'BASE_PHYSICAL_READS',            column_type:   'NUMBER' },
               { column_name:  'ACTUAL_PHYSICAL_READS',          column_type:   'NUMBER' },
               { column_name:  'ESTD_PHYSICAL_READ_TIME',        column_type:   'NUMBER' },
-              { column_name:  'CON_DBID',                       column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER', not_null: true  },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
           primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'BPID', 'BUFFERS_FOR_ESTIMATE', 'CON_DBID'],
@@ -316,7 +314,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Status',                         column_type:  'VARCHAR2', precision: 16 },
               { column_name:  'First_Change#',                  column_type:  'NUMBER' },
               { column_name:  'First_Time',                     column_type:  'DATE' },
-              { column_name:  'Con_DBID',                       column_type:  'NUMBER' },
+              { column_name:  'Con_DBID',                       column_type:  'NUMBER',     not_null: true  },
               { column_name:  'Con_ID',                         column_type:  'NUMBER' },
           ],
           primary_key: ['DBID', 'Snap_ID', 'Instance_Number', 'Group#', 'Thread#', 'Sequence#', 'Con_DBID']
@@ -415,7 +413,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'IO_OFFLOAD_RETURN_BYTES_DELTA',  column_type:   'NUMBER' },
               { column_name:  'BIND_DATA',                      column_type:   'RAW',       precision: 2000 },
               { column_name:  'FLAG',                           column_type:   'NUMBER' },
-              { column_name:  'CON_DBID',                       column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
           primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'SQL_ID', 'PLAN_HASH_VALUE', 'CON_DBID'],
@@ -428,10 +426,21 @@ class PanoramaSamplerStructureCheck
               { column_name:  'SQL_ID',                         column_type:  'VARCHAR2',   not_null: true, precision: 13  },
               { column_name:  'SQL_Text',                       column_type:  'CLOB'    },
               { column_name:  'Command_Type',                   column_type:  'NUMBER'    },
-              { column_name:  'CON_DBID',                       column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:  'NUMBER',     not_null: true },
               { column_name:  'Con_ID',                         column_type:  'NUMBER' },
           ],
           primary_key: ['DBID', 'SQL_ID', 'Con_DBID'],
+      },
+      {
+          table_name: 'Panorama_TopLevelCall_Name',
+          columns: [
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'Top_Level_Call#',                column_type:   'NUMBER',    not_null: true},
+              { column_name:  'Top_Level_Call_Name',            column_type:   'VARCHAR2',  precision: 64 },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER',    not_null: true },
+          ],
+          primary_key: ['DBID', 'Top_Level_Call#', 'Con_DBID'],
       },
       {
           table_name: 'Panorama_WR_Control',
@@ -489,26 +498,32 @@ ORDER BY Column_ID
                                  h.SQL_EXEC_ID, h.SQL_EXEC_START, h.PLSQL_ENTRY_OBJECT_ID, h.PLSQL_ENTRY_SUBPROGRAM_ID, h.PLSQL_OBJECT_ID, h.PLSQL_SUBPROGRAM_ID, h.QC_INSTANCE_ID, h.QC_SESSION_ID, h.QC_SESSION_SERIAL#, h.PX_FLAGS,
                                  h.EVENT, h.EVENT_ID, h.SEQ#, h.P1TEXT, h.P1, h.P2TEXT, h.P2, h.P3TEXT, h.P3,h.WAIT_CLASS, h.WAIT_CLASS_ID, h.WAIT_TIME, h.SESSION_STATE, h.TIME_WAITED,
                                  h.BLOCKING_SESSION_STATUS, h.BLOCKING_SESSION, h.BLOCKING_SESSION_SERIAL#, h.BLOCKING_INST_ID, h.BLOCKING_HANGCHAIN_INFO, h.CURRENT_OBJ#, h.CURRENT_FILE#, h.CURRENT_BLOCK#, h.CURRENT_ROW#,
-                                 h.TOP_LEVEL_CALL#, h.TOP_LEVEL_CALL_NAME, h.CONSUMER_GROUP_ID, h.XID,h.REMOTE_INSTANCE#, h.TIME_MODEL, h.IN_CONNECTION_MGMT, h.IN_PARSE, h.IN_HARD_PARSE, h.IN_SQL_EXECUTION, h.IN_PLSQL_EXECUTION,
+                                 h.TOP_LEVEL_CALL#,
+                                 #{PanoramaConnection.db_version >= '11.2' ? "tlcn.Top_Level_Call_Name" : "NULL Top_Level_Call_Name"},
+                                 h.CONSUMER_GROUP_ID, h.XID,h.REMOTE_INSTANCE#, h.TIME_MODEL, h.IN_CONNECTION_MGMT, h.IN_PARSE, h.IN_HARD_PARSE, h.IN_SQL_EXECUTION, h.IN_PLSQL_EXECUTION,
                                  h.IN_PLSQL_RPC, h.IN_PLSQL_COMPILATION, h.IN_JAVA_EXECUTION, h.IN_BIND, h.IN_CURSOR_CLOSE, h.IN_SEQUENCE_LOAD, h.IN_INMEMORY_QUERY, h.IN_INMEMORY_POPULATE, h.IN_INMEMORY_PREPOPULATE, h.IN_INMEMORY_REPOPULATE,
                                  h.IN_INMEMORY_TREPOPULATE, h.IN_TABLESPACE_ENCRYPTION, h.CAPTURE_OVERHEAD, h.REPLAY_OVERHEAD, h.IS_CAPTURED, h.IS_REPLAYED, h.SERVICE_HASH, h.PROGRAM,h.MODULE, h.ACTION, h.CLIENT_ID, h.MACHINE, h.PORT,
                                  h.ECID, h.DBREPLAY_FILE_ID, h.DBREPLAY_CALL_COUNTER, h.TM_DELTA_TIME, h.TM_DELTA_CPU_TIME, h.TM_DELTA_DB_TIME, h.DELTA_TIME, h.DELTA_READ_IO_REQUESTS, h.DELTA_WRITE_IO_REQUESTS, h.DELTA_READ_IO_BYTES,
                                  h.DELTA_WRITE_IO_BYTES, h.DELTA_INTERCONNECT_IO_BYTES, h.PGA_ALLOCATED, h.TEMP_SPACE_ALLOCATED, h.CON_ID
                           FROM   Internal_V$Active_Sess_History h
+                          #{"LEFT OUTER JOIN Panorama_TopLevelCall_Name tlcn ON tlcn.DBID = #{PanoramaConnection.dbid} AND tlcn.Top_Level_Call# = h.Top_Level_Call# AND tlcn.Con_DBID = #{PanoramaConnection.dbid}" if PanoramaConnection.db_version >= '11.2'}
                          "
         },
         {
             view_name: 'Panorama_Active_Sess_History',
-            view_select: "SELECT SNAP_ID, DBID, INSTANCE_NUMBER, CON_DBID, CON_ID, SAMPLE_ID, SAMPLE_TIME, SESSION_ID, SESSION_SERIAL#, SESSION_TYPE, FLAGS, USER_ID, SQL_ID, IS_SQLID_CURRENT, SQL_CHILD_NUMBER, SQL_OPCODE, SQL_OPNAME,
-                                 FORCE_MATCHING_SIGNATURE, TOP_LEVEL_SQL_ID, TOP_LEVEL_SQL_OPCODE, SQL_PLAN_HASH_VALUE, SQL_PLAN_LINE_ID, SQL_PLAN_OPERATION, SQL_PLAN_OPTIONS, SQL_EXEC_ID, SQL_EXEC_START, PLSQL_ENTRY_OBJECT_ID,
-                                 PLSQL_ENTRY_SUBPROGRAM_ID, PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID, QC_INSTANCE_ID, QC_SESSION_ID, QC_SESSION_SERIAL#, PX_FLAGS, EVENT, EVENT_ID, SEQ#, P1TEXT, P1, P2TEXT, P2, P3TEXT, P3, WAIT_CLASS,
-                                 WAIT_CLASS_ID, WAIT_TIME, SESSION_STATE, TIME_WAITED, BLOCKING_SESSION_STATUS, BLOCKING_SESSION, BLOCKING_SESSION_SERIAL#, BLOCKING_INST_ID, BLOCKING_HANGCHAIN_INFO, CURRENT_OBJ#, CURRENT_FILE#,
-                                 CURRENT_BLOCK#, CURRENT_ROW#, TOP_LEVEL_CALL#, TOP_LEVEL_CALL_NAME, CONSUMER_GROUP_ID, XID, REMOTE_INSTANCE#, TIME_MODEL, IN_CONNECTION_MGMT, IN_PARSE, IN_HARD_PARSE, IN_SQL_EXECUTION, IN_PLSQL_EXECUTION,
-                                 IN_PLSQL_RPC, IN_PLSQL_COMPILATION, IN_JAVA_EXECUTION, IN_BIND, IN_CURSOR_CLOSE, IN_SEQUENCE_LOAD, CAPTURE_OVERHEAD, REPLAY_OVERHEAD, IS_CAPTURED, IS_REPLAYED, SERVICE_HASH, PROGRAM, MODULE, ACTION, CLIENT_ID,
-                                 MACHINE, PORT, ECID, DBREPLAY_FILE_ID, DBREPLAY_CALL_COUNTER, TM_DELTA_TIME, TM_DELTA_CPU_TIME, TM_DELTA_DB_TIME, DELTA_TIME, DELTA_READ_IO_REQUESTS, DELTA_WRITE_IO_REQUESTS, DELTA_READ_IO_BYTES,
-                                 DELTA_WRITE_IO_BYTES, DELTA_INTERCONNECT_IO_BYTES, PGA_ALLOCATED, TEMP_SPACE_ALLOCATED, IN_INMEMORY_QUERY, IN_INMEMORY_POPULATE, IN_INMEMORY_PREPOPULATE, IN_INMEMORY_REPOPULATE, IN_INMEMORY_TREPOPULATE,
-                                 IN_TABLESPACE_ENCRYPTION
-                          FROM   Internal_Active_Sess_History
+            view_select: "SELECT h.SNAP_ID, h.DBID, h.INSTANCE_NUMBER, h.CON_DBID, h.CON_ID, h.SAMPLE_ID, h.SAMPLE_TIME, h.SESSION_ID, h.SESSION_SERIAL#, h.SESSION_TYPE, h.FLAGS, h.USER_ID, h.SQL_ID, h.IS_SQLID_CURRENT, h.SQL_CHILD_NUMBER, h.SQL_OPCODE, h.SQL_OPNAME,
+                                 h.FORCE_MATCHING_SIGNATURE, h.TOP_LEVEL_SQL_ID, h.TOP_LEVEL_SQL_OPCODE, h.SQL_PLAN_HASH_VALUE, h.SQL_PLAN_LINE_ID, h.SQL_PLAN_OPERATION, h.SQL_PLAN_OPTIONS, h.SQL_EXEC_ID, h.SQL_EXEC_START, h.PLSQL_ENTRY_OBJECT_ID,
+                                 h.PLSQL_ENTRY_SUBPROGRAM_ID, h.PLSQL_OBJECT_ID, h.PLSQL_SUBPROGRAM_ID, h.QC_INSTANCE_ID, h.QC_SESSION_ID, h.QC_SESSION_SERIAL#, h.PX_FLAGS, h.EVENT, h.EVENT_ID, h.SEQ#, h.P1TEXT, h.P1, h.P2TEXT, h.P2, h.P3TEXT, h.P3, h.WAIT_CLASS,
+                                 h.WAIT_CLASS_ID, h.WAIT_TIME, h.SESSION_STATE, h.TIME_WAITED, h.BLOCKING_SESSION_STATUS, h.BLOCKING_SESSION, h.BLOCKING_SESSION_SERIAL#, h.BLOCKING_INST_ID, h.BLOCKING_HANGCHAIN_INFO, h.CURRENT_OBJ#, h.CURRENT_FILE#,
+                                 h.CURRENT_BLOCK#, h.CURRENT_ROW#, h.TOP_LEVEL_CALL#,
+                                 #{PanoramaConnection.db_version >= '11.2' ? "tlcn.Top_Level_Call_Name" : "NULL Top_Level_Call_Name"},
+                                 h.CONSUMER_GROUP_ID, h.XID, h.REMOTE_INSTANCE#, h.TIME_MODEL, h.IN_CONNECTION_MGMT, h.IN_PARSE, h.IN_HARD_PARSE, h.IN_SQL_EXECUTION, h.IN_PLSQL_EXECUTION,
+                                 h.IN_PLSQL_RPC, h.IN_PLSQL_COMPILATION, h.IN_JAVA_EXECUTION, h.IN_BIND, h.IN_CURSOR_CLOSE, h.IN_SEQUENCE_LOAD, h.CAPTURE_OVERHEAD, h.REPLAY_OVERHEAD, h.IS_CAPTURED, h.IS_REPLAYED, h.SERVICE_HASH, h.PROGRAM, h.MODULE, h.ACTION, h.CLIENT_ID,
+                                 h.MACHINE, h.PORT, h.ECID, h.DBREPLAY_FILE_ID, h.DBREPLAY_CALL_COUNTER, h.TM_DELTA_TIME, h.TM_DELTA_CPU_TIME, h.TM_DELTA_DB_TIME, h.DELTA_TIME, h.DELTA_READ_IO_REQUESTS, h.DELTA_WRITE_IO_REQUESTS, h.DELTA_READ_IO_BYTES,
+                                 h.DELTA_WRITE_IO_BYTES, h.DELTA_INTERCONNECT_IO_BYTES, h.PGA_ALLOCATED, h.TEMP_SPACE_ALLOCATED, h.IN_INMEMORY_QUERY, h.IN_INMEMORY_POPULATE, h.IN_INMEMORY_PREPOPULATE, h.IN_INMEMORY_REPOPULATE, h.IN_INMEMORY_TREPOPULATE,
+                                 h.IN_TABLESPACE_ENCRYPTION
+                          FROM   Internal_Active_Sess_History h
+                          #{"LEFT OUTER JOIN Panorama_TopLevelCall_Name tlcn ON tlcn.DBID = h.DBID AND tlcn.Top_Level_Call# = h.Top_Level_Call# AND tlcn.Con_DBID = h.Con_DBID" if PanoramaConnection.db_version >= '11.2'}
                          "
         },
     ]
@@ -591,6 +606,7 @@ ORDER BY Column_ID
     end
 
     @ora_tab_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config[:owner].upcase]
+    @ora_tab_colnull  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name, Nullable FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config[:owner].upcase]
     @@tables.each do |table|
       check_table_columns(table) if check_table_in_this_thread?(table[:table_name], only_ash_tables)
     end
@@ -730,12 +746,40 @@ ORDER BY Column_ID
 
   def check_table_columns(table)
     table[:columns].each do |column|
+      # Check column existence
       if !@ora_tab_columns.include?({'table_name' => table[:table_name].upcase, 'column_name' => column[:column_name].upcase})
         sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} ADD ("
         sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]}"
         sql << ")"
         log(sql)
         PanoramaConnection.sql_execute(sql)
+      end
+
+      # check column null state
+      if !@ora_tab_colnull.include?({'table_name' => table[:table_name].upcase, 'column_name' => column[:column_name].upcase, 'nullable' => (column[:not_null] ? 'N' : 'Y')})
+        sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} MODIFY ("
+        sql << "#{column[:column_name]} #{column[:not_null] ? 'NOT NULL' : 'NULL'}"
+        sql << ")"
+        log(sql)
+        PanoramaConnection.sql_execute(sql)
+      end
+    end
+
+    # Check existencwe of obsolete columns
+    @ora_tab_columns.each do |tcol|
+      if tcol.table_name == table[:table_name].upcase
+        should_exist = false
+        table[:columns].each do |column|
+          if tcol.column_name == column[:column_name].upcase
+            should_exist = true
+            break
+          end
+        end
+        if !should_exist
+          sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} DROP COLUMN #{tcol.column_name}"
+          log(sql)
+          PanoramaConnection.sql_execute(sql)
+        end
       end
     end
   end
