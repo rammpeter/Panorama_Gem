@@ -187,7 +187,7 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_Snapshot IS
     #{ PanoramaConnection.db_version >= '11.2' ?
            "
     INSERT INTO Panorama_TopLevelCall_Name (DBID, Top_Level_Call#, Top_Level_Call_Name, Con_DBID, Con_ID)
-    SELECT p_DBID, Top_Level_Call#, Top_Level_Call_Name, p_Con_DBID, Con_ID
+    SELECT p_DBID, Top_Level_Call#, Top_Level_Call_Name, p_Con_DBID, #{PanoramaConnection.db_version >= '12.1' ? "s.Con_ID" : "0"}
     FROM   v$TopLevelCall s
     WHERE  NOT EXISTS (SELECT 1 FROM Panorama_TopLevelCall_Name t WHERE t.DBID = p_DBID AND t.Top_Level_Call# = s.Top_Level_Call# AND t.Con_DBID = p_Con_DBID)
     ;
