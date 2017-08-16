@@ -716,7 +716,7 @@ ORDER BY Column_ID
 
   # Check if this table check belongs to ash or snapshot
   def check_table_in_this_thread?(table_name, only_ash_tables)
-    ash_tables = ['Internal_V$Active_Sess_History'.upcase]
+    ash_tables = ['Internal_V$Active_Sess_History'.upcase, 'Panorama_TopLevelCall_Name'.upcase]
     (only_ash_tables && ash_tables.include?(table_name.upcase)) ||  (!only_ash_tables && !ash_tables.include?(table_name.upcase))
   end
 
