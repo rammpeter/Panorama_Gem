@@ -320,6 +320,17 @@ class PanoramaSamplerStructureCheck
           primary_key: ['DBID', 'Snap_ID', 'Instance_Number', 'Group#', 'Thread#', 'Sequence#', 'Con_DBID']
       },
       {
+          table_name: 'Panorama_Service_Name',
+          columns: [
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'SERVICE_NAME_HASH',              column_type:   'NUMBER',    not_null: true },
+              { column_name:  'SERVICE_NAME',                   column_type:   'VARCHAR2',  not_null: true, precision: 64 },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER',    not_null: true },
+          ],
+          primary_key: ['DBID', 'Service_Name', 'Con_DBID'],
+      },
+      {
           table_name: 'Panorama_Snapshot',
           columns: [
               { column_name:  'Snap_ID',                        column_type:  'NUMBER',     not_null: true },
@@ -716,7 +727,7 @@ ORDER BY Column_ID
 
   # Check if this table check belongs to ash or snapshot
   def check_table_in_this_thread?(table_name, only_ash_tables)
-    ash_tables = ['Internal_V$Active_Sess_History'.upcase, 'Panorama_TopLevelCall_Name'.upcase]
+    ash_tables = ['Internal_V$Active_Sess_History'.upcase, 'Panorama_TopLevelCall_Name'.upcase, 'Panorama_Service_Name'.upcase]
     (only_ash_tables && ash_tables.include?(table_name.upcase)) ||  (!only_ash_tables && !ash_tables.include?(table_name.upcase))
   end
 
