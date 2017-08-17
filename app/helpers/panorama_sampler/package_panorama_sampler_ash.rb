@@ -111,8 +111,10 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
     TM_DELTA_DB_TIME          NUMBER,
     DELTA_TIME                NUMBER,
     DELTA_READ_IO_REQUESTS    NUMBER,
-
-
+    DELTA_WRITE_IO_REQUESTS   NUMBER,
+    DELTA_READ_IO_BYTES       NUMBER,
+    DELTA_WRITE_IO_BYTES      NUMBER,
+    DELTA_INTERCONNECT_IO_BYTES NUMBER,
     Preserve_10Secs           VARCHAR2(1)
   );
   TYPE AshTableType IS TABLE OF AshType INDEX BY BINARY_INTEGER;
@@ -237,6 +239,10 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
              DECODE(ph.Sample_Time, NULL, NULL, (EXTRACT(DAY    FROM SYSTIMESTAMP-ph.Sample_Time)*86400 + EXTRACT(HOUR FROM SYSTIMESTAMP-ph.Sample_Time)*3600 +
                                                  EXTRACT(MINUTE FROM SYSTIMESTAMP-ph.Sample_Time)*60    + EXTRACT(SECOND FROM SYSTIMESTAMP-ph.Sample_Time))*1000000), -- Delta_Time
              NULL, -- DECODE(ph.Sample_Time, NULL, NULL, ss_rio.Value - NVL(ph.DELTA_READ_IO_REQUESTS, 0)),  --  DELTA_READ_IO_REQUESTS
+             NULL, -- DELTA_WRITE_IO_REQUESTS
+             NULL, -- DELTA_READ_IO_BYTES
+             NULL, -- DELTA_WRITE_IO_BYTES
+             NULL, -- DELTA_INTERCONNECT_IO_BYTES
              DECODE(MOD(TO_NUMBER(TO_CHAR(SYSDATE, 'SS')), 10), 0, 'Y', NULL) -- Preserve_10Secs
       BULK COLLECT INTO AshTable4Select
       FROM   v$Session s
@@ -291,7 +297,8 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
           REPLAY_OVERHEAD, IS_CAPTURED, IS_REPLAYED, Service_Hash, Program,
           Module, Action, Client_ID, Machine, Port, ECID,
           DBREPLAY_FILE_ID, DBREPLAY_CALL_COUNTER, TM_Delta_Time, TM_DELTA_CPU_TIME, TM_DELTA_DB_TIME,
-          DELTA_TIME, DELTA_READ_IO_REQUESTS,
+          DELTA_TIME, DELTA_READ_IO_REQUESTS, DELTA_WRITE_IO_REQUESTS, DELTA_READ_IO_BYTES,
+          DELTA_WRITE_IO_BYTES, DELTA_INTERCONNECT_IO_BYTES,
           Con_ID, Preserve_10Secs
         ) VALUES (
           p_Instance_Number, AshTable(Idx).Sample_ID, AshTable(Idx).Sample_Time, 'N', AshTable(Idx).Session_ID, AshTable(Idx).Session_Serial#,
@@ -313,7 +320,8 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
           AshTable(Idx).REPLAY_OVERHEAD, AshTable(Idx).IS_CAPTURED, AshTable(Idx).IS_REPLAYED, AshTable(Idx).Service_Hash, AshTable(Idx).Program,
           AshTable(Idx).Module, AshTable(Idx).Action, AshTable(Idx).Client_ID, AshTable(Idx).Machine, AshTable(Idx).Port, AshTable(Idx).ECID,
           AshTable(Idx).DBREPLAY_FILE_ID, AshTable(Idx).DBREPLAY_CALL_COUNTER, AshTable(Idx).TM_Delta_Time, AshTable(Idx).TM_DELTA_CPU_TIME, AshTable(Idx).TM_DELTA_DB_TIME,
-          AshTable(Idx).DELTA_TIME, AshTable(Idx).DELTA_READ_IO_REQUESTS,
+          AshTable(Idx).DELTA_TIME, AshTable(Idx).DELTA_READ_IO_REQUESTS, AshTable(Idx).DELTA_WRITE_IO_REQUESTS, AshTable(Idx).DELTA_READ_IO_BYTES,
+          AshTable(Idx).DELTA_WRITE_IO_BYTES, AshTable(Idx).DELTA_INTERCONNECT_IO_BYTES,
           p_Con_ID, AshTable(Idx).Preserve_10Secs
         );
         COMMIT;
