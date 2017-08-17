@@ -7,8 +7,6 @@
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_ash.rb" afterPath="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_ash.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" afterPath="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" afterPath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -122,8 +120,8 @@
       <file leaf-file-name="package_panorama_sampler_ash.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_ash.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="264" column="33" lean-forward="true" selection-start-line="264" selection-start-column="33" selection-end-line="264" selection-end-column="33" />
+            <state relative-caret-position="302">
+              <caret line="256" column="49" lean-forward="true" selection-start-line="256" selection-start-column="49" selection-end-line="256" selection-end-column="49" />
               <folding />
             </state>
           </provider>
@@ -1102,14 +1100,7 @@
       <workItem from="1501517780235" duration="4387000" />
       <workItem from="1501572939326" duration="94240000" />
       <workItem from="1502104819808" duration="35386000" />
-      <workItem from="1502276313484" duration="156137000" />
-    </task>
-    <task id="LOCAL-00996" summary="Robust test">
-      <created>1501747413232</created>
-      <option name="number" value="00996" />
-      <option name="presentableId" value="LOCAL-00996" />
-      <option name="project" value="LOCAL" />
-      <updated>1501747413232</updated>
+      <workItem from="1502276313484" duration="159543000" />
     </task>
     <task id="LOCAL-00997" summary="Housekeeping">
       <created>1501750192110</created>
@@ -1447,7 +1438,14 @@
       <option name="project" value="LOCAL" />
       <updated>1502972689895</updated>
     </task>
-    <option name="localTasksCounter" value="1045" />
+    <task id="LOCAL-01045" summary="Ash sampling: next columns">
+      <created>1502978655706</created>
+      <option name="number" value="01045" />
+      <option name="presentableId" value="LOCAL-01045" />
+      <option name="project" value="LOCAL" />
+      <updated>1502978655707</updated>
+    </task>
+    <option name="localTasksCounter" value="1046" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1483,7 +1481,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1908047000" />
+    <option name="totallyTimeSpent" value="1911453000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -2097,8 +2095,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_ash.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="264" column="33" lean-forward="true" selection-start-line="264" selection-start-column="33" selection-end-line="264" selection-end-column="33" />
+        <state relative-caret-position="302">
+          <caret line="256" column="49" lean-forward="true" selection-start-line="256" selection-start-column="49" selection-end-line="256" selection-end-column="49" />
           <folding />
         </state>
       </provider>

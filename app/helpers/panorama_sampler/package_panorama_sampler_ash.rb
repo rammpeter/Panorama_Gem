@@ -236,7 +236,7 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
              DECODE(ph.Sample_Time, NULL, NULL, stm_db.Value - NVL(ph.TM_Delta_DB_Time, 0)),      -- TM_DELTA_DB_TIME
              DECODE(ph.Sample_Time, NULL, NULL, (EXTRACT(DAY    FROM SYSTIMESTAMP-ph.Sample_Time)*86400 + EXTRACT(HOUR FROM SYSTIMESTAMP-ph.Sample_Time)*3600 +
                                                  EXTRACT(MINUTE FROM SYSTIMESTAMP-ph.Sample_Time)*60    + EXTRACT(SECOND FROM SYSTIMESTAMP-ph.Sample_Time))*1000000), -- Delta_Time
-             DECODE(ph.Sample_Time, NULL, NULL, ss_rio.Value - NVL(ph.DELTA_READ_IO_REQUESTS, 0)),  --  DELTA_READ_IO_REQUESTS
+             NULL, -- DECODE(ph.Sample_Time, NULL, NULL, ss_rio.Value - NVL(ph.DELTA_READ_IO_REQUESTS, 0)),  --  DELTA_READ_IO_REQUESTS
              DECODE(MOD(TO_NUMBER(TO_CHAR(SYSDATE, 'SS')), 10), 0, 'Y', NULL) -- Preserve_10Secs
       BULK COLLECT INTO AshTable4Select
       FROM   v$Session s
@@ -248,9 +248,14 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
       LEFT OUTER JOIN v$Services srv            ON srv.Name = s.Service_Name #{"AND srv.Con_ID = s.Con_ID" if PanoramaConnection.db_version >= '12.1'}
       LEFT OUTER JOIN v$Sess_Time_Model stm_db  ON stm_db.SID = s.SID AND stm_db.Stat_Name = 'DB time'
       LEFT OUTER JOIN v$Sess_Time_Model stm_cp  ON stm_cp.SID = s.SID AND stm_cp.Stat_Name = 'DB CPU'
-      LEFT OUTER JOIN Internal_V$Active_Sess_History ph ON ph.Instance_Number = p_Instance_Number AND ph.Session_ID = s.SID
-                                                        AND ph.Sample_ID = (SELECT MAX(Sample_ID) FROM Internal_V$Active_Sess_History phm WHERE phm.Instance_Number = p_Instance_Number AND phm.Session_ID = s.SID)
-      LEFT OUTER JOIN v$SesStat ss_rio          ON ss_rio.SID = s.SID AND ss_rio.Statistic#=Panorama_Sampler_ASH.Get_Stat_ID('physical read total IO requests') #{"AND ss_rio.Con_ID = s.Con_ID" if PanoramaConnection.db_version >= '12.1'}
+      LEFT OUTER JOIN (SELECT Session_ID, MAX(Sample_ID) Max_Sample_ID
+                       FROM   Internal_V$Active_Sess_History phm
+                       WHERE  phm.Instance_Number = p_Instance_Number
+                       GROUP BY Session_ID
+                      ) phms ON phms.Session_ID = s.SID
+      LEFT OUTER JOIN Internal_V$Active_Sess_History ph ON ph.Instance_Number = p_Instance_Number AND ph.Session_ID = s.SID AND ph.Sample_ID = phms.Max_Sample_ID
+      -- Access on v$SesStat is too slow for execution per second
+      --LEFT OUTER JOIN v$SesStat ss_rio          ON ss_rio.SID = s.SID AND ss_rio.Statistic#=Panorama_Sampler_ASH.Get_Stat_ID('physical read total IO requests') #{"AND ss_rio.Con_ID = s.Con_ID" if PanoramaConnection.db_version >= '12.1'}
       WHERE  s.Status = 'ACTIVE'
       AND    s.Wait_Class != 'Idle'
       AND    s.SID        != USERENV('SID')  -- dont record the own session that assumes always active this way
