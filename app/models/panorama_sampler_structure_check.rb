@@ -162,10 +162,11 @@ class PanoramaSamplerStructureCheck
               { column_name:  'PGA_ALLOCATED',                  column_type:  'NUMBER' },
               { column_name:  'TEMP_SPACE_ALLOCATED',           column_type:  'NUMBER' },
               { column_name:  'Con_ID',                         column_type:  'NUMBER', not_null: true  },
+              { column_name:  'Preserve_10Secs',                column_type:  'VARCHAR2', precision: 1  },  # Marker for long term preservation
               #{ column_name:  'DBOP_NAME',                      column_type:  'VARCHAR2', precision: 30 },
               #{ column_name:  'DBOP_EXEC_ID',                   column_type:  'NUMBER' },
           ],
-          primary_key: ['INSTANCE_NUMBER', 'SAMPLE_ID', 'SESSION_ID'],    # ensure that copying data into Panorama_Active_Sess_History does never rails PK-violation
+          primary_key: ['INSTANCE_NUMBER', 'SESSION_ID', 'SAMPLE_ID'],    # ensure that copying data into Panorama_Active_Sess_History does never rails PK-violation
       },
       {
           table_name: 'Internal_Active_Sess_History',

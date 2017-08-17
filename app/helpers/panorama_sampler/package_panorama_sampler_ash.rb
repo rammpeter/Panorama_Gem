@@ -5,7 +5,7 @@ module PanoramaSampler::PackagePanoramaSamplerAsh
 CREATE OR REPLACE Package panorama.Panorama_Sampler_ASH AS
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
 
-
+  FUNCTION Get_Stat_ID(p_Name IN VARCHAR2) RETURN NUMBER;
   PROCEDURE Run_Sampler_Daemon(p_Snapshot_Cycle_Seconds IN NUMBER, p_Instance_Number IN NUMBER, p_Con_ID IN NUMBER, p_Next_Snapshot_Start_Seconds IN NUMBER);
 
 END Panorama_Sampler_ASH;
@@ -106,11 +106,29 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
     ECID                      VARCHAR2(64),
     DBREPLAY_FILE_ID          NUMBER,
     DBREPLAY_CALL_COUNTER     NUMBER,
-    TM_DELTA_TIME             NUMBER
+    TM_DELTA_TIME             NUMBER,
+    TM_DELTA_CPU_TIME         NUMBER,
+    TM_DELTA_DB_TIME          NUMBER,
+    DELTA_TIME                NUMBER,
+    DELTA_READ_IO_REQUESTS    NUMBER,
+
+
+    Preserve_10Secs           VARCHAR2(1)
   );
   TYPE AshTableType IS TABLE OF AshType INDEX BY BINARY_INTEGER;
   AshTable                AshTableType;
   AshTable4Select         AshTableType;
+
+  TYPE StatNameTableType IS TABLE OF NUMBER INDEX BY VARCHAR2(64);
+  StatNameTable           StatNameTableType;
+
+  FUNCTION Get_Stat_ID(p_Name IN VARCHAR2) RETURN NUMBER IS
+  BEGIN
+    IF NOT StatNameTable.EXISTS(p_Name) THEN
+      SELECT Statistic# INTO StatNameTable(p_Name) FROM v$StatName WHERE Name = p_Name;
+    END IF;
+    RETURN StatNameTable(p_Name);
+  END Get_Stat_ID;
 
 
   PROCEDURE CreateSample(
@@ -213,7 +231,13 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
              NULL,                -- DBREPLAY_FILE_ID
              NULL,                -- DBREPLAY_CALL_COUNTER
              DECODE(ph.Sample_Time, NULL, NULL, (EXTRACT(DAY    FROM SYSTIMESTAMP-ph.Sample_Time)*86400 + EXTRACT(HOUR FROM SYSTIMESTAMP-ph.Sample_Time)*3600 +
-                                                 EXTRACT(MINUTE FROM SYSTIMESTAMP-ph.Sample_Time)*60    + EXTRACT(SECOND FROM SYSTIMESTAMP-ph.Sample_Time))*1000000) -- TM_Delta_Time
+                                                 EXTRACT(MINUTE FROM SYSTIMESTAMP-ph.Sample_Time)*60    + EXTRACT(SECOND FROM SYSTIMESTAMP-ph.Sample_Time))*1000000), -- TM_Delta_Time
+             DECODE(ph.Sample_Time, NULL, NULL, stm_cp.Value - NVL(ph.TM_Delta_CPU_Time, 0)),     -- TM_DELTA_CPU_TIME
+             DECODE(ph.Sample_Time, NULL, NULL, stm_db.Value - NVL(ph.TM_Delta_DB_Time, 0)),      -- TM_DELTA_DB_TIME
+             DECODE(ph.Sample_Time, NULL, NULL, (EXTRACT(DAY    FROM SYSTIMESTAMP-ph.Sample_Time)*86400 + EXTRACT(HOUR FROM SYSTIMESTAMP-ph.Sample_Time)*3600 +
+                                                 EXTRACT(MINUTE FROM SYSTIMESTAMP-ph.Sample_Time)*60    + EXTRACT(SECOND FROM SYSTIMESTAMP-ph.Sample_Time))*1000000), -- Delta_Time
+             DECODE(ph.Sample_Time, NULL, NULL, ss_rio.Value - NVL(ph.DELTA_READ_IO_REQUESTS, 0)),  --  DELTA_READ_IO_REQUESTS
+             DECODE(MOD(TO_NUMBER(TO_CHAR(SYSDATE, 'SS')), 10), 0, 'Y', NULL) -- Preserve_10Secs
       BULK COLLECT INTO AshTable4Select
       FROM   v$Session s
       LEFT OUTER JOIN v$SQLCommand c            ON c.Command_Type = s.Command #{"AND c.Con_ID = s.Con_ID" if PanoramaConnection.db_version >= '12.1'}
@@ -224,7 +248,9 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
       LEFT OUTER JOIN v$Services srv            ON srv.Name = s.Service_Name #{"AND srv.Con_ID = s.Con_ID" if PanoramaConnection.db_version >= '12.1'}
       LEFT OUTER JOIN v$Sess_Time_Model stm_db  ON stm_db.SID = s.SID AND stm_db.Stat_Name = 'DB time'
       LEFT OUTER JOIN v$Sess_Time_Model stm_cp  ON stm_cp.SID = s.SID AND stm_cp.Stat_Name = 'DB CPU'
-      LEFT OUTER JOIN Internal_V$Active_Sess_History ph ON ph.Instance_Number = p_Instance_Number AND ph.Sample_ID = p_Sample_ID-1 AND ph.Session_ID = s.SID
+      LEFT OUTER JOIN Internal_V$Active_Sess_History ph ON ph.Instance_Number = p_Instance_Number AND ph.Session_ID = s.SID
+                                                        AND ph.Sample_ID = (SELECT MAX(Sample_ID) FROM Internal_V$Active_Sess_History phm WHERE phm.Instance_Number = p_Instance_Number AND phm.Session_ID = s.SID)
+      LEFT OUTER JOIN v$SesStat ss_rio          ON ss_rio.SID = s.SID AND ss_rio.Statistic#=Panorama_Sampler_ASH.Get_Stat_ID('physical read total IO requests') #{"AND ss_rio.Con_ID = s.Con_ID" if PanoramaConnection.db_version >= '12.1'}
       WHERE  s.Status = 'ACTIVE'
       AND    s.Wait_Class != 'Idle'
       AND    s.SID        != USERENV('SID')  -- dont record the own session that assumes always active this way
@@ -236,7 +262,7 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
       END LOOP;
 
       p_Counter := p_Counter + 1;
-      IF p_Counter >= p_Bulk_Size-1 THEN
+      IF p_Counter >= p_Bulk_Size THEN
         p_Counter := 0;
 
         FORALL Idx IN 1 .. AshTable.COUNT
@@ -259,8 +285,9 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
           IN_INMEMORY_REPOPULATE, IN_INMEMORY_TREPOPULATE, IN_TABLESPACE_ENCRYPTION, CAPTURE_OVERHEAD,
           REPLAY_OVERHEAD, IS_CAPTURED, IS_REPLAYED, Service_Hash, Program,
           Module, Action, Client_ID, Machine, Port, ECID,
-          DBREPLAY_FILE_ID, DBREPLAY_CALL_COUNTER, TM_Delta_Time,
-          Con_ID
+          DBREPLAY_FILE_ID, DBREPLAY_CALL_COUNTER, TM_Delta_Time, TM_DELTA_CPU_TIME, TM_DELTA_DB_TIME,
+          DELTA_TIME, DELTA_READ_IO_REQUESTS,
+          Con_ID, Preserve_10Secs
         ) VALUES (
           p_Instance_Number, AshTable(Idx).Sample_ID, AshTable(Idx).Sample_Time, 'N', AshTable(Idx).Session_ID, AshTable(Idx).Session_Serial#,
           AshTable(Idx).Session_Type, AshTable(Idx).Flags, AshTable(Idx).User_ID, AshTable(Idx).SQL_ID, AshTable(Idx).Is_SQLID_Current, AshTable(Idx).SQL_Child_Number,
@@ -280,8 +307,9 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
           AshTable(Idx).IN_INMEMORY_REPOPULATE, AshTable(Idx).IN_INMEMORY_TREPOPULATE, AshTable(Idx).IN_TABLESPACE_ENCRYPTION, AshTable(Idx).CAPTURE_OVERHEAD,
           AshTable(Idx).REPLAY_OVERHEAD, AshTable(Idx).IS_CAPTURED, AshTable(Idx).IS_REPLAYED, AshTable(Idx).Service_Hash, AshTable(Idx).Program,
           AshTable(Idx).Module, AshTable(Idx).Action, AshTable(Idx).Client_ID, AshTable(Idx).Machine, AshTable(Idx).Port, AshTable(Idx).ECID,
-          AshTable(Idx).DBREPLAY_FILE_ID, AshTable(Idx).DBREPLAY_CALL_COUNTER, AshTable(Idx).TM_Delta_Time,
-          p_Con_ID
+          AshTable(Idx).DBREPLAY_FILE_ID, AshTable(Idx).DBREPLAY_CALL_COUNTER, AshTable(Idx).TM_Delta_Time, AshTable(Idx).TM_DELTA_CPU_TIME, AshTable(Idx).TM_DELTA_DB_TIME,
+          AshTable(Idx).DELTA_TIME, AshTable(Idx).DELTA_READ_IO_REQUESTS,
+          p_Con_ID, AshTable(Idx).Preserve_10Secs
         );
         COMMIT;
         AshTable.DELETE;
