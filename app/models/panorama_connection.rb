@@ -262,7 +262,7 @@ class PanoramaConnection
   def self.sql_select_iterator(sql, modifier=nil, query_name = 'sql_select_iterator')
     check_for_open_connection                                                   # ensure opened Oracle-connection
     management_pack_license = Thread.current[:panorama_connection_connect_info][:management_pack_license]
-    transformed_sql = PackLicense.filter_sql_for_pack_license(sql, management_pack_license)  # Check for lincense violation and possible statement transformation
+    transformed_sql = PackLicense.filter_sql_for_pack_license(sql, management_pack_license)  # Check for license violation and possible statement transformation
     stmt, binds = sql_prepare_binds(transformed_sql)   # Transform SQL and split SQL and binds
     SqlSelectIterator.new(translate_sql(stmt), binds, modifier, Thread.current[:panorama_connection_connect_info][:query_timeout], query_name)      # kann per Aufruf von each die einzelnen Records liefern
   end

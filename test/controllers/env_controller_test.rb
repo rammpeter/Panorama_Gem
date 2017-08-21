@@ -15,6 +15,8 @@ class EnvControllerTest <  ActionDispatch::IntegrationTest
     call_controllers_menu_entries_with_actions
   end
 
+
+
   test "should connect to test-db with xhr: true" do
     database = get_current_database
     database[:password] = Encryption.decrypt_value(database[:password], cookies['client_salt'])
@@ -68,8 +70,27 @@ class EnvControllerTest <  ActionDispatch::IntegrationTest
     end
   end
 
+  test "get_tnsnames_records with xhr: true" do
+    get '/env/get_tnsnames_records',  :params => {:format=>:js, :target_object=>:database}
+    assert_response :success
+  end
 
-  test "Diverses with xhr: true" do
+  test "choose_managent_pack_license with xhr: true" do
+    # :panorama_sampler excluded because it is tested with panorama_sampler_schema by set_management_pack_license
+    [:diagnostics_pack, :diagnostics_and_tuning_pack, :none].each do |license|
+      post '/env/choose_managent_pack_license',  :params => {:format=>:html, :management_pack_license => license }
+      assert_response :success
+    end
+  end
+
+  test 'set_management_pack_license with xhr: true' do
+    [:diagnostics_pack, :diagnostics_and_tuning_pack, :panorama_sampler, :none].each do |license|
+      post '/env/set_management_pack_license', :params => {:format=>:html, :management_pack_license => license }
+      assert_response :success
+    end
+  end
+
+  test "dbids with xhr: true" do
     post '/env/list_dbids', :params => {:format=>:html, :update_area=>:hugo}
     assert_response :success
 

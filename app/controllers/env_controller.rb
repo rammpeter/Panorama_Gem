@@ -318,6 +318,7 @@ class EnvController < ApplicationController
           sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"    # Connect with TNS-Alias has second try if does not function
         rescue Exception => e                                                   # Switch to host/port/sid instead
           Rails.logger.error "Error connecting to database: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
+          Rails.logger.error e.class.name
           Rails.logger.error e.message
           e.backtrace.each do |bt|
             Rails.logger.error bt
@@ -332,6 +333,7 @@ class EnvController < ApplicationController
       end
     rescue Exception => e
       Rails.logger.error "Error connecting to database: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
+      Rails.logger.error e.class.name
       Rails.logger.error e.message
       e.backtrace.each do |bt|
         Rails.logger.error bt
@@ -342,7 +344,7 @@ class EnvController < ApplicationController
         format.js {render :js => "show_status_bar_message('#{
                                           my_html_escape("#{
 t(:env_connect_error, :default=>'Error connecting to database')}:
-#{e.message}
+#{e.class.name}: #{e.message}
 
 JDBC URL:  '#{PanoramaConnection.jdbc_thin_url}'
 Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}
@@ -522,7 +524,7 @@ public
 
     render_partial :list_management_pack_license
   rescue Exception => e
-    Rails.logger.error "Error during list_management_pack_license: #{e.message}"
+    Rails.logger.error "Error during list_management_pack_license: #{e.class.name}  #{e.message}"
     set_current_database(get_current_database.merge( {:management_pack_license  => :none } ))
     add_statusbar_message("Cannot read managament pack licensing state from database!\nAssuming no management pack license exists.\n#{e.message}")
     start_page                                                                  # Assuming this is the first call at statup and not included from start_page

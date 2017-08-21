@@ -232,12 +232,13 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
              #{PanoramaConnection.db_version >= '11.2' ?  "s.ECID" : "NULL"  }, -- ECID
              NULL,                -- DBREPLAY_FILE_ID
              NULL,                -- DBREPLAY_CALL_COUNTER
-             DECODE(ph.Sample_Time, NULL, NULL, (EXTRACT(DAY    FROM SYSTIMESTAMP-ph.Sample_Time)*86400 + EXTRACT(HOUR FROM SYSTIMESTAMP-ph.Sample_Time)*3600 +
-                                                 EXTRACT(MINUTE FROM SYSTIMESTAMP-ph.Sample_Time)*60    + EXTRACT(SECOND FROM SYSTIMESTAMP-ph.Sample_Time))*1000000), -- TM_Delta_Time
+             -- cast SYSTIMESTAMP to timestamp without timezone to ensure timezone setting does not influence the difference SYSTIMESTAMP-Sample_Time
+             DECODE(ph.Sample_Time, NULL, NULL, (EXTRACT(DAY    FROM CAST(SYSTIMESTAMP AS TIMESTAMP)-ph.Sample_Time)*86400 + EXTRACT(HOUR FROM CAST(SYSTIMESTAMP AS TIMESTAMP)-ph.Sample_Time)*3600 +
+                                                 EXTRACT(MINUTE FROM CAST(SYSTIMESTAMP AS TIMESTAMP)-ph.Sample_Time)*60    + EXTRACT(SECOND FROM CAST(SYSTIMESTAMP AS TIMESTAMP)-ph.Sample_Time))*1000000), -- TM_Delta_Time
              DECODE(ph.Sample_Time, NULL, NULL, stm_cp.Value - NVL(ph.TM_Delta_CPU_Time, 0)),     -- TM_DELTA_CPU_TIME
              DECODE(ph.Sample_Time, NULL, NULL, stm_db.Value - NVL(ph.TM_Delta_DB_Time, 0)),      -- TM_DELTA_DB_TIME
-             DECODE(ph.Sample_Time, NULL, NULL, (EXTRACT(DAY    FROM SYSTIMESTAMP-ph.Sample_Time)*86400 + EXTRACT(HOUR FROM SYSTIMESTAMP-ph.Sample_Time)*3600 +
-                                                 EXTRACT(MINUTE FROM SYSTIMESTAMP-ph.Sample_Time)*60    + EXTRACT(SECOND FROM SYSTIMESTAMP-ph.Sample_Time))*1000000), -- Delta_Time
+             DECODE(ph.Sample_Time, NULL, NULL, (EXTRACT(DAY    FROM CAST(SYSTIMESTAMP AS TIMESTAMP)-ph.Sample_Time)*86400 + EXTRACT(HOUR FROM CAST(SYSTIMESTAMP AS TIMESTAMP)-ph.Sample_Time)*3600 +
+                                                 EXTRACT(MINUTE FROM CAST(SYSTIMESTAMP AS TIMESTAMP)-ph.Sample_Time)*60    + EXTRACT(SECOND FROM CAST(SYSTIMESTAMP AS TIMESTAMP)-ph.Sample_Time))*1000000), -- Delta_Time
              NULL, -- DECODE(ph.Sample_Time, NULL, NULL, ss_rio.Value - NVL(ph.DELTA_READ_IO_REQUESTS, 0)),  --  DELTA_READ_IO_REQUESTS
              NULL, -- DELTA_WRITE_IO_REQUESTS
              NULL, -- DELTA_READ_IO_BYTES
