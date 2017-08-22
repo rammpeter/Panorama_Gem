@@ -108,7 +108,7 @@ class PanoramaConnection
   attr_reader :db_version
   attr_reader :dbid
   attr_reader :con_id
-  attr_reader :db_block_size
+  attr_reader :db_blocksize
   attr_reader :db_wordsize
 
   # Array of PanoramaConnaction instances, elements consists of:
@@ -136,7 +136,7 @@ class PanoramaConnection
     @dbid            = db_config['dbid']
 
     db_blocksize_data = new_jdbc_connection.select_one "SELECT /* Panorama Tool Ramm */ TO_NUMBER(Value) Value FROM v$parameter WHERE UPPER(Name) = 'DB_BLOCK_SIZE'"
-    @db_block_size    = db_blocksize_data['value']
+    @db_blocksize     = db_blocksize_data['value']
 
     db_wordsize_data  = new_jdbc_connection.select_one "SELECT /* Panorama Tool Ramm */ DECODE (INSTR (banner, '64bit'), 0, 4, 8) Word_Size FROM v$version WHERE Banner LIKE '%Oracle Database%'"
     @db_wordsize      = db_wordsize_data['word_size']

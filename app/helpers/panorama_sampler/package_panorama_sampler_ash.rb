@@ -247,7 +247,7 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
              NULL, -- DELTA_WRITE_IO_BYTES
              NULL, -- DELTA_INTERCONNECT_IO_BYTES
              p.PGA_Alloc_Mem,     -- PGA_ALLOCATED
-             NULL,              -- TEMP_SPACE_ALLOCATED
+             ts.blocks * #{PanoramaConnection.db_blocksize},  -- TEMP_SPACE_ALLOCATED
              DECODE(MOD(TO_NUMBER(TO_CHAR(SYSDATE, 'SS')), 10), 0, 'Y', NULL) -- Preserve_10Secs
       BULK COLLECT INTO AshTable4Select
       FROM   v$Session s
@@ -266,6 +266,9 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
                        GROUP BY Session_ID
                       ) phms ON phms.Session_ID = s.SID
       LEFT OUTER JOIN Internal_V$Active_Sess_History ph ON ph.Instance_Number = p_Instance_Number AND ph.Session_ID = s.SID AND ph.Sample_ID = phms.Max_Sample_ID
+      LEFT OUTER JOIN (SELECT Session_Addr, SUM(Blocks) Blocks
+                       FROM   v$Tempseg_Usage
+                       GROUP BY Session_Addr) ts ON ts.Session_Addr = s.SAddr
       -- Access on v$SesStat is too slow for execution per second
       --LEFT OUTER JOIN v$SesStat ss_rio          ON ss_rio.SID = s.SID AND ss_rio.Statistic#=Panorama_Sampler_ASH.Get_Stat_ID('physical read total IO requests') #{"AND ss_rio.Con_ID = s.Con_ID" if PanoramaConnection.db_version >= '12.1'}
       WHERE  s.Status = 'ACTIVE'
