@@ -5,11 +5,22 @@ class PanoramaSamplerJob < ApplicationJob
 
   def perform(*args)
 
-    min_snapshot_cycle = 60                                                     # at least every hour run job
-    PanoramaSamplerConfig.get_cloned_config_array.each do |config|
-      min_snapshot_cycle = config[:snapshot_cycle] if config[:snapshot_cycle] < min_snapshot_cycle  # Rerrun job at smallest snapshot cycle config
+    snapshot_time = Time.now.round                                              # cut subseconds
+
+    min_snapshot_cycle = PanoramaSamplerConfig.min_snapshot_cycle
+
+    # calculate next snapshot time from now
+    last_snapshot_minute = snapshot_time.min-snapshot_time.min % min_snapshot_cycle
+    last_snapshot_time = Time.new(snapshot_time.year, snapshot_time.month, snapshot_time.day, snapshot_time.hour, last_snapshot_minute, 0)
+    next_snapshot_time = last_snapshot_time + min_snapshot_cycle * 60
+    PanoramaSamplerJob.set(wait_until: next_snapshot_time).perform_later
+
+    if last_snapshot_time < snapshot_time                                                 # First Job execution at server startup
+      Rails.logger.info "Job suspended because not started at exact snapshot time"
+      return
     end
 
+=begin
     snapshot_time = Time.now.round                                              # Cut subseconds
     # Wait until Time is at bound of smallest snapshot_cycle and exactly at minute bound
     while snapshot_time.strftime('%M').to_i % min_snapshot_cycle != 0 || snapshot_time.strftime('%S').to_i != 0
@@ -21,13 +32,15 @@ class PanoramaSamplerJob < ApplicationJob
     # Rails.logger.info "Starting with snapshot_time=#{Time.now.iso8601(10)}"
 
     # reschedule the job 12 seconds before next snapshot cycle
-    PanoramaSamplerJob.set(wait: (min_snapshot_cycle-0.2).minutes).perform_later    # Start 12 seconds before to ensure end of minute is hit exactly
-sleep 60
-Rails.logger.info "################ Sleep fulfilled"
+
+    #PanoramaSamplerJob.set(wait_until: Date.tomorrow.noon).perform_later(guest)
+    PanoramaSamplerJob.set(wait_until: .perform_later    # Start 12 seconds before to ensure end of minute is hit exactly
+
+=end
     # Iterate over PanoramaSampler entries
     PanoramaSamplerConfig.get_cloned_config_array.each do |config|
-      if config[:active] && (snapshot_time.strftime('%M').to_i % config[:snapshot_cycle] == 0  ||  # exact startup time at full hour + x*snapshot_cycle
-                             snapshot_time.strftime('%M').to_i == 0 && snapshot_time.strftime('%H') % config[:snapshot_cycle]/60 == 0)  # Full hour for snapshot cycle = n*hour
+      if config[:active] && (snapshot_time.min % config[:snapshot_cycle] == 0  ||  # exact startup time at full hour + x*snapshot_cycle
+                             snapshot_time.min == 0 && snapshot_time.hour % config[:snapshot_cycle]/60 == 0)  # Full hour for snapshot cycle = n*hour
         if config[:last_snapshot_start].nil? || (config[:last_snapshot_start]+(config[:snapshot_cycle]).minutes <= snapshot_time) && # snapshot_cycle expired ?
           PanoramaSamplerConfig.modify_config_entry({id: config[:id], last_snapshot_start: snapshot_time})
           WorkerThread.create_snapshot(config, snapshot_time)

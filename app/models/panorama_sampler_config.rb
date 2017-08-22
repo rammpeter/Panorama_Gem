@@ -41,6 +41,14 @@ class PanoramaSamplerConfig
     retval
   end
 
+  def self.min_snapshot_cycle
+    min_snapshot_cycle = 60                                                     # at least every hour run job
+    get_cloned_config_array.each do |config|
+      min_snapshot_cycle = config[:snapshot_cycle] if config[:snapshot_cycle] < min_snapshot_cycle  # Rerrun job at smallest snapshot cycle config
+    end
+    min_snapshot_cycle
+  end
+
   #
   def self.encryt_password(native_password)
     Encryption.encrypt_value(native_password, EngineConfig.config.panorama_sampler_master_password) # Encrypt password with master_password

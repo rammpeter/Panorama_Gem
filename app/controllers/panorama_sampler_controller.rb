@@ -58,6 +58,11 @@ class PanoramaSamplerController < ApplicationController
   end
 
   def store_config(config_entry)
+    if PanoramaSamplerConfig.min_snapshot_cycle > config_entry[:snapshot_cycle]
+      add_statusbar_message("Sampling currently starts each #{PanoramaSamplerConfig.min_snapshot_cycle} minutes\nIf you don't restart Panorama's server now than your setting starts working not before next full #{PanoramaSamplerConfig.min_snapshot_cycle} minutes")
+    end
+
+
     if PanoramaSamplerConfig.config_entry_exists?(config_entry[:id])
       PanoramaSamplerConfig.modify_config_entry(config_entry)
     else
