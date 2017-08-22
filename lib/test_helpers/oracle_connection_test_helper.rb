@@ -78,7 +78,6 @@ class ActiveSupport::TestCase
     # TODO Sollte so nicht mehr notwendig sein
     #open_oracle_connection                                                      # Connection zur Test-DB aufbauen, um Parameter auszulesen
     set_connection_info_for_request(current_database)
-    read_initial_db_values                                                      # evtl. Exception tritt erst beim ersten Zugriff auf
 
     # DBID is set at first request after login normally
     set_cached_dbid(PanoramaConnection.dbid)
