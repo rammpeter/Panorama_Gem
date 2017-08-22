@@ -138,7 +138,6 @@ class DbaSgaControllerTest < ActionController::TestCase
     post :list_result_cache, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
 
-
     if get_db_version >= '11.2'
       get :list_result_cache_single_results, :params => {:format=>:html, :instance=>1, :status=>'Published', :name=>'Hugo', :namespace=>'PLSQL', :update_area=>:hugo }
       assert_response :success
@@ -152,7 +151,6 @@ class DbaSgaControllerTest < ActionController::TestCase
 
     get :list_result_cache_dependents, :params => {:format=>:html, :instance=>1, :id=>100, :status=>'Published', :name=>'Hugo', :namespace=>'PLSQL', :update_area=>:hugo }
     assert_response :success
-
   end
 
   test "list_db_cache_advice_historic with xhr: true" do

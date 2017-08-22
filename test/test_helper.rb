@@ -73,9 +73,15 @@ class ActiveSupport::TestCase
     test_config = PanoramaTestConfig.test_config
 
     connect_oracle_db_internal(test_config)   # aus lib/test_helpers/oracle_connection_test_helper
+    @db_version = PanoramaConnection.db_version                                 # Store db_version outside PanoramaConnection
 
     showBlockingLocksMenu     # belegt dba_hist_blocking_locks_owner]
     showDbCacheMenu           # belegt dba_hist_cache_objects_owner]
+  end
+
+  # Don't use PanoramaConnection.db_version because PanoramaConnection.reset_thread_local_attributes is called at end of each request
+  def get_db_version
+    @db_version
   end
 
   def prepare_panorama_sampler_thread_db_config
