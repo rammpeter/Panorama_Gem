@@ -41,7 +41,11 @@ class PackLicense
         check_for_tuning_pack_usage(sql)
       when :panorama_sampler then
         raise "config[:panorama_sampler_schema] must be defined if config[:management_pack_license] == :panorama_sampler" if PanoramaConnection.get_config[:panorama_sampler_schema].nil?
+Rails.logger.info "####################### Before DummySamplerStructureCheck.transform_sql_for_sampler"
+        sql = DummySamplerStructureCheck.transform_sql_for_sampler(sql)
+Rails.logger.info "####################### After DummySamplerStructureCheck.transform_sql_for_sampler"
         sql = PanoramaSamplerStructureCheck.transform_sql_for_sampler(sql)
+Rails.logger.info "####################### After PanoramaSamplerStructureCheck.transform_sql_for_sampler"
         check_for_diagnostics_pack_usage(sql)
         check_for_tuning_pack_usage(sql)
       when :none then

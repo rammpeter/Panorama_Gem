@@ -101,16 +101,55 @@ end #class_eval
 MAX_CONNECTION_POOL_SIZE = 20                                                   # Number of pooled connections, may be more than max. threads
 
 class PanoramaConnection
+  attr_reader :jdbc_connection
+  attr_accessor :used_in_thread
+  attr_accessor :last_used_time
+  attr_reader :instance_number
+  attr_reader :db_version
+  attr_reader :dbid
+  attr_reader :con_id
+  attr_reader :db_block_size
+  attr_reader :db_wordsize
 
-  # Array of connection hashes, elements consists of:
-  #   :jdbc_connection
-  #   :used_in_thread
-  #   :last_used_time
+  # Array of PanoramaConnaction instances, elements consists of:
+  #   @jdbc_connection
+  #   @used_in_thread
+  #   @last_used_time
   @@connection_pool = []
 
   @@connection_pool_mutex = Mutex.new                                           # Ensure synchronized operations on @@connection_pool
 
   public
+
+  ############################ instance methods #########################
+  def initialize(new_jdbc_connection)                                           # Object instantiation is always done within working thread
+    @jdbc_connection = new_jdbc_connection
+    @used_in_thread  = true
+    @last_used_time  = Time.now
+
+    db_config   = new_jdbc_connection.select_one "SELECT i.Instance_Number, i.Version, d.DBID
+                                                  FROM v$Instance i
+                                                  CROSS JOIN v$Database d
+                                                 "
+    @instance_number = db_config['instance_number']
+    @db_version      = db_config['version']
+    @dbid            = db_config['dbid']
+
+    db_blocksize_data = new_jdbc_connection.select_one "SELECT /* Panorama Tool Ramm */ TO_NUMBER(Value) Value FROM v$parameter WHERE UPPER(Name) = 'DB_BLOCK_SIZE'"
+    @db_block_size    = db_blocksize_data['value']
+
+    db_wordsize_data  = new_jdbc_connection.select_one "SELECT /* Panorama Tool Ramm */ DECODE (INSTR (banner, '64bit'), 0, 4, 8) Word_Size FROM v$version WHERE Banner LIKE '%Oracle Database%'"
+    @db_wordsize      = db_wordsize_data['word_size']
+
+    if db_version >= '12.1'
+      con_id_data   = new_jdbc_connection.select_one "SELECT Con_ID FROM v$Session WHERE audsid = userenv('sessionid')" # Con_ID of connected session
+      @con_id        = con_id_data['con_id']
+    else
+      @con_id        = 0
+    end
+  end
+
+  ########################### class methods #############################
   # Store connection redentials for this request in thread, marks begin of request
   def self.set_connection_info_for_request(config)
     reset_thread_local_attributes
@@ -121,85 +160,46 @@ class PanoramaConnection
   def self.reset_thread_local_attributes
     Thread.current[:panorama_connection_app_info_set] = nil
     Thread.current[:panorama_connection_connect_info] = nil
-    Thread.current[:instance_number]                  = nil
-    Thread.current[:con_id]                           = nil
-    Thread.current[:db_version]                       = nil
-    Thread.current[:dbid]                             = nil
   end
 
   # Release connection at the end of request to mark free in pool or destroy
   def self.release_connection
-    if Thread.current[:panorama_connection_jdbc_connection]
+    if Thread.current[:panorama_connection_connection_object]
       @@connection_pool_mutex.synchronize do
-        @@connection_pool.each do |conn|
-          if conn[:jdbc_connection] == Thread.current[:panorama_connection_jdbc_connection]
-            conn[:used_in_thread] = false
-          end
-        end
+        Thread.current[:panorama_connection_connection_object].used_in_thread = false
       end
-      Thread.current[:panorama_connection_jdbc_connection] = nil
+      Thread.current[:panorama_connection_connection_object] = nil
     end
   end
 
   def self.destroy_connection
-    @@connection_pool_mutex.synchronize do
-      destroy_connection_in_mutexed_pool(Thread.current[:panorama_connection_jdbc_connection])
+    if !Thread.current[:panorama_connection_connection_object].nil?
+      @@connection_pool_mutex.synchronize do
+        destroy_connection_in_mutexed_pool(Thread.current[:panorama_connection_connection_object])
+      end
+      Thread.current[:panorama_connection_connection_object] = nil
     end
-    Thread.current[:panorama_connection_jdbc_connection] = nil
   end
 
-  def self.instance_number
-    fill_connection_info_fields unless Thread.current[:instance_number]
-    Thread.current[:instance_number]
-  end
+  def self.instance_number;   check_for_open_connection; Thread.current[:panorama_connection_connection_object].instance_number;   end
+  def self.db_version;        check_for_open_connection; Thread.current[:panorama_connection_connection_object].db_version;        end
+  def self.dbid;              check_for_open_connection; Thread.current[:panorama_connection_connection_object].dbid;              end
+  def self.db_blocksize;      check_for_open_connection; Thread.current[:panorama_connection_connection_object].db_blocksize;      end
+  def self.db_wordsize;       check_for_open_connection; Thread.current[:panorama_connection_connection_object].db_wordsize;       end
+  def self.con_id;            check_for_open_connection; Thread.current[:panorama_connection_connection_object].con_id;            end  # Container-ID for PDBs or 0
 
-  # Container-ID for PDBs or 0
-  def self.con_id
-    fill_connection_info_fields unless Thread.current[:con_id]
-    Thread.current[:con_id]
-  end
-
-  def self.db_version
-    fill_connection_info_fields unless Thread.current[:db_version]
-    Thread.current[:db_version]
-  end
-
-  def self.dbid
-    fill_connection_info_fields unless Thread.current[:dbid]
-    Thread.current[:dbid]
-  end
 
   private
-  # Read some info for connection from database
-  def self.fill_connection_info_fields
-    raise "PanoramaConnection.fill_connection_info_fields called on thread before execution of PanoramaConnection.set_connection_info_for_request" unless Thread.current[:panorama_connection_connect_info]
-    instance_data = sql_select_first_row "SELECT Instance_Number, Version FROM v$Instance"
-    Thread.current[:instance_number]  = instance_data.instance_number
-    Thread.current[:db_version]       = instance_data.version
-
-    database_data = sql_select_first_row "SELECT DBID FROM v$Database"
-    Thread.current[:dbid]             = database_data.dbid
-
-    if db_version >= '12.1'
-      Thread.current[:con_id] = sql_select_one "SELECT Con_ID FROM v$Session WHERE audsid = userenv('sessionid')" # Con_ID of connected session
-    else
-      Thread.current[:con_id] = 0
-    end
-  end
 
   def self.destroy_connection_in_mutexed_pool(destroy_conn)
-    @@connection_pool.each do |conn|
-      if conn[:jdbc_connection] == destroy_conn
-        config = conn[:jdbc_connection].instance_variable_get(:@config)
-        Rails.logger.info "Database connection destroyed: URL='#{config[:url]}' User='#{config[:username]}' Last used=#{conn[:last_used_time]} Pool size=#{@@connection_pool.count}"
-        begin
-          conn[:jdbc_connection].logoff
-        rescue Exception => e
-          Rails.logger.info "destroy_connection_in_mutexed_pool: Exception #{e.message} during logoff. URL='#{config[:url]}' User='#{config[:username]}' Last used=#{conn[:last_used_time]}"
-        end
-        @@connection_pool.delete(conn)
-      end
+    config = destroy_conn.jdbc_connection.instance_variable_get(:@config)
+    Rails.logger.info "Database connection destroyed: URL='#{config[:url]}' User='#{config[:username]}' Last used=#{destroy_conn.last_used_time} Pool size=#{@@connection_pool.count}"
+    begin
+      destroy_conn.jdbc_connection.logoff
+    rescue Exception => e
+      Rails.logger.info "destroy_connection_in_mutexed_pool: Exception #{e.message} during logoff. URL='#{config[:url]}' User='#{config[:username]}' Last used=#{destroy_conn.last_used_time}"
     end
+    @@connection_pool.delete(destroy_conn)
   end
 
   def self.get_host_tns(current_database)                                            # JDBC-URL for host/port/sid
@@ -220,7 +220,7 @@ class PanoramaConnection
   end
 
   def self.get_jdbc_driver_version
-    Thread.current[:panorama_connection_jdbc_connection].raw_connection.getMetaData().getDriverVersion()
+    Thread.current[:panorama_connection_connection_object].jdbc_connection.raw_connection.getMetaData().getDriverVersion()
   rescue Exception => e
     e.message                                                                   # return Exception message instead of raising exeption
   end
@@ -309,7 +309,7 @@ class PanoramaConnection
 
   def self.get_connection
     check_for_open_connection
-    Thread.current[:panorama_connection_jdbc_connection]
+    Thread.current[:panorama_connection_connection_object].jdbc_connection
   end
 
   def self.get_config
@@ -320,8 +320,8 @@ class PanoramaConnection
   private
   # ensure that Oracle-Connection exists and DBMS__Application_Info is executed
   def self.check_for_open_connection
-    if Thread.current[:panorama_connection_jdbc_connection].nil?                # No JDBC-Connection allocated for thread
-      Thread.current[:panorama_connection_jdbc_connection] = retrieve_from_pool_or_create_new_connection
+    if Thread.current[:panorama_connection_connection_object].nil?                # No JDBC-Connection allocated for thread
+      Thread.current[:panorama_connection_connection_object] = retrieve_from_pool_or_create_new_connection
     end
 
     if Thread.current[:panorama_connection_app_info_set].nil?                   # dbms_application_info not yet set in thread
@@ -330,7 +330,7 @@ class PanoramaConnection
       rescue Exception => e
         Rails.logger.error "Error '#{e.message}' in PanoramaConnection.check_for_open_connection! Drop connection and look for next one from pool"
         destroy_connection                                                      # Remove erroneous connection from pool
-        Thread.current[:panorama_connection_jdbc_connection] = retrieve_from_pool_or_create_new_connection  # get new connection from pool or create
+        Thread.current[:panorama_connection_connection_object] = retrieve_from_pool_or_create_new_connection  # get new connection from pool or create
         set_application_info                                                    # Set application info again and throw exception if error persists
       end
       Thread.current[:panorama_connection_app_info_set] = true
@@ -343,15 +343,15 @@ class PanoramaConnection
     @@connection_pool_mutex.synchronize do
       # Check if there is a free connection in pool
       @@connection_pool.each do |conn|                                          # Iterate over connections in pool
-        connection_config = conn[:jdbc_connection].instance_variable_get(:@config)  # Active JDBC connection config
+        connection_config = conn.jdbc_connection.instance_variable_get(:@config)  # Active JDBC connection config
         if retval.nil? &&                                                       # Searched connection, not already in use
-            !conn[:used_in_thread] &&
+            !conn.used_in_thread &&
             connection_config[:url] == jdbc_thin_url &&
             connection_config[:username] == Thread.current[:panorama_connection_connect_info][:user]
-          Rails.logger.info "Using existing database connection from pool: URL='#{jdbc_thin_url}' User='#{Thread.current[:panorama_connection_connect_info][:user]}' Last used=#{conn[:last_used_time]} Pool size=#{@@connection_pool.count}"
-          conn[:used_in_thread] = true                                          # Mark as used in pool and leave loop
-          conn[:last_used_time] = Time.now                                      # Reset ast used time
-          retval = conn[:jdbc_connection]
+          Rails.logger.info "Using existing database connection from pool: URL='#{jdbc_thin_url}' User='#{Thread.current[:panorama_connection_connect_info][:user]}' Last used=#{conn.last_used_time} Pool size=#{@@connection_pool.count}"
+          conn.used_in_thread = true                                          # Mark as used in pool and leave loop
+          conn.last_used_time = Time.now                                      # Reset ast used time
+          retval = conn
         end
       end
     end
@@ -363,7 +363,7 @@ class PanoramaConnection
       while @@connection_pool.count >= MAX_CONNECTION_POOL_SIZE
         # find oldest idle connection and free it
         @@connection_pool_mutex.synchronize do
-          idle_conns =  @@connection_pool.select {|e| !e[:used_in_thread] }.sort { |a, b| a[:last_used_time] <=> b[:last_used_time] }
+          idle_conns =  @@connection_pool.select {|e| !e.used_in_thread }.sort { |a, b| a.last_used_time <=> b.last_used_time }
           destroy_connection_in_mutexed_pool(idle_conns[0]) if !idle_conns.empty?               # Free oldest conenction
         end
         raise "Maximum number of active concurrent database sessions for Panorama exceeded (#{MAX_CONNECTION_POOL_SIZE})!\nPlease try again later." if @@connection_pool.count >= MAX_CONNECTION_POOL_SIZE
@@ -387,13 +387,10 @@ class PanoramaConnection
       )
       Rails.logger.info "New database connection created: URL='#{jdbc_thin_url}' User='#{Thread.current[:panorama_connection_connect_info][:user]}' Pool size=#{@@connection_pool.count+1}"
 
+      retval = PanoramaConnection.new(jdbc_connection)
+
       @@connection_pool_mutex.synchronize do
-        @@connection_pool << {
-            :jdbc_connection => jdbc_connection,
-            :used_in_thread => true,
-            :last_used_time => Time.now
-        }
-        retval = jdbc_connection
+        @@connection_pool << retval
       end
     end
     retval
@@ -401,7 +398,7 @@ class PanoramaConnection
 
   def self.set_application_info
     # This method raises connection exception at first database access
-    Thread.current[:panorama_connection_jdbc_connection].exec_update("call dbms_application_info.set_Module('Panorama', :action)", nil,
+    Thread.current[:panorama_connection_connection_object].jdbc_connection.exec_update("call dbms_application_info.set_Module('Panorama', :action)", nil,
                                   [ActiveRecord::Relation::QueryAttribute.new(':action', "#{Thread.current[:panorama_connection_connect_info][:current_controller_name]}/#{Thread.current[:panorama_connection_connect_info][:current_action_name]}", ActiveRecord::Type::Value.new)]
     )
   end
@@ -436,7 +433,7 @@ class PanoramaConnection
 
     def each(&block)
       # Execute SQL and call block for every record of result
-      Thread.current[:panorama_connection_jdbc_connection].iterate_query(@stmt, @query_name, @binds, @modifier, @query_timeout, &block)
+      Thread.current[:panorama_connection_connection_object].jdbc_connection.iterate_query(@stmt, @query_name, @binds, @modifier, @query_timeout, &block)
     rescue Exception => e
       bind_text = ''
       @binds.each do |b|

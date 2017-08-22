@@ -702,7 +702,7 @@ Solution: Execute as user 'SYS':
              GROUP BY px.QCInst_ID, px.QCSID, px.QCSerial#
              ) pq_mem ON pq_mem.qcinst_id = s.Inst_ID AND pq_mem.QCSID = s.SID AND pq_mem.QCSerial# = s.Serial#
       LEFT OUTER JOIN
-             (SELECT Inst_ID, Session_Addr, SUM(Extents) Temp_Extents, SUM(Blocks) Temp_Blocks, SUM(Blocks)*#{get_db_block_size}/(1024*1024) Temp_MB
+             (SELECT Inst_ID, Session_Addr, SUM(Extents) Temp_Extents, SUM(Blocks) Temp_Blocks, SUM(Blocks)*#{PanoramaConnection.db_blocksize}/(1024*1024) Temp_MB
               FROM   gv$Sort_Usage
               GROUP BY Inst_ID, Session_Addr
              ) temp ON temp.Inst_ID = s.Inst_ID AND temp.Session_Addr = s.sAddr

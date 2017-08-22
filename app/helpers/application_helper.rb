@@ -114,18 +114,7 @@ module ApplicationHelper
   end
 
   def get_db_version    # Oracle-Version
-    @buffered_db_version = read_from_client_info_store(:db_version) if !defined?(@buffered_db_version) || @buffered_db_version.nil?
-    @buffered_db_version
-  end
-
-  def get_db_block_size    # Oracle block size
-    @buffered_db_block_size = read_from_client_info_store(:db_block_size) if !defined?(@buffered_db_block_size) || @buffered_db_block_size.nil?
-    @buffered_db_block_size
-  end
-
-  def get_db_wordsize    # word size des Oracle-Servers
-    @buffered_wordsize = read_from_client_info_store(:db_wordsize) if !defined?(@buffered_wordsize) || @buffered_wordsize.nil?
-    @buffered_wordsize
+    PanoramaConnection.db_version
   end
 
   def set_cached_time_selection_start(time_selection_start)

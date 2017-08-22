@@ -81,7 +81,7 @@ class ActiveSupport::TestCase
     read_initial_db_values                                                      # evtl. Exception tritt erst beim ersten Zugriff auf
 
     # DBID is set at first request after login normally
-    set_cached_dbid(sql_select_one("SELECT /* Panorama Tool Ramm */ DBID FROM v$Database"))
+    set_cached_dbid(PanoramaConnection.dbid)
 
     set_I18n_locale('de')
   end

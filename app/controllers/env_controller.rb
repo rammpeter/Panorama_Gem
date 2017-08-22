@@ -100,8 +100,6 @@ class EnvController < ApplicationController
       @instance_data = []   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
       @version_info  = []   # Vorbelegung,damit bei Exception trotzdem valider Wert in Variable
       # Einlesen der DBID der Database, gleichzeitig Test auf Zugriffsrecht auf DataDictionary
-      read_initial_db_values
-
       # Data for DB versions
       @version_info = sql_select_all "SELECT /* Panorama Tool Ramm */ Banner FROM V$Version"
       @database_info = sql_select_first_row "SELECT /* Panorama Tool Ramm */ Name, Platform_name, Created, dbtimezone, SYSDATE FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
@@ -492,7 +490,7 @@ public
     else
       @dbids = nil
     end
-    set_cached_dbid(sql_select_one("SELECT /* Panorama Tool Ramm */ DBID FROM v$Database")) if set_new_dbid # dbid has not been set before or is not valid, necessary to retain the already choosen DBID at new login
+    set_cached_dbid(PanoramaConnection.dbid) if set_new_dbid # dbid has not been set before or is not valid, necessary to retain the already choosen DBID at new login
 
     render_partial :list_dbids
   end

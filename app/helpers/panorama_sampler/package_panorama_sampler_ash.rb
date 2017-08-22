@@ -115,6 +115,8 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
     DELTA_READ_IO_BYTES       NUMBER,
     DELTA_WRITE_IO_BYTES      NUMBER,
     DELTA_INTERCONNECT_IO_BYTES NUMBER,
+    PGA_ALLOCATED             NUMBER,
+    TEMP_SPACE_ALLOCATED      NUMBER,
     Preserve_10Secs           VARCHAR2(1)
   );
   TYPE AshTableType IS TABLE OF AshType INDEX BY BINARY_INTEGER;
@@ -244,9 +246,12 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
              NULL, -- DELTA_READ_IO_BYTES
              NULL, -- DELTA_WRITE_IO_BYTES
              NULL, -- DELTA_INTERCONNECT_IO_BYTES
+             p.PGA_Alloc_Mem,     -- PGA_ALLOCATED
+             NULL,              -- TEMP_SPACE_ALLOCATED
              DECODE(MOD(TO_NUMBER(TO_CHAR(SYSDATE, 'SS')), 10), 0, 'Y', NULL) -- Preserve_10Secs
       BULK COLLECT INTO AshTable4Select
       FROM   v$Session s
+      LEFT OUTER JOIN v$Process p               ON p.Addr = s.pAddr -- dont think that join per Con_ID is necessary here
       LEFT OUTER JOIN v$SQLCommand c            ON c.Command_Type = s.Command #{"AND c.Con_ID = s.Con_ID" if PanoramaConnection.db_version >= '12.1'}
       LEFT OUTER JOIN v$SQL sql                 ON sql.SQL_ID = s.SQL_ID AND sql.Child_Number = s.SQL_Child_Number #{"AND sql.Con_ID = s.Con_ID" if PanoramaConnection.db_version >= '12.1'}
       LEFT OUTER JOIN v$PX_Session pxs          ON pxs.SID = s.SID AND pxs.Serial#=s.Serial#
@@ -299,7 +304,7 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
           Module, Action, Client_ID, Machine, Port, ECID,
           DBREPLAY_FILE_ID, DBREPLAY_CALL_COUNTER, TM_Delta_Time, TM_DELTA_CPU_TIME, TM_DELTA_DB_TIME,
           DELTA_TIME, DELTA_READ_IO_REQUESTS, DELTA_WRITE_IO_REQUESTS, DELTA_READ_IO_BYTES,
-          DELTA_WRITE_IO_BYTES, DELTA_INTERCONNECT_IO_BYTES,
+          DELTA_WRITE_IO_BYTES, DELTA_INTERCONNECT_IO_BYTES, PGA_Allocated, Temp_Space_Allocated,
           Con_ID, Preserve_10Secs
         ) VALUES (
           p_Instance_Number, AshTable(Idx).Sample_ID, AshTable(Idx).Sample_Time, 'N', AshTable(Idx).Session_ID, AshTable(Idx).Session_Serial#,
@@ -322,7 +327,7 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
           AshTable(Idx).Module, AshTable(Idx).Action, AshTable(Idx).Client_ID, AshTable(Idx).Machine, AshTable(Idx).Port, AshTable(Idx).ECID,
           AshTable(Idx).DBREPLAY_FILE_ID, AshTable(Idx).DBREPLAY_CALL_COUNTER, AshTable(Idx).TM_Delta_Time, AshTable(Idx).TM_DELTA_CPU_TIME, AshTable(Idx).TM_DELTA_DB_TIME,
           AshTable(Idx).DELTA_TIME, AshTable(Idx).DELTA_READ_IO_REQUESTS, AshTable(Idx).DELTA_WRITE_IO_REQUESTS, AshTable(Idx).DELTA_READ_IO_BYTES,
-          AshTable(Idx).DELTA_WRITE_IO_BYTES, AshTable(Idx).DELTA_INTERCONNECT_IO_BYTES,
+          AshTable(Idx).DELTA_WRITE_IO_BYTES, AshTable(Idx).DELTA_INTERCONNECT_IO_BYTES, AshTable(Idx).PGA_Allocated, AshTable(Idx).Temp_Space_Allocated,
           p_Con_ID, AshTable(Idx).Preserve_10Secs
         );
         COMMIT;

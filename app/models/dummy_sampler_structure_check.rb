@@ -1,4 +1,5 @@
-class PanoramaSamplerStructureCheck
+class DummySamplerStructureCheck
+=begin
   include ExceptionHelper
   include PanoramaSampler::PackagePanoramaSamplerAsh
   include PanoramaSampler::PackagePanoramaSamplerSnapshot
@@ -35,24 +36,6 @@ class PanoramaSamplerStructureCheck
     Rails.logger.info "PanoramaSamplerStructureCheck: #{message} for config ID=#{@sampler_config[:id]} (#{@sampler_config[:name]}) "
   end
 
-=begin
-  Expexted structure, should contain structure of highest Oracle version:
-  [
-      {
-        table_name: ,
-        columns: [
-            {
-              column_name:
-              column_type:
-              not_null:
-              precision:
-              scale:
-            }
-        ],
-        primary_key: ['col1', 'col2']
-      }
-  ]
-=end
   TABLES = [
       {
           table_name: 'Internal_V$Active_Sess_History',
@@ -163,8 +146,8 @@ class PanoramaSamplerStructureCheck
               { column_name:  'TEMP_SPACE_ALLOCATED',           column_type:  'NUMBER' },
               { column_name:  'Con_ID',                         column_type:  'NUMBER', not_null: true  },
               { column_name:  'Preserve_10Secs',                column_type:  'VARCHAR2', precision: 1  },  # Marker for long term preservation
-              #{ column_name:  'DBOP_NAME',                      column_type:  'VARCHAR2', precision: 30 },
-              #{ column_name:  'DBOP_EXEC_ID',                   column_type:  'NUMBER' },
+          #{ column_name:  'DBOP_NAME',                      column_type:  'VARCHAR2', precision: 30 },
+          #{ column_name:  'DBOP_EXEC_ID',                   column_type:  'NUMBER' },
           ],
           primary_key: ['INSTANCE_NUMBER', 'SESSION_ID', 'SAMPLE_ID'],    # ensure that copying data into Panorama_Active_Sess_History does never rails PK-violation
       },
@@ -467,45 +450,12 @@ class PanoramaSamplerStructureCheck
 
   ]
 
-=begin
-
-Generator-Selects:
-
-######### Structure
-SELECT '              { column_name:  '''||Column_Name||''',     column_type:   '''||Data_Type||''''||
-       CASE WHEN Nullable = 'N' THEN ', not_null: true' END ||
-       CASE WHEN (Data_Type != 'NUMBER' OR Data_Length != 22) AND Data_Type NOT IN ('DATE') THEN ', precision: '||Data_Length  END ||
-       ' },'
-FROM   DBA_Tab_Columns
-WHERE  Table_Name = 'DBA_HIST_SQLSTAT'
-ORDER BY Column_ID
-;
-
-######### Field-List
-SELECT Column_Name||','
-FROM   DBA_Tab_Columns
-WHERE  Table_Name = 'DBA_HIST_SQLSTAT'
-ORDER BY Column_ID
-;
-
-=end
-
-
-=begin
-  Expexted structure, should contain structure of highest Oracle version:
- [
-     {
-         view_name: ,
-         view_select: ""
-     }
- ]
-=end
   # Dynamic declaration of view_select to allow adjustment to current database version, use view[:view_select].call
   VIEWS =
-    [
-        {
-            view_name: 'Panorama_V$Active_Sess_History',
-            view_select: proc{"SELECT h.INSTANCE_NUMBER Inst_ID, h.SAMPLE_ID, h.SAMPLE_TIME, h.IS_AWR_SAMPLE, h.SESSION_ID, h.SESSION_SERIAL#, h.SESSION_TYPE, h.FLAGS, h.USER_ID, h.SQL_ID, h.IS_SQLID_CURRENT, h.SQL_CHILD_NUMBER,
+      [
+          {
+              view_name: 'Panorama_V$Active_Sess_History',
+              view_select: proc{"SELECT h.INSTANCE_NUMBER Inst_ID, h.SAMPLE_ID, h.SAMPLE_TIME, h.IS_AWR_SAMPLE, h.SESSION_ID, h.SESSION_SERIAL#, h.SESSION_TYPE, h.FLAGS, h.USER_ID, h.SQL_ID, h.IS_SQLID_CURRENT, h.SQL_CHILD_NUMBER,
                                       h.SQL_OPCODE, h.SQL_OPNAME, h.FORCE_MATCHING_SIGNATURE, h.TOP_LEVEL_SQL_ID, h.TOP_LEVEL_SQL_OPCODE, h.SQL_PLAN_HASH_VALUE, h.SQL_PLAN_LINE_ID, h.SQL_PLAN_OPERATION, h.SQL_PLAN_OPTIONS,
                                       h.SQL_EXEC_ID, h.SQL_EXEC_START, h.PLSQL_ENTRY_OBJECT_ID, h.PLSQL_ENTRY_SUBPROGRAM_ID, h.PLSQL_OBJECT_ID, h.PLSQL_SUBPROGRAM_ID, h.QC_INSTANCE_ID, h.QC_SESSION_ID, h.QC_SESSION_SERIAL#, h.PX_FLAGS,
                                       h.EVENT, h.EVENT_ID, h.SEQ#, h.P1TEXT, h.P1, h.P2TEXT, h.P2, h.P3TEXT, h.P3,h.WAIT_CLASS, h.WAIT_CLASS_ID, h.WAIT_TIME, h.SESSION_STATE, h.TIME_WAITED,
@@ -519,11 +469,11 @@ ORDER BY Column_ID
                                       h.DELTA_WRITE_IO_BYTES, h.DELTA_INTERCONNECT_IO_BYTES, h.PGA_ALLOCATED, h.TEMP_SPACE_ALLOCATED, h.CON_ID
                                FROM   Internal_V$Active_Sess_History h
                                #{"LEFT OUTER JOIN Panorama_TopLevelCall_Name tlcn ON tlcn.DBID = #{PanoramaConnection.dbid} AND tlcn.Top_Level_Call# = h.Top_Level_Call# AND tlcn.Con_DBID = #{PanoramaConnection.dbid}" if PanoramaConnection.db_version >= '11.2'}
-                              "}
-        },
-        {
-            view_name: 'Panorama_Active_Sess_History',
-            view_select: proc{"SELECT h.SNAP_ID, h.DBID, h.INSTANCE_NUMBER, h.CON_DBID, h.CON_ID, h.SAMPLE_ID, h.SAMPLE_TIME, h.SESSION_ID, h.SESSION_SERIAL#, h.SESSION_TYPE, h.FLAGS, h.USER_ID, h.SQL_ID, h.IS_SQLID_CURRENT, h.SQL_CHILD_NUMBER, h.SQL_OPCODE, h.SQL_OPNAME,
+              "}
+          },
+          {
+              view_name: 'Panorama_Active_Sess_History',
+              view_select: proc{"SELECT h.SNAP_ID, h.DBID, h.INSTANCE_NUMBER, h.CON_DBID, h.CON_ID, h.SAMPLE_ID, h.SAMPLE_TIME, h.SESSION_ID, h.SESSION_SERIAL#, h.SESSION_TYPE, h.FLAGS, h.USER_ID, h.SQL_ID, h.IS_SQLID_CURRENT, h.SQL_CHILD_NUMBER, h.SQL_OPCODE, h.SQL_OPNAME,
                                       h.FORCE_MATCHING_SIGNATURE, h.TOP_LEVEL_SQL_ID, h.TOP_LEVEL_SQL_OPCODE, h.SQL_PLAN_HASH_VALUE, h.SQL_PLAN_LINE_ID, h.SQL_PLAN_OPERATION, h.SQL_PLAN_OPTIONS, h.SQL_EXEC_ID, h.SQL_EXEC_START, h.PLSQL_ENTRY_OBJECT_ID,
                                       h.PLSQL_ENTRY_SUBPROGRAM_ID, h.PLSQL_OBJECT_ID, h.PLSQL_SUBPROGRAM_ID, h.QC_INSTANCE_ID, h.QC_SESSION_ID, h.QC_SESSION_SERIAL#, h.PX_FLAGS, h.EVENT, h.EVENT_ID, h.SEQ#, h.P1TEXT, h.P1, h.P2TEXT, h.P2, h.P3TEXT, h.P3, h.WAIT_CLASS,
                                       h.WAIT_CLASS_ID, h.WAIT_TIME, h.SESSION_STATE, h.TIME_WAITED, h.BLOCKING_SESSION_STATUS, h.BLOCKING_SESSION, h.BLOCKING_SESSION_SERIAL#, h.BLOCKING_INST_ID, h.BLOCKING_HANGCHAIN_INFO, h.CURRENT_OBJ#, h.CURRENT_FILE#,
@@ -536,14 +486,14 @@ ORDER BY Column_ID
                                       h.IN_TABLESPACE_ENCRYPTION
                                FROM   Internal_Active_Sess_History h
                                #{"LEFT OUTER JOIN Panorama_TopLevelCall_Name tlcn ON tlcn.DBID = h.DBID AND tlcn.Top_Level_Call# = h.Top_Level_Call# AND tlcn.Con_DBID = h.Con_DBID" if PanoramaConnection.db_version >= '11.2'}
-                              "}
-        },
-    ]
-
+              "}
+          },
+      ]
+=end
   # Replace DBA_Hist in SQL with corresponding Panorama-Sampler table
   def self.transform_sql_for_sampler(org_sql)
     sql = org_sql.clone
-
+=begin
     # fake gv$Active_Session_History in SQL so translation will hit it
     sql.gsub!(/gv\$Active_Session_History/i, 'DBA_HIST_V$Active_Sess_History')
 
@@ -571,9 +521,11 @@ ORDER BY Column_ID
 
       start_index = up_sql.index('DBA_HIST', start_index + 8)                   # Look for next occurrence
     end
+=end
     sql
   end
 
+=begin
   # Replace DBA_Hist tablename in HTML-templates with corresponding Panorama-Sampler table and schema
   def self.adjust_table_name(org_table_name)
     return org_table_name if PanoramaConnection.get_config[:management_pack_license] != :panorama_sampler   # Sampler not active
@@ -836,7 +788,7 @@ ORDER BY Column_ID
   end
 
   def check_table_indexes(table)
-  ############ Check Indexes
+    ############ Check Indexes
     if table[:indexes]
       table[:indexes].each do |index|
         check_index(table[:table_name], index[:index_name], index[:columns])
@@ -916,5 +868,5 @@ ORDER BY Column_ID
 
   end
 
-
+=end
 end

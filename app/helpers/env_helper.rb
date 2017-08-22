@@ -6,16 +6,6 @@ require 'encryption'
 module EnvHelper
   include DatabaseHelper
 
-  # Einlesen diverser Parameter der DB, die spaeter noch laufend gebraucht werden
-  def read_initial_db_values
-    write_to_client_info_store(:db_version,     PanoramaConnection.db_version)
-    write_to_client_info_store(:db_block_size,  sql_select_one("SELECT /* Panorama Tool Ramm */ TO_NUMBER(Value) FROM v$parameter WHERE UPPER(Name) = 'DB_BLOCK_SIZE'"))
-    write_to_client_info_store(:db_wordsize,    sql_select_one("SELECT /* Panorama Tool Ramm */ DECODE (INSTR (banner, '64bit'), 0, 4, 8) FROM v$version WHERE Banner LIKE '%Oracle Database%'"))
-  rescue Exception => e
-    Rails.logger.error "Exception at read_initial_db_values: #{e.message}"
-    raise
-  end
-
   def init_management_pack_license(current_database)
     if current_database[:management_pack_license].nil?                          # not already set, calculate initial value
       control_management_pack_access = read_control_management_pack_access

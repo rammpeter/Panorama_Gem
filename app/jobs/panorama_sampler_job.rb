@@ -22,7 +22,8 @@ class PanoramaSamplerJob < ApplicationJob
 
     # reschedule the job 12 seconds before next snapshot cycle
     PanoramaSamplerJob.set(wait: (min_snapshot_cycle-0.2).minutes).perform_later    # Start 12 seconds before to ensure end of minute is hit exactly
-
+sleep 60
+Rails.logger.info "################ Sleep fulfilled"
     # Iterate over PanoramaSampler entries
     PanoramaSamplerConfig.get_cloned_config_array.each do |config|
       if config[:active] && (snapshot_time.strftime('%M').to_i % config[:snapshot_cycle] == 0  ||  # exact startup time at full hour + x*snapshot_cycle
