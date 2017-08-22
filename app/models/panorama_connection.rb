@@ -358,7 +358,6 @@ class PanoramaConnection
     # Create new connection if not found in pool
     if retval.nil?
       raise "Native ruby (RUBY_ENGINE=#{RUBY_ENGINE}) is no longer supported! Please use JRuby runtime environment! Call contact for support request if needed." if !defined?(RUBY_ENGINE) || RUBY_ENGINE != "jruby"
-
       # Shrink connection pool / reuse connection from pool if size exceeds limit
       while @@connection_pool.count >= MAX_CONNECTION_POOL_SIZE
         # find oldest idle connection and free it
@@ -366,7 +365,11 @@ class PanoramaConnection
           idle_conns =  @@connection_pool.select {|e| !e.used_in_thread }.sort { |a, b| a.last_used_time <=> b.last_used_time }
           destroy_connection_in_mutexed_pool(idle_conns[0]) if !idle_conns.empty?               # Free oldest conenction
         end
-        raise "Maximum number of active concurrent database sessions for Panorama exceeded (#{MAX_CONNECTION_POOL_SIZE})!\nPlease try again later." if @@connection_pool.count >= MAX_CONNECTION_POOL_SIZE
+        if @@connection_pool.count >= MAX_CONNECTION_POOL_SIZE
+          Rails.logger.error "Maximum number of active concurrent database sessions for Panorama exceeded (#{MAX_CONNECTION_POOL_SIZE})!"
+          dump_connection_pool_to_log
+          raise "Maximum number of active concurrent database sessions for Panorama exceeded (#{MAX_CONNECTION_POOL_SIZE})!\nPlease try again later."
+        end
       end
 
       begin
@@ -394,6 +397,16 @@ class PanoramaConnection
       end
     end
     retval
+  end
+
+  def self.dump_connection_pool_to_log
+    pos = 0
+    Rails.logger.info "Connection pool contains #{@@connection_pool.count} entries:"
+    @@connection_pool.each do |conn|
+      config = conn.jdbc_connection.instance_variable_get(:@config)
+      Rails.logger.info "#{pos}: URL = '#{config[:url]}' User = '#{config[:username]}' Last used = '#{conn.last_used_time}' Used in thread = #{conn.used_in_thread}"
+      pos += 1
+    end
   end
 
   def self.set_application_info
