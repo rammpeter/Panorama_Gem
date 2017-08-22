@@ -98,7 +98,7 @@ end #class_eval
 
 # Config for DB connection for current threads request is stored in Thread.current[:]
 
-MAX_CONNECTION_POOL_SIZE = 20                                                   # Number of pooled connections, may be more than max. threads
+MAX_CONNECTION_POOL_SIZE = 5                                                   # Number of pooled connections, may be more than max. threads
 
 class PanoramaConnection
   attr_reader :jdbc_connection
@@ -366,7 +366,7 @@ class PanoramaConnection
           destroy_connection_in_mutexed_pool(idle_conns[0]) if !idle_conns.empty?               # Free oldest conenction
         end
         if @@connection_pool.count >= MAX_CONNECTION_POOL_SIZE
-          Rails.logger.error "Maximum number of active concurrent database sessions for Panorama exceeded (#{MAX_CONNECTION_POOL_SIZE})!"
+          Rails.logger.error "Maximum number of active concurrent database sessions for Panorama reached (#{MAX_CONNECTION_POOL_SIZE})!"
           dump_connection_pool_to_log
           raise "Maximum number of active concurrent database sessions for Panorama exceeded (#{MAX_CONNECTION_POOL_SIZE})!\nPlease try again later."
         end

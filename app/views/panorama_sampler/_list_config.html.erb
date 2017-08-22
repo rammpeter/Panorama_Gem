@@ -54,15 +54,15 @@
 %>
 
 <%= gen_slickgrid(@sampler_config, column_options, {
-    :caption => "Panorama-Sampler configuration",
+    :caption => "Panorama-Sampler configuration (stored in local file system at Panorama server)",
     :max_height=>450
 }) %>
 
 <%=
-  ajax_submit("Add new config", {
+  ajax_submit("Add new target database for sampling", {
       :update_area => @update_area,
       :action      => :show_new_config_form,
-  }, :title => 'Add new database config'
+  }, :title => 'Add new config for target database'
   )
 %>
 
