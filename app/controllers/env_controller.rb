@@ -311,33 +311,8 @@ class EnvController < ApplicationController
 
     # Test der Connection und ruecksetzen auf vorherige wenn fehlschlaegt
     begin
-      if get_current_database[:modus] == 'tns'
-        begin
-          sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"    # Connect with TNS-Alias has second try if does not function
-        rescue Exception => e                                                   # Switch to host/port/sid instead
-          Rails.logger.error "Error connecting to database: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
-          Rails.logger.error e.class.name
-          Rails.logger.error e.message
-          e.backtrace.each do |bt|
-            Rails.logger.error bt
-          end
-          PanoramaConnection.destroy_connection                                 # Remove Connection from pool, should allocate new connection in next call
-          set_current_database(get_current_database.merge({:modus => 'host', :tns => PanoramaConnection.get_host_tns(get_current_database)}))
-          Rails.logger.info "Second try to connect with host/port/sid instead of TNS-alias: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
-          sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"    # Connect with host/port/sid as second try if does not function
-        end
-      else
-        sql_select_one "SELECT /* Panorama Tool Ramm */ SYSDATE FROM DUAL"      # Connect with host/port/sid should function at first try
-      end
+      PanoramaConnection.check_for_open_connection
     rescue Exception => e
-      Rails.logger.error "Error connecting to database: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{get_current_database[:tns]}' User='#{get_current_database[:user]}'"
-      Rails.logger.error e.class.name
-      Rails.logger.error e.message
-      e.backtrace.each do |bt|
-        Rails.logger.error bt
-      end
-      PanoramaConnection.destroy_connection                                 # Remove Connection from pool, should allocate new connection in next call
-
       respond_to do |format|
         format.js {render :js => "show_status_bar_message('#{
                                           my_html_escape("#{
@@ -355,10 +330,6 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
       end
       return        # Fehler-Ausgang
     end
-
-    # Merken interner DB-Name und ohne erneuten DB-Zugriff
-    set_current_database(get_current_database.merge( { :database_name => sql_select_one("SELECT SYS_CONTEXT('userenv', 'db_name') FROM dual")  } ))
-    write_connection_to_last_logins
 
     initialize_unique_area_id                                                   # Zaehler für eindeutige IDs ruecksetzen
 
@@ -388,15 +359,9 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
     # Set management pack according to 'control_management_pack_access' only after DB selects,
     # Until now get_current_database[:management_pack_license] is nil for first time login, so no management pack license is violated until now
     # User has to acknowlede management pack licensing at next screen
-    begin
-      set_current_database(get_current_database.merge( {:management_pack_license  => init_management_pack_license(get_current_database) } ))
-      set_current_database(get_current_database.merge( {:edition => PanoramaConnection.edition } ))
-    rescue Exception => e
-      Rails.logger.error "Error during init_management_pack_license: #{e.message}"
+    set_current_database(get_current_database.merge( {:management_pack_license  => init_management_pack_license(get_current_database) } ))
 
-      raise PopupMessageException.new("Your user needs SELECT ANY DICTIONARY or equivalent rights to login to Panorama!", e)
-    end
-
+    write_connection_to_last_logins
 
     timepicker_regional = ""
     if get_locale == "de"  # Deutsche Texte für DateTimePicker

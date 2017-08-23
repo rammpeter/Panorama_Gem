@@ -98,7 +98,7 @@ end #class_eval
 
 # Config for DB connection for current threads request is stored in Thread.current[:]
 
-MAX_CONNECTION_POOL_SIZE = 5                                                   # Number of pooled connections, may be more than max. threads
+MAX_CONNECTION_POOL_SIZE = 20                                                   # Number of pooled connections, may be more than max. threads
 
 class PanoramaConnection
   attr_reader :jdbc_connection
@@ -110,6 +110,8 @@ class PanoramaConnection
   attr_reader :con_id
   attr_reader :db_blocksize
   attr_reader :db_wordsize
+  attr_reader :database_name
+  attr_reader :edition
 
   # Array of PanoramaConnaction instances, elements consists of:
   #   @jdbc_connection
@@ -127,26 +129,35 @@ class PanoramaConnection
     @used_in_thread  = true
     @last_used_time  = Time.now
 
-    db_config   = new_jdbc_connection.select_one "SELECT i.Instance_Number, i.Version, d.DBID
-                                                  FROM v$Instance i
-                                                  CROSS JOIN v$Database d
-                                                 "
+
+
+  end
+
+  def read_initial_attributes
+    db_config   = PanoramaConnection.direct_select_one(@jdbc_connection,
+                  "SELECT i.Instance_Number, i.Version, d.DBID, d.Name Database_Name,
+                          (SELECT /*+ NO_MERGE */ TO_NUMBER(Value) FROM v$parameter WHERE UPPER(Name) = 'DB_BLOCK_SIZE') db_blocksize,
+                          (SELECT /*+ NO_MERGE */ DECODE (INSTR (banner, '64bit'), 0, 4, 8) Word_Size FROM v$version WHERE Banner LIKE '%Oracle Database%') db_wordsize,
+                          (SELECT /*+ NO_MERGE */ COUNT(*) FROM v$version WHERE Banner like '%Enterprise Edition%') enterprise_edition_count
+                   FROM   v$Instance i
+                   CROSS JOIN v$Database d
+                  ")
     @instance_number = db_config['instance_number']
     @db_version      = db_config['version']
     @dbid            = db_config['dbid']
-
-    db_blocksize_data = new_jdbc_connection.select_one "SELECT /* Panorama Tool Ramm */ TO_NUMBER(Value) Value FROM v$parameter WHERE UPPER(Name) = 'DB_BLOCK_SIZE'"
-    @db_blocksize     = db_blocksize_data['value']
-
-    db_wordsize_data  = new_jdbc_connection.select_one "SELECT /* Panorama Tool Ramm */ DECODE (INSTR (banner, '64bit'), 0, 4, 8) Word_Size FROM v$version WHERE Banner LIKE '%Oracle Database%'"
-    @db_wordsize      = db_wordsize_data['word_size']
+    @database_name   = db_config['database_name']
+    @db_blocksize    = db_config['db_blocksize']
+    @db_wordsize     = db_config['db_wordsize']
+    @edition         = (db_config['enterprise_edition_count'] > 0  ? :enterprise : :standard)
 
     if db_version >= '12.1'
-      con_id_data   = new_jdbc_connection.select_one "SELECT Con_ID FROM v$Session WHERE audsid = userenv('sessionid')" # Con_ID of connected session
+      con_id_data   = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT Con_ID FROM v$Session WHERE audsid = userenv('sessionid')") # Con_ID of connected session
       @con_id        = con_id_data['con_id']
     else
       @con_id        = 0
     end
+
+
   end
 
   ########################### class methods #############################
@@ -184,8 +195,10 @@ class PanoramaConnection
   def self.instance_number;   check_for_open_connection; Thread.current[:panorama_connection_connection_object].instance_number;   end
   def self.db_version;        check_for_open_connection; Thread.current[:panorama_connection_connection_object].db_version;        end
   def self.dbid;              check_for_open_connection; Thread.current[:panorama_connection_connection_object].dbid;              end
+  def self.database_name;     check_for_open_connection; Thread.current[:panorama_connection_connection_object].database_name;     end
   def self.db_blocksize;      check_for_open_connection; Thread.current[:panorama_connection_connection_object].db_blocksize;      end
   def self.db_wordsize;       check_for_open_connection; Thread.current[:panorama_connection_connection_object].db_wordsize;       end
+  def self.edition;           check_for_open_connection; Thread.current[:panorama_connection_connection_object].edition;           end
   def self.con_id;            check_for_open_connection; Thread.current[:panorama_connection_connection_object].con_id;            end  # Container-ID for PDBs or 0
 
 
@@ -379,24 +392,63 @@ class PanoramaConnection
         raise "One part of encryption key for stored password has changed at server side! Please connect giving username and password."
       end
 
-      jdbc_connection = ActiveRecord::ConnectionAdapters::OracleEnhancedJDBCConnection.new(
-          :adapter    => "oracle_enhanced",
-          :driver     => "oracle.jdbc.driver.OracleDriver",
-          :url        => jdbc_thin_url,
-          :username   => Thread.current[:panorama_connection_connect_info][:user],
-          :password   => local_password,
-          :privilege  => Thread.current[:panorama_connection_connect_info][:privilege],
-          :cursor_sharing => :exact             # oracle_enhanced_adapter setzt cursor_sharing per Default auf force
-      )
-      Rails.logger.info "New database connection created: URL='#{jdbc_thin_url}' User='#{Thread.current[:panorama_connection_connect_info][:user]}' Pool size=#{@@connection_pool.count+1}"
+      begin
+        jdbc_connection = do_login(local_password)
+        if Thread.current[:panorama_connection_connect_info][:modus] == 'tns'
+          begin
+            PanoramaConnection.direct_select_one(jdbc_connection, "SELECT /* Panorama first connection test for tns */ SYSDATE FROM DUAL")    # Connect with TNS-Alias has second try if does not function
+          rescue Exception => e                                                   # Switch to host/port/sid instead
+            Rails.logger.error "Error connecting to database: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{Thread.current[:panorama_connection_connect_info][:tns]}' User='#{Thread.current[:panorama_connection_connect_info][:user]}'"
+            Rails.logger.error "#{e.class.name} #{e.message}"
+            log_exception_backtrace(e, 20)
+
+            jdbc_connection.logoff if !jdbc_connection.nil?                     # close/free wrong connection
+            Thread.current[:panorama_connection_connect_info][:modus] = 'host'
+            Thread.current[:panorama_connection_connect_info][:tns]   = PanoramaConnection.get_host_tns(Thread.current[:panorama_connection_connect_info])
+            Rails.logger.info "Second try to connect with host/port/sid instead of TNS-alias: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{Thread.current[:panorama_connection_connect_info][:tns]}' User='#{Thread.current[:panorama_connection_connect_info][:user]}'"
+            PanoramaConnection.direct_select_one(jdbc_connection, "SELECT /* Panorama second connection test for tns */ SYSDATE FROM DUAL")    # Connect with host/port/sid as second try if does not function
+          end
+        else
+          PanoramaConnection.direct_select_one(jdbc_connection, "SELECT /* Panorama connection test for host/port/sid */ SYSDATE FROM DUAL")      # Connect with host/port/sid should function at first try
+        end
+      rescue Exception => e
+        jdbc_connection.logoff if !jdbc_connection.nil?                     # close/free wrong connection
+        Rails.logger.error "Error connecting to database: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{Thread.current[:panorama_connection_connect_info][:tns]}' User='#{Thread.current[:panorama_connection_connect_info][:user]}'"
+        Rails.logger.error "#{e.class.name} #{e.message}"
+        log_exception_backtrace(e, 20)
+        raise
+      end
 
       retval = PanoramaConnection.new(jdbc_connection)
+      begin
+        retval.read_initial_attributes
+      rescue Exception => e
+        jdbc_connection.logoff if !jdbc_connection.nil?                     # close/free wrong connection
+        Rails.logger.error "#{e.class.name} #{e.message}"
+        log_exception_backtrace(e, 20)
+        raise "Your user needs SELECT ANY DICTIONARY or equivalent rights to login to Panorama!"
+      end
 
+      # All checks succeeded, put in connection pool now
       @@connection_pool_mutex.synchronize do
         @@connection_pool << retval
       end
     end
     retval
+  end
+
+  def self.do_login(decrypted_password)
+    jdbc_connection = ActiveRecord::ConnectionAdapters::OracleEnhancedJDBCConnection.new(
+        :adapter    => "oracle_enhanced",
+        :driver     => "oracle.jdbc.driver.OracleDriver",
+        :url        => jdbc_thin_url,
+        :username   => Thread.current[:panorama_connection_connect_info][:user],
+        :password   => decrypted_password,
+        :privilege  => Thread.current[:panorama_connection_connect_info][:privilege],
+        :cursor_sharing => :exact             # oracle_enhanced_adapter setzt cursor_sharing per Default auf force
+    )
+    Rails.logger.info "New database connection created: URL='#{jdbc_thin_url}' User='#{Thread.current[:panorama_connection_connect_info][:user]}' Pool size=#{@@connection_pool.count+1}"
+    jdbc_connection
   end
 
   def self.dump_connection_pool_to_log
@@ -422,13 +474,28 @@ class PanoramaConnection
     stmt
   end
 
-  # Determine Entreprise or Standard Edition
-  def self.edition
-    if Thread.current[:panorama_connection_connect_info][:edition].nil?
-      Thread.current[:panorama_connection_connect_info][:edition] = :enterprise # Default
-      Thread.current[:panorama_connection_connect_info][:edition] = :standard if !(sql_select_one("SELECT COUNT(*) FROM v$version WHERE Banner like '%Enterprise Edition%'") > 0)
+  def self.log_exception_backtrace(exception, line_number_limit=nil)
+    Rails.logger.error "Stack-Trace for exception: #{exception.class} #{exception.message}"
+    curr_line_no=0
+    exception.backtrace.each do |bt|
+      Rails.logger.error bt if line_number_limit.nil? || curr_line_no < line_number_limit # report First x lines of stacktrace in log
+      curr_line_no += 1
     end
-    Thread.current[:panorama_connection_connect_info][:edition]
+  end
+
+  # Execute select direct on JDBC-Connection with logging
+  def self.direct_select_one(jdbc_connection, sql)
+    retval = nil
+    ActiveSupport::Notifications.instrumenter.instrument(
+        "sql.active_record",
+        :sql            => sql,
+        :name           => 'direct_select_one',
+        :connection_id  => object_id,
+        :statement_name => nil,
+        :binds          => []) do
+      retval = jdbc_connection.select_one sql
+    end
+    retval
   end
 
   class SqlSelectIterator
