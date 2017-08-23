@@ -711,11 +711,12 @@ ORDER BY Column_ID
                                                           AND    Type  = ?
                                                           AND    Text LIKE '%Panorama-Version%'
                                                          ", @sampler_config[:owner].upcase, package_name.upcase, (type==:spec ? 'PACKAGE' : 'PACKAGE BODY')]
+    package_version.delete!("\n") if !package_version.nil?                      # remove trailing line feed
 
     if package_obj.nil? ||
         package_obj.last_ddl_time < File.ctime(file_for_time_check) ||
         package_obj.status != 'VALID' ||
-        package_version.delete("\n") != PanoramaGem::VERSION
+        package_version != PanoramaGem::VERSION
       # Compile package
       Rails.logger.info "Package #{'body ' if type==:body}#{@sampler_config[:owner].upcase}.#{package_name} needs #{package_obj.nil? ? 'creation' : 'recompile'}"
       translated_source_buffer = source_buffer.gsub(/PANORAMA\./i, "#{@sampler_config[:owner].upcase}.")    # replace PANORAMA with the real owner
