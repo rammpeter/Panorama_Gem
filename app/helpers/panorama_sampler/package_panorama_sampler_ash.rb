@@ -176,8 +176,8 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
              pxs.QCSID,
              pxs.QCSerial#,
              NULL,                -- TODO: PX_FLAGS ermitteln
-             s.Event,
-             s.Event#,
+             DECODE(s.State, 'WAITING', s.Event, NULL),     -- Event
+             DECODE(s.State, 'WAITING', s.Event#, NULL),    -- Event#
              s.SEQ#,
              s.P1TEXT,
              s.P1,
@@ -185,8 +185,8 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
              s.P2,
              s.P3TEXT,
              s.P3,
-             s.Wait_Class,
-             s.Wait_Class_ID,
+             DECODE(s.State, 'WAITING', s.Wait_Class, NULL),    -- Wait_Class
+             DECODE(s.State, 'WAITING', s.Wait_Class_ID, NULL), -- Wait_Class_ID
              DECODE(s.State, 'WAITING', 0, s.Wait_Time_Micro),    -- Wait_Time: Time waited on last wait event in ON CPU, 0 currently waiting
              DECODE(s.State, 'WAITING', 'WAITING', 'ON CPU'),     -- Session_State
              DECODE(s.State, 'WAITING', s.Wait_Time_Micro, 0),    -- Time_waited: Current wait time if in wait, 0 if ON CPU

@@ -549,15 +549,10 @@ ORDER BY Column_ID
 
     up_sql = sql.upcase
 
-    compare_objects = TABLES.clone                                            # Add tables to compare-objects
-    VIEWS.each do |view|                                                      # Add views to compare-objects
-      compare_objects << { :table_name => view[:view_name]}
-    end
-
     start_index = up_sql.index('DBA_HIST')
     while start_index
 #      Rails.logger.info "######################### #{start_index} #{sql[start_index, sql.length-start_index]}"
-      compare_objects.each do |table|                                                  # Check if table might be replaced by Panorama-Sampler
+      get_table_and_view_names.each do |table|                                  # Check if table might be replaced by Panorama-Sampler
         if table[:table_name].upcase == up_sql[start_index, table[:table_name].length].gsub(/DBA_HIST/, 'PANORAMA')
           sql   .insert(start_index, "#{PanoramaConnection.get_config[:panorama_sampler_schema]}.")       # Add schema name before table_name
           up_sql.insert(start_index, "#{PanoramaConnection.get_config[:panorama_sampler_schema]}.")       # Increase size synchronously with sql
@@ -586,8 +581,12 @@ ORDER BY Column_ID
   def self.replacement_table(dba_hist_tablename)
     search_table_name = dba_hist_tablename.upcase
     return nil if dba_hist_tablename.length < 8
-    search_table_name['DBA_HIST'] = 'PANORAMA'
-    TABLES.each do |table|
+
+    # fake gv$Active_Session_History in SQL so translation will hit it
+    search_table_name.gsub!(/gv\$Active_Session_History/i, 'DBA_HIST_V$ACTIVE_SESS_HISTORY')
+
+    search_table_name['DBA_HIST'] = 'PANORAMA' if search_table_name['DBA_HIST']
+    get_table_and_view_names.each do |table|
       return table[:table_name]  if table[:table_name].upcase == search_table_name
     end
     nil
@@ -691,6 +690,15 @@ ORDER BY Column_ID
   end
 
   private
+
+  # get array of tables ans view
+  def self.get_table_and_view_names
+    compare_objects = TABLES.clone                                            # Add tables to compare-objects
+    VIEWS.each do |view|                                                      # Add views to compare-objects
+      compare_objects << { :table_name => view[:view_name]}
+    end
+    compare_objects
+  end
 
   def get_package_obj(package_name, type)
     PanoramaConnection.sql_select_first_row [ "SELECT Status, Last_DDL_Time
