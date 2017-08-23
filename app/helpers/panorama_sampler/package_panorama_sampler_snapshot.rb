@@ -3,6 +3,7 @@ module PanoramaSampler::PackagePanoramaSamplerSnapshot
   def panorama_sampler_snapshot_spec
     "
 CREATE OR REPLACE PACKAGE panorama.Panorama_Sampler_Snapshot IS
+  -- Panorama-Version: PANORAMA_VERSION
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
 
   PROCEDURE Do_Snapshot(p_Snap_ID IN NUMBER, p_Instance IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER, p_Con_ID IN NUMBER,
@@ -16,6 +17,7 @@ END Panorama_Sampler_Snapshot;
   def panorama_sampler_snapshot_body
     "
 CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_Snapshot IS
+  -- Panorama-Version: PANORAMA_VERSION
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
 
   PROCEDURE Move_ASH_To_Snapshot_Table(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS

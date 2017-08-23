@@ -3,6 +3,7 @@ module PanoramaSampler::PackagePanoramaSamplerAsh
   def panorama_sampler_ash_spec
     "
 CREATE OR REPLACE Package panorama.Panorama_Sampler_ASH AS
+  -- Panorama-Version: PANORAMA_VERSION
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
 
   FUNCTION Get_Stat_ID(p_Name IN VARCHAR2) RETURN NUMBER;
@@ -16,6 +17,7 @@ END Panorama_Sampler_ASH;
     "
 -- Package for use by Panorama-Sampler
 CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
+  -- Panorama-Version: PANORAMA_VERSION
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
   TYPE AshType IS RECORD (
     Sample_ID                 NUMBER,

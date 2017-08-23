@@ -15,7 +15,7 @@ class PanoramaSamplerJob < ApplicationJob
     next_snapshot_time = last_snapshot_time + min_snapshot_cycle * 60
     PanoramaSamplerJob.set(wait_until: next_snapshot_time).perform_later
 
-    if last_snapshot_time < snapshot_time                                                 # First Job execution at server startup
+    if last_snapshot_time < snapshot_time-1                                     # Filter first Job execution at server startup, 1 second
       Rails.logger.info "#{snapshot_time}: Job suspended because not started at exact snapshot time #{last_snapshot_time}"
       return
     end

@@ -704,12 +704,23 @@ ORDER BY Column_ID
   # type :spec or :body
   def create_or_check_package(file_for_time_check, source_buffer, package_name, type)
     package_obj = get_package_obj(package_name, type)
+    package_version = PanoramaConnection.sql_select_one ["SELECT TRIM(SUBSTR(Text, INSTR(Text, 'Panorama-Version: ')+18))
+                                                          FROM   All_Source
+                                                          WHERE  Owner = ?
+                                                          AND    Name  = ?
+                                                          AND    Type  = ?
+                                                          AND    Text LIKE '%Panorama-Version%'
+                                                         ", @sampler_config[:owner].upcase, package_name.upcase, (type==:spec ? 'PACKAGE' : 'PACKAGE BODY')]
 
-    if package_obj.nil? || package_obj.last_ddl_time < File.ctime(file_for_time_check) || package_obj.status != 'VALID'
+    if package_obj.nil? ||
+        package_obj.last_ddl_time < File.ctime(file_for_time_check) ||
+        package_obj.status != 'VALID' ||
+        package_version.delete("\n") != PanoramaGem::VERSION
       # Compile package
       Rails.logger.info "Package #{'body ' if type==:body}#{@sampler_config[:owner].upcase}.#{package_name} needs #{package_obj.nil? ? 'creation' : 'recompile'}"
       translated_source_buffer = source_buffer.gsub(/PANORAMA\./i, "#{@sampler_config[:owner].upcase}.")    # replace PANORAMA with the real owner
-      translated_source_buffer.gsub!(/COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME/, Time.now.to_s) # change source to provocate change of LAST_DDL_TIME
+      translated_source_buffer.gsub!(/COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME/, Time.now.to_s) # change source to provocate change of LAST_DDL_TIME even content is still the same
+      translated_source_buffer.gsub!(/PANORAMA_VERSION/, PanoramaGem::VERSION) # stamp version to file
 
       Rails.logger.info translated_source_buffer
       PanoramaConnection.sql_execute translated_source_buffer
