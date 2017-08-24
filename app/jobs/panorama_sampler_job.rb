@@ -41,10 +41,8 @@ class PanoramaSamplerJob < ApplicationJob
     PanoramaSamplerConfig.get_cloned_config_array.each do |config|
       if config[:active] && (snapshot_time.min % config[:snapshot_cycle] == 0  ||  # exact startup time at full hour + x*snapshot_cycle
                              snapshot_time.min == 0 && snapshot_time.hour % config[:snapshot_cycle]/60 == 0)  # Full hour for snapshot cycle = n*hour
-        if config[:last_snapshot_start].nil? || (config[:last_snapshot_start]+(config[:snapshot_cycle]).minutes <= snapshot_time) && # snapshot_cycle expired ?
-          PanoramaSamplerConfig.modify_config_entry({id: config[:id], last_snapshot_start: snapshot_time})
+        if  config[:last_snapshot_start].nil? || (config[:last_snapshot_start]+(config[:snapshot_cycle]).minutes <= snapshot_time)  # snapshot_cycle expired ?
           WorkerThread.create_snapshot(config, snapshot_time)
-          PanoramaSamplerConfig.modify_config_entry({id: config[:id], last_snapshot_end: Time.now})
         else
           Rails.logger.error "#{Time.now}: Last snapshot start (#{config[:last_snapshot_start]}) not old enough to expire next snapshot after #{config[:snapshot_cycle]} minutes for ID=#{config[:id]} '#{config[:name]}'"
           Rails.logger.error "May be sampling is done by multiple Panorama instances?"

@@ -107,6 +107,7 @@ class WorkerThread
       return
     end
 
+    PanoramaSamplerConfig.modify_config_entry({id: @sampler_config[:id], last_snapshot_start: Time.now})
     Rails.logger.info "#{Time.now}: Create new snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
 
     @@active_snashots[@sampler_config[:id]] = true                              # Create semaphore for thread, begin processing
@@ -120,6 +121,7 @@ class WorkerThread
     PanoramaSamplerSampling.do_housekeeping(@sampler_config)                    # Do housekeeping
 
     # End activities after finishing snapshot
+    PanoramaSamplerConfig.modify_config_entry({id: @sampler_config[:id], last_snapshot_end: Time.now})
     Rails.logger.info "#{Time.now}: Finished creating new snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
     @@active_snashots.delete(@sampler_config[:id])                              # Remove semaphore
     PanoramaConnection.release_connection                                       # Free DB connection in Pool

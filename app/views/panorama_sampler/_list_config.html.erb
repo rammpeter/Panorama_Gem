@@ -41,7 +41,7 @@
   end
 
   def snapshot_duration(rec)
-    fn(rec[:last_snapshot_end] - rec[:last_snapshot_start]) if rec[:last_snapshot_end] && rec[:last_snapshot_start]
+    fn(rec[:last_snapshot_end] - rec[:last_snapshot_start], 2) if rec[:last_snapshot_end] && rec[:last_snapshot_start]
   end
 
   column_options =

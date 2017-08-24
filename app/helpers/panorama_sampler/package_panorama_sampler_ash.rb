@@ -252,7 +252,7 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
              NULL, -- DELTA_WRITE_IO_BYTES
              NULL, -- DELTA_INTERCONNECT_IO_BYTES
              p.PGA_Alloc_Mem,     -- PGA_ALLOCATED
-             ts.blocks * #{PanoramaConnection.db_blocksize},  -- TEMP_SPACE_ALLOCATED
+             NVL(ts.blocks * #{PanoramaConnection.db_blocksize}, 0),  -- TEMP_SPACE_ALLOCATED
              DECODE(MOD(TO_NUMBER(TO_CHAR(SYSDATE, 'SS')), 10), 0, 'Y', NULL) -- Preserve_10Secs
       BULK COLLECT INTO AshTable4Select
       FROM   v$Session s
