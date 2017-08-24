@@ -128,6 +128,9 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
   TYPE StatNameTableType IS TABLE OF NUMBER INDEX BY VARCHAR2(64);
   StatNameTable           StatNameTableType;
 
+  TYPE DoubleCheckTableType IS TABLE OF NUMBER(1) INDEX BY BINARY_INTEGER;
+  DoubleCheckTable        DoubleCheckTableType;
+
   FUNCTION Get_Stat_ID(p_Name IN VARCHAR2) RETURN NUMBER IS
   BEGIN
     IF NOT StatNameTable.EXISTS(p_Name) THEN
@@ -277,11 +280,16 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
       AND    s.Wait_Class != 'Idle'
       AND    s.SID        != USERENV('SID')  -- dont record the own session that assumes always active this way
       #{"AND s.Con_ID = p_Con_ID" if PanoramaConnection.db_version >= '12.1'}
+      ORDER BY s.SID  -- sorted order needed for suppression of doublettes in next step
       ;
 
-      FOR Idx IN 1 .. AshTable4Select.COUNT LOOP
-        AshTable(AshTable.COUNT+1) := AshTable4Select(Idx);
+      FOR Idx IN 1 .. AshTable4Select.COUNT LOOP                              -- Move selected records into memory buffer for x Seconds
+        IF NOT DoubleCheckTable.EXISTS(AshTable4Select(Idx).Session_ID) THEN  -- Insert each SID ony one time, doublettes may be caused by v$Transaction
+          AshTable(AshTable.COUNT+1) := AshTable4Select(Idx);
+          DoubleCheckTable(AshTable4Select(Idx).Session_ID) := 1;             -- mark this SID as existing
+        END IF;
       END LOOP;
+      DoubleCheckTable.DELETE;
 
       p_Counter := p_Counter + 1;
       IF p_Counter >= p_Bulk_Size THEN
