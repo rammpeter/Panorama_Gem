@@ -43,6 +43,8 @@ class WorkerThread
 
   # Check if connection may function and store result in config hash
   def check_connection_internal(controller)
+    # Remove all connections from pool for this target to ensure connect with new credentials
+
     dbid = PanoramaConnection.sql_select_one "SELECT DBID FROM V$Database"
 
     if dbid.nil?

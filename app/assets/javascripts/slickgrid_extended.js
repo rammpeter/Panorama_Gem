@@ -309,51 +309,74 @@ function SlickGridExtended(container_id, options){
             var caption = jQuery("<div id='caption_"+container_id.replace(/#/, "")+"' class='slick-caption slick-shadow'></div>").insertBefore('#'+container_id);
 
             if (options['command_menu_entries']){
-                var command_menu_id = 'command_menu_'+container_id.replace(/#/, "");
-
-                var command_menu_context_id = command_menu_id+'_context_menu';
-
-                caption.append('<div style="float:left; margin-left:5px; margin-right:5px;" class="slick-shadow">' +
-                    '<div id="'+command_menu_id+'" style="padding-left: 10px; padding-right: 10px; background-color: #E0E0E0; cursor: pointer;">' +
-                    '\u2261' + // 3 waagerechte Striche ≡
-                    '<div class="contextMenu" id="'+command_menu_context_id+'" style="display:none;">' +
-                    '</div></div></div>'
-                );
-
-                var command_menu_list = '<ul>';
-
+                var show_command_entry_menu = false;                            // assume not showing menu until menu entry requests this
                 for (var cmd_index in options['command_menu_entries']) {
                     var cmd = options['command_menu_entries'][cmd_index];
-                    command_menu_list = command_menu_list +
-                        '<li id="'+command_menu_id+'_'+cmd['name']+'" title="'+cmd['hint']+'"><span class="'+cmd['icon_class']+'" style="float:left"></span><span>'+cmd['caption']+'</span></li>'
-                }
-                command_menu_list = command_menu_list + '</ul>';
-                jQuery('#'+command_menu_context_id).html(command_menu_list);
-
-
-                var bindings = {};
-                for (var cmd_index in options['command_menu_entries']) {
-                    var cmd = options['command_menu_entries'][cmd_index];
-                    bindings[command_menu_id+'_'+cmd['name']] = function(){ eval(cmd['action']); }
-                }
-
-                jQuery("#"+command_menu_id).contextMenu(command_menu_context_id, {
-                    menuStyle: {  width: '330px' },
-                    bindings:   bindings, onContextMenu : function(event, menu)                                   // dynamisches Anpassen des Context-Menü
-                    {
-                        return true;
+                    if (!(cmd['show_icon_in_caption'] == 'only')){
+                        show_command_entry_menu = true;
                     }
-                });
+                }
 
-                jQuery("#"+command_menu_id).bind('click' , function( event) {
-                    jQuery("#"+command_menu_id).trigger("contextmenu", event);
-                    return false;
-                });
+                if (show_command_entry_menu) {                                  // Showing menu not suppressed for at least one entry
+                    var command_menu_id = 'command_menu_'+container_id.replace(/#/, "");
+
+                    var command_menu_context_id = command_menu_id+'_context_menu';
+
+                    caption.append('<div style="float:left; margin-left:5px; margin-right:5px;" class="slick-shadow">' +
+                        '<div id="'+command_menu_id+'" style="padding-left: 10px; padding-right: 10px; background-color: #E0E0E0; cursor: pointer;">' +
+                        '\u2261' + // 3 waagerechte Striche ≡
+                        '<div class="contextMenu" id="'+command_menu_context_id+'" style="display:none;">' +
+                        '</div></div></div>'
+                    );
+
+                    var command_menu_list = '<ul>';
+
+                    for (var cmd_index in options['command_menu_entries']) {
+                        var cmd = options['command_menu_entries'][cmd_index];
+                        command_menu_list = command_menu_list +
+                            '<li id="'+command_menu_id+'_'+cmd['name']+'" title="'+cmd['hint']+'"><span class="'+cmd['icon_class']+'" style="float:left"></span><span>'+cmd['caption']+'</span></li>'
+                    }
+                    command_menu_list = command_menu_list + '</ul>';
+                    jQuery('#'+command_menu_context_id).html(command_menu_list);
+
+
+                    var bindings = {};
+                    for (var cmd_index in options['command_menu_entries']) {
+                        var cmd = options['command_menu_entries'][cmd_index];
+                        bindings[command_menu_id+'_'+cmd['name']] = function(){ eval(cmd['action']); }
+                    }
+
+                    jQuery("#"+command_menu_id).contextMenu(command_menu_context_id, {
+                        menuStyle: {  width: '330px' },
+                        bindings:   bindings, onContextMenu : function(event, menu) // dynamisches Anpassen des Context-Menü
+                        {
+                            return true;
+                        }
+                    });
+
+                    jQuery("#"+command_menu_id).bind('click' , function( event) {
+                        jQuery("#"+command_menu_id).trigger("contextmenu", event);
+                        return false;
+                    });
+                }
             }
+
+            if (options['command_menu_entries']){                               // Check for icons in caption line
+                for (var cmd_index in options['command_menu_entries']) {
+                    var cmd = options['command_menu_entries'][cmd_index];
+                    if (cmd['show_icon_in_caption']){                           // show icon in caption line of grid ?
+                        caption.append('<div style="float:left; margin-left:5px; margin-right:5px; margin-top:4px; cursor: pointer;"'+
+                            'title="'+cmd['hint'] + '" onclick="'+ cmd['action'] +'">' +
+                            '<span class="'+cmd['icon_class']+'" style="float:left"></span>' +
+                            '</div>');
+                    }
+                }
+            }
+
             caption.append(options['caption']);                                 // Add content after eventually menu
         }
 
-        dataView.setFilter(options["data_filter"]);                       // optinaler Filter auf Daten
+        dataView.setFilter(options["data_filter"]);                             // optinaler Filter auf Daten
 
     }   // initialize_slickgrid
 

@@ -76,6 +76,14 @@ class PanoramaSamplerController < ApplicationController
     list_config
   end
 
+  def clear_config_error
+    config_entry = {:id => params[:id].to_i}
+    config_entry[:last_error_time]    = nil
+    config_entry[:last_error_message] = nil
+    PanoramaSamplerConfig.modify_config_entry(config_entry)
+    list_config
+  end
+
   private
   # Test connection and store result in entry, return DBID or nil in cse of connect error
   def test_connection(config_entry)

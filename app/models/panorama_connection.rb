@@ -112,6 +112,7 @@ class PanoramaConnection
   attr_reader :db_wordsize
   attr_reader :database_name
   attr_reader :edition
+  attr_reader :password_hash
 
   # Array of PanoramaConnaction instances, elements consists of:
   #   @jdbc_connection
@@ -128,9 +129,7 @@ class PanoramaConnection
     @jdbc_connection = new_jdbc_connection
     @used_in_thread  = true
     @last_used_time  = Time.now
-
-
-
+    @password_hash   = PanoramaConnection.get_decrypted_password.hash
   end
 
   def read_initial_attributes
@@ -200,7 +199,6 @@ class PanoramaConnection
   def self.db_wordsize;       check_for_open_connection; Thread.current[:panorama_connection_connection_object].db_wordsize;       end
   def self.edition;           check_for_open_connection; Thread.current[:panorama_connection_connection_object].edition;           end
   def self.con_id;            check_for_open_connection; Thread.current[:panorama_connection_connection_object].con_id;            end  # Container-ID for PDBs or 0
-
 
   private
 
@@ -360,7 +358,8 @@ class PanoramaConnection
         if retval.nil? &&                                                       # Searched connection, not already in use
             !conn.used_in_thread &&
             connection_config[:url] == jdbc_thin_url &&
-            connection_config[:username] == Thread.current[:panorama_connection_connect_info][:user]
+            connection_config[:username] == Thread.current[:panorama_connection_connect_info][:user] &&
+            conn.password_hash == get_decrypted_password.hash                   # Password must be equal to that used in pooled connection
           Rails.logger.info "Using existing database connection from pool: URL='#{jdbc_thin_url}' User='#{Thread.current[:panorama_connection_connect_info][:user]}' Last used=#{conn.last_used_time} Pool size=#{@@connection_pool.count}"
           conn.used_in_thread = true                                          # Mark as used in pool and leave loop
           conn.last_used_time = Time.now                                      # Reset ast used time
@@ -386,14 +385,7 @@ class PanoramaConnection
       end
 
       begin
-        local_password = Encryption.decrypt_value(Thread.current[:panorama_connection_connect_info][:password], Thread.current[:panorama_connection_connect_info][:client_salt])
-      rescue Exception => e
-        Rails.logger.warn "Error in PanoramaConnection.retrieve_from_pool_or_create_new_connection decrypting pasword: #{e.message}"
-        raise "One part of encryption key for stored password has changed at server side! Please connect giving username and password."
-      end
-
-      begin
-        jdbc_connection = do_login(local_password)
+        jdbc_connection = do_login
         if Thread.current[:panorama_connection_connect_info][:modus] == 'tns'
           begin
             PanoramaConnection.direct_select_one(jdbc_connection, "SELECT /* Panorama first connection test for tns */ SYSDATE FROM DUAL")    # Connect with TNS-Alias has second try if does not function
@@ -406,6 +398,7 @@ class PanoramaConnection
             Thread.current[:panorama_connection_connect_info][:modus] = 'host'
             Thread.current[:panorama_connection_connect_info][:tns]   = PanoramaConnection.get_host_tns(Thread.current[:panorama_connection_connect_info])
             Rails.logger.info "Second try to connect with host/port/sid instead of TNS-alias: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{Thread.current[:panorama_connection_connect_info][:tns]}' User='#{Thread.current[:panorama_connection_connect_info][:user]}'"
+            do_login
             PanoramaConnection.direct_select_one(jdbc_connection, "SELECT /* Panorama second connection test for tns */ SYSDATE FROM DUAL")    # Connect with host/port/sid as second try if does not function
           end
         else
@@ -437,13 +430,20 @@ class PanoramaConnection
     retval
   end
 
-  def self.do_login(decrypted_password)
+  def self.get_decrypted_password
+    Encryption.decrypt_value(Thread.current[:panorama_connection_connect_info][:password], Thread.current[:panorama_connection_connect_info][:client_salt])
+  rescue Exception => e
+    Rails.logger.warn "Error in PanoramaConnection.get_decrypted_password decrypting pasword: #{e.class} #{e.message}"
+    raise "One part of encryption key for stored password has changed at server side! Please connect giving username and password."
+  end
+
+  def self.do_login
     jdbc_connection = ActiveRecord::ConnectionAdapters::OracleEnhancedJDBCConnection.new(
         :adapter    => "oracle_enhanced",
         :driver     => "oracle.jdbc.driver.OracleDriver",
         :url        => jdbc_thin_url,
         :username   => Thread.current[:panorama_connection_connect_info][:user],
-        :password   => decrypted_password,
+        :password   => get_decrypted_password,
         :privilege  => Thread.current[:panorama_connection_connect_info][:privilege],
         :cursor_sharing => :exact             # oracle_enhanced_adapter setzt cursor_sharing per Default auf force
     )

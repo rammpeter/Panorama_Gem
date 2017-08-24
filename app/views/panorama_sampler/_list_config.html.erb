@@ -2,6 +2,7 @@
   @update_area = get_unique_area_id
 
   def render_action_buttons(rec)
+    retval =
     "<div style=\"float:left\">#{
     ajax_submit('Edit', {
         :update_area => @update_area,
@@ -16,6 +17,18 @@
     }, :title => 'Delete configuration record',
         :onclick=>"return confirm('Delete config entry with ID = #{rec[:id]} ?');return false;"
     )}</div>"
+
+    if rec[:last_error_message] || rec[:last_error_time]
+      retval << "
+    <div>#{
+    ajax_submit('Clear error', {
+        :update_area => :content_for_layout,
+        :action      => :clear_config_error,
+        :id          => rec[:id]
+    }, :title => 'Delete error message for this config entry'
+    )}</div>"
+    end
+    retval
   end
 
   def default_style(rec, overwrite=nil)
@@ -55,7 +68,16 @@
 
 <%= gen_slickgrid(@sampler_config, column_options, {
     :caption => "Panorama-Sampler configuration (stored in local file system at Panorama server)",
-    :max_height=>450
+    :max_height=>450,
+    :command_menu_entries => [   {
+                                     :name                  => :refresh_list,
+                                     :caption               => 'Refresh list',
+                                     :hint                  => "Refresh content of list from config stored at server",
+                                     :icon_class            => 'ui-icon ui-icon-arrowrefresh-1-e',
+                                     :show_icon_in_caption  => :only,
+                                     :action                => "ajax_html('#{params[:update_area]}', 'panorama_sampler', 'list_config', { update_area: '#{params[:update_area]}'});"
+                                 }
+    ]
 }) %>
 
 <%=
