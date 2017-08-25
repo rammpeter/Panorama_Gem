@@ -598,7 +598,7 @@ module ApplicationHelper
                  WHERE  SQL_ID = ?",
                            sql_id]
 
-    if sqls.size == 0  # Wenn nicht gefunden, dann in AWR-History suchen
+    if sqls.size == 0 && PanoramaConnection.get_config[:management_pack_license] != :none  # Wenn nicht gefunden, dann in AWR-History suchen, but only if access is allowed
       sqls = sql_select_all ["\
                    SELECT /*+ Panorama-Tool Ramm */ SUBSTR(SQL_Text, 1, 150) SQL_Text
                    FROM   DBA_Hist_SQLText

@@ -644,7 +644,7 @@ ORDER BY Column_ID
     end
 
     # Check if accessing v$-tables from within PL/SQL-Package is possible
-    @sampler_config[:select_any_table] = (0 < PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM DBA_Sys_Privs WHERE Grantee = ? AND Privilege = 'SELECT ANY TABLE'", @sampler_config[:user]]))
+    @sampler_config[:select_any_table] = (0 < PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM DBA_Sys_Privs WHERE Grantee = ? AND Privilege = 'SELECT ANY TABLE'", @sampler_config[:user].upcase]))
 
     if @sampler_config[:select_any_table]                                       # call PL/SQL package? v$Tables with SELECT_ANY_CATALOG-role are accessible in PL/SQL only if SELECT ANY TABLE is granted
       if only_ash_tables

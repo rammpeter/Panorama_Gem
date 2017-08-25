@@ -50,7 +50,7 @@ class PanoramaSamplerController < ApplicationController
       store_config(config_entry)
     else                                                                        # Check connection pressed
       if dbid.nil?
-        ("Connect to '#{config_entry[:name]}' not successful!\nException: #{config_entry[:last_error_message]}\nSee Panorama-Log for further details")
+        show_popup_message("Connect to '#{config_entry[:name]}' not successful!\nException: #{config_entry[:last_error_message]}\nSee Panorama-Log for further details")
       else
         store_config(config_entry)                                                # add or modify entry in persistence
       end
