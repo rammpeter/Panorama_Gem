@@ -14,12 +14,8 @@ END Panorama_Sampler_Snapshot;
 
   end
 
-  def panorama_sampler_snapshot_body
+  def panorama_sampler_snapshot_code
     "
-CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_Snapshot IS
-  -- Panorama-Version: PANORAMA_VERSION
-  -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
-
   PROCEDURE Move_ASH_To_Snapshot_Table(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
     v_Max_Sample_ID NUMBER;
   BEGIN
@@ -250,10 +246,17 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_Snapshot IS
     Snap_TopLevelCallName     (p_DBID,      p_Con_DBID);
     Snap_WR_Control           (p_DBID,      p_Snapshot_Cycle, p_Snapshot_Retention);
   END Do_Snapshot;
-
-END Panorama_Sampler_Snapshot;
     "
   end
 
+  def panorama_sampler_snapshot_body
+    "
+CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_Snapshot IS
+  -- Panorama-Version: PANORAMA_VERSION
+  -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
+#{panorama_sampler_snapshot_code}
+END Panorama_Sampler_Snapshot;
+    "
+  end
 
 end

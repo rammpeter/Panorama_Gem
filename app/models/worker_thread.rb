@@ -107,7 +107,6 @@ class WorkerThread
       return
     end
 
-    PanoramaSamplerConfig.modify_config_entry({id: @sampler_config[:id], last_snapshot_start: Time.now})
     Rails.logger.info "#{Time.now}: Create new snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
 
     @@active_snashots[@sampler_config[:id]] = true                              # Create semaphore for thread, begin processing
@@ -128,6 +127,8 @@ class WorkerThread
     PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
   rescue Exception => e
     begin
+      PanoramaSamplerSampling.do_housekeeping(@sampler_config)                    # Do housekeeping also in case of exception to clear full tablespace quota etc.
+
       @@active_snashots.delete(@sampler_config[:id])                              # Remove semaphore
       Rails.logger.error("Error #{e.message} during WorkerThread.create_snapshot_internal for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]})")
       log_exception_backtrace(e, 20) if ENV['RAILS_ENV'] != 'test'

@@ -643,21 +643,26 @@ ORDER BY Column_ID
       check_view(view) if check_view_in_this_thread?(view[:view_name], only_ash_tables)
     end
 
-    if only_ash_tables
-      # Check PL/SQL package
+    # Check if accessing v$-tables from within PL/SQL-Package is possible
+    @sampler_config[:select_any_table] = (0 < PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM DBA_Sys_Privs WHERE Grantee = ? AND Privilege = 'SELECT ANY TABLE'", @sampler_config[:user]]))
 
-      # Get Path to this model class as base for sql files
-      # source_dir = Pathname(PanoramaSamplerStructureCheck.instance_method(:do_check_internal).source_location[0]).dirname.join('../helpers/panorama_sampler')
+    if @sampler_config[:select_any_table]                                       # call PL/SQL package? v$Tables with SELECT_ANY_CATALOG-role are accessible in PL/SQL only if SELECT ANY TABLE is granted
+      if only_ash_tables
+        # Check PL/SQL package
 
-      filename = PanoramaSampler::PackagePanoramaSamplerAsh.instance_method(:panorama_sampler_ash_spec).source_location[0]
+        # Get Path to this model class as base for sql files
+        # source_dir = Pathname(PanoramaSamplerStructureCheck.instance_method(:do_check_internal).source_location[0]).dirname.join('../helpers/panorama_sampler')
 
-      create_or_check_package(filename, panorama_sampler_ash_spec, 'PANORAMA_SAMPLER_ASH', :spec)
-      create_or_check_package(filename, panorama_sampler_ash_body, 'PANORAMA_SAMPLER_ASH', :body)
-    else                                                                        # for snapshot thread
-      filename = PanoramaSampler::PackagePanoramaSamplerSnapshot.instance_method(:panorama_sampler_snapshot_spec).source_location[0]
+        filename = PanoramaSampler::PackagePanoramaSamplerAsh.instance_method(:panorama_sampler_ash_spec).source_location[0]
 
-      create_or_check_package(filename, panorama_sampler_snapshot_spec, 'PANORAMA_SAMPLER_SNAPSHOT', :spec)
-      create_or_check_package(filename, panorama_sampler_snapshot_body, 'PANORAMA_SAMPLER_SNAPSHOT', :body)
+        create_or_check_package(filename, panorama_sampler_ash_spec, 'PANORAMA_SAMPLER_ASH', :spec)
+        create_or_check_package(filename, panorama_sampler_ash_body, 'PANORAMA_SAMPLER_ASH', :body)
+      else                                                                        # for snapshot thread
+        filename = PanoramaSampler::PackagePanoramaSamplerSnapshot.instance_method(:panorama_sampler_snapshot_spec).source_location[0]
+
+        create_or_check_package(filename, panorama_sampler_snapshot_spec, 'PANORAMA_SAMPLER_SNAPSHOT', :spec)
+        create_or_check_package(filename, panorama_sampler_snapshot_body, 'PANORAMA_SAMPLER_SNAPSHOT', :body)
+      end
     end
   end
 

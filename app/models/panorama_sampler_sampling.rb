@@ -1,5 +1,6 @@
 class PanoramaSamplerSampling
-
+  include PanoramaSampler::PackagePanoramaSamplerAsh
+  include PanoramaSampler::PackagePanoramaSamplerSnapshot
   include ExceptionHelper
 
 
@@ -42,8 +43,20 @@ class PanoramaSamplerSampling
                                     ) VALUES (?, ?, ?, ?, SYSDATE, ?)",
                                     @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, begin_interval_time, PanoramaConnection.con_id]
 
+    if @sampler_config[:select_any_table]                                       # call PL/SQL package ?
+      sql = " BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_Snapshot.Do_Snapshot(?, ?, ?, ?, ?, ?, ?, ?); END;"
+    else
+      sql = "
+        DECLARE
+        #{panorama_sampler_snapshot_code}
+        BEGIN
+          Do_Snapshot(?, ?, ?, ?, ?, ?, ?, ?);
+        END;
+        "
+    end
+
     ## TODO: Con_DBID mit realen werten des Containers füllen, falls PDB-übergreifendes Sampling gewünscht wird
-    PanoramaConnection.sql_execute [" BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_Snapshot.Do_Snapshot(?, ?, ?, ?, ?, ?, ?, ?); END;",
+    PanoramaConnection.sql_execute [sql,
                                     @snap_id, PanoramaConnection.instance_number, PanoramaConnection.dbid, con_dbid, PanoramaConnection.con_id,
                                     begin_interval_time, @sampler_config[:snapshot_cycle], @sampler_config[:snapshot_retention]]
   end
@@ -71,8 +84,19 @@ class PanoramaSamplerSampling
       snapshot_cycle_seconds -= start_delay_from_snapshot.to_i - 30             # Limit delay so that ASH-daemon terminates max. 30 seconds after next snapshot
     end
     next_snapshot_start_seconds = @sampler_config[:snapshot_cycle] * 60 - start_delay_from_snapshot # Number of seconds until next snapshot start
-    PanoramaConnection.sql_execute [" BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_ASH.Run_Sampler_Daemon(?, ?, ?, ?); END;",
-                                    snapshot_cycle_seconds, PanoramaConnection.instance_number, PanoramaConnection.con_id, next_snapshot_start_seconds]
+    if @sampler_config[:select_any_table]                                       # call PL/SQL package ?
+      sql = " BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_ASH.Run_Sampler_Daemon(?, ?, ?, ?); END;"
+    else
+      sql = "
+        DECLARE
+        #{panorama_sampler_ash_code}
+        BEGIN
+          Run_Sampler_Daemon(?, ?, ?, ?);
+        END;
+        "
+    end
+
+    PanoramaConnection.sql_execute [sql, snapshot_cycle_seconds, PanoramaConnection.instance_number, PanoramaConnection.con_id, next_snapshot_start_seconds]
   end
 
   private

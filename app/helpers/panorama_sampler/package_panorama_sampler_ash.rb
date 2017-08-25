@@ -13,12 +13,8 @@ END Panorama_Sampler_ASH;
     "
   end
 
-  def panorama_sampler_ash_body
+  def panorama_sampler_ash_code
     "
--- Package for use by Panorama-Sampler
-CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
-  -- Panorama-Version: PANORAMA_VERSION
-  -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
   TYPE AshType IS RECORD (
     Sample_ID                 NUMBER,
     Sample_Time               TIMESTAMP(3),
@@ -390,10 +386,19 @@ CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
         WHEN OTHERS THEN
           RAISE;
     END Run_Sampler_Daemon;
-
-END Panorama_Sampler_ASH;
     "
   end
 
+  def panorama_sampler_ash_body
+    "
+-- Package for use by Panorama-Sampler
+CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
+  -- Panorama-Version: PANORAMA_VERSION
+  -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
+#{panorama_sampler_ash_code}
+END Panorama_Sampler_ASH;
+"
+  end
 
-end
+
+  end
