@@ -73,6 +73,15 @@ class PanoramaSamplerSampling
       end
     end
     # Delete from tables without columns DBID and SNAP_ID
+    execute_until_nomore ["DELETE FROM Panorama_SQL_Plan p
+                           WHERE  DBID      = ?
+                           AND    Con_DBID  = ?
+                           AND    (SQL_ID, Plan_Hash_Value) NOT IN (SELECT SQL_ID, Plan_Hash_Value FROM Panorama_SQLStat s
+                                                 WHERE  s.DBID      = ?
+                                                 AND    s.Con_DBID  = ?
+                                                )
+                          ", PanoramaConnection.dbid, con_dbid, PanoramaConnection.dbid, con_dbid]
+
     execute_until_nomore ["DELETE FROM Panorama_SQLText t
                            WHERE  DBID      = ?
                            AND    Con_DBID  = ?

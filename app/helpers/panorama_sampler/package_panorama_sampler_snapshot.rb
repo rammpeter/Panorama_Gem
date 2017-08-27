@@ -91,6 +91,31 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_Service_Name;
 
+  PROCEDURE Snap_SQL_Plan(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_SQL_Plan (
+      DBID, SQL_ID, PLAN_HASH_VALUE, ID, OPERATION, OPTIONS, OBJECT_NODE, OBJECT#, OBJECT_OWNER, OBJECT_NAME, OBJECT_ALIAS, OBJECT_TYPE, OPTIMIZER,
+      PARENT_ID, DEPTH, POSITION, SEARCH_COLUMNS, COST, CARDINALITY, BYTES, OTHER_TAG, PARTITION_START, PARTITION_STOP, PARTITION_ID, OTHER,
+      DISTRIBUTION, CPU_COST, IO_COST, TEMP_SPACE, ACCESS_PREDICATES, FILTER_PREDICATES, PROJECTION, TIME, QBLOCK_NAME,
+      REMARKS, TIMESTAMP, OTHER_XML, CON_DBID, CON_ID
+    )
+    SELECT p_DBID, p.SQL_ID, p.Plan_Hash_Value, p.ID, p.OPERATION, p.OPTIONS, p.OBJECT_NODE, p.OBJECT#, p.OBJECT_OWNER, p.OBJECT_NAME, p.OBJECT_ALIAS, p.OBJECT_TYPE, p.OPTIMIZER,
+           p.PARENT_ID, p.DEPTH, p.POSITION, p.SEARCH_COLUMNS, p.COST, p.CARDINALITY, p.BYTES, p.OTHER_TAG, p.PARTITION_START, p.PARTITION_STOP, p.PARTITION_ID, p.OTHER,
+           p.DISTRIBUTION, p.CPU_COST, p.IO_COST, p.TEMP_SPACE, p.ACCESS_PREDICATES, p.FILTER_PREDICATES, p.PROJECTION, p.TIME, p.QBLOCK_NAME,
+           p.REMARKS, p.TIMESTAMP, p.OTHER_XML, p_CON_DBID, p.CON_ID
+    FROM   v$SQL_Plan p
+    -- Select only the plan of last parsed child with that plan_hash_value
+    JOIN   (SELECT /*+ NO_MERGE */ SQL_ID, Plan_Hash_Value, MAX(Child_Number) KEEP (DENSE_RANK LAST ORDER BY Timestamp) Max_Child_Number
+            FROM   v$SQL_Plan
+            GROUP BY SQL_ID, Plan_Hash_Value
+           ) pm ON pm.SQL_ID = p.SQL_ID AND pm.Plan_Hash_Value = p.Plan_Hash_Value AND pm.Max_Child_Number = p.Child_Number
+    WHERE  (p.SQL_ID, p.PLAN_HASH_VALUE, p.ID) NOT IN (SELECT SQL_ID, PLAN_HASH_VALUE, ID
+                                                 FROM   Panorama_SQL_Plan e
+                                                 WHERE  e.DBID = p_DBID AND e.Con_DBID = p_Con_DBID
+                                                )
+    ;
+  END Snap_SQL_Plan;
+
   PROCEDURE Snap_SQLStat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER, p_Begin_Interval_Time IN DATE) IS
   BEGIN
     -- Child cursors created in this snapshot period should count full in delta because they are not counted in previous snapshot's total values
@@ -241,6 +266,7 @@ END Panorama_Sampler_Snapshot;
     Snap_DB_cache_Advice      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Service_Name         (p_DBID,      p_Con_DBID);
+    Snap_SQL_Plan             (p_DBID,      p_Con_DBID);
     Snap_SQLStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID,    p_Begin_Interval_Time);
     Snap_SQLText              (p_DBID,      p_Con_DBID);
     Snap_TopLevelCallName     (p_DBID,      p_Con_DBID);
