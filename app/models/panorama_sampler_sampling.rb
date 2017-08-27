@@ -68,12 +68,19 @@ class PanoramaSamplerSampling
     snapshots_to_delete.each do |snapshot|
       PanoramaSamplerStructureCheck.tables.each do |table|
         if PanoramaSamplerStructureCheck.has_column?(table[:table_name], 'Snap_ID')
-          PanoramaConnection.sql_execute ["DELETE FROM #{@sampler_config[:owner]}.#{table[:table_name]} WHERE DBID = ? AND Snap_ID <= ?", PanoramaConnection.dbid, snapshot.snap_id]
+          execute_until_nomore ["DELETE FROM #{@sampler_config[:owner]}.#{table[:table_name]} WHERE DBID = ? AND Snap_ID <= ?", PanoramaConnection.dbid, snapshot.snap_id]
         end
       end
     end
     # Delete from tables without columns DBID and SNAP_ID
-
+    execute_until_nomore ["DELETE FROM Panorama_SQLText t
+                           WHERE  DBID      = ?
+                           AND    Con_DBID  = ?
+                           AND    SQL_ID NOT IN (SELECT SQL_ID FROM Panorama_SQLStat s
+                                                 WHERE  s.DBID      = ?
+                                                 AND    s.Con_DBID  = ?
+                                                )
+                          ", PanoramaConnection.dbid, con_dbid, PanoramaConnection.dbid, con_dbid]
   end
 
   # Run daemon, daeomon returns 1 second before next snapshot timestamp
@@ -104,4 +111,14 @@ class PanoramaSamplerSampling
     PanoramaConnection.dbid
   end
 
+  # Limit transaction size to prevent unnecessary UNDO traffic and ORA-1550 snapshot too old
+  def execute_until_nomore(params, max_rows=100000)
+    sql_addition =  " AND RowNum <= #{max_rows}"
+    params[0] << sql_addition if params.class == Array
+    params    << sql_addition if params.class == String
+    loop do
+      result_count = PanoramaConnection.sql_execute params
+      break if result_count < max_rows
+    end
+  end
 end
