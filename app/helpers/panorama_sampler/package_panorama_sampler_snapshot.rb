@@ -102,7 +102,7 @@ END Panorama_Sampler_Snapshot;
     SELECT p_DBID, p.SQL_ID, p.Plan_Hash_Value, p.ID, p.OPERATION, p.OPTIONS, p.OBJECT_NODE, p.OBJECT#, p.OBJECT_OWNER, p.OBJECT_NAME, p.OBJECT_ALIAS, p.OBJECT_TYPE, p.OPTIMIZER,
            p.PARENT_ID, p.DEPTH, p.POSITION, p.SEARCH_COLUMNS, p.COST, p.CARDINALITY, p.BYTES, p.OTHER_TAG, p.PARTITION_START, p.PARTITION_STOP, p.PARTITION_ID, p.OTHER,
            p.DISTRIBUTION, p.CPU_COST, p.IO_COST, p.TEMP_SPACE, p.ACCESS_PREDICATES, p.FILTER_PREDICATES, p.PROJECTION, p.TIME, p.QBLOCK_NAME,
-           p.REMARKS, p.TIMESTAMP, p.OTHER_XML, p_CON_DBID, p.CON_ID
+           p.REMARKS, p.TIMESTAMP, p.OTHER_XML, p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
     FROM   v$SQL_Plan p
     -- Select only the plan of last parsed child with that plan_hash_value
     JOIN   (SELECT /*+ NO_MERGE */ SQL_ID, Plan_Hash_Value, MAX(Child_Number) KEEP (DENSE_RANK LAST ORDER BY Timestamp) Max_Child_Number
