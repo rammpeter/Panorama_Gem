@@ -367,7 +367,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'SQL_ID', 'POSITION', 'CON_DBID'],
+          primary_key: ['DBID', 'Snap_ID', 'Instance_Number', 'SQL_ID', 'POSITION', 'CON_DBID'],
       },
       {
           table_name: 'Panorama_SQL_Plan',
