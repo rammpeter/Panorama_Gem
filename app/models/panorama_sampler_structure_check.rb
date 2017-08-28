@@ -345,6 +345,31 @@ class PanoramaSamplerStructureCheck
           indexes: [ {index_name: 'Panorama_Snapshot_MaxID_IX', columns: ['DBID', 'Instance_Number'] } ]
       },
       {
+          table_name: 'Panorama_SQLBind',
+          columns: [
+              { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
+              { column_name:  'SQL_ID',                         column_type:   'VARCHAR2',  not_null: true, precision: 13 },
+              { column_name:  'NAME',                           column_type:   'VARCHAR2',  precision: 128 },
+              { column_name:  'POSITION',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'DUP_POSITION',                   column_type:   'NUMBER' },
+              { column_name:  'DATATYPE',                       column_type:   'NUMBER' },
+              { column_name:  'DATATYPE_STRING',                column_type:   'VARCHAR2',  precision: 15 },
+              { column_name:  'CHARACTER_SID',                  column_type:   'NUMBER' },
+              { column_name:  'PRECISION',                      column_type:   'NUMBER' },
+              { column_name:  'SCALE',                          column_type:   'NUMBER' },
+              { column_name:  'MAX_LENGTH',                     column_type:   'NUMBER' },
+              { column_name:  'WAS_CAPTURED',                   column_type:   'VARCHAR2',  precision: 3 },
+              { column_name:  'LAST_CAPTURED',                  column_type:   'DATE' },
+              { column_name:  'VALUE_STRING',                   column_type:   'VARCHAR2',  precision: 4000 },
+              { column_name:  'VALUE_ANYDATA',                  column_type:   'ANYDATA' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },
+          ],
+          primary_key: ['DBID', 'SQL_ID', 'POSITION', 'CON_DBID'],
+      },
+      {
           table_name: 'Panorama_SQL_Plan',
           columns: [
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },

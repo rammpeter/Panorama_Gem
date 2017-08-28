@@ -475,7 +475,7 @@ public
         last_dbid = sql_select_one "SELECT MAX(DBID) KEEP (DENSE_RANK LAST ORDER BY End_Interval_Time) FROM #{ps.owner}.PANORAMA_SNAPSHOT"
         instances = sql_select_one ["SELECT COUNT(DISTINCT Instance_Number) FROM #{ps.owner}.PANORAMA_SNAPSHOT WHERE DBID = ?", last_dbid] if last_dbid
         ps_val = sql_select_first_row ["SELECT MIN(Begin_Interval_Time) Min_Time, MAX(End_Interval_Time) Max_Time FROM #{ps.owner}.PANORAMA_SNAPSHOT WHERE DBID = ?", last_dbid] if last_dbid
-        ps_wr = sql_select_first_row ["SELECT MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM #{ps.owner}.PANORAMA_WR_Control WHERE DBID = ?", get_dbid]
+        ps_wr = sql_select_first_row ["SELECT MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM #{ps.owner}.PANORAMA_WR_Control WHERE DBID = ?", last_dbid] if last_dbid
         ps[:last_dbid]      = last_dbid
         ps[:instances]      = instances
         ps[:min_time]       = ps_val.min_time if ps_val

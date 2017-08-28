@@ -91,6 +91,25 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_Service_Name;
 
+  PROCEDURE Snap_SQLBind(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_SQLBind(
+      SNAP_ID, DBID, INSTANCE_NUMBER, SQL_ID, NAME, POSITION, DUP_POSITION, DATATYPE, DATATYPE_STRING, CHARACTER_SID,
+      PRECISION, SCALE, MAX_LENGTH, WAS_CAPTURED, LAST_CAPTURED, VALUE_STRING, VALUE_ANYDATA,
+      CON_DBID, CON_ID
+    )
+    SELECT p_Snap_ID, p_DBID, p_Instance, b.SQL_ID, b.Name, b.Position, b.Dup_Position, b.DATATYPE, b.DATATYPE_STRING, b.CHARACTER_SID,
+           b.PRECISION, b.SCALE, b.MAX_LENGTH, b.WAS_CAPTURED, b.LAST_CAPTURED, b.VALUE_STRING, b.VALUE_ANYDATA,
+           p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+    FROM   v$SQL_Bind_Capture b
+    -- Select only the plan of last captured child with that SQL_ID
+    JOIN   (SELECT /*+ NO_MERGE */ SQL_ID, MAX(Child_Number) KEEP (DENSE_RANK LAST ORDER BY Last_Captured) Max_Child_Number
+            FROM   v$SQL_Bind_Capture
+            GROUP BY SQL_ID
+           ) bm ON bm.SQL_ID = b.SQL_ID AND bm.Max_Child_Number = b.Child_Number
+    ;
+  END Snap_SQLBind;
+
   PROCEDURE Snap_SQL_Plan(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO Panorama_SQL_Plan (
@@ -266,6 +285,7 @@ END Panorama_Sampler_Snapshot;
     Snap_DB_cache_Advice      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Service_Name         (p_DBID,      p_Con_DBID);
+    Snap_SQLBind              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_SQL_Plan             (p_DBID,      p_Con_DBID);
     Snap_SQLStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID,    p_Begin_Interval_Time);
     Snap_SQLText              (p_DBID,      p_Con_DBID);
