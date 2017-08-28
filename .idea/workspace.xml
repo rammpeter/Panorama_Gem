@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" afterPath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -122,10 +122,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
+            <state relative-caret-position="60">
               <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
               <folding />
             </state>
@@ -156,7 +156,7 @@
         <entry file="file://$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="382">
-              <caret line="109" column="5" lean-forward="true" selection-start-line="100" selection-start-column="4" selection-end-line="109" selection-end-column="5" />
+              <caret line="109" column="5" lean-forward="false" selection-start-line="100" selection-start-column="4" selection-end-line="109" selection-end-column="5" />
               <folding />
             </state>
           </provider>
@@ -192,11 +192,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="panorama_sampler_structure_check.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="panorama_sampler_structure_check.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="139">
-              <caret line="357" column="56" lean-forward="true" selection-start-line="357" selection-start-column="56" selection-end-line="357" selection-end-column="56" />
+              <caret line="357" column="108" lean-forward="true" selection-start-line="357" selection-start-column="108" selection-end-line="357" selection-end-column="108" />
               <folding />
             </state>
           </provider>
@@ -299,9 +299,9 @@
         <option value="$PROJECT_DIR$/app/models/worker_thread.rb" />
         <option value="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" />
         <option value="$PROJECT_DIR$/app/controllers/env_controller.rb" />
-        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/app/views/help/version_history.html" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
+        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
       </list>
     </option>
   </component>
@@ -1112,14 +1112,7 @@
       <workItem from="1503310497564" duration="93000" />
       <workItem from="1503310898595" duration="94269000" />
       <workItem from="1503913140496" duration="6273000" />
-      <workItem from="1503929329931" duration="1170000" />
-    </task>
-    <task id="LOCAL-01021" summary="Select Schema for Panorama-Sampler">
-      <created>1502291860678</created>
-      <option name="number" value="01021" />
-      <option name="presentableId" value="LOCAL-01021" />
-      <option name="project" value="LOCAL" />
-      <updated>1502291860678</updated>
+      <workItem from="1503929329931" duration="1392000" />
     </task>
     <task id="LOCAL-01022" summary="Select Schema for Panorama-Sampler">
       <created>1502293988364</created>
@@ -1457,7 +1450,14 @@
       <option name="project" value="LOCAL" />
       <updated>1503918031183</updated>
     </task>
-    <option name="localTasksCounter" value="1070" />
+    <task id="LOCAL-01070" summary="SQL binds added, PK corrected">
+      <created>1503930612826</created>
+      <option name="number" value="01070" />
+      <option name="presentableId" value="LOCAL-01070" />
+      <option name="project" value="LOCAL" />
+      <updated>1503930612829</updated>
+    </task>
+    <option name="localTasksCounter" value="1071" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1493,7 +1493,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2018104000" />
+    <option name="totallyTimeSpent" value="2018326000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1549,7 +1549,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Ash sampling: migrate tables to views" />
     <MESSAGE value="Ash sampling: bugfix&#10;New filter UserName" />
     <MESSAGE value="Ash sampling: move sampling to PL/SQL" />
     <MESSAGE value="Ash sampling: move sampling to PL/SQL, 11.2 compatibility" />
@@ -1574,7 +1573,8 @@
     <MESSAGE value="Sampling of SQL plan added" />
     <MESSAGE value="without Con_ID for 11.2" />
     <MESSAGE value="SQL binds added" />
-    <option name="LAST_COMMIT_MESSAGE" value="SQL binds added" />
+    <MESSAGE value="SQL binds added, PK corrected" />
+    <option name="LAST_COMMIT_MESSAGE" value="SQL binds added, PK corrected" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1987,14 +1987,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/controllers/panorama_sampler_controller_test.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -2022,7 +2014,7 @@
     <entry file="file://$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="382">
-          <caret line="109" column="5" lean-forward="true" selection-start-line="100" selection-start-column="4" selection-end-line="109" selection-end-column="5" />
+          <caret line="109" column="5" lean-forward="false" selection-start-line="100" selection-start-column="4" selection-end-line="109" selection-end-column="5" />
           <folding />
         </state>
       </provider>
@@ -2046,7 +2038,15 @@
     <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="139">
-          <caret line="357" column="56" lean-forward="true" selection-start-line="357" selection-start-column="56" selection-end-line="357" selection-end-column="56" />
+          <caret line="357" column="108" lean-forward="true" selection-start-line="357" selection-start-column="108" selection-end-line="357" selection-end-column="108" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
           <folding />
         </state>
       </provider>
