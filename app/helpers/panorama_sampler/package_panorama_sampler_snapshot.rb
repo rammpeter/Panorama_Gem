@@ -248,6 +248,23 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_SQLText;
 
+  PROCEDURE Snap_StatName IS
+  BEGIN
+    INSERT INTO Internal_StatName(STAT_ID, Name)
+    SELECT Stat_ID, Name
+    FROM   V$StatName n
+    WHERE  n.Stat_ID NOT IN (SELECT Stat_ID FROM Internal_StatName)
+    ;
+  END Snap_StatName;
+
+  PROCEDURE Snap_SysStat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Internal_SysStat(SNAP_ID, DBID, INSTANCE_NUMBER, STAT_ID, VALUE, CON_DBID, CON_ID)
+    SELECT p_Snap_ID, p_DBID, p_Instance, Stat_ID, Value, p_Con_DBID,  #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+    FROM   V$SysStat
+    ;
+  END Snap_SysStat;
+
   PROCEDURE Snap_TopLevelCallName(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     #{ PanoramaConnection.db_version >= '11.2' ?
@@ -289,6 +306,8 @@ END Panorama_Sampler_Snapshot;
     Snap_SQL_Plan             (p_DBID,      p_Con_DBID);
     Snap_SQLStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID,    p_Begin_Interval_Time);
     Snap_SQLText              (p_DBID,      p_Con_DBID);
+    Snap_StatName             ();
+    Snap_SysStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_TopLevelCallName     (p_DBID,      p_Con_DBID);
     Snap_WR_Control           (p_DBID,      p_Snapshot_Cycle, p_Snapshot_Retention);
   END Do_Snapshot;

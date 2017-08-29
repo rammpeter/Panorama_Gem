@@ -514,6 +514,27 @@ class PanoramaSamplerStructureCheck
           primary_key: ['DBID', 'SQL_ID', 'Con_DBID'],
       },
       {
+          table_name: 'Internal_StatName',
+          columns: [
+              { column_name:  'STAT_ID',                        column_type:   'NUMBER',    not_null: true },
+              { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 64 },
+          ],
+          primary_key: ['STAT_ID'],
+      },
+      {
+          table_name: 'Internal_SysStat',
+          columns: [
+              { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
+              { column_name:  'STAT_ID',                        column_type:   'NUMBER',    not_null: true },
+              { column_name:  'VALUE',                          column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },
+          ],
+          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'STAT_ID', 'CON_DBID'],
+      },
+      {
           table_name: 'Panorama_TopLevelCall_Name',
           columns: [
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
@@ -606,6 +627,13 @@ ORDER BY Column_ID
                                       h.IN_TABLESPACE_ENCRYPTION
                                FROM   Internal_Active_Sess_History h
                                #{"LEFT OUTER JOIN Panorama_TopLevelCall_Name tlcn ON tlcn.DBID = h.DBID AND tlcn.Top_Level_Call# = h.Top_Level_Call# AND tlcn.Con_DBID = h.Con_DBID" if PanoramaConnection.db_version >= '11.2'}
+                              "}
+        },
+        {
+            view_name: 'Panorama_SysStat',
+            view_select: proc{"SELECT s.SNAP_ID, s.DBID, s.INSTANCE_NUMBER, s.STAT_ID, n.NAME, s.VALUE, s.CON_DBID, s.CON_ID
+                               FROM   Internal_SysStat s
+                               LEFT OUTER JOIN Internal_StatName n ON n.Stat_ID = s.Stat_ID
                               "}
         },
     ]
