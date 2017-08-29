@@ -523,6 +523,21 @@ class DbaHistoryController < ApplicationController
       @sql_outlines       = []
     end
 
+    if !sql_statement                                                           # No SQL text found in history ?
+      sga_exists = sql_select_first_row ["SELECT Inst_ID FROM gv$SQLArea WHERE SQL_ID=? ORDER BY DECODE(Inst_ID, ?, 0, 1)", @sql_id, @instance] # First record in result with current instance if exsists
+      if sga_exists
+        redirect_to url_for(:controller => :dba_sga,
+                            :action     => :list_sql_detail_sql_id,
+                            :params     => {instance:           sga_exists.inst_id,
+                                            sql_id:             @sql_id,
+                                            update_area:        params[:update_area],
+                                            statusbar_message:  "No SQL text found in AWR-history for this SQL_ID and instance between #{@time_selection_start} and #{@time_selection_end}, but found SQL in current SGA"
+                                           },
+                            :method     => :post)
+        return
+      end
+    end
+
     render_partial :list_sql_detail_historic
   end #list_sql_detail_historic
 

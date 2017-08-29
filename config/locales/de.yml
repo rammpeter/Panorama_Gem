@@ -421,6 +421,7 @@
   dba_sga_list_sql_detail_sql_id_last_capture_hint:         Zeitpunkt der letzten Aufnahme
   dba_sga_list_sql_detail_sql_id_link_session_hint:         Anzeige Details zu Session
   dba_sga_list_sql_detail_sql_id_name_hint:                 Name der Bindevariablen im Statement
+  dba_sga_list_sql_detail_sql_id_only_one_child_msg:        Nur ein Child-Record gefunden in gv$SQL, daher gleich direkte Anzeige auf Child-Ebene
   dba_sga_list_sql_detail_sql_id_operation_id_hint:         Operation-ID des Workareas zur Referenz in Execution-Plan
   dba_sga_list_sql_detail_sql_id_optype_hint:               Operation-Type des Workareas
   dba_sga_list_sql_detail_sql_id_policy_hint:               Sizing-Policy des Workareas

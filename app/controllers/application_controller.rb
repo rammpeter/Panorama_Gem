@@ -106,6 +106,8 @@ class ApplicationController < ActionController::Base
     rescue Exception => e
       Rails.logger.warn("#### ApplicationController.begin_request: #{t(:application_helper_usage_error, :default=>'Exception while writing in')} #{filename}: #{e.message}")
     end
+
+    add_statusbar_message(params[:statusbar_message]) if params[:statusbar_message]
   end
 
   # Aktivitäten nach Requestbearbeitung

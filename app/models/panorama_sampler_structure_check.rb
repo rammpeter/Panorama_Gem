@@ -839,7 +839,7 @@ ORDER BY Column_ID
         sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]} ,"
       end
       sql[(sql.length) - 1] = ' '                                               # remove last ,
-      sql << ") PCTFREE 10"
+      sql << ") PCTFREE 10 ENABLE ROW MOVEMENT"
       log(sql)
       PanoramaConnection.sql_execute(sql)
       log "Table #{table[:table_name]} created"
