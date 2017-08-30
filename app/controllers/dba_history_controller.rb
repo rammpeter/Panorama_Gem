@@ -524,7 +524,7 @@ class DbaHistoryController < ApplicationController
     end
 
     if !sql_statement                                                           # No SQL text found in history ?
-      sga_exists = sql_select_first_row ["SELECT Inst_ID FROM gv$SQLArea WHERE SQL_ID=? ORDER BY DECODE(Inst_ID, ?, 0, 1)", @sql_id, @instance] # First record in result with current instance if exsists
+      sga_exists = sql_select_first_row ["SELECT Inst_ID FROM gv$SQLArea WHERE SQL_ID=? #{" ORDER BY DECODE(Inst_ID, #{@instance}, 0, 1)" if @instance}", @sql_id] # First record in result with current instance if exsists
       if sga_exists
         redirect_to url_for(:controller => :dba_sga,
                             :action     => :list_sql_detail_sql_id,

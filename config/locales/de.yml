@@ -1320,9 +1320,9 @@
     Nutzung von Literalen statt Bindevariablen mit hoher Anzahl unterschiedlicher Literale führt zu hohen Parse-Zahlen und Flutung der SQL-Area in der SGA.
     Auch wenn die Folgen durch Setzen von cursor_sharing != EXCACT reduziert werden können, bleibt eine hohe Speicheranforderung in SGA für das Matchen der SQLs mit den korrepondierenden SQLs mit ersetzten Bindevariablen.
     Die eindeutige Empfehlung ist: Bindevariablen benutzen!
-    Die Abfrage sucht über identische Ausführungspläne per Plan-Hash-Value.
+    Die Abfrage sucht über identische Ausführungspläne per Plan-Hash-Value aus Active Session History.
   dragnet_helper_133_name: |-
-    Fehlende Nutzung von Bindevariablen: Ermittlung über identische Plan-Hash-Values
+    Fehlende Nutzung von Bindevariablen: Ermittlung über identische Plan-Hash-Values aus Active Session History
   dragnet_helper_133_param_1_hint:                          Minimale Anzahl unterschiedlicher SQL-IDs je Plan-Hash-Value für Aufnahme in Selektion
   dragnet_helper_133_param_1_name:                          Minimale Anzahl unterschiedlicher SQL-IDs
 
@@ -1335,6 +1335,16 @@
     Problematische Nutzung von parallel query für kurzlaufende SQLs (Aus aktueller SGA)
   dragnet_helper_134_param_1_hint:                          Maximale Laufzeit je Ausführung des SQL in Sekunden für Berücksichtigung in der Selektion
   dragnet_helper_134_param_1_name:                          Maximale Laufzeit je Ausführung des SQL in Sekunden
+
+  dragnet_helper_135_desc: |-
+    Nutzung von Literalen statt Bindevariablen mit hoher Anzahl unterschiedlicher Literale führt zu hohen Parse-Zahlen und Flutung der SQL-Area in der SGA.
+    Auch wenn die Folgen durch Setzen von cursor_sharing != EXCACT reduziert werden können, bleibt eine hohe Speicheranforderung in SGA für das Matchen der SQLs mit den korrepondierenden SQLs mit ersetzten Bindevariablen.
+    Die eindeutige Empfehlung ist: Bindevariablen benutzen!
+    Die Abfrage sucht über identische Ausführungspläne per Plan-Hash-Value aus SGA.
+  dragnet_helper_135_name: |-
+    Fehlende Nutzung von Bindevariablen: Ermittlung über identische Plan-Hash-Values aus SGA
+  dragnet_helper_135_param_1_hint:                          Minimale Anzahl unterschiedlicher SQL-IDs je Plan-Hash-Value für Aufnahme in Selektion
+  dragnet_helper_135_param_1_name:                          Minimale Anzahl unterschiedlicher SQL-IDs
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 

@@ -6,11 +6,11 @@ module Dragnet::SqlsCursorRedundanciesHelper
   def sqls_cursor_redundancies
     [
         {
-            :name  => t(:dragnet_helper_133_name, :default=>'Missing usage of bind variables: Detection by identical plan-hash-value'),
+            :name  => t(:dragnet_helper_133_name, :default=>'Missing usage of bind variables: Detection by identical plan-hash-value from Active Session History'),
             :desc  => t(:dragnet_helper_133_desc, :default=>"Usage of literals instead of bind variables with high number of different literals leads to high parse counts and flooding of SQL-Area in SGA.
 You may reduce the problem by setting cursor_sharing != EXACT, but you still need large amount of SGA-memory to match your SQL with the corresponding SQL with replaced bind variables.
 So strong suggestion is: Use bind variables!
-This selection looks for statements with identical execution plans by plan-hash-value."),
+This selection looks for statements with identical execution plans by plan-hash-value from Active Session History."),
             :sql=>  "WITH Ret AS (SELECT ? Days FROM DUAL)
                       SELECT x.SQL_Plan_Hash_Value, x.Different_SQL_IDs, x.Last_Used_SQL_ID, u.UserName, x.First_Occurrence, x.Last_Occurrence, x.Elapsed_Secs
                       FROM   (
@@ -45,6 +45,34 @@ This selection looks for statements with identical execution plans by plan-hash-
             :parameter=>[
                 {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
                 {:name=> t(:dragnet_helper_133_param_1_name, :default=>'Minimum number of different SQL-IDs'), :size=>8, :default=>10, :title=>t(:dragnet_helper_133_param_1_hint, :default=>'Minimum number of different SQL-IDs per plan-hash-value for consideration in selection') }
+            ]
+        },
+        {
+            :name  => t(:dragnet_helper_135_name, :default=>'Missing usage of bind variables: Detection by identical plan-hash-value from SGA'),
+            :desc  => t(:dragnet_helper_133_desc, :default=>"Usage of literals instead of bind variables with high number of different literals leads to high parse counts and flooding of SQL-Area in SGA.
+You may reduce the problem by setting cursor_sharing != EXACT, but you still need large amount of SGA-memory to match your SQL with the corresponding SQL with replaced bind variables.
+So strong suggestion is: Use bind variables!
+This selection looks for statements with identical execution plans by plan-hash-value from SGA."),
+            :sql=>  "SELECT a.Inst_ID                                                         \"Instance\",
+                            a.Plan_Hash_Value                                                 \"Plan hash value\",
+                            a.Parsing_Schema_Name                                             \"Parsing schema\",
+                            COUNT(*)                                                          \"No. of entries in gv$SQLArea\",
+                            COUNT(DISTINCT a.SQL_ID)                                          \"No. of different SQL-IDs\",
+                            MIN(a.Last_Active_Time)                                           \"Oldest active time\",
+                            MAX(a.Last_Active_Time)                                           \"Youngest active time\",
+                            MAX(a.SQL_ID) KEEP (DENSE_RANK LAST ORDER BY Last_Active_Time)    \"SQL_ID\",
+                            ROUND(SUM(a.Sharable_Mem)  /(1024*1024), 2)                       \"Sharable memory (MB)\",
+                            ROUND(SUM(a.Persistent_Mem)/(1024*1024), 2)                       \"Persistent memory (MB)\",
+                            ROUND(SUM(a.Runtime_Mem)   /(1024*1024), 2)                       \"Runtime memory (MB)\",
+                            SUBSTR(MAX(a.SQL_Text) KEEP (DENSE_RANK LAST ORDER BY Last_Active_Time), 1, 400)  \"SQL text\"
+                     FROM   gv$SQLArea a
+                     WHERE  a.Plan_Hash_Value != 0
+                     GROUP BY a.Inst_ID, a.Plan_Hash_Value, a.Parsing_Schema_Name
+                     HAVING COUNT(*) > ?
+                     ORDER BY 4 DESC
+            ",
+            :parameter=>[
+                {:name=> t(:dragnet_helper_135_param_1_name, :default=>'Minimum number of different SQL-IDs'), :size=>8, :default=>10, :title=>t(:dragnet_helper_135_param_1_hint, :default=>'Minimum number of different SQL-IDs per plan-hash-value for consideration in selection') }
             ]
         },
         {
