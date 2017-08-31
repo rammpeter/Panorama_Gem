@@ -805,7 +805,7 @@ class DbaHistoryController < ApplicationController
     @time_selection_end   = params[:time_selection_end]
     @groupby              = params[:groupby]
 
-    @groupby = 'snap' unless @groupby   # Default
+    @groupby = 'snap' if @groupby.nil? || @groupby == ''  # Default
     case @groupby.to_s
       when "snap" then        # Direkte Anzeige der Snapshots
         @begin_interval_sql = "snap.Begin_Interval_Time"

@@ -22,6 +22,10 @@ class DbaHistoryControllerTest < ActionController::TestCase
     @max_snap_id = sql_select_one ["SELECT  /* Panorama-Tool Ramm */ MAX(Snap_ID)
                                    FROM    DBA_Hist_Snapshot
                                    WHERE   Begin_Interval_Time <= ?", time_selection_end ]
+    @sga_sql_id_without_history = sql_select_one "SELECT SQL_ID
+                                                  FROM   v$SQLArea
+                                                  WHERE  SQL_ID NOT IN (SELECT SQL_ID FROM DBA_Hist_SQLText)
+                                                  AND    RowNum < 2"
     raise "No snapshot found before #{time_selection_end}" if @max_snap_id.nil?
   end
 
@@ -45,8 +49,6 @@ class DbaHistoryControllerTest < ActionController::TestCase
     assert_response :success
   end
 
-
-
   test "sql_area_historic with xhr: true" do
     ['ElapsedTimePerExecute',
      'ElapsedTimeTotal',
@@ -58,40 +60,74 @@ class DbaHistoryControllerTest < ActionController::TestCase
      'BufferGets',
      'ClusterWaits'
     ].each do |topSort|
-      post :list_sql_area_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :maxResultCount=>100, :topSort=>topSort, :update_area=>:hugo }
-      assert_response :success
-
-      post :list_sql_area_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :maxResultCount=>100, :topSort=>topSort, :sql_id=>'14147ß1471', :update_area=>:hugo }
-      assert_response :success
-
-      post :list_sql_area_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :maxResultCount=>100, :topSort=>topSort, :filter=>'hugo<>%&', :update_area=>:hugo }
-      assert_response :success
-
-      post :list_sql_area_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :maxResultCount=>100, :topSort=>topSort, :instance=>1, :update_area=>:hugo }
-      assert_response :success
+      [nil, 1].each do |instance|
+        [nil, '14147ß1471'].each do |sql_id|
+          [nil, 'hugo<>%&'].each do |filter|
+            post :list_sql_area_historic, :params => {:format=>:html,
+                                                      :time_selection_start => @time_selection_start,
+                                                      :time_selection_end   => @time_selection_end,
+                                                      :maxResultCount       => 100,
+                                                      :topSort              => topSort,
+                                                      :filter               => filter,
+                                                      :sql_id               => sql_id,
+                                                      :instance             => instance,
+                                                      :update_area          => :hugo }
+            assert_response :success
+          end
+        end
+      end
     end
+  end
 
-    post :list_sql_detail_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-         :sql_id=>@sga_sql_id, :update_area=>:hugo }
-     assert_response :success
-
-    post :list_sql_detail_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-         :sql_id=>@sga_sql_id, :instance=>1, :update_area=>:hugo }
-    assert_response :success
-
-    post :list_sql_detail_historic, :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-         :sql_id=>@sga_sql_id, :parsing_schema_name=>@sga_parsing_schema_name, :update_area=>:hugo }
-    assert_response :success
-
-    post :list_sql_history_snapshots, :params => {:format=>:html, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_name, :groupby=>:day, :update_area=>:hugo}
-    assert_response :success
-    post :list_sql_history_snapshots, :params => {:format=>:html, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_name,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
-    assert_response :success
-
+  test 'list_sql_historic_execution_plan with xhr: true' do
     post :list_sql_historic_execution_plan, :params => {:format=>:html, :sql_id=>@sga_sql_id, :instance=>1, :parsing_schema_name=>@sga_parsing_schema_name,
                                                         :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
     assert_response :success
   end
+
+  test 'list_sql_history_snapshots with xhr: true' do
+    [nil, 1].each do |instance|
+      [{:time_selection_start => @time_selection_start, :time_selection_end =>@time_selection_end}, {:time_selection_start => nil, :time_selection_end => nil} ].each do |ts|
+        [nil, 'snap', 'hour', 'day', 'week', 'month'].each do |groupby|
+          [nil, @sga_parsing_schema_name].each do |parsing_schema_name|
+            post :list_sql_history_snapshots, :params => {:format=>:html,
+                                                          :sql_id               => @sga_sql_id,
+                                                          :instance             => instance,
+                                                          :parsing_schema_name  => parsing_schema_name,
+                                                          :groupby              => groupby,
+                                                          :time_selection_start => ts[:time_selection_start],
+                                                          :time_selection_end   => ts[:time_selection_end],
+                                                          :update_area          => :hugo }
+            assert_response :success
+          end
+        end
+      end
+    end
+  end
+
+  test 'sql_detail_historic with xhr: true' do
+    [nil, 1].each do |instance|
+      [@sga_sql_id, @sga_sql_id_without_history, '1234567890123'].each do |sql_id|
+        [nil, @sga_parsing_schema_name].each do |parsing_schema_name|
+          post :list_sql_detail_historic, :params => {:format               => :html,
+                                                      :time_selection_start => @time_selection_start,
+                                                      :time_selection_end   => @time_selection_end,
+                                                      :sql_id               => sql_id,
+                                                      :instance             => instance,
+                                                      :parsing_schema_name  => parsing_schema_name,
+                                                      :update_area          => :hugo }
+
+          if sql_id == @sga_sql_id_without_history
+            assert_response :redirect
+          else
+            assert_response :success
+          end
+        end
+
+      end
+    end
+  end
+
 
 
   test "show_using_sqls_historic with xhr: true" do
