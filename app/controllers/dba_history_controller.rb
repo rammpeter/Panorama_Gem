@@ -1932,6 +1932,27 @@ FROM (
     render :html => res_array.join.html_safe
   end
 
+  def select_plan_hash_value_for_baseline
+    @sql_id = params[:sql_id]
+    @min_snap_id = params[:min_snap_id]
+    @max_snap_id = params[:max_snap_id]
+
+    @plans = sql_select_all ["SELECT s.Plan_Hash_Value,
+                                    MIN(ss.Begin_Interval_Time) First_Occurrence,
+                                    MAX(ss.End_Interval_Time) Last_Occurrence,
+                                    SUM(s.Executions_Delta) Executions,
+                                    SUM(s.Elapsed_Time_Delta)/1000000 Elapsed_Secs,
+                                    SUM(s.Rows_Processed_Delta) Rows_Processed
+                             FROM   DBA_Hist_SQLStat s
+                             JOIN   DBA_Hist_Snapshot ss ON ss.DBID = s.DBID AND ss.Instance_Number = s.Instance_Number AND ss.Snap_ID = s.Snap_ID
+                             WHERE  s.DBID   = ?
+                             AND    S.SQL_ID = ?
+                             AND    s.Snap_ID BETWEEN ? AND ?
+                             GROUP BY s.Plan_Hash_Value
+                            ", get_dbid, @sql_id, @min_snap_id, @max_snap_id]
+      render_partial
+  end
+
   def generate_baseline_creation
     sql_id          = params[:sql_id]
     min_snap_id     = params[:min_snap_id]

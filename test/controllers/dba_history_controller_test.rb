@@ -257,6 +257,16 @@ class DbaHistoryControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  test "generate_baseline_creation with xhr: true" do
+    post :generate_baseline_creation, :params => {:format=>:html, :sql_id=>@sga_sql_id, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :plan_hash_value=>1234567, :update_area=>:hugo }
+    assert_response :success
+  end
+
+  test "select_plan_hash_value_for_baseline with xhr: true" do
+    post :select_plan_hash_value_for_baseline, :params => {:format=>:html, :sql_id=>@sga_sql_id, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :update_area=>:hugo }
+    assert_response :success
+
+  end
 
 
 end
