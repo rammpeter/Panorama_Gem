@@ -82,6 +82,115 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_Log;
 
+  PROCEDURE Snap_Seg_Stat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_Seg_Stat (SNAP_ID, DBID, INSTANCE_NUMBER, TS#, OBJ#, DATAOBJ#,
+                                   LOGICAL_READS_TOTAL, LOGICAL_READS_DELTA,
+                                   BUFFER_BUSY_WAITS_TOTAL, BUFFER_BUSY_WAITS_DELTA,
+                                   DB_BLOCK_CHANGES_TOTAL, DB_BLOCK_CHANGES_DELTA,
+                                   PHYSICAL_READS_TOTAL, PHYSICAL_READS_DELTA,
+                                   PHYSICAL_WRITES_TOTAL, PHYSICAL_WRITES_DELTA,
+                                   PHYSICAL_READS_DIRECT_TOTAL, PHYSICAL_READS_DIRECT_DELTA,
+                                   PHYSICAL_WRITES_DIRECT_TOTAL, PHYSICAL_WRITES_DIRECT_DELTA,
+                                   ITL_WAITS_TOTAL, ITL_WAITS_DELTA,
+                                   ROW_LOCK_WAITS_TOTAL, ROW_LOCK_WAITS_DELTA,
+                                   GC_CR_BLOCKS_SERVED_TOTAL, GC_CR_BLOCKS_SERVED_DELTA,
+                                   GC_CU_BLOCKS_SERVED_TOTAL, GC_CU_BLOCKS_SERVED_DELTA,
+                                   GC_BUFFER_BUSY_TOTAL, GC_BUFFER_BUSY_DELTA,
+                                   GC_CR_BLOCKS_RECEIVED_TOTAL, GC_CR_BLOCKS_RECEIVED_DELTA,
+                                   GC_CU_BLOCKS_RECEIVED_TOTAL, GC_CU_BLOCKS_RECEIVED_DELTA,
+                                   SPACE_USED_TOTAL, SPACE_USED_DELTA,
+                                   SPACE_ALLOCATED_TOTAL, SPACE_ALLOCATED_DELTA,
+                                   TABLE_SCANS_TOTAL, TABLE_SCANS_DELTA,
+                                   CHAIN_ROW_EXCESS_TOTAL, CHAIN_ROW_EXCESS_DELTA,
+                                   PHYSICAL_READ_REQUESTS_TOTAL, PHYSICAL_READ_REQUESTS_DELTA,
+                                   PHYSICAL_WRITE_REQUESTS_TOTAL, PHYSICAL_WRITE_REQUESTS_DELTA,
+                                   OPTIMIZED_PHYSICAL_READS_TOTAL, OPTIMIZED_PHYSICAL_READS_DELTA,
+                                   CON_DBID, CON_ID
+    )
+    SELECT *
+    FROM   (
+            SELECT p_SNAP_ID, p_DBID, p_INSTANCE, vs.TS#, vs.OBJ#, vs.DATAOBJ#,
+                   vs.LOGICAL_READS_TOTAL,            vs.LOGICAL_READS_TOTAL            - NVL(s.LOGICAL_READS_TOTAL,            vs.LOGICAL_READS_TOTAL)             LOGICAL_READS_DELTA,
+                   vs.BUFFER_BUSY_WAITS_TOTAL,        vs.BUFFER_BUSY_WAITS_TOTAL        - NVL(s.BUFFER_BUSY_WAITS_TOTAL,        vs.BUFFER_BUSY_WAITS_TOTAL)         BUFFER_BUSY_WAITS_DELTA,
+                   vs.DB_BLOCK_CHANGES_TOTAL,         vs.DB_BLOCK_CHANGES_TOTAL         - NVL(s.DB_BLOCK_CHANGES_TOTAL,         vs.DB_BLOCK_CHANGES_TOTAL)          DB_BLOCK_CHANGES_DELTA,
+                   vs.PHYSICAL_READS_TOTAL,           vs.PHYSICAL_READS_TOTAL           - NVL(s.PHYSICAL_READS_TOTAL,           vs.PHYSICAL_READS_TOTAL)            PHYSICAL_READS_DELTA,
+                   vs.PHYSICAL_WRITES_TOTAL,          vs.PHYSICAL_WRITES_TOTAL          - NVL(s.PHYSICAL_WRITES_TOTAL,          vs.PHYSICAL_WRITES_TOTAL)           PHYSICAL_WRITES_DELTA,
+                   vs.PHYSICAL_READS_DIRECT_TOTAL,    vs.PHYSICAL_READS_DIRECT_TOTAL    - NVL(s.PHYSICAL_READS_DIRECT_TOTAL,    vs.PHYSICAL_READS_DIRECT_TOTAL)     PHYSICAL_READS_DIRECT_DELTA,
+                   vs.PHYSICAL_WRITES_DIRECT_TOTAL,   vs.PHYSICAL_WRITES_DIRECT_TOTAL   - NVL(s.PHYSICAL_WRITES_DIRECT_TOTAL,   vs.PHYSICAL_WRITES_DIRECT_TOTAL)    PHYSICAL_WRITES_DIRECT_DELTA,
+                   vs.ITL_WAITS_TOTAL,                vs.ITL_WAITS_TOTAL                - NVL(s.ITL_WAITS_TOTAL,                vs.ITL_WAITS_TOTAL)                 ITL_WAITS_DELTA,
+                   vs.ROW_LOCK_WAITS_TOTAL,           vs.ROW_LOCK_WAITS_TOTAL           - NVL(s.ROW_LOCK_WAITS_TOTAL,           vs.ROW_LOCK_WAITS_TOTAL)            ROW_LOCK_WAITS_DELTA,
+                   vs.GC_CR_BLOCKS_SERVED_TOTAL,      vs.GC_CR_BLOCKS_SERVED_TOTAL      - NVL(s.GC_CR_BLOCKS_SERVED_TOTAL,      vs.GC_CR_BLOCKS_SERVED_TOTAL)       GC_CR_BLOCKS_SERVED_DELTA,
+                   vs.GC_CU_BLOCKS_SERVED_TOTAL,      vs.GC_CU_BLOCKS_SERVED_TOTAL      - NVL(s.GC_CU_BLOCKS_SERVED_TOTAL,      vs.GC_CU_BLOCKS_SERVED_TOTAL)       GC_CU_BLOCKS_SERVED_DELTA,
+                   vs.GC_BUFFER_BUSY_TOTAL,           vs.GC_BUFFER_BUSY_TOTAL           - NVL(s.GC_BUFFER_BUSY_TOTAL,           vs.GC_BUFFER_BUSY_TOTAL)            GC_BUFFER_BUSY_DELTA,
+                   vs.GC_CR_BLOCKS_RECEIVED_TOTAL,    vs.GC_CR_BLOCKS_RECEIVED_TOTAL    - NVL(s.GC_CR_BLOCKS_RECEIVED_TOTAL,    vs.GC_CR_BLOCKS_RECEIVED_TOTAL)     GC_CR_BLOCKS_RECEIVED_DELTA,
+                   vs.GC_CU_BLOCKS_RECEIVED_TOTAL,    vs.GC_CU_BLOCKS_RECEIVED_TOTAL    - NVL(s.GC_CU_BLOCKS_RECEIVED_TOTAL,    vs.GC_CU_BLOCKS_RECEIVED_TOTAL)     GC_CU_BLOCKS_RECEIVED_DELTA,
+                   vs.SPACE_USED_TOTAL,               vs.SPACE_USED_TOTAL               - NVL(s.SPACE_USED_TOTAL,               vs.SPACE_USED_TOTAL)                SPACE_USED_DELTA,
+                   vs.SPACE_ALLOCATED_TOTAL,          vs.SPACE_ALLOCATED_TOTAL          - NVL(s.SPACE_ALLOCATED_TOTAL,          vs.SPACE_ALLOCATED_TOTAL)           SPACE_ALLOCATED_DELTA,
+                   vs.TABLE_SCANS_TOTAL,              vs.TABLE_SCANS_TOTAL              - NVL(s.TABLE_SCANS_TOTAL,              vs.TABLE_SCANS_TOTAL)               TABLE_SCANS_DELTA,
+                   vs.CHAIN_ROW_EXCESS_TOTAL,         vs.CHAIN_ROW_EXCESS_TOTAL         - NVL(s.CHAIN_ROW_EXCESS_TOTAL,         vs.CHAIN_ROW_EXCESS_TOTAL)          CHAIN_ROW_EXCESS_DELTA,
+                   vs.PHYSICAL_READ_REQUESTS_TOTAL,   vs.PHYSICAL_READ_REQUESTS_TOTAL   - NVL(s.PHYSICAL_READ_REQUESTS_TOTAL,   vs.PHYSICAL_READ_REQUESTS_TOTAL)    PHYSICAL_READ_REQUESTS_DELTA,
+                   vs.PHYSICAL_WRITE_REQUESTS_TOTAL,  vs.PHYSICAL_WRITE_REQUESTS_TOTAL  - NVL(s.PHYSICAL_WRITE_REQUESTS_TOTAL,  vs.PHYSICAL_WRITE_REQUESTS_TOTAL)   PHYSICAL_WRITE_REQUESTS_DELTA,
+                   vs.OPTIMIZED_PHYSICAL_READS_TOTAL, vs.OPTIMIZED_PHYSICAL_READS_TOTAL - NVL(s.OPTIMIZED_PHYSICAL_READS_TOTAL, vs.OPTIMIZED_PHYSICAL_READS_TOTAL)  OPTIMIZED_PHYSICAL_READS_DELTA,
+                   p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+            FROM   (SELECT /*+ NO_MERGE */ TS#, Obj#, DataObj#,
+                           SUM(CASE WHEN Statistic_Name = 'logical reads'               THEN Value END) LOGICAL_READS_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'buffer busy waits'           THEN Value END) BUFFER_BUSY_WAITS_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'db_block_changes'            THEN Value END) DB_BLOCK_CHANGES_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'physical reads'              THEN Value END) PHYSICAL_READS_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'physical writes'             THEN Value END) PHYSICAL_WRITES_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'physical reads direct'       THEN Value END) PHYSICAL_READS_DIRECT_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'physical writes direct'      THEN Value END) PHYSICAL_WRITES_DIRECT_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'ITL waits'                   THEN Value END) ITL_WAITS_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'row lock waits'              THEN Value END) ROW_LOCK_WAITS_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'gc cr blocks served'         THEN Value END) GC_CR_BLOCKS_SERVED_TOTAL,    -- not found in v$Segment_stastistics
+                           SUM(CASE WHEN Statistic_Name = 'gc current blocks served'    THEN Value END) GC_CU_BLOCKS_SERVED_TOTAL,    -- not found in v$Segment_stastistics
+                           SUM(CASE WHEN Statistic_Name = 'gc buffer busy'              THEN Value END) GC_BUFFER_BUSY_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'gc cr blocks received'       THEN Value END) GC_CR_BLOCKS_RECEIVED_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'gc current blocks received'  THEN Value END) GC_CU_BLOCKS_RECEIVED_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'space used'                  THEN Value END) SPACE_USED_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'space allocated'             THEN Value END) SPACE_ALLOCATED_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'segment scans'               THEN Value END) TABLE_SCANS_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'chain row excess'            THEN Value END) CHAIN_ROW_EXCESS_TOTAL,       -- not found in v$Segment_stastistics
+                           SUM(CASE WHEN Statistic_Name = 'physical read requests'      THEN Value END) PHYSICAL_READ_REQUESTS_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'physical write requests'     THEN Value END) PHYSICAL_WRITE_REQUESTS_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'optimized physical reads'    THEN Value END) OPTIMIZED_PHYSICAL_READS_TOTAL
+                    FROM   v$SegStat
+                    GROUP BY TS#, Obj#, DataObj#
+                   ) vs
+            -- Last Sanpshot for each object
+            LEFT OUTER JOIN  (SELECT MAX(Snap_ID) Max_Snap_ID, DBID, INSTANCE_NUMBER, TS#, OBJ#, DATAOBJ#, CON_DBID
+                              FROM   Panorama_Seg_Stat
+                              GROUP BY DBID, INSTANCE_NUMBER, TS#, OBJ#, DATAOBJ#, CON_DBID
+                             ) ms ON ms.DBID=p_DBID AND ms.Instance_Number=p_Instance AND ms.TS#=vs.TS# AND ms.Obj#=vs.Obj# AND ms.DataObj#=vs.DataObj# AND ms.Con_DBID=p_Con_DBID
+            -- Complete record of last snapshot for each object
+            LEFT OUTER JOIN Panorama_Seg_Stat s ON  s.DBID=p_DBID AND s.Snap_ID=ms.Max_Snap_ID AND s.Instance_Number=p_Instance AND s.TS#=vs.TS# AND s.DataObj#=vs.DataObj# AND s.Obj#=vs.Obj# AND s.Con_DBID=p_Con_DBID
+           )
+    WHERE      LOGICAL_READS_DELTA            > 0
+            OR BUFFER_BUSY_WAITS_DELTA        > 0
+            OR DB_BLOCK_CHANGES_DELTA         > 0
+            OR PHYSICAL_READS_DELTA           > 0
+            OR PHYSICAL_WRITES_DELTA          > 0
+            OR PHYSICAL_READS_DIRECT_DELTA    > 0
+            OR PHYSICAL_WRITES_DIRECT_DELTA   > 0
+            OR ITL_WAITS_DELTA                > 0
+            OR ROW_LOCK_WAITS_DELTA           > 0
+            OR GC_CR_BLOCKS_SERVED_DELTA      > 0
+            OR GC_CU_BLOCKS_SERVED_DELTA      > 0
+            OR GC_BUFFER_BUSY_DELTA           > 0
+            OR GC_CR_BLOCKS_RECEIVED_DELTA    > 0
+            OR GC_CU_BLOCKS_RECEIVED_DELTA    > 0
+            OR SPACE_USED_DELTA               > 0
+            OR SPACE_ALLOCATED_DELTA          > 0
+            OR TABLE_SCANS_DELTA              > 0
+            OR CHAIN_ROW_EXCESS_DELTA         > 0
+            OR PHYSICAL_READ_REQUESTS_DELTA   > 0
+            OR PHYSICAL_WRITE_REQUESTS_DELTA  > 0
+            OR OPTIMIZED_PHYSICAL_READS_DELTA > 0
+    ;
+  END Snap_Seg_Stat;
+
+
   PROCEDURE Snap_Service_Name(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO Panorama_Service_Name (DBID, Service_Name_Hash, Service_Name, Con_DBID, Con_ID
@@ -302,6 +411,7 @@ END Panorama_Sampler_Snapshot;
     Snap_DB_cache_Advice      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Service_Name         (p_DBID,      p_Con_DBID);
+    Snap_Seg_Stat             (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_SQLBind              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_SQL_Plan             (p_DBID,      p_Con_DBID);
     Snap_SQLStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID,    p_Begin_Interval_Time);
