@@ -8,8 +8,8 @@ class PanoramaSamplerSampling
     PanoramaSamplerSampling.new(sampler_config).do_sampling_internal
   end
 
-  def self.do_housekeeping(sampler_config)
-    PanoramaSamplerSampling.new(sampler_config).do_housekeeping_internal
+  def self.do_housekeeping(sampler_config, shrink_space)
+    PanoramaSamplerSampling.new(sampler_config).do_housekeeping_internal(shrink_space)
   end
 
   def self.run_ash_daemon(sampler_config, snapshot_time)
@@ -61,7 +61,7 @@ class PanoramaSamplerSampling
                                     begin_interval_time, @sampler_config[:snapshot_cycle], @sampler_config[:snapshot_retention]]
   end
 
-  def do_housekeeping_internal
+  def do_housekeeping_internal(shrink_space)
     snapshots_to_delete = PanoramaConnection.sql_select_all ["SELECT Snap_ID FROM Panorama_Snapshot WHERE DBID = ? AND Begin_Interval_Time < SYSDATE - ?", PanoramaConnection.dbid, @sampler_config[:snapshot_retention]]
 
     # Delete from tables with columns DBID and SNAP_ID
@@ -69,6 +69,7 @@ class PanoramaSamplerSampling
       PanoramaSamplerStructureCheck.tables.each do |table|
         if PanoramaSamplerStructureCheck.has_column?(table[:table_name], 'Snap_ID')
           execute_until_nomore ["DELETE FROM #{@sampler_config[:owner]}.#{table[:table_name]} WHERE DBID = ? AND Snap_ID <= ?", PanoramaConnection.dbid, snapshot.snap_id]
+          exec_shrink_space(table[:table_name]) if shrink_space
         end
       end
     end
@@ -81,6 +82,7 @@ class PanoramaSamplerSampling
                                                  AND    s.Con_DBID  = ?
                                                 )
                           ", PanoramaConnection.dbid, con_dbid, PanoramaConnection.dbid, con_dbid]
+    exec_shrink_space('Panorama_SQL_Plan') if shrink_space
 
     execute_until_nomore ["DELETE FROM Panorama_SQLText t
                            WHERE  DBID      = ?
@@ -90,6 +92,7 @@ class PanoramaSamplerSampling
                                                  AND    s.Con_DBID  = ?
                                                 )
                           ", PanoramaConnection.dbid, con_dbid, PanoramaConnection.dbid, con_dbid]
+    exec_shrink_space('Panorama_SQLText') if shrink_space
   end
 
   # Run daemon, daeomon returns 1 second before next snapshot timestamp
@@ -129,5 +132,10 @@ class PanoramaSamplerSampling
       result_count = PanoramaConnection.sql_execute params
       break if result_count < max_rows
     end
+  end
+
+  def exec_shrink_space(table_name)
+    PanoramaConnection.sql_execute("ALTER TABLE #{@sampler_config[:owner]}.#{table_name} ENABLE ROW MOVEMENT")
+    PanoramaConnection.sql_execute("ALTER TABLE #{@sampler_config[:owner]}.#{table_name} SHRINK SPACE CASCADE")
   end
 end
