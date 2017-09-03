@@ -20,6 +20,6 @@ column_options =
 column_options << {:caption=>"Reason",  :data=>proc{|rec| j rec.reasons},       :title=>t(:dba_sga_list_sql_shared_cursor_reason_hint, :default=>'One ore more obstacles for not using shared cursor')} if get_db_version > "11"
 
 %>
-<%= gen_slickgrid(@reasons, column_options) %>
+<%= gen_slickgrid(@reasons, column_options, :max_height => 450) %>
 
 <div id="<%= @update_area %>"></div>
