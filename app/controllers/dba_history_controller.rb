@@ -1170,10 +1170,10 @@ FROM (
     binds.concat [@time_selection_start, @time_selection_end]
 
     @statistics = sql_select_iterator ["
-      SELECT /* Panorama-Tool Ramm */ name.Stat_Name, hist.Instance_Number, hist.Stat_ID, hist.Value, Min_Snap_ID, Max_Snap_ID, sn.Class Class_ID
+      SELECT /* Panorama-Tool Ramm */ name.Stat_Name, hist.Instance_Number, hist.Stat_ID, hist.Value, Min_Snap_ID, Max_Snap_ID, sn.Class Class_ID, hist.Snapshots
       FROM   (
               SELECT /*+ NO_MERGE*/ DBID, Instance_Number, Stat_ID,
-                     SUM(Value) Value, MIN(Min_Snap_ID) Min_Snap_ID, MAX(Max_Snap_ID) Max_Snap_ID
+                     SUM(Value) Value, MIN(Min_Snap_ID) Min_Snap_ID, MAX(Max_Snap_ID) Max_Snap_ID, COUNT(DISTINCT hist.Snap_ID) Snapshots
               FROM   (
                       SELECT /*+ NO_MERGE*/ st.DBID, st.Instance_Number, st.Snap_ID, st.Stat_Id, ss.Min_Snap_ID, ss.Max_Snap_ID,
                              Value - LAG(Value, 1, Value) OVER (PARTITION BY st.Instance_Number, st.Stat_ID ORDER BY Snap_ID) Value
@@ -1209,8 +1209,7 @@ FROM (
     @max_snap_id = params[:max_snap_id].to_i
 
     @snaps = sql_select_iterator ["
-      SELECT /* Panorama-Tool Ramm */ snap.Begin_Interval_Time,
-             Value
+      SELECT /* Panorama-Tool Ramm */ snap.Begin_Interval_Time, snap.End_Interval_Time, Value
       FROM   (
               SELECT Snap_ID,
                      Value - LAG(Value, 1, Value) OVER (PARTITION BY Stat_ID ORDER BY Snap_ID) Value
@@ -1229,13 +1228,14 @@ FROM (
 
     column_options =
     [
-      {:caption=>"Intervall",   :data=>proc{|rec| localeDateTime(rec.begin_interval_time)}, :title=>"Beginn des Zeitintervalls", :plot_master_time=>true },
-      {:caption=>"Value",       :data=>proc{|rec| formattedNumber(rec.value)},              :title=>"Wert der Statistik als Differenz zwischen Beginn und Ende des Sample-Zeitraumes", :align=>"right"},
+      {:caption=>"Interval start",  :data=>proc{|rec| localeDateTime(rec.begin_interval_time)}, :title=>"Begin of interval", :plot_master_time=>true },
+      {:caption=>"Interval end",    :data=>proc{|rec| localeDateTime(rec.end_interval_time)},   :title=>"End of interval" },
+      {:caption=>"Value",           :data=>proc{|rec| formattedNumber(rec.value)},              :title=>"Value of statistic between start and end of considered period", :align=>"right"},
     ]
 
     output = gen_slickgrid(@snaps, column_options,
                      {:plot_area_id => "list_system_statistics_historic_detail_plot_area",
-                      :caption      =>"System-Statistik #{@stat_name} Instance=#{@instance} von #{@time_selection_start} bis #{@time_selection_end}",
+                      :caption      =>"System statistic \"#{@stat_name}\" instance=#{@instance} from #{@time_selection_start} until #{@time_selection_end}",
                       :max_height   => 450
                      }
       )

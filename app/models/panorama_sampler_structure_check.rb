@@ -572,8 +572,11 @@ class PanoramaSamplerStructureCheck
       {
           table_name: 'Internal_StatName',
           columns: [
+              { column_name:  'DBID',                           column_type:   'NUMBER' },
               { column_name:  'STAT_ID',                        column_type:   'NUMBER',    not_null: true },
               { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 64 },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER' },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
           primary_key: ['STAT_ID'],
       },
@@ -686,8 +689,14 @@ ORDER BY Column_ID
                               "}
         },
         {
+            view_name: 'Panorama_Stat_Name',
+            view_select: proc{"SELECT s.DBID, s.STAT_ID, s.NAME Stat_Name, s.CON_DBID, s.CON_ID
+                               FROM   Internal_StatName s
+                              "}
+        },
+        {
             view_name: 'Panorama_SysStat',
-            view_select: proc{"SELECT s.SNAP_ID, s.DBID, s.INSTANCE_NUMBER, s.STAT_ID, n.NAME, s.VALUE, s.CON_DBID, s.CON_ID
+            view_select: proc{"SELECT s.SNAP_ID, s.DBID, s.INSTANCE_NUMBER, s.STAT_ID, n.NAME Stat_Name, s.VALUE, s.CON_DBID, s.CON_ID
                                FROM   Internal_SysStat s
                                LEFT OUTER JOIN Internal_StatName n ON n.Stat_ID = s.Stat_ID
                               "}

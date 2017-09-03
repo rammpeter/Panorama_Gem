@@ -3,6 +3,8 @@ class PanoramaSamplerJob < ApplicationJob
 
   queue_as :default
 
+  SECONDS_LATE_ALLOWED = 3                                                      # x seconds delay after job creation are accepted
+
   def perform(*args)
 
     snapshot_time = Time.now.round                                              # cut subseconds
@@ -15,7 +17,7 @@ class PanoramaSamplerJob < ApplicationJob
     next_snapshot_time = last_snapshot_time + min_snapshot_cycle * 60
     PanoramaSamplerJob.set(wait_until: next_snapshot_time).perform_later
 
-    if last_snapshot_time < snapshot_time-2                                     # Filter first Job execution at server startup, 2 seconds delay are allowed
+    if last_snapshot_time < snapshot_time-SECONDS_LATE_ALLOWED                  # Filter first Job execution at server startup, 2 seconds delay are allowed
       Rails.logger.info "#{snapshot_time}: Job suspended because not started at exact snapshot time #{last_snapshot_time}"
       return
     end
@@ -41,7 +43,7 @@ class PanoramaSamplerJob < ApplicationJob
     PanoramaSamplerConfig.get_cloned_config_array.each do |config|
       if config[:active] && (snapshot_time.min % config[:snapshot_cycle] == 0  ||  # exact startup time at full hour + x*snapshot_cycle
                              snapshot_time.min == 0 && snapshot_time.hour % config[:snapshot_cycle]/60 == 0)  # Full hour for snapshot cycle = n*hour
-        if  config[:last_snapshot_start].nil? || (config[:last_snapshot_start]+(config[:snapshot_cycle]).minutes <= snapshot_time+2)  # snapshot_cycle expired ?, 2 seconds delay are allowed
+        if  config[:last_snapshot_start].nil? || (config[:last_snapshot_start]+(config[:snapshot_cycle]).minutes <= snapshot_time+SECONDS_LATE_ALLOWED)  # snapshot_cycle expired ?, 2 seconds delay are allowed
           PanoramaSamplerConfig.modify_config_entry({id: config[:id], last_snapshot_start: snapshot_time})
           WorkerThread.create_snapshot(config, snapshot_time)
         else

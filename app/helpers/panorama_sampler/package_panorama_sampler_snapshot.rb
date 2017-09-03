@@ -356,10 +356,10 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_SQLText;
 
-  PROCEDURE Snap_StatName IS
+  PROCEDURE Snap_StatName(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Internal_StatName(STAT_ID, Name)
-    SELECT Stat_ID, Name
+    INSERT INTO Internal_StatName(DBID, STAT_ID, Name, Con_DBID, Con_ID)
+    SELECT p_DBID, Stat_ID, Name, p_Con_DBID, 0
     FROM   V$StatName n
     WHERE  n.Stat_ID NOT IN (SELECT Stat_ID FROM Internal_StatName)
     ;
@@ -415,7 +415,7 @@ END Panorama_Sampler_Snapshot;
     Snap_SQL_Plan             (p_DBID,      p_Con_DBID);
     Snap_SQLStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID,    p_Begin_Interval_Time);
     Snap_SQLText              (p_DBID,      p_Con_DBID);
-    Snap_StatName             ();
+    Snap_StatName             (p_DBID,      p_Con_DBID);
     Snap_SysStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_TopLevelCallName     (p_DBID,      p_Con_DBID);
     Snap_WR_Control           (p_DBID,      p_Snapshot_Cycle, p_Snapshot_Retention);
