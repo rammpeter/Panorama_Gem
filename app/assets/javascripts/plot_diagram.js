@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 // Zeichnen eines Diagrammes auf Basis des flot-Pugins
 // Peter Ramm, 25.10.2015
@@ -38,7 +38,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
     var legend_indexes          = {};           // Hash mit 'legend-name': index in Legende
     var legendXAxis             = null;         // erzeugt in initialize
     var previousToolTipPoint    = null;
-    var toolTipID               = canvas_id+"_ToolTip"
+    var toolTipID               = canvas_id+"_ToolTip";
     var plot                    = null;           //jQuery.plot(jQuery('#'+canvas_id), erzeugt in intialize()
 
     // Initialisierung des Objektes, ab jetzt ist this gültig
@@ -76,8 +76,6 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
             '<div id="'+canvas_id+'" class="slick-shadow" style="float:left; width:100%; height: '+canvas_height+'px; background-color: white; margin-bottom: 10px; "></div>'
         )
             .resize(function(){ resize_plot_diagrams();});     // Registrieren fuer Event
-        ;
-
         // Header-Bereich belegen
         jQuery('#'+head_id)
             .html('<div style="float:left; padding:3px;">'+caption+'</div><div align = "right"><input class="close_diagram_'+unique_id+'" type="button" title="Diagramm Schliessen" value="X"></div>')
@@ -119,7 +117,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
             options.yaxis.show==true ? locale_translate('diagram_y_axis_hide_hint') : locale_translate('diagram_y_axis_show_hint'),
             function(t){
                 plot_area.html(""); // Altes Diagramm entfernen
-                options.yaxis.show = !options.yaxis.show
+                options.yaxis.show = !options.yaxis.show;
                 plot_diagram(unique_id, plot_area_id, caption, data_array, options);
             }
         );
@@ -187,7 +185,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
 
 
         this.registerLegend();  // erstmaliger Aufruf, des weiteren neuer Aufruf nach Resize
-    }   // end initialize
+    };   // end initialize
 
 
     function pad2(number){          // Vornullen auffuellen für Datum etc.
@@ -250,7 +248,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
         // Zeitpunkt des Crosshairs in X-Axis anzeigen
         if (options.xaxes[0].mode == "time"){
             var time = new Date(pos.x);
-            legendXAxis.html(pad2(time.getUTCDate())+"."+pad2(time.getUTCMonth()+1)+"."+time.getUTCFullYear()+" "+pad2(time.getUTCHours())+":"+pad2(time.getUTCMinutes()));   // Anzeige des aktuellen wertes der X-Achse
+            legendXAxis.html(pad2(time.getUTCDate())+"."+pad2(time.getUTCMonth()+1)+"."+time.getUTCFullYear()+" "+pad2(time.getUTCHours())+":"+pad2(time.getUTCMinutes())+':'+pad2(time.getUTCSeconds()));   // Anzeige des aktuellen wertes der X-Achse
         } else {
             legendXAxis.html(pos.x);
         }
@@ -298,7 +296,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
 
             // Spalte zufügen für die Werte-Anzeige und für Schliesser
             legend_div.find("tr").each(function(index, elem){
-                var tr = jQuery(elem)
+                var tr = jQuery(elem);
                 var legend_name = jQuery(tr.children('td')[1]).html();
                 legend_indexes[legend_name] = index;                            // Position zum Name der Kurve in der Legende merken
                 tr.append("<td align='right' class='legend_value'></td>");
@@ -323,7 +321,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
 
 //        jQuery('#'+canvas_id+" .legend").draggable().css("left", -9).css("top", canvas_height*-1+9); // Legende verschiebbar gestalten, da dann mit position:relative gearbeitet wird, muss neu positioniert werden
         legend_div.draggable();
-    }
+    };
 
     this.delete_single_chart = function(legend_index){
 
@@ -348,7 +346,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
                 plot_diagram(unique_id, plot_area_id, caption, data_array, options);    // Neuzeichnen des Diagramm
             }
         }
-    }
+    };
 
 
     /**

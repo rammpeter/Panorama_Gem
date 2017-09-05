@@ -1399,13 +1399,19 @@ Solution: Execute as user 'SYS':
     else  # grouping
       trunc_tag = params[:verdichtung][:tag]
 
+      if trunc_tag == 'SS'
+        ts_expr = "CAST(Originating_Timestamp AS DATE)"   # trunc second
+      else
+        ts_expr = "TRUNC(Originating_Timestamp, '#{trunc_tag}')"
+      end
+
       @result =  sql_select_iterator ["\
-      SELECT TRUNC(Originating_Timestamp, '#{trunc_tag}') Originating_Timestamp, COUNT(*) Records
+      SELECT #{ts_expr} Originating_Timestamp, COUNT(*) Records
       FROM   V$DIAG_ALERT_EXT
       WHERE  Originating_Timestamp > TO_DATE(?, '#{sql_datetime_minute_mask}')
       AND    Originating_Timestamp < TO_DATE(?, '#{sql_datetime_minute_mask}')
       #{where_filter}
-      GROUP BY TRUNC(Originating_Timestamp, '#{trunc_tag}')
+      GROUP BY #{ts_expr}
       ORDER BY 1
    ", @time_selection_start, @time_selection_end].concat(where_values)
 

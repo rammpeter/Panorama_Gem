@@ -103,7 +103,7 @@ class DbaControllerTest < ActionController::TestCase
   end
 
   test "list_server_logs with xhr: true" do
-    ['MI', 'HH24', 'DD'].each do |tag|
+    ['SS', 'MI', 'HH24', 'DD'].each do |tag|
       ['all', 'tnslsnr', 'rdbms', 'asm'].each do |log_type|
         [:group, :detail].each do |button|
           [nil, 'hugo'].each do |incl_filter|
