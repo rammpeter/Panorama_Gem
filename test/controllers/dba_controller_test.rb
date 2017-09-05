@@ -102,4 +102,28 @@ class DbaControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  test "list_server_logs with xhr: true" do
+    ['MI', 'HH24', 'DD'].each do |tag|
+      ['all', 'tnslsnr', 'rdbms', 'asm'].each do |log_type|
+        [:group, :detail].each do |button|
+          [nil, 'hugo'].each do |incl_filter|
+            [nil, 'hugo'].each do |excl_filter|
+              post :list_server_logs, :params => {format:               :html,
+                                                  time_selection_start: @time_selection_start,
+                                                  time_selection_end:   @time_selection_end,
+                                                  log_type:             log_type,
+                                                  verdichtung:          {tag: tag},
+                                                  button                => 'hugo',
+                                                  incl_filter:          incl_filter,
+                                                  excl_filter:          excl_filter,
+                                                  :update_area          => :hugo
+              }
+              assert_response :success
+            end
+          end
+        end
+      end
+    end
+  end
+
 end

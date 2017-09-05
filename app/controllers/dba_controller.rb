@@ -1383,7 +1383,8 @@ Solution: Execute as user 'SYS':
       end
     end
 
-    @result =  sql_select_iterator ["\
+    if params[:detail]
+      @result =  sql_select_iterator ["\
       SELECT Inst_ID, Adr_Home, Originating_Timestamp, Component_ID,
              Message_Type, Message_Level,
              Process_ID, Message_Text, FileName
@@ -1394,7 +1395,22 @@ Solution: Execute as user 'SYS':
       ORDER BY Originating_Timestamp, Record_ID
    ", @time_selection_start, @time_selection_end].concat(where_values)
 
-    render_partial
+      render_partial :list_server_logs
+    else  # grouping
+      trunc_tag = params[:verdichtung][:tag]
+
+      @result =  sql_select_iterator ["\
+      SELECT TRUNC(Originating_Timestamp, '#{trunc_tag}') Originating_Timestamp, COUNT(*) Records
+      FROM   V$DIAG_ALERT_EXT
+      WHERE  Originating_Timestamp > TO_DATE(?, '#{sql_datetime_minute_mask}')
+      AND    Originating_Timestamp < TO_DATE(?, '#{sql_datetime_minute_mask}')
+      #{where_filter}
+      GROUP BY TRUNC(Originating_Timestamp, '#{trunc_tag}')
+      ORDER BY 1
+   ", @time_selection_start, @time_selection_end].concat(where_values)
+
+      render_partial :list_server_log_groups
+    end
   end
 
   def list_feature_usage

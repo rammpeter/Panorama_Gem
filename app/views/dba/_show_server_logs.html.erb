@@ -24,12 +24,14 @@
       </select>
     </div>
 
-    <div class="float_left" title="Show only records with matching hits at message text.\nDelimit several OR-combined inclusion expressions by '|'.">
+    <div class="float_left" title="Show only records with matching hits at message text.
+    Delimit several OR-combined inclusion expressions by '|'.">
       Incl. Filter
       <%= text_field_tag(:incl_filter, "", :size=>30) %>
     </div>
 
-    <div class="float_left" title="Show only records without matching hits at message text.\nDelimit several OR-combined exclusion expressions by '|'.">
+    <div class="float_left" title="Show only records without matching hits at message text.
+    Delimit several OR-combined exclusion expressions by '|'.">
       Excl. Filter
       <%= text_field_tag(:excl_filter, "", :size=>30) %>
     </div>
@@ -39,9 +41,23 @@
       <%= check_box_tag(:suppress_defaults, 1, false) %>
     </div>
 
-    <div class="float_left">
-      <%= submit_tag("Show", :title => 'Show content of server-side log in period') %>
+    <div class="float_left" style="border:1px solid gray; padding-left: 5px;">
+      <div class="float_left">
+        <%= submit_tag("Show single records", :title => 'Show single detail records of server-side log in period', name: :detail) %>
+      </div>
     </div>
+    <div class="float_left" style="border:1px solid gray; padding-left: 5px;">
+      <div class="float_left" title="Group values by time period">
+        Grouping
+        <%= select :verdichtung, :tag, [['Minute', 'MI'], [t(:hour, :default=>'Hour'), 'HH24'], [t(:day, :default=>'Day'), 'DD'] ], {:selected=>'MI'} %>
+      </div>
+      <div class="float_left">
+        <%= submit_tag("Show count per period", :title => "Show number of records per period", name: :group) %>
+      </div>
+    </div>
+
+
+
 <% end %>
 
 <div id="<%= @update_area %>" style="clear:both;">
