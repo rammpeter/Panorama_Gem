@@ -365,6 +365,19 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_StatName;
 
+  PROCEDURE Snap_System_Event(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_System_Event(SNAP_ID, DBID, INSTANCE_NUMBER, EVENT_ID, EVENT_NAME, WAIT_CLASS_ID, WAIT_CLASS,
+                                      TOTAL_WAITS, TOTAL_TIMEOUTS, TIME_WAITED_MICRO, TOTAL_WAITS_FG, TOTAL_TIMEOUTS_FG, TIME_WAITED_MICRO_FG,
+                                      CON_DBID, CON_ID
+                                     )
+    SELECT p_SNAP_ID, p_DBID, p_INSTANCE, EVENT_ID, EVENT, WAIT_CLASS_ID, WAIT_CLASS,
+           TOTAL_WAITS, TOTAL_TIMEOUTS, TIME_WAITED_MICRO, TOTAL_WAITS_FG, TOTAL_TIMEOUTS_FG, TIME_WAITED_MICRO_FG,
+           p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+    FROM   V$System_Event
+    ;
+  END Snap_System_Event;
+
   PROCEDURE Snap_SysStat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO Internal_SysStat(SNAP_ID, DBID, INSTANCE_NUMBER, STAT_ID, VALUE, CON_DBID, CON_ID)
@@ -416,6 +429,7 @@ END Panorama_Sampler_Snapshot;
     Snap_SQLStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID,    p_Begin_Interval_Time);
     Snap_SQLText              (p_DBID,      p_Con_DBID);
     Snap_StatName             (p_DBID,      p_Con_DBID);
+    Snap_System_Event         (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_SysStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_TopLevelCallName     (p_DBID,      p_Con_DBID);
     Snap_WR_Control           (p_DBID,      p_Snapshot_Cycle, p_Snapshot_Retention);

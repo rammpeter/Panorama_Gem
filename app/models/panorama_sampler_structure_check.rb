@@ -581,6 +581,26 @@ class PanoramaSamplerStructureCheck
           primary_key: ['STAT_ID'],
       },
       {
+          table_name: 'Panorama_System_Event',
+          columns: [
+              { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
+              { column_name:  'EVENT_ID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'EVENT_NAME',                     column_type:   'VARCHAR2',  not_null: true, precision: 64 },
+              { column_name:  'WAIT_CLASS_ID',                  column_type:   'NUMBER' },
+              { column_name:  'WAIT_CLASS',                     column_type:   'VARCHAR2',  precision: 64 },
+              { column_name:  'TOTAL_WAITS',                    column_type:   'NUMBER' },
+              { column_name:  'TOTAL_TIMEOUTS',                 column_type:   'NUMBER' },
+              { column_name:  'TIME_WAITED_MICRO',              column_type:   'NUMBER' },
+              { column_name:  'TOTAL_WAITS_FG',                 column_type:   'NUMBER' },
+              { column_name:  'TOTAL_TIMEOUTS_FG',              column_type:   'NUMBER' },
+              { column_name:  'TIME_WAITED_MICRO_FG',           column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
+          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'EVENT_ID', 'CON_DBID'],
+      },
+      {
           table_name: 'Internal_SysStat',
           columns: [
               { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },

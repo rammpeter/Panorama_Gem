@@ -975,23 +975,35 @@ FROM (
     end
     binds.concat [@time_selection_start, @time_selection_end]
     if params[:suppress_idle_waits]=='1'
-      additional_where2 << " WHERE name.Wait_Class != 'Idle'"
+      additional_where2 << " WHERE Wait_Class != 'Idle'"
     end
 
     @events = sql_select_iterator ["
-      SELECT /* Panorama-Tool Ramm */ hist.Instance_Number, name.Event_Name, name.Wait_Class, hist.Event_ID, hist.Waits, hist.Timeouts, hist.Time_Waited_Secs,
-             Min_snap_ID, Max_Snap_ID
+      SELECT /* Panorama-Tool Ramm */ *
       FROM   (
-              SELECT DBID, Instance_Number, Event_ID,
-                     SUM(Waits) Waits,
-                     SUM(Timeouts) Timeouts,
-                     SUM(Time_Waited_Micro)/1000000 Time_Waited_Secs,
+              SELECT DBID, Instance_Number, Event_ID, MIN(Event_Name) Event_Name, MIN(Wait_Class) Wait_Class,
+                     COUNT(*)                           Snapshots,
+                     SUM(Waits)                         Waits,
+                     SUM(Timeouts)                      Timeouts,
+                     SUM(Time_Waited_Micro)/1000000     Time_Waited_Secs,
+                     #{"\
+                     SUM(Waits_FG)                      Waits_FG,
+                     SUM(Timeouts_FG)                   Timeouts_FG,
+                     SUM(Time_Waited_Micro_FG)/1000000  Time_Waited_Secs_FG,
+                     " if get_db_version >= "11.1"}
                      MIN(Min_Snap_ID) Min_Snap_ID, MAX(Max_Snap_ID) Max_Snap_ID
               FROM   (
                       SELECT ev.DBID, ev.Instance_Number, ev.Snap_ID, ev.Event_Id, ss.Min_Snap_ID, ss.Max_Snap_ID,
-                             Total_Waits    - LAG(Total_Waits,    1, Total_Waits)     OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Waits,
-                             Total_Timeouts - LAG(Total_Timeouts, 1, Total_Timeouts)  OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Timeouts,
-                             Time_Waited_Micro - LAG(Time_Waited_Micro, 1, Time_Waited_Micro)  OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Time_Waited_Micro
+                             ev.Event_Name, ev.Wait_Class,
+                             Total_Waits        - LAG(Total_Waits,        1, Total_Waits)       OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Waits,
+                             Total_Timeouts     - LAG(Total_Timeouts,     1, Total_Timeouts)    OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Timeouts,
+                             Time_Waited_Micro  - LAG(Time_Waited_Micro,  1, Time_Waited_Micro) OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Time_Waited_Micro
+                             #{ "\
+                             ,Total_Waits_FG        - LAG(Total_Waits_FG,        1, Total_Waits_FG)       OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Waits_FG
+                             ,Total_Timeouts_FG     - LAG(Total_Timeouts_FG,     1, Total_Timeouts_FG)    OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Timeouts_FG
+                             ,Time_Waited_Micro_FG  - LAG(Time_Waited_Micro_FG,  1, Time_Waited_Micro_FG) OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Time_Waited_Micro_FG
+                             " if get_db_version >= "11.1"
+                             }
                       FROM   (SELECT DBID, Instance_Number, Min(Snap_ID) Min_Snap_ID, MAX(Snap_ID) Max_Snap_ID
                               FROM   DBA_Hist_Snapshot ss
                               WHERE  DBID = ? #{additional_where1}
@@ -1006,7 +1018,6 @@ FROM (
               AND    hist.Snap_ID >= hist.Min_Snap_ID  /* Vorgaenger des ersten Snap fuer LAG wieder ausblenden */
               GROUP BY DBID, Instance_Number, Event_ID
              ) hist
-      JOIN   DBA_Hist_Event_Name name ON name.DBID=hist.DBID AND Name.Event_ID = hist.Event_ID
       #{additional_where2}
       ORDER BY Time_waited_Secs DESC"].concat(binds)
 
@@ -1028,11 +1039,21 @@ FROM (
              Waits,
              Timeouts,
              Time_Waited_Micro/1000000 Time_Waited_Secs
+             #{ "\
+             , Waits_FG
+             , Timeouts_FG
+             , Time_Waited_Micro_FG/1000000 Time_Waited_Secs_FG" if get_db_version >= "11.1"}
       FROM   (
               SELECT Snap_ID,
-                     Total_Waits    - LAG(Total_Waits,    1, Total_Waits)     OVER (PARTITION BY Event_ID ORDER BY Snap_ID) Waits,
-                     Total_Timeouts - LAG(Total_Timeouts, 1, Total_Timeouts)  OVER (PARTITION BY Event_ID ORDER BY Snap_ID) Timeouts,
-                     Time_Waited_Micro - LAG(Time_Waited_Micro, 1, Time_Waited_Micro)  OVER (PARTITION BY Event_ID ORDER BY Snap_ID) Time_Waited_Micro
+                     Total_Waits        - LAG(Total_Waits,        1, Total_Waits)       OVER (PARTITION BY Event_ID ORDER BY Snap_ID) Waits,
+                     Total_Timeouts     - LAG(Total_Timeouts,     1, Total_Timeouts)    OVER (PARTITION BY Event_ID ORDER BY Snap_ID) Timeouts,
+                     Time_Waited_Micro  - LAG(Time_Waited_Micro,  1, Time_Waited_Micro) OVER (PARTITION BY Event_ID ORDER BY Snap_ID) Time_Waited_Micro
+                     #{ "\
+                     ,Total_Waits_FG        - LAG(Total_Waits_FG,        1, Total_Waits_FG)       OVER (PARTITION BY Event_ID ORDER BY Snap_ID) Waits_FG
+                     ,Total_Timeouts_FG     - LAG(Total_Timeouts_FG,     1, Total_Timeouts_FG)    OVER (PARTITION BY Event_ID ORDER BY Snap_ID) Timeouts_FG
+                     ,Time_Waited_Micro_FG  - LAG(Time_Waited_Micro_FG,  1, Time_Waited_Micro_FG) OVER (PARTITION BY Event_ID ORDER BY Snap_ID) Time_Waited_Micro_FG
+                     " if get_db_version >= "11.1"
+                     }
               FROM   DBA_Hist_System_Event
               WHERE DBID = ?
               AND   Instance_Number = ?

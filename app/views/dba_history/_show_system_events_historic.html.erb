@@ -1,4 +1,4 @@
-<div class="page_caption">Historie der System-Events aus DBA_Hist_System_Event
+<div class="page_caption">History of System-Events from DBA_Hist_System_Event
   <a target="_blank" href="https://docs.oracle.com/cloud/latest/db121/REFRN/waitevents003.htm">(Oracle-Doku)</a></div>
 
 <%= ajax_form(:controller => :dba_history, :action => :list_system_events_historic, :update_area => :list_system_events_historic_area) do %>
@@ -6,15 +6,15 @@
   <%= include_start_end_timepicker %>
 
   <div class="float_left">
-    Underdrücken Idle-Waits
-    <%= check_box_tag(:suppress_idle_waits, 1, true, :title=>"Wait-Class Idle unterdrücken") %>
+    Suppress Idle-Waits
+    <%= check_box_tag(:suppress_idle_waits, 1, true, :title=>"Suppress wait-class 'Idle' in result") %>
   </div>
   <div class="float_left">
     RAC-Instance
     <%= text_field_tag(:instance, read_from_client_info_store(:instance), :size=>3, :title => "RAC-Instance") %>
   </div>
   <div class="float_left">
-    <%= submit_tag("System-Events anzeigen", :title => "System-Events anzeigen") %>
+    <%= submit_tag("Show System-Events", :title => "Show System-Events") %>
   </div>
 <% end %>
 <div id="list_system_events_historic_area" style="float:left; width:100%;">
