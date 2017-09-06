@@ -581,6 +581,25 @@ class PanoramaSamplerStructureCheck
           primary_key: ['STAT_ID'],
       },
       {
+          table_name: 'Panorama_Sysmetric_History',
+          columns: [
+              { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
+              { column_name:  'BEGIN_TIME',                     column_type:   'DATE',      not_null: true },
+              { column_name:  'END_TIME',                       column_type:   'DATE',      not_null: true },
+              { column_name:  'INTSIZE',                        column_type:   'NUMBER',    not_null: true },
+              { column_name:  'GROUP_ID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'METRIC_ID',                      column_type:   'NUMBER',    not_null: true },
+              { column_name:  'METRIC_NAME',                    column_type:   'VARCHAR2',  not_null: true, precision: 64 },
+              { column_name:  'VALUE',                          column_type:   'NUMBER',    not_null: true },
+              { column_name:  'METRIC_UNIT',                    column_type:   'VARCHAR2',  not_null: true, precision: 64 },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },
+          ],
+          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'GROUP_ID', 'METRIC_ID', 'BEGIN_TIME', 'CON_DBID'],
+      },
+      {
           table_name: 'Panorama_System_Event',
           columns: [
               { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
