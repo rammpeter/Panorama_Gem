@@ -72,6 +72,17 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_DB_cache_Advice;
 
+  PROCEDURE Snap_Latch(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_Latch (SNAP_ID, DBID, INSTANCE_NUMBER, LATCH_HASH, LATCH_NAME, LEVEL#, GETS, MISSES, SLEEPS, IMMEDIATE_GETS, IMMEDIATE_MISSES,
+                                SPIN_GETS, SLEEP1, SLEEP2, SLEEP3, SLEEP4, WAIT_TIME, CON_DBID, CON_ID
+    )
+    SELECT p_SNAP_ID, p_DBID, p_INSTANCE, HASH, NAME, LEVEL#, GETS, MISSES, SLEEPS, IMMEDIATE_GETS, IMMEDIATE_MISSES,
+           SPIN_GETS, SLEEP1, SLEEP2, SLEEP3, SLEEP4, WAIT_TIME, p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+    FROM   v$Latch
+    ;
+  END Snap_Latch;
+
   PROCEDURE Snap_Log(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO Panorama_Log (Snap_ID, DBID, Instance_Number, Group#, Thread#, Sequence#, Bytes, Members, Archived, Status, First_Change#, First_Time,
@@ -442,6 +453,7 @@ END Panorama_Sampler_Snapshot;
   BEGIN
     Move_ASH_To_Snapshot_Table(p_Snap_ID,   p_DBID,     p_Con_DBID);
     Snap_DB_cache_Advice      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_Latch                (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Service_Name         (p_DBID,      p_Con_DBID);
     Snap_Seg_Stat             (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
