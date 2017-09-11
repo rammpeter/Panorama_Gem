@@ -122,29 +122,27 @@ class WorkerThread
     # End activities after finishing snapshot
     PanoramaSamplerConfig.modify_config_entry({id: @sampler_config[:id], last_snapshot_end: Time.now})
     Rails.logger.info "#{Time.now}: Finished creating new snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
-    @@active_snashots.delete(@sampler_config[:id])                              # Remove semaphore
-    PanoramaConnection.release_connection                                       # Free DB connection in Pool
-    PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
   rescue Exception => e
     begin
       Rails.logger.error("Error #{e.message} during WorkerThread.create_snapshot_internal for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]})")
       log_exception_backtrace(e, 30) if ENV['RAILS_ENV'] != 'test'
       PanoramaSamplerSampling.do_housekeeping(@sampler_config, true)            # Do housekeeping also in case of exception to clear full tablespace quota etc. + shrink space
-
-      @@active_snashots.delete(@sampler_config[:id])                            # Remove semaphore
       PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Error #{e.message} during WorkerThread.create_snapshot_internal")
-      PanoramaConnection.release_connection                                     # Free DB connection in Pool
-      PanoramaConnection.reset_thread_local_attributes                          # Ensure fresh thread attributes if thread is reused from pool
       raise e
     rescue Exception => x
       Rails.logger.error "WorkerThread.create_snapshot_internal: Exception #{x.message} in exception handler"
       log_exception_backtrace(x, 40)
-      @@active_snashots.delete(@sampler_config[:id])                            # Remove semaphore
       PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Error #{e.message} during WorkerThread.create_snapshot_internal")
-      PanoramaConnection.release_connection                                     # Free DB connection in Pool
-      PanoramaConnection.reset_thread_local_attributes                          # Ensure fresh thread attributes if thread is reused from pool
       raise x
     end
+  rescue Object => e
+    Rails.logger.error("Exception #{e.class} during WorkerThread.create_snapshot_internal for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]})")
+    PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Exception #{e.class} during WorkerThread.create_snapshot_internal")
+    raise e
+  ensure
+    @@active_snashots.delete(@sampler_config[:id])                              # Remove semaphore
+    PanoramaConnection.release_connection                                       # Free DB connection in Pool
+    PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
   end
 
   @@active_ash_daemons = {}
@@ -170,23 +168,25 @@ class WorkerThread
 
     # End activities after finishing snapshot
     Rails.logger.info "#{Time.now}: ASH daemon terminated for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
-    @@active_ash_daemons.delete(@sampler_config[:id])                           # Remove semaphore
-    PanoramaConnection.release_connection                                       # Free DB connection in Pool
-    PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
   rescue Exception => e
     begin
-      @@active_ash_daemons.delete(@sampler_config[:id])                              # Remove semaphore
       Rails.logger.error("Error #{e.message} during WorkerThread.create_ash_sampler_daemon for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]})")
       log_exception_backtrace(e, 20) if ENV['RAILS_ENV'] != 'test'
       PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Error #{e.message} during WorkerThread.create_ash_sampler_daemon")
-      PanoramaConnection.release_connection                                       # Free DB connection in Pool
-      PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
       raise e
     rescue Exception => x
       Rails.logger.error "WorkerThread.create_ash_sampler_daemon: Exception #{x.message} in exception handler"
       log_exception_backtrace(x, 40)
       raise x
     end
+  rescue Object => e
+    Rails.logger.error("Exception #{e.class} during WorkerThread.create_ash_sampler_daemon for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]})")
+    PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Exception #{e.class} during WorkerThread.create_ash_sampler_daemon")
+    raise e
+  ensure
+    @@active_ash_daemons.delete(@sampler_config[:id])                           # Remove semaphore
+    PanoramaConnection.release_connection                                       # Free DB connection in Pool
+    PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
   end
 
 
