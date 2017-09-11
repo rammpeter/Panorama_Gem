@@ -683,12 +683,12 @@ class DbaSgaController < ApplicationController
     @sums.each do |s|
       s['parameter'] =
           case s.pool
-            when 'buffer_cache' then "db_block_buffers = #{ sql_select_one(["SELECT Value FROM gv$Parameter WHERE Inst_ID = ? AND Name = ?", s.inst_id, 'db_block_buffers'])}, db_cache_size = #{sql_select_one(["SELECT Value FROM gv$Parameter WHERE Inst_ID = ? AND Name = ?", s.inst_id, 'db_cache_size'])}"
-            when 'java pool'    then "java_pool_size = #{   sql_select_one(["SELECT Value FROM gv$Parameter WHERE Inst_ID = ? AND Name = ?", s.inst_id, 'java_pool_size'])}"
-            when 'large pool'   then "large_pool_size = #{  sql_select_one(["SELECT Value FROM gv$Parameter WHERE Inst_ID = ? AND Name = ?", s.inst_id, 'large_pool_size'])}"
-            when 'log_buffer'   then "log_buffer = #{       sql_select_one(["SELECT Value FROM gv$Parameter WHERE Inst_ID = ? AND Name = ?", s.inst_id, 'log_buffer'])}"
-            when 'shared pool'  then "shared_pool_size = #{ sql_select_one(["SELECT Value FROM gv$Parameter WHERE Inst_ID = ? AND Name = ?", s.inst_id, 'shared_pool_size'])}"
-            when 'streams pool' then "streams_pool_size = #{sql_select_one(["SELECT Value FROM gv$Parameter WHERE Inst_ID = ? AND Name = ?", s.inst_id, 'streams_pool_size'])}"
+            when 'buffer_cache' then "db_block_buffers = #{ fn(sql_select_one(["SELECT Value FROM gv$Parameter WHERE Inst_ID = ? AND Name = ?", s.inst_id, 'db_block_buffers']))}, db_cache_size = #{fn(sql_select_one(["SELECT Value FROM gv$Parameter WHERE Inst_ID = ? AND Name = ?", s.inst_id, 'db_cache_size']))}"
+            when 'java pool'    then "java_pool_size = #{   fn(sql_select_one(["SELECT Value FROM gv$Parameter WHERE Inst_ID = ? AND Name = ?", s.inst_id, 'java_pool_size']))}"
+            when 'large pool'   then "large_pool_size = #{  fn(sql_select_one(["SELECT Value FROM gv$Parameter WHERE Inst_ID = ? AND Name = ?", s.inst_id, 'large_pool_size']))}"
+            when 'log_buffer'   then "log_buffer = #{       fn(sql_select_one(["SELECT Value FROM gv$Parameter WHERE Inst_ID = ? AND Name = ?", s.inst_id, 'log_buffer']))}"
+            when 'shared pool'  then "shared_pool_size = #{ fn(sql_select_one(["SELECT Value FROM gv$Parameter WHERE Inst_ID = ? AND Name = ?", s.inst_id, 'shared_pool_size']))}"
+            when 'streams pool' then "streams_pool_size = #{fn(sql_select_one(["SELECT Value FROM gv$Parameter WHERE Inst_ID = ? AND Name = ?", s.inst_id, 'streams_pool_size']))}"
           end
 
     end
