@@ -3,8 +3,6 @@
 <% @modus = "GV$SQLArea" # Ab jetzt Summen-Info anzeigen%>
 <%= render :partial=>"list_sql_sga_stat" %>
 
-<%= render :partial=>"dba_sga/list_sql_profiles" %>
-
 <% if @sql_child_info.plan_count == 1 %>
     <div id="<%= "#{@update_area}_execution_plan" %>"></div>
     <script type="text/javascript">

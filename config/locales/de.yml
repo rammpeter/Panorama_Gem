@@ -242,6 +242,9 @@
   dba_history_list_sql_detail_historic_create_baseline_caption:       Generiere SQL-Baseline
   dba_history_list_sql_detail_historic_create_baseline_hint: |-
     Generiere ein Script, um diesen konkreten Ausführungsplan als SQL-Baseline festzuschreiben.
+  dba_history_list_sql_detail_historic_create_translation_caption:    Generiere SQL-Translation
+  dba_history_list_sql_detail_historic_create_translation_hint: |-
+    Generiere ein Script, um für dieses SQL ein Profil für das SQL-Translation-Framework zu erstellen.
   dba_history_list_sql_detail_historic_last_plan_hash_hint:           Hash-Value des letzten Explain-Plans
   dba_history_list_sql_detail_historic_module_link_hint:              Detaillierung des Modul-Namens
   dba_history_list_sql_detail_historic_module_action_hint:            Module und Action der Session, von der Statement zuletzt geparst wurde
@@ -1509,6 +1512,9 @@
   menu_sga_pga_sqlarea_historic_hint:                       Auswertung historische SQLs aus DBA_Hist_SQLStat
   menu_sga_pga_sql_plan_baselines_hint:                     Anzeige der SQL-Plan Baselines der Datenbank
   menu_sga_pga_sql_profiles_hint:                           Anzeige der gespeicherten SQL-Profiles der Datenbank
+  menu_sga_pga_sql_translations_hint: |-
+    Anzeige der gespeicherten SQL-Translations der Datenbank
+    erzeugt durch  SQL-Translation-Framework (DBMS_SQL_TRANSLATOR)
   menu_sga_pga_stored_outlines_hint:                        Anzeige der gespeicherten Stored Outlines der Datenbank
 
   menu_storage_datafile_caption:                            Datafile-Nutzung

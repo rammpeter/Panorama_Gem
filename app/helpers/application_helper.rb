@@ -226,6 +226,11 @@ module ApplicationHelper
     retval
   end
 
+  # Escape SQL-Syntax to be transform SQL-Statements for usage in EXECUTE IMMEDIATE etc. with ''
+  def sql_escape(org_value)
+    org_value.gsub(/'/, "''").gsub(/&/, "'||CHR(38)||'")
+  end
+
   # Ermitteln prozentualen Anteil
   def percentage(single, sum)
     single && sum && sum != 0 ? single.to_f/sum*100 : 0

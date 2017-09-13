@@ -1327,6 +1327,54 @@ class DbaSgaController < ApplicationController
     render_partial
   end
 
+  def show_sql_translations
+    @translated_sql_id = params[:translated_sql_id]                             # optional filter condition
+    @translated_sql_id = nil if @translated_sql_id == ''
+
+    where_string = ''
+    where_values = []
+
+    if @translated_sql_id
+      if 0 < sql_select_one(["SELECT COUNT(*) FROM gv$SQLArea WHERE SQL_ID = ? AND RowNum < 2", @translated_sql_id])
+        where_string << "WHERE DBMS_LOB.COMPARE(t.Translated_Text, (SELECT SQL_FullText FROM gv$SQLArea WHERE SQL_ID = ? AND RowNum < 2)) = 0"
+        where_values << @translated_sql_id
+      else
+        if 0 < sql_select_one(["SELECT SQL_Text FROM DBA_Hist_SQLText WHERE DBID = ? AND SQL_ID = ? AND RowNum < 2", get_dbid, @translated_sql_id])
+          where_string << "WHERE DBMS_LOB.COMPARE(t.Translated_Text, (SELECT SQL_Text FROM DBA_Hist_SQLText WHERE DBID = ? AND SQL_ID = ? AND RowNum < 2)) = 0"
+          where_values << get_dbid
+          where_values << @translated_sql_id
+        else
+          where_string << "WHERE 1=2"    # without hit
+          Rails.logger.error "No SQL text found in gv$SQLArea or DBA_Hist_SQLText for SQL-ID='#{@translated_sql_id}'"
+        end
+      end
+    end
+
+    @translations = sql_select_all ["SELECT t.Owner, t.Profile_Name, SUBSTR(t.SQL_Text, 1,20) SQL_Text, t.SQL_ID, SUBSTR(t.translated_Text, 1,20) Translated_Text,
+                                            t.Enabled, t.Registration_Time, t.Client_Info, t.Module, t.Action,
+                                            uu.UserName Parsing_User_Name, us.UserName Parsing_Schema_Name, t.Comments
+                                            #{", t.Error_Code, t.Error_Source, t.Translation_Method, t.Dictionary_SQL_ID " if get_db_version >= '12.2'}
+                                     FROM   DBA_SQL_Translations t
+                                     LEFT OUTER JOIN All_Users uu ON uu.User_ID = t.Parsing_User_ID
+                                     LEFT OUTER JOIN All_Users us ON uu.User_ID = t.Parsing_Schema_ID
+                                     #{where_string}
+                                    "].concat(where_values)
+    render_partial
+  end
+
+  def list_sql_translation_sql_text
+    @sql_text = sql_select_one ["SELECT SQL_Text FROM DBA_SQL_Translations WHERE Owner = ? AND Profile_Name = ? AND SQL_ID = ?", params[:owner], params[:profile_name], params[:sql_id]]
+    respond_to do |format|
+      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(@sql_text)}</pre>".html_safe }
+    end
+  end
+
+  def list_sql_translation_translated_text
+    @sql_text = sql_select_one ["SELECT Translated_Text FROM DBA_SQL_Translations WHERE Owner = ? AND Profile_Name = ? AND SQL_ID = ?", params[:owner], params[:profile_name], params[:sql_id]]
+    respond_to do |format|
+      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(@sql_text)}</pre>".html_safe }
+    end
+  end
 
   def list_dbms_xplan_display
     instance        = params[:instance]
@@ -1472,6 +1520,109 @@ class DbaSgaController < ApplicationController
       @button_id = get_unique_area_id
       #render_partial(:start_sql_monitor_in_new_window, :additional_javascript_string => "jQuery('##{@button_id}').click();")
       render_partial :start_sql_monitor_in_new_window
+    end
+  end
+
+  def generate_sql_translation
+    @sql_id              = params[:sql_id]
+    user_name           = params[:user_name]
+    db_trigger_name     = "Panorama_#{@sql_id}"
+    profile_name        = "Panorama_#{@sql_id}".upcase
+
+    if params[:fixed_user].nil? || params[:fixed_user] == ''
+      @user_data = sql_select_all ["SELECT u.UserName
+                                   FROM   (SELECT DISTINCT User_ID
+                                           FROM   gv$Active_Session_History
+                                           WHERE  SQL_ID = ?
+                                          ) a
+                                   JOIN   All_Users u ON u.User_ID = a.User_ID
+                                  ", @sql_id]
+
+      user_name = @user_data[0].username if @user_data.count == 1                 # Switch username to the real session owner
+      if @user_data.count > 1
+        render_partial :select_user_for_generate_sql_translation
+        return
+      end
+    end
+
+    sql_text = sql_select_one ["SELECT SQL_FullText FROM gv$SQLArea WHERE SQL_ID = ?", @sql_id]
+    sql_text = sql_select_one ["SELECT SQL_Text FROM DBA_Hist_SQLText WHERE DBID = ? AND SQL_ID = ?", get_dbid, @sql_id] if sql_text.nil?
+
+    profile_exists = 0 < sql_select_one(["SELECT COUNT(*) FROM DBA_SQL_Translations WHERE Owner = ? AND Profile_Name = ? ", user_name, profile_name])
+
+    result = "
+-- Script for establishing SQL translation for SQL-ID='#{@sql_id}' based on SQL translation framework ( https://docs.oracle.com/database/121/DRDAA/sql_transl_arch.htm#DRDAA131 )
+-- Generated by Panorama at #{Time.now}
+-- Executing this script allows you to change the complete syntax of this SQL. Only result structure and used bind variables must remain consistent.
+-- This allows you to transparently fix each problem caused by the semantic of this SQL without any change on the calling application.
+-- Existing translations for the resulting SQLs are shown by Panorama in SQL-details view.
+-- All existing translations are listed in Panorama via menu 'SGA/PGA-details' / 'SQL plan management' / 'SQL translations'
+
+-- Attributes that must be adjusted by you in this script:
+--   - Name of the user that is really executing the SQL if this is different from current choosen user '#{user_name}'
+--   - Translated SQL text, currently initialized with the text of the original SQL
+
+-- To activate the translation you must reconnect your session to make the LOGON-trigger working (restart application or reset session pool)
+
+-- ############# Following acitivities should be sequentially executed in this order to establish translation #############
+
+-- 1. ####### Execute as user SYS to establish translation:
+
+GRANT CREATE SQL TRANSLATION PROFILE TO #{user_name};
+
+GRANT ALTER SESSION TO #{user_name};
+
+
+-- 2. ####### Execute as user #{user_name} to establish translation:
+
+#{ "-- Following sequence for profile creation commented out because profile already exists for user #{user_name}
+-- " if profile_exists}EXEC DBMS_SQL_TRANSLATOR.CREATE_PROFILE('#{profile_name}');
+
+BEGIN
+DBMS_SQL_TRANSLATOR.REGISTER_SQL_TRANSLATION('#{profile_name}',
+'#{sql_escape(sql_text)}',
+-- ####### Adjust the following SQL text as translation target on your needs
+'#{sql_escape(sql_text)}',
+TRUE);
+END;
+/
+
+
+-- 3. ####### Execute as user SYS to establish translation:
+
+CREATE TRIGGER #{db_trigger_name} AFTER LOGON ON DATABASE
+BEGIN
+  -- created by SQL translation script generated by Panorama to allow translation of SQL with SQL-ID='#{@sql_id}'
+  IF USER = '#{user_name}' THEN
+    EXECUTE IMMEDIATE 'ALTER SESSION SET CURRENT_SCHEMA=HUGO';
+    EXECUTE IMMEDIATE 'ALTER SESSION SET SQL_TRANSLATION_PROFILE=#{profile_name}';
+    EXECUTE IMMEDIATE 'ALTER SESSION SET EVENTS =''10601 trace name context forever, level 32''';
+  END IF;
+END;
+/
+
+-- ############# Following acitivities should be sequentially executed in this order to remove translation if not needed anymore #############
+
+-- 1. ####### Execute as user SYS to remove translation if not needed anymore:
+
+DROP TRIGGER #{db_trigger_name};
+
+-- 2. ####### Execute as user #{user_name} to remove translation if not needed anymore:
+
+DBMS_SQL_TRANSLATOR.DROP_PROFILE('#{profile_name}');
+
+
+-- ############ Remarks:
+-- To activate the translation you must usually reconnect your session to make the LOGON-trigger working.
+-- There is a solution to set the needed event in an already running session like:
+-- EXEC DBMS_SYSTEM.set_ev(<sid>, <serial#>, 10601, 32, '');
+-- but I did not found a solution for setting SQL_TRANSLATION_PROFILE=#{profile_name} in a running session
+
+
+"
+
+    respond_to do |format|
+      format.html {render :html => "<div style='background-color: lightyellow; white-space: pre-wrap; padding: 10px;'>#{my_html_escape(result)}</div>".html_safe }
     end
   end
 

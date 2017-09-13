@@ -234,6 +234,20 @@ column_options = [
   </div>
 <% end %>
 
+<% if get_db_version >= '12.1' %>
+    <div class="float_left">
+      <%=
+        ajax_submit(t(:dba_history_list_sql_detail_historic_create_translation_caption, :default=>'Generate SQL-Translation '), {
+            :controller           => :dba_sga,
+            :action               => :generate_sql_translation,
+            :update_area          => @update_area,
+            :sql_id               => @sql_id,
+            :user_name            => @parsing_schema_name
+        }, :title=> t(:dba_history_list_sql_detail_historic_create_translation_hint, :default=>"Generate script to create profile for SQL-translation-framework for this SQL."))
+      %>
+    </div>
+<% end %>
+
 <div id="<%= @update_area %>" style="clear:both; width:100%;">
 </div>
 

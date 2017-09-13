@@ -167,7 +167,9 @@ module MenuHelper
                 {:class=> 'item', :caption=>'SQL plan baselines',         :controller=> 'dba_sga',     :action=> 'show_plan_baselines',  :hint=>t(:menu_sga_pga_sql_plan_baselines_hint, :default=> 'Show all stored SQL plan baselines for this database') },
                   ] : []).concat([
                 {:class=> 'item', :caption=>'Stored outlines',            :controller=> 'dba_sga',     :action=> 'show_stored_outlines', :hint=>t(:menu_sga_pga_stored_outlines_hint, :default=> 'Show all stored outlines for this database') },
-                  ])
+                  ]).concat(get_db_version >= '12.1' ? [
+                {:class=> 'item', :caption=>'SQL translations',           :controller=> 'dba_sga',     :action=> 'show_sql_translations',  :hint=>t(:menu_sga_pga_sql_translations_hint, :default=> "Show all stored SQL-translations for this database\ncreated by SQL translation framework (DBMS_SQL_TRANSLATOR)") },
+                  ] : [])
             },
             { :class=> 'menu', :caption=> 'Compare execution plans', :content=>[
                 {:class=> 'item', :caption=> 'in current SGA',        :controller=> 'dba_sga',      :action=> 'show_compare_execution_plans',           :hint=>t(:menu_sga_pga_compare_execution_plans, :default=> 'Compare execution plan of two different cursors in SGA') },
