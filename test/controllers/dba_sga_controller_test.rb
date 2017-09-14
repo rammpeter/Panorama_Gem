@@ -170,9 +170,11 @@ class DbaSgaControllerTest < ActionController::TestCase
     post :list_sql_plan_baseline_sqltext, :params => {:format=>:html, :plan_name=>'Hugo', :update_area=>:hugo }
     assert_response :success
 
-    [nil, @sga_sql_id].each do |translation_sql_id|
-      post :show_sql_translations, :params => {:format=>:html, :translation_sql_id=>translation_sql_id, :update_area=>:hugo }
-      assert_response :success
+    if get_db_version >= '12.1'
+      [nil, @sga_sql_id].each do |translation_sql_id|
+        post :show_sql_translations, :params => {:format=>:html, :translation_sql_id=>translation_sql_id, :update_area=>:hugo }
+        assert_response :success
+      end
     end
   end
 
