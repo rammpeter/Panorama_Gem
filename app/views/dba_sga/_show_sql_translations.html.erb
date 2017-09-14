@@ -51,7 +51,7 @@
 
 <%=
   if @translated_sql_id
-    caption = "<div style=\"background-color: coral;\">SQL-Translation exists for SQL (from DBA_SQL_Translations)</div>".html_safe
+    caption = "<div style=\"background-color: coral;\">SQL text of SQL-ID='#{@translated_sql_id}' is result of SQL-translation (from DBA_SQL_Translations)</div>".html_safe
   else
     caption = "SQL-translations from DBA_SQL_Translations"
   end
