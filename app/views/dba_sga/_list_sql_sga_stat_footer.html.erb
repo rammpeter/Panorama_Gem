@@ -1,9 +1,7 @@
 <!-- @update_area muss durch Aufrufer gesetzt sein -->
-
-<div style="clear: both; padding: 5px;"><b><%= t(:dba_sga_list_sql_sga_stat_footer_additional_info, :default=>'Additional information') %></b></div>
-
+<br/>
 <div class="float_left">
-  <%= ajax_submit(t(:dba_sga_list_sql_sga_stat_footer_complete_timeline_caption, :default=>'Complete time line of SQL'), {
+  <%= ajax_submit(t(:dba_sga_list_sql_sga_stat_footer_complete_timeline_caption, :default=>'Full history'), {
            :update_area => @update_area,
            :action      => :list_sql_history_snapshots,
            :controller  => :dba_history,
@@ -11,7 +9,7 @@
            :sql_id      => @sql.sql_id,
            :groupby     => :day,
            :parsing_schema_name => @sql.parsing_schema_name
-      }, :title =>t(:dba_sga_list_sql_sga_stat_footer_complete_timeline_hint, :default=>'Show complete time history of SQL from AWR'))
+      }, :title =>t(:dba_sga_list_sql_sga_stat_footer_complete_timeline_hint, :default=>"Show complete time history of SQL from AWR for SQL-ID='%{sql_id}' and instance=%{instance}", sql_id: @sql.sql_id, instance: @sql.inst_id))
   %>
 </div>
 <div class="float_left">
@@ -81,7 +79,7 @@
 <% if get_db_version >= '12.1' %>
     <div class="float_left">
       <%=
-        ajax_submit(t(:dba_history_list_sql_detail_historic_create_translation_caption, :default=>'Generate SQL-Translation '), {
+        ajax_submit('SQL-Translation', {
             :controller           => :dba_sga,
             :action               => :generate_sql_translation,
             :update_area          => @update_area,

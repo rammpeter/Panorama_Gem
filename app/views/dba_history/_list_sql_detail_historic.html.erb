@@ -154,6 +154,20 @@ column_options = [
 </div>
 &nbsp;
 <div class="float_left">
+  <%= ajax_submit(t(:dba_history_list_sql_detail_historic_complete_timeline_caption, :default=>'Full history'), {
+      :update_area => @update_area,
+      :action      => :list_sql_history_snapshots,
+      :controller  => :dba_history,
+      :instance    => @instance,
+      :dbid        => @dbid,
+      :sql_id      => @sql_id,
+      :groupby     => :day,
+      :parsing_schema_name => @parsing_schema_name
+  }, :title => t(:dba_history_list_sql_detail_historic_complete_timeline_hint, :default=>'List complete history of SQL in time'))
+  %>
+</div>
+
+<div class="float_left">
     <%=
         groupfilter = {:DBID                   => @dbid,
                        :Idle_Wait1             => "PX Deq Credit: send blkd",
@@ -176,21 +190,7 @@ column_options = [
              :groupby     => "SQL-ID"
         }, :title =>t(:list_session_statistic_historic_grouping_link_title, :default=>"Show wait states of SQL in Active Session History for given time period") )
   %>
-</div>
-&nbsp;
-<div class="float_left">
-  <%= ajax_submit(t(:dba_history_list_sql_detail_historic_complete_timeline_caption, :default=>'Complete time line of SQL'), {
-           :update_area => @update_area,
-           :action      => :list_sql_history_snapshots,
-           :controller  => :dba_history,
-           :instance    => @instance,
-           :dbid        => @dbid,
-           :sql_id      => @sql_id,
-           :groupby     => :day,
-           :parsing_schema_name => @parsing_schema_name
-      }, :title => t(:dba_history_list_sql_detail_historic_complete_timeline_hint, :default=>'List complete history of SQL in time'))
-  %>
-</div>
+</div>&nbsp;
 &nbsp;
 <div class="float_left">
     <%= ajax_submit(t(:dba_history_list_sql_detail_historic_current_sga_caption, :default=>'SQL in current SGA'), {
@@ -212,14 +212,14 @@ column_options = [
                            :time_selection_end    => @time_selection_end,
                            :sql_id                => @sql_id
                    ), {:method => 'post', :target=>'_blank'}) do %>
-        <%= submit_tag(t(:dba_history_list_sql_detail_historic_sql_report_caption, :default=>'Generate SQL report'), :title =>t(:dba_history_list_sql_detail_historic_current_sga_hint, :default=>'Generate genuine Oracle SQL report by executing DBMS_WORKLOAD_REPOSITORY.AWR_SQL_REPORT_HTML')) %>
+        <%= submit_tag('SQL report', :title =>t(:dba_history_list_sql_detail_historic_current_sga_hint, :default=>'Generate genuine Oracle SQL report by executing DBMS_WORKLOAD_REPOSITORY.AWR_SQL_REPORT_HTML')) %>
       <% end %>
     </div>
 <% end %>
 <% if get_db_version >= '11.2' %>
   <div class="float_left">
       <%=
-        ajax_submit(t(:dba_history_list_sql_detail_historic_create_baseline_caption, :default=>'Generate SQL plan baseline'), {
+        ajax_submit('SQL plan baseline', {
             :controller      => :dba_history,
             :action          => (@sql.plan_hash_value_count > 1 ? :select_plan_hash_value_for_baseline : :generate_baseline_creation),
             :update_area     => @update_area,
@@ -237,7 +237,7 @@ column_options = [
 <% if get_db_version >= '12.1' %>
     <div class="float_left">
       <%=
-        ajax_submit(t(:dba_history_list_sql_detail_historic_create_translation_caption, :default=>'Generate SQL-Translation '), {
+        ajax_submit('SQL-Translation', {
             :controller           => :dba_sga,
             :action               => :generate_sql_translation,
             :update_area          => @update_area,

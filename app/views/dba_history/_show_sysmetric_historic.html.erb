@@ -1,4 +1,8 @@
-<div class="page_caption"><%= t(:dba_history_show_sysmetric_historic_header, :default=>"SysMetric-history from DBA_Hist_SysMetric_History/GV$SysMetric_History or DBA_Hist_SysMetric_Summary/GV$SysMetric_Summary") %></div>
+<div class="page_caption"><%= t(:dba_history_show_sysmetric_historic_header,
+                                :default=>"SysMetric-history from %{sysmetric_history_table}/GV$SysMetric_History or %{sysmetric_summary_table}/GV$SysMetric_Summary",
+                                sysmetric_history_table: PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SysMetric_History'),
+                                sysmetric_summary_table: PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SysMetric_Summary'),
+                              ) %></div>
 
 <% @update_area = get_unique_area_id %>
 
@@ -19,10 +23,10 @@
       </div>
     </div>
     <div class="float_left">
-        <%= submit_tag(t(:dba_history_show_sysmetric_submit_detail_caption, :default=>"Show details"), :title => t(:dba_history_show_sysmetric_submit_detail_hint, :default=>"Show details of SysMetric-history from DBA_Hist_SysMetric_History/GV$SysMetric_History"), :name=>"detail") %>
+        <%= submit_tag(t(:dba_history_show_sysmetric_submit_detail_caption, :default=>"Show details"), :title => t(:dba_history_show_sysmetric_submit_detail_hint, :default=>"Show details of SysMetric-history"), :name=>"detail") %>
     </div>
     <div class="float_left">
-        <%= submit_tag(t(:dba_history_show_sysmetric_submit_summary_caption, :default=>"Show summary"), :title => t(:dba_history_show_sysmetric_submit_summary_hint, :default=>"Show summary of SysMetric-history from DBA_Hist_SysMetric_Summary/GV$SysMetric_Summary (more compressed)"), :name=>"summary") %>
+        <%= submit_tag(t(:dba_history_show_sysmetric_submit_summary_caption, :default=>"Show summary"), :title => t(:dba_history_show_sysmetric_submit_summary_hint, :default=>"Show summary of SysMetric-summary (more compressed)"), :name=>"summary") %>
     </div>
 <% end %>
 
