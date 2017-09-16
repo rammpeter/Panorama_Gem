@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/panorama_gem.gemspec" afterPath="$PROJECT_DIR$/panorama_gem.gemspec" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -151,11 +151,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_tablespace_usage.html.erb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="_tablespace_usage.html.erb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/views/storage/_tablespace_usage.html.erb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="202">
               <caret line="78" column="7" lean-forward="false" selection-start-line="78" selection-start-column="7" selection-end-line="78" selection-end-column="7" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="75">
+              <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
               <folding />
             </state>
           </provider>
@@ -259,7 +269,6 @@
         <option value="$PROJECT_DIR$/app/views/dba_sga/_select_user_for_generate_sql_translation.html.erb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_sga_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_show_sql_translations.html.erb" />
-        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/test/controllers/dba_sga_controller_test.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_detail_execution_plan.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_detail_sql_id.html.erb" />
@@ -281,6 +290,7 @@
         <option value="$PROJECT_DIR$/app/views/help/version_history.html" />
         <option value="$PROJECT_DIR$/app/controllers/dba_controller.rb" />
         <option value="$PROJECT_DIR$/test/controllers/dba_controller_test.rb" />
+        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
       </list>
     </option>
   </component>
@@ -1108,14 +1118,7 @@
       <workItem from="1504014345574" duration="90765000" />
       <workItem from="1505309603856" duration="12623000" />
       <workItem from="1505465763902" duration="4885000" />
-      <workItem from="1505578657614" duration="5263000" />
-    </task>
-    <task id="LOCAL-01053" summary="Bugfix tests">
-      <created>1503406503287</created>
-      <option name="number" value="01053" />
-      <option name="presentableId" value="LOCAL-01053" />
-      <option name="project" value="LOCAL" />
-      <updated>1503406503288</updated>
+      <workItem from="1505578657614" duration="5496000" />
     </task>
     <task id="LOCAL-01054" summary="Bugfix tests">
       <created>1503410196753</created>
@@ -1453,7 +1456,14 @@
       <option name="project" value="LOCAL" />
       <updated>1505584932203</updated>
     </task>
-    <option name="localTasksCounter" value="1102" />
+    <task id="LOCAL-01102" summary="Switch to rails 5.1.4">
+      <created>1505587104215</created>
+      <option name="number" value="01102" />
+      <option name="presentableId" value="LOCAL-01102" />
+      <option name="project" value="LOCAL" />
+      <updated>1505587104215</updated>
+    </task>
+    <option name="localTasksCounter" value="1103" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1489,7 +1499,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2137908000" />
+    <option name="totallyTimeSpent" value="2138141000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1545,7 +1555,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Find missing bind variables by SGA" />
     <MESSAGE value="Expanded test" />
     <MESSAGE value="Column order reordered for ASH" />
     <MESSAGE value="Choose plan_hash value for baseline creation if there are multiple" />
@@ -1570,7 +1579,8 @@
     <MESSAGE value="Translations" />
     <MESSAGE value="v$SYSAUX_Occupants added" />
     <MESSAGE value="Redologs filter" />
-    <option name="LAST_COMMIT_MESSAGE" value="Redologs filter" />
+    <MESSAGE value="Switch to rails 5.1.4" />
+    <option name="LAST_COMMIT_MESSAGE" value="Switch to rails 5.1.4" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1848,13 +1858,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_detail_execution_plan.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="367">
@@ -2038,6 +2041,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="202">
           <caret line="78" column="7" lean-forward="false" selection-start-line="78" selection-start-column="7" selection-end-line="78" selection-end-column="7" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
           <folding />
         </state>
       </provider>
