@@ -6,8 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/controllers/dba_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/dba_controller.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/controllers/dba_controller_test.rb" afterPath="$PROJECT_DIR$/test/controllers/dba_controller_test.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/panorama_gem.gemspec" afterPath="$PROJECT_DIR$/panorama_gem.gemspec" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -156,7 +155,7 @@
         <entry file="file://$PROJECT_DIR$/app/views/storage/_tablespace_usage.html.erb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="202">
-              <caret line="78" column="7" lean-forward="true" selection-start-line="78" selection-start-column="7" selection-end-line="78" selection-end-column="7" />
+              <caret line="78" column="7" lean-forward="false" selection-start-line="78" selection-start-column="7" selection-end-line="78" selection-end-column="7" />
               <folding />
             </state>
           </provider>
@@ -1109,14 +1108,7 @@
       <workItem from="1504014345574" duration="90765000" />
       <workItem from="1505309603856" duration="12623000" />
       <workItem from="1505465763902" duration="4885000" />
-      <workItem from="1505578657614" duration="3566000" />
-    </task>
-    <task id="LOCAL-01052" summary="Log connection pool">
-      <created>1503405704143</created>
-      <option name="number" value="01052" />
-      <option name="presentableId" value="LOCAL-01052" />
-      <option name="project" value="LOCAL" />
-      <updated>1503405704143</updated>
+      <workItem from="1505578657614" duration="5263000" />
     </task>
     <task id="LOCAL-01053" summary="Bugfix tests">
       <created>1503406503287</created>
@@ -1454,7 +1446,14 @@
       <option name="project" value="LOCAL" />
       <updated>1505584444393</updated>
     </task>
-    <option name="localTasksCounter" value="1101" />
+    <task id="LOCAL-01101" summary="Redologs filter">
+      <created>1505584932203</created>
+      <option name="number" value="01101" />
+      <option name="presentableId" value="LOCAL-01101" />
+      <option name="project" value="LOCAL" />
+      <updated>1505584932203</updated>
+    </task>
+    <option name="localTasksCounter" value="1102" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1490,7 +1489,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2136211000" />
+    <option name="totallyTimeSpent" value="2137908000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1514,7 +1513,7 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2393216" sideWeight="0.56673115" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18882175" sideWeight="0.4952343" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27812895" sideWeight="0.3464837" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.42809734" sideWeight="0.84170854" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.42809734" sideWeight="0.84170854" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32967034" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.44134077" sideWeight="0.47434783" order="11" side_tool="false" content_ui="tabs" />
@@ -1546,7 +1545,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Sampling DBA_hist_SysSTat" />
     <MESSAGE value="Find missing bind variables by SGA" />
     <MESSAGE value="Expanded test" />
     <MESSAGE value="Column order reordered for ASH" />
@@ -1571,7 +1569,8 @@
     <MESSAGE value="Test only for 12.1" />
     <MESSAGE value="Translations" />
     <MESSAGE value="v$SYSAUX_Occupants added" />
-    <option name="LAST_COMMIT_MESSAGE" value="v$SYSAUX_Occupants added" />
+    <MESSAGE value="Redologs filter" />
+    <option name="LAST_COMMIT_MESSAGE" value="Redologs filter" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2038,7 +2037,7 @@
     <entry file="file://$PROJECT_DIR$/app/views/storage/_tablespace_usage.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="202">
-          <caret line="78" column="7" lean-forward="true" selection-start-line="78" selection-start-column="7" selection-end-line="78" selection-end-column="7" />
+          <caret line="78" column="7" lean-forward="false" selection-start-line="78" selection-start-column="7" selection-end-line="78" selection-end-column="7" />
           <folding />
         </state>
       </provider>

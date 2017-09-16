@@ -400,30 +400,18 @@
     </content>
     <orderEntry type="jdk" jdkName="RVM: jruby-9.1.7.0" jdkType="JRUBY_SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="PROVIDED" name="actioncable (v5.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="actionmailer (v5.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="actionpack (v5.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="actionview (v5.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="activejob (v5.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="activemodel (v5.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="activerecord (v5.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="activerecord-nulldb-adapter (v0.3.7, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="activerecord-oracle_enhanced-adapter (v1.7.11, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="activesupport (v5.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="addressable (v2.5.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="ansi (v1.5.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="archive-zip (v0.7.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="arel (v7.1.4, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="builder (v3.2.3, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="bundler (v1.14.6, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="capybara (v2.14.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="chromedriver-helper (v1.1.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="cliver (v0.3.2, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="concurrent-ruby (v1.0.5, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="erubis (v2.7.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="ffi (v1.9.18, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="globalid (v0.4.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="i18n (v0.8.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="i18n (v0.8.6, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="io-like (v0.3.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="launchy (v2.4.3, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="loofah (v2.0.3, RVM: jruby-9.1.7.0) [gem]" level="application" />
@@ -431,43 +419,29 @@
     <orderEntry type="library" scope="PROVIDED" name="method_source (v0.8.2, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="mime-types (v3.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="mime-types-data (v3.2016.0521, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="minitest (v5.10.2, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="minitest-capybara (v0.8.2, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="minitest-metadata (v0.6.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="minitest-rails (v3.0.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="minitest-rails-capybara (v3.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="minitest-reporters (v1.1.14, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="nio4r (v1.2.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="nokogiri (v1.7.2, RVM: jruby-9.1.7.0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="nio4r (v2.1.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="nokogiri (v1.8.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="phantomjs (v2.1.1.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="poltergeist (v1.15.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="public_suffix (v2.0.5, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="puma (v3.9.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rack (v2.0.3, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="rack-test (v0.6.3, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="rails (v5.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rails-dom-testing (v2.0.3, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rails-html-sanitizer (v1.0.3, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="railties (v5.0.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="rake (v12.0.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rb-fsevent (v0.10.2, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rb-inotify (v0.9.10, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="ruby-plsql (v0.6.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="ruby-progressbar (v1.8.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sass (v3.5.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sass-listen (v4.0.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sass-rails (v5.0.6, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="spoon (v0.0.6, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sprockets (v3.7.1, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="sprockets-rails (v3.2.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="thor (v0.19.4, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="thread_safe (v0.3.6, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="tilt (v2.0.7, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="tzinfo (v1.2.3, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="tzinfo-data (v1.2017.2, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="websocket-driver (v0.6.5, RVM: jruby-9.1.7.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="websocket-extensions (v0.1.2, RVM: jruby-9.1.7.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="xpath (v2.0.0, RVM: jruby-9.1.7.0) [gem]" level="application" />
   </component>
   <component name="RModuleSettingsStorage">
     <LOAD_PATH number="0" />
