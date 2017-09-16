@@ -105,4 +105,8 @@ class StorageControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  test "list_sysaux_occupants with xhr: true" do
+    post :list_sysaux_occupants, :params => { :format=>:html}
+    assert_response :success
+  end
 end

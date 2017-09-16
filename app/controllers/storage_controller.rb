@@ -1157,4 +1157,8 @@ class StorageController < ApplicationController
     render_partial
   end
 
+  def list_sysaux_occupants
+    @occupants = sql_select_iterator "SELECT * FROM V$SYSAUX_Occupants ORDER BY Space_Usage_KBytes DESC"
+    render_partial
+  end
 end
