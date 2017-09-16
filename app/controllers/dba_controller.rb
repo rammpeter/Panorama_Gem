@@ -374,6 +374,8 @@ class DbaController < ApplicationController
   end # show_lock_details
 
   def show_redologs
+    @instance = prepare_param_instance
+
     @redologs = sql_select_iterator("\
       SELECT /* Panorama-Tool Ramm */
         Inst_ID,
@@ -385,6 +387,7 @@ class DbaController < ApplicationController
         Members, Archived
       FROM gV$LOG
       WHERE Inst_ID = Thread#  -- im gv$-View werden jeweils die Logs der anderen Instanzen noch einmal in jeder Instance mit Thread# getzeigt, dies verhindert die Dopplung
+      #{"AND Inst_ID = #{@instance}" if @instance}
     ORDER BY First_Time DESC")
 
     render_partial
