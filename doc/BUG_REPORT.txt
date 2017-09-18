@@ -1,5 +1,22 @@
 27.04.2017 http-Requests kommen nicht zurück unter Oracle-Linux 6.5 (panorama.osp-dd.de), wenn jruby-jars 9.1.8.0 verwendet werden. Zurück auf 9.1.7.0 löste das Problem
 
+https://stackoverflow.com/questions/45193359/upgrading-from-jruby-9-0-5-0-hangs-tomcat
+says:
+sounds like an enthropy depletion might be going on,
+
+export JRUBY_OPTS=-J-Djava.security.egd=file:/dev/./urandom
+
+or in your case :
+
+export CATALINA_OPTS=-Djava.security.egd=file:/dev/./urandom
+
+explanation is this' questions answer: After Upgrade To JRuby 9.1.9.0, Rails CookieStore Very Slow When Handling Encrypted Cookies
+
+... the next jruby-openssl release should hopefully handle this better
+
+shareimprove this answer
+
+
 01.05.2017
 problem with Marshal in Rails 5.0.2
 

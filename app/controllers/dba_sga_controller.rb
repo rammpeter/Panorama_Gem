@@ -1350,13 +1350,12 @@ class DbaSgaController < ApplicationController
       end
     end
 
-    @translations = sql_select_all ["SELECT t.Owner, t.Profile_Name, SUBSTR(t.SQL_Text, 1,20) SQL_Text, t.SQL_ID, SUBSTR(t.translated_Text, 1,20) Translated_Text,
-                                            t.Enabled, t.Registration_Time, t.Client_Info, t.Module, t.Action,
-                                            uu.UserName Parsing_User_Name, us.UserName Parsing_Schema_Name, t.Comments
+    @translations = sql_select_all ["SELECT t.Owner, t.Profile_Name, SUBSTR(t.SQL_Text, 1,20) SQL_Text, t.SQL_ID, SUBSTR(t.translated_Text, 1,20) Translated_Text, t.Enabled
+                                            #{", t.Registration_Time, t.Client_Info, t.Module, t.Action, uu.UserName Parsing_User_Name, us.UserName Parsing_Schema_Name, t.Comments" if get_db_version > '12.1.0.1.0' }
                                             #{", t.Error_Code, t.Error_Source, t.Translation_Method, t.Dictionary_SQL_ID " if get_db_version >= '12.2'}
                                      FROM   DBA_SQL_Translations t
-                                     LEFT OUTER JOIN All_Users uu ON uu.User_ID = t.Parsing_User_ID
-                                     LEFT OUTER JOIN All_Users us ON uu.User_ID = t.Parsing_Schema_ID
+                                     #{"LEFT OUTER JOIN All_Users uu ON uu.User_ID = t.Parsing_User_ID
+                                        LEFT OUTER JOIN All_Users us ON uu.User_ID = t.Parsing_Schema_ID" if get_db_version > '12.1.0.1.0' }
                                      #{where_string}
                                     "].concat(where_values)
     render_partial
