@@ -26,7 +26,13 @@ class PanoramaSamplerController < ApplicationController
 
   def show_new_config_form
     @modus = :new
-    @config = {:id => PanoramaSamplerConfig.get_max_id+1, :active=>true, :snapshot_cycle => 60, :snapshot_retention => 32}
+    @config = {:id                        => PanoramaSamplerConfig.get_max_id+1,
+               :active                    => true,
+               :snapshot_cycle            => 60,
+               :snapshot_retention        => 32,
+               :sql_min_no_of_execs       => 1,
+               :sql_min_runtime_millisecs => 10
+    }
     render_partial :edit_config
   end
 

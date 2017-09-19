@@ -43,14 +43,26 @@ class PanoramaSamplerSampling
                                     ) VALUES (?, ?, ?, ?, SYSDATE, ?)",
                                     @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, begin_interval_time, PanoramaConnection.con_id]
 
+    do_snapshot_call = "Do_Snapshot(p_Snap_ID                   => ?,
+                                    p_Instance                  => ?,
+                                    p_DBID                      => ?,
+                                    p_Con_DBID                  => ?,
+                                    p_Con_ID                    => ?,
+                                    p_Begin_Interval_Time       => ?,
+                                    p_Snapshot_Cycle            => ?,
+                                    p_Snapshot_Retention        => ?,
+                                    p_SQL_Min_No_of_Execs       => ?,
+                                    p_SQL_Min_Runtime_MilliSecs => ?
+                                   )"
+
     if @sampler_config[:select_any_table]                                       # call PL/SQL package ?
-      sql = " BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_Snapshot.Do_Snapshot(?, ?, ?, ?, ?, ?, ?, ?); END;"
+      sql = " BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_Snapshot.#{do_snapshot_call}; END;"
     else
       sql = "
         DECLARE
         #{panorama_sampler_snapshot_code}
         BEGIN
-          Do_Snapshot(?, ?, ?, ?, ?, ?, ?, ?);
+          #{do_snapshot_call};
         END;
         "
     end
@@ -58,7 +70,9 @@ class PanoramaSamplerSampling
     ## TODO: Con_DBID mit realen werten des Containers füllen, falls PDB-übergreifendes Sampling gewünscht wird
     PanoramaConnection.sql_execute [sql,
                                     @snap_id, PanoramaConnection.instance_number, PanoramaConnection.dbid, con_dbid, PanoramaConnection.con_id,
-                                    begin_interval_time, @sampler_config[:snapshot_cycle], @sampler_config[:snapshot_retention]]
+                                    begin_interval_time, @sampler_config[:snapshot_cycle], @sampler_config[:snapshot_retention],
+                                    @sampler_config[:sql_min_no_of_execs], @sampler_config[:sql_min_runtime_millisecs]
+                                   ]
   end
 
   def do_housekeeping_internal(shrink_space)

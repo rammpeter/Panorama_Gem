@@ -93,6 +93,17 @@
       <td align="center"><%= text_field_tag(:config_snapshot_retention, @config[:snapshot_retention], :name=>'config[snapshot_retention]', :style => "width:95%; text-align: right;", :title=>'Retention time for snapshot data in days before deletion') %></td>
     </tr>
 
+    <tr title="or-combined limits for SQLs within snapshot cycle to be recorded by Panorama-Sampler">
+      <th>Limits for SQL-history</th>
+      <td align="center">
+        <% one_of_both_text = "One of both conditions must be fulfilled for SQL to be recorded in snahpshot." %>
+        Min. executions
+        <%= text_field_tag(:sql_min_no_of_execs,  @config[:sql_min_no_of_execs],  :name=>'config[sql_min_no_of_execs]',   :style => "width:25%; text-align: right;", :title=>"Minimum number of SQL executions in snapshot cycle to be recorded by Panorama-Sampler\n#{one_of_both_text}") %>
+        &nbsp;Min. runtime
+        <%= text_field_tag(:sql_min_runtime_millisecs, @config[:sql_min_runtime_millisecs], :name=>'config[sql_min_runtime_millisecs]',  :style => "width:25%; text-align: right;", :title=>"Minimum number of SQL runtime (milliseconds) in snapshot cycle to be recorded by Panorama-Sampler\n#{one_of_both_text}") %>
+      </td>
+    </tr>
+
   </table>
   <%= submit_tag('Test connection', :title =>"Test connection to configured database and save configuration if successful" ) %>
   <%= submit_tag('Save', :title =>"Save configuration data" ) %>
