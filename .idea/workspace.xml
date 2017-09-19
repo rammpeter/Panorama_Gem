@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat.html.erb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -131,7 +131,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="60">
@@ -223,7 +223,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_list_sql_sga_stat.html.erb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="_list_sql_sga_stat.html.erb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat.html.erb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="608">
@@ -330,9 +330,9 @@
         <option value="$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb" />
-        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat.html.erb" />
+        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
       </list>
     </option>
   </component>
@@ -1160,14 +1160,7 @@
       <workItem from="1505465763902" duration="4885000" />
       <workItem from="1505578657614" duration="10182000" />
       <workItem from="1505739964060" duration="924000" />
-      <workItem from="1505748707512" duration="12386000" />
-    </task>
-    <task id="LOCAL-01060" summary="ASH sampling, Suppress doublettes due to V$Transaction">
-      <created>1503555985129</created>
-      <option name="number" value="01060" />
-      <option name="presentableId" value="LOCAL-01060" />
-      <option name="project" value="LOCAL" />
-      <updated>1503555985129</updated>
+      <workItem from="1505748707512" duration="12428000" />
     </task>
     <task id="LOCAL-01061" summary="Slickgrid: menu icon, &#10;Connection pool protected with password check">
       <created>1503562714307</created>
@@ -1505,7 +1498,14 @@
       <option name="project" value="LOCAL" />
       <updated>1505814636815</updated>
     </task>
-    <option name="localTasksCounter" value="1109" />
+    <task id="LOCAL-01109" summary="Bugfix: Show SQL translation for &gt; 12.1 only">
+      <created>1505815284445</created>
+      <option name="number" value="01109" />
+      <option name="presentableId" value="LOCAL-01109" />
+      <option name="project" value="LOCAL" />
+      <updated>1505815284445</updated>
+    </task>
+    <option name="localTasksCounter" value="1110" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1541,7 +1541,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2156137000" />
+    <option name="totallyTimeSpent" value="2156179000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1597,7 +1597,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Performance optimization SQL_Plan" />
     <MESSAGE value="Shrink sampler objects after snapshot error" />
     <MESSAGE value="reasons for shared_cursor" />
     <MESSAGE value="Version count of Sql shown" />
@@ -1622,7 +1621,8 @@
     <MESSAGE value="Panorama-Sampler: Miminum values for SQL recording" />
     <MESSAGE value="Suppress buttons without tuning pack" />
     <MESSAGE value="Limit Sampler to SQLStat" />
-    <option name="LAST_COMMIT_MESSAGE" value="Limit Sampler to SQLStat" />
+    <MESSAGE value="Bugfix: Show SQL translation for &gt; 12.1 only" />
+    <option name="LAST_COMMIT_MESSAGE" value="Bugfix: Show SQL translation for &gt; 12.1 only" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2068,14 +2068,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="300">
@@ -2096,6 +2088,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="608">
           <caret line="123" column="9" lean-forward="true" selection-start-line="123" selection-start-column="9" selection-end-line="123" selection-end-column="9" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
           <folding />
         </state>
       </provider>
