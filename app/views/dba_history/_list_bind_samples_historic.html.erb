@@ -1,5 +1,6 @@
 <%=
     column_options = [
+            {:caption=>"Snapshot time", :data=>proc{|rec| localeDateTime(rec.end_interval_time)}, :title=>"Snapshot time (end of considered period)"},
             {:caption=>"Name",          :data=>proc{|rec| rec.name},                        :title=>t(:dba_history_list_sql_detail_historic_bind_name, :default=>"Name of bind variable in statement") },
             {:caption=>"Typ",           :data=>proc{|rec| rec.datatype_string},             :title=>"data type of bind variable"},
             {:caption=>"Last captured", :data=>proc{|rec| localeDateTime(rec.last_captured)}, :title=>"time of last capture"},

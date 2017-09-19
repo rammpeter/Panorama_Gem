@@ -550,12 +550,14 @@ class DbaHistoryController < ApplicationController
     @dbid        = prepare_param_dbid
 
     @binds = sql_select_iterator ["\
-        SELECT /* Panorama-Tool Ramm */ Name, DataType_String, Last_Captured,
-               CASE DataType_String
-                 WHEN 'TIMESTAMP' THEN TO_CHAR(ANYDATA.AccessTimestamp(Value_AnyData), '#{sql_datetime_minute_mask}')
-               ELSE Value_String END Value_String,
-               NLS_CHARSET_NAME(Character_SID) Character_Set, Precision, Scale, Max_Length
+        SELECT /* Panorama-Tool Ramm */ b.Name, b.DataType_String, b.Last_Captured,
+               CASE b.DataType_String
+                 WHEN 'TIMESTAMP' THEN TO_CHAR(ANYDATA.AccessTimestamp(b.Value_AnyData), '#{sql_datetime_minute_mask}')
+               ELSE b.Value_String END Value_String,
+               NLS_CHARSET_NAME(b.Character_SID) Character_Set, b.Precision, b.Scale, b.Max_Length,
+               ss.End_Interval_Time
         FROM   DBA_Hist_SQLBind b
+        JOIN   DBA_Hist_Snapshot ss ON ss.DBID = b.DBID AND ss.Snap_ID = b.Snap_ID AND ss.Instance_Number = b.Instance_Number
         WHERE  b.DBID            = ?
         AND    b.Instance_Number = ?
         AND    b.SQL_ID          = ?

@@ -1339,7 +1339,7 @@ class DbaSgaController < ApplicationController
         where_string << "WHERE DBMS_LOB.COMPARE(t.Translated_Text, (SELECT SQL_FullText FROM gv$SQLArea WHERE SQL_ID = ? AND RowNum < 2)) = 0"
         where_values << @translated_sql_id
       else
-        if 0 < sql_select_one(["SELECT SQL_Text FROM DBA_Hist_SQLText WHERE DBID = ? AND SQL_ID = ? AND RowNum < 2", get_dbid, @translated_sql_id])
+        if 0 < sql_select_one(["SELECT COUNT(*) FROM DBA_Hist_SQLText WHERE DBID = ? AND SQL_ID = ? AND RowNum < 2", get_dbid, @translated_sql_id])
           where_string << "WHERE DBMS_LOB.COMPARE(t.Translated_Text, (SELECT SQL_Text FROM DBA_Hist_SQLText WHERE DBID = ? AND SQL_ID = ? AND RowNum < 2)) = 0"
           where_values << get_dbid
           where_values << @translated_sql_id
