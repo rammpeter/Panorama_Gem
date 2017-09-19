@@ -202,7 +202,7 @@ column_options = [
         }, :title => t(:dba_history_list_sql_detail_historic_current_sga_hint, :default=>'Show data of SQL from current SGA (if still exists in SGA)'))
     %>
 </div>
-<% if @instance %>
+<% if @instance && (get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack || get_current_database[:management_pack_license] == :diagnostics_pack) %>
     &nbsp;
     <div class="float_left">
       <%= form_tag(url_for(:controller            => :dba_history,
