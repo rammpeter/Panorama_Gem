@@ -102,6 +102,14 @@ end
 
 <%= render :partial=>"dba_sga/list_sql_profiles" %>
 
+<% if get_db_version >= '12.1' %>
+    <% @update_area_sql_translation = get_unique_area_id %>
+    <script type="text/javascript">
+        ajax_html('<%= @update_area_sql_translation %>', 'dba_sga', 'show_sql_translations', {update_area: "<%= @update_area_sql_translation %>", translated_sql_id: "<%= @sql_id%>"});
+    </script>
+    <div id="<%= @update_area_sql_translation %>"></div>
+<% end %>
+
 <%
 def link_bind_samples(rec)
   ajax_link(fn(rec.samples), {

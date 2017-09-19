@@ -134,7 +134,8 @@
         max_snap_id = 'null';
       }
 
-      var groupby_value = dataContext.col0.replace(new RegExp(\"&\", 'g'), \"\\\\&\");
+      // escape ampersand and doublequote
+      var groupby_value = dataContext.col0.replace(new RegExp(\"&\", 'g'), \"\\\\&\").replace(String.fromCharCode(34), \"'+String.fromCharCode(34)+'\");
       //var groupby_value = jQuery(dataContext.col0).text();
 
       return '<a href=\"#\" title=\"#{"#{t(:active_session_history_list_session_statistic_historic_grouping_link_hint, :default=>"Show different")} #{next_groupby}s #{t(:of, :default=>"of")} #{@groupby}s"}\" '+
