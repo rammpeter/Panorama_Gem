@@ -236,10 +236,11 @@ END Panorama_Sampler_Snapshot;
             FROM   v$SQL_Bind_Capture
             GROUP BY SQL_ID
            ) bm ON bm.SQL_ID = b.SQL_ID AND bm.Max_Child_Number = b.Child_Number
+    WHERE  EXISTS (SELECT 1 FROM Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = b.SQL_ID AND ss.Con_DBID = p_Con_DBID) -- Only for SQLs recorded in Panorama_SQLStat in same snapshot
     ;
   END Snap_SQLBind;
 
-  PROCEDURE Snap_SQL_Plan(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
+  PROCEDURE Snap_SQL_Plan(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO Panorama_SQL_Plan (
       DBID, SQL_ID, PLAN_HASH_VALUE, ID, OPERATION, OPTIONS, OBJECT_NODE, OBJECT#, OBJECT_OWNER, OBJECT_NAME, OBJECT_ALIAS, OBJECT_TYPE, OPTIMIZER,
@@ -260,6 +261,7 @@ END Panorama_Sampler_Snapshot;
            ) pm ON pm.SQL_ID = p.SQL_ID AND pm.Plan_Hash_Value = p.Plan_Hash_Value AND pm.Max_Child_Number = p.Child_Number
     LEFT OUTER JOIN PANORAMA_SQL_PLAN e on e.DBID = p_DBID AND e.SQL_ID = p.SQL_ID AND e.Plan_Hash_Value = p.Plan_Hash_Value AND e.ID = p.ID AND e.Con_DBID = p_Con_DBID
     WHERE  e.DBID IS NULL   -- New records does not yet exists in table
+    AND    EXISTS (SELECT 1 FROM Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = p.SQL_ID AND ss.Plan_Hash_Value = p.Plan_Hash_Value AND ss.Con_DBID = p_Con_DBID) -- Only for SQLs recorded in Panorama_SQLStat in same snapshot
     ;
   END Snap_SQL_Plan;
 
@@ -368,14 +370,15 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_SQLStat;
 
-  PROCEDURE Snap_SQLText(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
+  PROCEDURE Snap_SQLText(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO Panorama_SQLText (DBID, SQL_ID, SQL_Text, Command_Type, Con_DBID, Con_ID)
     SELECT p_DBID, s.SQL_ID, s.SQL_FullText, s.Command_Type, p_Con_DBID,
            #{PanoramaConnection.db_version >= '12.1' ? "s.Con_ID" : "0"}
     FROM   v$SQLArea s
     LEFT OUTER JOIN Panorama_SQLText p ON p.DBID=p_DBID AND p.SQL_ID=s.SQL_ID AND p.Con_DBID=p_Con_DBID
-    WHERE p.SQL_ID IS NULL
+    WHERE  p.SQL_ID IS NULL  -- SQLText does not already exist
+    AND    EXISTS (SELECT 1 FROM Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = s.SQL_ID AND ss.Con_DBID = p_Con_DBID) -- Only for SQLs recorded in Panorama_SQLStat in same snapshot
     ;
   END Snap_SQLText;
 
@@ -462,11 +465,11 @@ END Panorama_Sampler_Snapshot;
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Service_Name         (p_DBID,      p_Con_DBID);
     Snap_Seg_Stat             (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
-    -- call Snap_SQLStat before any dependent statistic
+    -- call Snap_SQLStat before any dependent statistic, because dependents record only for SQLs already in SQLStat
     Snap_SQLStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID,     p_Begin_Interval_Time,     p_SQL_Min_No_of_Execs,      p_SQL_Min_Runtime_MilliSecs);
     Snap_SQLBind              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
-    Snap_SQL_Plan             (p_DBID,      p_Con_DBID);
-    Snap_SQLText              (p_DBID,      p_Con_DBID);
+    Snap_SQL_Plan             (p_Snap_ID,   p_DBID,      p_Con_DBID);
+    Snap_SQLText              (p_Snap_ID,   p_DBID,     p_Con_DBID);
     Snap_StatName             (p_DBID,      p_Con_DBID);
     Snap_Sysmetric_History    (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_System_Event         (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);

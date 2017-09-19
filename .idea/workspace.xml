@@ -6,8 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" afterPath="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -92,7 +92,7 @@
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_object_increase__Panorama_Gem.coverage" NAME="test_object_increase: Panorama_Gem Coverage Results" MODIFIED="1450105917637" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__PanoramaSamplerConfigTest___Panorama_Gem.coverage" NAME="Run test 'PanoramaSamplerConfigTest': Panorama_Gem Coverage Results" MODIFIED="1501157062144" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Test_10_2.coverage" NAME="Test 10.2 Coverage Results" MODIFIED="1454577332080" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
-    <SUITE FILE_PATH="coverage/Panorama_Gem@Development__Panorama_Gem.coverage" NAME="Development: Panorama_Gem Coverage Results" MODIFIED="1505811409550" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
+    <SUITE FILE_PATH="coverage/Panorama_Gem@Development__Panorama_Gem.coverage" NAME="Development: Panorama_Gem Coverage Results" MODIFIED="1505814577155" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__DbaSchemaControllerTest___Panorama_Gem.coverage" NAME="Run test 'DbaSchemaControllerTest': Panorama_Gem Coverage Results" MODIFIED="1465818691899" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_exadata_with_xhr__true__Panorama_Gem.coverage" NAME="test_exadata_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1490103315335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__env_controller_test___Panorama_Gem.coverage" NAME="Run test 'env_controller_test': Panorama_Gem Coverage Results" MODIFIED="1447927920645" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
@@ -135,8 +135,8 @@
       <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
-              <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
+            <state relative-caret-position="60">
+              <caret line="4" column="19" lean-forward="true" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
               <folding />
             </state>
           </provider>
@@ -152,11 +152,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="package_panorama_sampler_snapshot.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="package_panorama_sampler_snapshot.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="465" column="164" lean-forward="false" selection-start-line="465" selection-start-column="164" selection-end-line="465" selection-end-column="164" />
+            <state relative-caret-position="300">
+              <caret line="470" column="44" lean-forward="false" selection-start-line="470" selection-start-column="44" selection-end-line="470" selection-end-column="44" />
               <folding />
             </state>
           </provider>
@@ -202,7 +202,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_list_sql_sga_stat_footer.html.erb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="_list_sql_sga_stat_footer.html.erb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="357">
@@ -238,7 +238,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>Nur eoi</find>
       <find>list_sql_detail_historic</find>
       <find>list_sql_history_snapshots</find>
       <find>operation</find>
@@ -263,11 +262,12 @@
       <find>db_ver</find>
       <find>%</find>
       <find>RAC</find>
-      <find>Snap_SQLBind</find>
       <find>Snap_SQLStat</find>
       <find>p_SQL_Min_Runtime_Secs</find>
       <find>sql_min_runtime_secs</find>
       <find>SQL_Min_Runtime_Secs</find>
+      <find>Snap_SQLBind</find>
+      <find>Snap_SQLText</find>
     </findStrings>
     <replaceStrings>
       <replace>dLast_Load_Time</replace>
@@ -326,14 +326,14 @@
         <option value="$PROJECT_DIR$/app/controllers/dba_sga_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_show_sql_translations.html.erb" />
         <option value="$PROJECT_DIR$/doc/BUG_REPORT.txt" />
-        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
-        <option value="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" />
         <option value="$PROJECT_DIR$/app/controllers/panorama_sampler_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/panorama_sampler/_edit_config.html.erb" />
         <option value="$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb" />
+        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+        <option value="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" />
       </list>
     </option>
   </component>
@@ -1161,14 +1161,7 @@
       <workItem from="1505465763902" duration="4885000" />
       <workItem from="1505578657614" duration="10182000" />
       <workItem from="1505739964060" duration="924000" />
-      <workItem from="1505748707512" duration="10553000" />
-    </task>
-    <task id="LOCAL-01058" summary="Stamp panorama version into packages, Bugfix">
-      <created>1503493418335</created>
-      <option name="number" value="01058" />
-      <option name="presentableId" value="LOCAL-01058" />
-      <option name="project" value="LOCAL" />
-      <updated>1503493418335</updated>
+      <workItem from="1505748707512" duration="11750000" />
     </task>
     <task id="LOCAL-01059" summary="ASH sampling, Bugfix for ON CPU, Table_names in header">
       <created>1503500669916</created>
@@ -1506,7 +1499,14 @@
       <option name="project" value="LOCAL" />
       <updated>1505812974081</updated>
     </task>
-    <option name="localTasksCounter" value="1107" />
+    <task id="LOCAL-01107" summary="Suppress buttons without tuning pack">
+      <created>1505813476494</created>
+      <option name="number" value="01107" />
+      <option name="presentableId" value="LOCAL-01107" />
+      <option name="project" value="LOCAL" />
+      <updated>1505813476494</updated>
+    </task>
+    <option name="localTasksCounter" value="1108" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1542,7 +1542,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2154304000" />
+    <option name="totallyTimeSpent" value="2155501000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1566,7 +1566,7 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21662469" sideWeight="0.2496925" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18882175" sideWeight="0.4952343" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27812895" sideWeight="0.3464837" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.34435484" sideWeight="0.83417296" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.34435484" sideWeight="0.83417296" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32967034" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.44134077" sideWeight="0.47434783" order="11" side_tool="false" content_ui="tabs" />
@@ -1598,7 +1598,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Choose plan_hash value for baseline creation if there are multiple" />
     <MESSAGE value="Panorama-Sampler: DBA_Hist_Seg_Stat covered" />
     <MESSAGE value="Performance optimization SQL_Plan" />
     <MESSAGE value="Shrink sampler objects after snapshot error" />
@@ -1623,7 +1622,8 @@
     <MESSAGE value="Switch to rails 5.1.4" />
     <MESSAGE value="SQL translations for 12.1.0.1" />
     <MESSAGE value="Panorama-Sampler: Miminum values for SQL recording" />
-    <option name="LAST_COMMIT_MESSAGE" value="Panorama-Sampler: Miminum values for SQL recording" />
+    <MESSAGE value="Suppress buttons without tuning pack" />
+    <option name="LAST_COMMIT_MESSAGE" value="Suppress buttons without tuning pack" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2026,26 +2026,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="244">
           <caret line="73" column="113" lean-forward="false" selection-start-line="73" selection-start-column="113" selection-end-line="73" selection-end-column="113" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="465" column="164" lean-forward="false" selection-start-line="465" selection-start-column="164" selection-end-line="465" selection-end-column="164" />
           <folding />
         </state>
       </provider>
@@ -2096,6 +2080,22 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="357">
           <caret line="61" column="0" lean-forward="true" selection-start-line="61" selection-start-column="0" selection-end-line="61" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="19" lean-forward="true" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="470" column="44" lean-forward="false" selection-start-line="470" selection-start-column="44" selection-end-line="470" selection-end-column="44" />
           <folding />
         </state>
       </provider>
