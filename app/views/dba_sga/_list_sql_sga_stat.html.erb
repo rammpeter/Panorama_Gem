@@ -67,7 +67,18 @@ end
           <div id='<%= @update_area_action %>'></div>
         </td>        </tr>
         <tr title="<%= t(:dba_sga_list_sql_sga_stat_object_state_hint, :default=>'Object status of SQL') %>">            <td>Object status</td><td align="center"><%= @sql.object_status %></td>        </tr>
-        <tr title="<%= "#{t(:dba_sga_list_sql_sga_stat_plsql_hint, :default=>'Program name and line number if SQL is executed within PL/SQL')}\nType=#{@sql.program_type}\nLast DDL=#{localeDateTime(@sql.program_last_ddl_time)}" %>">            <td><%= t(:dba_sga_list_sql_sga_stat_plsql_caption, :default=>'PL/SQL program / line') %></td><td align="center"><%= "#{@sql.program_name} : #{fn(@sql.program_lineno)}" %></td>        </tr>
+        <tr title="<%= "#{t(:dba_sga_list_sql_sga_stat_plsql_hint, :default=>'Program name and line number if SQL is executed within PL/SQL')}\nType=#{@sql.program_type}\nLast DDL=#{localeDateTime(@sql.program_last_ddl_time)}" %>">
+          <td><%= t(:dba_sga_list_sql_sga_stat_plsql_caption, :default=>'PL/SQL program / line') %></td>
+          <td align="center"><%=
+            ajax_link("#{@sql.program_owner}.#{@sql.program_name} : #{fn(@sql.program_lineno)}", {
+                :controller    => :dba_schema,
+                :action        => :list_object_description,
+                :owner         => @sql.program_owner,
+                :segment_name  => @sql.program_name,
+                :update_area  => @update_area
+            }, :title=>"Show PL/SQL details at lower bound of browser page")
+          %></td>
+        </tr>
         <tr title="<%= t(:dba_sga_list_sql_sga_stat_first_load_hint, :default=>'First occurrence of SQL in SGA') %>">            <td>First Load Time</td><td align="center"><%= localeDateTime(@sql.first_load_time) %></td>        </tr>
         <tr title="<%= t(:dba_sga_list_sql_sga_stat_last_load_hint, :default=>'Last load time of SQL in SGA, this is start time for cumulative statistics in SGA') %>">            <td>Last Load Time</td><td align="center"><%= localeDateTime(@sql.last_load_time) %></td>        </tr>
         <tr title="<%= t(:dba_sga_list_sql_sga_stat_last_active_hint, :default=>'End of last execution of SQL') %>">            <td>Last Active Time</td><td align="center"><%= @sql.last_active_time %></td>        </tr>

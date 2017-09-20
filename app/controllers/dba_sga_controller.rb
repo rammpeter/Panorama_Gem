@@ -202,7 +202,7 @@ class DbaSgaController < ApplicationController
                 s.Plan_Hash_Value, /* Enthaelt im Falle v$SQLArea nur einem von mehreren moeglichen Werten */
                 s.Optimizer_Env_Hash_Value, s.Module, s.Action, s.Inst_ID,
                 s.Parsing_Schema_Name, SQL_Profile,
-                o.Owner||'.'||o.Object_Name Program_Name, o.Object_Type Program_Type, o.Last_DDL_Time Program_Last_DDL_Time,
+                o.Owner Program_Owner, o.Object_Name Program_Name, o.Object_Type Program_Type, o.Last_DDL_Time Program_Last_DDL_Time,
                 s.Program_Line# Program_LineNo, #{'SQL_Plan_Baseline, ' if get_db_version >= '11.2'}
                 DBMS_SQLTUNE.SQLTEXT_TO_SIGNATURE(SQL_FullText, 0) Exact_Signature,
                 DBMS_SQLTUNE.SQLTEXT_TO_SIGNATURE(SQL_FullText, 1) Force_Signature

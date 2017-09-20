@@ -774,18 +774,24 @@ class DbaSchemaController < ApplicationController
 
 
   def list_plsql_description
-    @owner         = params[:owner]
-    @object_name   = params[:object_name]
-    @object_type   = params[:object_type]
+    @owner                = params[:owner]
+    @object_name          = params[:object_name]
+    @object_type          = params[:object_type]
+    @current_update_area  = params[:update_area]
+    @show_line_numbers    = params[:show_line_numbers]
+    @show_line_numbers    = nil if @show_line_numbers == ''
+
 
     @dependencies = get_dependencies_count(@owner, @object_name, @object_type)
     @grants       = get_grant_count(@owner, @object_name)
 
     @attribs = sql_select_all ["SELECT o.Created, o.Last_DDL_Time, o.Status FROM DBA_Objects o WHERE o.Owner = ? AND o.Object_Name = ? AND o.Object_Type = ?", @owner, @object_name, @object_type]
 
-    @source = 'CREATE OR REPLACE '
+    line_no = 1
+    @source = "#{line_no.to_s.rjust(5)+'  ' if @show_line_numbers}CREATE OR REPLACE "
     sql_select_all(["SELECT Text FROM DBA_Source WHERE Owner=? AND Name=? AND Type = ? ORDER BY Line", @owner, @object_name, @object_type]).each do |r|
-      @source << r.text
+      @source << "#{line_no.to_s.rjust(5)+'  ' if @show_line_numbers && line_no > 1}#{r.text}"
+      line_no += 1
     end
 
     render_partial :list_plsql_description

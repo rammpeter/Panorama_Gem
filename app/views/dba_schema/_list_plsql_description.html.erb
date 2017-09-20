@@ -59,4 +59,17 @@
       }, :title => "Show grants for #{@object_type} #{@owner}.#{@object_name}")
   %>
 </div>
-<div id="<%= @update_area %>" style="clear:both;"></div>
+
+  <div class="float_left">
+    <%= ajax_submit(@show_line_numbers ? 'Hide line numbers' : 'Show line numbers', {
+        :action             => :list_plsql_description,
+        :owner              => @owner,
+        :object_name        => @object_name,
+        :object_type        => @object_type,
+        :show_line_numbers  => @show_line_numbers ? nil : 1,
+        :update_area        => @current_update_area,
+    }, :title => "Toggle line numbers for source text")
+    %>
+  </div>
+
+  <div id="<%= @update_area %>" style="clear:both;"></div>
