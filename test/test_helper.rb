@@ -91,19 +91,21 @@ class ActiveSupport::TestCase
 
     sampler_config = create_prepared_database_config(test_config)
 
-    sampler_config[:id]                      = 1
-    sampler_config[:name]                    = 'Test-Config'
-    sampler_config[:client_salt]             = EngineConfig.config.panorama_sampler_master_password  # identic doubled like WorkerThread.initialized
-    sampler_config[:management_pack_license] = :none                            # assume no management packs are licensed for PanoramaSampler-execution
-    sampler_config[:privilege]               = 'normal'
-    sampler_config[:query_timeout]           = 20                               # single test should not last longer
+    sampler_config[:id]                         = 1
+    sampler_config[:name]                       = 'Test-Config'
+    sampler_config[:client_salt]                = EngineConfig.config.panorama_sampler_master_password  # identic doubled like WorkerThread.initialized
+    sampler_config[:management_pack_license]    = :none                         # assume no management packs are licensed for PanoramaSampler-execution
+    sampler_config[:privilege]                  = 'normal'
+    sampler_config[:query_timeout]              = 20                            # single test should not last longer
 
     sampler_config[:password] = Encryption.encrypt_value(test_config["test_password"], sampler_config[:client_salt])
     sampler_config[:panorama_sampler_schema] = 'panorama_test'
 
-    sampler_config[:owner] = sampler_config[:user]                              # assume owner = connected user for test
-    sampler_config[:snapshot_cycle]         = 1                                 # Snapshot should start immediate
-    sampler_config[:snapshot_retention]     = 1
+    sampler_config[:owner]                      = sampler_config[:user]                             # assume owner = connected user for test
+    sampler_config[:snapshot_cycle]             = 1                             # Snapshot should start immediate
+    sampler_config[:snapshot_retention]         = 1
+    sampler_config[:sql_min_no_of_execs]        = 1
+    sampler_config[:sql_min_runtime_millisecs]  = 100
 
 
     if PanoramaSamplerConfig.config_entry_exists?(sampler_config[:id])
