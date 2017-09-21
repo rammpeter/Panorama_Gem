@@ -1978,11 +1978,17 @@ FROM (
 
   def generate_baseline_creation
     sql_id          = params[:sql_id]
-    min_snap_id     = params[:min_snap_id]
-    max_snap_id     = params[:max_snap_id]
+    min_snap_id     = params[:min_snap_id].to_i
+    max_snap_id     = params[:max_snap_id].to_i
     plan_hash_value = params[:plan_hash_value]
 
     sts_name = 'PANORAMA_STS'
+
+    snap_corrected_warning = ''
+    if min_snap_id == max_snap_id
+      min_snap_id -= 1
+      snap_corrected_warning = "\n-- End snapshot ID (#{max_snap_id}) must be greater than begin snapshot ID ((#{max_snap_id}).\nTherfore begin snapshot ID has been adjusted to #{min_snap_id}!\n\n"
+    end
 
     result = "
 -- Build SQL plan baseline for SQL-ID = '#{sql_id}', plan hash value = #{plan_hash_value}
@@ -1990,7 +1996,7 @@ FROM (
 -- based on idea from rmoff (https://rnm1978.wordpress.com/?s=baseline)
 
 -- to create a SQL-baseline execute this snippet as SYSDBA in SQL*Plus
-
+#{snap_corrected_warning}
 -- Drop eventually existing SQL Tuning Set (STS)
 BEGIN
   DBMS_SQLTUNE.DROP_SQLSET(sqlset_name => '#{sts_name}');
