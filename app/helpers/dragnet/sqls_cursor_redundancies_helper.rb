@@ -60,6 +60,8 @@ This selection looks for statements with identical execution plans by plan-hash-
                             COUNT(DISTINCT a.SQL_ID)                                          \"No. of different SQL-IDs\",
                             MIN(a.Last_Active_Time)                                           \"Oldest active time\",
                             MAX(a.Last_Active_Time)                                           \"Youngest active time\",
+                            MIN(TO_DATE(a.First_Load_Time, 'YYYY-MM-DD/HH24:MI:SS'))          \"First load time\",
+                            ROUND(SUM(a.Elapsed_Time)/1000000)                                \"Elapsed time (seconds)\",
                             MAX(a.SQL_ID) KEEP (DENSE_RANK LAST ORDER BY Last_Active_Time)    \"SQL_ID\",
                             ROUND(SUM(a.Sharable_Mem)  /(1024*1024), 2)                       \"Sharable memory (MB)\",
                             ROUND(SUM(a.Persistent_Mem)/(1024*1024), 2)                       \"Persistent memory (MB)\",
