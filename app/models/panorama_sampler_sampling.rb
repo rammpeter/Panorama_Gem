@@ -69,9 +69,16 @@ class PanoramaSamplerSampling
 
     ## TODO: Con_DBID mit realen werten des Containers füllen, falls PDB-übergreifendes Sampling gewünscht wird
     PanoramaConnection.sql_execute [sql,
-                                    @snap_id, PanoramaConnection.instance_number, PanoramaConnection.dbid, con_dbid, PanoramaConnection.con_id,
-                                    begin_interval_time, @sampler_config[:snapshot_cycle], @sampler_config[:snapshot_retention],
-                                    @sampler_config[:sql_min_no_of_execs], @sampler_config[:sql_min_runtime_millisecs]
+                                    @snap_id,
+                                    PanoramaConnection.instance_number,
+                                    PanoramaConnection.dbid,
+                                    con_dbid,
+                                    PanoramaConnection.con_id,
+                                    begin_interval_time,
+                                    @sampler_config[:snapshot_cycle],
+                                    @sampler_config[:snapshot_retention],
+                                    @sampler_config[:sql_min_no_of_execs],
+                                    @sampler_config[:sql_min_runtime_millisecs]
                                    ]
   end
 
