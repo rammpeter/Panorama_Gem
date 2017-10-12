@@ -144,7 +144,10 @@ Additional info about usage of index can be gained by querying DBA_Hist_Seg_Stat
             :desc  => t(:dragnet_helper_9_desc, :default=>"DB monitors usage (access) on indexes if declared so before by 'ALTER INDEX ... MONITORING USAGE'.
 Results of usage monitoring can be queried from v$Object_Usage but only for current schema.
 Over all schemas usage can be monitored with following SQL.
-Caution: GATHER_INDEX_STATS also counts as usage even if no other select touches this index.
+Caution:
+- Recursive index-lookup by foreign key validation does not count as usage in v$Object_Usage.
+- So please be careful if index is only needed for foreign key protection (to prevent full scans on detail-table at deletes on master-table).
+- GATHER_TABLE_STATS and GATHER_INDEX_STATS may also counts as usage even if no other select touches this index (no longer detected in DB-version >= 12).
 
 Additional information about index usage can be requested from DBA_Hist_Seg_Stat and DBA_Hist_Active_Sess_History."),
             :sql=> "SELECT /* DB-Tools Ramm: unused indexes */ u.*, i.Num_Rows, i.Distinct_Keys,
