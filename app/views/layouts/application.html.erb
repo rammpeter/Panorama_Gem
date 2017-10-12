@@ -28,7 +28,8 @@
         autoOpen:false,
         modal:true,
         title:'Loading ...',
-        closeText: ''
+        closeText: '',
+        close: function(){ indicator_call_stack_depth = 0}                      // Ensure call counter is reset if dialog closed by call or ESC-pressed
       });
       jQuery("#login_dialog")
           .dialog({
