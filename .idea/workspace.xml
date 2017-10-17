@@ -6,8 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/helpers/dragnet/unnecessary_indexes_helper.rb" afterPath="$PROJECT_DIR$/app/helpers/dragnet/unnecessary_indexes_helper.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/locales/de.yml" afterPath="$PROJECT_DIR$/config/locales/de.yml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -132,21 +131,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="database.yml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/dummy/config/database.yml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="330">
-              <caret line="22" column="28" lean-forward="false" selection-start-line="22" selection-start-column="13" selection-end-line="22" selection-end-column="28" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="195">
-              <caret line="13" column="0" lean-forward="false" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
+            <state relative-caret-position="75">
+              <caret line="5" column="36" lean-forward="false" selection-start-line="5" selection-start-column="36" selection-end-line="5" selection-end-column="36" />
               <folding />
             </state>
           </provider>
@@ -182,11 +171,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="unnecessary_indexes_helper.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="unnecessary_indexes_helper.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/helpers/dragnet/unnecessary_indexes_helper.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="297">
-              <caret line="148" column="67" lean-forward="false" selection-start-line="148" selection-start-column="67" selection-end-line="148" selection-end-column="67" />
+              <caret line="148" column="139" lean-forward="false" selection-start-line="148" selection-start-column="86" selection-end-line="148" selection-end-column="139" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="addition_controller.rb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/controllers/addition_controller.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="0">
+              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -219,16 +218,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="300">
               <caret line="20" column="34" lean-forward="false" selection-start-line="20" selection-start-column="33" selection-end-line="20" selection-end-column="34" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="sqls_cursor_redundancies_helper.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/helpers/dragnet/sqls_cursor_redundancies_helper.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="585">
-              <caret line="42" column="49" lean-forward="false" selection-start-line="42" selection-start-column="48" selection-end-line="42" selection-end-column="49" />
               <folding />
             </state>
           </provider>
@@ -330,10 +319,10 @@
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" />
         <option value="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" />
         <option value="$PROJECT_DIR$/app/controllers/panorama_sampler_controller.rb" />
-        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/app/views/layouts/application.html.erb" />
         <option value="$PROJECT_DIR$/config/locales/de.yml" />
         <option value="$PROJECT_DIR$/app/helpers/dragnet/unnecessary_indexes_helper.rb" />
+        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
       </list>
     </option>
   </component>
@@ -1166,14 +1155,7 @@
       <workItem from="1506273887834" duration="557000" />
       <workItem from="1506325998019" duration="4821000" />
       <workItem from="1506492602255" duration="6956000" />
-      <workItem from="1507720628942" duration="4130000" />
-    </task>
-    <task id="LOCAL-01069" summary="SQL binds added">
-      <created>1503918031183</created>
-      <option name="number" value="01069" />
-      <option name="presentableId" value="LOCAL-01069" />
-      <option name="project" value="LOCAL" />
-      <updated>1503918031183</updated>
+      <workItem from="1507720628942" duration="9319000" />
     </task>
     <task id="LOCAL-01070" summary="SQL binds added, PK corrected">
       <created>1503930612826</created>
@@ -1511,7 +1493,14 @@
       <option name="project" value="LOCAL" />
       <updated>1507807065467</updated>
     </task>
-    <option name="localTasksCounter" value="1118" />
+    <task id="LOCAL-01118" summary="Foreign key usage">
+      <created>1507812775533</created>
+      <option name="number" value="01118" />
+      <option name="presentableId" value="LOCAL-01118" />
+      <option name="project" value="LOCAL" />
+      <updated>1507812775533</updated>
+    </task>
+    <option name="localTasksCounter" value="1119" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1547,7 +1536,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2192981000" />
+    <option name="totallyTimeSpent" value="2198170000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1603,7 +1592,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="DBA_Hist_System_Event" />
     <MESSAGE value="DBA_Hist_Sysmetric_history" />
     <MESSAGE value="Fix bug without prev. records" />
     <MESSAGE value="DBA_Hist_Latch" />
@@ -1628,7 +1616,8 @@
     <MESSAGE value="New column in dragnet" />
     <MESSAGE value="Limit for sampling" />
     <MESSAGE value="Reset indicator_call_stack_depth if ESC pressed on indicator dialog" />
-    <option name="LAST_COMMIT_MESSAGE" value="Reset indicator_call_stack_depth if ESC pressed on indicator dialog" />
+    <MESSAGE value="Foreign key usage" />
+    <option name="LAST_COMMIT_MESSAGE" value="Foreign key usage" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1727,20 +1716,6 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/views/dba_history/_show_system_events_historic.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="130" lean-forward="false" selection-start-line="0" selection-start-column="130" selection-end-line="0" selection-end-column="130" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/active_session_history/_show_session_statistics_historic.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="161" lean-forward="false" selection-start-line="2" selection-start-column="82" selection-end-line="2" selection-end-column="161" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/dba_history/_show_system_statistics_historic.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -1989,6 +1964,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3795">
           <caret line="253" column="121" lean-forward="false" selection-start-line="253" selection-start-column="17" selection-end-line="253" selection-end-column="121" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2025,14 +2001,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="330">
           <caret line="22" column="28" lean-forward="false" selection-start-line="22" selection-start-column="13" selection-end-line="22" selection-end-column="28" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="13" column="0" lean-forward="false" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -2098,7 +2066,31 @@
     <entry file="file://$PROJECT_DIR$/app/helpers/dragnet/unnecessary_indexes_helper.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="297">
-          <caret line="148" column="67" lean-forward="false" selection-start-line="148" selection-start-column="67" selection-end-line="148" selection-end-column="67" />
+          <caret line="148" column="139" lean-forward="false" selection-start-line="148" selection-start-column="86" selection-end-line="148" selection-end-column="139" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/helpers/addition_helper.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="108" lean-forward="false" selection-start-line="7" selection-start-column="89" selection-end-line="7" selection-end-column="108" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/addition_controller.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="36" lean-forward="false" selection-start-line="5" selection-start-column="36" selection-end-line="5" selection-end-column="36" />
           <folding />
         </state>
       </provider>
