@@ -3,8 +3,9 @@ class PanoramaSamplerStructureCheck
   include PanoramaSampler::PackagePanoramaSamplerAsh
   include PanoramaSampler::PackagePanoramaSamplerSnapshot
 
-  def self.do_check(sampler_config, only_ash_tables)
-    PanoramaSamplerStructureCheck.new(sampler_config).do_check_internal(only_ash_tables)
+  def self.do_check(sampler_config, domain)
+    raise "Unsupported domain #{domain}" if ![:AWR, :ASH, :OBJECT_SIZE].include? domain
+    PanoramaSamplerStructureCheck.new(sampler_config).do_check_internal(domain)
   end
 
   def self.remove_tables(sampler_config)
@@ -40,6 +41,7 @@ class PanoramaSamplerStructureCheck
   [
       {
         table_name: ,
+        domain:,
         columns: [
             {
               column_name:
@@ -56,6 +58,7 @@ class PanoramaSamplerStructureCheck
   TABLES = [
       {
           table_name: 'Internal_V$Active_Sess_History',
+          domain: :ASH,
           columns: [
               { column_name:  'Instance_Number',                column_type:  'NUMBER',     not_null: true  },
               { column_name:  'SAMPLE_ID',                      column_type:  'NUMBER',     not_null: true },
@@ -170,6 +173,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Internal_Active_Sess_History',
+          domain: :AWR,
           columns: [
               { column_name:  'Snap_ID',                        column_type:  'NUMBER',     not_null: true },
               { column_name:  'DBID',                           column_type:  'NUMBER',     not_null: true },
@@ -280,6 +284,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Panorama_DB_Cache_Advice',
+          domain: :AWR,
           columns: [
               { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
@@ -302,6 +307,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Panorama_Latch',
+          domain: :AWR,
           columns: [
               { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
@@ -327,6 +333,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Panorama_Log',
+          domain: :AWR,
           columns: [
               { column_name:  'Snap_ID',                        column_type:  'NUMBER',     not_null: true },
               { column_name:  'DBID',                           column_type:  'NUMBER',     not_null: true },
@@ -346,7 +353,21 @@ class PanoramaSamplerStructureCheck
           primary_key: ['DBID', 'Snap_ID', 'Instance_Number', 'Group#', 'Thread#', 'Sequence#', 'Con_DBID']
       },
       {
+          table_name: 'Panorama_Object_Sizes',
+          domain: :OBJECT_SIZE,
+          columns: [
+              { column_name:  'Owner',                          column_type:  'VARCHAR2', precision: 128,  not_null: true },
+              { column_name:  'Segment_Name',                   column_type:  'VARCHAR2', precision: 128,  not_null: true },
+              { column_name:  'Segment_Type',                   column_type:  'VARCHAR2', precision: 128,  not_null: true },
+              { column_name:  'Tablespace_Name',                column_type:  'VARCHAR2', precision: 128,  not_null: true },
+              { column_name:  'Gather_Date',                    column_type:  'DATE',     not_null: true },
+              { column_name:  'Bytes',                          column_type:  'NUMBER',   not_null: true },
+          ],
+          primary_key: ['Owner', 'Segment_Name', 'Segment_Type', 'Tablespace_Name', 'Gather_Date']
+      },
+      {
           table_name: 'Panorama_Seg_Stat',
+          domain: :AWR,
           columns: [
               { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
@@ -403,6 +424,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Panorama_Service_Name',
+          domain: :ASH,
           columns: [
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
               { column_name:  'SERVICE_NAME_HASH',              column_type:   'NUMBER',    not_null: true },
@@ -414,6 +436,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Panorama_Snapshot',
+          domain: :AWR,
           columns: [
               { column_name:  'Snap_ID',                        column_type:  'NUMBER',     not_null: true },
               { column_name:  'DBID',                           column_type:  'NUMBER',     not_null: true },
@@ -427,6 +450,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Panorama_SQLBind',
+          domain: :AWR,
           columns: [
               { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
@@ -452,6 +476,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Panorama_SQL_Plan',
+          domain: :AWR,
           columns: [
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
               { column_name:  'SQL_ID',                         column_type:   'VARCHAR2',  not_null: true, precision: 13 },
@@ -497,6 +522,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Panorama_SQLStat',
+          domain: :AWR,
           columns: [
               { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
@@ -584,6 +610,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Panorama_SQLText',
+          domain: :AWR,
           columns: [
               { column_name:  'DBID',                           column_type:  'NUMBER',     not_null: true },
               { column_name:  'SQL_ID',                         column_type:  'VARCHAR2',   not_null: true, precision: 13  },
@@ -596,6 +623,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Internal_StatName',
+          domain: :AWR,
           columns: [
               { column_name:  'DBID',                           column_type:   'NUMBER' },
               { column_name:  'STAT_ID',                        column_type:   'NUMBER',    not_null: true },
@@ -607,6 +635,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Panorama_Sysmetric_History',
+          domain: :AWR,
           columns: [
               { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
@@ -626,6 +655,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Panorama_System_Event',
+          domain: :AWR,
           columns: [
               { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
@@ -646,6 +676,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Internal_SysStat',
+          domain: :AWR,
           columns: [
               { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
@@ -659,6 +690,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Panorama_TopLevelCall_Name',
+          domain: :ASH,
           columns: [
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
               { column_name:  'Top_Level_Call#',                column_type:   'NUMBER',    not_null: true},
@@ -670,6 +702,7 @@ class PanoramaSamplerStructureCheck
       },
       {
           table_name: 'Panorama_WR_Control',
+          domain: :AWR,
           columns: [
               { column_name:  'DBID',                           column_type:   'NUMBER',                        not_null: true },
               { column_name:  'SNAP_INTERVAL',                  column_type:   'INTERVAL DAY(5) TO SECOND(1)',  not_null: true},
@@ -710,6 +743,7 @@ ORDER BY Column_ID
  [
      {
          view_name: ,
+         domain: ,
          view_select: ""
      }
  ]
@@ -719,6 +753,7 @@ ORDER BY Column_ID
     [
         {
             view_name: 'Panorama_V$Active_Sess_History',
+            domain: :ASH,
             view_select: proc{"SELECT h.INSTANCE_NUMBER Inst_ID, h.SAMPLE_ID, h.SAMPLE_TIME, h.IS_AWR_SAMPLE, h.SESSION_ID, h.SESSION_SERIAL#, h.SESSION_TYPE, h.FLAGS, h.USER_ID, h.SQL_ID, h.IS_SQLID_CURRENT, h.SQL_CHILD_NUMBER,
                                       h.SQL_OPCODE, h.SQL_OPNAME, h.FORCE_MATCHING_SIGNATURE, h.TOP_LEVEL_SQL_ID, h.TOP_LEVEL_SQL_OPCODE, h.SQL_PLAN_HASH_VALUE, h.SQL_PLAN_LINE_ID, h.SQL_PLAN_OPERATION, h.SQL_PLAN_OPTIONS,
                                       h.SQL_EXEC_ID, h.SQL_EXEC_START, h.PLSQL_ENTRY_OBJECT_ID, h.PLSQL_ENTRY_SUBPROGRAM_ID, h.PLSQL_OBJECT_ID, h.PLSQL_SUBPROGRAM_ID, h.QC_INSTANCE_ID, h.QC_SESSION_ID, h.QC_SESSION_SERIAL#, h.PX_FLAGS,
@@ -737,6 +772,7 @@ ORDER BY Column_ID
         },
         {
             view_name: 'Panorama_Active_Sess_History',
+            domain: :AWR,
             view_select: proc{"SELECT h.SNAP_ID, h.DBID, h.INSTANCE_NUMBER, h.CON_DBID, h.CON_ID, h.SAMPLE_ID, h.SAMPLE_TIME, h.SESSION_ID, h.SESSION_SERIAL#, h.SESSION_TYPE, h.FLAGS, h.USER_ID, h.SQL_ID, h.IS_SQLID_CURRENT, h.SQL_CHILD_NUMBER, h.SQL_OPCODE, h.SQL_OPNAME,
                                       h.FORCE_MATCHING_SIGNATURE, h.TOP_LEVEL_SQL_ID, h.TOP_LEVEL_SQL_OPCODE, h.SQL_PLAN_HASH_VALUE, h.SQL_PLAN_LINE_ID, h.SQL_PLAN_OPERATION, h.SQL_PLAN_OPTIONS, h.SQL_EXEC_ID, h.SQL_EXEC_START, h.PLSQL_ENTRY_OBJECT_ID,
                                       h.PLSQL_ENTRY_SUBPROGRAM_ID, h.PLSQL_OBJECT_ID, h.PLSQL_SUBPROGRAM_ID, h.QC_INSTANCE_ID, h.QC_SESSION_ID, h.QC_SESSION_SERIAL#, h.PX_FLAGS, h.EVENT, h.EVENT_ID, h.SEQ#, h.P1TEXT, h.P1, h.P2TEXT, h.P2, h.P3TEXT, h.P3, h.WAIT_CLASS,
@@ -754,12 +790,14 @@ ORDER BY Column_ID
         },
         {
             view_name: 'Panorama_Stat_Name',
+            domain: :AWR,
             view_select: proc{"SELECT s.DBID, s.STAT_ID, s.NAME Stat_Name, s.CON_DBID, s.CON_ID
                                FROM   Internal_StatName s
                               "}
         },
         {
             view_name: 'Panorama_SysStat',
+            domain: :AWR,
             view_select: proc{"SELECT s.SNAP_ID, s.DBID, s.INSTANCE_NUMBER, s.STAT_ID, n.NAME Stat_Name, s.VALUE, s.CON_DBID, s.CON_ID
                                FROM   Internal_SysStat s
                                LEFT OUTER JOIN Internal_StatName n ON n.Stat_ID = s.Stat_ID
@@ -831,19 +869,19 @@ ORDER BY Column_ID
   end
 
   # Check data structures, for ASH-Thread or snapshot thread
-  def do_check_internal(only_ash_tables)
+  def do_check_internal(domain)
 
     @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config[:owner].upcase]
     @ora_tab_privs    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM ALL_TAB_PRIVS WHERE Table_Schema = ?  AND Privilege = 'SELECT'  AND Grantee = 'PUBLIC'",  @sampler_config[:owner].upcase]
 
     TABLES.each do |table|
-      check_table_existence(table) if check_table_in_this_thread?(table[:table_name], only_ash_tables)
+      check_table_existence(table) if table[:domain] == domain
     end
 
     @ora_tab_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config[:owner].upcase]
     @ora_tab_colnull  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name, Nullable FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config[:owner].upcase]
     TABLES.each do |table|
-      check_table_columns(table) if check_table_in_this_thread?(table[:table_name], only_ash_tables)
+      check_table_columns(table) if table[:domain] == domain
     end
 
     @ora_tab_pkeys    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Constraints WHERE Owner = ? AND Constraint_Type='P'", @sampler_config[:owner].upcase]
@@ -855,11 +893,11 @@ ORDER BY Column_ID
     @ora_indexes      = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name FROM All_Indexes WHERE Owner = ?", @sampler_config[:owner].upcase]
     @ora_ind_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Column_Name, Column_Position FROM All_Ind_Columns WHERE Table_Owner = ?", @sampler_config[:owner].upcase]
     TABLES.each do |table|
-      check_table_pkey(table) if check_table_in_this_thread?(table[:table_name], only_ash_tables)
+      check_table_pkey(table) if table[:domain] == domain
     end
 
     TABLES.each do |table|
-      check_table_indexes(table) if check_table_in_this_thread?(table[:table_name], only_ash_tables)
+      check_table_indexes(table) if table[:domain] == domain
     end
 
 
@@ -867,28 +905,24 @@ ORDER BY Column_ID
     @ora_view_texts   = PanoramaConnection.sql_select_all ["SELECT View_Name, Text FROM All_Views WHERE Owner = ?",  @sampler_config[:owner].upcase]
     @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config[:owner].upcase]
     VIEWS.each do |view|
-      check_view(view) if check_view_in_this_thread?(view[:view_name], only_ash_tables)
+      check_view(view) if view[:domain] == domain
     end
 
     # Check if accessing v$-tables from within PL/SQL-Package is possible
     @sampler_config[:select_any_table] = (0 < PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM DBA_Sys_Privs WHERE Grantee = ? AND Privilege = 'SELECT ANY TABLE'", @sampler_config[:user].upcase]))
 
     if @sampler_config[:select_any_table]                                       # call PL/SQL package? v$Tables with SELECT_ANY_CATALOG-role are accessible in PL/SQL only if SELECT ANY TABLE is granted
-      if only_ash_tables
-        # Check PL/SQL package
+      case domain
+        when :AWR then
+          filename = PanoramaSampler::PackagePanoramaSamplerSnapshot.instance_method(:panorama_sampler_snapshot_spec).source_location[0]
 
-        # Get Path to this model class as base for sql files
-        # source_dir = Pathname(PanoramaSamplerStructureCheck.instance_method(:do_check_internal).source_location[0]).dirname.join('../helpers/panorama_sampler')
+          create_or_check_package(filename, panorama_sampler_snapshot_spec, 'PANORAMA_SAMPLER_SNAPSHOT', :spec)
+          create_or_check_package(filename, panorama_sampler_snapshot_body, 'PANORAMA_SAMPLER_SNAPSHOT', :body)
+        when :ASH then
+          filename = PanoramaSampler::PackagePanoramaSamplerAsh.instance_method(:panorama_sampler_ash_spec).source_location[0]
 
-        filename = PanoramaSampler::PackagePanoramaSamplerAsh.instance_method(:panorama_sampler_ash_spec).source_location[0]
-
-        create_or_check_package(filename, panorama_sampler_ash_spec, 'PANORAMA_SAMPLER_ASH', :spec)
-        create_or_check_package(filename, panorama_sampler_ash_body, 'PANORAMA_SAMPLER_ASH', :body)
-      else                                                                        # for snapshot thread
-        filename = PanoramaSampler::PackagePanoramaSamplerSnapshot.instance_method(:panorama_sampler_snapshot_spec).source_location[0]
-
-        create_or_check_package(filename, panorama_sampler_snapshot_spec, 'PANORAMA_SAMPLER_SNAPSHOT', :spec)
-        create_or_check_package(filename, panorama_sampler_snapshot_body, 'PANORAMA_SAMPLER_SNAPSHOT', :body)
+          create_or_check_package(filename, panorama_sampler_ash_spec, 'PANORAMA_SAMPLER_ASH', :spec)
+          create_or_check_package(filename, panorama_sampler_ash_body, 'PANORAMA_SAMPLER_ASH', :body)
       end
     end
   end
@@ -976,18 +1010,11 @@ ORDER BY Column_ID
     end
   end
 
-  # Check if this table check belongs to ash or snapshot
-  def check_table_in_this_thread?(table_name, only_ash_tables)
-    ash_tables = ['Internal_V$Active_Sess_History'.upcase, 'Panorama_TopLevelCall_Name'.upcase, 'Panorama_Service_Name'.upcase]
-    (only_ash_tables && ash_tables.include?(table_name.upcase)) ||  (!only_ash_tables && !ash_tables.include?(table_name.upcase))
-  end
-
-  def check_view_in_this_thread?(view_name, only_ash_tables)
-    ash_views = ['Panorama_V$Active_Sess_History'.upcase]
-    (only_ash_tables && ash_views.include?(view_name.upcase)) ||  (!only_ash_tables && !ash_views.include?(view_name.upcase))
-  end
 
   def check_table_existence(table)
+    @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config[:owner].upcase] unless @ora_tables
+    @ora_tab_privs    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM ALL_TAB_PRIVS WHERE Table_Schema = ?  AND Privilege = 'SELECT'  AND Grantee = 'PUBLIC'",  @sampler_config[:owner].upcase] unless @ora_tab_privs
+
     if !@ora_tables.include?({'table_name' => table[:table_name].upcase})
       ############# Check Table existence
       log "Table #{table[:table_name]} does not exist"
@@ -1168,6 +1195,4 @@ ORDER BY Column_ID
     end
 
   end
-
-
 end

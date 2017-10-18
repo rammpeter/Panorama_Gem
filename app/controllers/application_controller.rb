@@ -113,7 +113,6 @@ class ApplicationController < ActionController::Base
   # Aktivitäten nach Requestbearbeitung
   def after_request
     PanoramaConnection.release_connection                                       # Free DB connection
-    PanoramaConnection.reset_thread_local_attributes
   end
 
   ####################################### only protected and private methods from here #####################################

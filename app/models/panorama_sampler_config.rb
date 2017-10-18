@@ -58,18 +58,27 @@ class PanoramaSamplerConfig
     raise "Password is mandatory" if (entry[:password].nil? || entry[:password] == '')
     if entry[:snapshot_cycle] <=0 || (60 % entry[:snapshot_cycle] != 0 && entry[:snapshot_cycle] % 60 != 0) || entry[:snapshot_cycle] % 5 != 0
       # Allow wrong values if master password is test password
-      raise "Snapshot cycle must be a multiple of 5 minutes\nand divisible without remainder from 60 minutes or multiple of 60 minutes\ne.g. 5, 10, 15, 20, 30, 60 or 120 minutes" if EngineConfig.config.panorama_sampler_master_password != 'hugo'
+      raise "AWR/ASH-snapshot cycle must be a multiple of 5 minutes\nand divisible without remainder from 60 minutes or multiple of 60 minutes\ne.g. 5, 10, 15, 20, 30, 60 or 120 minutes" if EngineConfig.config.panorama_sampler_master_password != 'hugo'
     end
-    raise "Snapshot retention must be >= 1 day" if entry[:snapshot_retention].to_i < 1
+    raise "AWR/ASH-napshot retention must be >= 1 day" if entry[:snapshot_retention] < 1
+
+   if entry[:object_size_snapshot_cycle] <=0 || 24 % entry[:object_size_snapshot_cycle] != 0 || entry[:object_size_snapshot_cycle]  > 24
+      raise "Object size snapshot cycle must be a divisible without remainder from 24 hours and max. 24 hours\ne.g. 1, 2, 3, 4, 6, 8, 12 or 24 hours"
+    end
+
+    raise "Object size snapshot cycle must be >= 1 hour>" if entry[:object_size_snapshot_cycle] <=0
+    raise "Object size snapshot retention must be >= 1 day" if entry[:object_size_snapshot_retention] < 1
   end
 
   # Modify some content after edit and before storage
   def self.prepare_saved_entry(entry)
-    entry[:tns]                 = PanoramaConnection.get_host_tns(entry) if entry[:modus].to_sym == :host
-    entry[:id]                  = entry[:id].to_i
-    entry[:snapshot_cycle]      = entry[:snapshot_cycle].to_i
-    entry[:snapshot_retention]  = entry[:snapshot_retention].to_i
-    entry[:owner]               = entry[:user] if entry[:owner].nil? || entry[:owner] == ''             # User is default for owner
+    entry[:tns]                             = PanoramaConnection.get_host_tns(entry) if entry[:modus].to_sym == :host
+    entry[:id]                              = entry[:id].to_i
+    entry[:snapshot_cycle]                  = entry[:snapshot_cycle].to_i
+    entry[:snapshot_retention]              = entry[:snapshot_retention].to_i
+    entry[:owner]                           = entry[:user] if entry[:owner].nil? || entry[:owner] == ''             # User is default for owner
+    entry[:object_size_snapshot_cycle]      = entry[:object_size_snapshot_cycle].to_i
+    entry[:object_size_snapshot_retention]  = entry[:object_size_snapshot_retention].to_i
 
     if entry[:password].nil? || entry[:password] == ''
       entry.delete(:password)                                                   # Preserve previous password at merge

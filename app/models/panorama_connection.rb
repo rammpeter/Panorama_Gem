@@ -180,6 +180,7 @@ class PanoramaConnection
       end
       Thread.current[:panorama_connection_connection_object] = nil
     end
+    PanoramaConnection.reset_thread_local_attributes                            # Ensure fresh thread attributes if thread is reused from pool
   end
 
   def self.destroy_connection

@@ -19,6 +19,18 @@ class PanoramaSamplerSampling
     PanoramaSamplerSampling.new(sampler_config).run_ash_daemon_internal(snapshot_time)
   end
 
+  def self.do_object_size_sampling(sampler_config, snapshot_time)
+    PanoramaConnection.sql_execute ["INSERT INTO #{sampler_config[:owner]}.Panorama_Object_Sizes (Owner, Segment_Name, Segment_Type, Tablespace_Name, Gather_Date, Bytes)
+                                     SELECT Owner, Segment_Name, Segment_Type, Tablespace_Name, ?, SUM(Bytes)
+                                     FROM   DBA_Segments
+                                     GROUP BY Owner, Segment_Name, Segment_Type, Tablespace_Name
+                                    ",
+                                    snapshot_time]
+  end
+
+  def self.do_object_size_housekeeping(sampler_config, shrink_space)
+  end
+
   def initialize(sampler_config)
     @sampler_config = sampler_config
   end

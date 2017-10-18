@@ -7,106 +7,147 @@
         :modus        => @modus,
         :id           => @config[:id]
     ) do %>
+  <div align="center">
+    <div>
+      <span title="Unique identifier for config entry">
+        ID: <%= @config[:id] %>
+      </span>
+        &nbsp;&nbsp;&nbsp;
+        <span title="Active-state, sampling occurs for active configurations only">
+        Active: <%= check_box_tag(:config_active, 1, @config[:active], :name=>'config[active]') %>
+      </span>
+        &nbsp;&nbsp;&nbsp;
+        <span title="Name / description for configuration">
+        Config name: <%= text_field_tag(:config_name, @config[:name], :name=>'config[name]', size: 80) %>
+      </span>
+    </div>
+    <br/>
+    <span class="fieldset_input_outer">
+      <fieldset class="fieldset_input">
+        <legend>Database connect info</legend>
+        <table>
+          <tr>
+            <td>DB identification mode</td>
+            <td align="center">
+              <div title="Select mode for identification of database">
+                <%= radio_button_tag(:config_modus, :tns,  true,  {:name=>'config[modus]', :onclick => "jQuery('.edit_config_tns').css('display', '');     jQuery('.edit_config_host').css('display', 'none');" }) %>TNS-Names
+                <%= radio_button_tag(:config_modus, :host, false, {:name=>'config[modus]', :onclick => "jQuery('.edit_config_tns').css('display', 'none'); jQuery('.edit_config_host').css('display', '');" }) %>Host, Port, SID/Service-Name
+              </div>
+            </td>
+          </tr>
 
-  <table>
-    <tr>
-      <th>ID</th>
-      <td align="center" title="Unique identifier for config entry"><%= @config[:id] %></td>
-    </tr>
+          <tr class="edit_config_tns">
+            <td title="<%= t :login_tns_hint, :default=>"Choose Oracle TNS-Alias (from tnsnames.ora at server side)" %>">TNS-Alias</td>
+            <% @tnsnames = read_tnsnames %>
+            <td align="center">
+              <div title="<%= t(:login_tns_hint, :default=>"Choose Oracle TNS-Alias (from tnsnames.ora at server side)") %>">
+                <div id="config_tns"></div> <!-- Befuellung geschieht durch Ajax-Call auf env/get_tnsnames_records -->
+              </div>
+            </td>
+          </tr>
 
-    <tr>
-      <th>Active</th>
-      <td align="center"><%= check_box_tag(:config_active, 1, @config[:active], :name=>'config[active]', :title=>"Active-state, sampling occurs for active configurations only") %></td>
-    </tr>
+          <tr class="edit_config_host" style="display: none">
+            <td title="Host-name. Übersteuert TNS-Alias wenn belegt">Host</td>
+            <td align="center"><%= text_field_tag(:config_host, @config[:host], :name=>'config[host]', :style=>"width:95%;", :title=>t(:login_database_host_hint, :default=>"hostname or IP adress") ) %></td>
+          </tr>
 
-    <tr>
-      <th>Config name</th>
-      <td align="center"><%= text_field_tag(:config_name, @config[:name], :name=>'config[name]', :style=>"width:95%;", :title=>"Name / description for configuration") %></td>
-    </tr>
+          <tr class="edit_config_host" style="display: none">
+            <td>Port</td>
+            <td align="center"><%= text_field_tag(:config_port, @config[:port], :name=>'config[port]', :style=>"width:95%;", :title=>"Port-Nummer" ) %></td>
+          </tr>
 
-    <tr>
-      <th>DB identification mode</th>
-      <td align="center">
-        <div title="Select mode for identification of database">
-          <%= radio_button_tag(:config_modus, :tns,  true,  {:name=>'config[modus]', :onclick => "jQuery('.edit_config_tns').css('display', '');     jQuery('.edit_config_host').css('display', 'none');" }) %>TNS-Names
-          <%= radio_button_tag(:config_modus, :host, false, {:name=>'config[modus]', :onclick => "jQuery('.edit_config_tns').css('display', 'none'); jQuery('.edit_config_host').css('display', '');" }) %>Host, Port, SID/Service-Name
-        </div>
-      </td>
-    </tr>
+          <tr class="edit_config_host" style="display: none">
+            <td>SID/Service</td>
+            <td align="center">
+              <div title="<%= t(:login_sid_service_title, :default=>"Interpret value as SID or Service-Name?") %>">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
+                <%= radio_button_tag('config_sid_usage', :SID,          true,  {:name=>'config[sid_usage]'}) %>SID
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <%= radio_button_tag('config_sid_usage', :SERVICE_NAME, false, {:name=>'config[sid_usage]'}) %>Service-Name
+              </div>
+              <div style="padding-top: 5px;">
+                <%= text_field_tag(:config_sid, @config[:sid], :name=>'config[sid]', :style=>"width:95%;", :title=>t(:login_database_sid_hint, :default=>"SID or service name of database")) %>
+              </div>
+            </td>
+          </tr>
 
-    <tr class="edit_config_tns">
-      <th title="<%= t :login_tns_hint, :default=>"Choose Oracle TNS-Alias (from tnsnames.ora at server side)" %>">TNS-Alias</th>
-      <% @tnsnames = read_tnsnames %>
-      <td align="center">
-        <div title="<%= t(:login_tns_hint, :default=>"Choose Oracle TNS-Alias (from tnsnames.ora at server side)") %>">
-          <div id="config_tns"></div> <!-- Befuellung geschieht durch Ajax-Call auf env/get_tnsnames_records -->
-        </div>
-      </td>
-    </tr>
+          <tr>
+            <td>Username</td>
+            <td align="center"><%= text_field_tag(:config_user, @config[:user], :name=>'config[user]', :style=>"width:95%;", :title=>"Name of user to connect to database for workload recording") %></td>
+          </tr>
 
-    <tr class="edit_config_host" style="display: none">
-      <th title="Host-name. Übersteuert TNS-Alias wenn belegt">Host</th>
-      <td align="center"><%= text_field_tag(:config_host, @config[:host], :name=>'config[host]', :style=>"width:95%;", :title=>t(:login_database_host_hint, :default=>"hostname or IP adress") ) %></td>
-    </tr>
+          <tr>
+            <td>Password</td>
+            <td align="center"><%= password_field_tag(:config_password, @config[:password], :name=>'config[password]', :style=>"width:95%;", :title=>"Password of user to store Panorama's tables for workload recording.\nPassword is changed only if new password entered here.\nLeave empty to preserve existing password.") %></td>
+          </tr>
 
-    <tr class="edit_config_host" style="display: none">
-      <th>Port</th>
-      <td align="center"><%= text_field_tag(:config_port, @config[:port], :name=>'config[port]', :style=>"width:95%;", :title=>"Port-Nummer" ) %></td>
-    </tr>
+          <tr>
+            <td>Schema owner</td>
+            <td align="center"><%= text_field_tag(:config_owner, @config[:owner], :name=>'config[owner]', :style=>"width:95%;", :title=>"Name of user/schema to store Panorama's tables for workload recording.\nConnection user must have rights to create objects in this schema.\nNeed to define only if different from connection username.") %></td>
+          </tr>
+        </table>
+      </fieldset>
+    </span>
 
-    <tr class="edit_config_host" style="display: none">
-      <th>SID/Service</th>
-      <td align="center">
-        <div title="<%= t(:login_sid_service_title, :default=>"Interpret value as SID or Service-Name?") %>">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
-          <%= radio_button_tag('config_sid_usage', :SID,          true,  {:name=>'config[sid_usage]'}) %>SID
-          &nbsp;&nbsp;&nbsp;&nbsp;
-          <%= radio_button_tag('config_sid_usage', :SERVICE_NAME, false, {:name=>'config[sid_usage]'}) %>Service-Name
-        </div>
-        <div style="padding-top: 5px;">
-          <%= text_field_tag(:config_sid, @config[:sid], :name=>'config[sid]', :style=>"width:95%;", :title=>t(:login_database_sid_hint, :default=>"SID or service name of database")) %>
-        </div>
-      </td>
-    </tr>
+    <span class="fieldset_input_outer">
+      <fieldset class="fieldset_input">
+        <legend>Counterpart to AWR and ASH</legend>
+        <table>
+          <tr title="Enable or disable sampling of Panorama's counterparts for Active Workload Repository (AWR) and Active Session History (ASH).
+          Disabling Panorama's AWR and ASH sampling allows you to use only the other sampling functions of Panorama if you already have Diagnostics Pack running">
+            <td>Sample AWR and ASH</td>
+            <td align="center"><%= check_box_tag(:config_awr_ash_active, 1, @config[:awr_ash_active], :name=>'config[awr_ash_active]') %></td>
+          </tr>
+          <tr>
+            <td>Snapshot cycle (minutes)</td>
+            <td align="center"><%= text_field_tag(:config_snapshot_cycle, @config[:snapshot_cycle], :name=>'config[snapshot_cycle]', size: 20, :style => "text-align: right;", :title=>'Delay between snapshots in minutes') %></td>
+          </tr>
 
-    <tr>
-      <th>Username</th>
-      <td align="center"><%= text_field_tag(:config_user, @config[:user], :name=>'config[user]', :style=>"width:95%;", :title=>"Name of user to connect to database for workload recording") %></td>
-    </tr>
+          <tr>
+            <td>Snapshot retention (days)</td>
+            <td align="center"><%= text_field_tag(:config_snapshot_retention, @config[:snapshot_retention], :name=>'config[snapshot_retention]', size: 20, :style => "text-align: right;", :title=>'Retention time for snapshot data in days before deletion') %></td>
+          </tr>
 
-    <tr>
-      <th>Password</th>
-      <td align="center"><%= password_field_tag(:config_password, @config[:password], :name=>'config[password]', :style=>"width:95%;", :title=>"Password of user to store Panorama's tables for workload recording.\nPassword is changed only if new password entered here.\nLeave empty to preserve existing password.") %></td>
-    </tr>
+          <tr title="or-combined limits for SQLs within snapshot cycle to be recorded by Panorama-Sampler">
+            <td>Limits for SQL-history</td>
+            <td align="center">
+              <% one_of_both_text = "One of both conditions must be fulfilled for SQL to be recorded in snahpshot." %>
+              Min. executions
+              <%= text_field_tag(:sql_min_no_of_execs,  @config[:sql_min_no_of_execs],  :name=>'config[sql_min_no_of_execs]', size: 4,  :style => "text-align: right;", :title=>"Minimum number of SQL executions in snapshot cycle to be recorded by Panorama-Sampler\n#{one_of_both_text}") %>
+              &nbsp;Min. runtime
+              <%= text_field_tag(:sql_min_runtime_millisecs, @config[:sql_min_runtime_millisecs], :name=>'config[sql_min_runtime_millisecs]', size: 6, :style => "text-align: right;", :title=>"Minimum number of SQL runtime (milliseconds) in snapshot cycle to be recorded by Panorama-Sampler\n#{one_of_both_text}") %>
+            </td>
+          </tr>
+        </table>
+      </fieldset>
+    </span>
 
-    <tr>
-      <th>Schema owner</th>
-      <td align="center"><%= text_field_tag(:config_owner, @config[:owner], :name=>'config[owner]', :style=>"width:95%;", :title=>"Name of user/schema to store Panorama's tables for workload recording.\nConnection user must have rights to create objects in this schema.\nNeed to define only if different from connection username.") %></td>
-    </tr>
+    <span class="fieldset_input_outer">
+      <fieldset class="fieldset_input">
+        <legend>Object size history</legend>
+        <table>
+          <tr title="Enable or disable sampling of tablespace-object sizes (tables. indexes, partitions).">
+            <td>Sample object sizes</td>
+            <td align="center"><%= check_box_tag(:config_object_size_active, 1, @config[:object_size_active], :name=>'config[object_size_active]') %></td>
+          </tr>
+          <tr>
+            <td>Snapshot cycle (hours)</td>
+            <td align="center"><%= text_field_tag(:config_object_size_snapshot_cycle, @config[:object_size_snapshot_cycle], :name=>'config[object_size_snapshot_cycle]', size: 4, :style => "text-align: right;", :title=>'Delay between snapshots of object sizes in hours') %></td>
+          </tr>
 
-    <tr>
-      <th>Snapshot cycle (minutes)</th>
-      <td align="center"><%= text_field_tag(:config_snapshot_cycle, @config[:snapshot_cycle], :name=>'config[snapshot_cycle]', :style => "width:95%; text-align: right;", :title=>'Delay between snapshots in minutes') %></td>
-    </tr>
+          <tr>
+            <td>Snapshot retention (days)</td>
+            <td align="center"><%= text_field_tag(:config_object_size_snapshot_retention, @config[:object_size_snapshot_retention], :name=>'config[object_size_snapshot_retention]', size: 6, :style => "text-align: right;", :title=>'Retention time for object size snapshot data in days before deletion') %></td>
+          </tr>
 
-    <tr>
-      <th>Snapshot retention (days)</th>
-      <td align="center"><%= text_field_tag(:config_snapshot_retention, @config[:snapshot_retention], :name=>'config[snapshot_retention]', :style => "width:95%; text-align: right;", :title=>'Retention time for snapshot data in days before deletion') %></td>
-    </tr>
+        </table>
+      </fieldset>
 
-    <tr title="or-combined limits for SQLs within snapshot cycle to be recorded by Panorama-Sampler">
-      <th>Limits for SQL-history</th>
-      <td align="center">
-        <% one_of_both_text = "One of both conditions must be fulfilled for SQL to be recorded in snahpshot." %>
-        Min. executions
-        <%= text_field_tag(:sql_min_no_of_execs,  @config[:sql_min_no_of_execs],  :name=>'config[sql_min_no_of_execs]',   :style => "width:25%; text-align: right;", :title=>"Minimum number of SQL executions in snapshot cycle to be recorded by Panorama-Sampler\n#{one_of_both_text}") %>
-        &nbsp;Min. runtime
-        <%= text_field_tag(:sql_min_runtime_millisecs, @config[:sql_min_runtime_millisecs], :name=>'config[sql_min_runtime_millisecs]',  :style => "width:25%; text-align: right;", :title=>"Minimum number of SQL runtime (milliseconds) in snapshot cycle to be recorded by Panorama-Sampler\n#{one_of_both_text}") %>
-      </td>
-    </tr>
+    </span>
+    <br/>
+    <%= submit_tag('Test connection', :title =>"Test connection to configured database and save configuration if successful" ) %>
+    <%= submit_tag('Save', :title =>"Save configuration data" ) %>
+  </div>
 
-  </table>
-  <%= submit_tag('Test connection', :title =>"Test connection to configured database and save configuration if successful" ) %>
-  <%= submit_tag('Save', :title =>"Save configuration data" ) %>
 
 <% end %>
 

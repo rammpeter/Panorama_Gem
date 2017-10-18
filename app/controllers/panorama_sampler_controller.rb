@@ -26,12 +26,16 @@ class PanoramaSamplerController < ApplicationController
 
   def show_new_config_form
     @modus = :new
-    @config = {:id                        => PanoramaSamplerConfig.get_max_id+1,
-               :active                    => true,
-               :snapshot_cycle            => 60,
-               :snapshot_retention        => 32,
-               :sql_min_no_of_execs       => 2,
-               :sql_min_runtime_millisecs => 10
+    @config = {:id                              => PanoramaSamplerConfig.get_max_id+1,
+               :active                          => true,
+               :snapshot_cycle                  => 60,
+               :snapshot_retention              => 32,
+               :sql_min_no_of_execs             => 2,
+               :sql_min_runtime_millisecs       => 10,
+               awr_ash_active:                  true,
+               object_size_active:              true,
+               object_size_snapshot_cycle:      24,
+               object_size_snapshot_retention:  10000,
     }
     render_partial :edit_config
   end
@@ -44,9 +48,11 @@ class PanoramaSamplerController < ApplicationController
   end
 
   def save_config
-    config_entry          = params[:config].to_unsafe_h.symbolize_keys
-    config_entry[:id]     = params[:id].to_i
-    config_entry[:active] = config_entry[:active] == '1'
+    config_entry                      = params[:config].to_unsafe_h.symbolize_keys
+    config_entry[:id]                 = params[:id].to_i
+    config_entry[:active]             = config_entry[:active] == '1'
+    config_entry[:awr_ash_active]     = config_entry[:awr_ash_active] == '1'
+    config_entry[:object_size_active] = config_entry[:object_size_active] == '1'
 
     config_entry = PanoramaSamplerConfig.prepare_saved_entry(config_entry)
 

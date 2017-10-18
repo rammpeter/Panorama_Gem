@@ -52,26 +52,33 @@
     end
   end
 
+  def data_awr_ash_sampling(rec)
+    "#{fn(rec[:snapshot_cycle])} / #{fn(rec[:snapshot_retention])} / #{fn(rec[:sql_min_no_of_execs])} / #{fn(rec[:sql_min_runtime_millisecs])}"
+  end
+
+  def title_awr_ash_sampling(rec)
+    "Delay between snapshots = #{fn(rec[:snapshot_cycle])} minutes\n\
+Retention time for snapshot data before deletion = #{fn(rec[:snapshot_retention])} days\n\
+Minimum number of SQL executions in snapshot cycle to be recorded by Panorama-Sampler = #{fn(rec[:sql_min_no_of_execs])}\n\
+Minimum number of SQL runtime in snapshot cycle to be recorded by Panorama-Sampler = #{fn(rec[:sql_min_runtime_millisecs])} milliseconds"
+  end
+
   column_options =
   [
-    {:caption=>'ID',                    :data=>proc{|rec| rec[:id]},                                        :title=>"Unique identifier for config entry", :align=>:right,           :data_style=>proc{|rec| default_style(rec)}},
-    {:caption=>'A.',                    :data=>proc{|rec| rec[:active] ? 'Y' : 'N'},                        :title=>"Active-state, sampling occurs for active configurations only", :data_style=>proc{|rec| default_style(rec)}},
-    {:caption=>'Config. name',          :data=>proc{|rec| rec[:name]},                                      :title=>"Name / description for configuration",                         :data_style=>proc{|rec| default_style(rec)}},
-    {:caption=>'TNS config',            :data=>proc{|rec| rec[:tns]},                                       :title=>"TNS-alias or connect string",                                  :data_style=>proc{|rec| default_style(rec)}},
-    {:caption=>'Username',              :data=>proc{|rec| rec[:user]},                                      :title=>"Name of user to connect to database for workload recording", :data_style=>proc{|rec| default_style(rec)}},
-    {:caption=>'Schema owner',          :data=>proc{|rec| rec[:owner]},                                     :title=>"Name of user/schema to store Panoramas tables for workload recording", :data_style=>proc{|rec| default_style(rec)}},
-    {:caption=>'DBID',                  :data=>proc{|rec| rec[:dbid]},                                      :title=>"Unique database identifier (v$Database.DBID)",                 :data_style=>proc{|rec| default_style(rec)}},
-    {:caption=>"Snapshot cycle",        :data=>proc{|rec| fn(rec[:snapshot_cycle])},                        :title=>"Delay between snapshots in minutes", :align=>:right,           :data_style=>proc{|rec| default_style(rec)}},
-    {:caption=>"Snapshot retention",    :data=>proc{|rec| fn(rec[:snapshot_retention])},                    :title=>"Retention time for snapshot data in days before deletion", :align=>:right, :data_style=>proc{|rec| default_style(rec)}},
-    {:caption=>"Min. SQL execs.",       :data=>proc{|rec| fn(rec[:sql_min_no_of_execs])},                   :title=>"Minimum number of SQL executions in snapshot cycle to be recorded by Panorama-Sampler", :align=>:right, :data_style=>proc{|rec| default_style(rec)}},
-    {:caption=>"Min. SQL runtime",      :data=>proc{|rec| fn(rec[:sql_min_runtime_millisecs])},             :title=>"Minimum number of SQL runtime (milliseconds) in snapshot cycle to be recorded by Panorama-Sampler", :align=>:right, :data_style=>proc{|rec| default_style(rec)}},
-    {:caption=>'Last snapshot time',    :data=>proc{|rec| localeDateTime(rec[:last_snapshot_start])},       :title=>"Timestamp of last snapshot start",                             :data_style=>proc{|rec| default_style(rec)}, :data_title=>proc{|rec| "%t\nLast snapshot ended at #{localeDateTime(rec[:last_snapshot_end])}"}},
-    {:caption=>'Last snapshot instance',:data=>proc{|rec| rec[:last_snapshot_instance]},                    :title=>"Instance number the last snapshot was executed on",            :data_style=>proc{|rec| default_style(rec)} },
-    {:caption=>'Last snapshot duration',:data=>proc{|rec| snapshot_duration(rec)},                          :title=>"Duration in seconds of last snapshot creation",                :align=>:right, :data_style=>proc{|rec| default_style(rec)}},
-    {:caption=>'Last connect time',     :data=>proc{|rec| localeDateTime(rec[:last_successful_connect])},   :title=>"Timestamp of last successful connect to this database",        :data_style=>proc{|rec| default_style(rec)}},
-    {:caption=>'Last error time',       :data=>proc{|rec| localeDateTime(rec[:last_error_time])},           :title=>"Timestamp of last connect- or execution-error", :data_style=>proc{|rec| default_style(rec, error_style(rec))}},
-    {:caption=>'Last error message',    :data=>proc{|rec| rec[:last_error_message]},                        :title=>"Last message of connect- or execution-error", :data_title=>proc{|rec| "%t\n#{rec[:last_error_message]}"}, :data_style=>proc{|rec| default_style(rec, error_style(rec))}, :max_wrap_width=>60},
-    {:caption=>'Action',                :data=>proc{|rec| render_action_buttons(rec) },                     :title=>"Execute action for this record" },
+    {:caption=>'ID',                            :data=>proc{|rec| rec[:id]},                                        :title=>"Unique identifier for config entry", :align=>:right,           :data_style=>proc{|rec| default_style(rec)}},
+    {:caption=>'A.',                            :data=>proc{|rec| rec[:active] ? 'Y' : 'N'},                        :title=>"Active-state, sampling occurs for active configurations only", :data_style=>proc{|rec| default_style(rec)}},
+    {:caption=>'Config. name',                  :data=>proc{|rec| rec[:name]},                                      :title=>"Name / description for configuration",                         :data_style=>proc{|rec| default_style(rec)}},
+    {:caption=>'TNS config',                    :data=>proc{|rec| rec[:tns]},                                       :title=>"TNS-alias or connect string",                                  :data_style=>proc{|rec| default_style(rec)}},
+    {:caption=>'Username',                      :data=>proc{|rec| rec[:user]},                                      :title=>"Name of user to connect to database for workload recording", :data_style=>proc{|rec| default_style(rec)}},
+    {:caption=>'Schema owner',                  :data=>proc{|rec| rec[:owner]},                                     :title=>"Name of user/schema to store Panoramas tables for workload recording", :data_style=>proc{|rec| default_style(rec)}},
+    {:caption=>'DBID',                          :data=>proc{|rec| rec[:dbid]},                                      :title=>"Unique database identifier (v$Database.DBID)",                 :data_style=>proc{|rec| default_style(rec)}},
+    {:caption=>'AWR/ASH-config',                :data=>proc{|rec| data_awr_ash_sampling(rec)},                      :title=>"Details for AWR/ASH-sampling",                                 :data_style=>proc{|rec| default_style(rec)}, data_title: proc{|rec| title_awr_ash_sampling(rec)}},
+    {:caption=>'Last AWR/ASH snapshot time',    :data=>proc{|rec| localeDateTime(rec[:last_snapshot_start])},       :title=>"Timestamp of last AWR/ASH snapshot start",                     :data_style=>proc{|rec| default_style(rec)}, :data_title=>proc{|rec| "%t\nLast snapshot ended at #{localeDateTime(rec[:last_snapshot_end])}\nLast snapshot was executed at instance #{rec[:last_snapshot_instance]}"}},
+    {:caption=>'Last AWR/ASH snapshot duration',:data=>proc{|rec| snapshot_duration(rec)},                          :title=>"Duration in seconds of last AWR/ASH snapshot creation",        :align=>:right, :data_style=>proc{|rec| default_style(rec)}},
+    {:caption=>'Last connect time',             :data=>proc{|rec| localeDateTime(rec[:last_successful_connect])},   :title=>"Timestamp of last successful connect to this database",        :data_style=>proc{|rec| default_style(rec)}},
+    {:caption=>'Last error time',               :data=>proc{|rec| localeDateTime(rec[:last_error_time])},           :title=>"Timestamp of last connect- or execution-error", :data_style=>proc{|rec| default_style(rec, error_style(rec))}},
+    {:caption=>'Last error message',            :data=>proc{|rec| rec[:last_error_message]},                        :title=>"Last message of connect- or execution-error", :data_title=>proc{|rec| "%t\n#{rec[:last_error_message]}"}, :data_style=>proc{|rec| default_style(rec, error_style(rec))}, :max_wrap_width=>60},
+    {:caption=>'Action',                        :data=>proc{|rec| render_action_buttons(rec) },                     :title=>"Execute action for this record" },
   ]
 
 %>
