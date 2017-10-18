@@ -45,9 +45,10 @@ class PanoramaSamplerStructureCheckTest < ActiveSupport::TestCase
   end
 
   test 'do_check' do
-    PanoramaSamplerStructureCheck.do_check(@sampler_config, :ASH)
-    PanoramaSamplerStructureCheck.do_check(@sampler_config, :AWR)
-    PanoramaSamplerStructureCheck.do_check(@sampler_config, :ASH)
-    PanoramaSamplerStructureCheck.do_check(@sampler_config, :AWR)
+    2.downto(1) do
+      PanoramaSamplerStructureCheck.do_check(@sampler_config, :ASH)
+      PanoramaSamplerStructureCheck.do_check(@sampler_config, :AWR)
+      PanoramaSamplerStructureCheck.do_check(@sampler_config, :OBJECT_SIZE)
+    end
   end
 end
