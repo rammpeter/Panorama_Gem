@@ -650,10 +650,35 @@ class AdditionController < ApplicationController
 
     if params[:tablespace][:name] != all_dropdown_selector_name
       @tablespace_name = params[:tablespace][:name]
-      @wherestr << " AND Last_TS=? "
+      @wherestr << " AND Tablespace_Name=? "
       @whereval << @tablespace_name
     end
 
+    @min_gather_date = sql_select_one ["SELECT MIN(Gather_Date) FROM #{@object_name} WHERE Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_start]
+    @max_gather_date = sql_select_one ["SELECT MAX(Gather_Date) FROM #{@object_name} WHERE Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_end]
+
+    @incs = sql_select_all ["
+      SELECT s.*,
+             NVL(End_Mbytes, 0) - NVL(Start_MBytes, 0) Aenderung_Abs,
+             CASE WHEN Start_MBytes != 0 THEN (End_MBytes/Start_MBytes-1)*100 END Aenderung_Pct
+      FROM   (SELECT Owner, Segment_Name, Segment_Type,
+                     MAX(Tablespace_Name) KEEP (DENSE_RANK LAST ORDER BY Gather_Date) Last_TS,
+                     COUNT(DISTINCT Tablespace_Name) Tablespaces,
+                     SUM(CASE WHEN s.Gather_Date = dates.Min_Gather_Date THEN MBytes END) Start_Mbytes,
+                     SUM(CASE WHEN s.Gather_Date = dates.Max_Gather_Date THEN MBytes END) End_Mbytes,
+                     REGR_SLOPE(MBytes, Gather_Date-TO_DATE('1900', 'YYYY')) Anstieg,
+                     COUNT(Distinct Gather_Date) Samples
+              FROM   (SELECT ? Min_Gather_Date, ? Max_Gather_Date FROM DUAL) dates
+              CROSS JOIN #{@object_name} s
+              WHERE  Gather_Date IN (dates.Min_Gather_Date, dates.Max_Gather_Date)
+              #{@wherestr}
+              GROUP BY Owner, Segment_Name, Segment_Type
+             ) s
+      WHERE  NVL(Start_MBytes, 0) != NVL(End_MBytes, 0)
+      ORDER BY NVL(End_Mbytes, 0) - NVL(Start_MBytes, 0) DESC
+    ", @min_gather_date, @max_gather_date].concat(@whereval)
+
+=begin
     @incs = sql_select_all ["
         SELECT s.*, End_Mbytes-Start_MBytes Aenderung_Abs,
         CASE WHEN Start_MBytes != 0 THEN (End_MBytes/Start_MBytes-1)*100 END Aenderung_Pct
@@ -677,6 +702,7 @@ class AdditionController < ApplicationController
                             @time_selection_start, @time_selection_end
                            ].concat(@whereval)
 
+=end
     render_partial "list_object_increase_detail"
   end
 
@@ -757,21 +783,25 @@ class AdditionController < ApplicationController
     name  = params[:name]
 
     @sizes = sql_select_all ["
-        SELECT /*+ PARALLEL(s,2) */
-               Gather_Date,
-               MBytes
-        FROM   #{@object_name} s
-        WHERE  Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')
-        AND    Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')
-        AND    Owner        = ?
-        AND    Segment_Name = ?
-        ORDER BY Gather_Date",
+      SELECT Gather_Date, MBytes,  MBytes - LAG(MBytes, 1, MBytes) OVER (ORDER BY Gather_Date) Increase_MB
+      FROM   (
+              SELECT Gather_Date,
+                     SUM(MBytes) MBytes
+              FROM   #{@object_name} s
+              WHERE  Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')
+              AND    Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')
+              AND    Owner        = ?
+              AND    Segment_Name = ?
+              GROUP BY Gather_Date
+             )
+      ORDER BY Gather_Date",
                              @time_selection_start, @time_selection_end, owner, name ]
 
     column_options =
         [
-            {:caption=>"Datum",           :data=>proc{|rec| localeDateTime(rec.gather_date)},   :title=>"Zeitpunkt der Aufzeichnung der Größe", :plot_master_time=>true},
-            {:caption=>"Größe MB",        :data=>proc{|rec| formattedNumber(rec.mbytes)},        :title=>"Größe des Objektes in MB", :align=>"right" }
+            {:caption=>"Datum",           :data=>proc{|rec| localeDateTime(rec.gather_date)},     :title=>"Zeitpunkt der Aufzeichnung der Größe", :plot_master_time=>true},
+            {:caption=>"Größe MB",        :data=>proc{|rec| formattedNumber(rec.mbytes)},         :title=>"Größe des Objektes in MB", :align=>"right" },
+            {:caption=>"Increase (MB)",   :data=>proc{|rec| formattedNumber(rec.increase_mb)},    :title=>"Size increase in MB since last snapshot",  :align=>"right" }
         ]
 
     output = gen_slickgrid(@sizes,

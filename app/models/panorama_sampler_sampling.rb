@@ -29,6 +29,7 @@ class PanoramaSamplerSampling
   end
 
   def self.do_object_size_housekeeping(sampler_config, shrink_space)
+    PanoramaSamplerSampling.new(sampler_config).do_object_size_housekeeping_internal(shrink_space)
   end
 
   def initialize(sampler_config)
@@ -107,7 +108,7 @@ class PanoramaSamplerSampling
       end
     end
     # Delete from tables without columns DBID and SNAP_ID
-    execute_until_nomore ["DELETE FROM Panorama_SQL_Plan p
+    execute_until_nomore ["DELETE FROM #{@sampler_config[:owner]}.Panorama_SQL_Plan p
                            WHERE  DBID      = ?
                            AND    Con_DBID  = ?
                            AND    (SQL_ID, Plan_Hash_Value) NOT IN (SELECT SQL_ID, Plan_Hash_Value FROM Panorama_SQLStat s
@@ -117,7 +118,7 @@ class PanoramaSamplerSampling
                           ", PanoramaConnection.dbid, con_dbid, PanoramaConnection.dbid, con_dbid]
     exec_shrink_space('Panorama_SQL_Plan') if shrink_space
 
-    execute_until_nomore ["DELETE FROM Panorama_SQLText t
+    execute_until_nomore ["DELETE FROM #{@sampler_config[:owner]}.Panorama_SQLText t
                            WHERE  DBID      = ?
                            AND    Con_DBID  = ?
                            AND    SQL_ID NOT IN (SELECT SQL_ID FROM Panorama_SQLStat s
@@ -126,6 +127,13 @@ class PanoramaSamplerSampling
                                                 )
                           ", PanoramaConnection.dbid, con_dbid, PanoramaConnection.dbid, con_dbid]
     exec_shrink_space('Panorama_SQLText') if shrink_space
+  end
+
+  def do_object_size_housekeeping_internal(shrink_space)
+    execute_until_nomore ["DELETE FROM #{@sampler_config[:owner]}.Panorama_Object_Sizes
+                           WHERE  Gather_Date < SYSDATE - ?
+                          ", @sampler_config[:object_size_snapshot_retention]]
+    exec_shrink_space('Panorama_Object_Sizes') if shrink_space
   end
 
   # Run daemon, daeomon returns 1 second before next snapshot timestamp
