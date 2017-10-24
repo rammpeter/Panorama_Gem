@@ -657,6 +657,9 @@ class AdditionController < ApplicationController
     @min_gather_date = sql_select_one ["SELECT MIN(Gather_Date) FROM #{@object_name} WHERE Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_start]
     @max_gather_date = sql_select_one ["SELECT MAX(Gather_Date) FROM #{@object_name} WHERE Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_end]
 
+    raise PopupMessageException.new("No data found after start time #{localeDateTime(@time_selection_start)}") if @min_gather_date.nil?
+    raise PopupMessageException.new("No data found before end time #{localeDateTime(@time_selection_end)}")  if @max_gather_date.nil?
+
     @incs = sql_select_all ["
       SELECT s.*,
              NVL(End_Mbytes, 0) - NVL(Start_MBytes, 0) Aenderung_Abs,
