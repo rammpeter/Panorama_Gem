@@ -25,7 +25,8 @@ class PanoramaSamplerSampling
                                      FROM   DBA_Segments
                                      GROUP BY Owner, Segment_Name, Segment_Type, Tablespace_Name
                                     ",
-                                    snapshot_time]
+                                    snapshot_time.round                         # Ensure accuracy on seconds, not fraction of seconds
+                                   ]
   end
 
   def self.do_object_size_housekeeping(sampler_config, shrink_space)

@@ -12,12 +12,8 @@
       <span title="Unique identifier for config entry">
         ID: <%= @config[:id] %>
       </span>
-        &nbsp;&nbsp;&nbsp;
-        <span title="Active-state, sampling occurs for active configurations only">
-        Active: <%= check_box_tag(:config_active, 1, @config[:active], :name=>'config[active]') %>
-      </span>
-        &nbsp;&nbsp;&nbsp;
-        <span title="Name / description for configuration">
+      &nbsp;&nbsp;&nbsp;
+      <span title="Name / description for configuration">
         Config name: <%= text_field_tag(:config_name, @config[:name], :name=>'config[name]', size: 80) %>
       </span>
     </div>

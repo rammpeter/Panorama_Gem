@@ -9,10 +9,8 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
     @config_entry_without_id                                  = get_current_database
     @config_entry_without_id[:password]                       = Encryption.decrypt_value(@config_entry_without_id[:password], cookies['client_salt'])
     @config_entry_without_id[:owner]                          = @config_entry_without_id[:user] # Default
-    @config_entry_without_id[:snapshot_cycle]                 = 20
-    @config_entry_without_id[:snapshot_retention]             = 60
-    @config_entry_without_id[:object_size_snapshot_cycle]     = 24
-    @config_entry_without_id[:object_size_snapshot_retention] = 20
+
+    set_panorama_sampler_config_defaults!(@config_entry_without_id)
 
     if PanoramaSamplerConfig.get_max_id < 100
       id = PanoramaSamplerConfig.get_max_id + 1

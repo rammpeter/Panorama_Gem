@@ -225,6 +225,8 @@ module MenuHelper
                     FROM   (SELECT 1 FROM All_Tables WHERE Table_Name='OG_SEG_SPACE_IN_TBS'
                             UNION ALL
                             SELECT 1 FROM All_Views WHERE View_Name = 'UT_SEG_SPACE_IN_TBS_V'
+                            UNION ALL
+                            SELECT 1 FROM All_Tables WHERE Table_Name='PANORAMA_OBJECT_SIZES' and Owner = '#{PanoramaConnection.get_config[:panorama_sampler_schema]}'
                            )"
                   ) > 0
   end

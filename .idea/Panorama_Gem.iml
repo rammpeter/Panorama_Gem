@@ -422,7 +422,7 @@
     <orderEntry type="library" scope="PROVIDED" name="concurrent-ruby (v1.0.5, RVM: jruby-9.1.13.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="erubi (v1.6.1, RVM: jruby-9.1.13.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="ffi (v1.9.18, RVM: jruby-9.1.13.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="globalid (v0.4.0, RVM: jruby-9.1.13.0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="globalid (v0.4.1, RVM: jruby-9.1.13.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="i18n (v0.8.6, RVM: jruby-9.1.13.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="io-like (v0.3.0, RVM: jruby-9.1.13.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="launchy (v2.4.3, RVM: jruby-9.1.13.0) [gem]" level="application" />
