@@ -16,7 +16,7 @@
    end
 
 
-   def strip_groupfilter                                                        # Groupfilter reduzieren um problematische Filter
+   @strip_groupfilter = proc do                                                        # Groupfilter reduzieren um problematische Filter
      groupfilter = @groupfilter.clone
      groupfilter.delete("Min_Snap_ID")                                         # Da sich anndere Kriterien geändert haben, kann diese Grenze nicht mehr stimmen
      groupfilter.delete("Max_Snap_ID")                                         # Da sich anndere Kriterien geändert haben, kann diese Grenze nicht mehr stimmen
@@ -26,9 +26,9 @@
     @caption = ""
     @caption << (ajax_form(:controller => :active_session_history, :action        => :refresh_time_selection,
                                 :groupby       => @groupby,                     # Gruppierungskriterium für einen Dialog
-                                :groupfilter   => strip_groupfilter,            # Groupfilter des letzten Aufrufes wiederverwenden, reduziert um Fehlerquellen
+                                :groupfilter   => @strip_groupfilter.call,       # Groupfilter des letzten Aufrufes wiederverwenden, reduziert um Fehlerquellen
                                 :update_area   => params[:update_area],         # Update_area des letzten Aufrufes wiederverwenden
-                                :repeat_action => @repeat_action             # Zuletzt aufgerufene action wiederholen
+                                :repeat_action => @repeat_action                # Zuletzt aufgerufene action wiederholen
                         ) do
         form_content = ""
         form_content << "<div class=\"float_left\">"

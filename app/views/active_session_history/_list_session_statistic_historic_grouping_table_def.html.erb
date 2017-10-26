@@ -37,8 +37,7 @@
 
 
 <%
-
-  def get_groupfilter(rec, groupby_column, groupby_value)
+  @get_groupfilter = proc do |rec, groupby_column, groupby_value|
     groupfilter = @groupfilter.clone                                            # Sicherstellen ,dass Nachfolger noch relevanten Filter bekommen
     if rec.min_snap_id
       groupfilter["Min_Snap_ID"] = rec.min_snap_id
@@ -55,7 +54,7 @@
 
 
   # Alternativ-Variante für Aktualisierung des Links in Javascript
-  def decorator_single_rows
+  @decorator_single_rows = proc do
     # Baue HREF in der Zelle mit Referenz auf Java-Funktion, die den Ajax-Aufruf enthält
     "
       var min_snap_id = dataContext[slickGrid.getColumnByName('min_snap_id').id]
@@ -145,10 +144,10 @@
   end
 
 
-  def link_temp_and_pga_usage(rec, value)
+  @link_temp_and_pga_usage = proc do |rec, value|
     ajax_link(value,     # Verhindern Zeilenumbruch in Anzeige
                     {:action  => :list_temp_usage_historic,
-                     :groupfilter  => get_groupfilter(rec, @groupby, rec.group_value),
+                     :groupfilter  => @get_groupfilter.call(rec, @groupby, rec.group_value),
                      :time_groupby => :day,
                      :update_area  => @update_area,
                             },
@@ -156,7 +155,7 @@
     )
   end
 
-  def show_info(value)
+  @show_info = proc do |value|
     if value.class == DateTime || value.class == Time
       localeDateTime value
     else
@@ -165,11 +164,11 @@
   end
 
   # Berechnung average load aus rec
-  def avg_load(rec)
+  @avg_load = proc do |rec|
     rec.time_waited_secs.to_f/(rec.sample_dauer_secs>0 ? rec.sample_dauer_secs : rec.max_sample_cycle)
   end
 
-  def total_time_waited_data_title(rec)
+  @total_time_waited_data_title = proc do |rec|
     retval = ''
     retval << "\n= #{fn(rec.time_waited_secs.to_f/60, 1)} minutes" if rec.time_waited_secs > 60
     retval << "\n= #{fn(rec.time_waited_secs.to_f/3600, 1)} hours" if rec.time_waited_secs > 3600
@@ -178,14 +177,14 @@
 
   @column_options = []
   @column_options << {:caption=>session_statistics_key_rule(@groupby)[:Name],         :data=>proc{|rec| show_groupkey_value(rec) },                        :title=>session_statistics_key_rule(@groupby)[:Title], :data_title=>session_statistics_key_rule(@groupby)[:Data_Title]}
-  @column_options << {:caption=>session_statistics_key_rule(@groupby)[:info_caption], :data=>proc{|rec| show_info(rec.info) },                       :title=>"#{t(:active_session_history_last_occurrence_caption, :default=>'Further info for grouping criteria')}: #{@groupby}", :data_title=>proc{|rec| rec.info_hint} } if session_statistics_key_rule(@groupby)[:info_caption]
-  @column_options << {:caption=>"Total Time waited",:data=>proc{|rec| fn(rec.time_waited_secs,0) },     :title=>t(:active_session_history_total_time_waited_hint, :default=>"Total time waited in seconds (sample-cycle(1/10 seconds) * samples)"), :data_title=>proc{|rec| "%t.#{total_time_waited_data_title(rec)}"}, :align=>"right", :show_pct_hint=>true, :show_pct_background=>true}
-  @column_options << {:caption=>"Avg. Load",        :data=>proc{|rec| fn(avg_load(rec),2) },            :title=>t(:active_session_history_load_hint, :default=>"Avg. number of waiting sessions averaged by time between first and last occurrence"), :align=>"right"}
+  @column_options << {:caption=>session_statistics_key_rule(@groupby)[:info_caption], :data=>proc{|rec| @show_info.call(rec.info) },                       :title=>"#{t(:active_session_history_last_occurrence_caption, :default=>'Further info for grouping criteria')}: #{@groupby}", :data_title=>proc{|rec| rec.info_hint} } if session_statistics_key_rule(@groupby)[:info_caption]
+  @column_options << {:caption=>"Total Time waited",                                  :data=>proc{|rec| fn(rec.time_waited_secs,0) },     :title=>t(:active_session_history_total_time_waited_hint, :default=>"Total time waited in seconds (sample-cycle(1/10 seconds) * samples)"), :data_title=>proc{|rec| "%t.#{@total_time_waited_data_title.call(rec)}"}, :align=>"right", :show_pct_hint=>true, :show_pct_background=>true}
+  @column_options << {:caption=>"Avg. Load",                                          :data=>proc{|rec| fn(@avg_load.call(rec),2) },            :title=>t(:active_session_history_load_hint, :default=>"Avg. number of waiting sessions averaged by time between first and last occurrence"), :align=>"right"}
   @column_options << {:caption=>t(:active_session_history_first_occurrence_caption, :default=>"First occurrence"), :data=>proc{|rec| localeDateTime(rec.first_occurrence) },      :title=>t(:active_session_history_first_occurrence_hint, :default=>"First occurrence of sample record in group")}
   @column_options << {:caption=>t(:active_session_history_last_occurrence_caption,  :default=>"Last occurrence"),  :data=>proc{|rec| localeDateTime(rec.last_occurrence) },       :title=>t(:active_session_history_last_occurrence_hint,  :default=>"Last occurrence of sample record in group")}
   @column_options << {:caption=>t(:active_session_history_duration_caption,         :default=>"Duration"),         :data=>proc{|rec| fn(rec.sample_dauer_secs,2) },  :title=>t(:active_session_history_duration_hint,         :default=>"Duration in seconds within time period"), :align=>"right"}
-  @column_options << {:caption=>"Avg. Time waited", :data=>proc{|rec| fn(rec.time_waited_avg_ms,2)},    :title=>"Avg. time in milliseconds that the current session actually spent waiting for the event. This column is set for waits that were in progress at the time the sample was taken.", :align=>"right"}
-  @column_options << {:caption=>"Samples",          :data=>proc{|rec| fn(rec.count_samples) },          :title=>t(:active_session_history_samples_hint, :default=>"Total number of sample records in group"), :align=>:right, :field_decorator_function=>decorator_single_rows }
+  @column_options << {:caption=>"Avg. Time waited",                                   :data=>proc{|rec| fn(rec.time_waited_avg_ms,2)},    :title=>"Avg. time in milliseconds that the current session actually spent waiting for the event. This column is set for waits that were in progress at the time the sample was taken.", :align=>"right"}
+  @column_options << {:caption=>"Samples",                                            :data=>proc{|rec| fn(rec.count_samples) },          :title=>t(:active_session_history_samples_hint, :default=>"Total number of sample records in group"), :align=>:right, :field_decorator_function=> @decorator_single_rows.call}
 
   @column_options << {:caption=>'min_snap_id', :data=>proc{|rec| rec.min_snap_id}, :hidden=>:true}
   @column_options << {:caption=>'max_snap_id', :data=>proc{|rec| rec.max_snap_id}, :hidden=>:true}
@@ -198,9 +197,9 @@
 
 
   @column_options << {:caption=>"Avg. PGA", :data=>proc{|rec| fn(rec.avg_pga_mb,2)},                                :title=>"Avg. amount of PGA in MB allocated per session",                           :align=>"right"}   if get_db_version >= "11.2"
-  @column_options << {:caption=>"Max. PGA", :data=>proc{|rec| link_temp_and_pga_usage(rec, fn(rec.max_pga_mb,2))},  :title=>"Max. amount of PGA in MB allocated by one single session",                 :align=>"right"}   if get_db_version >= "11.2"
+  @column_options << {:caption=>"Max. PGA", :data=>proc{|rec| @link_temp_and_pga_usage.call(rec, fn(rec.max_pga_mb,2))},  :title=>"Max. amount of PGA in MB allocated by one single session",                 :align=>"right"}   if get_db_version >= "11.2"
   @column_options << {:caption=>"Avg. Temp",:data=>proc{|rec| fn(rec.avg_temp_mb,2)},                               :title=>"Avg. amount of temp. tablespace in MB allocated per session",              :align=>"right"}   if get_db_version >= "11.2"
-  @column_options << {:caption=>"Max. Temp",:data=>proc{|rec| link_temp_and_pga_usage(rec, fn(rec.max_temp_mb,2))}, :title=>"Max. amount of temp. tablespace in MB allocated by one single session",    :align=>"right"}   if get_db_version >= "11.2"
+  @column_options << {:caption=>"Max. Temp",:data=>proc{|rec| @link_temp_and_pga_usage.call(rec, fn(rec.max_temp_mb,2))}, :title=>"Max. amount of temp. tablespace in MB allocated by one single session",    :align=>"right"}   if get_db_version >= "11.2"
   @column_options << {:caption=>"CPU-Time", :data=>proc{|rec| fn(rec.tm_cpu_time_secs)},                            :title=>"Amount of time in seconds sampled sessions spent on CPU (per session)",    :align=>:right}    if get_db_version >= "11.2"
   @column_options << {:caption=>"DB-Time",  :data=>proc{|rec| fn(rec.tm_db_time_secs)},                             :title=>"Amount of time in seconds sampled sessions spent in database calls",       :align=>:right}    if get_db_version >= "11.2"
   @column_options << {:caption=>"Rd. Rq.",  :data=>proc{|rec| fn(rec.delta_read_io_requests)},                      :title=>"Number of read I/O requests made by the scanned sessions",                 :align=>"right"}   if get_db_version >= "11.2"
@@ -239,7 +238,7 @@
 %>
 
 <%
-  def link_timeline(group_seconds)
+  @link_timeline = proc do |group_seconds|
     ajax_link("Hidden Auslöser für Timeline",
                             {:action        => "list_session_statistic_historic_timeline",
                              :groupfilter   => @groupfilter,
@@ -254,9 +253,9 @@
 
 %>
 
-<%= link_timeline(60) %>
-<%= link_timeline(10) %>
-<%= link_timeline( 1) %>
+<%= @link_timeline.call(60) %>
+<%= @link_timeline.call(10) %>
+<%= @link_timeline.call( 1) %>
 
 
 <div id="<%= @update_area %>_timeline" style="float:left; width:100%; "></div>

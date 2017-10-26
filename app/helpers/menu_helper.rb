@@ -188,7 +188,7 @@ module MenuHelper
                 [{:class=> 'item', :caption=> 'DB-Cache-Ressourcen',           :controller=> 'addition',                 :action=> 'db_cache_ressourcen',     :hint=> 'Historische Auswertung DB-Cache-Auslastung'}] : []
         ).concat(
             showObjectIncrease ?
-                [{:class=> 'item', :caption=> 'Wachstum von Objekten',           :controller=> 'addition',                 :action=> 'show_object_increase',     :hint=> 'Wachstum von Objekten in gegebenem Zeitraum'}] : []
+                [{:class=> 'item', :caption=>t(:menu_addition_size_evolution_caption, :default=>'Object size evolution'),           :controller=> 'addition',                 :action=> 'show_object_increase',     :hint=>t(:menu_addition_size_evolution_hint, :default=>'Evolution of object sizes in considered time period')}] : []
         ).concat(
             [{:class=> 'item', :caption=> t(:menu_addition_exec_with_given_parameters_caption, :default=>'Execute with given parameters') ,           :controller=> 'addition',                 :action=> 'show_recall_params',     :hint=>t(:menu_addition_exec_with_given_parameters_hint, :default=>'Execute one of Panoramas functions directly with given parameters') }]
         ).concat(
@@ -222,12 +222,8 @@ module MenuHelper
 
   def showObjectIncrease # Test auf Vorhandensein einer Tabelle in irgendeinem Schema
     sql_select_one("SELECT /* Panorama Tool Ramm */ COUNT(*)
-                    FROM   (SELECT 1 FROM All_Tables WHERE Table_Name='OG_SEG_SPACE_IN_TBS'
-                            UNION ALL
-                            SELECT 1 FROM All_Views WHERE View_Name = 'UT_SEG_SPACE_IN_TBS_V'
-                            UNION ALL
-                            SELECT 1 FROM All_Tables WHERE Table_Name='PANORAMA_OBJECT_SIZES' and Owner = '#{PanoramaConnection.get_config[:panorama_sampler_schema]}'
-                           )"
+                    FROM   All_Tables WHERE Table_Name='PANORAMA_OBJECT_SIZES' and Owner = '#{PanoramaConnection.get_config[:panorama_sampler_schema]}'
+                   "
                   ) > 0
   end
 

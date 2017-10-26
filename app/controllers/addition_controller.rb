@@ -646,16 +646,14 @@ class AdditionController < ApplicationController
   end
 
   def list_object_increase_detail
-    @object_name =  object_increase_object_name
-
     if params[:tablespace][:name] != all_dropdown_selector_name
       @tablespace_name = params[:tablespace][:name]
       @wherestr << " AND Tablespace_Name=? "
       @whereval << @tablespace_name
     end
 
-    @min_gather_date = sql_select_one ["SELECT MIN(Gather_Date) FROM #{@object_name} WHERE Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_start]
-    @max_gather_date = sql_select_one ["SELECT MAX(Gather_Date) FROM #{@object_name} WHERE Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_end]
+    @min_gather_date = sql_select_one ["SELECT MIN(Gather_Date) FROM #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes WHERE Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_start]
+    @max_gather_date = sql_select_one ["SELECT MAX(Gather_Date) FROM #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes WHERE Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_end]
 
     raise PopupMessageException.new("No data found after start time #{localeDateTime(@time_selection_start)}") if @min_gather_date.nil?
     raise PopupMessageException.new("No data found before end time #{localeDateTime(@time_selection_end)}")  if @max_gather_date.nil?
@@ -667,12 +665,12 @@ class AdditionController < ApplicationController
       FROM   (SELECT Owner, Segment_Name, Segment_Type,
                      MAX(Tablespace_Name) KEEP (DENSE_RANK LAST ORDER BY Gather_Date) Last_TS,
                      COUNT(DISTINCT Tablespace_Name) Tablespaces,
-                     SUM(CASE WHEN s.Gather_Date = dates.Min_Gather_Date THEN MBytes END) Start_Mbytes,
-                     SUM(CASE WHEN s.Gather_Date = dates.Max_Gather_Date THEN MBytes END) End_Mbytes,
-                     REGR_SLOPE(MBytes, Gather_Date-TO_DATE('1900', 'YYYY')) Anstieg,
+                     SUM(CASE WHEN s.Gather_Date = dates.Min_Gather_Date THEN Bytes END)/(1024*1024) Start_Mbytes,
+                     SUM(CASE WHEN s.Gather_Date = dates.Max_Gather_Date THEN Bytes END)/(1024*1024) End_Mbytes,
+                     REGR_SLOPE(Bytes, Gather_Date-TO_DATE('1900', 'YYYY')) Anstieg,
                      COUNT(Distinct Gather_Date) Samples
               FROM   (SELECT ? Min_Gather_Date, ? Max_Gather_Date FROM DUAL) dates
-              CROSS JOIN #{@object_name} s
+              CROSS JOIN #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
               WHERE  Gather_Date IN (dates.Min_Gather_Date, dates.Max_Gather_Date)
               #{@wherestr}
               GROUP BY Owner, Segment_Name, Segment_Type
@@ -710,7 +708,6 @@ class AdditionController < ApplicationController
   end
 
   def list_object_increase_timeline
-    @object_name =  object_increase_object_name
     groupby = params[:gruppierung][:tag]
 
     if params[:tablespace][:name] != all_dropdown_selector_name
@@ -723,8 +720,8 @@ class AdditionController < ApplicationController
         SELECT /*+ PARALLEL(s,2) */
                Gather_Date,
                #{groupby} GroupBy,
-               SUM(MBytes) MBytes
-        FROM   #{@object_name} s
+               SUM(Bytes)/(1024*1024) MBytes
+        FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
         WHERE  Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')
         AND    Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')
         #{@wherestr}
@@ -757,11 +754,11 @@ class AdditionController < ApplicationController
     column_options =
         [
             {:caption=>"Datum",           :data=>proc{|rec| localeDateTime(rec[:gather_date])},   :title=>"Zeitpunkt der Aufzeichnung der Größe", :plot_master_time=>true},
-            {:caption=>"Total MB",        :data=>proc{|rec| formattedNumber(rec[:total])},        :title=>"Größe Total in MB", :align=>"right" }
+            {:caption=>"Total MB",        :data=>proc{|rec| formattedNumber(rec[:total], 2)},        :title=>"Größe Total in MB", :align=>"right" }
         ]
 
     columns.each do |key, value|
-      column_options << {:caption=>key, :data=>"formattedNumber(rec['#{key}'])", :title=>"Größe für '#{key}' in MB", :align=>"right" }
+      column_options << {:caption=>key, :data=>proc{|rec| fn(rec[key], 2)}, :title=>"Size for #{key} in MB", :align=>"right" }
     end
 
     output = gen_slickgrid(@sizes, column_options, {
@@ -769,7 +766,7 @@ class AdditionController < ApplicationController
         :show_y_axes      => true,
         :plot_area_id     => :list_object_increase_timeline_diagramm,
         :max_height       => 450,
-        :caption          => "Zeitleiste nach #{groupby} aus #{@object_name}#{", Tablespace='#{@tablespace_name}'" if @tablespace_name}#{", Schema='#{@schema_name}'" if @schema_name}"
+        :caption          => "Size evolution over time grouped by #{groupby} from #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes#{", Tablespace='#{@tablespace_name}'" if @tablespace_name}#{", Schema='#{@schema_name}'" if @schema_name}"
     })
     output << "</div><div id='list_object_increase_timeline_diagramm'></div>".html_safe
 
@@ -780,7 +777,6 @@ class AdditionController < ApplicationController
   end
 
   def list_object_increase_object_timeline
-    @object_name =  object_increase_object_name
     save_session_time_selection
     owner = params[:owner]
     name  = params[:name]
@@ -789,8 +785,8 @@ class AdditionController < ApplicationController
       SELECT Gather_Date, MBytes,  MBytes - LAG(MBytes, 1, MBytes) OVER (ORDER BY Gather_Date) Increase_MB
       FROM   (
               SELECT Gather_Date,
-                     SUM(MBytes) MBytes
-              FROM   #{@object_name} s
+                     SUM(Bytes)/(1024*1024) MBytes
+              FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
               WHERE  Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')
               AND    Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')
               AND    Owner        = ?
@@ -802,9 +798,9 @@ class AdditionController < ApplicationController
 
     column_options =
         [
-            {:caption=>"Datum",           :data=>proc{|rec| localeDateTime(rec.gather_date)},     :title=>"Zeitpunkt der Aufzeichnung der Größe", :plot_master_time=>true},
-            {:caption=>"Größe MB",        :data=>proc{|rec| formattedNumber(rec.mbytes)},         :title=>"Größe des Objektes in MB", :align=>"right" },
-            {:caption=>"Increase (MB)",   :data=>proc{|rec| formattedNumber(rec.increase_mb)},    :title=>"Size increase in MB since last snapshot",  :align=>"right" }
+            {:caption=>"Datum",           :data=>proc{|rec| localeDateTime(rec.gather_date)},         :title=>"Timestamp of gathering object size",       :plot_master_time=>true},
+            {:caption=>"Größe MB",        :data=>proc{|rec| formattedNumber(rec.mbytes, 2)},          :title=>"Size of object in MB at gather time",      :align=>"right" },
+            {:caption=>"Increase (MB)",   :data=>proc{|rec| formattedNumber(rec.increase_mb, 2)},     :title=>"Size increase in MB since last snapshot",  :align=>"right" }
         ]
 
     output = gen_slickgrid(@sizes,
@@ -813,7 +809,7 @@ class AdditionController < ApplicationController
                                :multiple_y_axes => false,
                                :show_y_axes     => true,
                                :plot_area_id    => :list_object_increase_object_timeline_diagramm,
-                               :caption         => "Größenentwicklung #{owner}.#{name} aufgezeichnet in #{@object_name}",
+                               :caption         => "Size evolution of object #{owner}.#{name} recorded in #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes",
                                :max_height      => 450
                            }
     )

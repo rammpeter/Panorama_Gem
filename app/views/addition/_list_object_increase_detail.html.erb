@@ -9,7 +9,7 @@
               :time_selection_end   => @time_selection_end,
               :update_area          => @update_area
             },
-     :title=>"Anzeige der zeitlichen Entwicklung des Objektes (unterhalb)")
+     :title=>"Show detailed size evolution of object")
 
    end
 
@@ -39,17 +39,15 @@ column_options =
     {:caption=>"Owner",           :data=>proc{|rec| rec.owner},                      :title=>"Object-owner"},
     {:caption=>"Name", :data=>proc{|rec| link_object_description(@update_area, rec.owner, rec.segment_name, rec.segment_name)}, :title=>"Segment-name"},
     {:caption=>"Type",            :data=>proc{|rec| rec.segment_type},               :title=>"Segment-type"},
-    {:caption=>"Tablespace",      :data=>proc{|rec| show_ts(rec)},                    :title=>"Tablespace des Objektes am Ende der Betrachtung"},
-#    {:caption=>"Start",           :data=>proc{|rec| localeDateTime(rec.date_start)}, :title=>"Erste Aufzeichnung der Größe"},
-#    {:caption=>"Ende",            :data=>proc{|rec| localeDateTime(rec.date_end)},   :title=>"Letzte Aufzeichnung der Größe"},
-    {:caption=>"MB Start",        :data=>proc{|rec| formattedNumber(rec.start_mbytes)}, :title=>"Größe des Objektes in MB zum Start der Betrachtung",              :align=>:right},
-    {:caption=>"MB End",          :data=>proc{|rec| formattedNumber(rec.end_mbytes)}, :title=>"Größe des Objektes in MB zum Ende der Betrachtung",                 :align=>:right},
-    {:caption=>"MB Änderung",     :data=>proc{|rec| formattedNumber(rec.aenderung_abs)}, :title=>"Änderung der Größe des Objektes in MB während der Betrachtung",  :align=>:right},
-    {:caption=>"% Änderung",      :data=>proc{|rec| formattedNumber(rec.aenderung_pct,2)}, :title=>"Änderung der Größe des Objektes in % während der Betrachtung", :align=>:right},
+    {:caption=>"Tablespace",      :data=>proc{|rec| show_ts(rec)},                    :title=>"Tablespace of object at the end of considered period"},
+    {:caption=>"MB Start",        :data=>proc{|rec| formattedNumber(rec.start_mbytes, 2)}, :title=>"Size of object in MB at start of considered period",              :align=>:right},
+    {:caption=>"MB End",          :data=>proc{|rec| formattedNumber(rec.end_mbytes, 2)}, :title=>"Size of object in MB at end of considered period",                 :align=>:right},
+    {:caption=>"MB Change",     :data=>proc{|rec| formattedNumber(rec.aenderung_abs, 2)}, :title=>"Change of object size in MB within considered period",  :align=>:right},
+    {:caption=>"% Change",      :data=>proc{|rec| formattedNumber(rec.aenderung_pct,2)}, :title=>"Change of object size in % within considered period", :align=>:right},
 #    {:caption=>"Anstieg je Tag in MB", :data=>proc{|rec| formattedNumber(rec.anstieg,2)},    :title=>'Anstieg je Tag in MB lt. linearer Regression "REGR_SLOPE(MBytes, Gather_Date-TO_DATE(\'1900\', \'YYYY\'))"' , :align=>:right},
     {:caption=>'Action',          :data=>proc{|rec| render_action_buttons(rec)},      :title=>"Execute action for selected row" },
   ]
 %>
 
-<%= gen_slickgrid(@incs, column_options, {:caption=>"Objekt-Wachstum aus #{@object_name}#{", Tablespace='#{@tablespace_name}'" if @tablespace_name}#{", Schema='#{@schema_name}'" if @schema_name} between #{localeDateTime(@min_gather_date)} and #{localeDateTime(@max_gather_date)}", :max_height => 450 }) %>
+<%= gen_slickgrid(@incs, column_options, {:caption=>"Object size evolution #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes#{", Tablespace='#{@tablespace_name}'" if @tablespace_name}#{", Schema='#{@schema_name}'" if @schema_name} between #{localeDateTime(@min_gather_date)} and #{localeDateTime(@max_gather_date)}", :max_height => 450 }) %>
 <div id="<%= @update_area%>"></div>

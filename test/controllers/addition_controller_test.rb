@@ -86,6 +86,8 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_object_increase with xhr: true" do
+    set_current_database(get_current_database.merge( {panorama_sampler_schema: get_current_database[:user]} ))    # Ensure Panorama's tables are serached here
+
     @sampler_config_entry                                  = get_current_database
     @sampler_config_entry[:owner]                          = @sampler_config_entry[:user] # Default
 
@@ -93,25 +95,22 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
     PanoramaSamplerSampling.do_object_size_sampling(@sampler_config_entry, @ttime_selection_start)
     PanoramaSamplerSampling.do_object_size_sampling(@sampler_config_entry, @ttime_selection_end)
 
-    # TODO: showObjectIncrease restaurieren
-    if false # showObjectIncrease                                                     # Nur Testen wenn Tabelle(n) auch existieren
-      ['Segment_Type', 'Tablespace_Name', 'Owner'].each do |gruppierung_tag|
-        [{:detail=>1}, {:timeline=>1}].each do |submit_tag|
-          post '/addition/list_object_increase',  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
-                                        :tablespace=>{"name"=>all_dropdown_selector_name}, "schema"=>{"name"=>all_dropdown_selector_name}, :gruppierung=>{"tag"=>gruppierung_tag}, :update_area=>:hugo }.merge(submit_tag)
-          }
-          assert_response :success
+    ['Segment_Type', 'Tablespace_Name', 'Owner'].each do |gruppierung_tag|
+      [{:detail=>1}, {:timeline=>1}].each do |submit_tag|
+        post '/addition/list_object_increase',  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
+                                      :tablespace=>{"name"=>all_dropdown_selector_name}, "schema"=>{"name"=>all_dropdown_selector_name}, :gruppierung=>{"tag"=>gruppierung_tag}, :update_area=>:hugo }.merge(submit_tag)
+        }
+        assert_response :success
 
-          post '/addition/list_object_increase',  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
-                                        :tablespace=>{"name"=>'SYSTEM'}, "schema"=>{"name"=>all_dropdown_selector_name}, :gruppierung=>{"tag"=>gruppierung_tag}, :update_area=>:hugo }.merge(submit_tag)
-          }
-          assert_response :success
+        post '/addition/list_object_increase',  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
+                                      :tablespace=>{"name"=>'SYSTEM'}, "schema"=>{"name"=>all_dropdown_selector_name}, :gruppierung=>{"tag"=>gruppierung_tag}, :update_area=>:hugo }.merge(submit_tag)
+        }
+        assert_response :success
 
-          post '/addition/list_object_increase',  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
-                                        :tablespace=>{"name"=>all_dropdown_selector_name}, "schema"=>{"name"=>'SYS'}, :gruppierung=>{"tag"=>gruppierung_tag}, :update_area=>:hugo }.merge(submit_tag)
-          }
-          assert_response :success
-        end
+        post '/addition/list_object_increase',  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
+                                      :tablespace=>{"name"=>all_dropdown_selector_name}, "schema"=>{"name"=>'SYS'}, :gruppierung=>{"tag"=>gruppierung_tag}, :update_area=>:hugo }.merge(submit_tag)
+        }
+        assert_response :success
       end
     end
   end

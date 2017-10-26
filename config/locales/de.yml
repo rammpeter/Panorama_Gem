@@ -1456,6 +1456,8 @@
   menu_addition_exec_with_given_parameters_caption:         Ausführung mit gegebenen Parametern
   menu_addition_exec_with_given_parameters_hint:            Ausführung einer Funktion von Panorama direkt mit gegebenen Parametern
   menu_addition_panorama_sampler_config_hint:               Konfiguration der Ziel-Datenbanken für Panorama-Sampler
+  menu_addition_size_evolution_caption:                     Größen-Entwicklung von Objekten
+  menu_addition_size_evolution_hint:                        Entwicklung der Größe von Objekten im betrachteten Zeitraum
 
   menu_current_caption:                                     Aktuell
 
