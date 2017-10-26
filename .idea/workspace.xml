@@ -9,8 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" afterPath="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/addition/_show_object_increase.html.erb" afterPath="$PROJECT_DIR$/app/views/addition/_show_object_increase.html.erb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -158,11 +157,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="60">
               <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="_show_object_increase.html.erb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/views/addition/_show_object_increase.html.erb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="450">
+              <caret line="30" column="0" lean-forward="false" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -272,13 +281,13 @@
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
         <option value="$PROJECT_DIR$/app/helpers/addition_helper.rb" />
         <option value="$PROJECT_DIR$/app/controllers/addition_controller.rb" />
-        <option value="$PROJECT_DIR$/app/views/addition/_show_object_increase.html.erb" />
         <option value="$PROJECT_DIR$/app/jobs/panorama_sampler_job.rb" />
         <option value="$PROJECT_DIR$/app/helpers/menu_helper.rb" />
         <option value="$PROJECT_DIR$/config/locales/de.yml" />
         <option value="$PROJECT_DIR$/test/controllers/addition_controller_test.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+        <option value="$PROJECT_DIR$/app/views/addition/_show_object_increase.html.erb" />
       </list>
     </option>
   </component>
@@ -1138,14 +1147,7 @@
       <workItem from="1506273887834" duration="557000" />
       <workItem from="1506325998019" duration="4821000" />
       <workItem from="1506492602255" duration="6956000" />
-      <workItem from="1507720628942" duration="79408000" />
-    </task>
-    <task id="LOCAL-01080" summary="Performance optimization SQL_Plan">
-      <created>1504263831886</created>
-      <option name="number" value="01080" />
-      <option name="presentableId" value="LOCAL-01080" />
-      <option name="project" value="LOCAL" />
-      <updated>1504263831887</updated>
+      <workItem from="1507720628942" duration="79863000" />
     </task>
     <task id="LOCAL-01081" summary="Shrink sampler objects after snapshot error">
       <created>1504269352438</created>
@@ -1483,7 +1485,14 @@
       <option name="project" value="LOCAL" />
       <updated>1509029710076</updated>
     </task>
-    <option name="localTasksCounter" value="1129" />
+    <task id="LOCAL-01129" summary="exclude temporary">
+      <created>1509031346848</created>
+      <option name="number" value="01129" />
+      <option name="presentableId" value="LOCAL-01129" />
+      <option name="project" value="LOCAL" />
+      <updated>1509031346848</updated>
+    </task>
+    <option name="localTasksCounter" value="1130" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1519,7 +1528,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2268259000" />
+    <option name="totallyTimeSpent" value="2268714000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1575,7 +1584,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="SQL Translation generated, Version++" />
     <MESSAGE value="Test only for 12.1" />
     <MESSAGE value="Translations" />
     <MESSAGE value="v$SYSAUX_Occupants added" />
@@ -1600,7 +1608,8 @@
     <MESSAGE value="Test fixed" />
     <MESSAGE value="Use proc instead of def in templates" />
     <MESSAGE value="Sampling object sizes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Sampling object sizes" />
+    <MESSAGE value="exclude temporary" />
+    <option name="LAST_COMMIT_MESSAGE" value="exclude temporary" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2040,17 +2049,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/addition/_show_object_increase.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="465">
-          <caret line="31" column="104" lean-forward="false" selection-start-line="31" selection-start-column="104" selection-end-line="31" selection-end-column="104" />
-          <folding>
-            <element signature="n#style#0;n#fieldset#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#fieldset#1;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/models/worker_thread_test.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="150">
@@ -2124,6 +2122,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/addition/_show_object_increase.html.erb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="450">
+          <caret line="30" column="0" lean-forward="false" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
           <folding />
         </state>
       </provider>
