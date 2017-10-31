@@ -187,7 +187,7 @@ module MenuHelper
             showDbCacheMenu ?
                 [{:class=> 'item', :caption=> 'DB-Cache-Ressourcen',           :controller=> 'addition',                 :action=> 'db_cache_ressourcen',     :hint=> 'Historische Auswertung DB-Cache-Auslastung'}] : []
         ).concat(
-            showObjectIncrease ?
+            PanoramaSamplerStructureCheck.object_sizes_exists? ?
                 [{:class=> 'item', :caption=>t(:menu_addition_size_evolution_caption, :default=>'Object size evolution'),           :controller=> 'addition',                 :action=> 'show_object_increase',     :hint=>t(:menu_addition_size_evolution_hint, :default=>'Evolution of object sizes in considered time period')}] : []
         ).concat(
             [{:class=> 'item', :caption=> t(:menu_addition_exec_with_given_parameters_caption, :default=>'Execute with given parameters') ,           :controller=> 'addition',                 :action=> 'show_recall_params',     :hint=>t(:menu_addition_exec_with_given_parameters_hint, :default=>'Execute one of Panoramas functions directly with given parameters') }]
@@ -218,13 +218,6 @@ module MenuHelper
     Rails.logger.info "MenuHelper.showDbCacheMenu: #{res.anzahl} different schemas have table DBA_HIST_CACHE_OBJECTS, function hidden" if res.anzahl > 1
     res.anzahl == 1     # Nur verwenden, wenn genau ein Schema die Daten enthält
 
-  end
-
-  def showObjectIncrease # Test auf Vorhandensein einer Tabelle in irgendeinem Schema
-    sql_select_one("SELECT /* Panorama Tool Ramm */ COUNT(*)
-                    FROM   All_Tables WHERE Table_Name='PANORAMA_OBJECT_SIZES' and Owner = '#{PanoramaConnection.get_config[:panorama_sampler_schema]}'
-                   "
-                  ) > 0
   end
 
   def showPanoramaSampler

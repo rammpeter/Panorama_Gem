@@ -39,6 +39,13 @@ class PanoramaSamplerStructureCheck
                                       "
   end
 
+  def self.object_sizes_exists?
+    PanoramaConnection.sql_select_one("SELECT /* Panorama Tool Ramm */ COUNT(*)
+                    FROM   All_Tables WHERE Table_Name='PANORAMA_OBJECT_SIZES' and Owner = '#{PanoramaConnection.get_config[:panorama_sampler_schema]}'
+                   "
+    ) > 0
+  end
+
   def initialize(sampler_config)
     @sampler_config = sampler_config
   end
