@@ -19,6 +19,31 @@ class PanoramaSamplerStructureCheck
   # Schemas with valid Panorama-Sampler structures for start
   def self.panorama_sampler_schemas
     # TODO: anpassen auf mehrere Aspekte, die einzeln aktiv sein können
+
+    sql = "SELECT DISTINCT Owner FROM ("
+
+    # check existence of table with full set of columns
+    ['PANORAMA_SNAPSHOT', 'PANORAMA_OBJECT_SIZES', 'PANORAMA_CACHE_OBJECTS', 'PANORAMA_BLOCKING_LOCKS'].each do |test_table|
+      sql << "\nUNION ALL\n" if test_table != 'PANORAMA_SNAPSHOT'                 # not the first table
+      sql << "SELECT Owner
+              FROM   All_Tab_Columns
+              WHERE  Table_Name = '#{test_table}'
+              AND    Column_Name IN ("
+      TABLES.each do |table|
+        if table[:table_name].upcase == test_table
+          table[:columns].each do |column|
+            sql << "'#{column[:column_name].upcase}',"
+          end
+          sql[(sql.length) - 1] = ' '                                           # remove last ,
+          sql << ") GROUP BY Owner HAVING COUNT(*) = #{table[:columns].count}"  # all columns exists in tables?
+
+        end
+      end
+    end
+    sql << ")"
+
+    PanoramaConnection.sql_select_all sql
+=begin
     PanoramaConnection.sql_select_all "SELECT DISTINCT Owner
                                        FROM   (
                                                SELECT Owner
@@ -37,6 +62,7 @@ class PanoramaSamplerStructureCheck
                                                HAVING COUNT(*) = 6 /* all columns exists in tables */
                                               )
                                       "
+=end
   end
 
   def self.object_sizes_exists?
@@ -299,6 +325,71 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Con_ID',                         column_type:  'NUMBER',     not_null: true },
           ],
           primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'SAMPLE_ID', 'SESSION_ID', 'Con_DBID'],
+      },
+      {
+          table_name: 'Panorama_Blocking_Locks',
+          domain: :BLOCKING_LOCKS,
+          columns: [
+              { column_name:  'Snapshot_Timestamp',             column_type:   'DATE',      not_null: true,                 comment: 'Timestamp of recognition of blocking lock'},
+              { column_name:  'Instance_Number',                column_type:   'NUMBER',    not_null: true,                 comment: 'RAC-instance' },
+              { column_name:  'SID',                            column_type:   'NUMBER',    not_null: true,                 comment: 'SID of blocked session' },
+              { column_name:  'SerialNo',                       column_type:   'NUMBER',    not_null: true,                 comment: 'Serial number of blocked session' },
+              { column_name:  'SQL_ID',                         column_type:   'VARCHAR2',  precision: 13,                  comment: 'SQL-ID of active statement' },
+              { column_name:  'SQL_Child_Number',               column_type:   'NUMBER',                                    comment: 'Child number of active statement' },
+              { column_name:  'Prev_SQL_ID',                    column_type:   'VARCHAR2',  precision: 13,                  comment: 'Previously executed SQL-ID' },
+              { column_name:  'Prev_Child_Number',              column_type:   'NUMBER',                                    comment: 'Previously executed child number' },
+              { column_name:  'Status',                         column_type:   'VARCHAR2',  precision: 8, not_null: true,   comment: 'Status of blocked session' },
+              { column_name:  'Client_Info',                    column_type:   'VARCHAR2',  precision: 64,                  comment: 'Client info of blocked session'},
+              { column_name:  'Module',                         column_type:   'VARCHAR2',  precision: 48,                  comment: 'Module of blocked session' },
+              { column_name:  'Action',                         column_type:   'VARCHAR2',  precision: 32,                  comment: 'Action of blocked session' },
+              { column_name:  'Object_Owner',                   column_type:   'VARCHAR2',  precision: 128,                 comment: 'Owner of object waiting for lock' },
+              { column_name:  'Object_Name',                    column_type:   'VARCHAR2',  precision: 128,                 comment: 'Name of object waiting for lock' },
+              { column_name:  'User_Name',                      column_type:   'VARCHAR2',  precision: 128, not_null: true, comment: 'Owner of blocked session' },
+              { column_name:  'Machine',                        column_type:   'VARCHAR2',  precision: 64,                  comment: 'Machine of blocked session' },
+              { column_name:  'OS_User',                        column_type:   'VARCHAR2',  precision: 128,                 comment: 'OS-user of blocked session' },
+              { column_name:  'Process',                        column_type:   'VARCHAR2',  precision: 12,                  comment: 'Process-ID of blocked session' },
+              { column_name:  'Program',                        column_type:   'VARCHAR2',  precision: 48,                  comment: 'Program of blocked session' },
+              { column_name:  'Lock_Type',                      column_type:   'VARCHAR2',  precision: 2, not_null: true,   comment: 'Lock type of blocked session' },
+              { column_name:  'Seconds_In_Wait',                column_type:   'NUMBER',                                    comment: 'Number of seconds in current wait state' },
+              { column_name:  'ID1',                            column_type:   'NUMBER',                                    comment: 'ID1 of lock' },
+              { column_name:  'ID2',                            column_type:   'NUMBER',                                    comment: 'ID2 of lock' },
+              { column_name:  'Request',                        column_type:   'NUMBER',    precision: 1, not_null: true,   comment: 'Requested lock mode' },
+              { column_name:  'Lock_Mode',                      column_type:   'NUMBER',    precision: 1, not_null: true,   comment: 'Held lock mode' },
+              { column_name:  'Blocking_Object_Owner',          column_type:   'VARCHAR2',  precision: 128,                 comment: 'Owner of object session waits for unblocking' },
+              { column_name:  'Blocking_Object_Name',           column_type:   'VARCHAR2',  precision: 128,                 comment: 'Name of object session waits for unblocking' },
+              { column_name:  'Blocking_RowID',                 column_type:   'UROWID',                                    comment: 'RowID of record blocked session is waiting for' },
+              { column_name:  'Blocking_Instance_Number',       column_type:   'NUMBER',                                    comment: 'Instance of blocking session' },
+              { column_name:  'Blocking_SID',                   column_type:   'NUMBER',                                    comment: 'Session-ID of blocking session' },
+              { column_name:  'Blocking_SerialNo',              column_type:   'NUMBER',                                    comment: 'Serial number of blocking session' },
+              { column_name:  'Blocking_SQL_ID',                column_type:   'VARCHAR2',  precision: 13,                  comment: 'SQL-ID of active statement of blocking session' },
+              { column_name:  'Blocking_SQL_Child_Number',      column_type:   'NUMBER',                                    comment: 'Child number of active statement of blocking session' },
+              { column_name:  'Blocking_Prev_SQL_ID',           column_type:   'VARCHAR2',  precision: 13,                  comment: 'Previously executed SQL-ID of blocking session' },
+              { column_name:  'Blocking_Prev_Child_Number',     column_type:   'NUMBER',                                    comment: 'Previously executed child number of blocking session' },
+              { column_name:  'Blocking_Status',                column_type:   'VARCHAR2',  precision: 8,                   comment: 'Status of blocking session' },
+              { column_name:  'Blocking_Client_Info',           column_type:   'VARCHAR2',  precision: 64,                  comment: 'Client info of blocking session'},
+              { column_name:  'Blocking_Module',                column_type:   'VARCHAR2',  precision: 48,                  comment: 'Module of blocking session' },
+              { column_name:  'Blocking_Action',                column_type:   'VARCHAR2',  precision: 32,                  comment: 'Action of blocking session' },
+              { column_name:  'Blocking_User_Name',             column_type:   'VARCHAR2',  precision: 128, not_null: true, comment: 'Owner of blocking session' },
+              { column_name:  'Blocking_Machine',               column_type:   'VARCHAR2',  precision: 64,                  comment: 'Machine of blocking session' },
+              { column_name:  'Blocking_OS_User',               column_type:   'VARCHAR2',  precision: 128,                 comment: 'OS-user of blocking session' },
+              { column_name:  'Blocking_Process',               column_type:   'VARCHAR2',  precision: 12,                  comment: 'Process-ID of blocking session' },
+              { column_name:  'Blocking_Program',               column_type:   'VARCHAR2',  precision: 48,                  comment: 'Program of blocking session' },
+              { column_name:  'Waiting_For_PK_Column_Name',     column_type:   'VARCHAR2',  precision: 300,                 comment: 'Column name(s) of primary key of table waiting for unblocking' },
+              { column_name:  'Waiting_For_PK_Value',           column_type:   'VARCHAR2',  precision: 48,                  comment: 'Primary key content of table-record waiting for unblocking' },
+          ],
+      },
+      {
+          table_name: 'Panorama_Cache_Objects',
+          domain: :CACHE_OBJECTS,
+          columns: [
+              { column_name:  'Snapshot_Timestamp',             column_type:   'DATE',      not_null: true },
+              { column_name:  'Instance_Number',                column_type:   'NUMBER',    not_null: true },
+              { column_name:  'Owner',                          column_type:   'VARCHAR2',  precision: 128, not_null: true },
+              { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128, not_null: true },
+              { column_name:  'Partition_Name',                 column_type:   'VARCHAR2',  precision: 128, not_null: true },
+              { column_name:  'Blocks_Total',                   column_type:   'NUMBER',    not_null: true },
+              { column_name:  'Blocks_Dirty',                   column_type:   'NUMBER',    not_null: true },
+          ],
       },
       {
           table_name: 'Panorama_DB_Cache_Advice',
