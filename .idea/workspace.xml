@@ -140,8 +140,8 @@
       <file leaf-file-name="panorama_sampler_structure_check.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="469">
-              <caret line="377" column="57" lean-forward="false" selection-start-line="377" selection-start-column="57" selection-end-line="377" selection-end-column="57" />
+            <state relative-caret-position="128">
+              <caret line="20" column="0" lean-forward="false" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -1102,14 +1102,7 @@
       <workItem from="1506492602255" duration="6956000" />
       <workItem from="1507720628942" duration="80194000" />
       <workItem from="1509436566027" duration="5738000" />
-      <workItem from="1509460111480" duration="2975000" />
-    </task>
-    <task id="LOCAL-01083" summary="Version count of Sql shown">
-      <created>1504461471251</created>
-      <option name="number" value="01083" />
-      <option name="presentableId" value="LOCAL-01083" />
-      <option name="project" value="LOCAL" />
-      <updated>1504461471253</updated>
+      <workItem from="1509460111480" duration="3411000" />
     </task>
     <task id="LOCAL-01084" summary="SysStat translation">
       <created>1504465924639</created>
@@ -1447,7 +1440,14 @@
       <option name="project" value="LOCAL" />
       <updated>1509454239317</updated>
     </task>
-    <option name="localTasksCounter" value="1132" />
+    <task id="LOCAL-01132" summary="New sampling tables">
+      <created>1509463110535</created>
+      <option name="number" value="01132" />
+      <option name="presentableId" value="LOCAL-01132" />
+      <option name="project" value="LOCAL" />
+      <updated>1509463110535</updated>
+    </task>
+    <option name="localTasksCounter" value="1133" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1483,7 +1483,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2277758000" />
+    <option name="totallyTimeSpent" value="2278194000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1496,6 +1496,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="49" y="23" width="1631" height="1027" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2290749" sideWeight="0.7375" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.1014151" sideWeight="0.49131513" order="7" side_tool="false" content_ui="tabs" />
@@ -1506,7 +1507,7 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2290749" sideWeight="0.2625" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18882175" sideWeight="0.4952343" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27812895" sideWeight="0.3464837" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31330472" sideWeight="0.5859031" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31330472" sideWeight="0.5859031" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32967034" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.44134077" sideWeight="0.47434783" order="11" side_tool="false" content_ui="tabs" />
@@ -1538,7 +1539,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="v$SYSAUX_Occupants added" />
     <MESSAGE value="Redologs filter" />
     <MESSAGE value="Switch to rails 5.1.4" />
     <MESSAGE value="SQL translations for 12.1.0.1" />
@@ -1563,7 +1563,8 @@
     <MESSAGE value="exclude temporary" />
     <MESSAGE value="translation" />
     <MESSAGE value="Move function to structure-check" />
-    <option name="LAST_COMMIT_MESSAGE" value="Move function to structure-check" />
+    <MESSAGE value="New sampling tables" />
+    <option name="LAST_COMMIT_MESSAGE" value="New sampling tables" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2032,8 +2033,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="469">
-          <caret line="377" column="57" lean-forward="false" selection-start-line="377" selection-start-column="57" selection-end-line="377" selection-end-column="57" />
+        <state relative-caret-position="128">
+          <caret line="20" column="0" lean-forward="false" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
           <folding />
         </state>
       </provider>

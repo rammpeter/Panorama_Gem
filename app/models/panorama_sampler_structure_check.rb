@@ -18,8 +18,6 @@ class PanoramaSamplerStructureCheck
 
   # Schemas with valid Panorama-Sampler structures for start
   def self.panorama_sampler_schemas
-    # TODO: anpassen auf mehrere Aspekte, die einzeln aktiv sein können
-
     sql = "SELECT DISTINCT Owner FROM ("
 
     # check existence of table with full set of columns
