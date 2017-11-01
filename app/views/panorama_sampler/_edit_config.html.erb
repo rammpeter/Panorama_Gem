@@ -161,6 +161,28 @@
       </fieldset>
     </span>
 
+    <span class="fieldset_input_outer">
+      <fieldset class="fieldset_input">
+        <legend>Blocking locks history</legend>
+        <table>
+          <tr title="Enable or disable sampling of blocking lock situations.">
+            <td>Sample blocking locks</td>
+            <td align="center"><%= check_box_tag(:config_blocking_locks_active, 1, @config[:blocking_locks_active], :name=>'config[blocking_locks_active]') %></td>
+          </tr>
+          <tr>
+            <td>Snapshot cycle (minutes)</td>
+            <td align="center"><%= text_field_tag(:config_blocking_locks_snapshot_cycle, @config[:blocking_locks_snapshot_cycle], :name=>'config[blocking_locks_snapshot_cycle]', size: 6, :style => "text-align: right;", :title=>'Delay between snapshots of blocking locks in minutes') %></td>
+          </tr>
+
+          <tr>
+            <td>Snapshot retention (days)</td>
+            <td align="center"><%= text_field_tag(:config_blocking_locks_snapshot_retention, @config[:blocking_locks_snapshot_retention], :name=>'config[blocking_locks_snapshot_retention]', size: 6, :style => "text-align: right;", :title=>'Retention time for blocking locks snapshot data in days before deletion') %></td>
+          </tr>
+
+        </table>
+      </fieldset>
+    </span>
+
     <br/>
     <%= submit_tag('Test connection', :title =>"Test connection to configured database and save configuration if successful" ) %>
     <%= submit_tag('Save', :title =>"Save configuration data" ) %>

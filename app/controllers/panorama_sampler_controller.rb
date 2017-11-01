@@ -38,10 +38,12 @@ class PanoramaSamplerController < ApplicationController
   end
 
   def save_config
-    config_entry                      = params[:config].to_unsafe_h.symbolize_keys
-    config_entry[:id]                 = params[:id].to_i
-    config_entry[:awr_ash_active]     = config_entry[:awr_ash_active] == '1'
-    config_entry[:object_size_active] = config_entry[:object_size_active] == '1'
+    config_entry                          = params[:config].to_unsafe_h.symbolize_keys
+    config_entry[:id]                     = params[:id].to_i
+    config_entry[:awr_ash_active]         = config_entry[:awr_ash_active]         == '1'
+    config_entry[:object_size_active]     = config_entry[:object_size_active]     == '1'
+    config_entry[:cache_objects_active]   = config_entry[:cache_objects_active]   == '1'
+    config_entry[:blocking_locks_active]  = config_entry[:blocking_locks_active]  == '1'
 
     config_entry = PanoramaSamplerConfig.prepare_saved_entry(config_entry)
 

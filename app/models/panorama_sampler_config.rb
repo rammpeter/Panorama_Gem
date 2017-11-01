@@ -17,6 +17,9 @@ class PanoramaSamplerConfig
     config[:cache_objects_active]               = false if !config.has_key?(:cache_objects_active)
     config[:cache_objects_snapshot_cycle]       = 30    if !config.has_key?(:cache_objects_snapshot_cycle)
     config[:cache_objects_snapshot_retention]   = 60    if !config.has_key?(:cache_objects_snapshot_retention)
+    config[:blocking_locks_active]              = false if !config.has_key?(:blocking_locks_active)
+    config[:blocking_locks_snapshot_cycle]      = 2     if !config.has_key?(:blocking_locks_snapshot_cycle)
+    config[:blocking_locks_snapshot_retention]  = 60    if !config.has_key?(:blocking_locks_snapshot_retention)
     config
   end
 
@@ -24,14 +27,14 @@ class PanoramaSamplerConfig
   def self.get_cloned_config_array
     retval = []
     @@config_access_mutex.synchronize do
-      get_config_array.each{|c| retval << c.clone}
+      get_config_array.each{|c| retval << initialize_defaults(c.clone)}
     end
     retval
   end
 
   def self.get_cloned_config_entry(p_id)
     @@config_access_mutex.synchronize do
-      return get_config_entry_by_id(p_id).clone
+      return initialize_defaults(get_config_entry_by_id(p_id).clone)
     end
   end
 

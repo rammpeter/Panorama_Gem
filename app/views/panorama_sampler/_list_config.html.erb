@@ -1,7 +1,7 @@
 <%
   @update_area = get_unique_area_id
 
-  def render_action_buttons(rec)
+  @render_action_buttons = proc do |rec|
     retval =
     "<div style=\"float:left\">#{
     ajax_submit('Edit', {
@@ -31,11 +31,11 @@
     retval
   end
 
-  def error_style(rec)
+  @error_style = proc do |rec|
     "background-color:coral;" if rec[:last_successful_connect].nil? || (rec[:last_successful_connect] && rec[:last_error_time] && rec[:last_error_time] > rec[:last_successful_connect])
   end
 
-  def snapshot_duration(rec)
+  @snapshot_duration = proc do |rec|
     if rec[:last_snapshot_end] && rec[:last_snapshot_start]
       if rec[:last_snapshot_end] > rec[:last_snapshot_start]
         fn(rec[:last_snapshot_end] - rec[:last_snapshot_start], 2)
@@ -47,15 +47,15 @@
     end
   end
 
-  def awr_ash_style(rec)
+  @awr_ash_style = proc do |rec|
     "background-color:darkgray;" if !rec[:awr_ash_active]
   end
 
-  def data_awr_ash_sampling(rec)
+  @data_awr_ash_sampling = proc do |rec|
     "#{fn(rec[:snapshot_cycle])} / #{fn(rec[:snapshot_retention])} / #{fn(rec[:sql_min_no_of_execs])} / #{fn(rec[:sql_min_runtime_millisecs])}"
   end
 
-  def title_awr_ash_sampling(rec)
+  @title_awr_ash_sampling = proc do |rec|
     "AWR/ASH-sampling = #{rec[:awr_ash_active] ? 'Active' : 'Inactive'}
 Delay between snapshots = #{fn(rec[:snapshot_cycle])} minutes
 Retention time for snapshot data before deletion = #{fn(rec[:snapshot_retention])} days
@@ -63,19 +63,48 @@ Minimum number of SQL executions in snapshot cycle to be recorded by Panorama-Sa
 Minimum number of SQL runtime in snapshot cycle to be recorded by Panorama-Sampler = #{fn(rec[:sql_min_runtime_millisecs])} milliseconds"
   end
 
-  def object_size_style(rec)
+  @object_size_style = proc do |rec|
     "background-color:darkgray;" if !rec[:object_size_active]
   end
 
-  def data_object_size_sampling(rec)
+  @data_object_size_sampling = proc do |rec|
     "#{fn(rec[:object_size_snapshot_cycle])} / #{fn(rec[:object_size_snapshot_retention])}"
   end
 
-  def title_object_size_sampling(rec)
+  @title_object_size_sampling = proc do |rec|
     "Object size sampling = #{rec[:object_size_active] ? 'Active' : 'Inactive'}
 Delay between snapshots of object sizes = #{fn(rec[:object_size_snapshot_cycle])} hours
 Retention time for object size snapshot data before deletion = #{fn(rec[:object_size_snapshot_retention])} days"
   end
+
+  @cache_objects_style = proc do |rec|
+    "background-color:darkgray;" if !rec[:cache_objects_active]
+  end
+
+  @data_cache_objects_sampling = proc do |rec|
+    "#{fn(rec[:cache_objects_snapshot_cycle])} / #{fn(rec[:cache_objects_snapshot_retention])}"
+  end
+
+  @title_cache_objects_sampling = proc do |rec|
+    "DB-cache objects sampling = #{rec[:cache_objects_active] ? 'Active' : 'Inactive'}
+Delay between snapshots of DB-cache objects = #{fn(rec[:cache_objects_snapshot_cycle])} hours
+Retention time for DB-cache objects snapshot data before deletion = #{fn(rec[:cache_objects_snapshot_retention])} days"
+  end
+
+  @blocking_locks_style = proc do |rec|
+    "background-color:darkgray;" if !rec[:blocking_locks_active]
+  end
+
+  @data_blocking_locks_sampling = proc do |rec|
+    "#{fn(rec[:blocking_locks_snapshot_cycle])} / #{fn(rec[:blocking_locks_snapshot_retention])}"
+  end
+
+  @title_blocking_locks_sampling = proc do |rec|
+    "Blocking locks sampling = #{rec[:blocking_locks_active] ? 'Active' : 'Inactive'}
+Delay between snapshots of blocking locks = #{fn(rec[:blocking_locks_snapshot_cycle])} hours
+Retention time for blocking locks snapshot data before deletion = #{fn(rec[:blocking_locks_snapshot_retention])} days"
+  end
+
 
   column_options =
   [
@@ -85,15 +114,19 @@ Retention time for object size snapshot data before deletion = #{fn(rec[:object_
     {:caption=>'Username',                      :data=>proc{|rec| rec[:user]},                                            :title=>"Name of user to connect to database for workload recording" },
     {:caption=>'Schema owner',                  :data=>proc{|rec| rec[:owner]},                                           :title=>"Name of user/schema to store Panoramas tables for workload recording"},
     {:caption=>'DBID',                          :data=>proc{|rec| rec[:dbid]},                                            :title=>"Unique database identifier (v$Database.DBID)" },
-    {:caption=>'AWR/ASH config',                :data=>proc{|rec| data_awr_ash_sampling(rec)},                            :title=>"Details for AWR/ASH-sampling",                                 :data_style=>proc{|rec| awr_ash_style(rec)}, data_title: proc{|rec| title_awr_ash_sampling(rec)}},
-    {:caption=>'Last AWR/ASH snapshot time',    :data=>proc{|rec| localeDateTime(rec[:last_snapshot_start])},             :title=>"Timestamp of last AWR/ASH snapshot start",                     :data_style=>proc{|rec| awr_ash_style(rec)}, :data_title=>proc{|rec| "%t\nLast snapshot ended at #{localeDateTime(rec[:last_snapshot_end])}\nLast snapshot was executed at instance #{rec[:last_snapshot_instance]}"}},
-    {:caption=>'Last AWR/ASH snapshot duration',:data=>proc{|rec| snapshot_duration(rec)},                                :title=>"Duration in seconds of last AWR/ASH snapshot creation",        :align=>:right, :data_style=>proc{|rec| awr_ash_style(rec)}},
-    {:caption=>'Object size config',            :data=>proc{|rec| data_object_size_sampling(rec)},                        :title=>"Details for object size sampling",                             :data_style=>proc{|rec| object_size_style(rec)}, data_title: proc{|rec| title_object_size_sampling(rec)}},
-    {:caption=>'Last object size snapshot time',:data=>proc{|rec| localeDateTime(rec[:last_object_size_snapshot_start])}, :title=>"Timestamp of last object size snapshot start",                 :data_style=>proc{|rec| object_size_style(rec)}, :data_title=>proc{|rec| "%t\nLast object size snapshot ended at #{localeDateTime(rec[:last_object_size_snapshot_end])}"}},
+    {:caption=>'AWR/ASH config',                :data=>proc{|rec| @data_awr_ash_sampling.call(rec)},                      :title=>"Details for AWR/ASH-sampling",                                 :data_style=>@awr_ash_style, data_title: @title_awr_ash_sampling},
+    {:caption=>'Last AWR/ASH snapshot time',    :data=>proc{|rec| localeDateTime(rec[:last_snapshot_start])},             :title=>"Timestamp of last AWR/ASH snapshot start",                     :data_style=>@awr_ash_style, :data_title=>proc{|rec| "%t\nLast snapshot ended at #{localeDateTime(rec[:last_snapshot_end])}\nLast snapshot was executed at instance #{rec[:last_snapshot_instance]}"}},
+    {:caption=>'Last AWR/ASH snapshot duration',:data=>proc{|rec| @snapshot_duration.call(rec)},                          :title=>"Duration in seconds of last AWR/ASH snapshot creation",        :align=>:right, :data_style=>@awr_ash_style},
+    {:caption=>'Object size config',            :data=>proc{|rec| @data_object_size_sampling.call(rec)},                  :title=>"Details for object size sampling",                             :data_style=>@object_size_style, data_title: @title_object_size_sampling},
+    {:caption=>'Last object size snapshot time',:data=>proc{|rec| localeDateTime(rec[:last_object_size_snapshot_start])}, :title=>"Timestamp of last object size snapshot start",                 :data_style=>@object_size_style, :data_title=>proc{|rec| "%t\nLast object size snapshot ended at #{localeDateTime(rec[:last_object_size_snapshot_end])}"}},
+    {:caption=>'DB-cache objects config',       :data=>proc{|rec| @data_cache_objects_sampling.call(rec)},                :title=>"Details for DB-cache objects sampling",                        :data_style=>@cache_objects_style, data_title: @title_cache_objects_sampling},
+    {:caption=>'Last DB-cache objects snapshot time',:data=>proc{|rec| localeDateTime(rec[:last_cache_objects_snapshot_start])}, :title=>"Timestamp of last DB-cache objects snapshot start",     :data_style=>@cache_objects_style, :data_title=>proc{|rec| "%t\nLast DB-cache objects snapshot ended at #{localeDateTime(rec[:last_cache_objects_snapshot_end])}"}},
+    {:caption=>'Blocking locks config',         :data=>proc{|rec| @data_blocking_locks_sampling.call(rec)},               :title=>"Details for blocking locks sampling",                          :data_style=>@blocking_locks_style, data_title: @title_blocking_locks_sampling},
+    {:caption=>'Last blocking locks snapshot time',:data=>proc{|rec| localeDateTime(rec[:last_blocking_locks_snapshot_start])}, :title=>"Timestamp of last blocking locks snapshot start",        :data_style=>@blocking_locks_style, :data_title=>proc{|rec| "%t\nLast blocking locks snapshot ended at #{localeDateTime(rec[:last_blocking_locks_snapshot_end])}"}},
     {:caption=>'Last connect time',             :data=>proc{|rec| localeDateTime(rec[:last_successful_connect])},         :title=>"Timestamp of last successful connect to this database"},
-    {:caption=>'Last error time',               :data=>proc{|rec| localeDateTime(rec[:last_error_time])},                 :title=>"Timestamp of last connect- or execution-error", :data_style=>proc{|rec| error_style(rec)}},
-    {:caption=>'Last error message',            :data=>proc{|rec| rec[:last_error_message]},                              :title=>"Last message of connect- or execution-error", :data_title=>proc{|rec| "%t\n#{rec[:last_error_message]}"}, :data_style=>proc{|rec| error_style(rec)}, :max_wrap_width=>60},
-    {:caption=>'Action',                        :data=>proc{|rec| render_action_buttons(rec) },                           :title=>"Execute action for this record" },
+    {:caption=>'Last error time',               :data=>proc{|rec| localeDateTime(rec[:last_error_time])},                 :title=>"Timestamp of last connect- or execution-error", :data_style=>@error_style },
+    {:caption=>'Last error message',            :data=>proc{|rec| rec[:last_error_message]},                              :title=>"Last message of connect- or execution-error", :data_title=>proc{|rec| "%t\n#{rec[:last_error_message]}"}, :data_style=>@error_style, :max_wrap_width=>60},
+    {:caption=>'Action',                        :data=>proc{|rec| @render_action_buttons.call(rec) },                           :title=>"Execute action for this record" },
   ]
 
 %>
