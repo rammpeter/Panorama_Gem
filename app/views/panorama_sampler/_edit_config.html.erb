@@ -121,13 +121,13 @@
       <fieldset class="fieldset_input">
         <legend>Object size history</legend>
         <table>
-          <tr title="Enable or disable sampling of tablespace-object sizes (tables. indexes, partitions).">
+          <tr title="Enable or disable sampling of tablespace-object sizes (tables, indexes, partitions).">
             <td>Sample object sizes</td>
             <td align="center"><%= check_box_tag(:config_object_size_active, 1, @config[:object_size_active], :name=>'config[object_size_active]') %></td>
           </tr>
           <tr>
             <td>Snapshot cycle (hours)</td>
-            <td align="center"><%= text_field_tag(:config_object_size_snapshot_cycle, @config[:object_size_snapshot_cycle], :name=>'config[object_size_snapshot_cycle]', size: 4, :style => "text-align: right;", :title=>'Delay between snapshots of object sizes in hours') %></td>
+            <td align="center"><%= text_field_tag(:config_object_size_snapshot_cycle, @config[:object_size_snapshot_cycle], :name=>'config[object_size_snapshot_cycle]', size: 6, :style => "text-align: right;", :title=>'Delay between snapshots of object sizes in hours') %></td>
           </tr>
 
           <tr>
@@ -137,8 +137,30 @@
 
         </table>
       </fieldset>
-
     </span>
+
+    <span class="fieldset_input_outer">
+      <fieldset class="fieldset_input">
+        <legend>DB-cache history</legend>
+        <table>
+          <tr title="Enable or disable sampling of DB-cache contents per object (tables, indexes, partitions).">
+            <td>Sample DB-cache objects</td>
+            <td align="center"><%= check_box_tag(:config_cache_objects_active, 1, @config[:cache_objects_active], :name=>'config[cache_objects_active]') %></td>
+          </tr>
+          <tr>
+            <td>Snapshot cycle (minutes)</td>
+            <td align="center"><%= text_field_tag(:config_cache_objects_snapshot_cycle, @config[:cache_objects_snapshot_cycle], :name=>'config[cache_objects_snapshot_cycle]', size: 6, :style => "text-align: right;", :title=>'Delay between snapshots of cache objects in minutes') %></td>
+          </tr>
+
+          <tr>
+            <td>Snapshot retention (days)</td>
+            <td align="center"><%= text_field_tag(:config_cache_objects_snapshot_retention, @config[:cache_objects_snapshot_retention], :name=>'config[cache_objects_snapshot_retention]', size: 6, :style => "text-align: right;", :title=>'Retention time for cache objects snapshot data in days before deletion') %></td>
+          </tr>
+
+        </table>
+      </fieldset>
+    </span>
+
     <br/>
     <%= submit_tag('Test connection', :title =>"Test connection to configured database and save configuration if successful" ) %>
     <%= submit_tag('Save', :title =>"Save configuration data" ) %>

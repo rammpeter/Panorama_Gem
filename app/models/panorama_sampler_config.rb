@@ -3,6 +3,23 @@ class PanoramaSamplerConfig
   @@config_array = nil                                                          # First access loads it from session store
   @@config_access_mutex = Mutex.new
 
+
+  def self.initialize_defaults(config = {})
+    config[:id]                                 = PanoramaSamplerConfig.get_max_id+1     if !config.has_key?(:id)
+    config[:snapshot_cycle]                     = 60    if !config.has_key?(:snapshot_cycle)
+    config[:snapshot_retention]                 = 32    if !config.has_key?(:snapshot_retention)
+    config[:sql_min_no_of_execs]                = 2     if !config.has_key?(:sql_min_no_of_execs)
+    config[:sql_min_runtime_millisecs]          = 10    if !config.has_key?(:sql_min_runtime_millisecs)
+    config[:awr_ash_active]                     = false if !config.has_key?(:awr_ash_active)
+    config[:object_size_active]                 = false if !config.has_key?(:object_size_active)
+    config[:object_size_snapshot_cycle]         = 24    if !config.has_key?(:object_size_snapshot_cycle)
+    config[:object_size_snapshot_retention]     = 1000  if !config.has_key?(:object_size_snapshot_retention)
+    config[:cache_objects_active]               = false if !config.has_key?(:cache_objects_active)
+    config[:cache_objects_snapshot_cycle]       = 30    if !config.has_key?(:cache_objects_snapshot_cycle)
+    config[:cache_objects_snapshot_retention]   = 60    if !config.has_key?(:cache_objects_snapshot_retention)
+    config
+  end
+
   # Get copy of config array incl. cloned elements for display etc.
   def self.get_cloned_config_array
     retval = []
