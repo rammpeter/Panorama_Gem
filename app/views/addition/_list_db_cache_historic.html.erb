@@ -1,49 +1,52 @@
-  <%
-  def link_column(rec, value)
-      ajax_link(value, {
-              :action     => "list_db_cache_historic_detail",
-              :instance   => rec.instance,
-              :owner      => rec.owner,
-              :name       => rec.name,
-              :show_partitions => @show_partitions,
-              :partitionname => rec.partitionname,
-              :time_selection_start  => @time_selection_start,
-              :time_selection_end    => @time_selection_end,
-              :update_area=> "list_db_cache_historic_detail_area"
+<%
+  @update_area =  :list_db_cache_historic_detail_area
+
+  link_samples = proc do |rec|
+      ajax_link(fn(rec.samples), {
+              :action                 => :list_db_cache_historic_detail,
+              :instance               => rec.instance_number,
+              :owner                  => rec.owner,
+              :name                   => rec.name,
+              :show_partitions        => @show_partitions,
+              :partitionname          => rec.partition_name,
+              :time_selection_start   => @time_selection_start,
+              :time_selection_end     => @time_selection_end,
+              :update_area            => @update_area
             },
-     :title=>"Anzeige der Einzel-Samples des Objektes (unterhalb)")
+      :title=>"Show detailed sample records of object over time")
   end
 
-  def link_column_sql(rec, value)
-      ajax_link(value, {
-              :controller => "dba_history",
-              :action     => "show_using_sqls_historic",
-              :time_selection_start  => @time_selection_start,
-              :time_selection_end    => @time_selection_end,
-              :instance              => rec.instance,
-              :ObjectOwner=> rec.owner,
-              :ObjectName => rec.name,
-              :update_area=> "list_db_cache_historic_detail_area"
+  link_sqls = proc do |rec|
+      ajax_link('Show SQLs', {
+              :controller             => :dba_history,
+              :action                 => :show_using_sqls_historic,
+              :time_selection_start   => @time_selection_start,
+              :time_selection_end     => @time_selection_end,
+              :instance               => rec.instance_number,
+              :ObjectOwner            => rec.owner,
+              :ObjectName             => rec.name,
+              :update_area            => @update_area
             },
-     :title=>"Anzeige der SQL-Statements mit Nutzung dieses Objektes im Zeitraum (unterhalb)")
+     :title=>"Show SQLs using this object in choosen time period")
   end
 
-  def show_name(rec)
-    "#{rec.owner.downcase}.#{rec.name}#{" (#{rec.partitionname})" if @show_partitions == '1' && rec.partitionname}"
+  show_name = proc do |rec|
+    "#{rec.owner.downcase}.#{rec.name}#{" (#{rec.partition_name})" if @show_partitions == '1' && rec.partition_name}"
   end
 
   column_options =
   [
-    {:caption=>"I",                :data=>"rec.instance",                             :title=>"Instance-ID"},
-    {:caption=>"Name",             :data=>"link_column_sql(rec, show_name(rec))",     :title=>"Objekt-Name"},
-    {:caption=>"Index/Wichtung",   :data=>"formattedNumber(rec.sumblockstotal)",      :title=>"Nutzungs-Index (Summe der Blöcke aller Schnappschüsse des Objektes)", :align=>"right"},
-    {:caption=>"Avg.Blocks",       :data=>"formattedNumber(rec.avgblockstotal)",      :title=>"Durchschn. Anzahl DB-Blöcke im Cache belegt durch Objekt", :align=>"right"},
-    {:caption=>"Min.Blocks",       :data=>"formattedNumber(rec.minblockstotal)",      :title=>"Minimale Anzahl DB-Blöcke im Cache belegt durch Objekt", :align=>"right"},
-    {:caption=>"Max.Blocks",       :data=>"formattedNumber(rec.maxblockstotal)",      :title=>"Maximale Anzahl DB-Blöcke im Cache belegt durch Objekt", :align=>"right"},
-    {:caption=>"Avg.Dirty",        :data=>"formattedNumber(rec.avgblocksdirty)",      :title=>"Durchschn. Anzahl dirty DB-Blöcke im Cache belegt durch Objekt", :align=>"right"},
-    {:caption=>"Min.Dirty",        :data=>"formattedNumber(rec.minblocksdirty)",      :title=>"Minimale Anzahl dirty DB-Blöcke im Cache belegt durch Objekt", :align=>"right"},
-    {:caption=>"Max.Dirty",        :data=>"formattedNumber(rec.maxblocksdirty)",      :title=>"Maximale Anzahl dirty DB-Blöcke im Cache belegt durch Objekt", :align=>"right"},
-    {:caption=>"Samples",          :data=>"link_column(rec, formattedNumber(rec.samples))", :title=>"Anzahl einzelner Samples zum Objekt im Zeitraum", :align=>"right"},
+    {:caption=>"I",                :data=>proc{|rec| rec.instance_number},                                          :title=>"Instance-ID"},
+    {:caption=>"Name",             :data=>proc{|rec| link_object_description(@update_area, rec.owner, rec.name, show_name.call(rec)) },  :title=>"Objekt-Name"},
+    {:caption=>"Weighted index",   :data=>proc{|rec| fn(rec.sumblockstotal)},                                       :title=>"Usage-index (Sum of all DB-blocks of object over all considered snapshots in period)", :align=>"right"},
+    {:caption=>"Avg.Blocks",       :data=>proc{|rec| fn(rec.avgblockstotal)},                                       :title=>"Average number of DB-blocks in cache used by this object", :align=>"right"},
+    {:caption=>"Min.Blocks",       :data=>proc{|rec| fn(rec.minblockstotal)},                                       :title=>"Minimum number of DB-blocks in cache used by this object at a single snapshot", :align=>"right"},
+    {:caption=>"Max.Blocks",       :data=>proc{|rec| fn(rec.maxblockstotal)},                                       :title=>"Minimum number of DB-blocks in cache used by this object at a single snapshot", :align=>"right"},
+    {:caption=>"Avg.Dirty",        :data=>proc{|rec| fn(rec.avgblocksdirty)},                                       :title=>"Average number of dirty DB-blocks in cache used by this object", :align=>"right"},
+    {:caption=>"Min.Dirty",        :data=>proc{|rec| fn(rec.minblocksdirty)},                                       :title=>"Minimum number of dirty DB-blocks in cache used by this object at a single snapshot", :align=>"right"},
+    {:caption=>"Max.Dirty",        :data=>proc{|rec| fn(rec.maxblocksdirty)},                                       :title=>"Maximum number of dirty DB-blocks in cache used by this object at a single snapshot", :align=>"right"},
+    {:caption=>"Samples",          :data=>link_samples,                                                             :title=>"Number of snaphsot samples for this object in period", :align=>:right},
+    {:caption=>'SQLs',             :data=>link_sqls,                                                                :title=>"Show SQLs using this object in choosen time period"},
   ]
 %>
 

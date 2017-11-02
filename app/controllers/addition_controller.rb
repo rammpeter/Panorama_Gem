@@ -10,33 +10,33 @@ class AdditionController < ApplicationController
     save_session_time_selection                  # Werte puffern fuer spaetere Wiederverwendung
 
     if @show_partitions == '1'
-      partition_expression = "PartitionName"
+      partition_expression = "Partition_Name"
     else
       partition_expression = "NULL"
     end
 
     @entries= sql_select_iterator ["\
       SELECT /* Panorama-Tool Ramm */ *
-      FROM   (SELECT Instance, Owner, Name, PartitionName,
-                     AVG(BlocksTotal) AvgBlocksTotal,
-                     MIN(BlocksTotal) MinBlocksTotal,
-                     Max(BlocksTotal) MaxBlocksTotal,
-                     SUM(BlocksTotal) SumBlocksTotal,
-                     AVG(BlocksDirty) AvgBlocksDirty,
-                     MIN(BlocksDirty) MinBlocksDirty,
-                     MAX(BlocksDirty) MaxBlocksDirty,
+      FROM   (SELECT Instance_Number, Owner, Name, Partition_Name,
+                     AVG(Blocks_Total) AvgBlocksTotal,
+                     MIN(Blocks_Total) MinBlocksTotal,
+                     Max(Blocks_Total) MaxBlocksTotal,
+                     SUM(Blocks_Total) SumBlocksTotal,
+                     AVG(Blocks_Dirty) AvgBlocksDirty,
+                     MIN(Blocks_Dirty) MinBlocksDirty,
+                     MAX(Blocks_Dirty) MaxBlocksDirty,
                      COUNT(*)         Samples
-              FROM   (SELECT Instance, Owner, Name, #{partition_expression} PartitionName,
-                             SUM(BlocksTotal) BlocksTotal,
-                             SUM(BlocksDirty) BlocksDirty
-                      FROM   #{read_from_client_info_store(:dba_hist_cache_objects_owner)}.DBA_hist_Cache_Objects
-                      WHERE  SnapshotTS BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-                      #{" AND Instance=#{@instance}" if @instance}
+              FROM   (SELECT Instance_Number, Owner, Name, #{partition_expression} Partition_Name,
+                             SUM(Blocks_Total) Blocks_Total,
+                             SUM(Blocks_Dirty) Blocks_Dirty
+                      FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Cache_Objects
+                      WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                      #{" AND Instance_Number=#{@instance}" if @instance}
                       -- Verdichten je Schnappschuss auf Gruppierung, um saubere Min/Max/Avg-Werte zu erhalten
-                      GROUP BY SnapshotTS, Instance, Owner, Name, #{partition_expression}
+                      GROUP BY Snapshot_Timestamp, Instance_Number, Owner, Name, #{partition_expression}
                      )
-              GROUP BY Instance, Owner, Name, PartitionName
-              ORDER BY SUM(BlocksTotal) DESC
+              GROUP BY Instance_Number, Owner, Name, Partition_Name
+              ORDER BY SUM(Blocks_Total) DESC
              )
       WHERE RowNum <= ?",
                               @time_selection_start, @time_selection_end, max_result_count
@@ -52,20 +52,21 @@ class AdditionController < ApplicationController
     @owner           = params[:owner]
     @name            = params[:name]
     @partitionname   = params[:partitionname]
+    @partitionname   = nil if @partitionname == ''
     @show_partitions = params[:show_partitions]
 
     @entries= sql_select_all ["\
-      SELECT /* Panorama-Tool Ramm */ SnapshotTS,
-             SUM(BlocksTotal) BlocksTotal,
-             SUM(BlocksDirty) BlocksDirty
-      FROM   #{read_from_client_info_store(:dba_hist_cache_objects_owner)}.DBA_hist_Cache_Objects
-      WHERE  SnapshotTS BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-      AND    Owner    = ?
-      AND    Name     = ?
-      AND    Instance = ?
-      #{" AND PartitionName = ?" if @partitionname}
-      GROUP BY SnapshotTS
-      ORDER BY SnapshotTS
+      SELECT /* Panorama-Tool Ramm */ Snapshot_Timestamp,
+             SUM(Blocks_Total) Blocks_Total,
+             SUM(Blocks_Dirty) Blocks_Dirty
+      FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Cache_Objects
+      WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+      AND    Owner            = ?
+      AND    Name             = ?
+      AND    Instance_Number  = ?
+      #{" AND Partition_Name = ?" if @partitionname}
+      GROUP BY Snapshot_Timestamp
+      ORDER BY Snapshot_Timestamp
       "].concat([@time_selection_start, @time_selection_end, @owner, @name, @instance].concat(@partitionname ? [@partitionname] : [])
                              )
 
@@ -79,20 +80,20 @@ class AdditionController < ApplicationController
     @show_partitions = params[:show_partitions]
 
     if @show_partitions == '1'
-      partition_expression = "PartitionName"
+      partition_expression = "Partition_Name"
     else
       partition_expression = "NULL"
     end
 
     @entries= sql_select_all ["\
-      SELECT /* Panorama-Tool Ramm */ Owner, Name, #{partition_expression} PartitionName,
-             SUM(BlocksTotal) BlocksTotal,
-             SUM(BlocksDirty) BlocksDirty
-      FROM   #{read_from_client_info_store(:dba_hist_cache_objects_owner)}.DBA_hist_Cache_Objects
-      WHERE  SnapshotTS = TO_DATE(?, '#{sql_datetime_second_mask}')
-      AND    Instance   = ?
-      GROUP BY SnapshotTS, Instance, Owner, Name, #{partition_expression}
-      ORDER BY BlocksTotal DESC
+      SELECT /* Panorama-Tool Ramm */ Owner, Name, #{partition_expression} Partition_Name,
+             SUM(Blocks_Total) Blocks_Total,
+             SUM(Blocks_Dirty) Blocks_Dirty
+      FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Cache_Objects
+      WHERE  Snapshot_Timestamp = TO_DATE(?, '#{sql_datetime_second_mask}')
+      AND    Instance_Number   = ?
+      GROUP BY Snapshot_Timestamp, Instance_Number, Owner, Name, #{partition_expression}
+      ORDER BY Blocks_Total DESC
       ", @snapshotts, @instance]
 
     render_partial
@@ -105,37 +106,37 @@ class AdditionController < ApplicationController
     @time_selection_end       = params[:time_selection_end]
 
     if @show_partitions == '1'
-      partition_expression = "c.PartitionName"
+      partition_expression = "c.Partition_Name"
     else
       partition_expression = "NULL"
     end
 
     singles = sql_select_all ["\
       SELECT /* Panorama-Tool Ramm */
-             c.Instance, c.SnapshotTS, c.Owner, c.Name, #{partition_expression} PartitionName, SUM(c.BlocksTotal) BlocksTotal
-      FROM   #{read_from_client_info_store(:dba_hist_cache_objects_owner)}.DBA_hist_Cache_Objects c
+             c.Instance_Number, c.Snapshot_Timestamp, c.Owner, c.Name, #{partition_expression} Partition_Name, SUM(c.Blocks_Total) Blocks_Total
+      FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Cache_Objects c
       JOIN   (
-              SELECT Instance, Owner, Name, PartitionName, SumBlocksTotal
-              FROM   (SELECT Instance, Owner, Name, PartitionName,
-                             Max(BlocksTotal) MaxBlocksTotal,
-                             SUM(BlocksTotal) SumBlocksTotal
-                      FROM   (SELECT Instance, Owner, Name, #{partition_expression} PartitionName,
-                                     SUM(BlocksTotal) BlocksTotal
-                              FROM   #{read_from_client_info_store(:dba_hist_cache_objects_owner)}.DBA_hist_Cache_Objects c
-                              WHERE  SnapshotTS BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-                              #{" AND Instance=#{@instance}" if @instance}
+              SELECT Instance_Number, Owner, Name, Partition_Name, SumBlocksTotal
+              FROM   (SELECT Instance_Number, Owner, Name, Partition_Name,
+                             Max(Blocks_Total) MaxBlocksTotal,
+                             SUM(Blocks_Total) SumBlocksTotal
+                      FROM   (SELECT Instance_Number, Owner, Name, #{partition_expression} Partition_Name,
+                                     SUM(Blocks_Total) Blocks_Total
+                              FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Cache_Objects c
+                              WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                              #{" AND Instance_Number=#{@instance}" if @instance}
                               -- Verdichten je Schnappschuss auf Gruppierung, um saubere Min/Max/Avg-Werte zu erhalten
-                              GROUP BY SnapshotTS, Instance, Owner, Name, #{partition_expression}
+                              GROUP BY Snapshot_Timestamp, Instance_Number, Owner, Name, #{partition_expression}
                              )
-                      GROUP BY Instance, Owner, Name, PartitionName
-                      ORDER BY Max(BlocksTotal) DESC
+                      GROUP BY Instance_Number, Owner, Name, Partition_Name
+                      ORDER BY Max(Blocks_Total) DESC
                      )
               WHERE RowNum <= 10
-             ) s ON s.Instance = c.Instance AND s.Owner = c.Owner AND s.Name||s.PartitionName = c.Name||#{partition_expression}
-      WHERE  c.SnapshotTS BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-      #{" AND c.Instance=#{@instance}" if @instance}
-      GROUP BY c.Instance, c.SnapShotTS, c.Owner, c.Name, #{partition_expression}
-      ORDER BY c.SnapshotTS, MIN(s.SumBlocksTotal) DESC
+             ) s ON s.Instance_Number = c.Instance_Number AND s.Owner = c.Owner AND s.Name||s.Partition_Name = c.Name||#{partition_expression}
+      WHERE  c.Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+      #{" AND c.Instance_Number=#{@instance}" if @instance}
+      GROUP BY c.Instance_Number, c.SnapShot_Timestamp, c.Owner, c.Name, #{partition_expression}
+      ORDER BY c.Snapshot_Timestamp, MIN(s.SumBlocksTotal) DESC
       ",
                               @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end,
                              ]

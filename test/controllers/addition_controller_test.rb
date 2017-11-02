@@ -56,6 +56,21 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
 
 
   test "db_cache_historic with xhr: true" do
+    [nil, 1].each do |instance|
+      [nil, 1].each do |show_partitions|
+        post '/addition/list_db_cache_historic', :params => { :format               => :html,
+                                                              :time_selection_start => "01.01.2011 00:00",
+                                                              :time_selection_end   => "01.01.2011 01:00",
+                                                              :instance             => instance,
+                                                              :maxResultCount       => 100,
+                                                              :show_partitions      => show_partitions,
+                                                              :update_area          => :hugo } if ENV['DB_VERSION'] >= '11.2'
+        assert_response :success
+      end
+
+    end
+
+
     post '/addition/list_db_cache_historic', :params => { :format=>:html,
          :time_selection_start =>"01.01.2011 00:00",
          :time_selection_end =>"01.01.2011 01:00",

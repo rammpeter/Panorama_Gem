@@ -4,7 +4,7 @@ class PanoramaSamplerStructureCheck
   include PanoramaSampler::PackagePanoramaSamplerSnapshot
 
   def self.do_check(sampler_config, domain)
-    raise "Unsupported domain #{domain}" if ![:AWR, :ASH, :OBJECT_SIZE].include? domain
+    raise "Unsupported domain #{domain}" if ![:AWR, :ASH, :OBJECT_SIZE, :CACHE_OBJECTS, :BLOCKING_LOCKS].include? domain
     PanoramaSamplerStructureCheck.new(sampler_config).do_check_internal(domain)
   end
 
@@ -63,11 +63,8 @@ class PanoramaSamplerStructureCheck
 =end
   end
 
-  def self.object_sizes_exists?
-    PanoramaConnection.sql_select_one("SELECT /* Panorama Tool Ramm */ COUNT(*)
-                    FROM   All_Tables WHERE Table_Name='PANORAMA_OBJECT_SIZES' and Owner = '#{PanoramaConnection.get_config[:panorama_sampler_schema]}'
-                   "
-    ) > 0
+  def self.panorama_table_exists?(table_name)
+    PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM All_Tables WHERE Table_Name=? and Owner = '#{PanoramaConnection.get_config[:panorama_sampler_schema]}'", table_name.upcase]) > 0
   end
 
   def initialize(sampler_config)
@@ -384,10 +381,11 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Instance_Number',                column_type:   'NUMBER',    not_null: true },
               { column_name:  'Owner',                          column_type:   'VARCHAR2',  precision: 128, not_null: true },
               { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128, not_null: true },
-              { column_name:  'Partition_Name',                 column_type:   'VARCHAR2',  precision: 128, not_null: true },
+              { column_name:  'Partition_Name',                 column_type:   'VARCHAR2',  precision: 128 },
               { column_name:  'Blocks_Total',                   column_type:   'NUMBER',    not_null: true },
               { column_name:  'Blocks_Dirty',                   column_type:   'NUMBER',    not_null: true },
           ],
+          indexes: [ {index_name: 'Panorama_Cache_Objects_TS', columns: ['Snapshot_Timestamp', 'Instance_Number'] } ]
       },
       {
           table_name: 'Panorama_DB_Cache_Advice',

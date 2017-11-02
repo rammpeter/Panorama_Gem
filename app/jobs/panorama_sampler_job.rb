@@ -24,33 +24,36 @@ class PanoramaSamplerJob < ApplicationJob
 
     # Iterate over PanoramaSampler entries
     PanoramaSamplerConfig.get_cloned_config_array.each do |config|
-
-      # Call AWR / ASH function
-      if config[:awr_ash_active] && (snapshot_time.min % config[:snapshot_cycle] == 0  ||  # exact startup time at full hour + x*snapshot_cycle
-          snapshot_time.min == 0 && snapshot_time.hour % config[:snapshot_cycle]/60 == 0)  # Full hour for snapshot cycle = n*hour
-        if  config[:last_snapshot_start].nil? || (config[:last_snapshot_start]+(config[:snapshot_cycle]).minutes <= snapshot_time+SECONDS_LATE_ALLOWED)  # snapshot_cycle expired ?, 2 seconds delay are allowed
-          PanoramaSamplerConfig.modify_config_entry({id: config[:id], last_snapshot_start: snapshot_time})
-          WorkerThread.create_snapshot(config, snapshot_time)
-        else
-          Rails.logger.error "#{Time.now}: Last snapshot start (#{config[:last_snapshot_start]}) not old enough to expire next snapshot after #{config[:snapshot_cycle]} minutes for ID=#{config[:id]} '#{config[:name]}'"
-          Rails.logger.error "May be sampling is done by multiple Panorama instances?"
-        end
-      end
-
-      # Sample object sizes
-      if config[:object_size_active] && snapshot_time.min == 0 && (snapshot_time.hour % config[:object_size_snapshot_cycle] == 0)     # Full hour and snapshot cycle = n*hour
-        if config[:last_object_size_snapshot_start].nil? || config[:last_object_size_snapshot_start].day != snapshot_time.day || config[:last_object_size_snapshot_start].hour != snapshot_time.hour
-          PanoramaSamplerConfig.modify_config_entry({id: config[:id], last_object_size_snapshot_start: snapshot_time})
-          WorkerThread.create_object_size_snapshot(config, snapshot_time)
-        else
-          Rails.logger.error "#{Time.now}: Last object size snapshot start (#{config[:last_object_size_snapshot_start]}) not old enough to expire next snapshot after #{config[:object_size_snapshot_cycle]} hours for ID=#{config[:id]} '#{config[:name]}'"
-          Rails.logger.error "May be sampling is done by multiple Panorama instances?"
-        end
-      end
+      check_for_sampling(config, snapshot_time, :AWR_ASH)
+      check_for_sampling(config, snapshot_time, :OBJECT_SIZE, 60)
+      check_for_sampling(config, snapshot_time, :CACHE_OBJECTS)
+      check_for_sampling(config, snapshot_time, :BLOCKING_LOCKS)
     end
   rescue Exception => e
     Rails.logger.error "Exception in PanoramaSamplerJob.perform:\n#{e.message}"
     log_exception_backtrace(e, 40)
     raise e
   end
+
+
+  private
+  def check_for_sampling(config, snapshot_time, domain, minute_factor = 1)
+    last_snapshot_start_key = "last_#{domain.downcase}_snapshot_start".to_sym
+    config_active           = config["#{domain.downcase}_active".to_sym]
+    snapshot_cycle_minutes  = config["#{domain.downcase}_snapshot_cycle".to_sym] * minute_factor
+    last_snapshot_start     = config[last_snapshot_start_key]
+
+    if config_active && (snapshot_time.min % snapshot_cycle_minutes == 0  ||  # exact startup time at full hour + x*snapshot_cycle
+        snapshot_time.min == 0 && snapshot_time.hour % snapshot_cycle_minutes/60 == 0)  # Full hour for snapshot cycle = n*hour
+      if  last_snapshot_start.nil? || (last_snapshot_start + snapshot_cycle_minutes.minutes <= snapshot_time+SECONDS_LATE_ALLOWED)  # snapshot_cycle expired ?, 2 seconds delay are allowed
+        PanoramaSamplerConfig.modify_config_entry({id: config[:id], last_snapshot_start_key => snapshot_time})
+        WorkerThread.create_snapshot(config, snapshot_time, domain)
+      else
+        Rails.logger.error "#{Time.now}: Last #{domain} snapshot start (#{last_snapshot_start}) not old enough to expire next snapshot after #{snapshot_cycle_minutes} minutes for ID=#{config[:id]} '#{config[:name]}'"
+        Rails.logger.error "May be sampling is done by multiple Panorama instances?"
+      end
+    end
+
+  end
+
 end

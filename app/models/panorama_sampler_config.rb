@@ -6,8 +6,8 @@ class PanoramaSamplerConfig
 
   def self.initialize_defaults(config = {})
     config[:id]                                 = PanoramaSamplerConfig.get_max_id+1     if !config.has_key?(:id)
-    config[:snapshot_cycle]                     = 60    if !config.has_key?(:snapshot_cycle)
-    config[:snapshot_retention]                 = 32    if !config.has_key?(:snapshot_retention)
+    config[:awr_ash_snapshot_cycle]             = 60    if !config.has_key?(:awr_ash_snapshot_cycle)
+    config[:awr_ash_snapshot_retention]         = 32    if !config.has_key?(:awr_ash_snapshot_retention)
     config[:sql_min_no_of_execs]                = 2     if !config.has_key?(:sql_min_no_of_execs)
     config[:sql_min_runtime_millisecs]          = 10    if !config.has_key?(:sql_min_runtime_millisecs)
     config[:awr_ash_active]                     = false if !config.has_key?(:awr_ash_active)
@@ -64,7 +64,10 @@ class PanoramaSamplerConfig
   def self.min_snapshot_cycle
     min_snapshot_cycle = 60                                                     # at least every hour run job
     get_cloned_config_array.each do |config|
-      min_snapshot_cycle = config[:snapshot_cycle] if config[:snapshot_cycle] < min_snapshot_cycle  # Rerrun job at smallest snapshot cycle config
+      min_snapshot_cycle = config[:awr_ash_snapshot_cycle]            if config[:awr_ash_active]        && config[:awr_ash_snapshot_cycle]                  < min_snapshot_cycle  # Rerun job at smallest snapshot cycle config
+      min_snapshot_cycle = config[:object_size_snapshot_cycle]*60     if config[:object_size_active]    && config[:object_size_snapshot_cycle]*60   < min_snapshot_cycle  # Rerun job at smallest snapshot cycle config
+      min_snapshot_cycle = config[:cache_objects_snapshot_cycle]      if config[:cache_objects_active]  && config[:cache_objects_snapshot_cycle]    < min_snapshot_cycle  # Rerun job at smallest snapshot cycle config
+      min_snapshot_cycle = config[:blocking_locks_snapshot_cycle]     if config[:blocking_locks_active] && config[:blocking_locks_snapshot_cycle]   < min_snapshot_cycle  # Rerun job at smallest snapshot cycle config
     end
     min_snapshot_cycle
   end
@@ -76,11 +79,11 @@ class PanoramaSamplerConfig
 
   def self.validate_entry(entry)
     raise "Password is mandatory" if (entry[:password].nil? || entry[:password] == '')
-    if entry[:snapshot_cycle].nil? || entry[:snapshot_cycle] <=0 || (60 % entry[:snapshot_cycle] != 0 && entry[:snapshot_cycle] % 60 != 0) || entry[:snapshot_cycle] % 5 != 0
+    if entry[:awr_ash_snapshot_cycle].nil? || entry[:awr_ash_snapshot_cycle] <=0 || (60 % entry[:awr_ash_snapshot_cycle] != 0 && entry[:awr_ash_snapshot_cycle] % 60 != 0) || entry[:awr_ash_snapshot_cycle] % 5 != 0
       # Allow wrong values if master password is test password
       raise "AWR/ASH-snapshot cycle must be a multiple of 5 minutes\nand divisible without remainder from 60 minutes or multiple of 60 minutes\ne.g. 5, 10, 15, 20, 30, 60 or 120 minutes" if EngineConfig.config.panorama_sampler_master_password != 'hugo'
     end
-    raise "AWR/ASH-napshot retention must be >= 1 day" if entry[:snapshot_retention] < 1
+    raise "AWR/ASH-napshot retention must be >= 1 day" if entry[:awr_ash_snapshot_retention] < 1
 
    if entry[:object_size_snapshot_cycle].nil? || entry[:object_size_snapshot_cycle] <=0 || 24 % entry[:object_size_snapshot_cycle] != 0 || entry[:object_size_snapshot_cycle]  > 24
       raise "Object size snapshot cycle must be a divisible without remainder from 24 hours and max. 24 hours\ne.g. 1, 2, 3, 4, 6, 8, 12 or 24 hours"
@@ -92,13 +95,17 @@ class PanoramaSamplerConfig
 
   # Modify some content after edit and before storage
   def self.prepare_saved_entry(entry)
-    entry[:tns]                             = PanoramaConnection.get_host_tns(entry) if entry[:modus].to_sym == :host
-    entry[:id]                              = entry[:id].to_i
-    entry[:snapshot_cycle]                  = entry[:snapshot_cycle].to_i
-    entry[:snapshot_retention]              = entry[:snapshot_retention].to_i
-    entry[:owner]                           = entry[:user] if entry[:owner].nil? || entry[:owner] == ''             # User is default for owner
-    entry[:object_size_snapshot_cycle]      = entry[:object_size_snapshot_cycle].to_i
-    entry[:object_size_snapshot_retention]  = entry[:object_size_snapshot_retention].to_i
+    entry[:tns]                               = PanoramaConnection.get_host_tns(entry) if entry[:modus].to_sym == :host
+    entry[:id]                                = entry[:id].to_i
+    entry[:awr_ash_snapshot_cycle]            = entry[:awr_ash_snapshot_cycle].to_i
+    entry[:awr_ash_snapshot_retention]        = entry[:awr_ash_snapshot_retention].to_i
+    entry[:owner]                             = entry[:user] if entry[:owner].nil? || entry[:owner] == ''             # User is default for owner
+    entry[:object_size_snapshot_cycle]        = entry[:object_size_snapshot_cycle].to_i
+    entry[:object_size_snapshot_retention]    = entry[:object_size_snapshot_retention].to_i
+    entry[:cache_objects_snapshot_cycle]      = entry[:cache_objects_snapshot_cycle].to_i
+    entry[:cache_objects_snapshot_retention]  = entry[:cache_objects_snapshot_retention].to_i
+    entry[:blocking_locks_snapshot_cycle]     = entry[:blocking_locks_snapshot_cycle].to_i
+    entry[:blocking_locks_snapshot_retention] = entry[:blocking_locks_snapshot_retention].to_i
 
     if entry[:password].nil? || entry[:password] == ''
       entry.delete(:password)                                                   # Preserve previous password at merge

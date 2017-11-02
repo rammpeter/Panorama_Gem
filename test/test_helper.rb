@@ -76,7 +76,6 @@ class ActiveSupport::TestCase
     @db_version = PanoramaConnection.db_version                                 # Store db_version outside PanoramaConnection
 
     showBlockingLocksMenu     # belegt dba_hist_blocking_locks_owner]
-    showDbCacheMenu           # belegt dba_hist_cache_objects_owner]
   end
 
   # Don't use PanoramaConnection.db_version because PanoramaConnection.reset_thread_local_attributes is called at end of each request
@@ -85,16 +84,16 @@ class ActiveSupport::TestCase
   end
 
   def set_panorama_sampler_config_defaults!(sampler_config)
+
     sampler_config[:query_timeout]                  = 20                            # single test should not last longer
     sampler_config[:awr_ash_active]                 = true
-    sampler_config[:snapshot_cycle]                 = 1                             # Snapshot should start immediate
-    sampler_config[:snapshot_retention]             = 1
-    sampler_config[:sql_min_no_of_execs]            = 1
-    sampler_config[:sql_min_runtime_millisecs]      = 100
     sampler_config[:object_size_active]             = true
-    sampler_config[:object_size_snapshot_cycle]     = 24
-    sampler_config[:object_size_snapshot_retention] = 20
+    sampler_config[:cache_objects_active]           = true
+    sampler_config[:blocking_locks_active]          = true
+
+    sampler_config = PanoramaSamplerConfig.initialize_defaults(sampler_config)
   end
+
 
   def prepare_panorama_sampler_thread_db_config
     EngineConfig.config.panorama_sampler_master_password = 'hugo'

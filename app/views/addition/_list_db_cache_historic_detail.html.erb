@@ -4,7 +4,7 @@
     ajax_link(value, {
                  :action     => "list_db_cache_historic_snap",
                  :instance   => @instance,
-                 :snapshotts => localeDateTime(rec.snapshotts),
+                 :snapshotts => localeDateTime(rec.snapshot_timestamp),
                  :show_partitions => @show_partitions,
                  :update_area=> "list_db_cache_historic_snap_area"
                },
@@ -13,9 +13,9 @@
 
 column_options =
  [
-   {:caption=>"Zeit",   :data=>proc{|rec| link_column(rec, localeDateTime(rec.snapshotts)) }, :title=>"Zeitstempel des Schnappschuss",                        :plot_master_time=>true},
-   {:caption=>"Blocks", :data=>proc{|rec| link_column(rec, fn(rec.blockstotal)) },            :title=>"Anzahl DB-Blöcke im Cache belegt durch Objekt",        :align=>"right"},
-   {:caption=>"Dirty",  :data=>proc{|rec| link_column(rec, fn(rec.blocksdirty)) },            :title=>"Anzahl dirty DB-Blöcke im Cache belegt durch Objekt",  :align=>"right"},
+   {:caption=>"Zeit",   :data=>proc{|rec| link_column(rec, localeDateTime(rec.snapshot_timestamp)) }, :title=>"Zeitstempel des Schnappschuss",                        :plot_master_time=>true},
+   {:caption=>"Blocks", :data=>proc{|rec| link_column(rec, fn(rec.blocks_total)) },            :title=>"Anzahl DB-Blöcke im Cache belegt durch Objekt",        :align=>"right"},
+   {:caption=>"Dirty",  :data=>proc{|rec| link_column(rec, fn(rec.blocks_dirty)) },            :title=>"Anzahl dirty DB-Blöcke im Cache belegt durch Objekt",  :align=>"right"},
  ]
 %>
 

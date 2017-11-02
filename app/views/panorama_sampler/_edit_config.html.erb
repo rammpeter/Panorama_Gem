@@ -95,12 +95,12 @@
           </tr>
           <tr>
             <td>Snapshot cycle (minutes)</td>
-            <td align="center"><%= text_field_tag(:config_snapshot_cycle, @config[:snapshot_cycle], :name=>'config[snapshot_cycle]', size: 20, :style => "text-align: right;", :title=>'Delay between snapshots in minutes') %></td>
+            <td align="center"><%= text_field_tag(:config_awr_ash_snapshot_cycle, @config[:awr_ash_snapshot_cycle], :name=>'config[awr_ash_snapshot_cycle]', size: 20, :style => "text-align: right;", :title=>'Delay between snapshots in minutes') %></td>
           </tr>
 
           <tr>
             <td>Snapshot retention (days)</td>
-            <td align="center"><%= text_field_tag(:config_snapshot_retention, @config[:snapshot_retention], :name=>'config[snapshot_retention]', size: 20, :style => "text-align: right;", :title=>'Retention time for snapshot data in days before deletion') %></td>
+            <td align="center"><%= text_field_tag(:config_awr_ash_snapshot_retention, @config[:awr_ash_snapshot_retention], :name=>'config[awr_ash_snapshot_retention]', size: 20, :style => "text-align: right;", :title=>'Retention time for snapshot data in days before deletion') %></td>
           </tr>
 
           <tr title="or-combined limits for SQLs within snapshot cycle to be recorded by Panorama-Sampler">

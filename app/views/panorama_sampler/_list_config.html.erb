@@ -36,9 +36,9 @@
   end
 
   @snapshot_duration = proc do |rec|
-    if rec[:last_snapshot_end] && rec[:last_snapshot_start]
-      if rec[:last_snapshot_end] > rec[:last_snapshot_start]
-        fn(rec[:last_snapshot_end] - rec[:last_snapshot_start], 2)
+    if rec[:last_awr_ash_snapshot_end] && rec[:last_awr_ash_snapshot_start]
+      if rec[:last_awr_ash_snapshot_end] > rec[:last_awr_ash_snapshot_start]
+        fn(rec[:last_awr_ash_snapshot_end] - rec[:last_awr_ash_snapshot_start], 2)
       else
         'Snapshot not successful finished'
       end
@@ -52,13 +52,13 @@
   end
 
   @data_awr_ash_sampling = proc do |rec|
-    "#{fn(rec[:snapshot_cycle])} / #{fn(rec[:snapshot_retention])} / #{fn(rec[:sql_min_no_of_execs])} / #{fn(rec[:sql_min_runtime_millisecs])}"
+    "#{fn(rec[:awr_ash_snapshot_cycle])} / #{fn(rec[:awr_ash_snapshot_retention])} / #{fn(rec[:sql_min_no_of_execs])} / #{fn(rec[:sql_min_runtime_millisecs])}"
   end
 
   @title_awr_ash_sampling = proc do |rec|
     "AWR/ASH-sampling = #{rec[:awr_ash_active] ? 'Active' : 'Inactive'}
-Delay between snapshots = #{fn(rec[:snapshot_cycle])} minutes
-Retention time for snapshot data before deletion = #{fn(rec[:snapshot_retention])} days
+Delay between snapshots = #{fn(rec[:awr_ash_snapshot_cycle])} minutes
+Retention time for snapshot data before deletion = #{fn(rec[:awr_ash_snapshot_retention])} days
 Minimum number of SQL executions in snapshot cycle to be recorded by Panorama-Sampler = #{fn(rec[:sql_min_no_of_execs])}
 Minimum number of SQL runtime in snapshot cycle to be recorded by Panorama-Sampler = #{fn(rec[:sql_min_runtime_millisecs])} milliseconds"
   end
@@ -115,7 +115,7 @@ Retention time for blocking locks snapshot data before deletion = #{fn(rec[:bloc
     {:caption=>'Schema owner',                  :data=>proc{|rec| rec[:owner]},                                           :title=>"Name of user/schema to store Panoramas tables for workload recording"},
     {:caption=>'DBID',                          :data=>proc{|rec| rec[:dbid]},                                            :title=>"Unique database identifier (v$Database.DBID)" },
     {:caption=>'AWR/ASH config',                :data=>proc{|rec| @data_awr_ash_sampling.call(rec)},                      :title=>"Details for AWR/ASH-sampling",                                 :data_style=>@awr_ash_style, data_title: @title_awr_ash_sampling},
-    {:caption=>'Last AWR/ASH snapshot time',    :data=>proc{|rec| localeDateTime(rec[:last_snapshot_start])},             :title=>"Timestamp of last AWR/ASH snapshot start",                     :data_style=>@awr_ash_style, :data_title=>proc{|rec| "%t\nLast snapshot ended at #{localeDateTime(rec[:last_snapshot_end])}\nLast snapshot was executed at instance #{rec[:last_snapshot_instance]}"}},
+    {:caption=>'Last AWR/ASH snapshot time',    :data=>proc{|rec| localeDateTime(rec[:last_awr_ash_snapshot_start])},             :title=>"Timestamp of last AWR/ASH snapshot start",                     :data_style=>@awr_ash_style, :data_title=>proc{|rec| "%t\nLast snapshot ended at #{localeDateTime(rec[:last_awr_ash_snapshot_end])}\nLast snapshot was executed at instance #{rec[:last_awr_snapshot_instance]}"}},
     {:caption=>'Last AWR/ASH snapshot duration',:data=>proc{|rec| @snapshot_duration.call(rec)},                          :title=>"Duration in seconds of last AWR/ASH snapshot creation",        :align=>:right, :data_style=>@awr_ash_style},
     {:caption=>'Object size config',            :data=>proc{|rec| @data_object_size_sampling.call(rec)},                  :title=>"Details for object size sampling",                             :data_style=>@object_size_style, data_title: @title_object_size_sampling},
     {:caption=>'Last object size snapshot time',:data=>proc{|rec| localeDateTime(rec[:last_object_size_snapshot_start])}, :title=>"Timestamp of last object size snapshot start",                 :data_style=>@object_size_style, :data_title=>proc{|rec| "%t\nLast object size snapshot ended at #{localeDateTime(rec[:last_object_size_snapshot_end])}"}},

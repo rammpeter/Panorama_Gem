@@ -3,7 +3,7 @@ class WorkerThread
   include ExceptionHelper
 
   ############################### class methods as public interface ###############################
-  # Check if connection may function and return DBID aof database
+  # Check if connection may function and return DBID of database
   def self.check_connection(sampler_config, controller)
     thread = Thread.new{WorkerThread.new(sampler_config, 'check_connection').check_connection_internal(controller)}
     result = thread.value
@@ -13,22 +13,20 @@ class WorkerThread
     raise e
   end
 
-  # Create snapshot for PanoramaSampler
-  def self.create_snapshot(sampler_config, snapshot_time)
-    WorkerThread.new(sampler_config, 'check_structure_synchron').check_structure_synchron # Ensure existence of objects necessary for both Threads, synchron with job's thread
-    thread = Thread.new{WorkerThread.new(sampler_config, 'ash_sampler_daemon').create_ash_sampler_daemon(snapshot_time)} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
-    thread = Thread.new{WorkerThread.new(sampler_config, 'create_snapshot')   .create_snapshot_internal}  # Excute the snapshot and terminate
-  rescue Exception => e
-    Rails.logger.error "Exception #{e.message} raised in WorkerThread.create_snapshot for config-ID=#{sampler_config[:id]}"
-    raise e               # Don't raise exception because it should not stop calling job processing
-  end
+  # Generic create snapshot
+  def self.create_snapshot(sampler_config, snapshot_time, domain)
+    if domain == :AWR_ASH
+      WorkerThread.new(sampler_config, 'check_structure_synchron').check_structure_synchron # Ensure existence of objects necessary for both Threads, synchron with job's thread
+      thread = Thread.new{WorkerThread.new(sampler_config, 'ash_sampler_daemon').create_ash_sampler_daemon(snapshot_time)} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
+      #thread = Thread.new{WorkerThread.new(sampler_config, 'create_snapshot')   .create_awr_snapshot_internal}  # Excute the snapshot and terminate
 
-
-  def self.create_object_size_snapshot(sampler_config, snapshot_time)
-    thread = Thread.new{WorkerThread.new(sampler_config, 'create_object_size_snapshot').create_object_size_snapshot_internal(snapshot_time)}  # Excute the snapshot and terminate
+      create_snapshot(sampler_config, snapshot_time, :AWR)                      # recall method with changed domain
+    else
+      thread = Thread.new{WorkerThread.new(sampler_config, "create #{domain} snapshot").create_snapshot_internal(snapshot_time, domain)}  # Excute the snapshot and terminate
+    end
   rescue Exception => e
-    Rails.logger.error "Exception #{e.message} raised in WorkerThread.create_object_size_snapshot for config-ID=#{sampler_config[:id]}"
-    raise e               # Don't raise exception because it should not stop calling job processing
+    Rails.logger.error "Exception #{e.message} raised in WorkerThread.create_snapshot for config-ID=#{sampler_config[:id]} and domain=#{domain}"
+    # Don't raise exception because it should not stop calling job processing
   end
 
 
@@ -42,7 +40,7 @@ class WorkerThread
     connection_config[:client_salt]             = EngineConfig.config.panorama_sampler_master_password
     connection_config[:management_pack_license] = :none                         # assume no management packs are licensed
     connection_config[:privilege]               = 'normal'
-    connection_config[:query_timeout]           = connection_config[:snapshot_cycle]*60+60 # 1 minute more than snapshot cycle
+    connection_config[:query_timeout]           = connection_config[:awr_ash_snapshot_cycle]*60+60 # 1 minute more than snapshot cycle
     connection_config[:current_controller_name] = 'WorkerThread'
     connection_config[:current_action_name]     = action_name
 
@@ -103,51 +101,6 @@ class WorkerThread
     raise e
   end
 
-  @@active_snapshots = {}
-  # Create snapshot in database
-  def create_snapshot_internal
-    if @@active_snapshots[ @sampler_config[:id]]
-      Rails.logger.error("Previous snapshot creation not yet finshed for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]}), no snapshot created! Restart Panorama server if this problem persists.")
-      PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Previous snapshot creation not yet finshed, no snapshot created! Restart Panorama server if this problem persists.")
-      return
-    end
-
-    Rails.logger.info "#{Time.now}: Create new snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
-
-    @@active_snapshots[@sampler_config[:id]] = true                             # Create semaphore for thread, begin processing
-    PanoramaSamplerConfig.modify_config_entry({
-                                                  :id                       => @sampler_config[:id],
-                                                  :last_successful_connect  => Time.now,
-                                                  :last_snapshot_instance   => PanoramaConnection.instance_number
-                                              }) # Set after first successful SQL
-    PanoramaSamplerStructureCheck.do_check(@sampler_config, :AWR)               # Check data structure preconditions, but nor for ASH-tables
-    PanoramaSamplerSampling.do_sampling(@sampler_config)                        # Do Sampling (without active session history)
-    PanoramaSamplerSampling.do_housekeeping(@sampler_config, false)             # Do housekeeping without shrink space
-
-    # End activities after finishing snapshot
-    PanoramaSamplerConfig.modify_config_entry({id: @sampler_config[:id], last_snapshot_end: Time.now})
-    Rails.logger.info "#{Time.now}: Finished creating new snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
-  rescue Exception => e
-    begin
-      Rails.logger.error("Error #{e.message} during WorkerThread.create_snapshot_internal for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]})")
-      log_exception_backtrace(e, 30) if ENV['RAILS_ENV'] != 'test'
-      PanoramaSamplerSampling.do_housekeeping(@sampler_config, true)            # Do housekeeping also in case of exception to clear full tablespace quota etc. + shrink space
-      PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Error #{e.message} during WorkerThread.create_snapshot_internal")
-      raise e
-    rescue Exception => x
-      Rails.logger.error "WorkerThread.create_snapshot_internal: Exception #{x.message} in exception handler"
-      log_exception_backtrace(x, 40)
-      PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Error #{e.message} during WorkerThread.create_snapshot_internal")
-      raise x
-    end
-  rescue Object => e
-    Rails.logger.error("Exception #{e.class} during WorkerThread.create_snapshot_internal for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]})")
-    PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Exception #{e.class} during WorkerThread.create_snapshot_internal")
-    raise e
-  ensure
-    @@active_snapshots.delete(@sampler_config[:id])                             # Remove semaphore
-    PanoramaConnection.release_connection                                       # Free DB connection in Pool
-  end
 
   @@active_ash_daemons = {}
   # Create snapshot in database
@@ -192,44 +145,53 @@ class WorkerThread
     PanoramaConnection.release_connection                                       # Free DB connection in Pool
   end
 
-
-  @@active_object_size_snapshots = {}
-  def create_object_size_snapshot_internal(snapshot_time)
-    if @@active_object_size_snapshots[ @sampler_config[:id]]
-      Rails.logger.error("Previous object size snapshot not yet finshed for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]}), new object size snapshot not started! Restart Panorama server if this problem persists.")
-      PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Previous object size snapshot not yet finshed, new object size snapshot not started! Restart Panorama server if this problem persists.")
+  # Generic method to create snapshots
+  @@active_snapshots = {}
+  def create_snapshot_internal(snapshot_time, domain)
+    snapshot_semaphore_key = "#{@sampler_config[:id]}_#{domain}"
+    if @@active_snapshots[snapshot_semaphore_key]
+      Rails.logger.error("Previous #{domain} snapshot not yet finshed for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]}), new object size snapshot not started! Restart Panorama server if this problem persists.")
+      PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Previous #{domain} snapshot not yet finshed, new object size snapshot not started! Restart Panorama server if this problem persists.")
       return
     end
 
-    Rails.logger.info "#{Time.now}: Create new object size snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
+    Rails.logger.info "#{Time.now}: Create new #{domain} snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
 
-    @@active_object_size_snapshots[@sampler_config[:id]] = true                 # Create semaphore for thread, begin processing
+    @@active_snapshots[snapshot_semaphore_key] = true                 # Create semaphore for thread, begin processing
 
-    PanoramaSamplerConfig.modify_config_entry({ id: @sampler_config[:id], last_successful_connect: Time.now }) # Set after first successful SQL
-    PanoramaSamplerSampling.do_object_size_sampling(@sampler_config, snapshot_time)  # Do Sampling
-    PanoramaSamplerSampling.do_object_size_housekeeping(@sampler_config, false) # Do housekeeping without shrink space
+    PanoramaSamplerConfig.modify_config_entry({ id: @sampler_config[:id], last_successful_connect: Time.now, "last_#{domain.downcase}_snapshot_instance".to_sym => PanoramaConnection.instance_number }) # Set after first successful SQL
+
+    PanoramaSamplerStructureCheck.do_check(@sampler_config, :AWR) if domain == :AWR   # Check data structure preconditions, but nor for ASH-tables
+
+    PanoramaSamplerSampling.do_sampling(@sampler_config, snapshot_time, domain)  # Do Sampling
+    PanoramaSamplerSampling.do_housekeeping(@sampler_config, false, domain) # Do housekeeping without shrink space
 
     # End activities after finishing snapshot
-    PanoramaSamplerConfig.modify_config_entry({id: @sampler_config[:id], last_object_size_snapshot_end: Time.now})
-    Rails.logger.info "#{Time.now}: Finished creating new object size snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
+    PanoramaSamplerConfig.modify_config_entry({id: @sampler_config[:id], "last_#{domain.downcase}_snapshot_end".to_sym => Time.now})
+    Rails.logger.info "#{Time.now}: Finished creating new #{domain} snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}' and domain=#{domain}"
   rescue Exception => e
     begin
-      Rails.logger.error("Error #{e.message} during WorkerThread.create_object_size_snapshot_internal for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]})")
-      PanoramaSamplerStructureCheck.do_check(@sampler_config, :OBJECT_SIZE)       # Check data structure preconditions first in case of error
-      PanoramaSamplerSampling.do_object_size_housekeeping(@sampler_config, true)   # Do housekeeping also in case of exception to clear full tablespace quota etc. + shrink space
-      PanoramaSamplerSampling.do_object_size_sampling(@sampler_config, snapshot_time)  # Retry sampling
+      Rails.logger.error("Error #{e.message} during WorkerThread.create_snapshot_internal for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]}) and domain=#{domain}")
+      log_exception_backtrace(e, 30) if ENV['RAILS_ENV'] != 'test'
+      PanoramaSamplerStructureCheck.do_check(@sampler_config, domain)       # Check data structure preconditions first in case of error
+      PanoramaSamplerSampling.do_housekeeping(@sampler_config, true, domain)   # Do housekeeping also in case of exception to clear full tablespace quota etc. + shrink space
+      if domain == :AWR
+        raise e
+      else
+        PanoramaSamplerSampling.do_sampling(@sampler_config, snapshot_time, domain)  # Retry sampling
+      end
     rescue Exception => x
-      Rails.logger.error "WorkerThread.create_snapshot_internal: Exception #{x.message} in exception handler"
+      Rails.logger.error "WorkerThread.create_snapshot_internal: Exception #{x.message} in exception handler for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]}) and domain=#{domain}"
       log_exception_backtrace(x, 40)
-      PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Error #{e.message} during WorkerThread.create_object_size_snapshot_internal")
+      PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Error #{e.message} during WorkerThread.create_snapshot_internal for domain=#{domain}")
       raise x
     end
   rescue Object => e
-    Rails.logger.error("Exception #{e.class} during WorkerThread.create_object_size_snapshot_internal for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]})")
-    PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Exception #{e.class} during WorkerThread.create_object_size_snapshot_internal")
+    Rails.logger.error("Exception #{e.class} during WorkerThread.create_snapshot_internal for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]}) and domain=#{domain}")
+    PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Exception #{e.class} during WorkerThread.create_snapshot_internal for domain=#{domain}")
     raise e
   ensure
-    @@active_object_size_snapshots.delete(@sampler_config[:id])                 # Remove semaphore
+    @@active_snapshots.delete(snapshot_semaphore_key)                           # Remove semaphore
     PanoramaConnection.release_connection                                       # Free DB connection in Pool
   end
 

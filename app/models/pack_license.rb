@@ -88,7 +88,6 @@ class PackLicense
   def check_for_diagnostics_pack_usage(sql)
     allowed_array = [
         'DBA_HIST_BLOCKING_LOCKS',                                              # private table
-        'DBA_HIST_CACHE_OBJECTS',                                               # private table
         'DBA_HIST_DATABASE_INSTANCE',
         'DBA_HIST_SEG_STAT',
         'DBA_HIST_SEG_STAT_OBJ',

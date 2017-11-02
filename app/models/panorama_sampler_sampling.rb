@@ -4,12 +4,14 @@ class PanoramaSamplerSampling
   include ExceptionHelper
 
 
-  def self.do_sampling(sampler_config)
-    PanoramaSamplerSampling.new(sampler_config).do_sampling_internal
+  # call sampling method a'a do_object_size_sampling(snapshot_time)
+  def self.do_sampling(sampler_config, snapshot_time, domain)
+    PanoramaSamplerSampling.new(sampler_config).send("do_#{domain.downcase}_sampling".to_sym, snapshot_time)
   end
 
-  def self.do_housekeeping(sampler_config, shrink_space)
-    PanoramaSamplerSampling.new(sampler_config).do_housekeeping_internal(shrink_space)
+  # call housekeeping method a'a do_object_size_housekeeping(shrink_space)
+  def self.do_housekeeping(sampler_config, shrink_space, domain)
+    PanoramaSamplerSampling.new(sampler_config).send("do_#{domain.downcase}_housekeeping".to_sym, shrink_space)
   end
 
   def self.run_ash_daemon(sampler_config, snapshot_time)
@@ -19,26 +21,11 @@ class PanoramaSamplerSampling
     PanoramaSamplerSampling.new(sampler_config).run_ash_daemon_internal(snapshot_time)
   end
 
-  def self.do_object_size_sampling(sampler_config, snapshot_time)
-    PanoramaConnection.sql_execute ["INSERT INTO #{sampler_config[:owner]}.Panorama_Object_Sizes (Owner, Segment_Name, Segment_Type, Tablespace_Name, Gather_Date, Bytes)
-                                     SELECT Owner, Segment_Name, Segment_Type, Tablespace_Name, TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS'), SUM(Bytes)
-                                     FROM   DBA_Segments
-                                     WHERE  Segment_Type NOT IN ('TYPE2 UNDO', 'TEMPORARY')
-                                     GROUP BY Owner, Segment_Name, Segment_Type, Tablespace_Name
-                                    ",
-                                    snapshot_time.strftime('%Y-%m-%d %H:%M:%S')
-                                   ]
-  end
-
-  def self.do_object_size_housekeeping(sampler_config, shrink_space)
-    PanoramaSamplerSampling.new(sampler_config).do_object_size_housekeeping_internal(shrink_space)
-  end
-
   def initialize(sampler_config)
     @sampler_config = sampler_config
   end
 
-  def do_sampling_internal
+  def do_awr_sampling(snapshot_time)
     last_snap = PanoramaConnection.sql_select_first_row ["SELECT Snap_ID, End_Interval_Time
                                                     FROM   #{@sampler_config[:owner]}.Panorama_Snapshot
                                                     WHERE  DBID=? AND Instance_Number=?
@@ -47,7 +34,7 @@ class PanoramaSamplerSampling
 
     if last_snap.nil?                                                           # First access
       @snap_id = 1
-      begin_interval_time = (PanoramaConnection.sql_select_one "SELECT SYSDATE FROM Dual") - (@sampler_config[:snapshot_cycle]).minutes
+      begin_interval_time = (PanoramaConnection.sql_select_one "SELECT SYSDATE FROM Dual") - (@sampler_config[:awr_ash_snapshot_cycle]).minutes
     else
       @snap_id            = last_snap.snap_id + 1
       begin_interval_time = last_snap.end_interval_time
@@ -90,15 +77,15 @@ class PanoramaSamplerSampling
                                     con_dbid,
                                     PanoramaConnection.con_id,
                                     begin_interval_time,
-                                    @sampler_config[:snapshot_cycle],
-                                    @sampler_config[:snapshot_retention],
+                                    @sampler_config[:awr_ash_snapshot_cycle],
+                                    @sampler_config[:awr_ash_snapshot_retention],
                                     @sampler_config[:sql_min_no_of_execs],
                                     @sampler_config[:sql_min_runtime_millisecs]
                                    ]
   end
 
-  def do_housekeeping_internal(shrink_space)
-    snapshots_to_delete = PanoramaConnection.sql_select_all ["SELECT Snap_ID FROM Panorama_Snapshot WHERE DBID = ? AND Begin_Interval_Time < SYSDATE - ?", PanoramaConnection.dbid, @sampler_config[:snapshot_retention]]
+  def do_awr_housekeeping(shrink_space)
+    snapshots_to_delete = PanoramaConnection.sql_select_all ["SELECT Snap_ID FROM Panorama_Snapshot WHERE DBID = ? AND Begin_Interval_Time < SYSDATE - ?", PanoramaConnection.dbid, @sampler_config[:awr_ash_snapshot_retention]]
 
     # Delete from tables with columns DBID and SNAP_ID
     snapshots_to_delete.each do |snapshot|
@@ -131,21 +118,14 @@ class PanoramaSamplerSampling
     exec_shrink_space('Panorama_SQLText') if shrink_space
   end
 
-  def do_object_size_housekeeping_internal(shrink_space)
-    execute_until_nomore ["DELETE FROM #{@sampler_config[:owner]}.Panorama_Object_Sizes
-                           WHERE  Gather_Date < SYSDATE - ?
-                          ", @sampler_config[:object_size_snapshot_retention]]
-    exec_shrink_space('Panorama_Object_Sizes') if shrink_space
-  end
-
   # Run daemon, daeomon returns 1 second before next snapshot timestamp
   def run_ash_daemon_internal(snapshot_time)
     start_delay_from_snapshot = Time.now - snapshot_time
-    snapshot_cycle_seconds = @sampler_config[:snapshot_cycle] * 60
+    snapshot_cycle_seconds = @sampler_config[:awr_ash_snapshot_cycle] * 60
     if start_delay_from_snapshot > 30                                           # ASH-daemon starts more than 30 seconds after snapshot due to structure-check before
       snapshot_cycle_seconds -= start_delay_from_snapshot.to_i - 30             # Limit delay so that ASH-daemon terminates max. 30 seconds after next snapshot
     end
-    next_snapshot_start_seconds = @sampler_config[:snapshot_cycle] * 60 - start_delay_from_snapshot # Number of seconds until next snapshot start
+    next_snapshot_start_seconds = @sampler_config[:awr_ash_snapshot_cycle] * 60 - start_delay_from_snapshot # Number of seconds until next snapshot start
     if @sampler_config[:select_any_table]                                       # call PL/SQL package ?
       sql = " BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_ASH.Run_Sampler_Daemon(?, ?, ?, ?); END;"
     else
@@ -160,6 +140,69 @@ class PanoramaSamplerSampling
 
     PanoramaConnection.sql_execute [sql, snapshot_cycle_seconds, PanoramaConnection.instance_number, PanoramaConnection.con_id, next_snapshot_start_seconds]
   end
+
+  def do_object_size_sampling(snapshot_time)
+    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_Object_Sizes (Owner, Segment_Name, Segment_Type, Tablespace_Name, Gather_Date, Bytes)
+                                     SELECT Owner, Segment_Name, Segment_Type, Tablespace_Name, TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS'), SUM(Bytes)
+                                     FROM   DBA_Segments
+                                     WHERE  Segment_Type NOT IN ('TYPE2 UNDO', 'TEMPORARY')
+                                     GROUP BY Owner, Segment_Name, Segment_Type, Tablespace_Name
+                                    ",
+                                    snapshot_time.strftime('%Y-%m-%d %H:%M:%S')
+                                   ]
+  end
+
+  def do_object_size_housekeeping(shrink_space)
+    execute_until_nomore ["DELETE FROM #{@sampler_config[:owner]}.Panorama_Object_Sizes
+                           WHERE  Gather_Date < SYSDATE - ?
+                          ", @sampler_config[:object_size_snapshot_retention]]
+    exec_shrink_space('Panorama_Object_Sizes') if shrink_space
+  end
+
+  def do_cache_objects_sampling(snapshot_time)
+    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_Cache_Objects (
+                                       SnapShot_Timestamp,
+                                       Instance_Number,
+                                       Owner,
+                                       Name,
+                                       Partition_Name,
+                                       Blocks_Total,
+                                       Blocks_Dirty)
+                                     SELECT /*+ ORDERED USE_HASH(bh o) USE_NL(bh ts) Panorama */
+                                            TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS'),
+                                            Inst_ID,
+                                            NVL(o.Owner,'[UNKNOWN]'),
+                                            NVL(o.Object_Name,'TS='||ts.Name),
+                                            o.SubObject_Name,
+                                            SUM(bh.Blocks),
+                                            SUM(bh.DirtyBlocks)
+                                     FROM   (
+                                             SELECT /*+ NO_MERGE */ -- X$BH statt GV$BH weil damit kein Join gegen x$le mehr noetig innerhalb des Views
+                                                    Inst_ID, ObjD, TS#, Count(*) Blocks,
+                                                    SUM(DECODE (Dirty,'Y',1,0)) DirtyBlocks
+                                             FROM   gv$BH
+                                             GROUP BY Inst_ID, ObjD, TS#
+                                            ) bh
+                                     LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Data_Object_ID, Owner, Object_Name, Subobject_Name FROM DBA_Objects )o ON o.Data_Object_ID=bh.ObjD
+                                     LEFT OUTER JOIN sys.TS$ ts ON ts.TS# = bh.TS#
+                                     GROUP BY Inst_ID, NVL(o.Owner,'[UNKNOWN]'), NVL(o.Object_Name,'TS='||ts.Name), o.SubObject_Name
+                                     HAVING SUM(bh.Blocks) > 1000 /* Geringfuegigkeits-Grenze */
+                                    ", snapshot_time.strftime('%Y-%m-%d %H:%M:%S') ]
+  end
+
+  def do_cache_objects_housekeeping(shrink_space)
+    execute_until_nomore ["DELETE FROM #{@sampler_config[:owner]}.Panorama_Cache_Objects
+                           WHERE  Snapshot_Timestamp < SYSDATE - ?
+                          ", @sampler_config[:cache_objects_snapshot_retention]]
+    exec_shrink_space('Panorama_Cache_Objects') if shrink_space
+  end
+
+  def do_blocking_locks_sampling(snapshot_time)
+  end
+
+  def do_blocking_locks_housekeeping(shrink_space)
+  end
+
 
   private
   def con_dbid

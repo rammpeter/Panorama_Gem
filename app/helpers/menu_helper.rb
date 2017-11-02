@@ -141,9 +141,10 @@ module MenuHelper
             {:class=> 'item', :caption=>t(:menu_sga_pga_day_compare_caption, :default=> 'SQL-Area day comparison'),         :controller=> 'dba_history', :action=> 'compare_sql_area_historic',     :hint=>t(:menu_sga_pga_day_compare_hint, :default=> 'Comparison of SQL-statements from two different days') },
             {:class=> 'item', :caption=>t(:menu_sga_pga_sga_components_caption, :default=> 'SGA-components'),                 :controller=> 'dba_sga',     :action=> 'show_sga_components',           :hint=>t(:menu_sga_pga_sga_components_hint, :default=> 'Show components of current SGA') },
             { :class=> 'menu', :caption=> 'DB-Cache', :content=>[
-                {:class=> 'item', :caption=>t(:menu_sga_pga_cache_usage_caption,  :default=> 'DB-cache usage'),  :controller=> 'dba_sga',     :action=> 'db_cache_content',              :hint=>t(:menu_sga_pga_cache_usage_hint,  :default=> 'Current content of DB-cache') },
+                {:class=> 'item', :caption=>t(:menu_sga_pga_cache_usage_caption,  :default=> 'DB-cache usage current'),  :controller=> 'dba_sga',     :action=> 'db_cache_content',              :hint=>t(:menu_sga_pga_cache_usage_hint,  :default=> 'Current content of DB-cache') },
                 {:class=> 'item', :caption=>t(:menu_sga_pga_cache_advice_caption, :default=> 'DB-cache advice'), :controller=> 'dba_sga',     :action=> 'show_db_cache_advice_historic', :hint=>t(:menu_sga_pga_cache_advice_hint, :default=>"Historic view on \"what happens if\"-analysis for change of cache size") },
-            ]
+            ].concat(
+                PanoramaSamplerStructureCheck.panorama_table_exists?('Panorama_Cache_Objects') ? [{:class=> 'item', :caption=>t(:menu_sga_pga_cache_usage_historic_caption, :default=>'DB-cache usage historic'),           :controller=> 'addition',                 :action=> 'db_cache_ressourcen',     :hint=>t(:menu_sga_pga_cache_usage_historic_hint, :default=>'Historic view on DB-cache usage')}] : [] )
             },
             { :class=> 'menu', :caption=>t(:menu_sga_pga_object_usage_caption, :default=> 'Object usage by SQL'), :content=>[
                 {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),                     :controller=> 'dba_sga',     :action=> 'show_object_usage',             :hint=>t(:menu_sga_pga_object_usage_current_hint, :default=> 'Usage of given objects in explain plan of current SQLs in SGA') },
@@ -184,10 +185,7 @@ module MenuHelper
             showBlockingLocksMenu ?
                 [{:class=> 'item', :caption=> 'Historie Blocking Locks',    :controller=> 'addition',                 :action=> 'show_blocking_locks_history', :hint=> 'Historische Auswertung Blocking DB-Locks'}] : []
         ).concat(
-            showDbCacheMenu ?
-                [{:class=> 'item', :caption=> 'DB-Cache-Ressourcen',           :controller=> 'addition',                 :action=> 'db_cache_ressourcen',     :hint=> 'Historische Auswertung DB-Cache-Auslastung'}] : []
-        ).concat(
-            PanoramaSamplerStructureCheck.object_sizes_exists? ?
+            PanoramaSamplerStructureCheck.panorama_table_exists?('Panorama_Object_Sizes') ?
                 [{:class=> 'item', :caption=>t(:menu_addition_size_evolution_caption, :default=>'Object size evolution'),           :controller=> 'addition',                 :action=> 'show_object_increase',     :hint=>t(:menu_addition_size_evolution_hint, :default=>'Evolution of object sizes in considered time period')}] : []
         ).concat(
             [{:class=> 'item', :caption=> t(:menu_addition_exec_with_given_parameters_caption, :default=>'Execute with given parameters') ,           :controller=> 'addition',                 :action=> 'show_recall_params',     :hint=>t(:menu_addition_exec_with_given_parameters_hint, :default=>'Execute one of Panoramas functions directly with given parameters') }]
@@ -209,15 +207,6 @@ module MenuHelper
     write_to_client_info_store(:dba_hist_blocking_locks_owner, res.owner)
     Rails.logger.info "MenuHelper.showBlockingLocksMenu: #{res.anzahl} different schemas have table DBA_HIST_BLOCKING_LOCKS, function hidden" if res.anzahl > 1
     res.anzahl == 1     # Nur verwenden, wenn genau ein Schema die Daten enthält
-  end
-
-  def showDbCacheMenu
-    res = sql_select_first_row "SELECT /* Panorama Tool Ramm */ COUNT(*) Anzahl, MIN(Owner) Owner FROM All_Tables WHERE Table_Name = 'DBA_HIST_CACHE_OBJECTS'"
-    return false if res.nil?
-    write_to_client_info_store(:dba_hist_cache_objects_owner, res.owner)
-    Rails.logger.info "MenuHelper.showDbCacheMenu: #{res.anzahl} different schemas have table DBA_HIST_CACHE_OBJECTS, function hidden" if res.anzahl > 1
-    res.anzahl == 1     # Nur verwenden, wenn genau ein Schema die Daten enthält
-
   end
 
   def showPanoramaSampler
