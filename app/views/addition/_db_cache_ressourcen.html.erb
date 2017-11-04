@@ -1,6 +1,8 @@
 <div class="page_caption">DB-cache usage historic</div>
 
-<%= ajax_form(:controller=>:addition, :action=>:list_db_cache_historic, :update_area=>:list_db_cache_historic_area) do %>
+<% @update_area = get_unique_area_id %>
+
+<%= ajax_form(:controller=>:addition, :action=>:list_db_cache_historic, :update_area=>@update_area) do %>
   <div class="float_left">
     Max. result count
     <%= text_field_tag(:maxResultCount, "100", :size=>5, :title => "Maximum number of rows in result list ordered by used blocks in cache") %>
@@ -18,7 +20,7 @@
     <%= submit_tag("Show", :title => "Show historic DB-cache usage") %>
   </div>
 <% end %>
-<div id="list_db_cache_historic_area" style="float:left; width:100%;">
+<div id="<%= @update_area %>" style="float:left; width:100%;">
 </div>
 
 

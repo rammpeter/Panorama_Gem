@@ -145,14 +145,14 @@ class AdditionController < ApplicationController
     headers={}               # Spalten
     record = {}
     singles.each do |s|     # Iteration über einzelwerte
-      record[:snapshotts] = s.snapshotts unless record[:snapshotts] # Gruppenwechsel-Kriterium mit erstem Record initialisisieren
-      if record[:snapshotts] != s.snapshotts
+      record[:snapshot_timestamp] = s.snapshot_timestamp unless record[:snapshot_timestamp] # Gruppenwechsel-Kriterium mit erstem Record initialisisieren
+      if record[:snapshot_timestamp] != s.snapshot_timestamp
         @snapshots << record
         record = {}
-        record[:snapshotts] = s.snapshotts
+        record[:snapshot_timestamp] = s.snapshot_timestamp
       end
-      colname = "#{"(#{s.instance}) " unless @instance}#{s.owner}.#{s.name} #{"(#{s.partitionname})" if s.partitionname}"
-      record[colname] = s.blockstotal
+      colname = "#{"(#{s.instance_number}) " unless @instance}#{s.owner}.#{s.name} #{"(#{s.partition_name})" if s.partition_name}"
+      record[colname] = s.blocks_total
       headers[colname] = true    # Merken, dass Spalte verwendet
     end
     @snapshots << record if singles.length > 0    # Letzten Record in Array schreiben wenn Daten vorhanden
@@ -174,7 +174,7 @@ class AdditionController < ApplicationController
       output << "  { label: '#{key}',"
       output << "    data: ["
       @snapshots.each do |s|
-        output << "[#{milliSec1970(s[:snapshotts])}, #{s[key]}],"
+        output << "[#{milliSec1970(s[:snapshot_timestamp])}, #{s[key]}],"
       end
       output << "    ]"
       output << "  },"

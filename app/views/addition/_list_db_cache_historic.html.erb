@@ -1,5 +1,6 @@
 <%
-  @update_area =  :list_db_cache_historic_detail_area
+  @update_area = get_unique_area_id
+  @update_area_timeline = get_unique_area_id
 
   link_samples = proc do |rec|
       ajax_link(fn(rec.samples), {
@@ -37,7 +38,7 @@
   column_options =
   [
     {:caption=>"I",                :data=>proc{|rec| rec.instance_number},                                          :title=>"Instance-ID"},
-    {:caption=>"Name",             :data=>proc{|rec| link_object_description(@update_area, rec.owner, rec.name, show_name.call(rec)) },  :title=>"Objekt-Name"},
+    {:caption=>"Name",             :data=>proc{|rec| link_object_description(@update_area, rec.owner, rec.name, show_name.call(rec)) },  :title=>"Object-Name"},
     {:caption=>"Weighted index",   :data=>proc{|rec| fn(rec.sumblockstotal)},                                       :title=>"Usage-index (Sum of all DB-blocks of object over all considered snapshots in period)", :align=>"right"},
     {:caption=>"Avg.Blocks",       :data=>proc{|rec| fn(rec.avgblockstotal)},                                       :title=>"Average number of DB-blocks in cache used by this object", :align=>"right"},
     {:caption=>"Min.Blocks",       :data=>proc{|rec| fn(rec.minblockstotal)},                                       :title=>"Minimum number of DB-blocks in cache used by this object at a single snapshot", :align=>"right"},
@@ -54,8 +55,8 @@
   <%= gen_slickgrid(@entries, column_options,
                      {
                              :max_height => 450,
-                             :caption=> "DB-Cache-Nutzung zwischen #{@time_selection_start} und #{@time_selection_end} #{"Instance=#{@instance}" if @instance }",
-                             :context_menu_entries=>{:label=>"Top 10 auf Zeitleiste anzeigen",
+                             :caption=> "DB-cache usage between #{@time_selection_start} and #{@time_selection_end} #{"Instance=#{@instance}" if @instance }",
+                             :context_menu_entries=>{:label=>"Show Top 10 on time line",
                                                      :action=>"$('#list_db_cache_historic_hidden_link_timeline').click();" }
                      }
       ) %>
@@ -64,19 +65,19 @@
 
 
 <%= ajax_link("Hidden Auslöser für Timeline",
-                            {:action        => "list_db_cache_historic_timeline",
-                             :instance      => @instance,
+                            {:action                => :list_db_cache_historic_timeline,
+                             :instance              => @instance,
                              :time_selection_start  => @time_selection_start,
                              :time_selection_end    => @time_selection_end,
-                             :show_partitions => @show_partitions,
-                             :update_area   => "list_db_cache_historic_detail_area_timeline"
+                             :show_partitions       => @show_partitions,
+                             :update_area           => @update_area_timeline
                             },
                     :style=>"display:none",
                     :id=>"list_db_cache_historic_hidden_link_timeline"
     )
 %>
-<div id="list_db_cache_historic_detail_area_timeline" style="float:left; width:100%;">
+<div id="<%= @update_area_timeline %>" style="float:left; width:100%;">
 </div>
-<div id="list_db_cache_historic_detail_area" style="float:left; width:100%;">
+<div id="<%= @update_area %>" style="float:left; width:100%;">
 </div>
 

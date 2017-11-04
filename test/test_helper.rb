@@ -91,6 +91,7 @@ class ActiveSupport::TestCase
     sampler_config[:cache_objects_active]           = true
     sampler_config[:blocking_locks_active]          = true
 
+    sampler_config[:awr_ash_snapshot_cycle]         = 1                         # Ensure small runtime of test run
     sampler_config = PanoramaSamplerConfig.initialize_defaults(sampler_config)
   end
 

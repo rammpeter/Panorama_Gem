@@ -1,29 +1,30 @@
 <%
+  @update_area = get_unique_area_id
 
-  def link_column(rec, value)
-    ajax_link(value, {
-                 :action     => "list_db_cache_historic_snap",
-                 :instance   => @instance,
-                 :snapshotts => localeDateTime(rec.snapshot_timestamp),
+  link_snapshot = proc do |rec|
+    ajax_link(localeDateTime(rec.snapshot_timestamp), {
+                 :action          => :list_db_cache_historic_snap,
+                 :instance        => @instance,
+                 :snapshotts      => localeDateTime(rec.snapshot_timestamp),
                  :show_partitions => @show_partitions,
-                 :update_area=> "list_db_cache_historic_snap_area"
+                 :update_area     => @update_area
                },
-        :title=>"Anzeige der Cache-Nutzung zum Zeitpunkt (unterhalb)")
+        :title=>"Show complete cache usage for snapshot timestamp")
   end
 
 column_options =
  [
-   {:caption=>"Zeit",   :data=>proc{|rec| link_column(rec, localeDateTime(rec.snapshot_timestamp)) }, :title=>"Zeitstempel des Schnappschuss",                        :plot_master_time=>true},
-   {:caption=>"Blocks", :data=>proc{|rec| link_column(rec, fn(rec.blocks_total)) },            :title=>"Anzahl DB-Blöcke im Cache belegt durch Objekt",        :align=>"right"},
-   {:caption=>"Dirty",  :data=>proc{|rec| link_column(rec, fn(rec.blocks_dirty)) },            :title=>"Anzahl dirty DB-Blöcke im Cache belegt durch Objekt",  :align=>"right"},
+   {:caption=>"Timestamp",    :data=>link_snapshot ,                               :title=>"Timestamp of snapshot",                        :plot_master_time=>true},
+   {:caption=>"Blocks",       :data=>proc{|rec| fn(rec.blocks_total) },            :title=>"Number of DB-blocks in cache used by object",        :align=>:right},
+   {:caption=>"Dirty",        :data=>proc{|rec| fn(rec.blocks_dirty) },            :title=>"Number of dirty DB-blocks in cache used by object",  :align=>:right},
  ]
 %>
 
 <%= gen_slickgrid(@entries, column_options, {
         :max_height=>200,
-        :caption => "DB-Cache-Nutzung #{@owner}.#{@name} #{"(#{@partitionname})" if @partitionname} zwischen #{@time_selection_start} und #{@time_selection_end} Instance=#{@instance}"
+        :caption => "DB-cache usage #{@owner}.#{@name} #{"(#{@partitionname})" if @partitionname} between #{@time_selection_start} and #{@time_selection_end} Instance=#{@instance}"
 }) %>
 
-<div id="list_db_cache_historic_snap_area" style="float:left; width:100%;">
+<div id="<%= @update_area %>" style="float:left; width:100%;">
 </div>
 

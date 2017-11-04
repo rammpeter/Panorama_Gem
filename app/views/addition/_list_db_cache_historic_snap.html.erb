@@ -1,32 +1,35 @@
 <%
-def link_column_sql(rec, value)
-    ajax_link(value, {
-            :controller => "dba_history",
-            :action     => "show_using_sqls_historic",
-            :time_selection_start  => @snapshotts[0,16],   # Sekunden des Zeitstempels abschneiden
-            :time_selection_end    => @snapshotts[0,16],   # Sekunden des Zeitstempels abschneiden
-            :ObjectOwner=> rec.owner,
-            :ObjectName => rec.name,
-            :update_area=> "list_db_cache_historic_snap_detail_area"
-          },
-   :title=>"Anzeige der SQL-Statements mit Nutzung dieses Objektes im Zeitraum (unterhalb)")
-end
 
-def show_name(rec)
-  "#{rec.owner.downcase}.#{rec.name}#{" (#{rec.partitionname})" if @show_partitions == '1' && rec.partitionname}"
-end
+  @update_area = get_unique_area_id
+
+  link_sqls = proc do |rec|
+    ajax_link('Show SQLs', {
+            :controller             => :dba_history,
+            :action                 => :show_using_sqls_historic,
+            :time_selection_start   => @snapshotts[0,16],   # Sekunden des Zeitstempels abschneiden
+            :time_selection_end     => @snapshotts[0,16],   # Sekunden des Zeitstempels abschneiden
+            :ObjectOwner            => rec.owner,
+            :ObjectName             => rec.name,
+            :update_area            => @update_area
+          }, :title=>"Show SQLs using this object in choosen time period")
+  end
+
+  show_name = proc do |rec|
+    "#{rec.owner.downcase}.#{rec.name}#{" (#{rec.partitionname})" if @show_partitions == '1' && rec.partitionname}"
+  end
 
 column_options =
  [
-   {:caption=>"Name",   :data=>proc{|rec| link_column_sql(rec, show_name(rec)) }, :title=>"Objekt-Name"},
-   {:caption=>"Blocks", :data=>proc{|rec| formattedNumber(rec.blockstotal)},      :title=>"Anzahl DB-Blöcke im Cache belegt durch Objekt", :align=>"right"},
-   {:caption=>"Dirty",  :data=>proc{|rec| formattedNumber(rec.blocksdirty)},       :title=>"Anzahl dirty DB-Blöcke im Cache belegt durch Objekt", :align=>"right"},
+   {:caption=>"Name",   :data=>proc{|rec| link_object_description(@update_area, rec.owner, rec.name, show_name.call(rec)) },  :title=>"Object-Name"},
+   {:caption=>"Blocks", :data=>proc{|rec| formattedNumber(rec.blocks_total)},       :title=>"Number of DB-blocks in cache used by object",        :align=>:right},
+   {:caption=>"Dirty",  :data=>proc{|rec| formattedNumber(rec.blocks_dirty)},       :title=>"Number of dirty DB-blocks in cache used by object",  :align=>:right},
+   {:caption=>'SQLs',   :data=>link_sqls,                                                                :title=>"Show SQLs using this object in choosen time period"},
  ]
 %>
 
 <%= gen_slickgrid(@entries, column_options,  {
         :max_height => 450,
-        :caption    => "DB-Cache-Nutzung am #{@snapshotts} Instance=#{@instance}"
+        :caption    => "DB-cache usage at #{@snapshotts} Instance=#{@instance}"
 }) %>
 
-<div id="list_db_cache_historic_snap_detail_area"></div>
+<div id="<%= @update_area %>"></div>

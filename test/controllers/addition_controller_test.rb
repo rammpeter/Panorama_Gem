@@ -1,6 +1,7 @@
 # encoding: utf-8
 require 'test_helper'
 
+# Execution of WorkerThreadTest is precondition for successful run (initial table creation must be executed before this test)
 
 class AdditionControllerTest < ActionDispatch::IntegrationTest
   include MenuHelper
@@ -21,6 +22,7 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
     @time_selection_end = time_selection_end.strftime("%d.%m.%Y %H:%M")
     @time_selection_start = time_selection_start.strftime("%d.%m.%Y %H:%M")
 
+    set_current_database(get_current_database.merge( {panorama_sampler_schema: get_current_database[:user]} ))    # Ensure Panorama's tables are serached here
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
@@ -70,23 +72,32 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
 
     end
 
+    [nil, 1].each do |show_partitions|
+      get '/addition/list_db_cache_historic_detail', :params => { :format               =>:html,
+                                                                  :time_selection_start =>"01.01.2011 00:00",
+                                                                  :time_selection_end   =>"01.01.2011 01:00",
+                                                                  :instance             => 1,
+                                                                  :owner                => "sysp",
+                                                                  :name                 => "Employee",
+                                                                  show_partitions:      show_partitions,
+                                                                  partitionname:        show_partitions ? 'PART1' : nil,
+                                                                  :update_area          => :hugo  } if ENV['DB_VERSION'] >= '11.2'
+      assert_response :success
 
-    post '/addition/list_db_cache_historic', :params => { :format=>:html,
-         :time_selection_start =>"01.01.2011 00:00",
-         :time_selection_end =>"01.01.2011 01:00",
-         :instance  => "1",
-         :maxResultCount => 100,
-         :update_area=>:hugo } if ENV['DB_VERSION'] >= '11.2'
-    assert_response :success
+    end
 
-    get '/addition/list_db_cache_historic_detail', :params => { :format=>:html,
-        :time_selection_start =>"01.01.2011 00:00",
-        :time_selection_end =>"01.01.2011 01:00",
-        :instance  => 1,
-        :owner     => "sysp",
-        :name      => "Employee",
-        :update_area=>:hugo  } if ENV['DB_VERSION'] >= '11.2'
-    assert_response :success
+    [nil, 1].each do |instance|
+      [nil, 1].each do |show_partitions|
+        post '/addition/list_db_cache_historic_timeline', :params => {  format:               :html,
+                                                                        time_selection_start: "01.01.2011 00:00",
+                                                                        time_selection_end:   "01.01.2011 01:00",
+                                                                        :instance             => instance,
+                                                                        :show_partitions      => show_partitions,
+                                                                        :update_area          => :hugo } if ENV['DB_VERSION'] >= '11.2'
+        assert_response :success
+
+      end
+    end
 
     get '/addition/list_db_cache_historic_snap', :params => { :format=>:html,
         :snapshotts =>"01.01.2011 00:00",
@@ -101,14 +112,13 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_object_increase with xhr: true" do
-    set_current_database(get_current_database.merge( {panorama_sampler_schema: get_current_database[:user]} ))    # Ensure Panorama's tables are serached here
 
     @sampler_config_entry                                  = get_current_database
     @sampler_config_entry[:owner]                          = @sampler_config_entry[:user] # Default
 
     # Create test data
-    PanoramaSamplerSampling.do_object_size_sampling(@sampler_config_entry, @ttime_selection_start)
-    PanoramaSamplerSampling.do_object_size_sampling(@sampler_config_entry, @ttime_selection_end)
+    PanoramaSamplerSampling.do_sampling(@sampler_config_entry, @ttime_selection_start, :OBJECT_SIZE)
+    PanoramaSamplerSampling.do_sampling(@sampler_config_entry, @ttime_selection_end,   :OBJECT_SIZE)
 
     ['Segment_Type', 'Tablespace_Name', 'Owner'].each do |gruppierung_tag|
       [{:detail=>1}, {:timeline=>1}].each do |submit_tag|

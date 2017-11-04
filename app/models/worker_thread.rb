@@ -18,7 +18,6 @@ class WorkerThread
     if domain == :AWR_ASH
       WorkerThread.new(sampler_config, 'check_structure_synchron').check_structure_synchron # Ensure existence of objects necessary for both Threads, synchron with job's thread
       thread = Thread.new{WorkerThread.new(sampler_config, 'ash_sampler_daemon').create_ash_sampler_daemon(snapshot_time)} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
-      #thread = Thread.new{WorkerThread.new(sampler_config, 'create_snapshot')   .create_awr_snapshot_internal}  # Excute the snapshot and terminate
 
       create_snapshot(sampler_config, snapshot_time, :AWR)                      # recall method with changed domain
     else
