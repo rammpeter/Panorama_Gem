@@ -8,7 +8,7 @@
       ajax_link(value, {
                 :action            => 'list_blocking_locks_history_hierarchy_detail',
                 :update_area       => @update_area,
-                :snapshotts        => @snapshotts,
+                :snapshot_timestamp => @snapshot_timestamp,
                 :blocking_instance => rec.instance_number,
                 :blocking_sid      => rec.sid,
                 :blocking_serialno => rec.serialno
@@ -20,9 +20,9 @@
   def link_single(rec)
     ajax_link("< #{rec.samples} >",
                 {:action       => "list_blocking_locks_history_single_record",
-                 :groupfilter  =>  {:SnapshotTS      => @snapshotts,
-                                    :Min_Zeitstempel => @snapshotts,
-                                    :Max_Zeitstempel => @snapshotts,
+                 :groupfilter  =>  {:Snapshot_Timestamp     => @snapshot_timestamp,
+                                    :Min_Zeitstempel => @snapshot_timestamp,
+                                    :Max_Zeitstempel => @snapshot_timestamp,
                                     :Instance        => rec.instance_number,
                                     :SID             => rec.sid,
                                     :SerialNo        => rec.serialno,
@@ -33,17 +33,17 @@
   end
 
   def link_column_sql_id(rec, sql_id, child_number)
-    link_historic_sql_id(rec.instance_number, sql_id, @snapshotts, @snapshotts, @update_area, rec.username)
+    link_historic_sql_id(rec.instance_number, sql_id, @snapshot_timestamp, @snapshot_timestamp, @update_area, rec.user_name)
   end
 
   def link_column_blocking_reason_cascade(rec, value)
       ajax_link(value,
-                  {:action       => "list_blocking_reason_cascade",
-                   :update_area  => @update_area,
-                   :snapshotts   => @snapshotts,
-                   :instance     => rec.instance_number,
-                   :sid          => rec.sid,
-                   :serialno     => rec.serialno
+                  {:action              => "list_blocking_reason_cascade",
+                   :update_area         => @update_area,
+                   :snapshot_timestamp  => @snapshot_timestamp,
+                   :instance            => rec.instance_number,
+                   :sid                 => rec.sid,
+                   :serialno            => rec.serialno
                   },
            :title => "Anzeige der kompletten Kaskade der auslösenden Blocker für diese Session")
   end
@@ -60,24 +60,24 @@
     {:caption=>"SQL-ID Prev.SQL-ID", :data=>proc{|rec| "#{link_column_sql_id(rec, rec.sql_id, rec.sql_child_number)} #{link_column_sql_id(rec, rec.prev_sql_id, rec.prev_child_number)}"}, :title=>"Aktuelles und vorheriges SQL der geblockten Session"},
     {:caption=>"Status",          :data=>proc{|rec| rec.status},                                              :title=>"Status der geblockten Session"},
     {:caption=>"Client-Info / Module / Action",:data=>proc{|rec| "#{rec.client_info} #{rec.module} #{rec.action}"}, :title=>"Client-Info, Module und Action der geblockten Session", :data_title=>'Client-Info, Module und Action der blockenden Session, #{rec.waiting_app_desc}'},
-    {:caption=>"User",            :data=>proc{|rec| rec.username},         :title=>"User der geblockten Session", :data_title=>'User der geblockten Session, Machine=#{rec.machine}, OSUser=#{rec.osuser}, Process=#{rec.process}'},
-    {:caption=>"Program",         :data=>proc{|rec| rec.program},          :title=>"Programm der geblockten Session", :data_title=>'Programm der geblockten Session, Machine=#{rec.machine}, OSUser=#{rec.osuser}, Process=#{rec.process}'},
-    {:caption=>"Objectname",      :data=>proc{|rec| rec.objectname},       :title=>"Name des Objektes, auf das gewartet wird"},
-    {:caption=>"LT",              :data=>proc{|rec| rec.locktype},         :title=>"Locktype der wartenden Session", :data_title=>'#{lock_types(rec.locktype)}'},
+    {:caption=>"User",            :data=>proc{|rec| rec.user_name},         :title=>"User der geblockten Session", :data_title=>'User der geblockten Session, Machine=#{rec.machine}, OS-User=#{rec.os_user}, Process=#{rec.process}'},
+    {:caption=>"Program",         :data=>proc{|rec| rec.program},          :title=>"Programm der geblockten Session", :data_title=>'Programm der geblockten Session, Machine=#{rec.machine}, OS-User=#{rec.os_user}, Process=#{rec.process}'},
+    {:caption=>"Objectname",      :data=>proc{|rec| rec.object_name},       :title=>"Name des Objektes, auf das gewartet wird"},
+    {:caption=>"LT",              :data=>proc{|rec| rec.lock_type},        :title=>"Locktype der wartenden Session", :data_title=>'#{lock_types(rec.lock_type)}'},
     {:caption=>"ID1, ID2",        :data=>proc{|rec| "#{rec.id1}, #{rec.id2}"},         :title=>"ID1, ID2 des Objektes auf das gewartet wird"},
     {:caption=>"R",               :data=>proc{|rec| rec.request},                      :title=>"angeforderter Lock-Mode", :data_title=>'#{lock_modes(rec.request.to_s)}'},
-    {:caption=>"L",               :data=>proc{|rec| rec.lockmode},                     :title=>"gehaltener Lock-Mode", :data_title=>'#{lock_modes(rec.lockmode.to_s)}'},
-    {:caption=>"Blocking Object", :data=>proc{|rec| "#{rec.blocking_object_schema}.#{rec.blocking_object_name}"},  :title=>"Schema und Name des blockenden Objektes"},
-    {:caption=>"RowID / Primary Key", :data=>proc{|rec| "#{rec.blocking_rowid} #{rec.waitingforpkeycolumnname} = #{rec.waitingforpkeyvalue}"}, :title=>"RowID sowie Spalten und Inhalt des Primary Key des blockenden Objektes"},
+    {:caption=>"L",               :data=>proc{|rec| rec.lock_mode},                    :title=>"gehaltener Lock-Mode", :data_title=>'#{lock_modes(rec.lock_mode.to_s)}'},
+    {:caption=>"Blocking Object", :data=>proc{|rec| "#{rec.blocking_object_owner}.#{rec.blocking_object_name}"},  :title=>"Schema und Name des blockenden Objektes"},
+    {:caption=>"RowID / Primary Key", :data=>proc{|rec| "#{rec.blocking_rowid} #{rec.waiting_for_pk_column_name} = #{rec.waiting_for_pk_value}"}, :title=>"RowID sowie Spalten und Inhalt des Primary Key des blockenden Objektes"},
 =begin
     {:caption=>"Blocking Object", :data=>'"#{rec.root_blocking_object_schema}.#{rec.root_blocking_object_name}"', :title=>"Blockendes Objekt"},
-    {:caption=>"RowID / Primary Key", :data=>'"#{rec.root_blocking_rowid} #{rec.root_waitingforpkeycolumnname} = #{rec.root_waitingforpkeyvalue}"', :title=>"RowID sowie Spalten und Inhalt des Primary Key des blockenden Objektes"},
+    {:caption=>"RowID / Primary Key", :data=>'"#{rec.root_blocking_rowid} #{rec.root_waiting_for_pk_column_name} = #{rec.root_waiting_for_pk_value}"', :title=>"RowID sowie Spalten und Inhalt des Primary Key des blockenden Objektes"},
 =end
   ]
 %>
 
 <%= gen_slickgrid(@locks, column_options, {
-        :caption => "Sessions am #{@snapshotts} gelockt durch Instance=#{@blocking_instance}, SID=#{@blocking_sid}, SerialNo=#{@blocking_serialno}",
+        :caption => "Sessions am #{@snapshot_timestamp} gelockt durch Instance=#{@blocking_instance}, SID=#{@blocking_sid}, SerialNo=#{@blocking_serialno}",
         :max_height => 450
 }) %>
 

@@ -1,4 +1,4 @@
-<div class="page_caption"><%= "Historie aus #{read_from_client_info_store(:dba_hist_blocking_locks_owner)}.DBA_Hist_Blocking_Locks" %></div>
+<div class="page_caption"><%= "Extended blocking locks history from #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks" %></div>
 
 
 <%= ajax_form(:controller=>:addition, :action=>:list_blocking_locks_history, :update_area=>:list_blocking_locks_history_area) do %>

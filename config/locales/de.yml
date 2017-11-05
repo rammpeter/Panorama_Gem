@@ -1462,8 +1462,10 @@
   menu_current_caption:                                     Aktuell
 
   menu_dba_caption:                                         DBA Allgemein
-  menu_dba_blocking_locks_historic_caption:                 Blocking Locks historisch
-  menu_dba_blocking_locks_historic_hint:                    Anzeige historische Info zu Blocking Locks
+  menu_dba_blocking_locks_historic_caption:                 Blocking Locks historisch aus ASH
+  menu_dba_blocking_locks_historic_hint:                    Anzeige historische Info zu Blocking Locks aus Active Session History
+  menu_dba_blocking_locks_historic_panorama_caption:        Blocking Locks historisch aus Panorama-Sampler
+  menu_dba_blocking_locks_historic_panorama_hint:           Anzeige historische Info zu Blocking Locks aus Panorama-Sampler
   menu_dba_database_triggers_hint:                          Anzeige der global Datenbank-Trigger (z.B. LOGON-Trigger)
   menu_dba_explain_plan_hint:                               Anzeige Ausführungsplan eines SQL-Statements
   menu_dba_feature_usage_hint:                                 Statistiken über die Nutzung von Features und Packs der Oracle-DB

@@ -2,9 +2,14 @@ class PanoramaSamplerStructureCheck
   include ExceptionHelper
   include PanoramaSampler::PackagePanoramaSamplerAsh
   include PanoramaSampler::PackagePanoramaSamplerSnapshot
+  include PanoramaSampler::PackagePanoramaSamplerBlockingLocks
+
+  def self.domains                                                              # supported domain names
+    [:ASH, :AWR, :OBJECT_SIZE, :CACHE_OBJECTS, :BLOCKING_LOCKS]                 # :ASH needs to be first before :AWR
+  end
 
   def self.do_check(sampler_config, domain)
-    raise "Unsupported domain #{domain}" if ![:AWR, :ASH, :OBJECT_SIZE, :CACHE_OBJECTS, :BLOCKING_LOCKS].include? domain
+    raise "Unsupported domain #{domain}" if !domains.include? domain
     PanoramaSamplerStructureCheck.new(sampler_config).do_check_internal(domain)
   end
 
@@ -64,7 +69,8 @@ class PanoramaSamplerStructureCheck
   end
 
   def self.panorama_table_exists?(table_name)
-    PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM All_Tables WHERE Table_Name=? and Owner = '#{PanoramaConnection.get_config[:panorama_sampler_schema]}'", table_name.upcase]) > 0
+    return false if PanoramaConnection.get_config[:panorama_sampler_schema].nil?
+    PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM All_Tables WHERE Table_Name=? and Owner = '#{PanoramaConnection.get_config[:panorama_sampler_schema].upcase}'", table_name.upcase]) > 0
   end
 
   def initialize(sampler_config)
@@ -1020,14 +1026,16 @@ ORDER BY Column_ID
       case domain
         when :AWR then
           filename = PanoramaSampler::PackagePanoramaSamplerSnapshot.instance_method(:panorama_sampler_snapshot_spec).source_location[0]
-
           create_or_check_package(filename, panorama_sampler_snapshot_spec, 'PANORAMA_SAMPLER_SNAPSHOT', :spec)
           create_or_check_package(filename, panorama_sampler_snapshot_body, 'PANORAMA_SAMPLER_SNAPSHOT', :body)
         when :ASH then
           filename = PanoramaSampler::PackagePanoramaSamplerAsh.instance_method(:panorama_sampler_ash_spec).source_location[0]
-
           create_or_check_package(filename, panorama_sampler_ash_spec, 'PANORAMA_SAMPLER_ASH', :spec)
           create_or_check_package(filename, panorama_sampler_ash_body, 'PANORAMA_SAMPLER_ASH', :body)
+        when :BLOCKING_LOCKS then
+          filename = PanoramaSampler::PackagePanoramaSamplerBlockingLocks.instance_method(:panorama_sampler_blocking_locks_spec).source_location[0]
+          create_or_check_package(filename, panorama_sampler_blocking_locks_spec, 'PANORAMA_SAMPLER_BLOCKING_LOCKS', :spec)
+          create_or_check_package(filename, panorama_sampler_blocking_locks_body, 'PANORAMA_SAMPLER_BLOCKING_LOCKS', :body)
       end
     end
   end
@@ -1105,7 +1113,7 @@ ORDER BY Column_ID
       Rails.logger.info translated_source_buffer
       PanoramaConnection.sql_execute translated_source_buffer
       package_obj = get_package_obj(package_name, type)                         # repeat check on ALL_Objects
-      if package_obj.status != 'VALID'
+      if package_obj.nil? || package_obj.status != 'VALID'
         errors = PanoramaConnection.sql_select_all ["SELECT * FROM User_Errors WHERE Name = ? AND Type = ? ORDER BY Sequence", package_name.upcase, (type==:spec ? 'PACKAGE' : 'PACKAGE BODY')]
         errors.each do |e|
           Rails.logger.error "Line=#{e.line} position=#{e.position}: #{e.text}"

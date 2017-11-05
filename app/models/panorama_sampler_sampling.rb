@@ -1,6 +1,7 @@
 class PanoramaSamplerSampling
   include PanoramaSampler::PackagePanoramaSamplerAsh
   include PanoramaSampler::PackagePanoramaSamplerSnapshot
+  include PanoramaSampler::PackagePanoramaSamplerBlockingLocks
   include ExceptionHelper
 
 
@@ -85,7 +86,7 @@ class PanoramaSamplerSampling
   end
 
   def do_awr_housekeeping(shrink_space)
-    snapshots_to_delete = PanoramaConnection.sql_select_all ["SELECT Snap_ID FROM Panorama_Snapshot WHERE DBID = ? AND Begin_Interval_Time < SYSDATE - ?", PanoramaConnection.dbid, @sampler_config[:awr_ash_snapshot_retention]]
+    snapshots_to_delete = PanoramaConnection.sql_select_all ["SELECT Snap_ID FROM #{@sampler_config[:owner]}.Panorama_Snapshot WHERE DBID = ? AND Begin_Interval_Time < SYSDATE - ?", PanoramaConnection.dbid, @sampler_config[:awr_ash_snapshot_retention]]
 
     # Delete from tables with columns DBID and SNAP_ID
     snapshots_to_delete.each do |snapshot|
@@ -198,9 +199,27 @@ class PanoramaSamplerSampling
   end
 
   def do_blocking_locks_sampling(snapshot_time)
+    if @sampler_config[:select_any_table]                                       # call PL/SQL package ?
+      sql = " BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_Blocking_Locks.Create_Blocking_Locks_Snapshot(?, ?); END;"
+    else
+      sql = "
+        DECLARE
+        #{panorama_sampler_blocking_locks_code}
+        BEGIN
+          Create_Blocking_Locks_Snapshot(?, ?);
+        END;
+        "
+    end
+
+    # TODO: LongLocksSeconds in config
+    PanoramaConnection.sql_execute [sql, PanoramaConnection.instance_number, 1000]
   end
 
   def do_blocking_locks_housekeeping(shrink_space)
+    execute_until_nomore ["DELETE FROM #{@sampler_config[:owner]}.Panorama_Blocking_Locks
+                           WHERE  Snapshot_Timestamp < SYSDATE - ?
+                          ", @sampler_config[:blocking_locks_snapshot_retention]]
+    exec_shrink_space('Panorama_Blocking_Locks') if shrink_space
   end
 
 

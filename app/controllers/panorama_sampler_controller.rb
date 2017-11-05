@@ -45,7 +45,7 @@ class PanoramaSamplerController < ApplicationController
     config_entry[:cache_objects_active]   = config_entry[:cache_objects_active]   == '1'
     config_entry[:blocking_locks_active]  = config_entry[:blocking_locks_active]  == '1'
 
-    config_entry = PanoramaSamplerConfig.prepare_saved_entry(config_entry)
+    config_entry = PanoramaSamplerConfig.prepare_saved_entry(config_entry)      # Password encryption called here
 
     dbid = test_connection(config_entry)
 
@@ -62,8 +62,6 @@ class PanoramaSamplerController < ApplicationController
 
   def store_config(config_entry)
     old_min_snapshot_cycle = PanoramaSamplerConfig.min_snapshot_cycle
-
-
 
     if PanoramaSamplerConfig.config_entry_exists?(config_entry[:id])
       PanoramaSamplerConfig.modify_config_entry(config_entry)

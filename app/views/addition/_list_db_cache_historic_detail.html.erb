@@ -3,11 +3,11 @@
 
   link_snapshot = proc do |rec|
     ajax_link(localeDateTime(rec.snapshot_timestamp), {
-                 :action          => :list_db_cache_historic_snap,
-                 :instance        => @instance,
-                 :snapshotts      => localeDateTime(rec.snapshot_timestamp),
-                 :show_partitions => @show_partitions,
-                 :update_area     => @update_area
+                 :action              => :list_db_cache_historic_snap,
+                 :instance            => @instance,
+                 :snapshot_timestamp  => localeDateTime(rec.snapshot_timestamp),
+                 :show_partitions     => @show_partitions,
+                 :update_area         => @update_area
                },
         :title=>"Show complete cache usage for snapshot timestamp")
   end

@@ -39,7 +39,6 @@ class EnvController < ApplicationController
     session.delete(:version)                        if session[:version]
     session.delete(:db_block_size)                  if session[:db_block_size]
     session.delete(:wordsize)                       if session[:wordsize]
-    session.delete(:dba_hist_blocking_locks_owner)  if session[:dba_hist_blocking_locks_owner]
     session.delete(:request_counter)                if session[:request_counter]
     session.delete(:instance)                       if session[:instance]
     session.delete(:time_selection_start)           if session[:time_selection_start]

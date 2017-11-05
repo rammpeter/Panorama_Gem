@@ -6,8 +6,8 @@
     ajax_link('Show SQLs', {
             :controller             => :dba_history,
             :action                 => :show_using_sqls_historic,
-            :time_selection_start   => @snapshotts[0,16],   # Sekunden des Zeitstempels abschneiden
-            :time_selection_end     => @snapshotts[0,16],   # Sekunden des Zeitstempels abschneiden
+            :time_selection_start   => @snapshot_timestamp[0,16],   # Sekunden des Zeitstempels abschneiden
+            :time_selection_end     => @snapshot_timestamp[0,16],   # Sekunden des Zeitstempels abschneiden
             :ObjectOwner            => rec.owner,
             :ObjectName             => rec.name,
             :update_area            => @update_area
@@ -29,7 +29,7 @@ column_options =
 
 <%= gen_slickgrid(@entries, column_options,  {
         :max_height => 450,
-        :caption    => "DB-cache usage at #{@snapshotts} Instance=#{@instance}"
+        :caption    => "DB-cache usage at #{@snapshot_timestamp} Instance=#{@instance}"
 }) %>
 
 <div id="<%= @update_area %>"></div>

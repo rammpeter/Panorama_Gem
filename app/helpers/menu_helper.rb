@@ -14,8 +14,9 @@ module MenuHelper
             {:class=> 'item', :caption=> t(:menu_dba_start_page_caption, :default=>'Start page'),   :controller=>:env,             :action=>:start_page,  :hint=>t(:menu_dba_start_page_hint, :default=> 'Show global information for choosen database') },
             { :class=> 'menu', :caption=> 'DB-Locks', :content=>[
                 {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),        :controller=>:dba,             :action=> 'show_locks',        :hint=>t(:menu_dba_locks_hint, :default=> 'shows current locking state incl. blocking sessions')   },
-                {:class=> 'item', :caption=>t(:menu_dba_blocking_locks_historic_caption, :default=> 'Blocking locks historic'), :controller=> 'active_session_history',  :action=> 'show_blocking_locks_historic',   :hint=>t(:menu_dba_blocking_locks_historic_hint, :default=> 'show historic blocking locks information')   },
-                ]
+                {:class=> 'item', :caption=>t(:menu_dba_blocking_locks_historic_caption, :default=> 'Blocking locks historic from ASH'), :controller=> 'active_session_history',  :action=> 'show_blocking_locks_historic',   :hint=>t(:menu_dba_blocking_locks_historic_hint, :default=> 'Show historic blocking locks information from Active Session History')   },
+                ].concat(
+                  PanoramaSamplerStructureCheck.panorama_table_exists?('Panorama_Blocking_Locks') ? [{:class=> 'item', :caption=>t(:menu_dba_blocking_locks_historic_panorama_caption, :default=>'Blocking locks historic from Panorama-Sampler'),           :controller=> :addition,                 :action=> :show_blocking_locks_history,     :hint=>t(:menu_dba_blocking_locks_historic_panorama_hint, :default=>'Show historic blocking locks information from Panorama-Sampler')}] : [] )
             },
             { :class=> 'menu', :caption=> 'Redo-Logs', :content=>[
                 {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),        :controller=>:dba,             :action=> 'show_redologs',        :hint=>t(:menu_dba_redologs_hint, :default=> 'Show current redo log info') },
@@ -104,17 +105,21 @@ module MenuHelper
             ]
             },
             {:class=> 'item', :caption=> 'Tablespace-Objects',  :controller=>:dba_schema,       :action=>:show_object_size,  :hint=>t(:menu_dba_schema_ts_objects_hint, :default=> 'DB-objects by size, utilization and wastage') },
-            {:class=> 'item', :caption=> 'Describe object',     :controller=>:dba_schema,       :action=>:describe_object,  :hint=>'Describe database object (table, index, materialized view ...)' },
-            {:class=> 'item', :caption=> 'Materialized view structures',         :controller=>:storage,   :action=> 'show_materialized_views',  :hint=>t(:menu_storage_matview_hint, :default=> 'Show structure of materialzed views and MV-logs')   },
-            {:class=> 'item', :caption=> t(:menu_storage_table_dependency_caption, :default=>'Table-dependencies'),         :controller=> 'table_dependencies',  :action=> 'show_frame',            :hint=> t(:menu_storage_table_dependency_hint, :default=>'Direct and indirect referential dependencies of tables')},
-            { :class=> 'menu', :caption=> 'Temp usage', :content=>[
-                {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),                  :controller=>:storage,     :action=>:temp_usage,        :hint=>t(:menu_dba_temp_usage_hint, :default=>'Current usage of TEMP-tablespace') },
-                {:class=> 'item', :caption=>t(:menu_storage_temp_usage_historic_sysmetric_caption, :default=> 'Historic from SysMetric'),      :controller=>:storage ,  :action=>:show_temp_usage_sysmetric_historic,    :hint=>t(:menu_storage_temp_usage_historic_sysmetric_hint, :default=> 'Historic usage of TEMP tablespace from system metrics of AWR snapshots (down to sampling once per minute)'), :min_db_version => '11.2' },
-                {:class=> 'item', :caption=>t(:menu_storage_temp_usage_historic_ash_caption, :default=> 'Historic from ASH'),      :controller=>:active_session_history ,  :action=>:show_temp_usage_historic,    :hint=>t(:menu_storage_temp_usage_historic_ash_hint, :default=> 'Historic usage of TEMP tablespace by active sessions from Active Session History (down to sampling once per second)'), :min_db_version => '11.2' },
-            ]
-            },
-            ].
-            concat( isExadata? ? [
+            ].concat(PanoramaSamplerStructureCheck.panorama_table_exists?('Panorama_Object_Sizes') ? [{:class=> 'item', :caption=>t(:menu_addition_size_evolution_caption, :default=>'Object size evolution'),           :controller=> 'addition',                 :action=> 'show_object_increase',     :hint=>t(:menu_addition_size_evolution_hint, :default=>'Evolution of object sizes in considered time period')}] : [])
+            .concat(
+                [
+                    {:class=> 'item', :caption=> 'Describe object',     :controller=>:dba_schema,       :action=>:describe_object,  :hint=>'Describe database object (table, index, materialized view ...)' },
+                    {:class=> 'item', :caption=> 'Materialized view structures',         :controller=>:storage,   :action=> 'show_materialized_views',  :hint=>t(:menu_storage_matview_hint, :default=> 'Show structure of materialzed views and MV-logs')   },
+                    {:class=> 'item', :caption=> t(:menu_storage_table_dependency_caption, :default=>'Table-dependencies'),         :controller=> 'table_dependencies',  :action=> 'show_frame',            :hint=> t(:menu_storage_table_dependency_hint, :default=>'Direct and indirect referential dependencies of tables')},
+                    { :class=> 'menu', :caption=> 'Temp usage', :content=>[
+                        {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),                  :controller=>:storage,     :action=>:temp_usage,        :hint=>t(:menu_dba_temp_usage_hint, :default=>'Current usage of TEMP-tablespace') },
+                        {:class=> 'item', :caption=>t(:menu_storage_temp_usage_historic_sysmetric_caption, :default=> 'Historic from SysMetric'),      :controller=>:storage ,  :action=>:show_temp_usage_sysmetric_historic,    :hint=>t(:menu_storage_temp_usage_historic_sysmetric_hint, :default=> 'Historic usage of TEMP tablespace from system metrics of AWR snapshots (down to sampling once per minute)'), :min_db_version => '11.2' },
+                        {:class=> 'item', :caption=>t(:menu_storage_temp_usage_historic_ash_caption, :default=> 'Historic from ASH'),      :controller=>:active_session_history ,  :action=>:show_temp_usage_historic,    :hint=>t(:menu_storage_temp_usage_historic_ash_hint, :default=> 'Historic usage of TEMP tablespace by active sessions from Active Session History (down to sampling once per second)'), :min_db_version => '11.2' },
+                    ]
+                    },
+                ]
+            )
+            .concat( isExadata? ? [
                 { :class=> 'menu', :caption=> t(:menu_storage_exadata_specific_caption, :default=>'EXADATA-specific'), :content=>[
                     {:class=> 'item', :caption=>'Cell server config',            :controller=>:storage,     :action=>:list_exadata_cell_server,        :hint=>t(:menu_storage_exadata_specific_cell_server_hint, :default=>'Configuration of exadata cell server') },
                     {:class=> 'item', :caption=>'Cell server physical disks',    :controller=>:storage,     :action=>:list_exadata_cell_physical_disk,  :hint=>'List physical disks of exadata cell server' },
@@ -182,12 +187,6 @@ module MenuHelper
         { :class=> 'menu', :caption=>t(:menu_addition_caption, :default=> 'Spec. additions'), :content=>[
             {:class=> 'item', :caption=>t(:menu_addition_dragnet_caption, :default=> 'Dragnet investigation'), :controller=> 'dragnet', :action=> 'show_selection', :hint=>t(:menu_addition_dragnet_hint, :default=> 'Dragnet investigation for performance bottlenecks')   },
         ].concat(
-            showBlockingLocksMenu ?
-                [{:class=> 'item', :caption=> 'Historie Blocking Locks',    :controller=> 'addition',                 :action=> 'show_blocking_locks_history', :hint=> 'Historische Auswertung Blocking DB-Locks'}] : []
-        ).concat(
-            PanoramaSamplerStructureCheck.panorama_table_exists?('Panorama_Object_Sizes') ?
-                [{:class=> 'item', :caption=>t(:menu_addition_size_evolution_caption, :default=>'Object size evolution'),           :controller=> 'addition',                 :action=> 'show_object_increase',     :hint=>t(:menu_addition_size_evolution_hint, :default=>'Evolution of object sizes in considered time period')}] : []
-        ).concat(
             [{:class=> 'item', :caption=> t(:menu_addition_exec_with_given_parameters_caption, :default=>'Execute with given parameters') ,           :controller=> 'addition',                 :action=> 'show_recall_params',     :hint=>t(:menu_addition_exec_with_given_parameters_hint, :default=>'Execute one of Panoramas functions directly with given parameters') }]
         ).concat(
             showPanoramaSampler ?
@@ -197,16 +196,6 @@ module MenuHelper
     ]
 
     extend_main_menu main_menu      # Erweitern des Menues in die Panorama-Engine nutzender App durch Überblenden von menu_extension_helper.rb
-  end
-
-
-    #Ausgabe eines einzelnen Menues
-  def showBlockingLocksMenu
-    res = sql_select_first_row "SELECT /* Panorama Tool Ramm */ COUNT(*) Anzahl, MIN(Owner) Owner FROM All_Tables WHERE Table_Name = 'DBA_HIST_BLOCKING_LOCKS'"
-    return false if res.nil?
-    write_to_client_info_store(:dba_hist_blocking_locks_owner, res.owner)
-    Rails.logger.info "MenuHelper.showBlockingLocksMenu: #{res.anzahl} different schemas have table DBA_HIST_BLOCKING_LOCKS, function hidden" if res.anzahl > 1
-    res.anzahl == 1     # Nur verwenden, wenn genau ein Schema die Daten enthält
   end
 
   def showPanoramaSampler

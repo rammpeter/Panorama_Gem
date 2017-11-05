@@ -77,20 +77,21 @@ class PanoramaSamplerConfig
     Encryption.encrypt_value(native_password, EngineConfig.config.panorama_sampler_master_password) # Encrypt password with master_password
   end
 
-  def self.validate_entry(entry)
-    raise "Password is mandatory" if (entry[:password].nil? || entry[:password] == '')
+  def self.validate_entry(entry, empty_password_allowed = false)
+    raise PopupMessageException.new "User name is mandatory" if (entry[:user].nil? || entry[:user] == '')
+    raise PopupMessageException.new "Password is mandatory" if (entry[:password].nil? || entry[:password] == '') && !empty_password_allowed
     if entry[:awr_ash_snapshot_cycle].nil? || entry[:awr_ash_snapshot_cycle] <=0 || (60 % entry[:awr_ash_snapshot_cycle] != 0 && entry[:awr_ash_snapshot_cycle] % 60 != 0) || entry[:awr_ash_snapshot_cycle] % 5 != 0
       # Allow wrong values if master password is test password
-      raise "AWR/ASH-snapshot cycle must be a multiple of 5 minutes\nand divisible without remainder from 60 minutes or multiple of 60 minutes\ne.g. 5, 10, 15, 20, 30, 60 or 120 minutes" if EngineConfig.config.panorama_sampler_master_password != 'hugo'
+      raise PopupMessageException.new "AWR/ASH-snapshot cycle must be a multiple of 5 minutes\nand divisible without remainder from 60 minutes or multiple of 60 minutes\ne.g. 5, 10, 15, 20, 30, 60 or 120 minutes" if EngineConfig.config.panorama_sampler_master_password != 'hugo'
     end
-    raise "AWR/ASH-napshot retention must be >= 1 day" if entry[:awr_ash_snapshot_retention] < 1
+    raise PopupMessageException.new "AWR/ASH-napshot retention must be >= 1 day" if entry[:awr_ash_snapshot_retention] < 1
 
    if entry[:object_size_snapshot_cycle].nil? || entry[:object_size_snapshot_cycle] <=0 || 24 % entry[:object_size_snapshot_cycle] != 0 || entry[:object_size_snapshot_cycle]  > 24
-      raise "Object size snapshot cycle must be a divisible without remainder from 24 hours and max. 24 hours\ne.g. 1, 2, 3, 4, 6, 8, 12 or 24 hours"
+      raise PopupMessageException.new "Object size snapshot cycle must be a divisible without remainder from 24 hours and max. 24 hours\ne.g. 1, 2, 3, 4, 6, 8, 12 or 24 hours"
     end
 
-    raise "Object size snapshot cycle must be >= 1 hour>"   if entry[:object_size_snapshot_cycle].nil?      || entry[:object_size_snapshot_cycle]     <=0
-    raise "Object size snapshot retention must be >= 1 day" if entry[:object_size_snapshot_retention].nil?  || entry[:object_size_snapshot_retention] < 1
+    raise PopupMessageException.new "Object size snapshot cycle must be >= 1 hour>"   if entry[:object_size_snapshot_cycle].nil?      || entry[:object_size_snapshot_cycle]     <=0
+    raise PopupMessageException.new "Object size snapshot retention must be >= 1 day" if entry[:object_size_snapshot_retention].nil?  || entry[:object_size_snapshot_retention] < 1
   end
 
   # Modify some content after edit and before storage
@@ -106,6 +107,8 @@ class PanoramaSamplerConfig
     entry[:cache_objects_snapshot_retention]  = entry[:cache_objects_snapshot_retention].to_i
     entry[:blocking_locks_snapshot_cycle]     = entry[:blocking_locks_snapshot_cycle].to_i
     entry[:blocking_locks_snapshot_retention] = entry[:blocking_locks_snapshot_retention].to_i
+
+    validate_entry(entry, config_entry_exists?(entry[:id]))                     # Password required only for add, not for modify
 
     if entry[:password].nil? || entry[:password] == ''
       entry.delete(:password)                                                   # Preserve previous password at merge

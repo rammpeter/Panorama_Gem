@@ -18,7 +18,7 @@ class WorkerThreadTest < ActiveSupport::TestCase
   test "check_structure" do
     PanoramaSamplerStructureCheck.remove_tables(@sampler_config)                # ensure missing objects is tested
 
-    [:ASH, :AWR, :OBJECT_SIZE, :CACHE_OBJECTS, :BLOCKING_LOCKS].each do |domain|
+    PanoramaSamplerStructureCheck.domains.each do |domain|
       PanoramaSamplerStructureCheck.do_check(@sampler_config, domain)
     end                                                                         # leave all objects existing because other tests rely on
   end

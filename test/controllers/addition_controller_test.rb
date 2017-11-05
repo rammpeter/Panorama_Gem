@@ -10,7 +10,6 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context{}
 
-    showBlockingLocksMenu                                                       # Set cache with owner-schema for table
     #connect_oracle_db     # Nutzem Oracle-DB für Selektion
     @ttime_selection_end    = Time.new
     @ttime_selection_start  = @ttime_selection_end-10000          # x Sekunden Abstand
@@ -51,7 +50,7 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
          :blocking_instance => 1,
          :blocking_sid => 1,
          :blocking_serialno => 1,
-         :snapshotts =>"01.01.2011 00:00:00",
+         :snapshot_timestamp =>"01.01.2011 00:00:00",
          :update_area=>:hugo } if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
   end
@@ -100,7 +99,7 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
     end
 
     get '/addition/list_db_cache_historic_snap', :params => { :format=>:html,
-        :snapshotts =>"01.01.2011 00:00",
+        :snapshot_timestamp =>"01.01.2011 00:00",
         :instance  => "1",
         :update_area=>:hugo } if ENV['DB_VERSION'] >= '11.2'
     assert_response :success
