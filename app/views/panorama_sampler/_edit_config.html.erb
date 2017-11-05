@@ -173,12 +173,14 @@
             <td>Snapshot cycle (minutes)</td>
             <td align="center"><%= text_field_tag(:config_blocking_locks_snapshot_cycle, @config[:blocking_locks_snapshot_cycle], :name=>'config[blocking_locks_snapshot_cycle]', size: 6, :style => "text-align: right;", :title=>'Delay between snapshots of blocking locks in minutes') %></td>
           </tr>
-
           <tr>
             <td>Snapshot retention (days)</td>
             <td align="center"><%= text_field_tag(:config_blocking_locks_snapshot_retention, @config[:blocking_locks_snapshot_retention], :name=>'config[blocking_locks_snapshot_retention]', size: 6, :style => "text-align: right;", :title=>'Retention time for blocking locks snapshot data in days before deletion') %></td>
           </tr>
-
+          <tr>
+            <td>Limit for long locks (seconds)</td>
+            <td align="center"><%= text_field_tag(:config_blocking_locks_long_locks_limit, @config[:blocking_locks_long_locks_limit], :name=>'config[blocking_locks_long_locks_limit]', size: 6, :style => "text-align: right;", :title=>"Limit for long lasting DB-locks.\nLocks lasting longer than his limit are also recorded even if they are not blocking other transactions") %></td>
+          </tr>
         </table>
       </fieldset>
     </div>

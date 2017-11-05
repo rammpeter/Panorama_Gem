@@ -33,7 +33,7 @@ column_options =
     {:caption=>"B.User",          :data=>proc{|rec| rec.root_blocking_user_name},     :title=>"User der blockenden Session", :data_title=>'User der blockenden Session, Machine=#{rec.root_blocking_machine}, OS-User=#{rec.root_blocking_os_user}, Process=#{rec.root_blocking_process}'},
     {:caption=>"B.Program",       :data=>proc{|rec| rec.root_blocking_program},      :title=>"Programm der blockenden Session", :data_title=>'Programm der blockenden Session, Machine=#{rec.root_blocking_machine}, OS-User=#{rec.root_blocking_os_user}, Process=#{rec.root_blocking_process}'},
     {:caption=>"Blocking Object", :data=>proc{|rec| rec.root_blocking_object},                                         :title=>"Blockendes Objekt"},
-    {:caption=>"RowID / Primary Key", :data=>proc{|rec| "#{rec.root_blocking_rowid} #{rec.root_waiting_for_pk_column_name} = #{rec.root_waiting_for_pk_value}"}, :title=>"RowID sowie Spalten und Inhalt des Primary Key des blockenden Objektes"},
+    {:caption=>"RowID / Primary Key", :data=>proc{|rec| "#{rec.root_blocking_rowid} #{rec.root_wait_for_pk_column_name} = #{rec.root_waiting_for_pk_value}"}, :title=>"RowID sowie Spalten und Inhalt des Primary Key des blockenden Objektes"},
   ]
 %>
 

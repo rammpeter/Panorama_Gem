@@ -71,7 +71,7 @@
     {:caption=>"RowID / Primary Key", :data=>proc{|rec| "#{rec.blocking_rowid} #{rec.waiting_for_pk_column_name} = #{rec.waiting_for_pk_value}"}, :title=>"RowID sowie Spalten und Inhalt des Primary Key des blockenden Objektes"},
 =begin
     {:caption=>"Blocking Object", :data=>'"#{rec.root_blocking_object_schema}.#{rec.root_blocking_object_name}"', :title=>"Blockendes Objekt"},
-    {:caption=>"RowID / Primary Key", :data=>'"#{rec.root_blocking_rowid} #{rec.root_waiting_for_pk_column_name} = #{rec.root_waiting_for_pk_value}"', :title=>"RowID sowie Spalten und Inhalt des Primary Key des blockenden Objektes"},
+    {:caption=>"RowID / Primary Key", :data=>'"#{rec.root_blocking_rowid} #{rec.root_wait_for_pk_column_name} = #{rec.root_waiting_for_pk_value}"', :title=>"RowID sowie Spalten und Inhalt des Primary Key des blockenden Objektes"},
 =end
   ]
 %>

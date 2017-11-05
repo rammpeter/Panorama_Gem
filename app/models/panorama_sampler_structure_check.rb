@@ -1020,7 +1020,7 @@ ORDER BY Column_ID
     end
 
     # Check if accessing v$-tables from within PL/SQL-Package is possible
-    @sampler_config[:select_any_table] = (0 < PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM DBA_Sys_Privs WHERE Grantee = ? AND Privilege = 'SELECT ANY TABLE'", @sampler_config[:user].upcase]))
+    PanoramaSamplerConfig.check_for_select_any_table!(@sampler_config)
 
     if @sampler_config[:select_any_table]                                       # call PL/SQL package? v$Tables with SELECT_ANY_CATALOG-role are accessible in PL/SQL only if SELECT ANY TABLE is granted
       case domain
@@ -1034,8 +1034,8 @@ ORDER BY Column_ID
           create_or_check_package(filename, panorama_sampler_ash_body, 'PANORAMA_SAMPLER_ASH', :body)
         when :BLOCKING_LOCKS then
           filename = PanoramaSampler::PackagePanoramaSamplerBlockingLocks.instance_method(:panorama_sampler_blocking_locks_spec).source_location[0]
-          create_or_check_package(filename, panorama_sampler_blocking_locks_spec, 'PANORAMA_SAMPLER_BLOCKING_LOCKS', :spec)
-          create_or_check_package(filename, panorama_sampler_blocking_locks_body, 'PANORAMA_SAMPLER_BLOCKING_LOCKS', :body)
+          create_or_check_package(filename, panorama_sampler_blocking_locks_spec, 'PANORAMA_SAMPLER_BLOCK_LOCKS', :spec)
+          create_or_check_package(filename, panorama_sampler_blocking_locks_body, 'PANORAMA_SAMPLER_BLOCK_LOCKS', :body)
       end
     end
   end
@@ -1066,6 +1066,13 @@ ORDER BY Column_ID
         end
       end
     end
+  end
+
+  def self.translate_plsql_aliases(config, source_buffer)
+    translated_source_buffer = source_buffer.gsub(/PANORAMA\./i, "#{config[:owner].upcase}.")    # replace PANORAMA. with the real owner
+    translated_source_buffer.gsub!(/COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME/, Time.now.to_s) # change source to provocate change of LAST_DDL_TIME even content is still the same
+    translated_source_buffer.gsub!(/PANORAMA_VERSION/, PanoramaGem::VERSION) # stamp version to file
+    translated_source_buffer
   end
 
   private
@@ -1106,9 +1113,8 @@ ORDER BY Column_ID
         package_version != PanoramaGem::VERSION
       # Compile package
       Rails.logger.info "Package #{'body ' if type==:body}#{@sampler_config[:owner].upcase}.#{package_name} needs #{package_obj.nil? ? 'creation' : 'recompile'}"
-      translated_source_buffer = source_buffer.gsub(/PANORAMA\./i, "#{@sampler_config[:owner].upcase}.")    # replace PANORAMA with the real owner
-      translated_source_buffer.gsub!(/COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME/, Time.now.to_s) # change source to provocate change of LAST_DDL_TIME even content is still the same
-      translated_source_buffer.gsub!(/PANORAMA_VERSION/, PanoramaGem::VERSION) # stamp version to file
+
+      translated_source_buffer = translate_plsql_aliases(@sampler_config, source_buffer)
 
       Rails.logger.info translated_source_buffer
       PanoramaConnection.sql_execute translated_source_buffer

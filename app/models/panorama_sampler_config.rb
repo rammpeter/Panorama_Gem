@@ -20,6 +20,7 @@ class PanoramaSamplerConfig
     config[:blocking_locks_active]              = false if !config.has_key?(:blocking_locks_active)
     config[:blocking_locks_snapshot_cycle]      = 2     if !config.has_key?(:blocking_locks_snapshot_cycle)
     config[:blocking_locks_snapshot_retention]  = 60    if !config.has_key?(:blocking_locks_snapshot_retention)
+    config[:blocking_locks_long_locks_limit]    = 10000 if !config.has_key?(:blocking_locks_long_locks_limit)
     config
   end
 
@@ -107,6 +108,7 @@ class PanoramaSamplerConfig
     entry[:cache_objects_snapshot_retention]  = entry[:cache_objects_snapshot_retention].to_i
     entry[:blocking_locks_snapshot_cycle]     = entry[:blocking_locks_snapshot_cycle].to_i
     entry[:blocking_locks_snapshot_retention] = entry[:blocking_locks_snapshot_retention].to_i
+    entry[:blocking_locks_long_locks_limit]   = entry[:blocking_locks_long_locks_limit].to_i
 
     validate_entry(entry, config_entry_exists?(entry[:id]))                     # Password required only for add, not for modify
 
@@ -157,6 +159,14 @@ class PanoramaSamplerConfig
                                                   :last_error_message => message
                                               })
   end
+
+  def self.check_for_select_any_table!(config)
+    # Check if accessing v$-tables from within PL/SQL-Package is possible
+    config[:select_any_table] = (0 < PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM DBA_Sys_Privs WHERE Grantee = ? AND Privilege = 'SELECT ANY TABLE'", config[:user].upcase]))
+    modify_config_entry(config)                                                 # Modify input parameter and persist result
+  end
+
+
   private
 
   def self.client_info_store_key

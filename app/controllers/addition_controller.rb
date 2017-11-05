@@ -348,11 +348,11 @@ class AdditionController < ApplicationController
                MIN(CAST(Root_Blocking_RowID AS VARCHAR2(18)))
              END Root_Blocking_RowID,
              Root_Blocking_SQL_ID, Root_Blocking_SQL_Child_Number, Root_Blocking_Prev_SQL_ID, Root_Block_Prev_Child_Number,
-             CASE WHEN COUNT(DISTINCT Root_Waiting_For_PK_Column_Name) > 1 THEN   -- Nur anzeigen wenn eindeutig
-               '< '||COUNT(DISTINCT Root_Waiting_For_PK_Column_Name)||' >'
+             CASE WHEN COUNT(DISTINCT Root_Wait_For_PK_Column_Name) > 1 THEN   -- Nur anzeigen wenn eindeutig
+               '< '||COUNT(DISTINCT Root_Wait_For_PK_Column_Name)||' >'
              ELSE
-               MIN(Root_Waiting_For_PK_Column_Name)
-             END Root_Waiting_For_PK_Column_Name,
+               MIN(Root_Wait_For_PK_Column_Name)
+             END Root_Wait_For_PK_Column_Name,
              CASE WHEN COUNT(DISTINCT Root_Waiting_For_PK_Value) > 1 THEN   -- Nur anzeigen wenn eindeutig
                '< '||COUNT(DISTINCT Root_Waiting_For_PK_Value)||' >'
              ELSE
@@ -374,7 +374,7 @@ class AdditionController < ApplicationController
                      CONNECT_BY_ROOT Blocking_SQL_Child_Number Root_Blocking_SQL_Child_Number,
                      CONNECT_BY_ROOT Blocking_Prev_SQL_ID     Root_Blocking_Prev_SQL_ID,
                      CONNECT_BY_ROOT Blocking_Prev_Child_Number Root_Block_Prev_Child_Number,
-                     CONNECT_BY_ROOT Waiting_For_PK_Column_Name Root_Waiting_For_PK_Column_Name,
+                     CONNECT_BY_ROOT Waiting_For_PK_Column_Name Root_Wait_For_PK_Column_Name,
                      CONNECT_BY_ROOT Waiting_For_PK_Value     Root_Waiting_For_PK_Value,
                      CONNECT_BY_ROOT Blocking_Status          Root_Blocking_Status,
                      CONNECT_BY_ROOT Blocking_Client_Info     Root_Blocking_Client_Info,

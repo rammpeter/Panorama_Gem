@@ -200,19 +200,19 @@ class PanoramaSamplerSampling
 
   def do_blocking_locks_sampling(snapshot_time)
     if @sampler_config[:select_any_table]                                       # call PL/SQL package ?
-      sql = " BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_Blocking_Locks.Create_Blocking_Locks_Snapshot(?, ?); END;"
+      sql = " BEGIN #{@sampler_config[:owner]}.Panorama_Sampler_Block_Locks.Create_Block_Locks_Snapshot(?, ?); END;"
     else
       sql = "
         DECLARE
-        #{panorama_sampler_blocking_locks_code}
+        #{PanoramaSamplerStructureCheck.translate_plsql_aliases(@sampler_config, panorama_sampler_blocking_locks_code)}
         BEGIN
-          Create_Blocking_Locks_Snapshot(?, ?);
+          Create_Block_Locks_Snapshot(?, ?);
         END;
         "
     end
 
     # TODO: LongLocksSeconds in config
-    PanoramaConnection.sql_execute [sql, PanoramaConnection.instance_number, 1000]
+    PanoramaConnection.sql_execute [sql, PanoramaConnection.instance_number, @sampler_config[:blocking_locks_long_locks_limit]]
   end
 
   def do_blocking_locks_housekeeping(shrink_space)

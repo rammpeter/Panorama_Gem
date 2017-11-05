@@ -2,19 +2,19 @@ module PanoramaSampler::PackagePanoramaSamplerBlockingLocks
   # PL/SQL-Package for blocking locks snapshot creation
   def panorama_sampler_blocking_locks_spec
     "
-CREATE OR REPLACE Package panorama.Panorama_Sampler_Blocking_Locks AS
+CREATE OR REPLACE Package panorama.Panorama_Sampler_Block_Locks AS
   -- Panorama-Version: PANORAMA_VERSION
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
 
-  PROCEDURE Create_Blocking_Locks_Snapshot(p_Instance_Number IN NUMBER, p_LongLocksSeconds IN NUMBER);
+  PROCEDURE Create_Block_Locks_Snapshot(p_Instance_Number IN NUMBER, p_LongLocksSeconds IN NUMBER);
 
-END Panorama_Sampler_Blocking_Locks;
+END Panorama_Sampler_Block_Locks;
     "
   end
 
   def panorama_sampler_blocking_locks_code
     "
-  PROCEDURE Create_Blocking_Locks_Snapshot(p_Instance_Number IN NUMBER, p_LongLocksSeconds IN NUMBER) IS
+  PROCEDURE Create_Block_Locks_Snapshot(p_Instance_Number IN NUMBER, p_LongLocksSeconds IN NUMBER) IS
     v_Waiting_For_PK_Column_Name  panorama.Panorama_Blocking_Locks.Waiting_For_PK_Column_Name%TYPE;
     v_Waiting_For_PK_Value        panorama.Panorama_Blocking_Locks.Waiting_For_PK_Value%TYPE;
     v_TableName                   VARCHAR2(30);
@@ -178,67 +178,22 @@ END Panorama_Sampler_Blocking_Locks;
       );
       EXCEPTION
         WHEN OTHERS THEN
-          DBMS_OUTPUT.PUT_LINE('Fehler bei Insert in DBA_Hist_Blocking_Locks');
-          DBMS_OUTPUT.PUT_LINE('SYSDATE='||v_Snapshot_Timestamp);
-          DBMS_OUTPUT.PUT_LINE('Inst_ID='||Rec.Inst_ID);
-          DBMS_OUTPUT.PUT_LINE('SID='||Rec.SID);
-          DBMS_OUTPUT.PUT_LINE('Serial#='||Rec.Serial#);
-          DBMS_OUTPUT.PUT_LINE('SQL_ID='||Rec.SQL_ID);
-          DBMS_OUTPUT.PUT_LINE('SQL_Child_Number='||Rec.SQL_Child_Number);
-          DBMS_OUTPUT.PUT_LINE('Prev_SQL_ID='||Rec.Prev_SQL_ID);
-          DBMS_OUTPUT.PUT_LINE('Prev_Child_Number='||Rec.Prev_Child_Number);
-          DBMS_OUTPUT.PUT_LINE('Status='||Rec.Status);
-          DBMS_OUTPUT.PUT_LINE('Client_Info='||Rec.Client_Info);
-          DBMS_OUTPUT.PUT_LINE('Module='||Rec.Module);
-          DBMS_OUTPUT.PUT_LINE('Action='||Rec.Action);
-          DBMS_OUTPUT.PUT_LINE('Object_Name='||Rec.Object_Name);
-          DBMS_OUTPUT.PUT_LINE('User_Name='||Rec.UserName);
-          DBMS_OUTPUT.PUT_LINE('Machine='||Rec.Machine);
-          DBMS_OUTPUT.PUT_LINE('OSUser='||Rec.OSUser);
-          DBMS_OUTPUT.PUT_LINE('Process='||Rec.Process);
-          DBMS_OUTPUT.PUT_LINE('Program='||Rec.Program);
-          DBMS_OUTPUT.PUT_LINE('Lock_Type='||Rec.Lock_Type);
-          DBMS_OUTPUT.PUT_LINE('Seconds_In_Wait='||Rec.Seconds_In_Wait);
-          DBMS_OUTPUT.PUT_LINE('ID1='||Rec.ID1);
-          DBMS_OUTPUT.PUT_LINE('ID2='||Rec.ID2);
-          DBMS_OUTPUT.PUT_LINE('Request='||Rec.Request);
-          DBMS_OUTPUT.PUT_LINE('Lock_Mode='||Rec.Lock_Mode);
-          DBMS_OUTPUT.PUT_LINE('Blocking_Object_Owner='||Rec.Blocking_Object_Owner);
-          DBMS_OUTPUT.PUT_LINE('Blocking_Object_Name='||Rec.Blocking_Object_Name);
-          DBMS_OUTPUT.PUT_LINE('Blocking_RowID='||v_Blocking_RowID);
-          DBMS_OUTPUT.PUT_LINE('Blocking_Instance_Number='||Rec.Blocking_Instance_Number);
-          DBMS_OUTPUT.PUT_LINE('Blocking_SID='||Rec.Blocking_SID);
-          DBMS_OUTPUT.PUT_LINE('Blocking_SerialNo='||Rec.Blocking_SerialNo);
-          DBMS_OUTPUT.PUT_LINE('Blocking_SQL_ID='||Rec.Blocking_SQL_ID);
-          DBMS_OUTPUT.PUT_LINE('Blocking_SQL_Child_Number='||Rec.Blocking_SQL_Child_Number);
-          DBMS_OUTPUT.PUT_LINE('Blocking_Prev_SQL_ID='||Rec.Blocking_Prev_SQL_ID);
-          DBMS_OUTPUT.PUT_LINE('Blocking_Prev_Child_Number='||Rec.Blocking_Prev_Child_Number);
-          DBMS_OUTPUT.PUT_LINE('Blocking_Status='||Rec.Blocking_Status);
-          DBMS_OUTPUT.PUT_LINE('Blocking_Client_Info='||Rec.Blocking_Client_Info);
-          DBMS_OUTPUT.PUT_LINE('Blocking_Module='||Rec.Blocking_Module);
-          DBMS_OUTPUT.PUT_LINE('Blocking_Action='||Rec.Blocking_Action);
-          DBMS_OUTPUT.PUT_LINE('Blocking_User_name='||Rec.Blocking_User_name);
-          DBMS_OUTPUT.PUT_LINE('Blocking_Machine='||Rec.Blocking_Machine);
-          DBMS_OUTPUT.PUT_LINE('Blocking_OS_User='||Rec.Blocking_OS_User);
-          DBMS_OUTPUT.PUT_LINE('Blocking_Process='||Rec.Blocking_Process);
-          DBMS_OUTPUT.PUT_LINE('Blocking_Program='||Rec.Blocking_Program);
-          DBMS_OUTPUT.PUT_LINE('Waiting_For_PK_Column_Name='||v_Waiting_For_PK_Column_Name);
-          DBMS_OUTPUT.PUT_LINE('Waiting_For_PK_Value='||v_Waiting_For_PK_Value);
           RAISE;
       END;
     END LOOP;
-  END Create_Blocking_Locks_Snapshot;
+  END Create_Block_Locks_Snapshot;
     "
+    # TODO: Output insert row content in case of exception
   end
 
   def panorama_sampler_blocking_locks_body
     "
 -- Package for use by Panorama-Sampler
-CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_Blocking_Locks AS
+CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_Block_Locks AS
   -- Panorama-Version: PANORAMA_VERSION
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
 #{panorama_sampler_blocking_locks_code}
-END Panorama_Sampler_Blocking_Locks;
+END Panorama_Sampler_Block_Locks;
 "
   end
 
