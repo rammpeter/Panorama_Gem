@@ -109,9 +109,6 @@ module EnvHelper
 
   # Einlesen und strukturieren der Datei tnsnames.ora
   def read_tnsnames
-
-    tnsnames = {}
-
     if ENV['TNS_ADMIN']
       tnsadmin = ENV['TNS_ADMIN']
     else
@@ -123,7 +120,19 @@ module EnvHelper
       end
     end
 
-    fullstring = IO.read( "#{tnsadmin}/tnsnames.ora" )
+    read_tnsnames_internal( "#{tnsadmin}/tnsnames.ora" )
+
+  rescue Exception => e
+    Rails.logger.error "Error processing tnsnames.ora: #{e.message}"
+    {}
+  end
+
+  def read_tnsnames_internal(file_name)
+    tnsnames = {}
+
+    fullstring = IO.read(file_name)
+
+    # Test for IFILE insertions
 
     while true
       # Ermitteln TNSName
@@ -181,5 +190,4 @@ module EnvHelper
     Rails.logger.error "Error processing tnsnames.ora: #{e.message}"
     tnsnames
   end
-
 end

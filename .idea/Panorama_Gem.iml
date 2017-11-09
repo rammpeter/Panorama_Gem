@@ -427,6 +427,7 @@
     <orderEntry type="library" scope="PROVIDED" name="io-like (v0.3.0, RVM: jruby-9.1.13.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="launchy (v2.4.3, RVM: jruby-9.1.13.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="loofah (v2.0.3, RVM: jruby-9.1.13.0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="mail (v2.7.0, RVM: jruby-9.1.13.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="method_source (v0.8.2, RVM: jruby-9.1.13.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="mini_mime (v0.1.4, RVM: jruby-9.1.13.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="minitest (v5.10.3, RVM: jruby-9.1.13.0) [gem]" level="application" />

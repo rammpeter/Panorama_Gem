@@ -160,7 +160,7 @@ class WorkerThread
 
     @@active_snapshots[snapshot_semaphore_key] = true                 # Create semaphore for thread, begin processing
 
-    PanoramaSamplerConfig.modify_config_entry({ id: @sampler_config[:id], last_successful_connect: Time.now, "last_#{domain.downcase}_snapshot_instance".to_sym => PanoramaConnection.instance_number }) # Set after first successful SQL
+    PanoramaSamplerConfig.modify_config_entry(@sampler_config[:id], { last_successful_connect: Time.now, "last_#{domain.downcase}_snapshot_instance".to_sym => PanoramaConnection.instance_number }) # Set after first successful SQL
 
     PanoramaSamplerStructureCheck.do_check(@sampler_config, :AWR) if domain == :AWR   # Check data structure preconditions, but nor for ASH-tables
 
@@ -168,7 +168,7 @@ class WorkerThread
     PanoramaSamplerSampling.do_housekeeping(@sampler_config, false, domain) # Do housekeeping without shrink space
 
     # End activities after finishing snapshot
-    PanoramaSamplerConfig.modify_config_entry({id: @sampler_config[:id], "last_#{domain.downcase}_snapshot_end".to_sym => Time.now})
+    PanoramaSamplerConfig.modify_config_entry(@sampler_config[:id], {"last_#{domain.downcase}_snapshot_end".to_sym => Time.now})
     Rails.logger.info "#{Time.now}: Finished creating new #{domain} snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}' and domain=#{domain}"
   rescue Exception => e
     begin

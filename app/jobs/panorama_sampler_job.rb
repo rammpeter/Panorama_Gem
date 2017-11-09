@@ -46,7 +46,7 @@ class PanoramaSamplerJob < ApplicationJob
     if config_active && (snapshot_time.min % snapshot_cycle_minutes == 0  ||  # exact startup time at full hour + x*snapshot_cycle
         snapshot_time.min == 0 && snapshot_time.hour % snapshot_cycle_minutes/60 == 0)  # Full hour for snapshot cycle = n*hour
       if  last_snapshot_start.nil? || (last_snapshot_start + snapshot_cycle_minutes.minutes <= snapshot_time+SECONDS_LATE_ALLOWED)  # snapshot_cycle expired ?, 2 seconds delay are allowed
-        PanoramaSamplerConfig.modify_config_entry({id: config[:id], last_snapshot_start_key => snapshot_time})
+        PanoramaSamplerConfig.modify_config_entry(config[:id], {last_snapshot_start_key => snapshot_time})
         WorkerThread.create_snapshot(config, snapshot_time, domain)
       else
         Rails.logger.error "#{Time.now}: Last #{domain} snapshot start (#{last_snapshot_start}) not old enough to expire next snapshot after #{snapshot_cycle_minutes} minutes for ID=#{config[:id]} '#{config[:name]}'"

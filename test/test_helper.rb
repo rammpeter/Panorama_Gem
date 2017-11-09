@@ -117,7 +117,7 @@ class ActiveSupport::TestCase
 
 
     if PanoramaSamplerConfig.config_entry_exists?(sampler_config[:id])
-      PanoramaSamplerConfig.modify_config_entry(sampler_config)
+      PanoramaSamplerConfig.modify_config_entry(sampler_config[:id], sampler_config)
     else
       PanoramaSamplerConfig.add_config_entry(sampler_config)
     end

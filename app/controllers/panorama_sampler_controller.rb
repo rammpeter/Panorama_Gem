@@ -64,7 +64,7 @@ class PanoramaSamplerController < ApplicationController
     old_min_snapshot_cycle = PanoramaSamplerConfig.min_snapshot_cycle
 
     if PanoramaSamplerConfig.config_entry_exists?(config_entry[:id])
-      PanoramaSamplerConfig.modify_config_entry(config_entry)
+      PanoramaSamplerConfig.modify_config_entry(config_entry[:id], config_entry)
     else
       PanoramaSamplerConfig.add_config_entry(config_entry)
     end
@@ -84,10 +84,7 @@ class PanoramaSamplerController < ApplicationController
   end
 
   def clear_config_error
-    config_entry = {:id => params[:id].to_i}
-    config_entry[:last_error_time]    = nil
-    config_entry[:last_error_message] = nil
-    PanoramaSamplerConfig.modify_config_entry(config_entry)
+    PanoramaSamplerConfig.modify_config_entry(params[:id], {last_error_time: nil, last_error_message: nil})
     list_config
   end
 

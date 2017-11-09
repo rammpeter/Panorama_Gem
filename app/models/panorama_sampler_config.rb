@@ -132,12 +132,12 @@ class PanoramaSamplerConfig
     end
   end
 
-  # modify entry (parameter already prepared)
-  def self.modify_config_entry(entry)
+  # modify entry (parameter already prepared), change only parameters in entry
+  def self.modify_config_entry(id, change_entry)
     @@config_access_mutex.synchronize do
-      org_entry = get_config_entry_by_id(entry[:id])
-      validate_entry(org_entry.merge(entry))                                    # Validate resulting merged entry
-      org_entry.merge!(entry)                                                   # Do real merge if validation passed
+      org_entry = get_config_entry_by_id(id.to_i)
+      validate_entry(org_entry.merge(change_entry))                             # Validate resulting merged entry
+      org_entry.merge!(change_entry)                                             # Do real merge if validation passed
       write_config_array_to_store
     end
   end
@@ -153,17 +153,14 @@ class PanoramaSamplerConfig
 
   # Set error state
   def self.set_error_message(id, message)
-    PanoramaSamplerConfig.modify_config_entry({
-                                                  :id                 => id,
-                                                  :last_error_time    => Time.now,
-                                                  :last_error_message => message
-                                              })
+    PanoramaSamplerConfig.modify_config_entry(id, { last_error_time: Time.now, last_error_message: message })
   end
 
   def self.check_for_select_any_table!(config)
     # Check if accessing v$-tables from within PL/SQL-Package is possible
-    config[:select_any_table] = (0 < PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM DBA_Sys_Privs WHERE Grantee = ? AND Privilege = 'SELECT ANY TABLE'", config[:user].upcase]))
-    modify_config_entry(config)                                                 # Modify input parameter and persist result
+    modify_config_entry(config[:id],
+                        { select_any_table: (0 < PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM DBA_Sys_Privs WHERE Grantee = ? AND Privilege = 'SELECT ANY TABLE'", config[:user].upcase]))}
+    )                                                 # Modify input parameter and persist result
   end
 
 
@@ -205,8 +202,9 @@ class PanoramaSamplerConfig
 
   #  Call inside Mutex.synchronize only
   def self.get_config_entry_by_id_or_nil(p_id)
+    i_id = p_id.to_i
     get_config_array.each do |c|
-      return c if c[:id] == p_id
+      return c if c[:id] == i_id
     end
     return nil
   end
