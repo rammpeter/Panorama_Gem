@@ -133,6 +133,25 @@ module EnvHelper
     fullstring = IO.read(file_name)
 
     # Test for IFILE insertions
+    fullstring_ifile = fullstring.clone                                         # local copy
+    while true
+      start_pos_ifile = fullstring_ifile.index('IFILE')
+      break unless start_pos_ifile
+      fullstring_ifile = fullstring_ifile[start_pos_ifile+5, 1000000]           # remove all before and including IFILE
+
+      while fullstring_ifile[0].match '[= ]'                                    # remove = and blanks before filename
+        fullstring_ifile = fullstring_ifile[1, 1000000]                         # remove first char of string
+      end
+
+      start_pos_ifile = fullstring_ifile.index("\n")
+      if start_pos_ifile.nil?
+        ifile_name = fullstring_ifile[0, 1000000]
+      else
+        ifile_name = fullstring_ifile[0, start_pos_ifile-1]
+      end
+
+      tnsnames.merge!(read_tnsnames_internal(ifile_name))
+    end
 
     while true
       # Ermitteln TNSName
