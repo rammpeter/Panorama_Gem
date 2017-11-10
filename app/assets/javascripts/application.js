@@ -22,6 +22,7 @@
 //= require superfish/hoverIntent
 //= require superfish/superfish
 //= require jstree
+//= require jquery.easytabs
 //= require_tree .
 
 "use strict";

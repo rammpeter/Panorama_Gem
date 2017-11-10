@@ -206,7 +206,7 @@ module EnvHelper
     end
     tnsnames
   rescue Exception => e
-    Rails.logger.error "Error processing tnsnames.ora: #{e.message}"
+    Rails.logger.error "Error processing #{file_name}: #{e.message}"
     tnsnames
   end
 end

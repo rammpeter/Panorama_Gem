@@ -8,182 +8,188 @@
         :id           => @config[:id]
     ) do %>
   <div align="center">
-    <div>
-      <span title="Unique identifier for config entry">
-        ID: <%= @config[:id] %>
-      </span>
-      &nbsp;&nbsp;&nbsp;
-      <span title="Name / description for configuration">
-        Config name: <%= text_field_tag(:config_name, @config[:name], :name=>'config[name]', size: 80) %>
-      </span>
-    </div>
-    <br/>
-    <div class="fieldset_input_outer">
-      <fieldset class="fieldset_input">
-        <legend>Database connect info</legend>
-        <table>
-          <tr>
-            <td>DB identification mode</td>
-            <td align="center">
-              <div title="Select mode for identification of database">
-                <%= radio_button_tag(:config_modus, :tns,  true,  {:name=>'config[modus]', :onclick => "jQuery('.edit_config_tns').css('display', '');     jQuery('.edit_config_host').css('display', 'none');" }) %>TNS-Names
-                <%= radio_button_tag(:config_modus, :host, false, {:name=>'config[modus]', :onclick => "jQuery('.edit_config_tns').css('display', 'none'); jQuery('.edit_config_host').css('display', '');" }) %>Host, Port, SID/Service-Name
-              </div>
-            </td>
-          </tr>
 
-          <tr class="edit_config_tns">
-            <td title="<%= t :login_tns_hint, :default=>"Choose Oracle TNS-Alias (from tnsnames.ora at server side)" %>">TNS-Alias</td>
-            <% @tnsnames = read_tnsnames %>
-            <td align="center">
-              <div title="<%= t(:login_tns_hint, :default=>"Choose Oracle TNS-Alias (from tnsnames.ora at server side)") %>">
-                <div id="config_tns"></div> <!-- Befuellung geschieht durch Ajax-Call auf env/get_tnsnames_records -->
-              </div>
-            </td>
-          </tr>
+    <div id="sampler_config_tab_container" style="display: inline-block;" class="tab-container">
+      <ul class="etabs">
+        <li class="tab"><a href="#tab-database-config">Database connect info</a></li>
+        <li class="tab"><a href="#tab-awr-ash">AWR and ASH</a></li>
+        <li class="tab"><a href="#tab-object-size-history">Object size history</a></li>
+        <li class="tab"><a href="#tab-db-cache-history">DB-cache history</a></li>
+        <li class="tab"><a href="#tab-blocking-locks-history">Blocking locks history</a></li>
+      </ul>
+      <div class="panel-container">
+        <div id="tab-database-config">
+          <div>
+            <table width="100%">
+              <tr title="Unique identifier for config entry">
+                <td>ID</td><td align="center"><%= @config[:id] %></td>
+              </tr>
 
-          <tr class="edit_config_host" style="display: none">
-            <td title="Host-name. Übersteuert TNS-Alias wenn belegt">Host</td>
-            <td align="center"><%= text_field_tag(:config_host, @config[:host], :name=>'config[host]', :style=>"width:95%;", :title=>t(:login_database_host_hint, :default=>"hostname or IP adress") ) %></td>
-          </tr>
+              <tr>
+                <td>Config name</td><td align="center" title="Name / description for configuration"><%= text_field_tag(:config_name, @config[:name], :name=>'config[name]', :style=>"width:95%;",) %></td>
+              </tr>
 
-          <tr class="edit_config_host" style="display: none">
-            <td>Port</td>
-            <td align="center"><%= text_field_tag(:config_port, @config[:port], :name=>'config[port]', :style=>"width:95%;", :title=>"Port-Nummer" ) %></td>
-          </tr>
+              <tr>
+                <td>DB identification mode</td>
+                <td align="center">
+                  <div title="Select mode for identification of database">
+                    <%= radio_button_tag(:config_modus, :tns,  true,  {:name=>'config[modus]', :onclick => "jQuery('.edit_config_tns').css('display', '');     jQuery('.edit_config_host').css('display', 'none');" }) %>TNS-Names
+                    <%= radio_button_tag(:config_modus, :host, false, {:name=>'config[modus]', :onclick => "jQuery('.edit_config_tns').css('display', 'none'); jQuery('.edit_config_host').css('display', '');" }) %>Host, Port, SID/Service-Name
+                  </div>
+                </td>
+              </tr>
 
-          <tr class="edit_config_host" style="display: none">
-            <td>SID/Service</td>
-            <td align="center">
-              <div title="<%= t(:login_sid_service_title, :default=>"Interpret value as SID or Service-Name?") %>">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
-                <%= radio_button_tag('config_sid_usage', :SID,          true,  {:name=>'config[sid_usage]'}) %>SID
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <%= radio_button_tag('config_sid_usage', :SERVICE_NAME, false, {:name=>'config[sid_usage]'}) %>Service-Name
-              </div>
-              <div style="padding-top: 5px;">
-                <%= text_field_tag(:config_sid, @config[:sid], :name=>'config[sid]', :style=>"width:95%;", :title=>t(:login_database_sid_hint, :default=>"SID or service name of database")) %>
-              </div>
-            </td>
-          </tr>
+              <tr class="edit_config_tns">
+                <td title="<%= t :login_tns_hint, :default=>"Choose Oracle TNS-Alias (from tnsnames.ora at server side)" %>">TNS-Alias</td>
+                <% @tnsnames = read_tnsnames %>
+                <td align="center">
+                  <div title="<%= t(:login_tns_hint, :default=>"Choose Oracle TNS-Alias (from tnsnames.ora at server side)") %>">
+                    <div id="config_tns"></div> <!-- Befuellung geschieht durch Ajax-Call auf env/get_tnsnames_records -->
+                  </div>
+                </td>
+              </tr>
 
-          <tr>
-            <td>Username</td>
-            <td align="center"><%= text_field_tag(:config_user, @config[:user], :name=>'config[user]', :style=>"width:95%;", :title=>"Name of user to connect to database for workload recording") %></td>
-          </tr>
+              <tr class="edit_config_host" style="display: none">
+                <td title="Host-name. Übersteuert TNS-Alias wenn belegt">Host</td>
+                <td align="center"><%= text_field_tag(:config_host, @config[:host], :name=>'config[host]', :style=>"width:95%;", :title=>t(:login_database_host_hint, :default=>"hostname or IP adress") ) %></td>
+              </tr>
 
-          <tr>
-            <td>Password</td>
-            <td align="center"><%= password_field_tag(:config_password, @config[:password], :name=>'config[password]', :style=>"width:95%;", :title=>"Password of user to store Panorama's tables for workload recording.\nPassword is changed only if new password entered here.\nLeave empty to preserve existing password.") %></td>
-          </tr>
+              <tr class="edit_config_host" style="display: none">
+                <td>Port</td>
+                <td align="center"><%= text_field_tag(:config_port, @config[:port], :name=>'config[port]', :style=>"width:95%;", :title=>"Port-Nummer" ) %></td>
+              </tr>
 
-          <tr>
-            <td>Schema owner</td>
-            <td align="center"><%= text_field_tag(:config_owner, @config[:owner], :name=>'config[owner]', :style=>"width:95%;", :title=>"Name of user/schema to store Panorama's tables for workload recording.\nConnection user must have rights to create objects in this schema.\nNeed to define only if different from connection username.") %></td>
-          </tr>
-        </table>
-      </fieldset>
-    </div>
+              <tr class="edit_config_host" style="display: none">
+                <td>SID/Service</td>
+                <td align="center">
+                  <div title="<%= t(:login_sid_service_title, :default=>"Interpret value as SID or Service-Name?") %>">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
+                    <%= radio_button_tag('config_sid_usage', :SID,          true,  {:name=>'config[sid_usage]'}) %>SID
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <%= radio_button_tag('config_sid_usage', :SERVICE_NAME, false, {:name=>'config[sid_usage]'}) %>Service-Name
+                  </div>
+                  <div style="padding-top: 5px;">
+                    <%= text_field_tag(:config_sid, @config[:sid], :name=>'config[sid]', :style=>"width:95%;", :title=>t(:login_database_sid_hint, :default=>"SID or service name of database")) %>
+                  </div>
+                </td>
+              </tr>
 
-    <div class="fieldset_input_outer">
-      <fieldset class="fieldset_input">
-        <legend>Counterpart to AWR and ASH</legend>
-        <table>
-          <tr title="Enable or disable sampling of Panorama's counterparts for Active Workload Repository (AWR) and Active Session History (ASH).
+              <tr>
+                <td>Username</td>
+                <td align="center"><%= text_field_tag(:config_user, @config[:user], :name=>'config[user]', :style=>"width:95%;", :title=>"Name of user to connect to database for workload recording") %></td>
+              </tr>
+
+              <tr>
+                <td>Password</td>
+                <td align="center"><%= password_field_tag(:config_password, @config[:password], :name=>'config[password]', :style=>"width:95%;", :title=>"Password of user to store Panorama's tables for workload recording.\nPassword is changed only if new password entered here.\nLeave empty to preserve existing password.") %></td>
+              </tr>
+
+              <tr>
+                <td>Schema owner</td>
+                <td align="center"><%= text_field_tag(:config_owner, @config[:owner], :name=>'config[owner]', :style=>"width:95%;", :title=>"Name of user/schema to store Panorama's tables for workload recording.\nConnection user must have rights to create objects in this schema.\nNeed to define only if different from connection username.") %></td>
+              </tr>
+            </table>
+
+          </div>
+        </div>
+
+        <div id="tab-awr-ash">
+          <table width="100%">
+            <tr title="Enable or disable sampling of Panorama's counterparts for Active Workload Repository (AWR) and Active Session History (ASH).
           Disabling Panorama's AWR and ASH sampling allows you to use only the other sampling functions of Panorama if you already have Diagnostics Pack running">
-            <td>Sample AWR and ASH</td>
-            <td align="center"><%= check_box_tag(:config_awr_ash_active, 1, @config[:awr_ash_active], :name=>'config[awr_ash_active]') %></td>
-          </tr>
-          <tr>
-            <td>Snapshot cycle (minutes)</td>
-            <td align="center"><%= text_field_tag(:config_awr_ash_snapshot_cycle, @config[:awr_ash_snapshot_cycle], :name=>'config[awr_ash_snapshot_cycle]', size: 20, :style => "text-align: right;", :title=>'Delay between snapshots in minutes') %></td>
-          </tr>
+              <td>Sample AWR and ASH</td>
+              <td align="center"><%= check_box_tag(:config_awr_ash_active, 1, @config[:awr_ash_active], :name=>'config[awr_ash_active]') %></td>
+            </tr>
+            <tr>
+              <td>Snapshot cycle (minutes)</td>
+              <td align="center"><%= text_field_tag(:config_awr_ash_snapshot_cycle, @config[:awr_ash_snapshot_cycle], :name=>'config[awr_ash_snapshot_cycle]', size: 20, :style => "text-align: right;", :title=>'Delay between snapshots in minutes') %></td>
+            </tr>
 
-          <tr>
-            <td>Snapshot retention (days)</td>
-            <td align="center"><%= text_field_tag(:config_awr_ash_snapshot_retention, @config[:awr_ash_snapshot_retention], :name=>'config[awr_ash_snapshot_retention]', size: 20, :style => "text-align: right;", :title=>'Retention time for snapshot data in days before deletion') %></td>
-          </tr>
+            <tr>
+              <td>Snapshot retention (days)</td>
+              <td align="center"><%= text_field_tag(:config_awr_ash_snapshot_retention, @config[:awr_ash_snapshot_retention], :name=>'config[awr_ash_snapshot_retention]', size: 20, :style => "text-align: right;", :title=>'Retention time for snapshot data in days before deletion') %></td>
+            </tr>
 
-          <tr title="or-combined limits for SQLs within snapshot cycle to be recorded by Panorama-Sampler">
-            <td>Limits for SQL-history</td>
-            <td align="center">
-              <% one_of_both_text = "One of both conditions must be fulfilled for SQL to be recorded in snahpshot." %>
-              Min. executions
-              <%= text_field_tag(:sql_min_no_of_execs,  @config[:sql_min_no_of_execs],  :name=>'config[sql_min_no_of_execs]', size: 4,  :style => "text-align: right;", :title=>"Minimum number of SQL executions in snapshot cycle to be recorded by Panorama-Sampler\n#{one_of_both_text}") %>
-              &nbsp;Min. runtime
-              <%= text_field_tag(:sql_min_runtime_millisecs, @config[:sql_min_runtime_millisecs], :name=>'config[sql_min_runtime_millisecs]', size: 6, :style => "text-align: right;", :title=>"Minimum number of SQL runtime (milliseconds) in snapshot cycle to be recorded by Panorama-Sampler\n#{one_of_both_text}") %>
-            </td>
-          </tr>
-        </table>
-      </fieldset>
+            <tr title="or-combined limits for SQLs within snapshot cycle to be recorded by Panorama-Sampler">
+              <td>Limits for SQL-history</td>
+              <td align="center">
+                <% one_of_both_text = "One of both conditions must be fulfilled for SQL to be recorded in snahpshot." %>
+                Min. executions
+                <%= text_field_tag(:sql_min_no_of_execs,  @config[:sql_min_no_of_execs],  :name=>'config[sql_min_no_of_execs]', size: 4,  :style => "text-align: right;", :title=>"Minimum number of SQL executions in snapshot cycle to be recorded by Panorama-Sampler\n#{one_of_both_text}") %>
+                &nbsp;Min. runtime
+                <%= text_field_tag(:sql_min_runtime_millisecs, @config[:sql_min_runtime_millisecs], :name=>'config[sql_min_runtime_millisecs]', size: 6, :style => "text-align: right;", :title=>"Minimum number of SQL runtime (milliseconds) in snapshot cycle to be recorded by Panorama-Sampler\n#{one_of_both_text}") %>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <div id="tab-object-size-history">
+          <table width="100%">
+            <tr title="Enable or disable sampling of tablespace-object sizes (tables, indexes, partitions).">
+              <td>Sample object sizes</td>
+              <td align="center"><%= check_box_tag(:config_object_size_active, 1, @config[:object_size_active], :name=>'config[object_size_active]') %></td>
+            </tr>
+            <tr>
+              <td>Snapshot cycle (hours)</td>
+              <td align="center"><%= text_field_tag(:config_object_size_snapshot_cycle, @config[:object_size_snapshot_cycle], :name=>'config[object_size_snapshot_cycle]', size: 6, :style => "text-align: right;", :title=>'Delay between snapshots of object sizes in hours') %></td>
+            </tr>
+
+            <tr>
+              <td>Snapshot retention (days)</td>
+              <td align="center"><%= text_field_tag(:config_object_size_snapshot_retention, @config[:object_size_snapshot_retention], :name=>'config[object_size_snapshot_retention]', size: 6, :style => "text-align: right;", :title=>'Retention time for object size snapshot data in days before deletion') %></td>
+            </tr>
+
+          </table>
+        </div>
+
+        <div id="tab-db-cache-history">
+          <table width="100%">
+            <tr title="Enable or disable sampling of DB-cache contents per object (tables, indexes, partitions).">
+              <td>Sample DB-cache objects</td>
+              <td align="center"><%= check_box_tag(:config_cache_objects_active, 1, @config[:cache_objects_active], :name=>'config[cache_objects_active]') %></td>
+            </tr>
+            <tr>
+              <td>Snapshot cycle (minutes)</td>
+              <td align="center"><%= text_field_tag(:config_cache_objects_snapshot_cycle, @config[:cache_objects_snapshot_cycle], :name=>'config[cache_objects_snapshot_cycle]', size: 6, :style => "text-align: right;", :title=>'Delay between snapshots of cache objects in minutes') %></td>
+            </tr>
+
+            <tr>
+              <td>Snapshot retention (days)</td>
+              <td align="center"><%= text_field_tag(:config_cache_objects_snapshot_retention, @config[:cache_objects_snapshot_retention], :name=>'config[cache_objects_snapshot_retention]', size: 6, :style => "text-align: right;", :title=>'Retention time for cache objects snapshot data in days before deletion') %></td>
+            </tr>
+
+          </table>
+        </div>
+
+        <div id="tab-blocking-locks-history">
+          <table width="100%">
+            <tr title="Enable or disable sampling of blocking lock situations.">
+              <td>Sample blocking locks</td>
+              <td align="center"><%= check_box_tag(:config_blocking_locks_active, 1, @config[:blocking_locks_active], :name=>'config[blocking_locks_active]') %></td>
+            </tr>
+            <tr>
+              <td>Snapshot cycle (minutes)</td>
+              <td align="center"><%= text_field_tag(:config_blocking_locks_snapshot_cycle, @config[:blocking_locks_snapshot_cycle], :name=>'config[blocking_locks_snapshot_cycle]', size: 6, :style => "text-align: right;", :title=>'Delay between snapshots of blocking locks in minutes') %></td>
+            </tr>
+            <tr>
+              <td>Snapshot retention (days)</td>
+              <td align="center"><%= text_field_tag(:config_blocking_locks_snapshot_retention, @config[:blocking_locks_snapshot_retention], :name=>'config[blocking_locks_snapshot_retention]', size: 6, :style => "text-align: right;", :title=>'Retention time for blocking locks snapshot data in days before deletion') %></td>
+            </tr>
+            <tr>
+              <td>Limit for long locks (seconds)</td>
+              <td align="center"><%= text_field_tag(:config_blocking_locks_long_locks_limit, @config[:blocking_locks_long_locks_limit], :name=>'config[blocking_locks_long_locks_limit]', size: 6, :style => "text-align: right;", :title=>"Limit for long lasting DB-locks.\nLocks lasting longer than his limit are also recorded even if they are not blocking other transactions") %></td>
+            </tr>
+          </table>
+        </div>
+
+      </div>
+
+
     </div>
-
-    <div class="fieldset_input_outer">
-      <fieldset class="fieldset_input">
-        <legend>Object size history</legend>
-        <table>
-          <tr title="Enable or disable sampling of tablespace-object sizes (tables, indexes, partitions).">
-            <td>Sample object sizes</td>
-            <td align="center"><%= check_box_tag(:config_object_size_active, 1, @config[:object_size_active], :name=>'config[object_size_active]') %></td>
-          </tr>
-          <tr>
-            <td>Snapshot cycle (hours)</td>
-            <td align="center"><%= text_field_tag(:config_object_size_snapshot_cycle, @config[:object_size_snapshot_cycle], :name=>'config[object_size_snapshot_cycle]', size: 6, :style => "text-align: right;", :title=>'Delay between snapshots of object sizes in hours') %></td>
-          </tr>
-
-          <tr>
-            <td>Snapshot retention (days)</td>
-            <td align="center"><%= text_field_tag(:config_object_size_snapshot_retention, @config[:object_size_snapshot_retention], :name=>'config[object_size_snapshot_retention]', size: 6, :style => "text-align: right;", :title=>'Retention time for object size snapshot data in days before deletion') %></td>
-          </tr>
-
-        </table>
-      </fieldset>
-    </div>
-
-    <div class="fieldset_input_outer">
-      <fieldset class="fieldset_input">
-        <legend>DB-cache history</legend>
-        <table>
-          <tr title="Enable or disable sampling of DB-cache contents per object (tables, indexes, partitions).">
-            <td>Sample DB-cache objects</td>
-            <td align="center"><%= check_box_tag(:config_cache_objects_active, 1, @config[:cache_objects_active], :name=>'config[cache_objects_active]') %></td>
-          </tr>
-          <tr>
-            <td>Snapshot cycle (minutes)</td>
-            <td align="center"><%= text_field_tag(:config_cache_objects_snapshot_cycle, @config[:cache_objects_snapshot_cycle], :name=>'config[cache_objects_snapshot_cycle]', size: 6, :style => "text-align: right;", :title=>'Delay between snapshots of cache objects in minutes') %></td>
-          </tr>
-
-          <tr>
-            <td>Snapshot retention (days)</td>
-            <td align="center"><%= text_field_tag(:config_cache_objects_snapshot_retention, @config[:cache_objects_snapshot_retention], :name=>'config[cache_objects_snapshot_retention]', size: 6, :style => "text-align: right;", :title=>'Retention time for cache objects snapshot data in days before deletion') %></td>
-          </tr>
-
-        </table>
-      </fieldset>
-    </div>
-
-    <div class="fieldset_input_outer">
-      <fieldset class="fieldset_input">
-        <legend>Blocking locks history</legend>
-        <table>
-          <tr title="Enable or disable sampling of blocking lock situations.">
-            <td>Sample blocking locks</td>
-            <td align="center"><%= check_box_tag(:config_blocking_locks_active, 1, @config[:blocking_locks_active], :name=>'config[blocking_locks_active]') %></td>
-          </tr>
-          <tr>
-            <td>Snapshot cycle (minutes)</td>
-            <td align="center"><%= text_field_tag(:config_blocking_locks_snapshot_cycle, @config[:blocking_locks_snapshot_cycle], :name=>'config[blocking_locks_snapshot_cycle]', size: 6, :style => "text-align: right;", :title=>'Delay between snapshots of blocking locks in minutes') %></td>
-          </tr>
-          <tr>
-            <td>Snapshot retention (days)</td>
-            <td align="center"><%= text_field_tag(:config_blocking_locks_snapshot_retention, @config[:blocking_locks_snapshot_retention], :name=>'config[blocking_locks_snapshot_retention]', size: 6, :style => "text-align: right;", :title=>'Retention time for blocking locks snapshot data in days before deletion') %></td>
-          </tr>
-          <tr>
-            <td>Limit for long locks (seconds)</td>
-            <td align="center"><%= text_field_tag(:config_blocking_locks_long_locks_limit, @config[:blocking_locks_long_locks_limit], :name=>'config[blocking_locks_long_locks_limit]', size: 6, :style => "text-align: right;", :title=>"Limit for long lasting DB-locks.\nLocks lasting longer than his limit are also recorded even if they are not blocking other transactions") %></td>
-          </tr>
-        </table>
-      </fieldset>
-    </div>
+    <script type="text/javascript">
+        $( function() {
+            $( "#sampler_config_tab_container" ).easytabs();
+        } );
+    </script>
 
     <br/>
     <%= submit_tag('Test connection', :title =>"Test connection to configured database and save configuration if successful" ) %>
