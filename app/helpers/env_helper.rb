@@ -131,6 +131,7 @@ module EnvHelper
     tnsnames = {}
 
     fullstring = IO.read(file_name)
+    fullstring.encode!(fullstring.encoding, :universal_newline => true)         # Ensure that Windows-Linefeeds 0D0A are replaced by 0A
 
     # Test for IFILE insertions
     fullstring_ifile = fullstring.clone                                         # local copy
