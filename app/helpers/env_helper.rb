@@ -147,7 +147,7 @@ module EnvHelper
       if start_pos_ifile.nil?
         ifile_name = fullstring_ifile[0, 1000000]
       else
-        ifile_name = fullstring_ifile[0, start_pos_ifile-1]
+        ifile_name = fullstring_ifile[0, start_pos_ifile]
       end
 
       tnsnames.merge!(read_tnsnames_internal(ifile_name))
