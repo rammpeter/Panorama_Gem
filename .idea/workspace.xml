@@ -7,11 +7,9 @@
     <bookmark url="file://$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb" line="66" mnemonic="7" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="Bugfix pending sessions in Sampler">
+    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/panorama_connection.rb" afterPath="$PROJECT_DIR$/app/models/panorama_connection.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/models/worker_thread.rb" afterPath="$PROJECT_DIR$/app/models/worker_thread.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/usage/connection_pool.html.erb" afterPath="$PROJECT_DIR$/app/views/usage/connection_pool.html.erb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -184,7 +182,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="connection_pool.html.erb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="connection_pool.html.erb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/views/usage/connection_pool.html.erb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="315">
@@ -194,7 +192,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="60">
@@ -317,11 +315,11 @@
         <option value="$PROJECT_DIR$/app/views/help/help_env_set_database.en.html" />
         <option value="$PROJECT_DIR$/app/helpers/menu_helper.rb" />
         <option value="$PROJECT_DIR$/app/controllers/help_controller.rb" />
-        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/app/models/worker_thread.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_connection.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" />
         <option value="$PROJECT_DIR$/app/views/usage/connection_pool.html.erb" />
+        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
       </list>
     </option>
   </component>
@@ -1184,14 +1182,7 @@
       <workItem from="1509609283695" duration="11422000" />
       <workItem from="1509630186916" duration="18107000" />
       <workItem from="1509779885549" duration="40206000" />
-      <workItem from="1510211930899" duration="43964000" />
-    </task>
-    <task id="LOCAL-01100" summary="v$SYSAUX_Occupants added">
-      <created>1505584444393</created>
-      <option name="number" value="01100" />
-      <option name="presentableId" value="LOCAL-01100" />
-      <option name="project" value="LOCAL" />
-      <updated>1505584444393</updated>
+      <workItem from="1510211930899" duration="44032000" />
     </task>
     <task id="LOCAL-01101" summary="Redologs filter">
       <created>1505584932203</created>
@@ -1529,7 +1520,14 @@
       <option name="project" value="LOCAL" />
       <updated>1510666325710</updated>
     </task>
-    <option name="localTasksCounter" value="1149" />
+    <task id="LOCAL-01149" summary="Pending Sessions: not a bug, it's a feature">
+      <created>1510678523817</created>
+      <option name="number" value="01149" />
+      <option name="presentableId" value="LOCAL-01149" />
+      <option name="project" value="LOCAL" />
+      <updated>1510678523817</updated>
+    </task>
+    <option name="localTasksCounter" value="1150" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1565,7 +1563,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2397597000" />
+    <option name="totallyTimeSpent" value="2397665000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1621,7 +1619,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Foreign key usage" />
     <MESSAGE value="Object-sizes sampling" />
     <MESSAGE value="Object-sizes sampling, Show real differences and new/deleted objects" />
     <MESSAGE value="Prepare addition tests" />
@@ -1646,7 +1643,8 @@
     <MESSAGE value="Bugfix last char of IFILE" />
     <MESSAGE value="usage/connection_pool added" />
     <MESSAGE value="Bugfix pending sessions in Sampler" />
-    <option name="LAST_COMMIT_MESSAGE" value="Bugfix pending sessions in Sampler" />
+    <MESSAGE value="Pending Sessions: not a bug, it's a feature" />
+    <option name="LAST_COMMIT_MESSAGE" value="Pending Sessions: not a bug, it's a feature" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2116,14 +2114,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="884">
@@ -2168,6 +2158,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="315">
           <caret line="21" column="144" lean-forward="false" selection-start-line="21" selection-start-column="144" selection-end-line="21" selection-end-column="144" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
           <folding />
         </state>
       </provider>
