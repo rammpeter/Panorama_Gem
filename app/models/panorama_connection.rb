@@ -322,9 +322,11 @@ class PanoramaConnection
     management_pack_license = Thread.current[:panorama_connection_connect_info][:management_pack_license]
     transformed_sql = PackLicense.filter_sql_for_pack_license(sql, management_pack_license)  # Check for lincense violation and possible statement transformation
     stmt, binds = sql_prepare_binds(transformed_sql)   # Transform SQL and split SQL and binds
-    # TODO: query_timeout berücksichtigen
-    #SqlSelectIterator.new(translate_sql(stmt), binds, modifier, Thread.current[:panorama_connection_connect_info][:query_timeout], query_name)      # kann per Aufruf von each die einzelnen Records liefern
+    # Without query_timeout because long lasting ASH sampling is executed with this method
+    Thread.current[:panorama_connection_connection_object].register_sql_execution(stmt)
     get_connection.exec_update(stmt, query_name, binds)
+  ensure
+    Thread.current[:panorama_connection_connection_object].unregister_sql_execution
   end
 
 

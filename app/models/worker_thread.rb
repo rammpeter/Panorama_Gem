@@ -193,7 +193,6 @@ class WorkerThread
     raise e
   ensure
     @@active_snapshots.delete(snapshot_semaphore_key)                           # Remove semaphore
-Rails.logger.info "Release_Connection for create_snapshot_internal"
     PanoramaConnection.release_connection                                       # Free DB connection in Pool
   end
 

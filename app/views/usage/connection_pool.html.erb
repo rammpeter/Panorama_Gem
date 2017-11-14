@@ -10,7 +10,7 @@
   column_options =
       [
 
-          {:caption=>'Used in thread', :data=>proc{|rec| rec.used_in_thread ? 'Y' : ''},          :title=>"Is connection currently used in active thread of Panorama server"},
+          {:caption=>'Used in thread', :data=>proc{|rec| rec.used_in_thread ? 'Y' : ''},          :title=>"Is connection currently used in active thread / active request processing at Panorama server"},
           {:caption=>'URL',            :data=>proc{|rec| rec.get_config[:url]},                   :title=>"Connection URL"},
           {:caption=>'Username',       :data=>proc{|rec| rec.get_config[:username]},              :title=>"Username of connection"},
           {:caption=>'DB name',        :data=>proc{|rec| rec.database_name},                      :title=>"Internal DB name"},
