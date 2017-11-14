@@ -218,8 +218,9 @@ Especially this is true for generated dynamic SQL statements (e.g. from OR-mappe
             :name  => t(:dragnet_helper_110_name, :default=>'Concurrency on memory, latches: insufficient cached sequences'),
             :desc  => t(:dragnet_helper_110_desc, :default=>'Fetching of sequence values / filling the sequence cache causes writes in dictionary and interchange between REC-instances.
                           Highly frequent access on dictionary structures of sequences leads to unnecessary wait events, therefore you should define reasonable cache sizes for sequences.'),
-            :sql=>  "SELECT /* DB-Tools Ramm insufficent cached sequences */ *
-                      FROM   DBA_Sequences
+            :sql=>  "SELECT /* DB-Tools Ramm insufficent cached sequences */ s.*,
+                             ROUND(s.Last_Number*100/s.Max_Value, 1) \"% of max. value reached\"
+                      FROM   DBA_Sequences s
                       WHERE  Sequence_Owner NOT IN ('SYS', 'SYSTEM')
                       ORDER  By Last_Number/DECODE(Cache_Size,0,1,Cache_Size) DESC NULLS LAST",
         },

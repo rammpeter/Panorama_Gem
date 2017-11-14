@@ -1,0 +1,43 @@
+<html>
+<head>
+  <title>Panorama : Usage statistics</title>
+  <%= stylesheet_link_tag "application", media: "all" %>
+  <%= javascript_include_tag "application" %>
+
+  <%= csrf_meta_tags %>
+
+  <script type="text/javascript">
+      /* Initialisierung von Objekten bei startup der Seite */
+      bind_ajax_callbacks();                                                  // Callbacks für jeden Ajax-Aufruf binden
+
+      register_tooltip(jQuery(document));                                     // Jquery-UI Tooltips verwenden
+
+      // Ueberladen der Funktionen aus application.js
+      function showIndicator(url) {
+          jQuery("#indicator").show();
+      }
+
+      function hideIndicator(url) {
+          jQuery("#indicator").hide();
+      }
+
+
+  </script>
+</head>
+<body style="background-color: #ccccff;
+    color: #333;
+    font-family: sans-serif;
+    margin: 0;
+    padding:  5px;
+" onload="hideIndicator();">
+<div class="usage_help_head_block">
+  <h2 style="margin: 10px; padding: 15px;">
+    <div style="float:left;">Panorama : usage statistics</div>
+  </h2>
+  <div id="indicator" style="position: absolute;right: 10px; top: 30px;">
+    <img src="../assets/ajax-loader.gif">
+  </div>
+</div>
+<%= yield %>
+</body>
+</html>

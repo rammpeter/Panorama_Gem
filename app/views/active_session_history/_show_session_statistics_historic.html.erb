@@ -26,7 +26,16 @@
       </select>
   </div>
 
-  <div class="float_left" title="optional additional Filter on username, session-ID, module, action, DB-object, program or machine (like-comparison and case ignored)">
+  <div class="float_left" title="optional additional Filter on all of the following columns:
+- username
+- session-ID
+- module
+- action
+- DB-object
+- program
+- machine
+- plan hash value
+LIKE-comparison with wildcards (%, ?) and case ignored">
     Filter
     <%= text_field_tag(:filter, "", :size=>20) %>
   </div>

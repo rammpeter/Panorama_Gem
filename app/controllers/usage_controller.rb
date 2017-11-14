@@ -2,14 +2,20 @@
 require_relative '../../config/engine_config'
 
 class UsageController < ApplicationController
-  layout false        # Aufruf der Seite ohne Layout
+  layout "usage_layout"
 
   def info
     fill_usage_info
   end
 
   def fill_usage_info
-    file = File.open(EngineConfig.config.usage_info_filename, "r")
+    begin
+      file = File.open(EngineConfig.config.usage_info_filename, "r")
+    rescue Exception => e
+      Rails.logger.error "Error opening file #{EngineConfig.config.usage_info_filename}: #{e.message}. PWD = #{Dir.pwd}"
+      raise
+    end
+
     months = {}
     begin
       while true do
@@ -49,7 +55,6 @@ class UsageController < ApplicationController
       value.extend SelectHashHelper
       @usage << value
     end
-
   end
 
   def detail_sum
@@ -170,6 +175,10 @@ class UsageController < ApplicationController
     respond_to do |format|
       format.html {render :html => output}
     end
+  end
+
+  def connection_pool
+
   end
 
 end

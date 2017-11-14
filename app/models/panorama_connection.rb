@@ -113,6 +113,7 @@ class PanoramaConnection
   attr_reader :database_name
   attr_reader :edition
   attr_reader :password_hash
+  attr_reader :sql_stmt_in_execution
 
   # Array of PanoramaConnaction instances, elements consists of:
   #   @jdbc_connection
@@ -190,6 +191,14 @@ class PanoramaConnection
       end
       Thread.current[:panorama_connection_connection_object] = nil
     end
+  end
+
+  def self.get_connection_pool                                                  # get pool info, for read access only
+    @@connection_pool
+  end
+
+  def get_config
+    @jdbc_connection.instance_variable_get(:@config)
   end
 
   def self.instance_number;   check_for_open_connection; Thread.current[:panorama_connection_connection_object].instance_number;   end
@@ -327,6 +336,14 @@ class PanoramaConnection
   def self.get_config
     raise "PanoramaConnection.get_config: Thread.current[:panorama_connection_connect_info] = nil" if Thread.current[:panorama_connection_connect_info].nil?
     Thread.current[:panorama_connection_connect_info]
+  end
+
+  def register_sql_execution(stmt)
+    @sql_stmt_in_execution = stmt
+  end
+
+  def unregister_sql_execution
+    @sql_stmt_in_execution = nil
   end
 
   private
@@ -514,6 +531,7 @@ class PanoramaConnection
 
     def each(&block)
       # Execute SQL and call block for every record of result
+      Thread.current[:panorama_connection_connection_object].register_sql_execution(@stmt)    # Allows to show SQL in usage/connection_pool
       Thread.current[:panorama_connection_connection_object].jdbc_connection.iterate_query(@stmt, @query_name, @binds, @modifier, @query_timeout, &block)
     rescue Exception => e
       bind_text = ''
@@ -525,6 +543,8 @@ class PanoramaConnection
       new_ex = Exception.new("Error while executing SQL:\n#{e.message}\nSQL-Statement:\n#{@stmt}\n#{bind_text.length > 0 ? "Bind-Values:\n#{bind_text}" : ''}")
       new_ex.set_backtrace(e.backtrace)
       raise new_ex
+    ensure
+      Thread.current[:panorama_connection_connection_object].unregister_sql_execution   # free current SQL info for usage/connection_pool
     end
 
   end
