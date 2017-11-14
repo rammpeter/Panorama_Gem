@@ -144,7 +144,7 @@ class PanoramaSamplerSampling
 
   def do_object_size_sampling(snapshot_time)
     PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config[:owner]}.Panorama_Object_Sizes (Owner, Segment_Name, Segment_Type, Tablespace_Name, Gather_Date, Bytes)
-                                     SELECT Owner, Segment_Name, Segment_Type, Tablespace_Name, TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS'), SUM(Bytes)
+                                     SELECT Owner, Segment_Name, Segment_Type, Tablespace_Name, TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS'), NVL(SUM(Bytes), 0)
                                      FROM   DBA_Segments
                                      WHERE  Segment_Type NOT IN ('TYPE2 UNDO', 'TEMPORARY')
                                      GROUP BY Owner, Segment_Name, Segment_Type, Tablespace_Name

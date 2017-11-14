@@ -115,7 +115,7 @@ class PanoramaConnection
   attr_reader :password_hash
   attr_reader :sql_stmt_in_execution
 
-  # Array of PanoramaConnaction instances, elements consists of:
+  # Array of PanoramaConnection instances, elements consists of:
   #   @jdbc_connection
   #   @used_in_thread
   #   @last_used_time
