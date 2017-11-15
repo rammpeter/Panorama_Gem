@@ -1,11 +1,8 @@
 <%
    @update_area = get_unique_area_id
 
- def link_session(rec)
-   link_session_details(@update_area, rec.inst_id, rec.sid, rec.serialno)
- end
 
- def link_QC_session(rec)
+ link_QC_session = proc do |rec|
     ajax_link(rec.qcinst_id ? "#{rec.qcinst_id}:#{rec.qcsid},#{rec.qcserialno}" : "", {
               :action => :show_session_detail,
               :instance => rec.qcinst_id,
@@ -23,11 +20,11 @@
 
   column_options.concat(
   [
-    {:caption=>"SID/SN",           :data=>proc{|rec| link_session(rec)},              :title=>'SID, SerialNo'},
+    {:caption=>"SID/SN",           :data=>proc{|rec| link_session_details(@update_area, rec.inst_id, rec.sid, rec.serialno)},              :title=>'SID, SerialNo'},
     {:caption=>"Status",           :data=>proc{|rec| rec.status},                     :title=>"Session-Status"},
     {:caption=>"SQL_ID",           :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.sql_id, rec.sql_child_number)},                     :title=>"Current SQL-ID of session"},
     {:caption=>"Wait event",       :data=>proc{|rec| rec.wait_event},                 :title=>'Wait-Event', :data_title=>proc{|rec| explain_wait_event(rec.wait_event)} },
-    {:caption=>"W",                :data=>proc{|rec| fn(rec.seconds_in_wait)},        :title=>'Wait time in current event in seconds', :align=>:right},
+    {:caption=>"Wait time",        :data=>proc{|rec| fn(rec.seconds_waiting, 1)},     :title=>'Wait time in current event in seconds', data_title: proc{|rec| "%t\nWait_time = #{fn(rec.seconds_waiting*1000, 3)} ms"}, :align=>:right},
     {:caption=>"User",             :data=>proc{|rec| rec.username},                   :title=>"Oracle-Username"},
     {:caption=>"Proc",             :data=>proc{|rec| rec.spid},                       :title=>t(:dba_list_sessions_proc_hint, :default=>'Process-ID of Oracle shadow process on DB-server')},
     {:caption=>"Machine",          :data=>proc{|rec| link_machine_ip_info(@update_area, rec.machine)}, :title=>t(:dba_list_sessions_machine_hint, :default=>'Name of client machine')},
@@ -45,7 +42,7 @@
     {:caption=>"Open Cursor",      :data=>proc{|rec| fn(rec.open_cursor)},            :title=>t(:dba_list_sessions_open_cursor_hint, :default=>'Number of open cursor for session'), :align=>"right"},
     {:caption=>"OC SQL",           :data=>proc{|rec| fn(rec.open_cursor_sql)},        :title=>t(:dba_list_sessions_open_cursor_sql_hint, :default=>'Number of different SQL-IDs for open cursor of session'), :align=>"right"},
     {:caption=>"P Q",              :data=>proc{|rec| fn(rec.pqcount)},                :title=>t(:dba_list_sessions_pq_hint, :default=>'Number of parallel uqery slave processes'), :align=>"right"},
-    {:caption=>"Q C",              :data=>proc{|rec| link_QC_session(rec)},           :title=>"Parallel query coordinator session (Instance:SID,SerialNo)"},
+    {:caption=>"Q C",              :data=>link_QC_session,                            :title=>"Parallel query coordinator session (Instance:SID,SerialNo)"},
     {:caption=>"PGA Used",         :data=>proc{|rec| fn((rec.pga_used_mem/1048576.0 rescue 0), 3)},   :title=>t(:dba_list_sessions_pga_used_hint, :default=>'Currently used PGA-memory in MBytes'), :align=>"right"},
     {:caption=>"PGA Alloc.",       :data=>proc{|rec| fn((rec.pga_alloc_mem/1048576.0 rescue 0), 3)},   :title=>"PGA memory currently allocated by the process (including free PGA memory not yet released to the operating system by the server process) in MB", :align=>"right"},
     {:caption=>"PGA Freea.",       :data=>proc{|rec| fn((rec.pga_freeable_mem/1048576.0 rescue 0), 3)},:title=>t(:dba_list_sessions_pga_free_hint, :default=>'Currently allocated PGA-memory of process which is freeable in MBytes'), :align=>"right"},

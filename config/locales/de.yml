@@ -330,7 +330,7 @@
   dba_list_dml_locks_object_hint:                           Betroffenes Objekt
   dba_list_dml_locks_module_hint:                           Module-Info der Session
   dba_list_dml_locks_status_hint:                           Status-Info der Session
-  dba_list_dml_locks_time_hint:                             Wartezeit in Sekunden auf Lock bzw. seit letztem Statuswechsel ACTIVE/INACTIVE
+  dba_list_dml_locks_time_hint:                             Wartezeit in Sekunden auf Lock bzw. seit Ende des letzten Wait-Event
 
   dba_list_rowid_link_hint:                                 Zeige Felder und Werte des Primary der Tabelle
 
@@ -517,7 +517,7 @@
   dba_show_session_waits_blocking_session_hint:             Instance und SID der blockenden Session
   dba_show_session_waits_blocking_status_hint:              Status der blockenden Session
   dba_show_session_waits_blocking_user_hint:                User der blockenden Session
-  dba_show_session_waits_count_caption:                     Anzahl
+  dba_show_session_waits_count_caption:                     Anzahl Sessions
   dba_show_session_waits_count_hint:                        Anzahl aktive Sessions in diesem Event
   dba_show_session_waits_hlevel_hint:                       Hierarchie-Tiefe der Abhängigkeit vom Root-Blocker (1=Root-Blocker selbst)
   dba_show_session_waits_link_session_hint:                 Details zur Session, SerialNo =

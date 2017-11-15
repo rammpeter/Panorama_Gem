@@ -92,7 +92,7 @@ Retention time for object size snapshot data before deletion = #{fn(rec[:object_
 
   @title_cache_objects_sampling = proc do |rec|
     "DB-cache objects sampling = #{rec[:cache_objects_active] ? 'Active' : 'Inactive'}
-Delay between snapshots of DB-cache objects = #{fn(rec[:cache_objects_snapshot_cycle])} hours
+Delay between snapshots of DB-cache objects = #{fn(rec[:cache_objects_snapshot_cycle])} minutes
 Retention time for DB-cache objects snapshot data before deletion = #{fn(rec[:cache_objects_snapshot_retention])} days"
   end
 

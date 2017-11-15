@@ -76,7 +76,7 @@ class DbaController < ApplicationController
                 s.Row_Wait_File#                                            Row_Wait_File_No,
                 s.Row_Wait_Block#                                           Row_Wait_Block_No,
                 s.Row_Wait_Row#                                             Row_Wait_Row_No,
-                s.Seconds_In_Wait                                           WaitingForTime,
+                #{get_db_version < '11.1' ? "s.Seconds_In_Wait" : "DECODE(s.State, 'WAITING', s.Wait_Time_Micro, s.Time_Since_Last_Wait_Micro)/1000000"} WaitingForTime,
                 l.ctime                                                     Lock_Held_Seconds,
                 SUBSTR(l.ID1||':'||l.ID2,1,12)                              ID1ID2,
                 /* Request!=0 indicates waiting for resource determinded by ID1, ID2 */
@@ -143,7 +143,7 @@ class DbaController < ApplicationController
                      s.Row_Wait_File#       Row_Wait_File_No,
                      s.Row_Wait_Block#      Row_Wait_Block_No,
                      s.Row_Wait_Row#        Row_Wait_Row_No,
-                     s.Seconds_In_Wait,
+                     #{get_db_version < '11.1' ? "s.Seconds_In_Wait" : "s.Wait_Time_Micro/1000000"} Seconds_Waiting,
                      l.ID1,
                      l.ID2,
                      /* Request!=0 indicates waiting for resource determinded by ID1, ID2 */
@@ -661,7 +661,8 @@ Solution: Execute as user 'SYS':
         wa.Operation_Type, wa.Policy, wa.Active_Time_Secs, wa.Work_Area_Size_MB,
         wa.Expected_Size_MB, wa.Actual_Mem_Used_MB, wa.Max_Mem_Used_MB, wa.Number_Passes,
         wa.WA_TempSeg_Size_MB,
-        CASE WHEN w.State = 'WAITING' THEN w.Event ELSE 'ON CPU' END Wait_Event, w.Seconds_In_Wait
+        CASE WHEN w.State = 'WAITING' THEN w.Event ELSE 'ON CPU' END Wait_Event,
+        #{get_db_version < '11.1' ? "w.Seconds_In_Wait" : "DECODE(w.State, 'WAITING', w.Wait_Time_Micro, w.Time_Since_Last_Wait_Micro)/1000000"} Seconds_Waiting
       FROM    GV$session s
       LEFT OUTER JOIN (SELECT Inst_ID, SID, count(*) Open_Cursor, count(distinct sql_id) Open_Cursor_SQL
                        FROM   gv$Open_Cursor
@@ -817,7 +818,7 @@ Solution: Execute as user 'SYS':
 
     begin       # Test, ob Daten für Session in gv$SQL_Monitor existieren, Problem: Kann Nutzung der Option Tuning Pack aktivieren, wenn diese nicht per Init-Parameter 'control_management_pack_access' deaktiviert ist
       @sql_monitor_exists = false
-      if PackLicense.tuning_pack_licensed?(get_current_database[:management_pack_license])
+      if PackLicense.tuning_pack_licensed?
         @sql_monitor_exists = sql_select_one ["SELECT 1
                                                FROM   gv$SQL_Monitor
                                                WHERE  Inst_ID         = ?
@@ -1160,21 +1161,23 @@ Solution: Execute as user 'SYS':
     @wait_sums = sql_select_iterator "\
       SELECT /*+ ORDERED USE_NL(s) Panorama Ramm */
              COUNT(*) Anzahl,
-             w.Inst_ID,
-             DECODE(w.State, 'WAITING', w.Event, 'ON CPU') Event,
-             DECODE(w.State, 'WAITING', w.Wait_Class, NULL) Wait_Class,
-             DECODE(w.State, 'WAITING', w.State, NULL) State,
-             SUM(w.Wait_Time) Wait_Time,
-             SUM(w.Seconds_In_wait) Sum_Seconds_In_Wait,
-             MAX(w.Seconds_In_Wait) Max_Seconds_In_Wait,
-             CASE WHEN COUNT(DISTINCT s.Module) = 1 THEN MIN(s.Module) ELSE
-                  TO_CHAR(COUNT(DISTINCT s.Module)) END Modules
-      FROM   gv$Session_Wait w
-     JOIN    gv$Session s ON s.Inst_ID = w.Inst_ID AND s.SID = w.SID
-     WHERE w.Wait_Class != 'Idle'
-     GROUP BY w.Inst_ID, DECODE(w.State, 'WAITING', w.Event, 'ON CPU'),
-              DECODE(w.State, 'WAITING', w.Wait_Class, NULL), DECODE(w.State, 'WAITING', w.State, NULL)
-     ORDER BY COUNT(*) DESC, SUM(w.Seconds_In_wait) DESC"
+             s.Inst_ID,
+             DECODE(s.State, 'WAITING', s.Event, 'ON CPU')  Event,
+             DECODE(s.State, 'WAITING', s.Wait_Class, NULL) Wait_Class,
+             DECODE(s.State, 'WAITING', s.State, NULL)      State,
+             #{"SUM(Seconds_In_Wait) Sum_Wait_Time_Seconds," if get_db_version < '11.1'}
+             #{"MAX(Seconds_In_Wait) Max_Wait_Time_Seconds," if get_db_version < '11.1'}
+             #{"SUM(DECODE(State, 'WAITING', s.Wait_Time_Micro, s.Time_Since_Last_Wait_Micro))/1000000 Sum_Wait_Time_Seconds," if get_db_version >= '11.1'}
+             #{"MAX(DECODE(State, 'WAITING', s.Wait_Time_Micro, s.Time_Since_Last_Wait_Micro))/1000000 Max_Wait_Time_Seconds," if get_db_version >= '11.1'}
+             COUNT(DISTINCT s.Module)                       Module_Count,
+             MIN(s.Module)                                  Module,
+             COUNT(DISTINCT s.Action)                       Action_Count,
+             MIN(s.Action)                                  Action
+      FROM   gv$Session s
+     WHERE   Wait_Class != 'Idle'
+     GROUP BY Inst_ID, DECODE(State, 'WAITING', Event, 'ON CPU'),
+              DECODE(State, 'WAITING', Wait_Class, NULL), DECODE(State, 'WAITING', State, NULL)
+     ORDER BY COUNT(*) DESC, 6 DESC"
 
     # Erweitern der Daten um Informationen, die nicht im originalen Statement selektiert werden können,
     # da die Tabellen nicht auf allen DB zur Verfügung stehen
@@ -1259,18 +1262,18 @@ Solution: Execute as user 'SYS':
     @instance = params[:instance]
     @event    = params[:event]
     @waits = sql_select_iterator ["\
-      SELECT /*+ ORDERED USE_NL(s) Panorama Ramm */
-             w.Inst_ID, w.SID, s.Serial# SerialNo, w.Event, w.Wait_Class,
-             w.P1Text, w.P1, w.P1Raw,
-             w.P2Text, w.P2, w.P2Raw,
-             w.P3Text, w.P3, w.P3Raw,
-             w.Wait_Time, w.Seconds_In_wait, w.State,
-             s.Client_Info, s.Module, s.Action,
-             s.SQL_ID, s.Prev_SQL_ID, s.SQL_Child_Number, s.Prev_Child_Number
-      FROM   gv$Session_Wait w
-      JOIN   gv$Session s ON s.Inst_ID = w.Inst_ID AND s.SID = w.SID
-      WHERE  w.Inst_ID = ? 
-      AND    ((? = 'ON CPU' AND w.State != 'WAITING') OR w.Event   = ?) ",
+      SELECT Inst_ID, SID, Serial# SerialNo, Event, Wait_Class,
+             P1Text, P1, P1Raw,
+             P2Text, P2, P2Raw,
+             P3Text, P3, P3Raw,
+             #{"Seconds_In_Wait*1000 Wait_Time_MilliSeconds," if get_db_version < '11.1'}
+             #{"DECODE(State, 'WAITING', s.Wait_Time_Micro, s.Time_Since_Last_Wait_Micro)/1000 Wait_Time_MilliSeconds," if get_db_version >= '11.1'}
+             State,
+             Client_Info, Module, Action,
+             SQL_ID, Prev_SQL_ID, SQL_Child_Number, Prev_Child_Number
+      FROM   gv$Session s
+      WHERE  s.Inst_ID = ?
+      AND    ((? = 'ON CPU' AND s.State != 'WAITING') OR s.Event   = ?) ",
       @instance, @event, @event]
 
     render_partial :list_waits_per_event

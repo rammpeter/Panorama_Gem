@@ -95,7 +95,8 @@
         <div id="tab-awr-ash">
           <table width="100%">
             <tr title="Enable or disable sampling of Panorama's counterparts for Active Workload Repository (AWR) and Active Session History (ASH).
-          Disabling Panorama's AWR and ASH sampling allows you to use only the other sampling functions of Panorama if you already have Diagnostics Pack running">
+          Disabling Panorama's AWR and ASH sampling allows you to use only the other sampling functions of Panorama if you already have Diagnostics Pack running.
+          For RAC you need to configure it's own sampling config for every instance where TNS-service points exactly to the RAC-instance.">
               <td>Sample AWR and ASH</td>
               <td align="center"><%= check_box_tag(:config_awr_ash_active, 1, @config[:awr_ash_active], :name=>'config[awr_ash_active]') %></td>
             </tr>
@@ -124,7 +125,8 @@
 
         <div id="tab-object-size-history">
           <table width="100%">
-            <tr title="Enable or disable sampling of tablespace-object sizes (tables, indexes, partitions).">
+            <tr title="Enable or disable sampling of tablespace-object sizes (tables, indexes, partitions).
+            For RAC you need to configure this sampling only once because it is not instance-dependent.">
               <td>Sample object sizes</td>
               <td align="center"><%= check_box_tag(:config_object_size_active, 1, @config[:object_size_active], :name=>'config[object_size_active]') %></td>
             </tr>
@@ -143,7 +145,8 @@
 
         <div id="tab-db-cache-history">
           <table width="100%">
-            <tr title="Enable or disable sampling of DB-cache contents per object (tables, indexes, partitions).">
+            <tr title="Enable or disable sampling of DB-cache contents per object (tables, indexes, partitions).
+            For RAC you need to configure it's own sampling config for every instance where TNS-service points exactly to the RAC-instance.">
               <td>Sample DB-cache objects</td>
               <td align="center"><%= check_box_tag(:config_cache_objects_active, 1, @config[:cache_objects_active], :name=>'config[cache_objects_active]') %></td>
             </tr>
@@ -162,7 +165,8 @@
 
         <div id="tab-blocking-locks-history">
           <table width="100%">
-            <tr title="Enable or disable sampling of blocking lock situations.">
+            <tr title="Enable or disable sampling of blocking lock situations.
+            For RAC you need to configure this sampling only once because it samples over all instances at once.">
               <td>Sample blocking locks</td>
               <td align="center"><%= check_box_tag(:config_blocking_locks_active, 1, @config[:blocking_locks_active], :name=>'config[blocking_locks_active]') %></td>
             </tr>
