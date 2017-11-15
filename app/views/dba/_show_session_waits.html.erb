@@ -83,7 +83,7 @@ column_options =
     {:caption=>"W. Client-Info / Module / Action", :data=>proc{|rec| "#{rec.client_info} #{rec.module} #{rec.action}"},       :title=>t(:dba_show_session_waits_waiting_client_info_hint, :default=>'Client-info, module and action of waiting session'), :data_title=>proc{|rec| "%t, #{rec.waiting_app_desc}"} },
     {:caption=>"W. User",               :data=>proc{|rec| rec.username},                                                      :title=>t(:dba_show_session_waits_waiting_user_hint, :default=>'User of waiting session'),             :data_title=>proc{|rec| "%t, Machine=#{rec.machine}, OSUser=#{rec.osuser}, Process=#{rec.process}"} },
     {:caption=>"W. Program",            :data=>proc{|rec| rec.program},                                                       :title=>t(:dba_show_session_waits_waiting_program_hint, :default=>'Program of waiting session'),         :data_title=>proc{|rec| "%t, Machine=#{rec.machine}, OSUser=#{rec.osuser}, Process=#{rec.process}"} },
-    {:caption=>"Wait Sec",              :data=>proc{|rec| formattedNumber(rec.seconds_in_wait)},                              :title=>t(:dba_show_session_waits_seconds_hint, :default=>'Seconds in wait for waiting session'), :align=>"right"},
+    {:caption=>"Wait time (sec.)",      :data=>proc{|rec| formattedNumber(rec.seconds_waiting, 1)},                           :title=>t(:dba_show_session_waits_seconds_hint, :default=>'Seconds in wait for waiting session'), :align=>"right"},
     {:caption=>"W. SQL-ID",             :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.sql_id, rec.sql_child_number, rec.username)}, :title=>t(:dba_show_session_waits_waiting_sql_id_hint, :default=>'current SQL-ID of waiting session')},
   ]
 %>

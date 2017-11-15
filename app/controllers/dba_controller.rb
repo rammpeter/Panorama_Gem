@@ -1210,7 +1210,7 @@ Solution: Execute as user 'SYS':
                      s.Row_Wait_File#       Row_Wait_File_No,
                      s.Row_Wait_Block#      Row_Wait_Block_No,
                      s.Row_Wait_Row#        Row_Wait_Row_No,
-                     s.Seconds_In_Wait,
+                     #{get_db_version < '11.1' ? "s.Seconds_In_Wait" : "s.Wait_Time_Micro/1000000"} Seconds_Waiting,
                      s.Blocking_Instance    Blocking_Instance_Number,
                      s.Blocking_Session     Blocking_SID,
                      bs.Serial#             Blocking_SerialNo,
