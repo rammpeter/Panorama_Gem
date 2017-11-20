@@ -158,9 +158,8 @@ class PanoramaSamplerConfig
 
   def self.check_for_select_any_table!(config)
     # Check if accessing v$-tables from within PL/SQL-Package is possible
-    modify_config_entry(config[:id],
-                        { select_any_table: (0 < PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM DBA_Sys_Privs WHERE Grantee = ? AND Privilege = 'SELECT ANY TABLE'", config[:user].upcase]))}
-    )                                                 # Modify input parameter and persist result
+    # don't persist config change because config may be pending (not saved) for new sampler configuration
+    config[:select_any_table] = (0 < PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM DBA_Sys_Privs WHERE Grantee = ? AND Privilege = 'SELECT ANY TABLE'", config[:user].upcase]))
   end
 
 

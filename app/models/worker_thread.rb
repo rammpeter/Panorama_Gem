@@ -57,7 +57,7 @@ class WorkerThread
       controller.add_statusbar_message("Trial connect to '#{@sampler_config[:name]}' not successful, see Panorama-Log for details")
       @sampler_config[:last_error_time] = Time.now
     else
-      PanoramaSamplerConfig.check_for_select_any_table!(@sampler_config)        # Persist existence of grant
+      PanoramaSamplerConfig.check_for_select_any_table!(@sampler_config)
 
       owner_exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Users WHERE UserName = ?", @sampler_config[:owner].upcase]
       raise "Schema-owner #{@sampler_config[:owner]} does not exists in database" if owner_exists == 0

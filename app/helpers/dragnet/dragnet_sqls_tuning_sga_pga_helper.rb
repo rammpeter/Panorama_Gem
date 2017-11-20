@@ -215,37 +215,46 @@ Especially this is true for generated dynamic SQL statements (e.g. from OR-mappe
             :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') }]
         },
         {
-            :name  => t(:dragnet_helper_110_name, :default=>'Concurrency on memory, latches: insufficient cached sequences'),
+            :name  => t(:dragnet_helper_110_name, :default=>'Concurrency on memory, latches: insufficient cached sequences from DBA_Sequences'),
             :desc  => t(:dragnet_helper_110_desc, :default=>'Fetching of sequence values / filling the sequence cache causes writes in dictionary and interchange between REC-instances.
                           Highly frequent access on dictionary structures of sequences leads to unnecessary wait events, therefore you should define reasonable cache sizes for sequences.'),
-            :sql=>  "SELECT /* DB-Tools Ramm insufficent cached sequences */ s.*,
-                             ROUND(s.Last_Number*100/s.Max_Value, 1) \"% of max. value reached\"
-                      FROM   DBA_Sequences s
-                      WHERE  Sequence_Owner NOT IN ('SYS', 'SYSTEM')
-                      ORDER  By Last_Number/DECODE(Cache_Size,0,1,Cache_Size) DESC NULLS LAST",
+            :sql=>  "SELECT x.*,
+                            ROUND(\"Values per day\"/DECODE(Cache_Size,0,1,Cache_Size)) \"Cache reloads per day\"
+                     FROM   (SELECT
+                                    s.Sequence_Owner, s.Sequence_Name, s.Cache_size, s.Min_Value, s.Max_Value, s.Increment_By,
+                                    s.Cycle_flag, s.Last_Number, s.Partition_Count, s.Session_Flag, s.Keep_Value,
+                                    ROUND(s.Last_Number*100/s.Max_Value, 1) \"% of max. value reached\",
+                                    ROUND((s.Last_Number-s.Min_Value)/(SYSDATE-o.Created)) \"Values per day\",
+                                    o.Created, o.Last_DDL_Time
+                             FROM   DBA_Sequences s
+                             LEFT OUTER JOIN   DBA_Objects o ON o.Owner = s.Sequence_Owner AND o.Object_Name = s.Sequence_Name AND o.Object_Type = 'SEQUENCE'
+                             WHERE  Sequence_Owner NOT IN ('SYS', 'SYSTEM')
+                            ) x
+                      ORDER  By \"Values per day\"/DECODE(Cache_Size,0,1,Cache_Size) DESC NULLS LAST",
         },
         {
-            :name  => t(:dragnet_helper_111_name, :default=>'Concurrency on memory, latches: Overview over usage of sequences'),
+            :name  => t(:dragnet_helper_111_name, :default=>'Concurrency on memory, latches: Overview over usage of sequences by SQLs'),
             :desc  => t(:dragnet_helper_111_desc, :default=>'If sequences may be cached in application, next values must not be read from DB one by one.
                                                               This may reduce the number of roundtrips between application and database.'),
-            :sql=>  "SELECT /* DB-Tools Ramm  Overview usage of sequences */ *
-                      FROM   (
-                              SELECT ROUND(Executions/CASE WHEN (Last_Active_Time - First_Load_Time) < 1 THEN 1 ELSE Last_Active_Time - First_Load_Time END) Executions_per_Day,
-                                     ROUND(Rows_Processed/CASE WHEN (Last_Active_Time - First_Load_Time) < 1 THEN 1 ELSE Last_Active_Time - First_Load_Time END) Rows_Processed_per_Day,
-                                     x.*
-                              FROM   (
-                                      SELECT /*+ ORDERED USE_HASH(p a s) */
-                                             p.Inst_ID, a.Executions, a.Rows_Processed,
-                                             ROUND(a.Rows_Processed/a.Executions,2) Rows_Per_Exec,
-                                             TO_DATE(a.First_Load_Time, 'YYYY-MM_DD/HH24:MI:SS') First_Load_Time, a.Last_Active_Time,
-                                             p.Object_Owner, p.Object_Name, s.Cache_Size,
-                                             a.SQL_ID, a.SQL_Text
-                                      FROM   (SELECT /*+ NO_MERGE */ * FROM gv$SQL_Plan WHERE Operation = 'SEQUENCE') p
-                                      JOIN   (SELECT /*+ NO_MERGE */ * FROM gV$SQL WHERE Executions > 0) a ON a.Inst_ID = p.Inst_ID AND a.SQL_ID = p.SQL_ID AND a.Child_Number = p.Child_Number
-                                      JOIN   (SELECT /*+ NO_MERGE */ * FROM DBA_Sequences) s ON s.Sequence_Owner = p.Object_Owner AND s.Sequence_Name = p.Object_Name
-                                     ) x
-                             )
-                      ORDER BY Executions_per_Day DESC NULLS LAST"
+            :sql=> "SELECT ROUND(Rows_Processed_per_Day/DECODE(Cache_Size, 0, 1, Cache_Size)) Cache_Reloads_Per_Day,
+                           y.*
+                    FROM   (
+                            SELECT ROUND(Executions/CASE WHEN (Last_Active_Time - First_Load_Time) < 1 THEN 1 ELSE Last_Active_Time - First_Load_Time END) Executions_per_Day,
+                                   ROUND(Rows_Processed/CASE WHEN (Last_Active_Time - First_Load_Time) < 1 THEN 1 ELSE Last_Active_Time - First_Load_Time END) Rows_Processed_per_Day,
+                                   x.*
+                            FROM   (
+                                    SELECT /*+ ORDERED USE_HASH(p a s) */
+                                           p.Inst_ID, a.Executions, a.Rows_Processed,
+                                           ROUND(a.Rows_Processed/a.Executions,2) Rows_Per_Exec,
+                                           TO_DATE(a.First_Load_Time, 'YYYY-MM_DD/HH24:MI:SS') First_Load_Time, a.Last_Active_Time,
+                                           p.Object_Owner, p.Object_Name, s.Cache_Size,
+                                           a.SQL_ID, SUBSTR(a.SQL_Text, 1, 200) SQL_Text
+                                    FROM   (SELECT /*+ NO_MERGE */ * FROM gv$SQL_Plan WHERE Operation = 'SEQUENCE') p
+                                    JOIN   (SELECT /*+ NO_MERGE */ * FROM gV$SQL WHERE Executions > 0) a ON a.Inst_ID = p.Inst_ID AND a.SQL_ID = p.SQL_ID AND a.Child_Number = p.Child_Number
+                                    JOIN   (SELECT /*+ NO_MERGE */ * FROM DBA_Sequences) s ON s.Sequence_Owner = p.Object_Owner AND s.Sequence_Name = p.Object_Name
+                                   ) x
+                           ) y
+                    ORDER BY Rows_Processed_per_Day/DECODE(Cache_Size, 0, 1, Cache_Size) DESC NULLS LAST"
         },
         {
             :name  => t(:dragnet_helper_112_name, :default=>'Active sessions (from AWR history DBA_Hist_Active_Sess_History)'),

@@ -27,6 +27,11 @@ class DbaHistoryControllerTest < ActionController::TestCase
                                                   WHERE  SQL_ID NOT IN (SELECT SQL_ID FROM DBA_Hist_SQLText)
                                                   AND    RowNum < 2"
     raise "No snapshot found before #{time_selection_end}" if @max_snap_id.nil?
+
+    sql_row = sql_select_first_row "SELECT SQL_ID, Child_Number, Parsing_Schema_Name FROM v$sql WHERE SQL_Text LIKE '%OBJ$%' AND Object_Status = 'VALID' ORDER BY Executions DESC"
+    @sga_sql_id = sql_row.sql_id
+    @sga_child_number = sql_row.child_number
+    @sga_parsing_schema_name = sql_row.parsing_schema_name
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat

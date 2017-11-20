@@ -26,6 +26,11 @@ class DbaSgaControllerTest < ActionController::TestCase
                "ClusterWaits"
     ]
 
+    sql_row = sql_select_first_row "SELECT SQL_ID, Child_Number, Parsing_Schema_Name FROM v$sql WHERE SQL_Text LIKE '%OBJ$%' AND Object_Status = 'VALID' ORDER BY Executions DESC"
+    @sga_sql_id = sql_row.sql_id
+    @sga_child_number = sql_row.child_number
+    @sga_parsing_schema_name = sql_row.parsing_schema_name
+
     @object_id = sql_select_one "SELECT Object_ID FROM DBA_Objects WHERE Object_Name = 'OBJ$'"
   end
 

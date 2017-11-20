@@ -49,6 +49,7 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
     ['Save', 'Test connection'].each do |button|                                # Simulate pressed button "Save" or "Test connection"
       ['Existing', 'New'].each do |mode|                                        # Simulate change of existing or new record
         ['Right', 'Wrong', 'System'].each do |right|                            # Valid or invalid connection info
+Rails.logger.info "################################ save:config mode: #{button} #{mode} #{right}"
           id = mode=='New' ? PanoramaSamplerConfig.get_max_id + 1 : PanoramaSamplerConfig.get_max_id
           config = @config_entry_without_id.clone
           response_format = :html                                                        # Default

@@ -30,6 +30,11 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
                 :Min_Snap_ID     => @min_snap_id,
                 :Max_Snap_ID     => @max_snap_id
         }
+
+      sql_row = sql_select_first_row "SELECT SQL_ID, Child_Number, Parsing_Schema_Name FROM v$sql WHERE SQL_Text LIKE '%OBJ$%' AND Object_Status = 'VALID' ORDER BY Executions DESC"
+      @sga_sql_id = sql_row.sql_id
+      @sga_child_number = sql_row.child_number
+      @sga_parsing_schema_name = sql_row.parsing_schema_name
     }
   end
 
@@ -81,25 +86,23 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
   test "list_session_statistic_historic_grouping with xhr: true" do
-    session_statistics_key_rules.each do |outer_groupby, value_outer|
-      # Iteration über Gruppierungskriterien
-      session_statistics_key_rules.each do |groupby, value_inner|
-        # Test mit realem Wert
-        add_filter = {outer_groupby => bind_value_from_key_rule(outer_groupby)}
-        post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
-        assert_response :success
+    # Iteration über Gruppierungskriterien
+    session_statistics_key_rules.each do |groupby, value_inner|
+      # Test mit realem Wert
+      add_filter = {groupby => bind_value_from_key_rule(groupby)}
+      post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
+      assert_response :success
 
-        post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge(:Additional_Filter=>'sys'), :update_area=>:hugo }
-        assert_response :success
+      post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge(:Additional_Filter=>'sys'), :update_area=>:hugo }
+      assert_response :success
 
-        # Test mit NULL als Filterkriterium
-        add_filter = {outer_groupby => nil}
-        post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
-        assert_response :success
+      # Test mit NULL als Filterkriterium
+      add_filter = {groupby => nil}
+      post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
+      assert_response :success
 
-        post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge(:Additional_Filter=>'sys'), :update_area=>:hugo }
-        assert_response :success
-      end
+      post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge(:Additional_Filter=>'sys'), :update_area=>:hugo }
+      assert_response :success
     end
   end
 
