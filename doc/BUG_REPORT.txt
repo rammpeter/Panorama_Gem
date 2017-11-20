@@ -31,3 +31,7 @@ $ rails c
 
 Turns out this is a known bug that's fixed in the upcoming 9.1.9.0 release of jRuby - see jruby/jruby#4526
 
+20.11.2017
+warble with bundler v 1.16.0 and jruby 1.9.14 leads to:
+Unable to detect bundler spec under '/Users/pramm/.rvm/gems/jruby-9.1.14.0/gems/bundler-1.16.0'' and its sub-dirs
+bundler 1.15.4 runs ok
