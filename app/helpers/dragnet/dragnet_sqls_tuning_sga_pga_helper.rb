@@ -222,7 +222,7 @@ Especially this is true for generated dynamic SQL statements (e.g. from OR-mappe
                             ROUND(\"Values per day\"/DECODE(Cache_Size,0,1,Cache_Size)) \"Cache reloads per day\"
                      FROM   (SELECT
                                     s.Sequence_Owner, s.Sequence_Name, s.Cache_size, s.Min_Value, s.Max_Value, s.Increment_By,
-                                    s.Cycle_flag, s.Last_Number, s.Session_Flag, s.Keep_Value,
+                                    s.Cycle_flag, s.Last_Number,
                                     ROUND(s.Last_Number*100/s.Max_Value, 1) \"% of max. value reached\",
                                     ROUND((s.Last_Number-s.Min_Value)/(SYSDATE-o.Created)) \"Values per day\",
                                     o.Created, o.Last_DDL_Time
