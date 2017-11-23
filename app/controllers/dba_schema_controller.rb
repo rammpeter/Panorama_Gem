@@ -260,7 +260,7 @@ class DbaSchemaController < ApplicationController
         @seqs = sql_select_all ["SELECT * FROM DBA_Sequences WHERE Sequence_Owner = ? AND Sequence_Name = ?", @owner, @object_name]
         render_partial "list_sequence_description"
         return
-      when 'PACKAGE', 'PACKAGE BODY', 'PROCEDURE', 'FUNCTION'
+      when 'PACKAGE', 'PACKAGE BODY', 'PROCEDURE', 'FUNCTION', 'TYPE', 'TYPE BODY'
         list_plsql_description
         return
       when 'TRIGGER'
