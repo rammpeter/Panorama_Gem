@@ -259,39 +259,40 @@ class DbaController < ApplicationController
 
     @ddl_locks = sql_select_all("\
       SELECT /*+ ordered */ /* Panorama-Tool Ramm */
-        h1.Inst_ID                                                  B_Inst_ID,
-        h1.SID                                                      B_SID,
-        h1.Serial#                                                  B_SerialNo,
-        p1.spID                                                     B_PID,
-        h1.UserName                                                 B_User,
-        h1.Machine                                                  B_Machine,
-        h1.OSUser                                                   B_OSUser,
-        h1.Process                                                  B_Process,
-        h1.Program                                                  B_Program,
-        w1.Inst_ID                                                  W_Inst_ID,
-        w1.SID                                                      W_SID,
-        w1.Serial#                                                  W_SerialNo,
+        hs.Inst_ID                                                  B_Inst_ID,
+        hs.SID                                                      B_SID,
+        hs.Serial#                                                  B_SerialNo,
+        hp.spID                                                     B_PID,
+        hs.UserName                                                 B_User,
+        hs.Machine                                                  B_Machine,
+        hs.OSUser                                                   B_OSUser,
+        hs.Process                                                  B_Process,
+        hs.Program                                                  B_Program,
+        ws.Inst_ID                                                  W_Inst_ID,
+        ws.SID                                                      W_SID,
+        ws.Serial#                                                  W_SerialNo,
+        wp.spID                                                     W_PID,
+        ws.UserName                                                 W_User,
+        ws.Machine                                                  W_Machine,
+        ws.OSUser                                                   W_OSUser,
+        ws.Process                                                  W_Process,
+        ws.Program                                                  W_Program,
         w.kgllktype                                                 LockType,
-        SUBSTR(od.TO_Name,1,30)                                     Object,
+        od.TO_Owner                                                 Object_Owner,
+        od.TO_Name                                                  Object_Name,
         decode(h.kgllkmod,  0, 'None', 1, 'Null', 2, 'Share', 3, 'Exclusive', 'Unknown') mode_held,
         decode(w.kgllkreq,  0, 'None', 1, 'Null', 2, 'Share', 3, 'Exclusive', 'Unknown') mode_requested
-      FROM  dba_kgllock w,
-            dba_kgllock h,
-            GV$session w1,
-            GV$session h1,
-            GV$Process p1,
-            v$Object_dependency od
+      FROM  dba_kgllock w
+      JOIN  dba_kgllock h                     ON h.kgllktype = w.kgllktype AND h.kgllkhdl = w.kgllkhdl
+      JOIN  GV$session ws                     ON ws.saddr = w.kgllkuse
+      JOIN  GV$session hs                     ON hs.saddr = h.kgllkuse
+      JOIN  GV$Process wp                     ON wp.Addr = ws.pAddr AND wp.Inst_ID = ws.Inst_ID
+      JOIN  GV$Process hp                     ON hp.Addr = hs.pAddr AND hp.Inst_ID = hs.Inst_ID
+      LEFT OUTER JOIN v$Object_dependency od  ON od.TO_ADDRESS = w.kgllkhdl
       WHERE   (((h.kgllkmod != 0)     and (h.kgllkmod != 1)
       and     ((h.kgllkreq = 0) or (h.kgllkreq = 1)))
       and     (((w.kgllkmod = 0) or (w.kgllkmod= 1))
       and     ((w.kgllkreq != 0) and (w.kgllkreq != 1))))
-      and     w.kgllktype             = h.kgllktype
-      and     w.kgllkhdl              = h.kgllkhdl
-      and     w.kgllkuse              = w1.saddr
-      and     h.kgllkuse              = h1.saddr
-      AND     od.TO_ADDRESS           = w.kgllkhdl
-      AND     p1.Addr                 = h1.pAddr
-      AND     p1.Inst_ID              = h1.Inst_ID
       ")
 
     #@result_size = @ddl_locks.length       # Tatsaechliche anzahl Zeilen im Result
