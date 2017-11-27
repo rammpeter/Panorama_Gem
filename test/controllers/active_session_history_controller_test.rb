@@ -32,9 +32,9 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
         }
 
       sql_row = sql_select_first_row "SELECT SQL_ID, Child_Number, Parsing_Schema_Name FROM v$sql WHERE SQL_Text LIKE '%OBJ$%' AND Object_Status = 'VALID' ORDER BY Executions DESC"
-      @sga_sql_id = sql_row.sql_id
+      @hist_sql_id = sql_row.sql_id
       @sga_child_number = sql_row.child_number
-      @sga_parsing_schema_name = sql_row.parsing_schema_name
+      @hist_parsing_schema_name = sql_row.parsing_schema_name
     }
   end
 
@@ -159,7 +159,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
   test "show_prepared_active_session_history with xhr: true" do
-    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>1, :sql_id=>@sga_sql_id }
+    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>1, :sql_id=>@hist_sql_id }
     assert_response :success
     post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>1, :sid=>@sid }
     assert_response :success
@@ -170,7 +170,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
          :groupfilter => {
                          :DBID     => get_dbid,
                          :Instance => 1,
-                         "SQL-ID"  => @sga_sql_id
+                         "SQL-ID"  => @hist_sql_id
          },
          :time_selection_start => @time_selection_start,
          :time_selection_end   => @time_selection_end, :update_area=>:hugo }

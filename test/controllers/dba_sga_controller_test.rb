@@ -27,9 +27,9 @@ class DbaSgaControllerTest < ActionController::TestCase
     ]
 
     sql_row = sql_select_first_row "SELECT SQL_ID, Child_Number, Parsing_Schema_Name FROM v$sql WHERE SQL_Text LIKE '%OBJ$%' AND Object_Status = 'VALID' ORDER BY Executions DESC"
-    @sga_sql_id = sql_row.sql_id
+    @hist_sql_id = sql_row.sql_id
     @sga_child_number = sql_row.child_number
-    @sga_parsing_schema_name = sql_row.parsing_schema_name
+    @hist_parsing_schema_name = sql_row.parsing_schema_name
 
     @object_id = sql_select_one "SELECT Object_ID FROM DBA_Objects WHERE Object_Name = 'OBJ$'"
   end
@@ -78,15 +78,15 @@ class DbaSgaControllerTest < ActionController::TestCase
   end
 
   test "list_sql_detail_sql_id_childno with xhr: true" do
-    get :list_sql_detail_sql_id_childno, :params => {:format=>:html, :instance => "1", :sql_id => @sga_sql_id, child_number: @sga_child_number, :update_area=>:hugo  }
+    get :list_sql_detail_sql_id_childno, :params => {:format=>:html, :instance => "1", :sql_id => @hist_sql_id, child_number: @sga_child_number, :update_area=>:hugo  }
     assert_response :success
   end
 
   test "list_sql_detail_sql_id with xhr: true" do
-    get  :list_sql_detail_sql_id , :params => {:format=>:html, :instance => "1", :sql_id => @sga_sql_id, :update_area=>:hugo }
+    get  :list_sql_detail_sql_id , :params => {:format=>:html, :instance => "1", :sql_id => @hist_sql_id, :update_area=>:hugo }
     assert_response :success
 
-    get  :list_sql_detail_sql_id , :params => {:format=>:html, :sql_id => @sga_sql_id, :update_area=>:hugo }
+    get  :list_sql_detail_sql_id , :params => {:format=>:html, :sql_id => @hist_sql_id, :update_area=>:hugo }
     assert_response :success
 
     post :list_sql_profile_detail, :params => {:format=>:html, :profile_name=>'Hugo', :update_area=>:hugo }
@@ -95,7 +95,7 @@ class DbaSgaControllerTest < ActionController::TestCase
   end
 
   test "list_open_cursor_per_sql with xhr: true" do
-    get :list_open_cursor_per_sql, :params => {:format=>:html, :instance=>1, :sql_id => @sga_sql_id, :update_area=>:hugo }
+    get :list_open_cursor_per_sql, :params => {:format=>:html, :instance=>1, :sql_id => @hist_sql_id, :update_area=>:hugo }
     assert_response :success
   end
 
@@ -128,12 +128,12 @@ class DbaSgaControllerTest < ActionController::TestCase
   end
 
   test "list_cursor_memory with xhr: true" do
-    get :list_cursor_memory, :params => {:format=>:html, :instance=>1, :sql_id=>@sga_sql_id, :update_area=>:hugo }
+    get :list_cursor_memory, :params => {:format=>:html, :instance=>1, :sql_id=>@hist_sql_id, :update_area=>:hugo }
     assert_response :success
   end
 
   test "compare_execution_plans with xhr: true" do
-    post :list_compare_execution_plans, :params => {:format=>:html, :instance_1=>1, :sql_id_1=>@sga_sql_id, :child_number_1 =>@sga_child_number,  :instance_2=>1, :sql_id_2=>@sga_sql_id, :child_number_2 =>@sga_child_number, :update_area=>:hugo }
+    post :list_compare_execution_plans, :params => {:format=>:html, :instance_1=>1, :sql_id_1=>@hist_sql_id, :child_number_1 =>@sga_child_number, :instance_2=>1, :sql_id_2=>@hist_sql_id, :child_number_2 =>@sga_child_number, :update_area=>:hugo }
     assert_response :success
   end
 
@@ -176,7 +176,7 @@ class DbaSgaControllerTest < ActionController::TestCase
     assert_response :success
 
     if get_db_version >= '12.1'
-      [nil, @sga_sql_id].each do |translation_sql_id|
+      [nil, @hist_sql_id].each do |translation_sql_id|
         post :show_sql_translations, :params => {:format=>:html, :translation_sql_id=>translation_sql_id, :update_area=>:hugo }
         assert_response :success
       end
@@ -189,8 +189,8 @@ class DbaSgaControllerTest < ActionController::TestCase
         [nil, true].each do |fixed_user|
           post :show_sql_translations, :params => {:format      => :html,
                                                    :location    => location,
-                                                   :sql_id      => @sga_sql_id,
-                                                   :user_name   => @sga_parsing_schema_name,
+                                                   :sql_id      => @hist_sql_id,
+                                                   :user_name   => @hist_parsing_schema_name,
                                                    :fixed_user  => fixed_user,
                                                    :update_area => :hugo
           }
