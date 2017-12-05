@@ -711,6 +711,7 @@ class AdditionController < ApplicationController
   def list_object_increase_timeline
     groupby = params[:gruppierung][:tag]
 
+    @tablespace_name = nil                                                      # initialization
     if params[:tablespace][:name] != all_dropdown_selector_name
       @tablespace_name = params[:tablespace][:name]
       @wherestr << " AND Tablespace_Name=? "
