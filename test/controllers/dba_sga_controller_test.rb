@@ -206,14 +206,18 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
                                               FROM gv$SQL_Monitor
                                               ORDER BY Last_Refresh_Time DESC"
 
-    post '/dba_sga/list_sql_monitor', :params => {format:       :html,
-                                                  instance:     sql_montitor_data.inst_id,
-                                                  sid:          sql_montitor_data.sid,
-                                                  serialno:     sql_montitor_data.serialno,
-                                                  sql_id:       sql_montitor_data.sql_id,
-                                                  sql_exec_id:  sql_montitor_data.sql_exec_id,
-    }
-    assert_response :success
+    if sql_montitor_data.nil?
+      Rails.logger.info "Test list_sql_monitor: no data found from gv$SQL_Monitor, test terminated"
+    else
+      post '/dba_sga/list_sql_monitor', :params => {format:       :html,
+                                                    instance:     sql_montitor_data.inst_id,
+                                                    sid:          sql_montitor_data.sid,
+                                                    serialno:     sql_montitor_data.serialno,
+                                                    sql_id:       sql_montitor_data.sql_id,
+                                                    sql_exec_id:  sql_montitor_data.sql_exec_id,
+      }
+      assert_response :success
+    end
   end
 
   test "list_sql_monitor_sessions with xhr :true" do
@@ -227,15 +231,18 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
                                                 HAVING #{having}
                                                 ORDER BY MAX(Last_Refresh_Time) DESC"
 
-      post '/dba_sga/list_sql_monitor_sessions', :params => {format:          :html,
-                                                             instance:        sql_montitor_data.inst_id,
-                                                             sid:             sql_montitor_data.sid,
-                                                             serialno:        sql_montitor_data.serialno,
-                                                             sql_id:          sql_montitor_data.sql_id,
-                                                             plan_hash_value: sql_montitor_data.sql_plan_hash_value,
-      }
-      assert_response :success
-
+      if sql_montitor_data.nil?
+        Rails.logger.info "Test list_sql_monitor_sessions: no data found from gv$SQL_Monitor, test terminated"
+      else
+        post '/dba_sga/list_sql_monitor_sessions', :params => {format:          :html,
+                                                               instance:        sql_montitor_data.inst_id,
+                                                               sid:             sql_montitor_data.sid,
+                                                               serialno:        sql_montitor_data.serialno,
+                                                               sql_id:          sql_montitor_data.sql_id,
+                                                               plan_hash_value: sql_montitor_data.sql_plan_hash_value,
+        }
+        assert_response :success
+      end
     end
   end
 
