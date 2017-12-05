@@ -30,9 +30,9 @@ column_options =
 <%
    @update_area = get_unique_area_id
 
-   def link_column_sql(rec)
-     ajax_link("#{rec.owner} . #{rec.object_name}#{rec.subobject_name ? " ("+rec.subobject_name+")": ""}", {
-                              :controller   => :dba_sga,
+   link_column_sql = proc do |rec|
+     ajax_link(fn(rec.sql_id_count), {
+                             :controller   => :dba_sga,
                              :action       => :show_using_sqls,
                              :ObjectOwner  => rec.owner,
                              :ObjectName   => rec.object_name,
@@ -43,11 +43,16 @@ column_options =
      )
    end
 
+  link_object_name = proc do |rec|
+    link_object_description(@update_area, rec.owner, rec.object_name, "#{rec.owner} . #{rec.object_name}#{rec.subobject_name ? " ("+rec.subobject_name+")": ""}")
+  end
+
 column_options =
 [
-  {:caption=>"Name",        :data=>proc{|rec| link_column_sql(rec) },                       :title=>"Object-Name"},
+  {:caption=>"Name",        :data=>link_object_name,                                        :title=>"Object-Name"},
   {:caption=>"Type",        :data=>proc{|rec| rec.object_type},                             :title=>"Object-Type"},
   {:caption=>"Tablename",   :data=>proc{|rec| rec.table_name},                              :title=>"Tablename for indexes"},
+  {:caption=>'SQLs',        :data=>link_column_sql,                                         :title=>'Number of different SQL-IDs in SGA for this object', align: :right},
   {:caption=>"Size (MB)",   :data=>proc{|rec| formattedNumber(rec.size_mb, 3)},             :title=>"Size of object in cache in MBytes", :align=>:right },
   {:caption=>"Blocks",      :data=>proc{|rec| formattedNumber(rec.blocks)},                 :title=>"Number of DB-blocks", :align=>:right },
   {:caption=>"%",           :data=>proc{|rec| formattedNumber(rec.blocks*100.0/@total_blocks,2)},:title=>"Percentage of total cache", :align=>:right },

@@ -754,8 +754,9 @@ class DbaSgaController < ApplicationController
         #{@show_partitions=="1" ? "o.SubObject_Name" : "''"} SubObject_Name,
         MIN(o.Object_Type) Object_Type,  -- MIN statt Aufnahme in GROUP BY
         MIN(CASE WHEN o.Object_Type LIKE 'INDEX%' THEN
-                  (SELECT Table_Name FROM DBA_Indexes i WHERE i.Owner = o.Owner AND i.Index_Name = o.Object_Name)
+                  (SELECT Table_Owner||'.'||Table_Name FROM DBA_Indexes i WHERE i.Owner = o.Owner AND i.Index_Name = o.Object_Name)
         ELSE NULL END) Table_Name, -- MIN statt Aufnahme in GROUP BY
+        NVL(SUM(sqls.SQL_ID_Count),0)  SQL_ID_Count,
         SUM(bh.Blocks * ts.BlockSize) / (1024*1024) Size_MB,
         SUM(bh.Blocks)      Blocks,
         SUM(bh.DirtyBlocks) DirtyBlocks,
@@ -793,8 +794,14 @@ class DbaSgaController < ApplicationController
         ) BH
         LEFT OUTER JOIN DBA_Objects o ON o.Data_Object_ID = bh.ObjD
         LEFT OUTER JOIN sys.TS$ ts ON ts.TS# = bh.TS#
+        LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Object# Object_ID, COUNT(DISTINCT SQL_ID) SQL_ID_Count
+                         FROM   gv$SQL_Plan
+                         WHERE  Object# IS NOT NULL
+                         AND    Inst_ID = ?
+                         GROUP BY Object#
+                        ) sqls ON sqls.Object_ID = o.Object_ID
       GROUP BY NVL(o.Owner,'[UNKNOWN]'), NVL(o.Object_Name,'TS='||ts.Name)#{@show_partitions=="1" ? ", o.SubObject_Name" : ""}
-      ORDER BY 6 DESC", @instance]
+      ORDER BY 7 DESC", @instance, @instance]
     @total_blocks = 0                  # Summation der Blockanzahl des Caches
     @objects.each do |o|
       @total_blocks += o.blocks
