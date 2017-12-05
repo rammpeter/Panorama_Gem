@@ -10,13 +10,14 @@
                        :sql_exec_id  => @sql_exec_id
                ), :target=>'_blank'
       ) do %>
-      <%= submit_tag('Open new SQL Monitor browser tab', :id => @button_id, :style => "display: none;", 'data-disable-with'=>false, :title=>"Safari doesn't allow new browser tab from Javascript code (Popup-protection).\nTherefore you must click the button yourself.") %>
+      <%= submit_tag('Open new SQL Monitor browser tab', :id => @button_id, :onclick=>"jQuery('##{@button_id}').css('display', 'none');", :style => "display: none;", 'data-disable-with'=>false, :title=>"Safari doesn't allow new browser tab from Javascript code (Popup-protection).\nTherefore you must click the button yourself.") %>
   <% end %>
 </div>
 
 <script type="text/javascript">
   if (window.safari !== undefined) {                                            // Direct open new tab from async call is not allowed in Safari
       jQuery('#<%= @button_id %>').css('display', 'inline');                    // make Button visible to be clicked by user
+      show_status_bar_message('Safari doesn\'t allow new browser tab from Javascript code (Popup-protection).<br/>Please click the button \'Open new SQL Monitor browser tab\' at the lower bound again');
   } else {
       jQuery('#<%= @button_id %>').click();                                     // Direct open new tab from async call is allowed
   }

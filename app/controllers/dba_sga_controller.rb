@@ -1421,7 +1421,7 @@ class DbaSgaController < ApplicationController
       result.gsub!(/http:/, 'https:')
     end
 
-    render :text => result
+    render :html => result.html_safe
   end
 
   def list_sql_monitor_sessions

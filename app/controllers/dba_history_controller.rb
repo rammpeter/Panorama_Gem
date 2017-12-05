@@ -2056,7 +2056,7 @@ END;
 
 "
     sql_select_all(["SELECT Inst_ID, RAWTOHEX(Address) Address, Hash_Value FROM gv$SQLArea WHERE SQL_ID=?", sql_id]).each do |r|
-      result << "-- For intance = #{r.inst_id}:
+      result << "-- For instance = #{r.inst_id}:
 exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
 
 "

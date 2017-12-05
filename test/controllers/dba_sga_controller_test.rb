@@ -1,7 +1,7 @@
 # encoding: utf-8
 require 'test_helper'
 
-class DbaSgaControllerTest < ActionController::TestCase
+class DbaSgaControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
@@ -41,143 +41,143 @@ class DbaSgaControllerTest < ActionController::TestCase
 
 
   test "show_application_info with xhr: true" do
-    get :show_application_info, :params => {:format=>:html, :moduletext=>"Application = 128", :update_area=>:hugo }
+    get '/dba_sga/show_application_info', :params => {:format=>:html, :moduletext=>"Application = 128", :update_area=>:hugo }
     assert_response :success
   end
 
   test "list_sql_area_sql_id with xhr: true" do
     @topSort.each do |ts|
-      post :list_sql_area_sql_id, :params => {:format=>:html, :maxResultCount=>"100", :topSort=>ts, :update_area=>:hugo }
+      post '/dba_sga/list_sql_area_sql_id', :params => {:format=>:html, :maxResultCount=>"100", :topSort=>ts, :update_area=>:hugo }
       assert_response :success
 
-      post :list_sql_area_sql_id, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"1", :topSort=>ts, :update_area=>:hugo }
+      post '/dba_sga/list_sql_area_sql_id', :params => {:format=>:html, :maxResultCount=>"100", :instance=>"1", :topSort=>ts, :update_area=>:hugo }
       assert_response :success
 
-      post :list_sql_area_sql_id, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"1", :username=>'hugo', :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
+      post '/dba_sga/list_sql_area_sql_id', :params => {:format=>:html, :maxResultCount=>"100", :instance=>"1", :username=>'hugo', :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
       assert_response :success
 
-      post :list_sql_area_sql_id, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"1", :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
+      post '/dba_sga/list_sql_area_sql_id', :params => {:format=>:html, :maxResultCount=>"100", :instance=>"1", :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
       assert_response :success
     end
   end
 
   test "list_sql_area_sql_id_childno with xhr: true" do
     @topSort.each do |ts|
-      post :list_sql_area_sql_id_childno, :params => {:format=>:html, :maxResultCount=>"100", :topSort=>ts, :update_area=>:hugo }
+      post '/dba_sga/list_sql_area_sql_id_childno', :params => {:format=>:html, :maxResultCount=>"100", :topSort=>ts, :update_area=>:hugo }
       assert_response :success
 
-      post :list_sql_area_sql_id_childno, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"1", :topSort=>ts, :update_area=>:hugo }
+      post '/dba_sga/list_sql_area_sql_id_childno', :params => {:format=>:html, :maxResultCount=>"100", :instance=>"1", :topSort=>ts, :update_area=>:hugo }
       assert_response :success
 
-      post :list_sql_area_sql_id_childno, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"", :username=>'hugo', :topSort=>ts, :update_area=>:hugo }
+      post '/dba_sga/list_sql_area_sql_id_childno', :params => {:format=>:html, :maxResultCount=>"100", :instance=>"", :username=>'hugo', :topSort=>ts, :update_area=>:hugo }
       assert_response :success
 
-      post :list_sql_area_sql_id_childno, :params => {:format=>:html, :maxResultCount=>"100", :instance=>"", :username=>'hugo', :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
+      post '/dba_sga/list_sql_area_sql_id_childno', :params => {:format=>:html, :maxResultCount=>"100", :instance=>"", :username=>'hugo', :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
       assert_response :success
     end
   end
 
   test "list_sql_detail_sql_id_childno with xhr: true" do
-    get :list_sql_detail_sql_id_childno, :params => {:format=>:html, :instance => "1", :sql_id => @hist_sql_id, child_number: @sga_child_number, :update_area=>:hugo  }
+    get '/dba_sga/list_sql_detail_sql_id_childno', :params => {:format=>:html, :instance => "1", :sql_id => @hist_sql_id, child_number: @sga_child_number, :update_area=>:hugo  }
     assert_response :success
   end
 
   test "list_sql_detail_sql_id with xhr: true" do
-    get  :list_sql_detail_sql_id , :params => {:format=>:html, :instance => "1", :sql_id => @hist_sql_id, :update_area=>:hugo }
+    get  '/dba_sga/list_sql_detail_sql_id' , :params => {:format=>:html, :instance => "1", :sql_id => @hist_sql_id, :update_area=>:hugo }
     assert_response :success
 
-    get  :list_sql_detail_sql_id , :params => {:format=>:html, :sql_id => @hist_sql_id, :update_area=>:hugo }
+    get  '/dba_sga/list_sql_detail_sql_id' , :params => {:format=>:html, :sql_id => @hist_sql_id, :update_area=>:hugo }
     assert_response :success
 
-    post :list_sql_profile_detail, :params => {:format=>:html, :profile_name=>'Hugo', :update_area=>:hugo }
+    post '/dba_sga/list_sql_profile_detail', :params => {:format=>:html, :profile_name=>'Hugo', :update_area=>:hugo }
     assert_response :success
 
   end
 
   test "list_open_cursor_per_sql with xhr: true" do
-    get :list_open_cursor_per_sql, :params => {:format=>:html, :instance=>1, :sql_id => @hist_sql_id, :update_area=>:hugo }
+    get '/dba_sga/list_open_cursor_per_sql', :params => {:format=>:html, :instance=>1, :sql_id => @hist_sql_id, :update_area=>:hugo }
     assert_response :success
   end
 
   test "list_sga_components with xhr: true" do
-    post :list_sga_components, :params => {:format=>:html, :instance=>1, :update_area=>:hugo }
+    post '/dba_sga/list_sga_components', :params => {:format=>:html, :instance=>1, :update_area=>:hugo }
     assert_response :success
 
-    post :list_sga_components, :params => {:format=>:html, :update_area=>:hugo }
+    post '/dba_sga/list_sga_components', :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
 
-    post :list_sql_area_memory, :params => {:format=>:html, :instance=>1, :update_area=>:hugo }
+    post '/dba_sga/list_sql_area_memory', :params => {:format=>:html, :instance=>1, :update_area=>:hugo }
     assert_response :success
 
-    post :list_object_cache_detail, :params => {:format=>:html, :instance=>1, :type=>"CURSOR", :namespace=>"SQL AREA", :db_link=>"", :kept=>"NO", :order_by=>"sharable_mem", :update_area=>:hugo }
+    post '/dba_sga/list_object_cache_detail', :params => {:format=>:html, :instance=>1, :type=>"CURSOR", :namespace=>"SQL AREA", :db_link=>"", :kept=>"NO", :order_by=>"sharable_mem", :update_area=>:hugo }
     assert_response :success
 
-    post :list_object_cache_detail, :params => {:format=>:html, :instance=>1, :type=>"CURSOR", :namespace=>"SQL AREA", :db_link=>"", :kept=>"NO", :order_by=>"record_count", :update_area=>:hugo }
+    post '/dba_sga/list_object_cache_detail', :params => {:format=>:html, :instance=>1, :type=>"CURSOR", :namespace=>"SQL AREA", :db_link=>"", :kept=>"NO", :order_by=>"record_count", :update_area=>:hugo }
     assert_response :success
 
   end
 
   test "list_db_cache_content with xhr: true" do
-    post :list_db_cache_content, :params => {:format=>:html, :instance=>1, :update_area=>:hugo }
+    post '/dba_sga/list_db_cache_content', :params => {:format=>:html, :instance=>1, :update_area=>:hugo }
     assert_response :success
   end
 
   test "show_using_sqls with xhr: true" do
-    get :show_using_sqls, :params => {:format=>:html, :ObjectName=>"gv$sql", :update_area=>:hugo }
+    get '/dba_sga/show_using_sqls', :params => {:format=>:html, :ObjectName=>"gv$sql", :update_area=>:hugo }
     assert_response :success
   end
 
   test "list_cursor_memory with xhr: true" do
-    get :list_cursor_memory, :params => {:format=>:html, :instance=>1, :sql_id=>@hist_sql_id, :update_area=>:hugo }
+    get '/dba_sga/list_cursor_memory', :params => {:format=>:html, :instance=>1, :sql_id=>@hist_sql_id, :update_area=>:hugo }
     assert_response :success
   end
 
   test "compare_execution_plans with xhr: true" do
-    post :list_compare_execution_plans, :params => {:format=>:html, :instance_1=>1, :sql_id_1=>@hist_sql_id, :child_number_1 =>@sga_child_number, :instance_2=>1, :sql_id_2=>@hist_sql_id, :child_number_2 =>@sga_child_number, :update_area=>:hugo }
+    post '/dba_sga/list_compare_execution_plans', :params => {:format=>:html, :instance_1=>1, :sql_id_1=>@hist_sql_id, :child_number_1 =>@sga_child_number, :instance_2=>1, :sql_id_2=>@hist_sql_id, :child_number_2 =>@sga_child_number, :update_area=>:hugo }
     assert_response :success
   end
 
   test "list_result_cache with xhr: true" do
-    post :list_result_cache, :params => {:format=>:html, :instance=>1, :update_area=>:hugo }
+    post '/dba_sga/list_result_cache', :params => {:format=>:html, :instance=>1, :update_area=>:hugo }
     assert_response :success
-    post :list_result_cache, :params => {:format=>:html, :update_area=>:hugo }
+    post '/dba_sga/list_result_cache', :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
 
     if get_db_version >= '11.2'
-      get :list_result_cache_single_results, :params => {:format=>:html, :instance=>1, :status=>'Published', :name=>'Hugo', :namespace=>'PLSQL', :update_area=>:hugo }
+      get '/dba_sga/list_result_cache_single_results', :params => {:format=>:html, :instance=>1, :status=>'Published', :name=>'Hugo', :namespace=>'PLSQL', :update_area=>:hugo }
       assert_response :success
     end
 
-    get :list_result_cache_dependencies_by_id, :params => {:format=>:html, :instance=>1, :id=>100, :status=>'Published', :name=>'Hugo', :namespace=>'PLSQL', :update_area=>:hugo }
+    get '/dba_sga/list_result_cache_dependencies_by_id', :params => {:format=>:html, :instance=>1, :id=>100, :status=>'Published', :name=>'Hugo', :namespace=>'PLSQL', :update_area=>:hugo }
     assert_response :success
 
-    get :list_result_cache_dependencies_by_name, :params => {:format=>:html, :instance=>1, :status=>'Published', :name=>'Hugo', :namespace=>'PLSQL', :update_area=>:hugo }
+    get '/dba_sga/list_result_cache_dependencies_by_name', :params => {:format=>:html, :instance=>1, :status=>'Published', :name=>'Hugo', :namespace=>'PLSQL', :update_area=>:hugo }
     assert_response :success
 
-    get :list_result_cache_dependents, :params => {:format=>:html, :instance=>1, :id=>100, :status=>'Published', :name=>'Hugo', :namespace=>'PLSQL', :update_area=>:hugo }
+    get '/dba_sga/list_result_cache_dependents', :params => {:format=>:html, :instance=>1, :id=>100, :status=>'Published', :name=>'Hugo', :namespace=>'PLSQL', :update_area=>:hugo }
     assert_response :success
   end
 
   test "list_db_cache_advice_historic with xhr: true" do
-    post :list_db_cache_advice_historic, :params => {:format=>:html, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo }
+    post '/dba_sga/list_db_cache_advice_historic', :params => {:format=>:html, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo }
     assert_response :success
   end
 
   test "list_db_cache_by_object_id with xhr: true" do
-    post :list_db_cache_by_object_id, :params => {:format=>:html, :object_id=>@object_id, :update_area=>:hugo }
+    post '/dba_sga/list_db_cache_by_object_id', :params => {:format=>:html, :object_id=>@object_id, :update_area=>:hugo }
     assert_response :success
   end
 
   test "plan_management with xhr: true" do
-    post :list_sql_profile_sqltext, :params => {:format=>:html, :profile_name=>'Hugo', :update_area=>:hugo }
+    post '/dba_sga/list_sql_profile_sqltext', :params => {:format=>:html, :profile_name=>'Hugo', :update_area=>:hugo }
     assert_response :success
 
-    post :list_sql_plan_baseline_sqltext, :params => {:format=>:html, :plan_name=>'Hugo', :update_area=>:hugo }
+    post '/dba_sga/list_sql_plan_baseline_sqltext', :params => {:format=>:html, :plan_name=>'Hugo', :update_area=>:hugo }
     assert_response :success
 
     if get_db_version >= '12.1'
       [nil, @hist_sql_id].each do |translation_sql_id|
-        post :show_sql_translations, :params => {:format=>:html, :translation_sql_id=>translation_sql_id, :update_area=>:hugo }
+        post '/dba_sga/show_sql_translations', :params => {:format=>:html, :translation_sql_id=>translation_sql_id, :update_area=>:hugo }
         assert_response :success
       end
     end
@@ -187,7 +187,7 @@ class DbaSgaControllerTest < ActionController::TestCase
     if get_db_version >= '12.1'
       [:SGA, :AWR].each do |location|
         [nil, true].each do |fixed_user|
-          post :show_sql_translations, :params => {:format      => :html,
+          post '/dba_sga/show_sql_translations', :params => {:format      => :html,
                                                    :location    => location,
                                                    :sql_id      => @hist_sql_id,
                                                    :user_name   => @hist_parsing_schema_name,
@@ -199,5 +199,45 @@ class DbaSgaControllerTest < ActionController::TestCase
       end
     end
   end
+
+  test "list_sql_monitor with xhr: true" do
+
+    sql_montitor_data = sql_select_first_row "SELECT Inst_ID, SID, Session_Serial# SerialNo, SQL_ID, SQL_Exec_ID
+                                              FROM gv$SQL_Monitor
+                                              ORDER BY Last_Refresh_Time DESC"
+
+    post '/dba_sga/list_sql_monitor', :params => {format:       :html,
+                                                  instance:     sql_montitor_data.inst_id,
+                                                  sid:          sql_montitor_data.sid,
+                                                  serialno:     sql_montitor_data.serialno,
+                                                  sql_id:       sql_montitor_data.sql_id,
+                                                  sql_exec_id:  sql_montitor_data.sql_exec_id,
+    }
+    assert_response :success
+  end
+
+  test "list_sql_monitor_sessions with xhr :true" do
+    # call render or start_sql_monitor_in_new_window depending from result count
+#    ["COUNT(*) = 1", "COUNT(*) > 1"].each do |having|    # "COUNT(*) = 1 causes redirect via browser which does not function in test environment
+    ["COUNT(*) > 1"].each do |having|
+      sql_montitor_data = sql_select_first_row "SELECT Inst_ID, SID, Session_Serial# SerialNo, SQL_ID, SQL_Plan_Hash_Value
+                                                FROM   gv$SQL_Monitor
+                                                WHERE  DECODE(Process_Name, 'ora', 1, 0) = 1
+                                                GROUP BY Inst_ID, SID, Session_Serial#, SQL_ID, SQL_Plan_Hash_Value
+                                                HAVING #{having}
+                                                ORDER BY MAX(Last_Refresh_Time) DESC"
+
+      post '/dba_sga/list_sql_monitor_sessions', :params => {format:          :html,
+                                                             instance:        sql_montitor_data.inst_id,
+                                                             sid:             sql_montitor_data.sid,
+                                                             serialno:        sql_montitor_data.serialno,
+                                                             sql_id:          sql_montitor_data.sql_id,
+                                                             plan_hash_value: sql_montitor_data.sql_plan_hash_value,
+      }
+      assert_response :success
+
+    end
+  end
+
 
 end
