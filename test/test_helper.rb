@@ -65,7 +65,7 @@ class ActiveSupport::TestCase
   def connect_oracle_db
 
     raise "Environment-Variable DB_VERSION not set" unless ENV['DB_VERSION']
-    Rails.logger.info "Starting Test with configuration test_#{ENV['DB_VERSION']}"
+    Rails.logger.info "#{Time.now} : Starting Test with configuration test_#{ENV['DB_VERSION']}"
 
     # Array mit Bestandteilen der Vorgabe aus database.yml
     #test_config = Dummy::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]

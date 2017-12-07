@@ -93,8 +93,8 @@ class ActiveSupport::TestCase
   end
 
   def set_session_test_db_context
-    Rails.logger.info ""
-    Rails.logger.info "=========== oracle_connection_test_helper.rb : set_session_test_db_context ==========="
+    message = "#{Time.now} : #{self.class}.#{self.name} started"
+    puts message
 
     # Client Info store entfernen, da dieser mit anderem Schlüssel verschlüsselt sein kann
     #FileUtils.rm_rf(Application.config.client_info_filename)
