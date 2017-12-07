@@ -16,11 +16,12 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
       @time_selection_end = min_alter_org.strftime("%d.%m.%Y %H:%M")
       @time_selection_start = (max_alter_org).strftime("%d.%m.%Y %H:%M")
 
+      # Binding DATE instead of STRING results in dependency from DB's NLS-setting
       snaps = sql_select_first_row ["SELECT /* Panorama-Tool Ramm */ MAX(Snap_ID) Min_Snap_ID, MAX(Snap_ID) Max_Snap_ID
                                     FROM   DBA_Hist_Snapshot
                                     WHERE  DBID = ?
-                                    AND    Begin_Interval_Time BETWEEN ? AND ?
-                                   ", get_dbid, max_alter_org, min_alter_org]
+                                    AND    Begin_Interval_Time BETWEEN TO_DATE(?, 'DD.MM.YYYY HH24:MI') AND TO_DATE(?, 'DD.MM.YYYY HH24:MI')
+                                   ", get_dbid, max_alter_org.strftime("%d.%m.%Y %H:%M"), min_alter_org.strftime("%d.%m.%Y %H:%M")]
       @min_snap_id = snaps.min_snap_id
       @max_snap_id = snaps.max_snap_id
       @groupfilter = {
