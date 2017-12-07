@@ -177,7 +177,7 @@ function expand_sql_id_hint(id, sql_id){
     }
     else {
         SQL_shortText_Cache[sql_id] = "< SQL-Text: request in progress>";        // Verhindern, dass während der Abfrage erneut nachgefragt wird
-        jQuery.ajax({url: "dba_history/getSQL_ShortText?sql_id="+sql_id,
+        jQuery.ajax({url: "dba_history/getSQL_ShortText?sql_id="+sql_id+'&browser_tab_id='+browser_tab_id,
             dataType: "json",
             success: function(response) {
                 if (response['sql_short_text']){
@@ -248,7 +248,7 @@ function ajax_html(update_area, controller, action, payload, options){
                 }
             }
         },
-        url: controller+'/'+action+'?window_width='+jQuery(window).width(),
+        url: controller+'/'+action+'?window_width='+jQuery(window).width()+'&browser_tab_id='+browser_tab_id,
         data: payload
     });
 }

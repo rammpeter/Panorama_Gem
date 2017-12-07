@@ -68,6 +68,14 @@ class ApplicationController < ActionController::Base
       I18n.locale = 'en'                                                        # wenn Problem bei Lesen des Cookies auftreten, dann Default verwenden
     end
 
+    if ENV['RAILS_ENV'] == 'test'
+      @browser_tab_id = 1                                                       # Use browser_tab_id 1 for test instead of param
+    else
+      @browser_tab_id = params[:browser_tab_id]
+    end
+    @browser_tab_id = nil if @browser_tab_id == ''
+    @browser_tab_id = @browser_tab_id.to_i unless @browser_tab_id.nil?
+
     # Ausschluss von Methoden, die keine DB-Connection bebötigen
     # Präziser before_filter mit Test auf controller
     if (controller_name == 'env' && ['index', 'get_tnsnames_records', 'set_locale', 'set_database_by_params', 'set_database_by_id'].include?(action_name) ) ||
@@ -76,8 +84,10 @@ class ApplicationController < ActionController::Base
       return
     end
 
+    raise "URL-parameter 'browser_tab_id' missing for request with controller = #{controller_name}, action = #{action_name}.\nPlease report error to administrator." if @browser_tab_id.nil?
+
     begin
-      current_database = read_from_client_info_store(:current_database)
+      current_database = get_current_database
       raise PopupMessageException.new('No current DB connect info set! Please reconnect to DB!') unless current_database
       set_connection_info_for_request(current_database)
     rescue StandardError => e                                                   # Problem bei Zugriff auf verschlüsselte Cookies

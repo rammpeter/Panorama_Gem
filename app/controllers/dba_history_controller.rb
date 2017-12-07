@@ -839,6 +839,12 @@ class DbaHistoryController < ApplicationController
       @time_selection_end =alter.time_selection_end
     end
 
+    if @time_selection_start == nil || @time_selection_end == nil
+      show_popup_message "No AWR snapshots found for DBID = #{@dbid} #{" and Instance = #{@instance}" if @instance}"
+      return
+    end
+
+
     @hist = sql_select_iterator(["\
       SELECT /* Panorama-Tool Ramm */
              #{@begin_interval_sql}             Begin_Interval_Time,

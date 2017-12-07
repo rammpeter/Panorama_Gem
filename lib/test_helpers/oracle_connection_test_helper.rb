@@ -71,7 +71,14 @@ class ActiveSupport::TestCase
 
     # Passwort verschlüsseln in session
     current_database[:password] = Encryption.encrypt_value(test_config["test_password"], cookies['client_salt'])
-    write_to_client_info_store(:current_database, current_database)
+
+    @browser_tab_id = 1
+    browser_tab_ids = { @browser_tab_id => {
+        current_database: current_database,
+        last_used: Time.now
+    }
+    }
+    write_to_client_info_store(:browser_tab_ids, browser_tab_ids)
 
 
     # puts "Test for #{ENV['DB_VERSION']} with #{database.user}/#{database.password}@#{database.host}:#{database.port}:#{database.sid}"

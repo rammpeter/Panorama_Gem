@@ -23,6 +23,7 @@ class EnvController < ApplicationController
   def index
     # Ensure client browser has unique client_key stored as cookie (create new one if not already exists)
     initialize_client_key_cookie
+    initialize_browser_tab_id                                                   # Helper to distiguish browser tabs
 
     set_I18n_locale('en') if get_locale.nil?                                    # Locale not yet specified, set default
 
@@ -52,7 +53,6 @@ class EnvController < ApplicationController
     write_to_client_info_store(:last_used_menu_caption,     'Start')
     write_to_client_info_store(:last_used_menu_hint,        t(:menu_env_index_hint, :default=>"Start of application without connect to database"))
 
-    @panorama_session_key = rand(10000000)                                      # Unique key to distinguish multiple tabs or windows of one browser instance
 
   rescue Exception=>e
     Rails.logger.error("#{e.message}")
@@ -403,7 +403,7 @@ private
   # Schreiben der aktuellen Connection in last logins, wenn neue dabei
   def write_connection_to_last_logins
 
-    database = read_from_client_info_store(:current_database)
+    database = get_current_database
 
     last_logins = read_last_logins
     min_id = nil

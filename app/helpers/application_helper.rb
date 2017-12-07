@@ -93,13 +93,17 @@ module ApplicationHelper
 
     @buffered_current_database = nil                                            # lokalen Cache verwerfen
     current_database[:query_timeout] = current_database[:query_timeout].to_i if !current_database.nil?
-    write_to_client_info_store(:current_database, current_database)
+
+    browser_tab_ids = read_from_client_info_store(:browser_tab_ids)             # read full tree with all browser-tab-specific connections
+    browser_tab_ids[@browser_tab_id][:current_database] = current_database      # set current connection for current browser tab
+    write_to_client_info_store(:browser_tab_ids, browser_tab_ids)               # write full tree back to store
 
     set_connection_info_for_request(current_database)                           # Pin connection info for following request
   end
 
   def get_current_database
-    @buffered_current_database = read_from_client_info_store(:current_database) if !defined?(@buffered_current_database) || @buffered_current_database.nil?
+    browser_tab_ids = read_from_client_info_store(:browser_tab_ids)
+    @buffered_current_database = browser_tab_ids[@browser_tab_id][:current_database] if !defined?(@buffered_current_database) || @buffered_current_database.nil?
     @buffered_current_database
   end
 

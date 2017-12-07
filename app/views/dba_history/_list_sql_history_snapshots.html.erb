@@ -82,7 +82,7 @@ caption << (ajax_form(:controller => :dba_history, :action        => :list_sql_h
 
   form_content << '&nbsp;&nbsp;&nbsp;'
   form_content << "<span title=\"Parsing schema name. You can change this filter value or empty this field to disable the filter\">Schema "
-  form_content << text_field_tag(:parsing_schema_name, @parsing_schema_name, :size=>10)
+  form_content << text_field_tag(:parsing_schema_name, @parsing_schema_name, :size=>20)
   form_content << '</span>'
 
   form_content << '&nbsp;&nbsp;&nbsp;'

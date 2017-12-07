@@ -19,10 +19,11 @@
   <%= csrf_meta_tags %>
 
   <script type="text/javascript">
+    var browser_tab_id = <%= @browser_tab_id %>;                                // Unique identifier for browser tab
 
     /* Initialisierung von Objekten bei startup der Seite */
     jQuery(document).ready(function(){
-      bind_ajax_callbacks();                                                  // Callbacks für jeden Ajax-Aufruf binden
+      bind_ajax_callbacks();                                                    // Callbacks für jeden Ajax-Aufruf binden
       jQuery("#ajax_indicator").dialog({
         dialogClass: "no-close",
         autoOpen:false,
@@ -98,6 +99,7 @@
                 <% end %>
               </select>
             </div>
+            <%= hidden_field_tag('browser_tab_id', @browser_tab_id) %>
             <%= submit_tag t(:login_submit_caption, :default=>"Login"), :name => "login", :title => t(:login_saved_login_title, :default=>"Login with selected saved credentials"), :disabled=>(last_logins.length==0) %>
             <%= submit_tag t(:login_saved_delete_caption, :default=>"Delete"), :name => "delete", :title => t(:login_saved_delete_title, :default=>"Delete selected saved login information"), data: { confirm: t(:login_saved_delete_confirmation, :default=>"Do you really want to delete this saved login credential?") }, :disabled=>(last_logins.length==0) %>
         <% end %>
@@ -193,6 +195,7 @@
         </tr>
         <tr>
           <td colspan="2" align="center">
+            <%= hidden_field_tag('browser_tab_id', @browser_tab_id) %>
             <%= submit_tag t(:login_submit_caption, :default=>"Login"), :id => "submit_login_dialog" %>
           </td>
         </tr>

@@ -7,7 +7,8 @@
                        :sid          => @sid,
                        :serialno     => @serialno,
                        :sql_id       => @sql_id,
-                       :sql_exec_id  => @sql_exec_id
+                       :sql_exec_id  => @sql_exec_id,
+                       browser_tab_id: @browser_tab_id
                ), :target=>'_blank'
       ) do %>
       <%= submit_tag('Open new SQL Monitor browser tab', :id => @button_id, :onclick=>"jQuery('##{@button_id}').css('display', 'none');", :style => "display: none;", 'data-disable-with'=>false, :title=>"Safari doesn't allow new browser tab from Javascript code (Popup-protection).\nTherefore you must click the button yourself.") %>
