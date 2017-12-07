@@ -201,47 +201,61 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_sql_monitor with xhr: true" do
+    begin
 
-    sql_montitor_data = sql_select_first_row "SELECT Inst_ID, SID, Session_Serial# SerialNo, SQL_ID, SQL_Exec_ID
-                                              FROM gv$SQL_Monitor
-                                              ORDER BY Last_Refresh_Time DESC"
+      sql_montitor_data = sql_select_first_row "SELECT Inst_ID, SID, Session_Serial# SerialNo, SQL_ID, SQL_Exec_ID
+                                                FROM gv$SQL_Monitor
+                                                ORDER BY Last_Refresh_Time DESC"
 
-    if sql_montitor_data.nil?
-      Rails.logger.info "Test list_sql_monitor: no data found from gv$SQL_Monitor, test terminated"
-    else
-      post '/dba_sga/list_sql_monitor', :params => {format:       :html,
-                                                    instance:     sql_montitor_data.inst_id,
-                                                    sid:          sql_montitor_data.sid,
-                                                    serialno:     sql_montitor_data.serialno,
-                                                    sql_id:       sql_montitor_data.sql_id,
-                                                    sql_exec_id:  sql_montitor_data.sql_exec_id,
-      }
-      assert_response :success
+      if sql_montitor_data.nil?
+        Rails.logger.info "Test list_sql_monitor: no data found from gv$SQL_Monitor, test terminated"
+      else
+        post '/dba_sga/list_sql_monitor', :params => {format:       :html,
+                                                      instance:     sql_montitor_data.inst_id,
+                                                      sid:          sql_montitor_data.sid,
+                                                      serialno:     sql_montitor_data.serialno,
+                                                      sql_id:       sql_montitor_data.sql_id,
+                                                      sql_exec_id:  sql_montitor_data.sql_exec_id,
+        }
+        assert_response :success
+      end
+    rescue PopupMessageException
+      # each request without :diagnostics_and_tuning_pack should result in PopupMessageException
+      if get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack
+        raise "#{self.class} test list_sql_monitor: PopupMessageException catched for get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack"
+      end
     end
   end
 
   test "list_sql_monitor_sessions with xhr :true" do
-    # call render or start_sql_monitor_in_new_window depending from result count
-#    ["COUNT(*) = 1", "COUNT(*) > 1"].each do |having|    # "COUNT(*) = 1 causes redirect via browser which does not function in test environment
-    ["COUNT(*) > 1"].each do |having|
-      sql_montitor_data = sql_select_first_row "SELECT Inst_ID, SID, Session_Serial# SerialNo, SQL_ID, SQL_Plan_Hash_Value
-                                                FROM   gv$SQL_Monitor
-                                                WHERE  DECODE(Process_Name, 'ora', 1, 0) = 1
-                                                GROUP BY Inst_ID, SID, Session_Serial#, SQL_ID, SQL_Plan_Hash_Value
-                                                HAVING #{having}
-                                                ORDER BY MAX(Last_Refresh_Time) DESC"
+    begin
+      # call render or start_sql_monitor_in_new_window depending from result count
+  #    ["COUNT(*) = 1", "COUNT(*) > 1"].each do |having|    # "COUNT(*) = 1 causes redirect via browser which does not function in test environment
+      ["COUNT(*) > 1"].each do |having|
+        sql_montitor_data = sql_select_first_row "SELECT Inst_ID, SID, Session_Serial# SerialNo, SQL_ID, SQL_Plan_Hash_Value
+                                                  FROM   gv$SQL_Monitor
+                                                  WHERE  DECODE(Process_Name, 'ora', 1, 0) = 1
+                                                  GROUP BY Inst_ID, SID, Session_Serial#, SQL_ID, SQL_Plan_Hash_Value
+                                                  HAVING #{having}
+                                                  ORDER BY MAX(Last_Refresh_Time) DESC"
 
-      if sql_montitor_data.nil?
-        Rails.logger.info "Test list_sql_monitor_sessions: no data found from gv$SQL_Monitor, test terminated"
-      else
-        post '/dba_sga/list_sql_monitor_sessions', :params => {format:          :html,
-                                                               instance:        sql_montitor_data.inst_id,
-                                                               sid:             sql_montitor_data.sid,
-                                                               serialno:        sql_montitor_data.serialno,
-                                                               sql_id:          sql_montitor_data.sql_id,
-                                                               plan_hash_value: sql_montitor_data.sql_plan_hash_value,
-        }
-        assert_response :success
+        if sql_montitor_data.nil?
+          Rails.logger.info "Test list_sql_monitor_sessions: no data found from gv$SQL_Monitor, test terminated"
+        else
+          post '/dba_sga/list_sql_monitor_sessions', :params => {format:          :html,
+                                                                 instance:        sql_montitor_data.inst_id,
+                                                                 sid:             sql_montitor_data.sid,
+                                                                 serialno:        sql_montitor_data.serialno,
+                                                                 sql_id:          sql_montitor_data.sql_id,
+                                                                 plan_hash_value: sql_montitor_data.sql_plan_hash_value,
+          }
+          assert_response :success
+        end
+      end
+    rescue PopupMessageException
+      # each request without :diagnostics_and_tuning_pack should result in PopupMessageException
+      if get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack
+        raise "#{self.class} test list_sql_monitor: PopupMessageException catched for get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack"
       end
     end
   end
