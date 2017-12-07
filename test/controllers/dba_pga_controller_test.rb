@@ -4,7 +4,7 @@ require 'test_helper'
 class DbaPgaControllerTest < ActionController::TestCase
 
   setup do
-    set_session_test_db_context{}
+    set_session_test_db_context
 
     min_alter_org = sql_select_one "SELECT /* Panorama-Tool Ramm */ MAX(Begin_Interval_Time) FROM DBA_Hist_Snapshot"
     max_alter_org = min_alter_org-10000

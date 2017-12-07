@@ -5,7 +5,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
 
   setup do
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
-    set_session_test_db_context{}
+    set_session_test_db_context
     time_selection_end  = Time.new
     time_selection_start  = time_selection_end-100000
     @time_selection_end = time_selection_end.strftime("%d.%m.%Y %H:%M")

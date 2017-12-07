@@ -112,7 +112,7 @@ class ActiveSupport::TestCase
     @serialno = db_session.serialno
     @saddr    = db_session.saddr
 
-    yield   # Ausführen optionaler Blöcke mit Anweisungen, die gegen die Oracle-Connection verarbeitet werden
+    yield if block_given?                                                       # Ausführen optionaler Blöcke mit Anweisungen, die gegen die Oracle-Connection verarbeitet werden
 
     # Rückstellen auf NullDB kann man sich hier sparen
   end

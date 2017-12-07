@@ -4,7 +4,7 @@ require 'test_helper'
 class HelpControllerTest < ActionDispatch::IntegrationTest
 
   setup do
-    set_session_test_db_context{}
+    set_session_test_db_context
   end
 
   test "overview with xhr: true" do

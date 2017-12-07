@@ -5,7 +5,7 @@ class DbaHistoryControllerTest < ActionController::TestCase
 
   setup do
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
-    set_session_test_db_context{}
+    set_session_test_db_context
 
     #time_selection_end  = Time.new
     # TODO: Additional test with overlapping start and end (first snapshot after start and last snapshot before end)

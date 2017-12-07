@@ -7,7 +7,7 @@ class DragnetControllerTest < ActionController::TestCase
 
   setup do
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
-    set_session_test_db_context{}
+    set_session_test_db_context
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat

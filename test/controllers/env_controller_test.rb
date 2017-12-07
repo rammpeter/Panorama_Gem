@@ -7,7 +7,7 @@ include ActionView::Helpers::TranslationHelper
 class EnvControllerTest <  ActionDispatch::IntegrationTest
 
   setup do
-    set_session_test_db_context{}
+    set_session_test_db_context
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat

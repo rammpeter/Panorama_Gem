@@ -3,7 +3,7 @@ require 'test_helper'
 class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
 
   setup do
-    set_session_test_db_context{}
+    set_session_test_db_context
     EngineConfig.config.panorama_sampler_master_password = 'hugo'
 
     @config_entry_without_id                                  = get_current_database
