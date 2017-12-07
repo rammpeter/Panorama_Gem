@@ -16,7 +16,7 @@ class DbaHistoryControllerTest < ActionController::TestCase
     @time_selection_start = time_selection_start.strftime("%d.%m.%Y %H:%M")
     @min_snap_id = sql_select_one ["SELECT  /* Panorama-Tool Ramm */ MIN(Snap_ID)
                                    FROM    DBA_Hist_Snapshot
-                                   WHERE   Begin_Interval_Time >= ?", time_selection_start ]
+                                   WHERE   Begin_Interval_Time >= TO_DATE(?, 'DD.MM.YYYY HH24:MI')", @time_selection_start ]
     raise "No snapshot found after #{time_selection_start}" if @min_snap_id.nil?
 
     @max_snap_id = sql_select_one ["SELECT  /* Panorama-Tool Ramm */ MAX(Snap_ID)
