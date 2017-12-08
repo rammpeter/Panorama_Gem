@@ -57,12 +57,13 @@
 
   active_session_history_list_blocking_locks_historic_sample_wait_caption: |-
     Zeit in Sekunden die mittelbar und unmittelbar geblockte Sessions warteten innerhalb des betrachteten Zeitraumes
-    Gewichteter Wert berechnet aus der Anzahl Samples in der Active Session History
+    Gewichteter Wert berechnet aus der Anzahl Samples in der Active Session History.
+    Für kleine wait times kann dieser Wert erheblich größer als die Relaität sein da jeder Sample-Record für eine oder zehn Sekunden steht
 
   active_session_history_list_blocking_locks_historic_total_wait_caption: |-
     Summe Anzahl Sekunden die mittelbar und unmittelbar geblockte Sessions bereits im Wartezustand warten.
     Maximaler Wert zu einem Zeitpunkt des betrachteten Zeitraumes
-    Aus v$Session.Wait_Time+Time_waited
+    Aus v$Session.Time_waited
     Kann kumulierte Werte enthalten von vor dem Beginn des betrachteten Zeitraumes
 
   active_session_history_list_groupfilter_delete_filter_hint: Refresh der Anzeige ohne diesen Filter
@@ -71,7 +72,7 @@
 
   active_session_history_list_blocking_locks_historic_blocking_action_hint:   Action der blockenden Session
   active_session_history_list_blocking_locks_historic_blocking_event_hint:    Wait-Event der blockenden Session
-  active_session_history_list_blocking_locks_historic_blocking_module_hint:   Module der blockenden Session
+  active_session_history_list_blocking_locks_historic_blocking_module_hint:   Module, Action und Programm der blockenden Session
   active_session_history_list_blocking_locks_historic_blocking_object_hint:   Objekt auf dessen Freigabe direkt von der wartenden Session gewartet wird (oder Anzahl wenn mehrere im Zeitraum)
   active_session_history_list_blocking_locks_historic_blocking_sid_hint:      SID der blockenden Session
   active_session_history_list_blocking_locks_historic_blocking_sqlid_hint:    SQL-ID der blockenden Session
@@ -90,7 +91,7 @@
   active_session_history_list_blocking_locks_historic_detail_session_waiting_hint: |-
     Summe Anzahl Sekunden die diese Session bereits im Wartezustand wartet auf die blockend Session.
     Maximaler Wert zu einem Zeitpunkt des betrachteten Zeitraumes
-    Aus v$Session.Wait_Time+Time_waited
+    Aus v$Session.Time_waited
     Kann kumulierte Werte enthalten von vor dem Beginn des betrachteten Zeitraumes.
 
   active_session_history_list_blocking_locks_historic_detail_session_wait_sample_hint: |-

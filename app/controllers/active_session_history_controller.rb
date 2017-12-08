@@ -450,7 +450,7 @@ class ActiveSessionHistoryController < ApplicationController
 
     @locks = sql_select_iterator [
       "WITH /* Panorama-Tool Ramm */
-                   TSSel AS (SELECT h.*, (h.Wait_Time+h.Time_Waited)/1000000 Seconds_in_Wait
+                   TSSel AS (SELECT h.*, h.Time_Waited/1000000 Seconds_in_Wait
                              FROM   (
                                       SELECT 10 Sample_Cycle,
                                              /* auf 10 Sekunden genau gerundete Zeit */
@@ -458,7 +458,7 @@ class ActiveSessionHistoryController < ApplicationController
                                              Snap_ID, h.Instance_Number, Session_ID, Session_Serial#,
                                              Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, Current_File#, Current_Block#,
                                              #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
-                                             p2, p2Text, Wait_Time, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Module, Action
+                                             p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Module, Action, Program
                                       FROM   DBA_Hist_Active_Sess_History h
                                       LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = h.Instance_Number
                                       WHERE  (v.Min_Sample_Time IS NULL OR h.Sample_Time < v.Min_Sample_Time)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen  */
@@ -471,7 +471,7 @@ class ActiveSessionHistoryController < ApplicationController
                                              NULL Snap_ID, h.Inst_ID Instance_Number, Session_ID, Session_Serial#,
                                              Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, Current_File#, Current_Block#,
                                              #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
-                                             p2, p2Text, Wait_Time, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Module, Action
+                                             p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Module, Action, Program
                                       FROM   gv$Active_Session_History h
                                       WHERE  Sample_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                                     ) h
@@ -492,6 +492,7 @@ class ActiveSessionHistoryController < ApplicationController
                            CONNECT_BY_ROOT Snap_ID                  Root_Snap_ID,
                            CONNECT_BY_ROOT Module                   Root_Module,
                            CONNECT_BY_ROOT Action                   Root_Action,
+                           CONNECT_BY_ROOT Program                  Root_Program,
                            l.*,
                            Level cLevel,
                            Connect_By_IsCycle Is_Cycle
@@ -539,6 +540,7 @@ class ActiveSessionHistoryController < ApplicationController
                                  CASE WHEN COUNT(DISTINCT Root_Event)           > 1 THEN '< '||COUNT(DISTINCT Root_Event)          ||' >' ELSE MIN(Root_Event)           END Root_Event,
                                  CASE WHEN COUNT(DISTINCT Root_Module)          > 1 THEN '< '||COUNT(DISTINCT Root_Module)         ||' >' ELSE MIN(Root_Module)          END Root_Module,
                                  CASE WHEN COUNT(DISTINCT Root_Action)          > 1 THEN '< '||COUNT(DISTINCT Root_Action)         ||' >' ELSE MIN(Root_Action)          END Root_Action,
+                                 CASE WHEN COUNT(DISTINCT Root_Program)         > 1 THEN '< '||COUNT(DISTINCT Root_Program)        ||' >' ELSE MIN(Root_Program)         END Root_Program,
                                  MAX(cLevel) MaxLevel,
                                  SUM(CASE WHEN cLevel=1 THEN 1 ELSE 0 END) Sample_Count_Direct
                           FROM   root_sel l
@@ -549,11 +551,11 @@ class ActiveSessionHistoryController < ApplicationController
        SELECT c.Min_Sample_Time, c.Max_Sample_Time, c.Min_Snap_ID, c.Max_Snap_ID,
               x.Root_Blocking_Session, x.Root_Blocking_Session_Serial# Root_Blocking_Session_SerialNo,
               x.Root_Blocking_Session_Status #{', x.Root_Blocking_Inst_ID' if get_db_version >= '11.2'},
-              x.Root_Blocking_Event, x.Root_Blocking_Module, x.Root_Blocking_Action, x.Root_Blocking_Program, x.Root_Blocking_SQL_ID, u.UserName Root_Blocking_UserName,
+              x.Root_Blocking_Event, x.Root_Blocking_Module, x.Root_Blocking_Action, x.Root_Blocking_Program, x.Root_Blocking_Program, x.Root_Blocking_SQL_ID, u.UserName Root_Blocking_UserName,
               x.DeadLock, x.Max_Seconds_in_Wait_Total,
               c.Current_File_No, c.Current_Block_No, c.Current_Row_No, c.Data_Object_ID,
               c.Blocked_Sessions_Total, c.Waiting_Instance, c.Blocked_Sessions_Direct, c.Seconds_in_Wait_Sample, c.Root_Blocking_Object_Type, c.Root_Blocking_Object_Owner, c.Root_Blocking_Object, c.Root_Blocking_SubObject, Root_Blocking_Object_Addition, c.Root_Instance_Number,
-              c.Root_SQL_ID, c.Root_UserName, c.Root_Event, c.Root_Module, c.Root_Action, c.MaxLevel, c.Sample_Count_Direct
+              c.Root_SQL_ID, c.Root_UserName, c.Root_Event, c.Root_Module, c.Root_Action, c.Root_Program, c.MaxLevel, c.Sample_Count_Direct
        FROM   (
               SELECT /*+ USE_NL(gr rhh) */
                      Decode(SUM(gr.Is_Cycle_Sum), 0, NULL, 'Y') Deadlock,
@@ -602,7 +604,7 @@ class ActiveSessionHistoryController < ApplicationController
        LEFT OUTER JOIN DBA_Users u ON u.User_ID = x.Root_Blocking_User_ID
        JOIN   root_sel_compr c ON  NVL(c.Root_Blocking_Session, 0) = NVL(x.Root_Blocking_Session,0) AND NVL(c.Root_Blocking_Session_Serial#, 0) = NVL(x.Root_Blocking_Session_Serial#, 0)
                                AND c.Root_Blocking_Session_Status = x.Root_Blocking_Session_Status #{' AND NVL(c.Root_Blocking_Inst_ID, 0) = NVL(x.Root_Blocking_Inst_ID, 0)' if get_db_version >= '11.2'}
-       ORDER BY x.Max_Seconds_in_Wait_Total+c.Seconds_in_Wait_Sample DESC
+       ORDER BY x.Max_Seconds_in_Wait_Total DESC
        ", @dbid, @min_snap_id, @max_snap_id, @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end, @dbid]
 
     render_partial
@@ -618,6 +620,9 @@ class ActiveSessionHistoryController < ApplicationController
     @blocking_instance          = params[:blocking_instance]
     @blocking_session           = params[:blocking_session]
     @blocking_session_serialno  = params[:blocking_session_serialno]
+    @blocking_instance          = nil if @blocking_instance         == ''
+    @blocking_session           = nil if @blocking_session          == ''
+    @blocking_session_serialno  = nil if @blocking_session_serialno == ''
 
     wherevalues = [ @dbid, @min_snap_id, @max_snap_id, @min_sample_time , @max_sample_time, @min_sample_time , @max_sample_time ]
     wherevalues << @blocking_session          if @blocking_session
@@ -633,7 +638,7 @@ class ActiveSessionHistoryController < ApplicationController
                                      TRUNC(h.Sample_Time+INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(h.Sample_Time+INTERVAL '5' SECOND, 'SS'))/10)/8640  Rounded_Sample_Time,
                                      h.Instance_Number, Session_ID, Session_Serial#, Current_File#, Current_Block#,
                                      Snap_ID, Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2'}
-                                     p2, p2Text, Wait_Time, Time_Waited, Current_Obj#, SQL_ID, SQL_Child_Number, User_ID, Event, Module, Action
+                                     p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, SQL_Child_Number, User_ID, Event, Module, Action, Program
                               FROM   DBA_Hist_Active_Sess_History h
                               LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = h.Instance_Number
                               WHERE  (v.Min_Sample_Time IS NULL OR h.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
@@ -647,7 +652,7 @@ class ActiveSessionHistoryController < ApplicationController
                                      CAST(Sample_Time + INTERVAL '0.5' SECOND AS DATE) Rounded_Sample_Time, /* auf eine Sekunde genau gerundete Zeit */
                                      h.Inst_ID, Session_ID, Session_Serial#, Current_File#, Current_Block#,
                                      NULL Snap_ID, Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2'}
-                                     p2, p2Text, Wait_Time, Time_Waited, Current_Obj#, SQL_ID, SQL_Child_Number, User_ID, Event, Module, Action
+                                     p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, SQL_Child_Number, User_ID, Event, Module, Action, Program
                               FROM   gv$Active_Session_History h
                               WHERE  CAST(Sample_Time + INTERVAL '0.5' SECOND AS DATE) >= TO_DATE(?, '#{sql_datetime_second_mask}')      /* auf eine Sekunde genau gerundete Zeit */
                               AND    CAST(Sample_Time + INTERVAL '0.5' SECOND AS DATE) <= TO_DATE(?, '#{sql_datetime_second_mask}')      /* auf eine Sekunde genau gerundete Zeit */
@@ -713,6 +718,7 @@ class ActiveSessionHistoryController < ApplicationController
                                   CASE WHEN COUNT(DISTINCT CASE WHEN cLevel = 2 THEN Event           END) > 1 THEN  '< '||COUNT(DISTINCT CASE WHEN cLevel = 2 THEN Event           END)||' >' ELSE MAX(CASE WHEN cLevel = 2 THEN Event                    END) END Blocked_Event,
                                   CASE WHEN COUNT(DISTINCT CASE WHEN cLevel = 2 THEN Module          END) > 1 THEN  '< '||COUNT(DISTINCT CASE WHEN cLevel = 2 THEN Module          END)||' >' ELSE MAX(CASE WHEN cLevel = 2 THEN Module                   END) END Blocked_Module,
                                   CASE WHEN COUNT(DISTINCT CASE WHEN cLevel = 2 THEN Action          END) > 1 THEN  '< '||COUNT(DISTINCT CASE WHEN cLevel = 2 THEN Action          END)||' >' ELSE MAX(CASE WHEN cLevel = 2 THEN Action                   END) END Blocked_Action,
+                                  CASE WHEN COUNT(DISTINCT CASE WHEN cLevel = 2 THEN Program         END) > 1 THEN  '< '||COUNT(DISTINCT CASE WHEN cLevel = 2 THEN Program         END)||' >' ELSE MAX(CASE WHEN cLevel = 2 THEN Program                  END) END Blocked_Program,
                                  MAX(cLevel)-1 MaxLevel
                            FROM   root_sel l
                            LEFT OUTER JOIN DBA_Objects o  ON  o.Object_ID = Root_Real_Current_Object_No
@@ -726,13 +732,14 @@ class ActiveSessionHistoryController < ApplicationController
                            MAX(Rounded_Sample_Time)+(MIN(Sample_Cycle)/86400)   Max_Sample_Time,                        /* wegen Nachfolgendem BETWEEN-Vergleich der gerundeten Zeiten auf nächsten Sample_Cycle abgrenzen */
                            MIN(Snap_ID)                                         Min_Snap_ID,
                            MAX(Snap_ID)                                         Max_Snap_ID,
-                           MAX((Wait_Time+Time_Waited)/1000000)   Max_Seconds_in_Wait,      /* max. Wartezeit der geblockten Session innerhalb Zeitraum */
+                           MAX(Time_Waited/1000000)               Max_Seconds_in_Wait,      /* max. Wartezeit der geblockten Session innerhalb Zeitraum */
                            SUM(Sample_Cycle)                      Seconds_in_Wait_Sample,   /* Wartezeit auf Basis der anzahl ASH-Samples */
                            MIN(User_ID)                           User_ID,                   /* bleit identisch innerhalb einer Session */
-                           CASE WHEN COUNT(DISTINCT SQL_ID) > 1 THEN '< '||COUNT(DISTINCT SQL_ID) ||' >' ELSE MIN(SQL_ID) END SQL_ID,
-                           CASE WHEN COUNT(DISTINCT Event)  > 1 THEN '< '||COUNT(DISTINCT Event)  ||' >' ELSE MIN(Event)  END Event,
-                           CASE WHEN COUNT(DISTINCT Module) > 1 THEN '< '||COUNT(DISTINCT Module) ||' >' ELSE MIN(Module) END Module,
-                           CASE WHEN COUNT(DISTINCT Action) > 1 THEN '< '||COUNT(DISTINCT Action) ||' >' ELSE MIN(Action) END Action
+                           CASE WHEN COUNT(DISTINCT SQL_ID)  > 1 THEN '< '||COUNT(DISTINCT SQL_ID)  ||' >' ELSE MIN(SQL_ID)  END SQL_ID,
+                           CASE WHEN COUNT(DISTINCT Event)   > 1 THEN '< '||COUNT(DISTINCT Event)   ||' >' ELSE MIN(Event)   END Event,
+                           CASE WHEN COUNT(DISTINCT Module)  > 1 THEN '< '||COUNT(DISTINCT Module)  ||' >' ELSE MIN(Module)  END Module,
+                           CASE WHEN COUNT(DISTINCT Action)  > 1 THEN '< '||COUNT(DISTINCT Action)  ||' >' ELSE MIN(Action)  END Action,
+                           CASE WHEN COUNT(DISTINCT Program) > 1 THEN '< '||COUNT(DISTINCT Program) ||' >' ELSE MIN(Program) END Program
                     FROM   tSel
                     WHERE  #{@blocking_session ? "Blocking_Session = ? AND Blocking_Session_Serial# = ? #{' AND Blocking_Inst_ID = ?' if get_db_version >= '11.2'}" : "Blocking_Session_Status='GLOBAL'"}
                     GROUP BY Instance_Number, Session_ID, Session_Serial#
@@ -750,14 +757,14 @@ class ActiveSessionHistoryController < ApplicationController
                c.Blocking_File_No, c.Blocking_Block_No, c.Blocking_Row_No,
                c.Blocked_File_No,  c.Blocked_Block_No,  c.Blocked_Row_No,
                c.Sample_Count_Direct, c.MaxLevel,
-               c.Blocked_Instance, c.Blocked_UserName, c.Blocked_SQL_ID, c.Blocked_Event, c.Blocked_Module, c.Blocked_Action,
+               c.Blocked_Instance, c.Blocked_UserName, c.Blocked_SQL_ID, c.Blocked_Event, c.Blocked_Module, c.Blocked_Action, c.Blocked_Program,
                cs.*
         FROM   dir_sel o
         JOIN   (-- Alle gelockten Sessions incl. mittelbare
                 SELECT Root_Instance_Number, Root_Session_ID, Root_Session_Serial#, Root_Blocking_Session_Status, DECODE(SUM(Sum_Is_Cycle), 0, NULL, 'Y') Deadlock,
                        MAX(Seconds_in_Wait_Blocked_Total) Max_Sec_in_Wait_Blocked_Total
                 FROM   (SELECT Root_Instance_Number, Root_Session_ID, Root_Session_Serial#, Root_Blocking_Session_Status,
-                               SUM(CASE WHEN CLevel>1 THEN (Wait_Time+Time_Waited)/1000000 ELSE 0 END) Seconds_in_Wait_Blocked_Total,
+                               SUM(CASE WHEN CLevel>1 THEN Time_Waited/1000000 ELSE 0 END) Seconds_in_Wait_Blocked_Total,
                                SUM(Is_Cycle) Sum_Is_Cycle
                         FROM   root_sel
                         GROUP BY Rounded_Sample_Time, Root_Instance_Number, Root_Session_ID, Root_Session_Serial#, Root_Blocking_Session_Status
@@ -766,7 +773,7 @@ class ActiveSessionHistoryController < ApplicationController
                 ) cs ON cs.Root_Instance_Number = o.Instance_Number AND cs.Root_Session_ID = o.Session_ID AND cs.Root_Session_Serial# = o.Session_Serial#
         JOIN    root_sel_compr c ON c.Root_Instance_Number = cs.Root_Instance_Number AND c.Root_Session_ID = cs.Root_Session_ID AND c.Root_Session_Serial# = cs.Root_Session_Serial#
         LEFT OUTER JOIN DBA_Users u   ON u.User_ID = o.User_ID
-        ORDER BY o.Max_Seconds_in_Wait+o.Seconds_in_Wait_Sample+cs.Max_Sec_in_Wait_Blocked_Total+Seconds_in_Wait_Blocked_Sample DESC"].concat(wherevalues)
+        ORDER BY o.Max_Seconds_in_Wait+cs.Max_Sec_in_Wait_Blocked_Total DESC"].concat(wherevalues)
 
 
     render_partial
