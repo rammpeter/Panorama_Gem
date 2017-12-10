@@ -379,7 +379,7 @@ module KeyExplanationHelper
           'enq: TE - KTF broadcast'           => 'KTF broadcasting',
           'enq: TF - contention'              => 'Serializes dropping of a temporary file',
           'enq: TL - contention'              => 'Serializes threshold log table read and update',
-          'enq: TM - contention'              => 'Synchronizes accesses to an object',
+          'enq: TM - contention'              => "Synchronizes accesses to an object.\nMay be caused by missing index on foreign key column.",
           'enq: TO - contention'              => 'Synchronizes DDL and DML operations on a temp object',
           'enq: TQ - TM contention'           => 'TM access to the queue table',
           'enq: TQ - DDL contention'          => 'TM access to the queue table',
