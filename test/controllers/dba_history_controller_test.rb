@@ -21,7 +21,7 @@ class DbaHistoryControllerTest < ActionController::TestCase
 
     @max_snap_id = sql_select_one ["SELECT  /* Panorama-Tool Ramm */ MAX(Snap_ID)
                                    FROM    DBA_Hist_Snapshot
-                                   WHERE   Begin_Interval_Time <= ?", time_selection_end ]
+                                   WHERE   Begin_Interval_Time <= TO_DATE(?, 'DD.MM.YYYY HH24:MI')", @time_selection_end ]
     @sga_sql_id_without_history = sql_select_one "SELECT SQL_ID
                                                   FROM   v$SQLArea
                                                   WHERE  SQL_ID NOT IN (SELECT SQL_ID FROM DBA_Hist_SQLText)
