@@ -214,7 +214,7 @@ module MenuHelper
 
 private
   # Aufbau eines Menü-Eintrages als Ajax-Call
-  def menu_link_remote(title, controller, action, hint='')
+  def menu_link_remote(title, controller, action, hint, prev_menu_caption)
       exec_controller = :env                 # Default-Controller, wenn keine eigene Action deklariert ist
       exec_action     = :render_menu_action  # Default-Action wenn keine eigene Action deklariert ist
 
@@ -238,12 +238,13 @@ private
                 {
                     :title => hint,
                     :id    => "menu_#{controller}_#{action}"
-                }
+                },
+                "document.title ='Panorama (#{current_tns}): #{escape_js_single_quote("#{prev_menu_caption} / '#{title}'")}';"
       )
   end
 
 
-  def build_menu_entry(menu_entry)
+  def build_menu_entry(menu_entry, prev_menu_caption='')
     if menu_entry[:min_db_version] && get_db_version <  menu_entry[:min_db_version]
       return ''                                                                    # Keine Anzeige, da Funktion von DB-Version noch nicht unterstützt wird
     end
@@ -253,9 +254,9 @@ private
     output << '<ul>
     '
     menu_entry[:content].each do |m|
-      output << build_menu_entry(m) if m[:class] == 'menu'
+      output << build_menu_entry(m, "#{prev_menu_caption} / '#{m[:caption]}'") if m[:class] == 'menu'
       unless m[:min_db_version] && get_db_version <  m[:min_db_version] # Prüfung auf unterstützte DB-Version
-        output << "<li>#{ menu_link_remote(m[:caption], m[:controller], m[:action], m[:hint]) }</li>" if m[:class] == 'item'
+        output << "<li>#{ menu_link_remote(m[:caption], m[:controller], m[:action], m[:hint], prev_menu_caption) }</li>" if m[:class] == 'item'
       end
     end
     output << '</ul>
@@ -271,16 +272,16 @@ public
 
     output = "<ul class='sf-menu sf-js-enabled sf-shadow'>"
     menu_content.each do |m|      # Aufruf Methode application_helper.menu_content
-      output << build_menu_entry(m)
+      output << build_menu_entry(m, "'#{m[:caption]}'")
     end
     output << "
       <li>
           <a class='sf-with-ul' href='#a'>#{ t :help, :default=> 'Help' }<span class='sf-sub-indicator'> »</span></a>
         <ul>
-          <li>#{ link_to t(:menu_help_overview_caption, :default=> 'Overview'), { :controller => 'help', :action=> 'overview'}, :title=>t(:menu_help_overview_hint, :default=>'Help-overview'), :target=> '_blank'  }</li>
+          <li>#{ link_to t(:menu_help_overview_caption, :default=> 'Overview'), { :controller => 'help', :action=> 'overview', browser_tab_id: @browser_tab_id }, :title=>t(:menu_help_overview_hint, :default=>'Help-overview'), :target=> '_blank'  }</li>
           <li><a href='mailto:#{contact_mail_addr}'  title='#{t :menu_help_contact_title, :default=> 'Contact to producer'}'>#{t :menu_help_contact_caption, :default=> 'Contact'}</a></li>
-          <li><a href='https://rammpeter.wordpress.com/category/panorama-news-and-hints'  title='#{t :menu_help_wiki_title, :default=> 'Panorama-Blog with news and usage hints'}' target='_blank'>#{t :menu_help_wiki_caption, :default=> 'Blog'}</a></li>
-          <li>#{ link_to t(:menu_help_version_history_caption, :default=> 'Version history'), { :controller => 'help', :action=> 'version_history'}, :title=>t(:menu_help_version_history_hint, :default=>'Development history of features and versions'), :target=> '_blank'  }</li>
+          <li><a href='https://rammpeter.blogspot.de/search/label/Panorama%20How-To'  title='#{t :menu_help_wiki_title, :default=> 'Panorama-Blog with news and usage hints'}' target='_blank'>#{t :menu_help_wiki_caption, :default=> 'Blog'}</a></li>
+          <li>#{ link_to t(:menu_help_version_history_caption, :default=> 'Version history'), { :controller => 'help', :action=> 'version_history', browser_tab_id: @browser_tab_id}, :title=>t(:menu_help_version_history_hint, :default=>'Development history of features and versions'), :target=> '_blank'  }</li>
         </ul>
       </li>
     </ul>

@@ -218,6 +218,11 @@ module ApplicationHelper
     timestamp.strftime('%s').to_i * 1000
   end
 
+  # Escape single quote in Javascript strings bounded with single quotes themself
+  def escape_js_single_quote(org)
+    org.gsub(/'/, "'+String.fromCharCode(39)+'")
+  end
+
   # Maskieren von html-special chars incl. NewLine
   def my_html_escape(org_value, line_feed_to_br=true)
     '' if org_value.nil?

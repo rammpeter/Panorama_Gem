@@ -29,7 +29,7 @@
                     'core': {
                         "multiple" : false,
                         'data': {
-                            'url': 'dragnet/get_selection_list?&filter='+filter+'&include_description='+include_description,
+                            'url': 'dragnet/get_selection_list?&filter='+filter+'&browser_tab_id=<%= @browser_tab_id %>&include_description='+include_description,
                             'data' : function (node) {
                                 return { 'id' : node.id };
                             }

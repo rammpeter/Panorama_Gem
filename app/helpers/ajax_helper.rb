@@ -91,7 +91,7 @@ module AjaxHelper
   #   caption:      String
   #   url:          Hash with controller, action, update_area, payload
   #   html_options: Hash
-  def ajax_link(caption, url, html_options={})
+  def ajax_link(caption, url, html_options={}, additional_onclick_js='')
     data = {}
     options = ''
 
@@ -110,9 +110,12 @@ module AjaxHelper
       options << " #{key}=\"#{value}\""
     end
 
+    local_additional_onclick_js = additional_onclick_js.clone
+    local_additional_onclick_js << ';' if local_additional_onclick_js[local_additional_onclick_js.length-1] != ';'
+
     json_data =  my_html_escape( data.to_json.gsub(/\\"/, '"+String.fromCharCode(34)+"') )    # Escape possible double quotes in strings to JS code
 
-    "<a href=\"#\" onclick=\"ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{json_data}, { element: this}); return false; \"  #{options}>#{my_html_escape(caption)}</a>".html_safe
+    "<a href=\"#\" onclick=\"ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{json_data}, { element: this}); #{local_additional_onclick_js} return false; \"  #{options}>#{my_html_escape(caption)}</a>".html_safe
   end # ajax_link
 
   # Ajax-Link definieren mit Indikator-Anzeige während Ausführung
