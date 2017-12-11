@@ -531,6 +531,7 @@ class DbaHistoryController < ApplicationController
                             :params     => {instance:           sga_exists.inst_id,
                                             sql_id:             @sql_id,
                                             update_area:        params[:update_area],
+                                            browser_tab_id:     @browser_tab_id,
                                             statusbar_message:  "No SQL text found in AWR-history for this SQL_ID and instance between #{@time_selection_start} and #{@time_selection_end}, but found SQL in current SGA"
                                            },
                             :method     => :post)

@@ -833,7 +833,8 @@ class AdditionController < ApplicationController
     end
 
     parameter_info.symbolize_keys!
-    parameter_info[:update_area] = params[:update_area]
+    parameter_info[:update_area]     = params[:update_area]
+    parameter_info[:browser_tab_id]  = @browser_tab_id
 
     redirect_to url_for(:controller => parameter_info[:controller],:action => parameter_info[:action], :params => parameter_info, :method=>:post)
 
