@@ -299,6 +299,24 @@ This selection considers current SGA'),
                          {:name=>t(:dragnet_helper_127_param_3_name, :default=>'Minimum elapsed seconds in active session history for TABLE ACCESS BY ROWID'), :size=>8, :default=>0, :title=>t(:dragnet_helper_127_param_3_hint, :default=>"Minimum amount of elapsed seconds in GV$Active_Session_History of for TABLE ACCESS BY ROWID on the considered table to be shown in this selection. Value=0 means: show this table access also if there are no records in active session history for this access.") },
             ]
         },
+        {
+            :name  => t(:dragnet_helper_136_name, :default=>'Possibly missing NOT NULL constraint, although there are no NULL values in column'),
+            :desc  => t(:dragnet_helper_136_desc, :default=>'If a column is always filled with values, it should eventually be backed up by a NOT NULL constraint.
+This is especially important if the column is indexed, since without the NOT NULL constraint the index is not used for an ORDER BY (or only if in the SQL result explicitly excludes NULLs).'),
+            :sql=> "
+SELECT /*+ NO_MERGE */ tc.Owner, tc.Table_Name, tc.Column_Name, ic.Index_Name, tc.Num_Distinct, t.Num_Rows, t.Last_Analyzed
+FROM   DBA_Tab_Columns tc
+JOIN   DBA_Tables t                ON t.Owner = tc.Owner AND t.Table_Name = tc.Table_Name
+LEFT OUTER JOIN DBA_Ind_Columns ic ON ic.Table_Owner = tc.Owner AND ic.Table_Name = tc.Table_Name AND ic.Column_Name = tc.Column_Name AND ic.Column_Position = 1
+WHERE  tc.Nullable = 'Y'
+AND    tc.Num_Nulls = 0
+AND    tc.Num_Distinct > 0
+AND    t.Num_Rows > ?
+ORDER BY DECODE(ic.Index_Name, NULL, 1, 0), t.Num_Rows DESC
+            ",
+            :parameter=>[{:name=>t(:dragnet_helper_param_minimal_rows_name, :default=>'Minimum number of rows in table'), :size=>8, :default=>100000, :title=>t(:dragnet_helper_param_minimal_rows_hint, :default=>'Minimum number of rows in table for consideration in selection')}
+            ]
+        },
     ]
   end # sqls_potential_db_structures
 

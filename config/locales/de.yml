@@ -1353,6 +1353,12 @@
   dragnet_helper_135_param_1_hint:                          Minimale Anzahl unterschiedlicher SQL-IDs je Plan-Hash-Value für Aufnahme in Selektion
   dragnet_helper_135_param_1_name:                          Minimale Anzahl unterschiedlicher SQL-IDs
 
+  dragnet_helper_136_desc: |-
+    Wenn eine Spalte immer mit Werten belegt wird, sollte dies eventuell durch einen NOT NULL-Constraint abgesichert werden.
+    Wesentlich ist dies besonders wenn die Spalte indiziert wird, da ohne den NOT NULL-Constraint der Index nicht für eine ORDER BY genutzt wird (bzw. nur wenn im SQL-Result explizit NULLs ausgeschlossen werden).
+  dragnet_helper_136_name: |-
+    Eventuell fehlender NOT NULL-Constraint obwohl keine NULL-Werte in Spalte enthalten sind
+
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 
   dragnet_show_personal_selection_form_caption:             Erweitern der Rasterfahndungs-SQLs um persönliche Abfragen

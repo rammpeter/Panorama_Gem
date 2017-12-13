@@ -10,9 +10,8 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/dragnet/_show_selection.html.erb" afterPath="$PROJECT_DIR$/app/views/dragnet/_show_selection.html.erb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/views/env/_build_main_menu.html.erb" afterPath="$PROJECT_DIR$/app/views/env/_build_main_menu.html.erb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/helpers/dragnet/sqls_potential_db_structures_helper.rb" afterPath="$PROJECT_DIR$/app/helpers/dragnet/sqls_potential_db_structures_helper.rb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/locales/de.yml" afterPath="$PROJECT_DIR$/config/locales/de.yml" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -157,11 +156,48 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="75">
               <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="dragnet_helper.rb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/helpers/dragnet_helper.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="0">
+              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="sqls_potential_db_structures_helper.rb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/helpers/dragnet/sqls_potential_db_structures_helper.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="604">
+              <caret line="318" column="0" lean-forward="false" selection-start-line="318" selection-start-column="0" selection-end-line="318" selection-end-column="0" />
+              <folding>
+                <element signature="e#9824#9925#0" expanded="true" />
+                <element signature="e#18862#19247#0" expanded="true" />
+                <element signature="e#25067#25189#0" expanded="true" />
+                <element signature="e#25213#25544#0" expanded="true" />
+                <element signature="e#26174#26261#0" expanded="true" />
+                <element signature="e#26299#26417#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="de.yml" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/config/locales/de.yml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="300">
+              <caret line="1360" column="0" lean-forward="true" selection-start-line="1360" selection-start-column="0" selection-end-line="1360" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -212,16 +248,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="661">
               <caret line="67" column="6" lean-forward="false" selection-start-line="67" selection-start-column="6" selection-end-line="67" selection-end-column="30" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="menu_helper.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/helpers/menu_helper.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1705">
-              <caret line="10" column="6" lean-forward="false" selection-start-line="10" selection-start-column="6" selection-end-line="10" selection-end-column="6" />
               <folding />
             </state>
           </provider>
@@ -291,7 +317,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/helpers/dragnet/dragnet_sqls_tuning_sga_pga_helper.rb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_schema_controller.rb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/dba/_list_ddl_locks.html.erb" />
@@ -323,7 +348,6 @@
         <option value="$PROJECT_DIR$/test/test_helper.rb" />
         <option value="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" />
         <option value="$PROJECT_DIR$/app/views/active_session_history/_list_blocking_locks_historic.html.erb" />
-        <option value="$PROJECT_DIR$/config/locales/de.yml" />
         <option value="$PROJECT_DIR$/app/views/active_session_history/_list_blocking_locks_historic_detail.html.erb" />
         <option value="$PROJECT_DIR$/app/controllers/active_session_history_controller.rb" />
         <option value="$PROJECT_DIR$/app/helpers/key_explanation_helper.rb" />
@@ -342,6 +366,8 @@
         <option value="$PROJECT_DIR$/app/views/dragnet/_show_selection.html.erb" />
         <option value="$PROJECT_DIR$/app/views/env/_build_main_menu.html.erb" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+        <option value="$PROJECT_DIR$/app/helpers/dragnet/sqls_potential_db_structures_helper.rb" />
+        <option value="$PROJECT_DIR$/config/locales/de.yml" />
       </list>
     </option>
   </component>
@@ -444,6 +470,13 @@
               <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
               <item name="app" type="462c0819:PsiDirectoryNode" />
               <item name="helpers" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
+              <item name="app" type="462c0819:PsiDirectoryNode" />
+              <item name="helpers" type="462c0819:PsiDirectoryNode" />
+              <item name="dragnet" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
@@ -1236,14 +1269,7 @@
       <workItem from="1511958994010" duration="2023000" />
       <workItem from="1512381618932" duration="3430000" />
       <workItem from="1512455930135" duration="47936000" />
-      <workItem from="1512914264695" duration="26702000" />
-    </task>
-    <task id="LOCAL-01130" summary="translation">
-      <created>1509032211581</created>
-      <option name="number" value="01130" />
-      <option name="presentableId" value="LOCAL-01130" />
-      <option name="project" value="LOCAL" />
-      <updated>1509032211581</updated>
+      <workItem from="1512914264695" duration="27692000" />
     </task>
     <task id="LOCAL-01131" summary="Move function to structure-check">
       <created>1509454239317</created>
@@ -1581,7 +1607,14 @@
       <option name="project" value="LOCAL" />
       <updated>1513100297327</updated>
     </task>
-    <option name="localTasksCounter" value="1179" />
+    <task id="LOCAL-01179" summary="Fix missing browser_tab_id">
+      <created>1513159514568</created>
+      <option name="number" value="01179" />
+      <option name="presentableId" value="LOCAL-01179" />
+      <option name="project" value="LOCAL" />
+      <updated>1513159514569</updated>
+    </task>
+    <option name="localTasksCounter" value="1180" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1617,7 +1650,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2520946000" />
+    <option name="totallyTimeSpent" value="2521936000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1673,7 +1706,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Bugfix pending sessions in Sampler" />
     <MESSAGE value="Pending Sessions: not a bug, it's a feature" />
     <MESSAGE value="Desupport seconds_in_wait" />
     <MESSAGE value="Fix bug for test connection" />
@@ -1698,7 +1730,8 @@
     <MESSAGE value="Add browser_tab_id at missing points" />
     <MESSAGE value="Show menu info in tab title" />
     <MESSAGE value="Test perepared but not ready" />
-    <option name="LAST_COMMIT_MESSAGE" value="Test perepared but not ready" />
+    <MESSAGE value="Fix missing browser_tab_id" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix missing browser_tab_id" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1872,20 +1905,6 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/test/controllers/dba_pga_controller_test.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="31" lean-forward="true" selection-start-line="6" selection-start-column="31" selection-end-line="6" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/controllers/dba_schema_controller_test.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="7" column="31" lean-forward="true" selection-start-line="7" selection-start-column="31" selection-end-line="7" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/controllers/dba_sga_controller_test.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
@@ -2000,14 +2019,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="326">
           <caret line="163" column="101" lean-forward="true" selection-start-line="163" selection-start-column="101" selection-end-line="163" selection-end-column="101" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/config/locales/de.yml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="227">
-          <caret line="93" column="18" lean-forward="true" selection-start-line="93" selection-start-column="18" selection-end-line="93" selection-end-column="18" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2268,6 +2279,37 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
           <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/helpers/dragnet_helper.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/helpers/dragnet/sqls_potential_db_structures_helper.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="604">
+          <caret line="318" column="0" lean-forward="false" selection-start-line="318" selection-start-column="0" selection-end-line="318" selection-end-column="0" />
+          <folding>
+            <element signature="e#9824#9925#0" expanded="true" />
+            <element signature="e#18862#19247#0" expanded="true" />
+            <element signature="e#25067#25189#0" expanded="true" />
+            <element signature="e#25213#25544#0" expanded="true" />
+            <element signature="e#26174#26261#0" expanded="true" />
+            <element signature="e#26299#26417#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/locales/de.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="1360" column="0" lean-forward="true" selection-start-line="1360" selection-start-column="0" selection-end-line="1360" selection-end-column="0" />
           <folding />
         </state>
       </provider>
