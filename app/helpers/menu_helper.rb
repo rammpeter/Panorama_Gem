@@ -248,9 +248,10 @@ private
     if menu_entry[:min_db_version] && get_db_version <  menu_entry[:min_db_version]
       return ''                                                                    # Keine Anzeige, da Funktion von DB-Version noch nicht unterstützt wird
     end
+    @menu_node_id += 1
     output = ''
     output << '<li>'
-    output << "<a class='sf-with-ul' href='#a'>#{menu_entry[:caption]}<span class='sf-sub-indicator'> »</span></a>"
+    output << "<a id='menu_node_#{@menu_node_id}' class='sf-with-ul' href='#a'>#{menu_entry[:caption]}<span class='sf-sub-indicator'> »</span></a>"
     output << '<ul>
     '
     menu_entry[:content].each do |m|
@@ -271,17 +272,19 @@ public
     return '' if get_current_database.nil? || get_db_version.nil?       # Abbrechen des Menüaufbaus, wenn die Versions-Strukturen gar nicht gefüllt sind
 
     output = "<ul class='sf-menu sf-js-enabled sf-shadow'>"
+    @menu_node_id = 0                                                           # Each menu gets own ID
     menu_content.each do |m|      # Aufruf Methode application_helper.menu_content
       output << build_menu_entry(m, "'#{m[:caption]}'")
     end
+    @menu_node_id += 1
     output << "
       <li>
-          <a class='sf-with-ul' href='#a'>#{ t :help, :default=> 'Help' }<span class='sf-sub-indicator'> »</span></a>
+          <a id='menu_node_#{@menu_node_id}' class='sf-with-ul' href='#a'>#{ t :help, :default=> 'Help' }<span class='sf-sub-indicator'> »</span></a>
         <ul>
-          <li>#{ link_to t(:menu_help_overview_caption, :default=> 'Overview'), { :controller => 'help', :action=> 'overview', browser_tab_id: @browser_tab_id }, :title=>t(:menu_help_overview_hint, :default=>'Help-overview'), :target=> '_blank'  }</li>
-          <li><a href='mailto:#{contact_mail_addr}'  title='#{t :menu_help_contact_title, :default=> 'Contact to producer'}'>#{t :menu_help_contact_caption, :default=> 'Contact'}</a></li>
-          <li><a href='https://rammpeter.blogspot.de/search/label/Panorama%20How-To'  title='#{t :menu_help_wiki_title, :default=> 'Panorama-Blog with news and usage hints'}' target='_blank'>#{t :menu_help_wiki_caption, :default=> 'Blog'}</a></li>
-          <li>#{ link_to t(:menu_help_version_history_caption, :default=> 'Version history'), { :controller => 'help', :action=> 'version_history', browser_tab_id: @browser_tab_id}, :title=>t(:menu_help_version_history_hint, :default=>'Development history of features and versions'), :target=> '_blank'  }</li>
+          <li>#{ link_to t(:menu_help_overview_caption, :default=> 'Overview'), { :controller => 'help', :action=> 'overview', browser_tab_id: @browser_tab_id }, id: "menu_help_overview" ,:title=>t(:menu_help_overview_hint, :default=>'Help-overview'), :target=> '_blank'  }</li>
+          <li><a href='mailto:#{contact_mail_addr}'  id='menu_help_mailto' title='#{t :menu_help_contact_title, :default=> 'Contact to producer'}'>#{t :menu_help_contact_caption, :default=> 'Contact'}</a></li>
+          <li><a href='https://rammpeter.blogspot.de/search/label/Panorama%20How-To' id='menu_help_blog' title='#{t :menu_help_wiki_title, :default=> 'Panorama-Blog with news and usage hints'}' target='_blank'>#{t :menu_help_wiki_caption, :default=> 'Blog'}</a></li>
+          <li>#{ link_to t(:menu_help_version_history_caption, :default=> 'Version history'), { :controller => 'help', :action=> 'version_history', browser_tab_id: @browser_tab_id}, id: "menu_help_version_history", :title=>t(:menu_help_version_history_hint, :default=>'Development history of features and versions'), :target=> '_blank'  }</li>
         </ul>
       </li>
     </ul>

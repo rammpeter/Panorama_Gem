@@ -98,7 +98,7 @@ end #class_eval
 
 # Config for DB connection for current threads request is stored in Thread.current[:]
 
-MAX_CONNECTION_POOL_SIZE = 20                                                   # Number of pooled connections, may be more than max. threads
+MAX_CONNECTION_POOL_SIZE = 100                                                  # Number of pooled connections, may be more than max. threads
 
 class PanoramaConnection
   attr_reader :jdbc_connection
