@@ -98,7 +98,7 @@ end #class_eval
 
 # Config for DB connection for current threads request is stored in Thread.current[:]
 
-MAX_CONNECTION_POOL_SIZE = 100                                                  # Number of pooled connections, may be more than max. threads
+MAX_CONNECTION_POOL_SIZE = ENV['MAX_CONNECTION_POOL_SIZE'] || 100               # Number of pooled connections, may be more than max. threads
 
 class PanoramaConnection
   attr_reader :jdbc_connection
@@ -391,16 +391,24 @@ class PanoramaConnection
     if retval.nil?
       raise "Native ruby (RUBY_ENGINE=#{RUBY_ENGINE}) is no longer supported! Please use JRuby runtime environment! Call contact for support request if needed." if !defined?(RUBY_ENGINE) || RUBY_ENGINE != "jruby"
       # Shrink connection pool / reuse connection from pool if size exceeds limit
+      retry_count = 0
       while @@connection_pool.count >= MAX_CONNECTION_POOL_SIZE
         # find oldest idle connection and free it
         @@connection_pool_mutex.synchronize do
           idle_conns =  @@connection_pool.select {|e| !e.used_in_thread }.sort { |a, b| a.last_used_time <=> b.last_used_time }
-          destroy_connection_in_mutexed_pool(idle_conns[0]) if !idle_conns.empty?               # Free oldest conenction
-        end
-        if @@connection_pool.count >= MAX_CONNECTION_POOL_SIZE
-          Rails.logger.error "Maximum number of active concurrent database sessions for Panorama reached (#{MAX_CONNECTION_POOL_SIZE})!"
-          dump_connection_pool_to_log
-          raise "Maximum number of active concurrent database sessions for Panorama exceeded (#{MAX_CONNECTION_POOL_SIZE})!\nPlease try again later."
+          destroy_connection_in_mutexed_pool(idle_conns[0]) if !idle_conns.empty?               # Free oldest connection
+
+          if @@connection_pool.count >= MAX_CONNECTION_POOL_SIZE
+            if retry_count < 5
+              Rails.logger.info "Maximum number of active concurrent database sessions for Panorama reached (#{MAX_CONNECTION_POOL_SIZE})!\nWaiting one second until retry."
+              retry_count += 1
+              sleep 1
+            else
+              Rails.logger.error "Maximum number of active concurrent database sessions for Panorama reached (#{MAX_CONNECTION_POOL_SIZE})!"
+              dump_connection_pool_to_log
+              raise "Maximum number of active concurrent database sessions for Panorama exceeded (#{MAX_CONNECTION_POOL_SIZE})!\nPlease try again later."
+            end
+          end
         end
       end
 

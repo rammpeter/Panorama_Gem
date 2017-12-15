@@ -297,7 +297,7 @@ function bind_ajax_callbacks() {
                 }
             }
             // Zeileneilenumbrüche anzeigen in Dialog als <br>
-            error_dialog_content.html(error_dialog_content.html().replace(/\\n/g, "<br>"));
+            error_dialog_content.html(error_dialog_content.html().replace(/\n/g, "<br>"));
 
             //jQuery("#error_dialog_stacktrace").text((new Error()).stack);
 
