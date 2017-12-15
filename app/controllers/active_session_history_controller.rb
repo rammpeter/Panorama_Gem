@@ -46,15 +46,6 @@ class ActiveSessionHistoryController < ApplicationController
     where_from_groupfilter(params[:groupfilter], params[:groupby])
     @dbid = params[:groupfilter][:DBID]       # identische DBID verwenden wie im groupfilter bereits gesetzt
 
-
-    record_modifier = proc{|rec|
-      # Angenommene Anzahl Sekunden je Zyklus korrigieren, wenn Gruppierung < als Zyklus der Aufzeichnung
-      # rec.max_sample_cycle > group_seconds kann nur auftreten wenn group_seconds=1 und Daten aus DBA_Hist_Active_Sess_History
-      divider = rec.max_sample_cycle > group_seconds ? group_seconds : group_seconds/rec.max_sample_cycle
-
-      rec['diagram_value'] = rec.count_samples.to_f / divider  # Anzeige als Anzahl aktive Sessions
-    }
-
     # Mysteriös: LEFT OUTER JOIN per s.Current_Obj# funktioniert nicht gegen ALL_Objects, wenn s.PLSQL_Entry_Object_ID != NULL
     singles= sql_select_iterator(["\
       WITH procs AS (SELECT /*+ NO_MERGE */ Object_ID, SubProgram_ID, Object_Type, Owner, Object_Name, Procedure_name FROM DBA_Procedures)
@@ -62,9 +53,7 @@ class ActiveSessionHistoryController < ApplicationController
              -- Beginn eines zu betrachtenden Zeitabschnittes
              TRUNC(Sample_Time) + TRUNC(TO_NUMBER(TO_CHAR(Sample_Time, 'SSSSS'))/#{group_seconds})*#{group_seconds}/86400 Start_Sample,
              NVL(TO_CHAR(#{session_statistics_key_rule(@groupby)[:sql]}), 'NULL') Criteria,
-             SUM(s.Sample_Cycle)                            Time_Waited_Secs,  -- Gewichtete Zeit in der Annahme, dass Wait aktiv für die Dauer des Samples war (und daher vom Snapshot gesehen wurde)
-             MAX(s.Sample_Cycle)                            Max_Sample_Cycle,  -- max. Abstand zwischen zwei Samples
-             COUNT(1)                                       Count_Samples
+             SUM(s.Sample_Cycle / CASE WHEN s.Sample_Cycle > #{group_seconds} THEN #{group_seconds}*s.Sample_Cycle ELSE #{group_seconds} END) Diagram_Value
       FROM   (SELECT /*+ NO_MERGE ORDERED */
                      10 Sample_Cycle, Instance_Number, #{get_ash_default_select_list}
               FROM   DBA_Hist_Active_Sess_History s
@@ -84,7 +73,7 @@ class ActiveSessionHistoryController < ApplicationController
       WHERE 1=1 #{@global_where_string}
       GROUP BY TRUNC(Sample_Time) + TRUNC(TO_NUMBER(TO_CHAR(Sample_Time, 'SSSSS'))/#{group_seconds})*#{group_seconds}/86400, #{session_statistics_key_rule(@groupby)[:sql]}
       ORDER BY 1
-     "].concat(@dba_hist_where_values).concat([@dbid]).concat(@global_where_values), record_modifier)
+     "].concat(@dba_hist_where_values).concat([@dbid]).concat(@global_where_values))
 
 
     # Anzeige der Filterbedingungen im Caption des Diagrammes

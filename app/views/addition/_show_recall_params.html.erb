@@ -4,7 +4,6 @@
 <%= ajax_form(:controller => :addition, :action => :exec_recall_params, :update_area => @update_area) do %>
     <%= text_area_tag(:parameter_info, nil, :rows=>6, :class=>:full_width_text_area, :title=>t(:addition_show_recall_params_parameter_info_hint, :default=>'Paste your parameter info for execution')) %>
     <%= submit_tag('Execute', :title => t(:addition_show_recall_params_submit_hint, :default=>"Execute Panorama's function determined by 'controller' and 'action' using the given parameters")) %>
-<% form_tag(url_for())  %>
 
 
 <% end %>

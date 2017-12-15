@@ -127,6 +127,10 @@ END Panorama_Sampler_ASH;
   TYPE DoubleCheckTableType IS TABLE OF NUMBER(1) INDEX BY BINARY_INTEGER;
   DoubleCheckTable        DoubleCheckTableType;
 
+  v_SysTimestamp          TIMESTAMP(3);
+  v_Mod_Seconds           NUMBER(2);
+  v_Preserve_10Secs       CHAR(1);
+
   FUNCTION Get_Stat_ID(p_Name IN VARCHAR2) RETURN NUMBER IS
   BEGIN
     IF NOT StatNameTable.EXISTS(p_Name) THEN
@@ -146,8 +150,17 @@ END Panorama_Sampler_ASH;
     BEGIN
       p_Sample_ID := p_Sample_ID + 1;
       AshTable4Select.DELETE;
+
+      v_SysTimestamp := SYSTIMESTAMP;
+      v_Mod_Seconds := MOD(TO_NUMBER(TO_CHAR(CAST(v_SysTimestamp + interval '0.5' second AS DATE), 'SS')), 10);
+      IF v_Mod_Seconds = 0 THEN
+        v_Preserve_10Secs := 'Y';
+      ELSE
+        v_Preserve_10Secs := NULL;
+      END IF;
+
       SELECT p_Sample_ID,
-             SYSTIMESTAMP,        -- Sample_Time
+             v_SysTimestamp,      -- Sample_Time
              s.SID,
              s.Serial#,
              s.Type,
@@ -249,7 +262,7 @@ END Panorama_Sampler_ASH;
              NULL, -- DELTA_INTERCONNECT_IO_BYTES
              p.PGA_Alloc_Mem,     -- PGA_ALLOCATED
              NVL(ts.blocks * #{PanoramaConnection.db_blocksize}, 0),  -- TEMP_SPACE_ALLOCATED
-             DECODE(MOD(TO_NUMBER(TO_CHAR(SYSDATE, 'SS')), 10), 0, 'Y', NULL) -- Preserve_10Secs
+             v_Preserve_10Secs -- Preserve_10Secs, decide MOD 10 on rounded seconds (distance between samples may be a bit smaller than 1 second)
       BULK COLLECT INTO AshTable4Select
       FROM   v$Session s
       LEFT OUTER JOIN v$Process p               ON p.Addr = s.pAddr -- dont think that join per Con_ID is necessary here
@@ -365,6 +378,10 @@ END Panorama_Sampler_ASH;
 
       LOOP
         v_Bulk_Size := 10; -- Number of seconds between persists/commits
+
+        -- Wait until current second ends, ensure also that first sample is at seconds bound
+        DBMS_LOCK.SLEEP(1-MOD(EXTRACT(SECOND FROM SYSTIMESTAMP), 1));
+
         -- Reduce Bulk_Size before end of snapshot so last records are so commited that they are visible for snapshot creation and don't fall into the next snapshot
         IF v_Seconds_Run > p_Next_Snapshot_Start_Seconds - v_Bulk_Size THEN   -- less than v_Bulk_Size seconds until next snapshot
           v_Bulk_Size := p_Next_Snapshot_Start_Seconds - v_Seconds_Run;       -- reduce bulk size
@@ -376,8 +393,6 @@ END Panorama_Sampler_ASH;
         CreateSample(p_Instance_Number, p_Con_ID, v_Bulk_Size, v_Counter, v_Sample_ID);
         EXIT WHEN SYSDATE >= v_LastSampleTime;
 
-        -- Wait until current second ends
-        DBMS_LOCK.SLEEP(1-MOD(EXTRACT(SECOND FROM SYSTIMESTAMP), 1));
         v_Seconds_Run := v_Seconds_Run + 1;
 
       END LOOP;
