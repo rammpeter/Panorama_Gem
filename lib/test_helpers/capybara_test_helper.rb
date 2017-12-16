@@ -32,7 +32,13 @@ class Capybara::Rails::TestCase
 #    Capybara.current_driver     = :webkit                                       # Setting works for all Capybara-Tests
 #    Capybara.javascript_driver  = :webkit                                       # Setting works for all Capybara-Tests
 
-    visit root_path                                                             # /env/index
+    begin
+      visit root_path                                                             # /env/index
+      puts "Next step after calling visit root_path"
+    rescue
+      puts "Exception catched from calling visit root_path"
+    end
+
     #page.save_and_open_page
     #assert_content page, "Please choose saved connection"
 
