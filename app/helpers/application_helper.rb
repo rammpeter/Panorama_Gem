@@ -108,12 +108,13 @@ module ApplicationHelper
   end
 
   def set_cached_dbid(dbid)                                                     # Current or previous DBID of connected database
-    @buffered_dbid = nil
-    write_to_client_info_store(:dbid, dbid.to_i)
+    @buffered_dbid = nil                                                        # throe away previous value
+    set_current_database(get_current_database.merge({choosen_dbid: dbid.to_i}))
+    # write_to_client_info_store(:dbid, dbid.to_i)
   end
 
   def get_dbid    # die originale oder nach Login ausgewählte DBID
-    @buffered_dbid = read_from_client_info_store(:dbid) if !defined?(@buffered_dbid) || @buffered_dbid.nil?
+    @buffered_dbid = get_current_database[:choosen_dbid] if !defined?(@buffered_dbid) || @buffered_dbid.nil?
     @buffered_dbid
   end
 
