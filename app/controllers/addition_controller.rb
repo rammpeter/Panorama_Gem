@@ -635,6 +635,7 @@ class AdditionController < ApplicationController
     @wherestr = ""
     @whereval = []
 
+    @schema_name = nil
     if params[:schema][:name] != all_dropdown_selector_name
       @schema_name = params[:schema][:name]
       @wherestr << " AND Owner=? "
