@@ -1114,7 +1114,7 @@ ORDER BY Column_ID
       # Compile package
       Rails.logger.info "Package #{'body ' if type==:body}#{@sampler_config[:owner].upcase}.#{package_name} needs #{package_obj.nil? ? 'creation' : 'recompile'}"
 
-      translated_source_buffer = translate_plsql_aliases(@sampler_config, source_buffer)
+      translated_source_buffer = PanoramaSamplerStructureCheck.translate_plsql_aliases(@sampler_config, source_buffer)
 
       Rails.logger.info translated_source_buffer
       PanoramaConnection.sql_execute translated_source_buffer
