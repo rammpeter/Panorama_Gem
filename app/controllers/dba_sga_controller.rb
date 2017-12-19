@@ -339,6 +339,8 @@ class DbaSgaController < ApplicationController
                  'PARALLEL_FROM_SERIAL',          'S > P',
                  'PARALLEL_TO_PARALLEL',          'P > P',
                  'PARALLEL_TO_SERIAL',            'P > S',
+                 'SINGLE_COMBINED_WITH_CHILD',    'SCWC',
+                 'SINGLE_COMBINED_WITH_PARENT',   'SCWP',
                  Other_Tag
                 ) Parallel_Short,
           Other_Tag, Other_XML, Other,

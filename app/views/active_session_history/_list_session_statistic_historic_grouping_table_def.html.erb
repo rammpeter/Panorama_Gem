@@ -75,29 +75,31 @@
     "
   end
 
-  def show_groupkey_value(rec)
-    return nil if rec.group_value.nil?
-    # Zerlegen der ersten Spalten in Elemente für optionalen Link
-    case @groupby
-      when "DB-Object"      then if rec.group_value['[Unknown]'].nil?; link_object_description(@update_area, rec.group_value.split(".")[0], rec.group_value.split(".")[1], rec.group_value); else rec.group_value; end
-      when "DB-Sub-Object"  then if rec.group_value['[Unknown]'].nil?; link_object_description(@update_area, rec.group_value.split(".")[0], rec.group_value.split(".")[1].split(" ")[0], rec.group_value); else rec.group_value; end
-      when "Entry-PL/SQL"   then if rec.group_value['[Unknown]'].nil?
-                                   full_obj = rec.group_value.split(" ")[1]
-                                   link_object_description(@update_area, full_obj.split(".")[0], full_obj.split(".")[1], rec.group_value);
-                                 else
-                                   rec.group_value
-                                 end
-      when 'Machine'        then link_machine_ip_info(@update_area, rec.group_value)
-      when "SQL-ID"         then link_column_sql_id(rec)
-    else rec.group_value
+  @show_groupkey_value = proc do |rec|
+    if rec.group_value.nil?
+      nil
+    else
+      # Zerlegen der ersten Spalten in Elemente für optionalen Link
+      case @groupby
+        when "DB-Object"      then if rec.group_value['[Unknown]'].nil?; link_object_description(@update_area, rec.group_value.split(".")[0], rec.group_value.split(".")[1], rec.group_value); else rec.group_value; end
+        when "DB-Sub-Object"  then if rec.group_value['[Unknown]'].nil?; link_object_description(@update_area, rec.group_value.split(".")[0], rec.group_value.split(".")[1].split(" ")[0], rec.group_value); else rec.group_value; end
+        when "Entry-PL/SQL"   then if rec.group_value['[Unknown]'].nil?
+                                     full_obj = rec.group_value.split(" ")[1]
+                                     link_object_description(@update_area, full_obj.split(".")[0], full_obj.split(".")[1], rec.group_value);
+                                   else
+                                     rec.group_value
+                                   end
+        when 'Machine'        then link_machine_ip_info(@update_area, rec.group_value)
+        when "SQL-ID"         then link_historic_sql_id(rec.instance_number_cnt == 1 ? rec.instance_number : nil,
+                                                        rec.sql_id,
+                                                        @groupfilter[:time_selection_start],
+                                                        @groupfilter[:time_selection_end],
+                                                        @update_area,
+                                                        rec.username_cnt == 1 ? rec.username : nil
+        )
+      else rec.group_value
+      end
     end
-  end
-
-  # Aus Gruppenlink direkt SQL-Details aufrufen, wenn eideutige Aussage zu SQL_ID und Username und Instance
-  def link_column_sql_id(rec)
-     link_historic_sql_id(rec.instance_number, rec.sql_id, @groupfilter[:time_selection_start], @groupfilter[:time_selection_end], @update_area,
-                         (rec.username && rec.username.match('<.*>'))  ? nil : rec.username
-    )
   end
 
   # Alternativ-Variante für Aktualisierung des Links in Javascript
@@ -176,7 +178,7 @@
   end
 
   @column_options = []
-  @column_options << {:caption=>session_statistics_key_rule(@groupby)[:Name],         :data=>proc{|rec| show_groupkey_value(rec) },                        :title=>session_statistics_key_rule(@groupby)[:Title], :data_title=>session_statistics_key_rule(@groupby)[:Data_Title]}
+  @column_options << {:caption=>session_statistics_key_rule(@groupby)[:Name],         :data=>proc{|rec| @show_groupkey_value.call(rec)},                    :title=>session_statistics_key_rule(@groupby)[:Title], :data_title=>session_statistics_key_rule(@groupby)[:Data_Title]}
   @column_options << {:caption=>session_statistics_key_rule(@groupby)[:info_caption], :data=>proc{|rec| @show_info.call(rec.info) },                       :title=>"#{t(:active_session_history_last_occurrence_caption, :default=>'Further info for grouping criteria')}: #{@groupby}", :data_title=>proc{|rec| rec.info_hint} } if session_statistics_key_rule(@groupby)[:info_caption]
   @column_options << {:caption=>"Total Time waited",                                  :data=>proc{|rec| fn(rec.time_waited_secs,0) },     :title=>t(:active_session_history_total_time_waited_hint, :default=>"Total time waited in seconds (sample-cycle(1/10 seconds) * samples)"), :data_title=>proc{|rec| "%t.#{@total_time_waited_data_title.call(rec)}"}, :align=>"right", :show_pct_hint=>true, :show_pct_background=>true}
   @column_options << {:caption=>"Avg. Load",                                          :data=>proc{|rec| fn(@avg_load.call(rec),2) },            :title=>t(:active_session_history_load_hint, :default=>"Avg. number of waiting sessions averaged by time between first and last occurrence"), :align=>"right"}
@@ -225,7 +227,6 @@
     context_menu_entries << create_context_menu_entry(10)
     context_menu_entries << create_context_menu_entry(1)
 
-
     gen_slickgrid(@sessions,
                    @column_options,
                    {
@@ -235,7 +236,8 @@
                        :command_menu_entries => get_recall_params_info_for_render_page_caption
                    }
                   )
-%>
+
+ %>
 
 <%
   @link_timeline = proc do |group_seconds|

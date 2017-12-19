@@ -627,6 +627,8 @@ class DbaHistoryController < ApplicationController
                                        'PARALLEL_FROM_SERIAL',          'S > P',
                                        'PARALLEL_TO_PARALLEL',          'P > P',
                                        'PARALLEL_TO_SERIAL',            'P > S',
+                                       'SINGLE_COMBINED_WITH_CHILD',    'SCWC',
+                                       'SINGLE_COMBINED_WITH_PARENT',   'SCWP',
                                        Other_Tag
                                       ) Parallel_Short,
                                 p.Depth, p.Access_Predicates, p.Filter_Predicates, p.Projection, p.temp_Space/(1024*1024) Temp_Space_MB, p.Distribution,

@@ -28,7 +28,7 @@ end
 %>
 
 
-<%= render_page_caption("#{t(:dba_history_list_sql_detail_historic_caption, :default=>'Statement details from')} #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat')} #{@sql.first_occurrence ? localeDateTime(@sql.first_occurrence) : @time_selection_start} #{t(:until, :default=>'until')} #{@sql.last_occurrence ? localeDateTime(@sql.last_occurrence) : @time_selection_end} : Instance = #{@instance}, SQL-ID = '#{@sql_id}'", get_recall_params_info_for_render_page_caption) %>
+<%= render_page_caption("#{t(:dba_history_list_sql_detail_historic_caption, :default=>'Statement details from')} #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat')} #{@sql.first_occurrence ? localeDateTime(@sql.first_occurrence) : @time_selection_start} #{t(:until, :default=>'until')} #{@sql.last_occurrence ? localeDateTime(@sql.last_occurrence) : @time_selection_end} : Instance = #{@instance.nil? ? 'All' : @instance}, SQL-ID = '#{@sql_id}'", get_recall_params_info_for_render_page_caption) %>
 
 <table id="<%= "#{@table_id_prefix}_main" %>" border="0" >
   <tr>
