@@ -1426,6 +1426,11 @@ Solution: Execute as user 'SYS':
     end
   end
 
+  def list_patch_history
+    @patches = sql_select_iterator "SELECT * FROM sys.Registry$History ORDER BY Action_Time"
+    render_partial
+  end
+
   def list_feature_usage
     @feature_usage = sql_select_all "SELECT * FROM DBA_FEATURE_USAGE_STATISTICS"
 

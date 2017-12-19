@@ -1,0 +1,19 @@
+<%
+  column_options =
+      [
+          {:caption=>'Action time',   :data=>proc{|rec| localeDateTime(rec.action_time) }, :title=>"The time the upgrade, downgrade, or patch action was completed"},
+          {:caption=>'Action',        :data=>proc{|rec| rec.action },                      :title=>"The specific action (for example, UPGRADE or DOWNGRADE)"},
+          {:caption=>'Namespace',     :data=>proc{|rec| rec.namespace },                   :title=>"The namespace of the components affected (for example, SERVER)"},
+          {:caption=>'Version',       :data=>proc{|rec| rec.version },                     :title=>"The version number of the server (for example, 10.2.0.1.0)"},
+          {:caption=>'ID',            :data=>proc{|rec|rec.id },                           :title=>"The identification number of the Critical Patch Update"},
+          {:caption=>'Comments',      :data=>proc{|rec|rec.comments },                     :title=>"Additional comments about the action taken"},
+          {:caption=>'Bundle series', :data=>proc{|rec|rec.bundle_series },                :title=>"Bundle series"},
+      ]
+
+
+%>
+<%= gen_slickgrid(@patches, column_options, {
+    :caption =>  "Upgrades / Downgrades / Patches",
+    :max_height=>450
+})
+%>

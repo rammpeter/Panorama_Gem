@@ -1477,6 +1477,7 @@
   menu_dba_explain_plan_hint:                               Anzeige Ausführungsplan eines SQL-Statements
   menu_dba_feature_usage_hint:                                 Statistiken über die Nutzung von Features und Packs der Oracle-DB
   menu_dba_locks_hint:                                      Aktueller Lock-Status incl. Blocking Locks
+  menu_dba_patch_hint:                                      Historie der Upgrades/ Downgrades / Patches
   menu_dba_schema_audit_trail_hint:                         Anzeige von per Standard Audit Trail geloggten Aktivitäten (DBA_Audit_Trail)
   menu_dba_schema_ts_objects_hint:                          DB-Objekte nach Größe, Auslastung, Verschnitt
   menu_dba_schema_unified_audit_trail_hint:                 Anzeige von per Unified Audit Trail geloggten Aktivitäten

@@ -38,6 +38,7 @@ module MenuHelper
             ]
             },
             {:class=> 'item', :caption=> 'Feature usage',      :controller=>:dba,             :action=>:list_feature_usage,  :hint=>t(:menu_dba_feature_usage_hint, :default=> 'Statistics about usage of features and packs of Oracle-DB') },
+            {:class=> 'item', :caption=> 'Upgrade/patch history', :controller=>:dba,          :action=>:list_patch_history,  :hint=>t(:menu_dba_patch_hint, :default=> 'History of upgrades / downgrades / patches') },
             {:class=> 'item', :caption=> 'Explain Plan',       :controller=>:dba,             :action=> 'explain_plan',      :hint=>t(:menu_dba_explain_plan_hint, :default=> 'Show execution plan of SQL-statement') },
             ]
         },
