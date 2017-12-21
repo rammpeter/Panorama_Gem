@@ -2,6 +2,8 @@ require "minitest/rails/capybara"
 
 require 'capybara/poltergeist'
 
+# replaced by chrome
+=begin
 class Capybara::Rails::TestCase
 
 
@@ -98,3 +100,4 @@ class Capybara::Rails::TestCase
   end
 
 end
+=end
