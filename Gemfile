@@ -29,6 +29,6 @@ group :test do
   gem "capybara"
   #gem "capybara-webkit"
   gem "launchy"
-  gem 'poltergeist'
-  gem 'phantomjs', :require => 'phantomjs/poltergeist'
+  # gem 'poltergeist'
+  # gem 'phantomjs', :require => 'phantomjs/poltergeist'
 end
