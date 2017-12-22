@@ -1281,6 +1281,23 @@ class DbaSgaController < ApplicationController
     render_partial
   end
 
+  def show_sql_plan_management
+    @profile_count = nil
+    @profile_count = sql_select_one "SELECT COUNT(*) FROM DBA_SQL_Profiles" if get_db_version >= '10.1'
+
+    @baseline_count = nil
+    @baseline_count = sql_select_one "SELECT COUNT(*) FROM DBA_SQL_Plan_Baselines" if get_db_version >= '11.1'
+
+    @outline_count = sql_select_one "SELECT COUNT(*) FROM DBA_Outlines"
+
+    @translation_count = nil
+    @translation_count = sql_select_one "SELECT COUNT(*) FROM DBA_SQL_Translations" if get_db_version >= '12.1'
+
+    @patches_count = nil
+    @patches_count = sql_select_one "SELECT COUNT(*) FROM DBA_SQL_Patches" if get_db_version >= '12.1'
+
+    render_partial
+  end
 
   # Existierende SQL-Profiles
   def show_profiles
@@ -1382,6 +1399,24 @@ class DbaSgaController < ApplicationController
     respond_to do |format|
       format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(@sql_text)}</pre>".html_safe }
     end
+  end
+
+  def show_sql_patches
+    @exact_signature = params[:exact_signature]
+    @force_signature = params[:force_signature]
+
+    where_stmt = ''
+    where_values = []
+
+    if @exact_signature && @force_signature
+      where_stmt = "WHERE (p.Force_Matching = 'YES' AND Signature = ?) OR (p.Force_Matching = 'NO' AND Signature = ?)"
+      where_values << @force_signature
+      where_values << @exact_signature
+    end
+
+    @sql_patches = sql_select_all ["SELECT p.* FROM DBA_SQL_Patches p #{where_stmt}"].concat(where_values)
+
+    render_partial
   end
 
   def list_dbms_xplan_display

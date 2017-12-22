@@ -485,6 +485,8 @@
   dba_sga_show_sql_area_submit_hint:                        Anlistung der SQL nach Suchkriterien
   dba_sga_show_sql_area_user_hint:                          Filter der Treffermenge auf Username beim Erzeugen des Child-Cursors
 
+  dba_sga_show_sql_plan_management_patches_hint:            Anzeige aller SQL-Patches der Datenbank
+
   dba_show_locks_caption:                                   Aktuell Locks verschiedener Typen anlisten
   dba_show_locks_all_locks_caption:                         Alle Locks
   dba_show_locks_all_locks_hint:                            Alle Locks anlisten? Sonst AE- und PS-Locks unterdrücken.
@@ -1530,6 +1532,7 @@
   menu_sga_pga_sqlarea_current_sqlid_childno_hint:          Auswertung aktuelle SQLs aus SGA auf Ebene SQL_ID, Child-Nr.
   menu_sga_pga_sqlarea_historic_hint:                       Auswertung historische SQLs aus DBA_Hist_SQLStat
   menu_sga_pga_sql_plan_baselines_hint:                     Anzeige der SQL-Plan Baselines der Datenbank
+  menu_sga_pga_sql_plan_management_hint:                    Anzeige der SQL-Plan Managament-Direktiven der Datenbank
   menu_sga_pga_sql_profiles_hint:                           Anzeige der gespeicherten SQL-Profiles der Datenbank
   menu_sga_pga_sql_translations_hint: |-
     Anzeige der gespeicherten SQL-Translations der Datenbank

@@ -127,9 +127,17 @@ end
 <%= render :partial=>"dba_sga/list_sql_profiles" %>
 
 <% if get_db_version >= '12.1' %>
-  <% @update_area_sql_translation = get_unique_area_id %>
-  <script type="text/javascript">
-      ajax_html('<%= @update_area_sql_translation %>', 'dba_sga', 'show_sql_translations', {update_area: "<%= @update_area_sql_translation %>", translated_sql_id: "<%= @sql_id%>"}, {retain_status_message: true});
-  </script>
-  <div id="<%= @update_area_sql_translation %>"></div>
+    <% @update_area_sql_translation = get_unique_area_id %>
+    <script type="text/javascript">
+        ajax_html('<%= @update_area_sql_translation %>', 'dba_sga', 'show_sql_translations', {update_area: "<%= @update_area_sql_translation %>", translated_sql_id: "<%= @sql_id%>"}, {retain_status_message: true});
+    </script>
+    <div id="<%= @update_area_sql_translation %>"></div>
+
+    <% @update_area_sql_patches = get_unique_area_id %>
+    <script type="text/javascript">
+        ajax_html('<%= @update_area_sql_patches %>', 'dba_sga', 'show_sql_patches', {update_area: "<%= @update_area_sql_patches %>", exact_signature: <%= @sql.exact_signature%>, force_signature: <%= @sql.force_signature%>}, {retain_status_message: true});
+    </script>
+    <div id="<%= @update_area_sql_patches %>"></div>
+
 <% end %>
+
