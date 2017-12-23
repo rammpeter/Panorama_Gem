@@ -1414,10 +1414,18 @@ class DbaSgaController < ApplicationController
       where_values << @exact_signature
     end
 
-    @sql_patches = sql_select_all ["SELECT p.* FROM DBA_SQL_Patches p #{where_stmt}"].concat(where_values)
+    @sql_patches = sql_select_all ["SELECT p.*, TO_CHAR(Signature) Char_Signature FROM DBA_SQL_Patches p #{where_stmt}"].concat(where_values)
 
     render_partial
   end
+
+  def list_sql_patch_sql_text
+    @sql_text = sql_select_one ["SELECT SQL_Text FROM DBA_SQL_Patches WHERE Category = ? AND TO_CHAR(Signature) = ?", params[:category], params[:signature]]
+    respond_to do |format|
+      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(@sql_text)}</pre>".html_safe }
+    end
+  end
+
 
   def list_dbms_xplan_display
     instance        = params[:instance]

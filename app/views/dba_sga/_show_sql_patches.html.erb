@@ -27,13 +27,23 @@
     )
   end
 
-
+  link_sql_text = proc do |rec|
+    ajax_link(rec.sql_text[0,40],
+              {:controller   => :dba_sga,
+               :action       => :list_sql_patch_sql_text,
+               :category     => rec.category,
+               :signature    => rec.signature.to_s,   # Use string, because numeric values are rounded (long integer limit?)
+               :update_area  => @update_area,
+              },
+              :title=>"Show complete text of SQL statement"
+    )
+  end
 
   column_options = []
   column_options << {:caption=>'Name',                :data=>proc{|rec| rec.name},                              :title=>"Name of the SQL patch"}
   column_options << {:caption=>'Category',            :data=>proc{|rec| rec.category},                          :title=>"Category of the SQL patch"}
   column_options << {:caption=>'Signature',           :data=>proc{|rec| fn rec.signature},                      :title=>"Unique identifier generated from normalized SQL text", align: :right}
-  column_options << {:caption=>'SQL text',            :data=>proc{|rec| rec.sql_text[0, 30]},                   :title=>"Un-normalized SQL text"}
+  column_options << {:caption=>'SQL text',            :data=>link_sql_text,                                     :title=>"Un-normalized SQL text"}
   column_options << {:caption=>'Created',             :data=>proc{|rec| localeDateTime rec.created},            :title=>"Timestamp when the SQL patch was created"}
   column_options << {:caption=>'Last modified',       :data=>proc{|rec| localeDateTime rec.last_modified},      :title=>"Timestamp when the SQL patch was last modified"}
   column_options << {:caption=>'Description',         :data=>proc{|rec| rec.description},                       :title=>"Text description provided for the SQL patch"}
