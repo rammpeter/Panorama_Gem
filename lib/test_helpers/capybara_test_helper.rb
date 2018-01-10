@@ -1,9 +1,10 @@
+# replaced by chrome
+=begin
+
 require "minitest/rails/capybara"
 
 require 'capybara/poltergeist'
 
-# replaced by chrome
-=begin
 class Capybara::Rails::TestCase
 
 
