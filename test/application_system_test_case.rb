@@ -49,7 +49,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 #page.save_and_open_page
 #assert_content page, "Please choose saved connection"
 
-    page.must_have_content "Please choose saved connection"
+    assert_text "Please choose saved connection"
 
 #test_config = PanoramaOtto::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]
     test_config = PanoramaTestConfig.test_config

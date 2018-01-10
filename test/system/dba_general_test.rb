@@ -6,27 +6,27 @@ class DbaGeneralTest < ApplicationSystemTestCase
     login_and_menu_call('DBA general', 'menu_env_start_page')
     assert_ajax_success
 
-    page.must_have_content 'Current database'
-    page.must_have_content 'Server versions'
-    page.must_have_content 'Client versions'
-    page.must_have_content 'Instance data'
-    page.must_have_content 'Usage of Oracle management packs by Panorama'
-    page.must_have_content 'Handling hints'
+    assert_text 'Current database'
+    assert_text 'Server versions'
+    assert_text 'Client versions'
+    assert_text 'Instance data'
+    assert_text 'Usage of Oracle management packs by Panorama'
+    assert_text 'Handling hints'
   end
 
   test "DB-Locks / current" do
     login_and_menu_call('DBA general', 'DB-Locks', 'menu_dba_show_locks')
     assert_ajax_success
-    page.must_have_content 'List current locks of different types'
+    assert_text 'List current locks of different types'
 
     page.click_button 'button_dml_locks'
     assert_ajax_success
-    page.must_have_content 'DML Database locks (from GV$Lock)'
+    assert_text 'DML Database locks (from GV$Lock)'
 
     # click first row column "SID/SN" in grid
     page.first(:xpath, "//div[contains(@class, 'slick-cell') and contains(@class, 'l0') and contains(@class, 'r0')]").first('a').click
     assert_ajax_success
-    page.must_have_content 'Details for session SID='
+    assert_text 'Details for session SID='
 
     # click first row column "Module" in grid
     page.first(:xpath, "//div[contains(@class, 'slick-inner-cell') and contains(@row, '0') and contains(@column, 'col2')]").first('a').click
@@ -38,15 +38,15 @@ class DbaGeneralTest < ApplicationSystemTestCase
 
     page.click_button 'button_blocking_dml_locks'
     assert_ajax_success
-    page.must_have_content 'Blocking DML-Locks from gv$Lock'
+    assert_text 'Blocking DML-Locks from gv$Lock'
 
     page.click_button 'button_blocking_ddl_locks'
     assert_ajax_success
-    page.must_have_content 'Blocking DDL-Locks in Library Cache (from DBA_KGLLock)'
+    assert_text 'Blocking DDL-Locks in Library Cache (from DBA_KGLLock)'
 
     page.click_button 'button_2pc'
     assert_ajax_success
-    page.must_have_content 'Pending two-phase commits '
+    assert_text 'Pending two-phase commits '
 
     # save_and_open_screenshot  # cannot work at headless server
   end
@@ -54,7 +54,7 @@ class DbaGeneralTest < ApplicationSystemTestCase
   test "DB-Locks / Blocking locks historic" do
     login_and_menu_call('DBA general', 'DB-Locks', 'menu_active_session_history_show_blocking_locks_historic')
     assert_ajax_success
-    page.must_have_content 'Blocking Locks from DBA_Hist_Active_Sess_History'
+    assert_text 'Blocking Locks from DBA_Hist_Active_Sess_History'
 
 
 
