@@ -329,7 +329,8 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
       return        # Fehler-Ausgang
     end
 
-    initialize_unique_area_id                                                   # Zaehler für eindeutige IDs ruecksetzen
+    # deprecated
+    #initialize_unique_area_id                                                   # Zaehler für eindeutige IDs ruecksetzen
 
     # Detect existence of Panorama_Sampler
     panorama_sampler_data = PanoramaSamplerStructureCheck.panorama_sampler_schemas

@@ -168,7 +168,7 @@ module MenuHelper
                   {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),                  :controller=> 'dba_sga',     :action=> 'show_result_cache',        :hint=>t(:menu_sga_pga_result_cache_current_hint, :default=> 'Show current usage of result cache') },
                 ]
             },
-            {:class=> 'item', :caption=> 'SQL plan management',        :controller=> 'dba_sga',      :action=> 'show_sql_plan_management',           :hint=>t(:menu_sga_pga_sql_plan_management_hint, :default=> 'Show all SQL plan management directives of database') },
+            {:class=> 'item', :caption=> 'SQL plan management',        :controller=> 'dba_sga',      :action=> 'show_sql_plan_management',           :hint=>"#{t(:menu_sga_pga_sql_plan_management_hint, :default=> "Show all SQL plan management directives of database")}:\n- SQL profiles\n- SQL plan baselines\n- Stored outlines\n- SQL translations\n- SQL patches" },
             { :class=> 'menu', :caption=> 'Compare execution plans', :content=>[
                 {:class=> 'item', :caption=> 'in current SGA',        :controller=> 'dba_sga',      :action=> 'show_compare_execution_plans',           :hint=>t(:menu_sga_pga_compare_execution_plans, :default=> 'Compare execution plan of two different cursors in SGA') },
                 {:class=> 'item', :caption=> 'in historic AWR data',  :controller=> 'dba_history',  :action=> 'show_compare_execution_plans_historic',  :hint=>t(:menu_sga_pga_compare_execution_plans_historic, :default=> 'Compare two execution plans from AWR history') },

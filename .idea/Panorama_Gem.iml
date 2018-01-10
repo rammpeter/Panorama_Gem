@@ -400,7 +400,6 @@
     <orderEntry type="library" scope="PROVIDED" name="capybara (v2.16.1, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="childprocess (v0.8.0, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="chromedriver-helper (v1.1.0, RVM: jruby-9.1.14.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="cliver (v0.3.2, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="concurrent-ruby (v1.0.5, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="crass (v1.0.3, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="erubi (v1.7.0, RVM: jruby-9.1.14.0) [gem]" level="application" />
@@ -421,8 +420,6 @@
     <orderEntry type="library" scope="PROVIDED" name="minitest-reporters (v1.1.19, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="nio4r (v2.1.0, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="nokogiri (v1.8.1, RVM: jruby-9.1.14.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="phantomjs (v2.1.1.0, RVM: jruby-9.1.14.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="poltergeist (v1.17.0, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="public_suffix (v3.0.1, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="puma (v3.11.0, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rack (v2.0.3, RVM: jruby-9.1.14.0) [gem]" level="application" />

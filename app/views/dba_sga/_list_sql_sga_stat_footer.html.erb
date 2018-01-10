@@ -92,5 +92,17 @@
     </div>
 <% end %>
 
+<% if get_db_version >= '12.1' %>
+    <div class="float_left">
+      <%=
+        ajax_submit('SQL-Patch', {
+            :controller           => :dba_sga,
+            :action               => :generate_sql_patch,
+            :update_area          => @update_area,
+            :sql_id               => @sql_id,
+        }, :title=> t(:dba_history_list_sql_detail_historic_create_sql_patch_hint, :default=>"Generate script to create SQL patch for this SQL."))
+      %>
+    </div>
+<% end %>
 
 <div  style="clear: both;"></div>

@@ -442,7 +442,8 @@ class DbaHistoryController < ApplicationController
                  MIN(s.Parsing_Schema_Name)         Min_Parsing_Schema_Name,
                  COUNT(DISTINCT Parsing_Schema_Name) Parsing_Schema_Count,      /* muss eindeutig sein */
                  COUNT(*)                           Hit_Count,
-                 MAX(s.SQL_Profile)                 SQL_Profile                 /* Eines der devt. benutzten Profiles */
+                 MAX(s.SQL_Profile)                 SQL_Profile                /* Eines der evt. benutzten Profiles */
+                 #{", MAX(s.Force_Matching_Signature) Force_Matching_Signature" if get_db_version >= '12.1'}
          FROM   Snaps
           JOIN   DBA_Hist_SQLStat s ON s.DBID = Snaps.DBID AND s.Instance_Number = Snaps.Instance_Number AND s.Snap_ID BETWEEN Snaps.Start_Snap_ID AND Snaps.End_Snap_ID
           WHERE  s.SQL_ID = ?
@@ -509,6 +510,7 @@ class DbaHistoryController < ApplicationController
 
     if sql_statement
       @sql_statement      = sql_statement.sql_text
+      @exact_matching_signature = sql_statement.exact_signature   # Not available in DBA_Hist_SQLStat
       @sql_profiles       = sql_select_all ["SELECT * FROM DBA_SQL_Profiles       WHERE Signature = TO_NUMBER(?) OR Signature = TO_NUMBER(?)", sql_statement.exact_signature.to_s, sql_statement.force_signature.to_s]
       if get_db_version >= "11.2"
         @sql_plan_baselines = sql_select_all ["SELECT * FROM DBA_SQL_Plan_Baselines WHERE Signature = TO_NUMBER(?) OR Signature = TO_NUMBER(?)", sql_statement.exact_signature.to_s, sql_statement.force_signature.to_s]

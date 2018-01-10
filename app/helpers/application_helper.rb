@@ -483,10 +483,10 @@ module ApplicationHelper
     end
   end
 
-  # Rücksetzen des Zählers bei Neuanmeldung
-  def initialize_unique_area_id
-    write_to_client_info_store(:request_counter, 0)
-  end
+#  # Rücksetzen des Zählers bei Neuanmeldung
+#  def initialize_unique_area_id
+#    write_to_client_info_store(:request_counter, 0)
+#  end
 
   # Eindeutigen Bezeichner fuer DIV-ID in html-Struktur
   def get_unique_area_id

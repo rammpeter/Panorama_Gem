@@ -105,9 +105,17 @@ end
 <% if get_db_version >= '12.1' %>
     <% @update_area_sql_translation = get_unique_area_id %>
     <script type="text/javascript">
-        ajax_html('<%= @update_area_sql_translation %>', 'dba_sga', 'show_sql_translations', {update_area: "<%= @update_area_sql_translation %>", translated_sql_id: "<%= @sql_id%>"});
+        ajax_html('<%= @update_area_sql_translation %>', 'dba_sga', 'show_sql_translations', {update_area: "<%= @update_area_sql_translation %>", translated_sql_id: "<%= @sql_id%>"}, {retain_status_message: true});
     </script>
     <div id="<%= @update_area_sql_translation %>"></div>
+
+    <% @update_area_sql_patches = get_unique_area_id %>
+
+    <script type="text/javascript">
+        ajax_html('<%= @update_area_sql_patches %>', 'dba_sga', 'show_sql_patches', {update_area: "<%= @update_area_sql_patches %>", exact_signature: "<%= @exact_matching_signature%>", force_signature: "<%= @sql.force_matching_signature%>"}, {retain_status_message: true});
+    </script>
+    <div id="<%= @update_area_sql_patches %>"></div>
+
 <% end %>
 
 <%
@@ -253,6 +261,19 @@ column_options = [
             :sql_id               => @sql_id,
             :user_name            => @parsing_schema_name
         }, :title=> t(:dba_history_list_sql_detail_historic_create_translation_hint, :default=>"Generate script to create profile for SQL-translation-framework for this SQL."))
+      %>
+    </div>
+<% end %>
+
+<% if get_db_version >= '12.1' %>
+    <div class="float_left">
+      <%=
+        ajax_submit('SQL-Patch', {
+            :controller           => :dba_sga,
+            :action               => :generate_sql_patch,
+            :update_area          => @update_area,
+            :sql_id               => @sql_id,
+        }, :title=> t(:dba_history_list_sql_detail_historic_create_sql_patch_hint, :default=>"Generate script to create SQL patch for this SQL."))
       %>
     </div>
 <% end %>
