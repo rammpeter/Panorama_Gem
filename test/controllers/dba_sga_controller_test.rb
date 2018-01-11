@@ -200,6 +200,13 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "generate_sql_patch with xhr: true" do
+    if get_db_version >= '12.1'
+      post '/dba_sga/generate_sql_patch', :params => {format: :html, sql_id: @hist_sql_id, update_area: :hugo }
+      assert_response :success
+    end
+  end
+
   test "list_sql_monitor with xhr: true" do
     begin
 

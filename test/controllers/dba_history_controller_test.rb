@@ -10,8 +10,10 @@ class DbaHistoryControllerTest < ActionController::TestCase
     #time_selection_end  = Time.new
     # TODO: Additional test with overlapping start and end (first snapshot after start and last snapshot before end)
     # End with latest existing sample
-    time_selection_end = sql_select_one "SELECT /* Panorama-Tool Ramm */ MAX(Begin_Interval_Time) FROM DBA_Hist_Snapshot"
-    time_selection_start  = time_selection_end-10000          # x Sekunden Abstand
+    time_selection_end = sql_select_one "SELECT /* Panorama-Tool Ramm */ MAX(End_Interval_Time) FROM DBA_Hist_Snapshot"
+    prev_start_time = sql_select_one "SELECT /* Panorama-Tool Ramm */ MAX(Begin_Interval_Time) FROM DBA_Hist_Snapshot WHERE Snap_ID < (SELECT MAX(Snap_ID) FROM DBA_Hist_Snapshot)"
+
+    time_selection_start  = prev_start_time-4000          # x Sekunden Abstand
     @time_selection_end = time_selection_end.strftime("%d.%m.%Y %H:%M")
     @time_selection_start = time_selection_start.strftime("%d.%m.%Y %H:%M")
     @min_snap_id = sql_select_one ["SELECT  /* Panorama-Tool Ramm */ MIN(Snap_ID)
