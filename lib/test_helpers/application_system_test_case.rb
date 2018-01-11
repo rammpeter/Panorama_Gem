@@ -1,4 +1,4 @@
-require "test_helper"
+#require "test_helper"
 
 #TODO: test/dummy/public/assets entsorgen incl. .sprockets* vor Tests
 

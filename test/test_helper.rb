@@ -14,6 +14,7 @@ require "minitest/reporters"
 require File.expand_path("../../lib/test_helpers/oracle_connection_test_helper.rb", __FILE__)       # requires config/environment.rb loaded
 require File.expand_path("../../lib/test_helpers/menu_test_helper.rb", __FILE__)
 require File.expand_path("../../lib/test_helpers/capybara_test_helper.rb", __FILE__)
+require File.expand_path("../../lib/test_helpers/application_system_test_case", __FILE__)
 
 # Filter out Minitest backtrace while allowing backtrace from other libraries
 # to be shown.
