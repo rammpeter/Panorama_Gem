@@ -1716,21 +1716,30 @@ END;
 -- All existing translations are listed in Panorama via menu 'SGA/PGA-details' / 'SQL plan management' / 'SQL patches'
 
 -- Attributes that must be adjusted by you in this script:
---   -
---   - Translated SQL text, currently initialized with the text of the original SQL
+--   - 'hint_text'   place your optimizer hints here
+--   - 'decription'  describe purpose of SQL-patch
 
--- ############# Following acitivities should be executed as SYSDBA to establish SQL patch #############
-
+-- ############# To establish SQL patch execut this as SYSDBA #############
+-- on Pluggable database execute it connected to PDB, not CDB
 
 #{ "-- Drop already existing SQL-Patch for this SQL before applying new patch
 EXEC DBMS_SQLDiag.Drop_SQL_Patch('#{existing_patch_for_sql}');
 " if !existing_patch_for_sql.nil?}
-
+#{
+  get_db_version >= '12.2' ?
+      "
+DECLARE
+  patch_name VARCHAR2(32767);
 BEGIN
-  sys.DBMS_SQLDiag_Internal.i_create_patch(
+  patch_name := sys.DBMS_SQLDiag.create_SQL_patch(" :
+      "
+BEGIN
+  sys.DBMS_SQLDiag_Internal.i_create_patch("
+}
     sql_text    => '#{sql_escape(sql_text)}',
     hint_text   => '< my personal hint>',
-    name        => '#{patch_name}'
+    name        => '#{patch_name}',
+    description => 'My personal description for patch'
   );
 END;
 /
