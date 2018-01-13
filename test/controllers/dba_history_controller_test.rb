@@ -285,5 +285,20 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
 
   end
 
+  test "list_resource_limits_historic with xhr: true" do
+    sql_select_all("SELECT DISTINCT Resource_Name FROM DBA_Hist_Resource_Limit").each do |resname_rec|
+      [1, nil].each do |instance|
+        post :list_resource_limits_historic, params: {
+            format:               :html,
+            time_selection_start: @time_selection_start,
+            time_selection_end:   @time_selection_end,
+            instance:             instance,
+            resource:             {name: resname_rec.resource_name},
+            update_area:          :hugo
+        }
+        assert_response :success
+      end
+    end
+  end
 
 end

@@ -1818,7 +1818,12 @@ FROM (
 
   def show_resource_limits_historic
     @names = sql_select_all 'SELECT /* Panorama-Tool Ramm */ DISTINCT Resource_Name FROM DBA_Hist_Resource_Limit'
-    render_partial
+    if @names.length == 0
+      show_popup_message("No content available in DBA_Hist_Resource_Limit for your connection!
+For PDB please connect to database with CDB-user instead of PDB-user.")
+    else
+      render_partial
+    end
   end
 
   def list_resource_limits_historic
@@ -1835,14 +1840,18 @@ FROM (
              SUM(rl.Initial_Allocation)           Initial_Allocation,
              SUM(rl.Limit_Value)                  Limit_Value
       FROM   DBA_Hist_Snapshot ss
-      JOIN   DBA_Hist_Resource_Limit rl ON rl.DBID=ss.DBID AND rl.Snap_ID=ss.Snap_ID AND rl.Instance_Number=ss.Instance_Number
+      JOIN   (SELECT DBID, Snap_ID, Instance_Number, Current_Utilization, Max_Utilization,
+                     CASE WHEN TRIM(Initial_Allocation) = 'UNLIMITED' THEN -1 ELSE TO_NUMBER(Initial_Allocation) END Initial_Allocation,
+                     CASE WHEN TRIM(Limit_Value)        = 'UNLIMITED' THEN -1 ELSE TO_NUMBER(Limit_Value)        END Limit_Value
+              FROM   DBA_Hist_Resource_Limit
+              WHERE  Resource_Name = ?
+             ) rl ON rl.DBID=ss.DBID AND rl.Snap_ID=ss.Snap_ID AND rl.Instance_Number=ss.Instance_Number
       WHERE  ss.End_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
       AND    ss.End_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-      AND    rl.Resource_Name = ?
       #{ @instance ? " AND ss.Instance_Number=#{@instance}" : ''}
       GROUP BY ROUND(ss.End_Interval_Time, 'MI')
       ORDER BY ROUND(ss.End_Interval_Time, 'MI') DESC
-     ", @time_selection_start, @time_selection_end, @resource_name ]
+     ", @resource_name, @time_selection_start, @time_selection_end ]
 
     render_partial
   end
