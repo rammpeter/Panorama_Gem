@@ -1409,12 +1409,19 @@ class DbaSgaController < ApplicationController
     where_values = []
 
     if @exact_signature && @force_signature
-      where_stmt = "WHERE (p.Force_Matching = 'YES' AND Signature = ?) OR (p.Force_Matching = 'NO' AND Signature = ?)"
+      where_stmt = "WHERE (p.Force_Matching = 'YES' AND p.Signature = ?) OR (p.Force_Matching = 'NO' AND p.Signature = ?)"
       where_values << @force_signature
       where_values << @exact_signature
     end
 
-    @sql_patches = sql_select_all ["SELECT p.*, TO_CHAR(Signature) Char_Signature FROM DBA_SQL_Patches p #{where_stmt}"].concat(where_values)
+    @sql_patches = sql_select_all ["SELECT p.*, TO_CHAR(p.Signature) Char_Signature, sod.comp_data
+                                    FROM DBA_SQL_Patches p
+                                    JOIN sys.sqlobj$ so ON so.Name = p.Name AND so.Signature = p.Signature AND so.Category = p.Category AND so.Obj_Type = 3 /* SQL patch */
+                                    JOIN sys.sqlobj$data sod ON sod.signature = so.signature
+                                                    and     sod.category = so.category
+                                                    and     sod.obj_type = so.obj_type
+                                                    and     sod.plan_id = so.plan_id
+                                    #{where_stmt}"].concat(where_values)
 
     render_partial
   end
@@ -1682,7 +1689,7 @@ END;
 "
 
     respond_to do |format|
-      format.html {render :html => "<div style='background-color: lightyellow; white-space: pre-wrap; padding: 10px;'>#{my_html_escape(result)}</div>".html_safe }
+      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap; padding: 10px;'>#{my_html_escape(result)}</pre>".html_safe }
     end
   end
 
@@ -1693,6 +1700,7 @@ END;
 
     sql_text = sql_select_one ["SELECT SQL_FullText FROM gv$SQLArea WHERE SQL_ID = ?", @sql_id]
     sql_text = sql_select_one ["SELECT SQL_Text FROM DBA_Hist_SQLText WHERE DBID = ? AND SQL_ID = ?", get_dbid, @sql_id] if sql_text.nil?
+    raise "No SQL text found for SQL-ID='#{@sql_id}' in gv$SQLArea or DBA_Hist_SQLText" if sql_text.nil?
 
     existing_patch_for_sql = sql_select_one ["SELECT Name
                                               FROM   DBA_SQL_Patches p
@@ -1713,7 +1721,7 @@ END;
 -- Executing this script allows you to add optimizer hints that are used for execution of this SQL.
 -- This allows you to transparently influence execution plan without any change of the calling application.
 -- Existing SQL-patches for SQLs are shown by Panorama in SQL-details view.
--- All existing translations are listed in Panorama via menu 'SGA/PGA-details' / 'SQL plan management' / 'SQL patches'
+-- All existing SQL-patches are listed in Panorama via menu 'SGA/PGA-details' / 'SQL plan management' / 'SQL patches'
 
 -- Attributes that must be adjusted by you in this script:
 --   - 'hint_text'   place your optimizer hints here
@@ -1750,7 +1758,7 @@ END;
 "
 
     respond_to do |format|
-      format.html {render :html => "<div style='background-color: lightyellow; white-space: pre-wrap; padding: 10px;'>#{my_html_escape(result)}</div>".html_safe }
+      format.html {render :html => "<pre class='yellow-panel' style=' white-space: pre-wrap; padding: 10px;'>#{my_html_escape(result)}</pre>".html_safe }
     end
   end
 end

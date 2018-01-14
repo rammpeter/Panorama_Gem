@@ -1,32 +1,6 @@
 <%
   @update_area = get_unique_area_id
 
-  def list_sql_text(rec)
-    ajax_link(rec.sql_text.html_safe,
-                            {:controller   => :dba_sga,
-                             :action       => :list_sql_translation_sql_text,
-                             :owner        => rec.owner,
-                             :profile_name => rec.profile_name,
-                             :sql_id       => rec.sql_id,
-                             :update_area  => @update_area,
-                            },
-                    :title=>"Show complete text of SQL"
-    )
-  end
-
-  def list_translated_text(rec)
-    ajax_link(rec.translated_text.html_safe,
-                            {:controller   => :dba_sga,
-                             :action       => :list_sql_translation_translated_text,
-                             :owner        => rec.owner,
-                             :profile_name => rec.profile_name,
-                             :sql_id       => rec.sql_id,
-                             :update_area  => @update_area,
-                            },
-                    :title=>"Show complete text of SQL"
-    )
-  end
-
   link_sql_text = proc do |rec|
     ajax_link(rec.sql_text[0,40],
               {:controller   => :dba_sga,
@@ -39,11 +13,23 @@
     )
   end
 
+  show_comp_data = proc do |rec|
+    # input: XML-structure for outline_data
+    # return: Array of hint-texts
+    output = ''
+    Nokogiri::XML(rec.comp_data).xpath("//hint").each do |hint|
+      output << "#{my_html_escape(hint.text)}<br/>"
+    end
+    output
+  end
+
+
   column_options = []
   column_options << {:caption=>'Name',                :data=>proc{|rec| rec.name},                              :title=>"Name of the SQL patch"}
   column_options << {:caption=>'Category',            :data=>proc{|rec| rec.category},                          :title=>"Category of the SQL patch"}
   column_options << {:caption=>'Signature',           :data=>proc{|rec| fn rec.signature},                      :title=>"Unique identifier generated from normalized SQL text", align: :right}
   column_options << {:caption=>'SQL text',            :data=>link_sql_text,                                     :title=>"Un-normalized SQL text"}
+  column_options << {:caption=>'Optimizer hint',      :data=>show_comp_data,                                    :title=>"Optimizer hint text(s) extracted from outline_data XML structure"}
   column_options << {:caption=>'Created',             :data=>proc{|rec| localeDateTime rec.created},            :title=>"Timestamp when the SQL patch was created"}
   column_options << {:caption=>'Last modified',       :data=>proc{|rec| localeDateTime rec.last_modified},      :title=>"Timestamp when the SQL patch was last modified"}
   column_options << {:caption=>'Description',         :data=>proc{|rec| rec.description},                       :title=>"Text description provided for the SQL patch"}
@@ -54,24 +40,6 @@
   column_options << {:caption=>'Task object ID',      :data=>proc{|rec| fn rec.task_obj_id},                    :title=>"Advisor object ID for the SQL patch", align: :right}
   column_options << {:caption=>'Task finding ID',     :data=>proc{|rec| fn rec.task_fnd_id},                    :title=>"Advisor finding ID for the SQL patch", align: :right}
   column_options << {:caption=>'Task rec. ID',        :data=>proc{|rec| fn rec.task_rec_id},                    :title=>"Advisor recommendation ID for the SQL patchh", align: :right}
-=begin
-  column_options << {:caption=>'Profile name',        :data=>proc{|rec| rec.profile_name},                      :title=>"Name of SQL translation profile"}
-  column_options << {:caption=>'SQL to translate',    :data=>proc{|rec| list_sql_text(rec)},                    :title=>"Text of original SQL to be translated\nThis SQL text will never occur in SQL Area etc. if SQL is translated to another SQL text."}
-  column_options << {:caption=>'SQL-ID to translate', :data=>proc{|rec| rec.sql_id},                            :title=>"SQL-ID of original SQL to be translated\nThis SQL-ID will never occur in SQL Area etc. if SQL is translated to another SQL text."}
-  column_options << {:caption=>'Translated SQL',      :data=>proc{|rec| list_translated_text(rec)},             :title=>"Text of translated SQL after translation\nThis SQL text will occur in SQL Area etc. if translation is active."}
-  column_options << {:caption=>'Enabled',             :data=>proc{|rec| rec.enabled},                           :title=>"Is translation enabled?"}
-  column_options << {:caption=>'Registration time',   :data=>proc{|rec| localeDateTime(rec.registration_time)}, :title=>"Timestamp of translation registration"}                                                if get_db_version > '12.1.0.1.0'
-  column_options << {:caption=>'Client info',         :data=>proc{|rec| rec.client_info},                       :title=>"Client information when the SQL was parsed and the translation was registered"}        if get_db_version > '12.1.0.1.0'
-  column_options << {:caption=>'Module',              :data=>proc{|rec| rec.module},                            :title=>"Module when the SQL was parsed and the translation was registered"}                    if get_db_version > '12.1.0.1.0'
-  column_options << {:caption=>'Action',              :data=>proc{|rec| rec.action},                            :title=>"Action when the SQL was parsed and the translation was registered"}                    if get_db_version > '12.1.0.1.0'
-  column_options << {:caption=>'Parsing user',        :data=>proc{|rec| rec.parsing_user_name},                 :title=>"Current user when the SQL was parsed and the translation was registered"}              if get_db_version > '12.1.0.1.0'
-  column_options << {:caption=>'Parsing schema',      :data=>proc{|rec| rec.parsing_schema_name},               :title=>"Current schema when the SQL was parsed and the translation was registered"}            if get_db_version > '12.1.0.1.0'
-  column_options << {:caption=>'Comments',            :data=>proc{|rec| rec.comments},                          :title=>"Comments on the translation"}                                                          if get_db_version > '12.1.0.1.0'
-  column_options << {:caption=>'Error code',          :data=>proc{|rec| rec.error_code},                        :title=>"Last error code when the SQL was run"}                                                 if get_db_version >= '12.2'
-  column_options << {:caption=>'Error source',        :data=>proc{|rec| rec.error_source},                      :title=>"Source of the last error"}                                                             if get_db_version >= '12.2'
-  column_options << {:caption=>'Translation method',  :data=>proc{|rec| rec.translation_method},                :title=>"Method used to translate the SQL during the last error"}                               if get_db_version >= '12.2'
-  column_options << {:caption=>'Dict. SQL-ID',        :data=>proc{|rec| rec.dictionary_sql_id},                 :title=>"SQL identifier of the SQL text in the translation dictionary used to translate the SQL during the last error"} if get_db_version >= '12.2'
-=end
 %>
 
 <%=

@@ -643,5 +643,4 @@ module ApplicationHelper
       raise "Exception '#{e.message}' while decrypting your client key from browser cookie. \nPlease try again."
     end
   end
-
 end

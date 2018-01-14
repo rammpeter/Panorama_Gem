@@ -2079,11 +2079,24 @@ END;
       result << "-- For instance = #{r.inst_id}:
 exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
 
+-- ######### to remove an existing SQL plan baseline execute the following:
+-- Get the SQL-Handle of the baseline by
+-- SELECT * FROM dba_sql_plan_baselines WHERE SQL_Text LIKE '%<your SQL>%';
+
+-- Drop the baseline with the SQL-Handle from previous select
+-- DECLARE
+--   v_dropped_plans number;
+-- BEGIN
+--   v_dropped_plans := DBMS_SPM.DROP_SQL_PLAN_BASELINE (sql_handle => 'SQL_b6b0d1c71cd1807b');
+--   DBMS_OUTPUT.PUT_LINE('dropped ' || v_dropped_plans || ' plans');
+-- END;
+-- /
+
 "
     end
 
     respond_to do |format|
-      format.html {render :html => "<div style='background-color: lightyellow; white-space: pre-wrap; padding: 10px;'>#{my_html_escape(result)}</div>".html_safe }
+      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap; padding: 10px;'>#{my_html_escape(result)}</pre>".html_safe }
     end
   end
 
