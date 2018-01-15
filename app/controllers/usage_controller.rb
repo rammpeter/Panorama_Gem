@@ -4,7 +4,10 @@ require_relative '../../config/engine_config'
 class UsageController < ApplicationController
   layout "usage_layout"
 
+  include EnvHelper
+
   def info
+    initialize_browser_tab_id
     fill_usage_info
   end
 

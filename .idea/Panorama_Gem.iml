@@ -396,7 +396,7 @@
     <orderEntry type="library" scope="PROVIDED" name="archive-zip (v0.7.0, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="arel (v8.0.0, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="builder (v3.2.3, RVM: jruby-9.1.14.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="bundler (v1.15.4, RVM: jruby-9.1.14.0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="bundler (v1.16.1, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="capybara (v2.16.1, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="childprocess (v0.8.0, RVM: jruby-9.1.14.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="chromedriver-helper (v1.1.0, RVM: jruby-9.1.14.0) [gem]" level="application" />

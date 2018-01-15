@@ -7,6 +7,8 @@
   <%= csrf_meta_tags %>
 
   <script type="text/javascript">
+      var browser_tab_id = <%= @browser_tab_id %>;                                // Unique identifier for browser tab
+
       /* Initialisierung von Objekten bei startup der Seite */
       bind_ajax_callbacks();                                                  // Callbacks für jeden Ajax-Aufruf binden
 
