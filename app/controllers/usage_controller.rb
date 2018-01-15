@@ -181,6 +181,7 @@ class UsageController < ApplicationController
   end
 
   def connection_pool
+    initialize_browser_tab_id
 
   end
 
