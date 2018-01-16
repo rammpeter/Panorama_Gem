@@ -499,8 +499,14 @@ module KeyExplanationHelper
   def sga_name_explanation(search_sga_name)
     unless @@sga_names
       @@sga_names = {
-          'KGLH0' => 'Kernel generic library heap 0: session specific environment informations for child cursors',
-          'SQLA'  => 'SQL area ',
+          'buffer cache'          => 'Cached database blocks',
+          'free memory'           => 'Available free memory in pool for usage',
+          'gcs res hash bucket'   => 'Status info of cached data blocks for Global Cache Service (GCS)',
+          'gcs resources'         => 'Status info of cached data blocks for Global Cache Service (GCS)',
+          'gcs shadows'           => 'Status info of cached data blocks for Global Cache Service (GCS)',
+          'KGLH0'                 => 'Kernel generic library heap 0: session specific environment informations for child cursors',
+          'shared_io_pool'        => 'Used for handling of LOB secure files',
+          'SQLA'                  => 'SQL area (parsed SQL statements)',
       }
     end
 
