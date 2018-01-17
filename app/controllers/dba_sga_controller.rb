@@ -296,6 +296,21 @@ class DbaSgaController < ApplicationController
                     sql_row.exact_signature.to_s, sql_row.force_signature.to_s] if sql_row
   end
 
+  def get_sql_bind_count(instance, sql_id, child_number = nil, child_address = nil)
+    sql_select_one ["\
+      SELECT COUNT(*)
+      FROM   gv$SQL_Bind_Capture c
+      WHERE  Inst_ID = ?
+      AND    SQL_ID  = ?
+      #{" AND Child_Number  = ?" unless child_number.nil?}
+      #{" AND Child_Address = HEXTORAW(?)" unless child_address.nil?}
+      ORDER BY Position
+      ", instance, sql_id ]
+                                .concat(child_number.nil?  ? [] : [child_number])
+                                .concat(child_address.nil? ? [] : [child_address])
+
+  end
+
   public
 
   def list_sql_profile_detail
@@ -494,6 +509,7 @@ class DbaSgaController < ApplicationController
     @sql_profiles        = get_sql_profiles(@sql)
     @sql_plan_baselines  = get_sql_plan_baselines(@sql)
     @sql_outlines        = get_sql_outlines(@sql)
+    @sql_bind_count      = get_sql_bind_count(@instance, @sql_id, @child_number, @child_address)
 
     #@plans               = get_sga_execution_plan(@modus, @sql_id, @instance, @child_number, @child_address, true)
 
@@ -586,6 +602,7 @@ class DbaSgaController < ApplicationController
     @sql_profiles          = get_sql_profiles(@sql)
     @sql_plan_baselines    = get_sql_plan_baselines(@sql)
     @sql_outlines          = get_sql_outlines(@sql)
+    @sql_bind_count        = get_sql_bind_count(@instance, @sql_id)
 
     # Bindevariablen des Cursors
     @binds = sql_select_all ["\
@@ -617,6 +634,34 @@ class DbaSgaController < ApplicationController
     end
 
     render_partial :list_sql_detail_sql_id, (@status_message.length > 0 ? {:status_bar_message => my_html_escape(@status_message)} : {})
+  end
+
+  def list_bind_variables
+    @instance       = prepare_param_instance
+    @sql_id         = params[:sql_id]
+    @child_number   = params[:child_number]
+    @child_address  = params[:child_address]
+    @child_number   = nil if @child_number  == ''
+    @child_address  = nil if @child_address == ''
+
+    # Bindevariablen des Cursors
+    @binds = sql_select_all ["\
+      SELECT /* Panorama-Tool Ramm */ Child_Number, Name, Position, DataType_String, Last_Captured,
+             CASE DataType_String
+               WHEN 'TIMESTAMP' THEN TO_CHAR(ANYDATA.AccessTimestamp(Value_AnyData), '#{sql_datetime_minute_mask}')
+             ELSE Value_String END Value_String,
+             Child_Number,
+             NLS_CHARSET_NAME(Character_SID) Character_Set, Precision, Scale, Max_Length
+      FROM   gv$SQL_Bind_Capture c
+      WHERE  Inst_ID = ?
+      AND    SQL_ID  = ?
+      #{" AND Child_Number  = ?" unless @child_number.nil?}
+      #{" AND Child_Address = HEXTORAW(?)" unless @child_address.nil?}
+      ORDER BY Position
+      ", @instance, @sql_id ]
+                                .concat(@child_number.nil?  ? [] : [@child_number])
+                                .concat(@child_address.nil? ? [] : [@child_address])
+    render_partial
   end
 
   def list_sql_shared_cursor

@@ -1,5 +1,22 @@
 <!-- @update_area muss durch Aufrufer gesetzt sein -->
 <br/>
+<% if @sql_bind_count > 0 %>
+  <div class="float_left">
+    <%= ajax_submit("Bind variables (#{@sql_bind_count})", {
+        :update_area    => @update_area,
+        :controller     => :dba_sga,
+        :action         => :list_bind_variables,
+        :instance       => @sql.inst_id,
+        :sql_id         => @sql.sql_id,
+        :child_number   => @sql['child_number'],
+        :child_address  => @sql['child_address'],
+    }, :title =>t(:dba_sga_list_sql_sga_stat_footer_bind_hint, :default=>"Show bind variables of last execution of SQL"))
+    %>
+  </div>
+<% end %>
+
+<div style="clear: both"></div>
+
 <div class="float_left">
   <%= ajax_submit(t(:dba_sga_list_sql_sga_stat_footer_complete_timeline_caption, :default=>'Full history'), {
            :update_area => @update_area,

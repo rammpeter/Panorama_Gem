@@ -94,6 +94,15 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
 
   end
 
+  test "list_bind_variables_per_sql with xhr: true" do
+    post '/dba_sga/list_bind_variables', :params => {format: :html, instance: 1, sql_id: @hist_sql_id, update_area: :hugo }
+    assert_response :success
+
+    post '/dba_sga/list_bind_variables', :params => {format: :html, instance: 1, sql_id: @hist_sql_id, child_number: 0, child_address: 'ABC', update_area: :hugo }
+    assert_response :success
+  end
+
+
   test "list_open_cursor_per_sql with xhr: true" do
     get '/dba_sga/list_open_cursor_per_sql', :params => {:format=>:html, :instance=>1, :sql_id => @hist_sql_id, :update_area=>:hugo }
     assert_response :success
