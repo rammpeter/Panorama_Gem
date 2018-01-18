@@ -1339,7 +1339,7 @@ class DbaSgaController < ApplicationController
     @translation_count = sql_select_one "SELECT COUNT(*) FROM DBA_SQL_Translations" if get_db_version >= '12.1'
 
     @patches_count = nil
-    @patches_count = sql_select_one "SELECT COUNT(*) FROM DBA_SQL_Patches" if get_db_version >= '12.1'
+    @patches_count = sql_select_one "SELECT COUNT(*) FROM DBA_SQL_Patches" if get_db_version >= '11.1'
 
     render_partial
   end
