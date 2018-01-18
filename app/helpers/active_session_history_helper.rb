@@ -103,7 +103,7 @@ module ActiveSessionHistoryHelper
       when :SubObject_Name              then {:name => 'SubObject_Name',              :sql => "o.SubObject_Name"}
       when :Current_Obj_No              then {:name => 'Current_Obj_No',              :sql => "s.Current_Obj_No"}
       when :User_ID                     then {:name => 'User-ID',                     :sql => "s.User_ID"}
-      when :Additional_Filter           then {:name => 'Additional Filter',           :sql => "UPPER(u.UserName||s.Session_ID||s.Module||s.Action||o.Object_Name||s.Program#{get_db_version >= '11.2' ? '|| s.Machine' : ''}||s.SQL_Plan_Hash_Value) LIKE UPPER('%'||?||'%')", :already_bound => true }  # Such-Filter
+      when :Additional_Filter           then {:name => 'Additional Filter',           :sql => "UPPER(u.UserName||s.Session_ID||s.SQL_ID||s.Module||s.Action||o.Object_Name||s.Program#{get_db_version >= '11.2' ? '|| s.Machine' : ''}||s.SQL_Plan_Hash_Value) LIKE UPPER('%'||?||'%')", :already_bound => true }  # Such-Filter
       when :Temp_Usage_MB_greater       then {:name => 'TEMP-usage (MB) > x',         :sql => "s.Temp_Space_Allocated > ?*(1024*1024)", :already_bound => true}
       else                              { :name => session_statistics_key_rule(key.to_s)[:Name], :sql => session_statistics_key_rule(key.to_s)[:sql] }                              # 2. Versuch aus Liste der Gruppierungskriterien
     end
