@@ -48,6 +48,8 @@ class PackLicense
       when :none then
         check_for_diagnostics_pack_usage(sql)
         check_for_tuning_pack_usage(sql)
+      else
+        raise "Unknown license type #{@license_type}"
     end
     sql
   end

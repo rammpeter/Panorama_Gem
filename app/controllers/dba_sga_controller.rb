@@ -122,6 +122,7 @@ class DbaSgaController < ApplicationController
               when "ClusterWaits"         then "s.Cluster_Wait_Time DESC"
               when "LastActive"           then "s.Last_Active_Time DESC NULLS LAST"
               when "Memory"               then "s.SHARABLE_MEM+s.PERSISTENT_MEM+s.RUNTIME_MEM DESC"
+              else raise "Unknwown value #{top_sort} for top_sort"
             end} )
   WHERE ROWNUM < ?
   ORDER BY #{
@@ -138,6 +139,7 @@ class DbaSgaController < ApplicationController
           when "ClusterWaits"         then "Cluster_Wait_Time_Secs DESC"
           when "LastActive"           then "Last_Active_Time DESC NULLS LAST"
           when "Memory"               then "SHARABLE_MEM+PERSISTENT_MEM+RUNTIME_MEM DESC"
+          else raise "Unknwown value #{top_sort} for top_sort"
         end}"
     ].concat(where_values)
   end
@@ -899,7 +901,7 @@ class DbaSgaController < ApplicationController
                              AND s.Child_Number    = p.Child_Number
                             )
        WHERE #{wherestr}
-       ORDER BY s.Elapsed_Time DESC"].concat whereval;
+       ORDER BY s.Elapsed_Time DESC"].concat whereval
     render_partial
   end
 

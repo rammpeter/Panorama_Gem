@@ -56,7 +56,7 @@ class EnvController < ApplicationController
 
   rescue Exception=>e
     Rails.logger.error("#{e.message}")
-    set_current_database(nil) if !cookies['client_key'].nil?                    # Sicherstellen, dass bei naechstem Aufruf neuer Einstieg (nur wenn client_info_store bereits initialisiert ist)
+    set_current_database(nil) unless cookies['client_key'].nil? # Sicherstellen, dass bei naechstem Aufruf neuer Einstieg (nur wenn client_info_store bereits initialisiert ist)
     raise e                                                                     # Werfen der Exception
   end
 
@@ -551,7 +551,7 @@ public
 
           # Find methods in file
           if line.match(/^ *def /)
-            if !controller_short_name.nil?
+            unless controller_short_name.nil?
               action_name = line.gsub(/\(/, ' ').split[1]
               if !action_name.match(/\?/) && public_actions && !action_name.match(/self\./)
                 # set route for controllers action

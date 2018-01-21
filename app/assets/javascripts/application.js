@@ -55,10 +55,10 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 function useIndicator(url){
 
     function exclude_action_hit(exclude_url){
-        return url.indexOf(exclude_url) != -1;
+        return url.indexOf(exclude_url) !== -1;
     }
 
-    if (url == undefined)
+    if (url === undefined)
         return true;
 
     return  (!(
@@ -79,14 +79,14 @@ function hideIndicator(url) {
         indicator_call_stack_depth = indicator_call_stack_depth - 1;
         if (indicator_call_stack_depth < 0)
             indicator_call_stack_depth = 0;
-        if (indicator_call_stack_depth == 0)                                    // last call of stacked ajax calls
+        if (indicator_call_stack_depth === 0)                                    // last call of stacked ajax calls
             jQuery("#ajax_indicator").dialog("close");
     }
 }
 
 function closeAllTooltips(self_tooltip){
     jQuery('.tooltip_class').each(function(){                                   // Test each open tooltip to be closed
-        if (!self_tooltip || jQuery(this).attr('id') != self_tooltip.attr('id')){   // down close requestung tooltip itself
+        if (!self_tooltip || jQuery(this).attr('id') !== self_tooltip.attr('id')){   // down close requestung tooltip itself
             jQuery(this).remove();                                              // close other tooltip than requesting
         }
     });
@@ -140,7 +140,7 @@ function register_tooltip(jquery_object){
 function check_dom_for_duplicate_ids() {
     var idDictionary = {};
     jQuery('[id]').each(function() {
-        idDictionary[this.id] == undefined ? idDictionary[this.id] = 1 : idDictionary[this.id] ++;
+        idDictionary[this.id] === undefined ? idDictionary[this.id] = 1 : idDictionary[this.id] ++;
     });
     for (var id in idDictionary) {
         if (idDictionary[id] > 1) {
@@ -285,11 +285,11 @@ function bind_ajax_callbacks() {
 
             var error_dialog_content = jQuery("#error_dialog_content");
 
-            if (typeof jqXHR.responseText == 'undefined'){                        // Server nicht erreichbar
+            if (typeof jqXHR.responseText === 'undefined'){                        // Server nicht erreichbar
 //            if (jqXHR.responseText == undefined){                               // Server nicht erreichbar
                 error_dialog_content.text('Panorama-Server is not available');
             } else {
-                if (jqXHR.responseText.search('Error at server ') == -1) {      // Error kommt nicht vom Server, sondern aus JavaScript des Browsers
+                if (jqXHR.responseText.search('Error at server ') === -1) {      // Error kommt nicht vom Server, sondern aus JavaScript des Browsers
                     log_stack('Error:' + thrownError);
                     error_dialog_content.text(jqXHR.responseText);              // Inhalt escapen vor Anzeige, damit nicht interpretiert wird
                 } else {
@@ -327,7 +327,7 @@ function check_menu_width() {
     var main_menu = jQuery('#main_menu');
 
     var menu_width = main_menu.width();
-    if (menu_ul.data('unshrinked_menu_width') != undefined)
+    if (menu_ul.data('unshrinked_menu_width') !== undefined)
         menu_width = menu_ul.data('unshrinked_menu_width');
 
     var tns_width  =  jQuery('#head_links').width();

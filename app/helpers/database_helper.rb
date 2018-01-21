@@ -206,15 +206,15 @@ public
         if (next_new_line_pos && next_new_line_pos > max_line_length) || ( next_new_line_pos.nil? && cmp_str.length >= max_line_length )
           rev_str = cmp_str[0, max_line_length].reverse
           lf_pos = rev_str.index(/\sDNA\s/)                                   # Look for last AND before max_line_length
-          unless lf_pos.nil?                                                  # AND found before max_new_line_pos
-            sql.insert(pos+max_line_length-lf_pos-4, "\n")
-            cmp_str = sql[pos, sql.length-pos].upcase                         # Refresh Compare sql beginning at pos for next comparison
-          else                                                                # Comma not found before max_new_line_pos
-            lf_pos = cmp_str.index(/\sAND\s/, max_line_length)                # look for next comma after max_line_length
+          if lf_pos.nil? # Comma not found before max_new_line_pos
+            lf_pos = cmp_str.index(/\sAND\s/, max_line_length) # look for next comma after max_line_length
             if !lf_pos.nil? && (next_new_line_pos.nil? || lf_pos < next_new_line_pos)
-              sql.insert(pos+lf_pos+1, "\n")
-              cmp_str = sql[pos, sql.length-pos].upcase                         # Refresh Compare sql beginning at pos for next comparison
+              sql.insert(pos + lf_pos + 1, "\n")
+              cmp_str = sql[pos, sql.length - pos].upcase # Refresh Compare sql beginning at pos for next comparison
             end
+          else # AND found before max_new_line_pos
+            sql.insert(pos + max_line_length - lf_pos - 4, "\n")
+            cmp_str = sql[pos, sql.length - pos].upcase # Refresh Compare sql beginning at pos for next comparison
           end
         end
 

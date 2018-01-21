@@ -286,16 +286,16 @@ class IoController < ApplicationController
       "#{column} - LAG(#{column}, 1, #{column}) OVER (PARTITION BY f.DBID, f.Instance_Number, f.Function_ID, f.FileType_ID ORDER BY f.Snap_ID) #{column},\n"
     end
 
-    result << iostat_detail_history_internal_sql_select_column('Small_Read_Megabytes');
-    result << iostat_detail_history_internal_sql_select_column('Small_Write_Megabytes');
-    result << iostat_detail_history_internal_sql_select_column('Large_Read_Megabytes');
-    result << iostat_detail_history_internal_sql_select_column('Large_Write_Megabytes');
-    result << iostat_detail_history_internal_sql_select_column('Small_Read_Reqs');
-    result << iostat_detail_history_internal_sql_select_column('Small_Write_Reqs');
-    result << iostat_detail_history_internal_sql_select_column('Large_Read_Reqs');
-    result << iostat_detail_history_internal_sql_select_column('Large_Write_Reqs');
-    result << iostat_detail_history_internal_sql_select_column('Number_Of_Waits');
-    result << iostat_detail_history_internal_sql_select_column('Wait_Time');
+    result << iostat_detail_history_internal_sql_select_column('Small_Read_Megabytes')
+    result << iostat_detail_history_internal_sql_select_column('Small_Write_Megabytes')
+    result << iostat_detail_history_internal_sql_select_column('Large_Read_Megabytes')
+    result << iostat_detail_history_internal_sql_select_column('Large_Write_Megabytes')
+    result << iostat_detail_history_internal_sql_select_column('Small_Read_Reqs')
+    result << iostat_detail_history_internal_sql_select_column('Small_Write_Reqs')
+    result << iostat_detail_history_internal_sql_select_column('Large_Read_Reqs')
+    result << iostat_detail_history_internal_sql_select_column('Large_Write_Reqs')
+    result << iostat_detail_history_internal_sql_select_column('Number_Of_Waits')
+    result << iostat_detail_history_internal_sql_select_column('Wait_Time')
     result << "MIN(f.Snap_ID) KEEP (DENSE_RANK FIRST ORDER BY f.Snap_ID) OVER (PARTITION BY f.Instance_Number) First_Snap_ID /* Erster Treffer zu verwerfen wegen LAG */
      FROM   Snaps s
      JOIN   DBA_Hist_IOStat_Detail f ON f.DBID=s.DBID AND f.Instance_Number = s.Instance_Number AND f.Snap_ID=s.Snap_ID
@@ -470,21 +470,21 @@ class IoController < ApplicationController
       "#{column} - LAG(#{column}, 1, #{column}) OVER (PARTITION BY f.DBID, f.Instance_Number, f.FileType_ID ORDER BY f.Snap_ID) #{column},\n"
     end
 
-    result << iostat_filetype_history_internal_sql_select_column('Small_Read_Megabytes');
-    result << iostat_filetype_history_internal_sql_select_column('Small_Write_Megabytes');
-    result << iostat_filetype_history_internal_sql_select_column('Large_Read_Megabytes');
-    result << iostat_filetype_history_internal_sql_select_column('Large_Write_Megabytes');
-    result << iostat_filetype_history_internal_sql_select_column('Small_Read_Reqs');
-    result << iostat_filetype_history_internal_sql_select_column('Small_Write_Reqs');
-    result << iostat_filetype_history_internal_sql_select_column('Small_Sync_Read_Reqs');
-    result << iostat_filetype_history_internal_sql_select_column('Large_Read_Reqs');
-    result << iostat_filetype_history_internal_sql_select_column('Large_Write_Reqs');
-    result << iostat_filetype_history_internal_sql_select_column('Small_Read_ServiceTime');
-    result << iostat_filetype_history_internal_sql_select_column('Small_Write_ServiceTime');
-    result << iostat_filetype_history_internal_sql_select_column('Small_Sync_Read_Latency');
-    result << iostat_filetype_history_internal_sql_select_column('Large_Read_ServiceTime');
-    result << iostat_filetype_history_internal_sql_select_column('Large_Write_ServiceTime');
-    result << iostat_filetype_history_internal_sql_select_column('Retries_On_Error');
+    result << iostat_filetype_history_internal_sql_select_column('Small_Read_Megabytes')
+    result << iostat_filetype_history_internal_sql_select_column('Small_Write_Megabytes')
+    result << iostat_filetype_history_internal_sql_select_column('Large_Read_Megabytes')
+    result << iostat_filetype_history_internal_sql_select_column('Large_Write_Megabytes')
+    result << iostat_filetype_history_internal_sql_select_column('Small_Read_Reqs')
+    result << iostat_filetype_history_internal_sql_select_column('Small_Write_Reqs')
+    result << iostat_filetype_history_internal_sql_select_column('Small_Sync_Read_Reqs')
+    result << iostat_filetype_history_internal_sql_select_column('Large_Read_Reqs')
+    result << iostat_filetype_history_internal_sql_select_column('Large_Write_Reqs')
+    result << iostat_filetype_history_internal_sql_select_column('Small_Read_ServiceTime')
+    result << iostat_filetype_history_internal_sql_select_column('Small_Write_ServiceTime')
+    result << iostat_filetype_history_internal_sql_select_column('Small_Sync_Read_Latency')
+    result << iostat_filetype_history_internal_sql_select_column('Large_Read_ServiceTime')
+    result << iostat_filetype_history_internal_sql_select_column('Large_Write_ServiceTime')
+    result << iostat_filetype_history_internal_sql_select_column('Retries_On_Error')
 
     result << "MIN(f.Snap_ID) KEEP (DENSE_RANK FIRST ORDER BY f.Snap_ID) OVER (PARTITION BY f.Instance_Number) First_Snap_ID /* Erster Treffer zu verwerfen wegen LAG */
      FROM   Snaps s

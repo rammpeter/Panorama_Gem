@@ -10,7 +10,7 @@
         // Ermitteln der Anzahl führender Blanks als Maß für die Hierarchietiefe
         function blank_count(value){
             var i=0;
-            while ((value[i] == ' '  || value.charCodeAt(i)==160 /* &nbsp; */ || value[i] == '|') && i<value.length){
+            while ((value[i] === ' '  || value.charCodeAt(i)===160 /* &nbsp; */ || value[i] === '|') && i<value.length){
                 i++;
             }
             return i;

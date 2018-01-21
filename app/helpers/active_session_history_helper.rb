@@ -184,8 +184,8 @@ module ActiveSessionHistoryHelper
     # Set Filter on Snap_ID for partition pruning on DBA_Hist_Active_Sess_History (if not already set)
     if !@groupfilter.has_key?(:Min_Snap_ID) || !@groupfilter.has_key?(:Max_Snap_ID)
       get_min_max_snap_ids(@groupfilter[:time_selection_start], @groupfilter[:time_selection_end], @groupfilter[:DBID])
-      @groupfilter[:Min_Snap_ID] = @min_snap_id if !@groupfilter.has_key?(:Min_Snap_ID)
-      @groupfilter[:Max_Snap_ID] = @max_snap_id if !@groupfilter.has_key?(:Max_Snap_ID)
+      @groupfilter[:Min_Snap_ID] = @min_snap_id unless @groupfilter.has_key?(:Min_Snap_ID)
+      @groupfilter[:Max_Snap_ID] = @max_snap_id unless @groupfilter.has_key?(:Max_Snap_ID)
     end
 
     @groupfilter.each {|key,value|

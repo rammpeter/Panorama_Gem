@@ -8,7 +8,7 @@ class DbaSchemaController < ApplicationController
       SELECT /* Panorama-Tool Ramm */
         TABLESPACE_NAME Name                                    
       FROM DBA_TableSpaces                                      
-      ORDER BY 1 ");
+      ORDER BY 1 ")
     @tablespaces.insert(0, {:name=>all_dropdown_selector_name}.extend(SelectHashHelper))
 
 
@@ -16,7 +16,7 @@ class DbaSchemaController < ApplicationController
       SELECT /* Panorama-Tool Ramm */
         UserName Name                                           
       FROM DBA_Users
-      ORDER BY 1 ");
+      ORDER BY 1 ")
     @schemas.insert(0, {:name=>all_dropdown_selector_name}.extend(SelectHashHelper))
 
     render_partial
@@ -458,11 +458,11 @@ class DbaSchemaController < ApplicationController
     partition_expression
   end
 
-  def get_index_partition_expression(owner, table_name)
+  def get_index_partition_expression(owner, index_name)
 
-    part_ind      = sql_select_first_row ["SELECT Partitioning_Type, SubPartitioning_Type #{", Interval" if get_db_version >= "11.2"} FROM DBA_Part_Indexes WHERE Owner = ? AND Index_Name = ?", @owner, @index_name]
-    part_keys     = sql_select_all ["SELECT Column_Name FROM DBA_Part_Key_Columns WHERE Owner = ? AND Name = ? ORDER BY Column_Position", @owner, @index_name]
-    sub_part_keys = sql_select_all ["SELECT Column_Name FROM DBA_SubPart_Key_Columns WHERE Owner = ? AND Name = ? ORDER BY Column_Position", @owner, @index_name]
+    part_ind      = sql_select_first_row ["SELECT Partitioning_Type, SubPartitioning_Type #{", Interval" if get_db_version >= "11.2"} FROM DBA_Part_Indexes WHERE Owner = ? AND Index_Name = ?", owner, index_name]
+    part_keys     = sql_select_all ["SELECT Column_Name FROM DBA_Part_Key_Columns WHERE Owner = ? AND Name = ? ORDER BY Column_Position",  owner, index_name]
+    sub_part_keys = sql_select_all ["SELECT Column_Name FROM DBA_SubPart_Key_Columns WHERE Owner = ? AND Name = ? ORDER BY Column_Position", owner, index_name]
 
     partition_expression = "Partition by #{part_ind.partitioning_type} (#{part_keys.map{|i| i.column_name}.join(",")}) #{"Interval #{part_ind.interval}" if get_db_version >= "11.2" && part_ind.interval}"
     partition_expression << " Sub-Partition by #{part_ind.subpartitioning_type} (#{sub_part_keys.map{|i| i.column_name}.join(",")})" if part_ind.subpartitioning_type != 'NONE'
@@ -1027,7 +1027,7 @@ class DbaSchemaController < ApplicationController
 WHERE RowNum < 100
               )"
     else
-      return "DBA_Audit_Trail"
+      "DBA_Audit_Trail"
     end
   end
 
@@ -1080,7 +1080,7 @@ WHERE RowNum < 100
     end
 
     if params[:grouping] && params[:grouping] != "none"
-      list_audit_trail_grouping(params[:grouping], where_string, where_values, params[:update_area], params[:top_x].to_i)
+      list_audit_trail_grouping(params[:grouping], where_string, where_values, params[:top_x].to_i)
     else
       audit_mode_xml = sql_select_one("SELECT Value FROM v$Parameter WHERE Name = 'audit_trail'")['XML'] != nil
 
@@ -1097,7 +1097,7 @@ WHERE RowNum < 100
   end
 
   # Gruppierte Ausgabe der Audit-Trail-Info
-  def list_audit_trail_grouping(grouping, where_string, where_values, update_area, top_x)
+  def list_audit_trail_grouping(grouping, where_string, where_values, top_x)
     @grouping = grouping
     @top_x    = top_x
 

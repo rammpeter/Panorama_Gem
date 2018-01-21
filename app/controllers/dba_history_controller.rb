@@ -366,7 +366,6 @@ class DbaHistoryController < ApplicationController
   end #list_sql_area_historic
 
   def list_sql_detail_historic
-    update_area  = params[:update_area]
     @instance    = prepare_param_instance
     @sql_id      = params[:sql_id]
     @parsing_schema_name = params[:parsing_schema_name]
@@ -525,7 +524,7 @@ class DbaHistoryController < ApplicationController
       @sql_outlines       = []
     end
 
-    if !sql_statement                                                           # No SQL text found in history ?
+    unless sql_statement                                                           # No SQL text found in history ?
       sga_exists = sql_select_first_row ["SELECT Inst_ID FROM gv$SQLArea WHERE SQL_ID=? #{" ORDER BY DECODE(Inst_ID, #{@instance}, 0, 1)" if @instance}", @sql_id] # First record in result with current instance if exsists
       if sga_exists
         redirect_to url_for(:controller => :dba_sga,
@@ -575,7 +574,6 @@ class DbaHistoryController < ApplicationController
 
 
   def list_sql_historic_execution_plan
-    update_area  = params[:update_area]
     @instance    = prepare_param_instance         # optional
     @sql_id      = params[:sql_id]
     @parsing_schema_name = params[:parsing_schema_name]   # optional, Kann '[UNKNOWN]' enthalten, dann kein Match möglich
@@ -782,20 +780,20 @@ class DbaHistoryController < ApplicationController
       line.other_tag.hash + line.depth.hash + line.access_predicates.hash + line.filter_predicates.hash + line.distribution.hash
     end
 
-    for row_index in 0..max_plan_length-1
+    (0..max_plan_length - 1).each {|row_index|
       @multiplans.each do |mp|
-        mp[:plans][row_index][:plan_different] = false if mp[:plans][row_index]   # Default, fall später nichts abweichendes festgestellt
+        mp[:plans][row_index][:plan_different] = false if mp[:plans][row_index] # Default, fall später nichts abweichendes festgestellt
       end
 
       test_hash = plan_line_hash(@multiplans[0][:plans][row_index])
-      for mp_index in 1..@multiplans.count-1
+      (1..@multiplans.count - 1).each {|mp_index|
         if plan_line_hash(@multiplans[mp_index][:plans][row_index]) != test_hash
           @multiplans.each do |mp|
-            mp[:plans][row_index][:plan_different] = true if mp[:plans][row_index]          # Merken differenz auf Zeilenebene
+            mp[:plans][row_index][:plan_different] = true if mp[:plans][row_index] # Merken differenz auf Zeilenebene
           end
         end
-      end
-    end
+      }
+    }
 
     render_partial :list_sql_detail_historic_execution_plan
   end
@@ -910,7 +908,6 @@ class DbaHistoryController < ApplicationController
     @object_owner = params[:ObjectOwner]
     @object_owner = nil if @object_owner == ""
     @object_name = params[:ObjectName]
-    update_area  = params[:update_area]
 
     where_filter = ""
     where_values = []
@@ -2080,7 +2077,7 @@ END;
 exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
 
 -- ######### to remove an existing SQL plan baseline execute the following:
--- Get the SQL-Handle of the baseline from Panorama's selections or by
+-- Get the SQL-Handle of your baseline from Panorama's selections or by
 -- SELECT * FROM dba_sql_plan_baselines WHERE SQL_Text LIKE '%<your SQL>%';
 
 -- Drop all baselines of the SQL with the given SQL-Handle

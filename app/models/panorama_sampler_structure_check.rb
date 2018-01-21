@@ -1036,6 +1036,8 @@ ORDER BY Column_ID
           filename = PanoramaSampler::PackagePanoramaSamplerBlockingLocks.instance_method(:panorama_sampler_blocking_locks_spec).source_location[0]
           create_or_check_package(filename, panorama_sampler_blocking_locks_spec, 'PANORAMA_SAMPLER_BLOCK_LOCKS', :spec)
           create_or_check_package(filename, panorama_sampler_blocking_locks_body, 'PANORAMA_SAMPLER_BLOCK_LOCKS', :body)
+        else
+          raise "Unknown value #{@sampler_config[:select_any_table]} for select_any_table"
       end
     end
   end

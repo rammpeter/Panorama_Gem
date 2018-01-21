@@ -204,9 +204,9 @@
 <% end %>
 
 <script type="text/javascript">
-    if ('<%= @config[:modus] %>' == 'host')
+    if ('<%= @config[:modus] %>' === 'host')
         jQuery('#config_modus_host').click();
-    if ('<%= @config[:sid_usage] %>' == 'SERVICE_NAME')
+    if ('<%= @config[:sid_usage] %>' === 'SERVICE_NAME')
         jQuery('#config_sid_usage_SERVICE_NAME').click();
     jQuery.ajax({type: 'GET', url:'env/get_tnsnames_records?target_object=config&selected=<%= @config[:tns] %>', async: false});
 </script>

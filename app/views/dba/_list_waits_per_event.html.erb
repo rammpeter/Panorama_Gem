@@ -19,7 +19,7 @@
     [
       {:caption=>"I",                         :data=>proc{|rec| rec.inst_id },                          :title=>"RAC-Instance"},
       {:caption=>"SID, SN",                   :data=>link_column_sid,                                   :title=>"SID, Serial-Number"},
-      {:caption=>"#{last_prefix}Event",       :data=>proc{|rec| rec.event },                            :title=>"Wait-Event", :data_title=>'Wait-event: #{explain_wait_event(rec.event)}'},
+      {:caption=>"#{last_prefix}Event",       :data=>proc{|rec| rec.event },                            :title=>"Wait-Event", :data_title=>proc{|rec| "Wait-event:\n#{explain_wait_event(rec.event)}"}},
       {:caption=>"#{last_prefix}Wait-Class",  :data=>proc{|rec| rec.wait_class},          :title=>"Wait-Class"},
       {:caption=>"Parameter",                 :data=>proc{|rec| link_wait_params(rec.inst_id, @event, rec.p1, rec.p1text, rec.p1raw, rec.p2, rec.p2text, rec.p2raw, rec.p3, rec.p3text, rec.p3raw, "list_session_details_wait_info_#{rec.inst_id}_#{rec.sid}") },  :title=>"Parameter des Wait-Event"},
       {:caption=>"Wait-Time (ms)",            :data=>proc{|rec| fn(rec.wait_time_milliseconds, 2)},     :title=>"Wait-time in current event in seconds", align: :right},

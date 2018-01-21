@@ -271,6 +271,7 @@ class DbaWaitsController < ApplicationController
       when 'dd'   then @sample_seconds = 86400
       when 'hh24' then @sample_seconds = 1440
       when 'mi'   then @sample_seconds = 60
+      else raise "Unknwown value #{@grouping} for grouping"
     end
 
     ash_select_list = 'Sample_Time, Event, Session_State,

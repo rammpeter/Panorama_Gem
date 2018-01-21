@@ -1,4 +1,5 @@
 # contains functions to be executed in separate manual thread
+# noinspection RubyClassVariableUsageInspection
 class WorkerThread
   include ExceptionHelper
 

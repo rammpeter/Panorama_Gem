@@ -60,6 +60,7 @@ ActiveRecord::ConnectionAdapters::OracleEnhancedJDBCConnection.class_eval do
         oracle_downcase(col_name).freeze
       end
       fetch_options = {:get_lob_value => (name != 'Writable Large Object')}
+      # noinspection RubyAssignmentExpressionInConditionalInspection
       while row = cursor.fetch(fetch_options)
         result_hash = {}
         columns.each_index do |index|
@@ -100,6 +101,7 @@ end #class_eval
 
 MAX_CONNECTION_POOL_SIZE = ENV['MAX_CONNECTION_POOL_SIZE'] || 100               # Number of pooled connections, may be more than max. threads
 
+# noinspection RubyClassVariableUsageInspection
 class PanoramaConnection
   attr_reader :jdbc_connection
   attr_accessor :used_in_thread
@@ -241,7 +243,7 @@ class PanoramaConnection
   end
 
   def self.get_jdbc_driver_version
-    Thread.current[:panorama_connection_connection_object].jdbc_connection.raw_connection.getMetaData().getDriverVersion()
+    Thread.current[:panorama_connection_connection_object].jdbc_connection.raw_connection.getMetaData.getDriverVersion
   rescue Exception => e
     e.message                                                                   # return Exception message instead of raising exeption
   end

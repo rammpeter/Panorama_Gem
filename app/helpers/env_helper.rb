@@ -14,7 +14,7 @@ module EnvHelper
       return :panorama_sampler             if !current_database[:panorama_sampler_schema].nil?  # Use Panorama-Sampler as default if data exists
       return :none
     end
-    return current_database[:management_pack_license]                           # Use old value if already set
+    current_database[:management_pack_license] # Use old value if already set
   end
 
   def read_control_management_pack_access                                       # returns either NONE | DIAGNOSTIC | DIAGNOSTIC+TUNING
@@ -84,26 +84,26 @@ module EnvHelper
       end
     end
 
-    unless cookies['client_key']                                                # Erster Zugriff in neu gestartetem Browser oder Cookie nicht mehr verfügbar
+    if cookies['client_key']
+      if cookies.class.name != 'Rack::Test::CookieJar' # Don't set Hash for cookies in test because it becomes String like ' { :value => 100, :expires => ... }'
+        cookies['client_salt'] = {:value => cookies['client_salt'], :expires => 1.year.from_now} # Timeout neu setzen bei Benutzung
+        cookies['client_key'] = {:value => cookies['client_key'], :expires => 1.year.from_now} # Timeout neu setzen bei Benutzung
+      end
+    else # Erster Zugriff in neu gestartetem Browser oder Cookie nicht mehr verfügbar
       loop_count = 0
       while loop_count < MAX_NEW_KEY_TRIES
-        loop_count = loop_count+1
+        loop_count = loop_count + 1
         new_client_key = rand(10000000)
-        unless EngineConfig.get_client_info_store.exist?(new_client_key)                     # Dieser Key wurde noch nie genutzt
+        unless EngineConfig.get_client_info_store.exist?(new_client_key) # Dieser Key wurde noch nie genutzt
           # Salt immer mit belegen bei Vergabe des client_key, da es genutzt wird zur Verschlüsselung des Client_Key im cookie
-          cookies['client_salt'] = { :value => rand(10000000000),                                                 :expires => 1.year.from_now }  # Lokaler Schlüsselbestandteil im Browser-Cookie des Clients, der mit genutzt wird zur Verschlüsselung der auf Server gespeicherten Login-Daten
-          cookies['client_key']  = { :value => Encryption.encrypt_value(new_client_key, cookies['client_salt']),  :expires => 1.year.from_now }
+          cookies['client_salt'] = {:value => rand(10000000000), :expires => 1.year.from_now} # Lokaler Schlüsselbestandteil im Browser-Cookie des Clients, der mit genutzt wird zur Verschlüsselung der auf Server gespeicherten Login-Daten
+          cookies['client_key'] = {:value => Encryption.encrypt_value(new_client_key, cookies['client_salt']), :expires => 1.year.from_now}
           client_store = EngineConfig.get_client_info_store
-          client_store.write(new_client_key, 1)                        # Marker fuer Verwendung des Client-Keys
+          client_store.write(new_client_key, 1) # Marker fuer Verwendung des Client-Keys
           break
         end
       end
       raise "Cannot create client key after #{MAX_NEW_KEY_TRIES} tries" if loop_count >= MAX_NEW_KEY_TRIES
-    else
-      if cookies.class.name != 'Rack::Test::CookieJar'                          # Don't set Hash for cookies in test because it becomes String like ' { :value => 100, :expires => ... }'
-        cookies['client_salt'] = { :value => cookies['client_salt'], :expires => 1.year.from_now }    # Timeout neu setzen bei Benutzung
-        cookies['client_key']  = { :value => cookies['client_key'],  :expires => 1.year.from_now }    # Timeout neu setzen bei Benutzung
-      end
     end
   end
 

@@ -67,11 +67,11 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
     fill_in('database[host]', with: test_host)
     fill_in('database[port]', with: test_port)
-    if (test_sid)
+    if test_sid
       page.find_by_id('database_sid_usage_SID').set(true)
       fill_in('database_sid', with: test_sid)
     end
-    if (test_service_name)
+    if test_service_name
       find_by_id('database_sid_usage_SERVICE_NAME').set(true)
       fill_in('database_sid', with: test_service_name)
     end

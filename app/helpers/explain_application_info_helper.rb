@@ -6,7 +6,7 @@ module ExplainApplicationInfoHelper
   # Application-Spezifisch: Extrahieren weiterer Info aus Kurzbezeichnern
   # Return Hash mit zwei Elementen:  :short_info  :long_info
   def explain_application_info(org_text)
-    return {}
+    {}
 
     # Example:
     # retval = {}

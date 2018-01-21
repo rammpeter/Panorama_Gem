@@ -1,4 +1,5 @@
 # Stores Config-object in memory and synchronizes access to session store on disk
+# noinspection RubyClassVariableUsageInspection
 class PanoramaSamplerConfig
   @@config_array = nil                                                          # First access loads it from session store
   @@config_access_mutex = Mutex.new

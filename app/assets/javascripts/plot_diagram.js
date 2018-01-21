@@ -44,7 +44,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
     // Initialisierung des Objektes, ab jetzt ist this gültig
     this.initialize = function(){
         // options mit Defaults versehen
-        if (options == undefined)
+        if (options === undefined)
             options = {};
 
 
@@ -84,7 +84,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
 
         // Unterschiedliche IDs fuer Y-Achsen vergeben, wenn separat darzustellen
         jQuery.each(data_array, function(i,val){
-            if (options.plot_diagram.multiple_y_axes==true)
+            if (options.plot_diagram.multiple_y_axes===true)
                 val.yaxis = data_array.length-i;
             else
                 val.yaxis = 1;
@@ -92,7 +92,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
 
         plot = jQuery.plot(jQuery('#'+canvas_id), data_array, options);     // Ausgabe des Diagrammes auf Canvas
 
-        if (data_array.length == 0){
+        if (data_array.length === 0){
             return;                                   // Aufbereitung des Diagrammes verlassen wenn gar keine Daten zum Zeichnen
         }
 
@@ -113,8 +113,8 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
         context_menu_entry(
             'y_axis',
             "ui-icon ui-icon-comment",
-            options.yaxis.show==true ? locale_translate('diagram_y_axis_hide_name') : locale_translate('diagram_y_axis_show_name'),
-            options.yaxis.show==true ? locale_translate('diagram_y_axis_hide_hint') : locale_translate('diagram_y_axis_show_hint'),
+            options.yaxis.show===true ? locale_translate('diagram_y_axis_hide_name') : locale_translate('diagram_y_axis_show_name'),
+            options.yaxis.show===true ? locale_translate('diagram_y_axis_hide_hint') : locale_translate('diagram_y_axis_show_hint'),
             function(t){
                 plot_area.html(""); // Altes Diagramm entfernen
                 options.yaxis.show = !options.yaxis.show;
@@ -125,8 +125,8 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
         context_menu_entry(
             'all_in_one',
             "ui-icon ui-icon-arrow-4-diag",
-            options.plot_diagram.multiple_y_axes==true ? locale_translate('diagram_all_on_name') : locale_translate('diagram_all_off_name'),
-            options.plot_diagram.multiple_y_axes==true ? locale_translate('diagram_all_on_hint') : locale_translate('diagram_all_off_hint'),
+            options.plot_diagram.multiple_y_axes===true ? locale_translate('diagram_all_on_name') : locale_translate('diagram_all_off_name'),
+            options.plot_diagram.multiple_y_axes===true ? locale_translate('diagram_all_on_hint') : locale_translate('diagram_all_off_hint'),
             function(t){
                 plot_area.html(""); // Altes Diagramm entfernen
                 options.plot_diagram.multiple_y_axes = !options.plot_diagram.multiple_y_axes;
@@ -137,8 +137,8 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
         context_menu_entry(
             'stack',
             "ui-icon  ui-icon-arrowthickstop-1-s",
-            options.series.stack==true ? locale_translate('diagram_unstack_name') : locale_translate('diagram_stack_name'),
-            options.series.stack==true ? locale_translate('diagram_unstack_hint') : locale_translate('diagram_stack_hint'),
+            options.series.stack===true ? locale_translate('diagram_unstack_name') : locale_translate('diagram_stack_name'),
+            options.series.stack===true ? locale_translate('diagram_unstack_hint') : locale_translate('diagram_stack_hint'),
             function(t){
                 plot_area.html(""); // Altes Diagramm entfernen
                 options.series.stack = !options.series.stack;
@@ -152,8 +152,8 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
         context_menu_entry(
             'point',
             "ui-icon  ui-icon-radio-off",
-            options.series.points.show==true ? locale_translate('diagram_hide_points_name') : locale_translate('diagram_show_points_name'),
-            options.series.points.show==true ? locale_translate('diagram_hide_points_hint') : locale_translate('diagram_show_points_hint'),
+            options.series.points.show===true ? locale_translate('diagram_hide_points_name') : locale_translate('diagram_show_points_name'),
+            options.series.points.show===true ? locale_translate('diagram_hide_points_hint') : locale_translate('diagram_show_points_hint'),
             function(t){
                 plot_area.html(""); // Altes Diagramm entfernen
                 options.series.points.show = !options.series.points.show;
@@ -246,7 +246,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
             jQuery(legend_values[legend_indexes[series.label]]).html(y.toFixed(2));
         }
         // Zeitpunkt des Crosshairs in X-Axis anzeigen
-        if (options.xaxes[0].mode == "time"){
+        if (options.xaxes[0].mode === "time"){
             var time = new Date(pos.x);
             legendXAxis.html(pad2(time.getUTCDate())+"."+pad2(time.getUTCMonth()+1)+"."+time.getUTCFullYear()+" "+pad2(time.getUTCHours())+":"+pad2(time.getUTCMinutes())+':'+pad2(time.getUTCSeconds()));   // Anzeige des aktuellen wertes der X-Achse
         } else {
@@ -263,7 +263,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
             if (!updateLegendTimeout)
                 updateLegendTimeout = setTimeout(updateLegend, 50);     // Zeitverzögertes Ausfrufen von updateLegend für crosshair und Aktualisierung Legende
             if (item) {
-                if (previousToolTipPoint != item.dataIndex) {
+                if (previousToolTipPoint !== item.dataIndex) {
                     previousToolTipPoint = item.dataIndex;
                     $("#"+toolTipID).remove();
                     // Label ist schon durch Crosshair mit Anfangs-Wert belegt, diesen durch aktuellen ersetzen
@@ -282,7 +282,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
 
         // Legendenzeile für X-Achse hinzufügen
         var x_legend_title;
-        if (options.xaxes[0].mode == "time"){
+        if (options.xaxes[0].mode === "time"){
             x_legend_title = "Time";
         } else {
             x_legend_title = 'X';
@@ -292,7 +292,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
 
         legend_div.children('div').detach();                                    // Entfernen eines Div ohne Funktion vor der legend_table, das sonst in der Größe mitgerführt werden müsste
         legend_div.find("table").addClass('legend_table');
-        if (jQuery('#'+canvas_id+" .legendXAxis").length == 0) {                // bei erstmaligem aufruf Zeile hinzufügen, nicht bei jedem Resize
+        if (jQuery('#'+canvas_id+" .legendXAxis").length === 0) {                // bei erstmaligem aufruf Zeile hinzufügen, nicht bei jedem Resize
 
             // Spalte zufügen für die Werte-Anzeige und für Schliesser
             legend_div.find("tr").each(function(index, elem){
@@ -312,7 +312,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
         legend_values       = jQuery('#'+canvas_id+" .legend_value");            // Liste der letzten Spalten merken für wiederholte Verwendung
 
         // Titel zu Skalen der spalten hinzufuegen, wenn multiple y-Achsen angezeigt werden
-        if (options.plot_diagram.multiple_y_axes==true){
+        if (options.plot_diagram.multiple_y_axes===true){
 
             jQuery.each(data_array, function(i,val){
                 jQuery('#'+canvas_id+" .y"+(data_array.length-i)+"Axis").attr("title", val.label);
@@ -328,7 +328,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
         // ermitteln des legenden-Namen über Index in table
         var legend_name = '';
         jQuery.each(legend_indexes, function(index, value){
-            if (value == legend_index){
+            if (value === legend_index){
                 legend_name = index;
             }
         });
@@ -338,7 +338,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
 
         // Finden der korrespondierenden Kurve im Data-Array (kann anders sortiert sein) und entfernen dieser
         for (var data_index in data_array) {
-            if (data_array[data_index].label == legend_name){
+            if (data_array[data_index].label === legend_name){
                 if (data_array[data_index]['delete_callback']){
                     data_array[data_index]['delete_callback'](legend_name);     // deregistrieren der Spalte beim Aufrufer wenn callback hinterlegt
                 }

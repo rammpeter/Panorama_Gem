@@ -747,6 +747,7 @@ class AdditionController < ApplicationController
         @sizes << record
         record = {:gather_date=>s.gather_date}  # Neuer Record
       end
+      # noinspection RubyScope
       record[:total] = 0 unless record[:total]
       record[:total] += s.mbytes
       record[s.groupby] = s.mbytes
