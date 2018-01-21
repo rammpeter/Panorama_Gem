@@ -13,7 +13,8 @@
    end
 
    column_options = [
-    {:caption=>"Plan name",     :data=>proc{|rec| rec.plan_name},                       :title=>"Name of baseline plan"},
+    {:caption=>'SQL handle',    :data=>proc{|rec| rec.sql_handle},                      :title=>"Name of the SQL handle.\nUniquely identifies the SQL.\nUse this for dropping all plan baselines of a SQL"},
+    {:caption=>"Plan name",     :data=>proc{|rec| rec.plan_name},                       :title=>"Name of baseline plan\nIdentifies a unique execution plan within a SQL handle."},
     {:caption=>"Creator",       :data=>proc{|rec| rec.creator},                         :title=>"Name of creator"},
     {:caption=>"Origin",        :data=>proc{|rec| rec.origin},                          :title=>"how plan baseline was created" },
     {:caption=>"Parsing schema name", :data=>proc{|rec| rec.parsing_schema_name},       :title=>"Parsing schema name" },

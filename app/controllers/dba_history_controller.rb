@@ -2080,10 +2080,10 @@ END;
 exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
 
 -- ######### to remove an existing SQL plan baseline execute the following:
--- Get the SQL-Handle of the baseline by
+-- Get the SQL-Handle of the baseline from Panorama's selections or by
 -- SELECT * FROM dba_sql_plan_baselines WHERE SQL_Text LIKE '%<your SQL>%';
 
--- Drop the baseline with the SQL-Handle from previous select
+-- Drop all baselines of the SQL with the given SQL-Handle
 -- DECLARE
 --   v_dropped_plans number;
 -- BEGIN
