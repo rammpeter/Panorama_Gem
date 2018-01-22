@@ -29,9 +29,12 @@
     {:caption=>"Fixed",         :data=>proc{|rec| rec.fixed},                           :title=>"fixed status of plan baseline" },
     {:caption=>"Reproduced",    :data=>proc{|rec| rec.reproduced},                      :title=>"reproduced status of plan baseline" },
     {:caption=>"Auto purge",    :data=>proc{|rec| rec.autopurge},                       :title=>"autopurge status of plan baseline" },
-    {:caption=>"Executions",    :data=>proc{|rec| fn(rec.executions)},                  :title=>"number of plan baseline executions", :align=>:right },
-    {:caption=>"Buffer gets",   :data=>proc{|rec| fn(rec.buffer_gets)},                 :title=>"total buffer gets",        :align=>:right },
-    {:caption=>"Rows processed",:data=>proc{|rec| fn(rec.rows_processed)},              :title=>"number of rows processed", :align=>:right },
+    {:caption=>'Optim. costs',  :data=>proc{|rec| fn(rec.optimizer_cost)},              :title=>"Optimizer cost at the time the plan baseline was created", :align=>:right },
+    {:caption=>'Module',        :data=>proc{|rec| rec.module},                          :title=>"Module at plan create" },
+    {:caption=>'Action',        :data=>proc{|rec| rec.action},                          :title=>"Action at plan create" },
+    {:caption=>"Executions",    :data=>proc{|rec| fn(rec.executions)},                  :title=>"Number of executions at the time the plan baseline was created", :align=>:right },
+    {:caption=>"Buffer gets",   :data=>proc{|rec| fn(rec.buffer_gets)},                 :title=>"Total buffer gets at the time the plan baseline was created",        :align=>:right },
+    {:caption=>"Rows processed",:data=>proc{|rec| fn(rec.rows_processed)},              :title=>"Total rows processed at the time the plan baseline was created", :align=>:right },
     {:caption=>'Usages in SGA', :data=>proc{|rec| fn(rec.sga_usages)},                  :title=>'Number of current usage of this baseline in SGA (from gv$SQLArea.SQL_Plan_Baseline)', :align=>:right },
     {:caption=>"SQL",           :data=>proc{|rec| link_sql_text(rec)},                  :title=>"Un-normalized SQL text" },
   ]
@@ -39,7 +42,13 @@
 %>
 
 <%=
-  gen_slickgrid(@baselines, column_options, :caption => "SQL plan baselines from DBA_SQL_Plan_Baselines", :max_height=>450)
+  if @force_matching_signature
+    caption = "<div style=\"background-color: coral;\">SQL plan baseline exists for SQL (from DBA_SQL_Plan_Baselines)</div>".html_safe
+  else
+    caption = "SQL plan baselines from DBA_SQL_Plan_Baselines"
+  end
+
+  gen_slickgrid(@baselines, column_options, :caption => caption, :max_height=>450) if @force_matching_signature.nil? || @baselines.count > 0
 %>
 
 <div id="<%= @update_area %>"></div>

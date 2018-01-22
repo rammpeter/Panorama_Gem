@@ -441,8 +441,8 @@ class DbaHistoryController < ApplicationController
                  MIN(s.Parsing_Schema_Name)         Min_Parsing_Schema_Name,
                  COUNT(DISTINCT Parsing_Schema_Name) Parsing_Schema_Count,      /* muss eindeutig sein */
                  COUNT(*)                           Hit_Count,
-                 MAX(s.SQL_Profile)                 SQL_Profile                /* Eines der evt. benutzten Profiles */
-                 #{", MAX(s.Force_Matching_Signature) Force_Matching_Signature" if get_db_version >= '12.1'}
+                 MAX(s.SQL_Profile)                 SQL_Profile,                /* Eines der evt. benutzten Profiles */
+                 MAX(s.Force_Matching_Signature)    Force_Matching_Signature
          FROM   Snaps
           JOIN   DBA_Hist_SQLStat s ON s.DBID = Snaps.DBID AND s.Instance_Number = Snaps.Instance_Number AND s.Snap_ID BETWEEN Snaps.Start_Snap_ID AND Snaps.End_Snap_ID
           WHERE  s.SQL_ID = ?
@@ -511,16 +511,10 @@ class DbaHistoryController < ApplicationController
       @sql_statement      = sql_statement.sql_text
       @exact_matching_signature = sql_statement.exact_signature   # Not available in DBA_Hist_SQLStat
       @sql_profiles       = sql_select_all ["SELECT * FROM DBA_SQL_Profiles       WHERE Signature = TO_NUMBER(?) OR Signature = TO_NUMBER(?)", sql_statement.exact_signature.to_s, sql_statement.force_signature.to_s]
-      if get_db_version >= "11.2"
-        @sql_plan_baselines = sql_select_all ["SELECT * FROM DBA_SQL_Plan_Baselines WHERE Signature = TO_NUMBER(?) OR Signature = TO_NUMBER(?)", sql_statement.exact_signature.to_s, sql_statement.force_signature.to_s]
-      else
-        @sql_plan_baselines = []
-      end
       @sql_outlines       = sql_select_all ["SELECT * FROM DBA_Outlines           WHERE Signature = sys.UTL_RAW.Cast_From_Number(TO_NUMBER(?)) OR Signature = sys.UTL_RAW.Cast_From_Number(TO_NUMBER(?))", sql_statement.exact_signature.to_s, sql_statement.force_signature.to_s]
     else
       @sql_statement      = "[No statement found in DBA_Hist_SQLText]"
       @sql_profiles       = []
-      @sql_plan_baselines = []
       @sql_outlines       = []
     end
 
@@ -1973,9 +1967,10 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
   end
 
   def select_plan_hash_value_for_baseline
-    @sql_id = params[:sql_id]
-    @min_snap_id = params[:min_snap_id]
-    @max_snap_id = params[:max_snap_id]
+    @sql_id                     = params[:sql_id]
+    @min_snap_id                = params[:min_snap_id]
+    @max_snap_id                = params[:max_snap_id]
+    @force_matching_signature   = params[:force_matching_signature]
 
     @plans = sql_select_all ["SELECT s.Plan_Hash_Value,
                                     MIN(ss.Begin_Interval_Time) First_Occurrence,
@@ -1994,10 +1989,12 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
   end
 
   def generate_baseline_creation
-    sql_id          = params[:sql_id]
-    min_snap_id     = params[:min_snap_id].to_i
-    max_snap_id     = params[:max_snap_id].to_i
-    plan_hash_value = params[:plan_hash_value]
+    sql_id                      = params[:sql_id]
+    min_snap_id                 = params[:min_snap_id].to_i
+    max_snap_id                 = params[:max_snap_id].to_i
+    plan_hash_value             = params[:plan_hash_value]
+    force_matching_signature    = params[:force_matching_signature]
+
 
     sts_name = 'PANORAMA_STS'
 
@@ -2012,30 +2009,36 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
 -- Generated with Panorama at #{Time.now}
 -- based on idea from rmoff (https://rnm1978.wordpress.com/?s=baseline)
 
--- to create a SQL-baseline execute this snippet as SYSDBA in SQL*Plus
+-- to create a SQL-baseline execute this PL/SQL snippet as SYSDBA in SQL*Plus
 #{snap_corrected_warning}
--- Drop eventually existing SQL Tuning Set (STS)
-BEGIN
-  DBMS_SQLTUNE.DROP_SQLSET(sqlset_name => '#{sts_name}');
-EXCEPTION
-  WHEN OTHERS THEN
-    NULL;
-END;
-/
 
--- Create new SQL Tuning Set (STS)
-BEGIN
-  DBMS_SQLTUNE.CREATE_SQLSET(
-    sqlset_name => '#{sts_name}',
-    description => 'Panorama: SQL Tuning Set for loading plan into SQL Plan Baseline');
-END;
-/
+SET SERVEROUTPUT ON;
 
--- Populate STS from AWR, using a time duration when the desired plan was used
---  Specify the sql_id in the basic_filter (other predicates are available, see documentation)
 DECLARE
-  cur sys_refcursor;
+  cur           sys_refcursor;
+  hit_count     PLS_INTEGER;
+  sql_handle    VARCHAR2(30);
+  plan_name     VARCHAR2(30);
 BEGIN
+  -- Drop eventually existing SQL Tuning Set (STS)
+  BEGIN
+    DBMS_SQLTUNE.DROP_SQLSET(sqlset_name => '#{sts_name}');
+  EXCEPTION
+    WHEN OTHERS THEN
+      NULL;
+  END;
+
+  -- Drop eventually existing previous baselines for this statement
+  FOR Rec IN (SELECT SQL_Handle, Plan_Name FROM DBA_SQL_Plan_Baselines WHERE Signature = #{force_matching_signature})
+  LOOP
+    hit_count := DBMS_SPM.DROP_SQL_PLAN_BASELINE (SQL_Handle => Rec.SQL_Handle, Plan_Name => Rec.Plan_Name);
+  END LOOP;
+
+  -- Create new SQL Tuning Set (STS)
+  DBMS_SQLTUNE.CREATE_SQLSET(sqlset_name => '#{sts_name}', description => 'Panorama: SQL Tuning Set for loading plan into SQL Plan Baseline');
+
+  -- Populate STS from AWR, using a time duration when the desired plan was used
+  --  Specify the sql_id in the basic_filter (other predicates are available, see documentation)
   OPEN cur FOR
     SELECT VALUE(P)
     FROM TABLE(
@@ -2043,24 +2046,24 @@ BEGIN
               ) p;
      DBMS_SQLTUNE.LOAD_SQLSET( sqlset_name=> '#{sts_name}', populate_cursor=>cur);
   CLOSE cur;
-END;
-/
 
--- you can check now the result in tunning set by executing
--- SELECT * FROM TABLE(DBMS_SQLTUNE.SELECT_SQLSET(sqlset_name => '#{sts_name}'));
+  -- Load desired plan from STS as SQL Plan Baseline
+  -- Filter explicitly for the plan_hash_value here
+  hit_count := DBMS_SPM.LOAD_PLANS_FROM_SQLSET(sqlset_name => '#{sts_name}', Basic_Filter=>'plan_hash_value = ''#{plan_hash_value}''');
 
--- Load desired plan from STS as SQL Plan Baseline
--- Filter explicitly for the plan_hash_value here if you want
-DECLARE
-  my_plans pls_integer;
-BEGIN
-  my_plans := DBMS_SPM.LOAD_PLANS_FROM_SQLSET(sqlset_name => '#{sts_name}', Basic_Filter=>'plan_hash_value = ''#{plan_hash_value}''');
-END;
-/
-
--- Drop SQL Tuning Set (STS) which is not needed no more
-BEGIN
+  -- Drop SQL Tuning Set (STS) which is not needed no more
   DBMS_SQLTUNE.DROP_SQLSET(sqlset_name => '#{sts_name}');
+  -- if you want to check the result of the tunning set than comment out DBMS_SQLTUNE.DROP_SQLSET and execute
+  -- SELECT * FROM TABLE(DBMS_SQLTUNE.SELECT_SQLSET(sqlset_name => '#{sts_name}'));
+
+  -- Get access criteria for the new create baseline
+  SELECT SQL_Handle, Plan_Name INTO sql_handle, plan_name FROM DBA_SQL_Plan_Baselines WHERE Signature = #{force_matching_signature};
+
+  -- Set this baseline as fixed
+  hit_count := DBMS_SPM.ALTER_SQL_PLAN_BASELINE(SQL_Handle => sql_handle, Plan_Name => plan_name, Attribute_Name => 'fixed', Attribute_Value => 'YES');
+
+  -- Set the description according to your choice (max. 500 chars)
+  hit_count := DBMS_SPM.ALTER_SQL_PLAN_BASELINE(SQL_Handle => sql_handle, Plan_Name => plan_name, Attribute_Name => 'description', Attribute_Value => 'Baseline generated by Panorama ...');
 END;
 /
 

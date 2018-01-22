@@ -206,8 +206,8 @@ class DbaSgaController < ApplicationController
                 s.Parsing_Schema_Name, SQL_Profile,
                 o.Owner Program_Owner, o.Object_Name Program_Name, o.Object_Type Program_Type, o.Last_DDL_Time Program_Last_DDL_Time,
                 s.Program_Line# Program_LineNo, #{'SQL_Plan_Baseline, ' if get_db_version >= '11.2'}
-                DBMS_SQLTUNE.SQLTEXT_TO_SIGNATURE(SQL_FullText, 0) Exact_Signature,
-                DBMS_SQLTUNE.SQLTEXT_TO_SIGNATURE(SQL_FullText, 1) Force_Signature
+                s.Exact_Matching_Signature /* DBMS_SQLTUNE.SQLTEXT_TO_SIGNATURE(SQL_FullText, 0) */ Exact_Signature,
+                s.Force_Matching_Signature /* DBMS_SQLTUNE.SQLTEXT_TO_SIGNATURE(SQL_FullText, 1) */ Force_Signature
            FROM #{modus} s
            LEFT OUTER JOIN DBA_Objects o ON o.Object_ID = s.Program_ID -- PL/SQL-Programm
            WHERE s.SQL_ID  = ? #{where_string}
@@ -281,16 +281,6 @@ class DbaSgaController < ApplicationController
                     sql_row.exact_signature.to_s, sql_row.force_signature.to_s].concat(sql_row.sql_profile ? [sql_row.sql_profile] : []) if sql_row
   end
 
-  # Existierende SQL-Plan Baselines, Parameter: Result-Zeile eines selects
-  def get_sql_plan_baselines(sql_row)
-    if get_db_version >= "11.2"
-      sql_select_all ["SELECT * FROM DBA_SQL_Plan_Baselines WHERE Signature = TO_NUMBER(?) OR  Signature = TO_NUMBER(?) #{'OR Plan_Name = ?' if sql_row.sql_plan_baseline}
-                      ",
-                    sql_row.exact_signature.to_s, sql_row.force_signature.to_s].concat(sql_row.sql_plan_baseline ? [sql_row.sql_plan_baseline] : []) if sql_row
-    else
-      []
-    end
-  end
 
   # Existierende stored outlines, Parameter: Result-Zeile eines selects
   def get_sql_outlines(sql_row)
@@ -509,7 +499,6 @@ class DbaSgaController < ApplicationController
 
     @sql_statement       = get_sga_sql_statement(@instance, @sql_id)
     @sql_profiles        = get_sql_profiles(@sql)
-    @sql_plan_baselines  = get_sql_plan_baselines(@sql)
     @sql_outlines        = get_sql_outlines(@sql)
     @sql_bind_count      = get_sql_bind_count(@instance, @sql_id, @child_number, @child_address)
 
@@ -602,7 +591,6 @@ class DbaSgaController < ApplicationController
 
     @sql_statement         = get_sga_sql_statement(@instance, params[:sql_id])
     @sql_profiles          = get_sql_profiles(@sql)
-    @sql_plan_baselines    = get_sql_plan_baselines(@sql)
     @sql_outlines          = get_sql_outlines(@sql)
     @sql_bind_count        = get_sql_bind_count(@instance, @sql_id)
 
@@ -1374,14 +1362,19 @@ class DbaSgaController < ApplicationController
 
   # Existierende SQL-Plan Baselines
   def show_plan_baselines
-    @baselines = sql_select_iterator "SELECT b.*, em.SGA_Usages
-                                      FROM   DBA_SQL_Plan_Baselines b
-                                      LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ SQL_Plan_Baseline, COUNT(*) SGA_Usages
-                                                         FROM   gv$SQLArea
-                                                         WHERE  SQL_Plan_Baseline IS NOT NULL
-                                                         GROUP BY SQL_Plan_Baseline
-                                                        ) em ON em.SQL_Plan_Baseline = b.Plan_Name
-                                     "
+    @force_matching_signature = params[:force_matching_signature]
+    @force_matching_signature = nil if @force_matching_signature == ''
+
+
+    @baselines = sql_select_all ["SELECT b.*, em.SGA_Usages
+                                  FROM   DBA_SQL_Plan_Baselines b
+                                  LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ SQL_Plan_Baseline, COUNT(*) SGA_Usages
+                                                     FROM   gv$SQLArea
+                                                     WHERE  SQL_Plan_Baseline IS NOT NULL
+                                                     GROUP BY SQL_Plan_Baseline
+                                                    ) em ON em.SQL_Plan_Baseline = b.Plan_Name
+                                  #{"WHERE b.Signature = ?" unless @force_matching_signature.nil?}
+                                 "].concat(@force_matching_signature.nil? ? [] : [@force_matching_signature])
     render_partial
   end
 

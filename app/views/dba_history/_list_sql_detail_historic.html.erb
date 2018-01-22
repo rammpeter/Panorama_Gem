@@ -100,6 +100,15 @@ end
 
 <%= render :partial=>"dba_sga/list_sql_profiles" %>
 
+<% if get_db_version >= '11.1' %>
+  <% @update_area_sql_plan_baseline = get_unique_area_id %>
+  <script type="text/javascript">
+      ajax_html('<%= @update_area_sql_plan_baseline %>', 'dba_sga', 'show_plan_baselines', {update_area: "<%= @update_area_sql_plan_baseline %>", force_matching_signature: "<%= @sql.force_matching_signature %>"}, {retain_status_message: true});
+  </script>
+  <div id="<%= @update_area_sql_plan_baseline %>"></div>
+<% end %>
+
+
 <% if get_db_version >= '12.1' %>
     <% @update_area_sql_translation = get_unique_area_id %>
     <script type="text/javascript">
@@ -236,13 +245,14 @@ column_options = [
   <div class="float_left">
       <%=
         ajax_submit('SQL plan baseline', {
-            :controller      => :dba_history,
-            :action          => (@sql.plan_hash_value_count > 1 ? :select_plan_hash_value_for_baseline : :generate_baseline_creation),
-            :update_area     => @update_area,
-            :sql_id          => @sql_id,
-            :plan_hash_value => @sql.last_plan_hash_value,
-            :min_snap_id     => @sql.min_snap_id,
-            :max_snap_id     => @sql.max_snap_id
+            :controller                 => :dba_history,
+            :action                     => (@sql.plan_hash_value_count > 1 ? :select_plan_hash_value_for_baseline : :generate_baseline_creation),
+            :update_area                => @update_area,
+            :sql_id                     => @sql_id,
+            :plan_hash_value            => @sql.last_plan_hash_value,
+            :min_snap_id                => @sql.min_snap_id,
+            :max_snap_id                => @sql.max_snap_id,
+            :force_matching_signature   => @sql.force_matching_signature.to_s
         }, :disabled => (@sql.plan_hash_value_count < 1),
                     :title=> t(:dba_history_list_sql_detail_historic_create_baseline_hint, :default=>"Generate script to fix exactly this execution plan as SQL-baseline for this SQL."))
 

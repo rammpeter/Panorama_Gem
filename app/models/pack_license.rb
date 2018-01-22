@@ -37,6 +37,8 @@ class PackLicense
   def filter_sql_string_for_pack_license(sql)
 
     case @license_type
+      when :diagnostics_and_tuning_pack
+        nil
       when :diagnostics_pack then
         check_for_tuning_pack_usage(sql)
       when :panorama_sampler then
@@ -45,7 +47,7 @@ class PackLicense
         sql = PanoramaSamplerStructureCheck.transform_sql_for_sampler(sql)
         check_for_diagnostics_pack_usage(sql)
         check_for_tuning_pack_usage(sql)
-      when :none then
+      when :none, nil then
         check_for_diagnostics_pack_usage(sql)
         check_for_tuning_pack_usage(sql)
       else
