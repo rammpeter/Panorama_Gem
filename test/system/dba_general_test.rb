@@ -54,7 +54,11 @@ class DbaGeneralTest < ApplicationSystemTestCase
     assert_text 'Blocking Locks from DBA_Hist_Active_Sess_History'
 
 
-
+    fill_in('time_selection_start_default', with: get_time_string(1440))
+    fill_in('time_selection_end_default',   with: get_time_string)
+    page.click_button 'Show blocking locks'
+    assert_ajax_success
+    assert_text 'Blocking locks between'
   end
 
 
