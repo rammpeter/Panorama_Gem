@@ -172,7 +172,7 @@ module SlickgridHelper
   #     :multiple_y_axes      => Jedem Wert im Diagramm seinen eigenen 100%-Wertebereich der y-Achse zuweisen (true|false)
   #     :show_y_axes          => Anzeige der y-Achsen links im Diagramm? (true|false)
   #     :context_menu_entries => Array mit Hashes bzw. einzelner Hash mit weiterem Eintrag für Context-Menu: :label, :icon, :action
-  #     :command_menu_entries => Array with hashes or single hash for actions available in caption bar: :name, :caption, :hint, :icon_class=>"ui-icon xxx", :show_icon_in_caption=>true|false|:only ,  :action=>javascript
+  #     :command_menu_entries => Array with hashes or single hash for actions available in caption bar: :name, :caption, :hint, :icon_class=>"ui-icon xxx", :show_icon_in_caption=>true|false|:only\:right ,  :action=>javascript
   #     :line_height_single   => Einzeilige Anzeige in Zeile der Tabelle oder mehrzeilige Anzeige wenn durch Umburch im Feld nötig (true|false)
   #     :data_filter          => Name der JavaScript-Methode für filtern der angezeigten Zeilen: Methode muss einen Parameter "item" besitzen mit aktuell zu prüfender Zeile
   #     :grid_id              => DOM-ID des DIV-Elementes für slickgrid
@@ -208,6 +208,8 @@ module SlickgridHelper
     global_options[:show_y_axes]        = true                                  unless global_options[:show_y_axes]
     global_options[:line_height_single] = false                                 unless global_options[:line_height_single]
 
+
+
     calculate_column_options(column_options, data)    # Berechnen diverser Spaltenparameter
 
     if global_options[:grid_id]
@@ -216,6 +218,16 @@ module SlickgridHelper
       table_id  = "grid_#{rand(99999999)}"                                      # Zufallszahl für html-ID
     end
 
+    global_options[:command_menu_entries] = [] if global_options[:command_menu_entries].nil?
+    global_options[:command_menu_entries] <<
+        {
+            :name                  => :remove_table_from_page,
+            :caption               => 'Close table',
+            :hint                  => "Remove this table from page",
+            :icon_class            => 'ui-icon ui-icon-close',
+            :show_icon_in_caption  => :right,
+            :action                => "jQuery('#caption_#{table_id}').remove(); jQuery('##{table_id}').remove(); jQuery('#menu_#{table_id}').remove();"
+        }
 
     output = ''
     output << "<div id='#{table_id}' style='"

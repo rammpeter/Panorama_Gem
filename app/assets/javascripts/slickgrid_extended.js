@@ -314,7 +314,7 @@ function SlickGridExtended(container_id, options){
                 var show_command_entry_menu = false;                            // assume not showing menu until menu entry requests this
                 for (var cmd_index in options['command_menu_entries']) {
                     var cmd = options['command_menu_entries'][cmd_index];
-                    if (!(cmd['show_icon_in_caption'] === 'only')){
+                    if (cmd['show_icon_in_caption'] !== 'only' && cmd['show_icon_in_caption'] !== 'right'){
                         show_command_entry_menu = true;
                     }
                 }
@@ -366,7 +366,7 @@ function SlickGridExtended(container_id, options){
             if (options['command_menu_entries']){                               // Check for icons in caption line
                 for (var cmd_index in options['command_menu_entries']) {
                     var cmd = options['command_menu_entries'][cmd_index];
-                    if (cmd['show_icon_in_caption']){                           // show icon in caption line of grid ?
+                    if (cmd['show_icon_in_caption'] && cmd['show_icon_in_caption'] !== 'right' ){   // show icon in caption line of grid ?
                         caption.append('<div style="float:left; margin-left:5px; margin-right:5px; margin-top:4px; cursor: pointer;"'+
                             'title="'+cmd['hint'] + '" onclick="'+ cmd['action'] +'">' +
                             '<span class="'+cmd['icon_class']+'" style="float:left"></span>' +
@@ -376,6 +376,19 @@ function SlickGridExtended(container_id, options){
             }
 
             caption.append(options['caption']);                                 // Add content after eventually menu
+
+            if (options['command_menu_entries']){                               // Check for icons in caption line
+                for (var cmd_index in options['command_menu_entries']) {
+                    var cmd = options['command_menu_entries'][cmd_index];
+                    if (cmd['show_icon_in_caption'] === 'right' ){              // show icon in caption line of grid but right ?
+                        caption.append('<div style="float:right; margin-left:5px; margin-right:5px; margin-top:4px; cursor: pointer;"'+
+                            'title="'+cmd['hint'] + '" onclick="'+ cmd['action'] +'">' +
+                            '<span class="'+cmd['icon_class']+'" style="float:right"></span>' +
+                            '</div>');
+                    }
+                }
+            }
+
         }
 
         dataView.setFilter(options["data_filter"]);                             // optinaler Filter auf Daten
