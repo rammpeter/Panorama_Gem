@@ -46,6 +46,7 @@ class GlobalMenuTest < ApplicationSystemTestCase
       begin
         Capybara.ignore_hidden_elements = false
         link_to_click = page.find(:css, '#main_menu #'+menu_link[:id])
+        raise "Menu-link not found for '#main_menu #'#{menu_link[:id]}" if link_to_click.nil?
         puts "click #{link_to_click.text}"
         link_to_click.click
         Capybara.ignore_hidden_elements = true

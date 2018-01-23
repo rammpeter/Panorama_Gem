@@ -4,7 +4,7 @@
 
 
 Capybara.register_driver :headless_chrome do |app|
-  args = ['window-size=1200,1000']                                              # window must be large enough in Y-dimension to paint full menu
+  args = ['window-size=1400,1000']                                              # window must be large enough in Y-dimension to paint full menu
   args.concat %w[headless disable-gpu] if RbConfig::CONFIG['host_os'] != 'darwin' # run headless if not Mac-OS
 
   capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
