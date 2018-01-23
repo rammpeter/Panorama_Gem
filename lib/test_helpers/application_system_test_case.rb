@@ -46,10 +46,12 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
       puts "Exception catched from calling visit root_path"
     end
 
-#page.save_and_open_page
-#assert_content page, "Please choose saved connection"
-
-    assert_text "Please choose saved connection"
+    begin
+      assert_text "Please choose saved connection"
+    rescue Capybara::ExpectationNotMet
+      sleep 5                                                                   # Sleep some time let rails start
+      assert_text "Please choose saved connection"                              # try again
+    end
 
 #test_config = PanoramaOtto::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]
     test_config = PanoramaTestConfig.test_config

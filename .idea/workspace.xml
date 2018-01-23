@@ -7,10 +7,9 @@
     <bookmark url="file://$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb" line="66" mnemonic="7" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
+    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="Harden tests">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb" afterPath="$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb" />
-      <change beforePath="$PROJECT_DIR$/test/system/dba_general_test.rb" afterPath="$PROJECT_DIR$/test/system/dba_general_test.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -85,7 +84,7 @@
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_All_menu_entries__Panorama_Gem.coverage" NAME="test_All_menu_entries: Panorama_Gem Coverage Results" MODIFIED="1513848211988" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_transform_sql_for_sampler__Panorama_Gem.coverage" NAME="test_transform_sql_for_sampler: Panorama_Gem Coverage Results" MODIFIED="1502539816739" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_save_config_with_xhr__true__Panorama_Gem.coverage" NAME="test_save_config_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1511194386130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
-    <SUITE FILE_PATH="coverage/Panorama_Gem@test_DB_Locks___Blocking_locks_historic__Panorama_Gem.coverage" NAME="test_DB-Locks_/_Blocking_locks_historic: Panorama_Gem Coverage Results" MODIFIED="1516715117075" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
+    <SUITE FILE_PATH="coverage/Panorama_Gem@test_DB_Locks___Blocking_locks_historic__Panorama_Gem.coverage" NAME="test_DB-Locks_/_Blocking_locks_historic: Panorama_Gem Coverage Results" MODIFIED="1516715772268" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__PanoramaSamplerStructureCheckTest___Panorama_Gem.coverage" NAME="Run test 'PanoramaSamplerStructureCheckTest': Panorama_Gem Coverage Results" MODIFIED="1502791780007" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_list_iostat_detail_history_samples__Panorama_Gem.coverage" NAME="test_list_iostat_detail_history_samples: Panorama_Gem Coverage Results" MODIFIED="1475164930508" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_do_sampling_awr_ash__Panorama_Gem.coverage" NAME="test_do_sampling_awr_ash: Panorama_Gem Coverage Results" MODIFIED="1513454342786" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
@@ -226,8 +225,8 @@
       <file leaf-file-name="application_system_test_case.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="644">
-              <caret line="146" column="21" lean-forward="false" selection-start-line="146" selection-start-column="6" selection-end-line="146" selection-end-column="21" />
+            <state relative-caret-position="238">
+              <caret line="47" column="0" lean-forward="false" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -236,8 +235,8 @@
       <file leaf-file-name="dba_general_test.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test/system/dba_general_test.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="228">
-              <caret line="50" column="26" lean-forward="false" selection-start-line="50" selection-start-column="26" selection-end-line="50" selection-end-column="26" />
+            <state relative-caret-position="553">
+              <caret line="50" column="20" lean-forward="false" selection-start-line="50" selection-start-column="20" selection-end-line="50" selection-end-column="20" />
               <folding />
             </state>
           </provider>
@@ -257,8 +256,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>generate_sql_patch</find>
-      <find>yellow</find>
       <find>browser_tab</find>
       <find>browser_tan</find>
       <find>GLOBAL</find>
@@ -287,6 +284,8 @@
       <find>baseline</find>
       <find>generate</find>
       <find>click</find>
+      <find>assert_text</find>
+      <find>Please choose saved connection</find>
     </findStrings>
     <replaceStrings>
       <replace>dLast_Load_Time</replace>
@@ -357,8 +356,8 @@
         <option value="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat.html.erb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_sga_controller.rb" />
-        <option value="$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb" />
         <option value="$PROJECT_DIR$/test/system/dba_general_test.rb" />
+        <option value="$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb" />
       </list>
     </option>
   </component>
@@ -602,6 +601,36 @@
               <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
               <item name="test" type="462c0819:PsiDirectoryNode" />
               <item name="system" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+            </path>
+            <path>
+              <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="capybara (v2.16.1, RVM: jruby-9.1.15.0) [gem]" type="70bed36:NamedLibraryElementNode" />
+            </path>
+            <path>
+              <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="capybara (v2.16.1, RVM: jruby-9.1.15.0) [gem]" type="70bed36:NamedLibraryElementNode" />
+              <item name="lib" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="capybara (v2.16.1, RVM: jruby-9.1.15.0) [gem]" type="70bed36:NamedLibraryElementNode" />
+              <item name="lib" type="462c0819:PsiDirectoryNode" />
+              <item name="capybara" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="capybara (v2.16.1, RVM: jruby-9.1.15.0) [gem]" type="70bed36:NamedLibraryElementNode" />
+              <item name="lib" type="462c0819:PsiDirectoryNode" />
+              <item name="capybara" type="462c0819:PsiDirectoryNode" />
+              <item name="node" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -1219,14 +1248,7 @@
       <workItem from="1515868645033" duration="30940000" />
       <workItem from="1516216659403" duration="10632000" />
       <workItem from="1516372976933" duration="570000" />
-      <workItem from="1516560037914" duration="23333000" />
-    </task>
-    <task id="LOCAL-01172" summary="Blocking locks historic. GLOBAL supported for detail view">
-      <created>1512769395207</created>
-      <option name="number" value="01172" />
-      <option name="presentableId" value="LOCAL-01172" />
-      <option name="project" value="LOCAL" />
-      <updated>1512769395207</updated>
+      <workItem from="1516560037914" duration="24048000" />
     </task>
     <task id="LOCAL-01173" summary="Key explanation">
       <created>1512914390400</created>
@@ -1564,7 +1586,14 @@
       <option name="project" value="LOCAL" />
       <updated>1516714476860</updated>
     </task>
-    <option name="localTasksCounter" value="1221" />
+    <task id="LOCAL-01221" summary="Harden tests">
+      <created>1516715216953</created>
+      <option name="number" value="01221" />
+      <option name="presentableId" value="LOCAL-01221" />
+      <option name="project" value="LOCAL" />
+      <updated>1516715216954</updated>
+    </task>
+    <option name="localTasksCounter" value="1222" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1577,11 +1606,11 @@
     <history-entry file="test_DB-Locks___Blocking_locks_historic__Panorama_Gem - 2018.01.23 at 14h 46m 06s.xml">
       <configuration name="test_DB-Locks_/_Blocking_locks_historic: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
     </history-entry>
+    <history-entry file="test_DB-Locks___Blocking_locks_historic__Panorama_Gem - 2018.01.23 at 14h 57m 20s.xml">
+      <configuration name="test_DB-Locks_/_Blocking_locks_historic: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
+    </history-entry>
     <history-entry file="test_DB-Locks___current__Panorama_Gem_(1) - 2018.01.23 at 14h 28m 19s.xml">
       <configuration name="test_DB-Locks_/_current: Panorama_Gem (1)" configurationId="TestUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="test_Start_page__Panorama_Gem - 2018.01.10 at 20h 33m 29s.xml">
-      <configuration name="test_Start_page: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
     </history-entry>
     <history-entry file="test_generate_sql_patch_with_xhr__true__Panorama_Gem - 2018.01.11 at 08h 11m 03s.xml">
       <configuration name="test_generate_sql_patch_with_xhr:_true: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
@@ -1600,9 +1629,9 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2702199000" />
+    <option name="totallyTimeSpent" value="2702914000" />
   </component>
-  <component name="TodoView" selected-index="4">
+  <component name="TodoView">
     <todo-panel id="selected-file">
       <is-autoscroll-to-source value="true" />
     </todo-panel>
@@ -1613,19 +1642,18 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="50" y="23" width="1630" height="1027" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30472103" sideWeight="0.48770103" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2532189" sideWeight="0.31801006" order="10" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.34871244" sideWeight="0.6819899" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2532189" sideWeight="0.48806533" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18882175" sideWeight="0.4952343" order="14" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.29974812" sideWeight="0.6243822" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34871244" sideWeight="0.6819899" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2532189" sideWeight="0.48806533" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18776824" sideWeight="0.4952343" order="14" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.29974812" sideWeight="0.625" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection Results" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24650078" sideWeight="0.49241465" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26633167" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32725322" sideWeight="0.5417076" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.29974812" sideWeight="0.3756178" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.29974812" sideWeight="0.375" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36695278" sideWeight="0.8073048" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27812895" sideWeight="0.3464837" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32967034" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
@@ -1642,6 +1670,32 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
+              <option name="COLUMN_ORDER">
+                <list>
+                  <option value="0" />
+                  <option value="1" />
+                  <option value="2" />
+                  <option value="3" />
+                </list>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="Vcs.Log.UiProperties">
     <option name="RECENTLY_FILTERED_USER_GROUPS">
@@ -1830,30 +1884,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/config/initializers/initialize_sampler_jobs.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="57" lean-forward="false" selection-start-line="5" selection-start-column="57" selection-end-line="5" selection-end-column="57" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/dba_waits_controller.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="141">
-          <caret line="273" column="50" lean-forward="true" selection-start-line="273" selection-start-column="50" selection-end-line="273" selection-end-column="50" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/worker_thread.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="171">
-          <caret line="84" column="2" lean-forward="false" selection-start-line="84" selection-start-column="2" selection-end-line="84" selection-end-column="2" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_area.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="177">
@@ -2230,18 +2260,42 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/.rvm/gems/jruby-9.1.15.0/gems/bundler-1.16.1/lib/bundler/source/path.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="6" lean-forward="false" selection-start-line="7" selection-start-column="6" selection-end-line="7" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.rvm/gems/jruby-9.1.15.0/gems/capybara-2.16.1/lib/capybara/minitest.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="20">
+          <caret line="10" column="50" lean-forward="false" selection-start-line="10" selection-start-column="14" selection-end-line="10" selection-end-column="50" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.rvm/gems/jruby-9.1.15.0/gems/capybara-2.16.1/lib/capybara/node/matchers.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="216">
+          <caret line="616" column="45" lean-forward="true" selection-start-line="616" selection-start-column="18" selection-end-line="616" selection-end-column="45" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="644">
-          <caret line="146" column="21" lean-forward="false" selection-start-line="146" selection-start-column="6" selection-end-line="146" selection-end-column="21" />
+        <state relative-caret-position="238">
+          <caret line="47" column="0" lean-forward="false" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test/system/dba_general_test.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="228">
-          <caret line="50" column="26" lean-forward="false" selection-start-line="50" selection-start-column="26" selection-end-line="50" selection-end-column="26" />
+        <state relative-caret-position="553">
+          <caret line="50" column="20" lean-forward="false" selection-start-line="50" selection-start-column="20" selection-end-line="50" selection-end-column="20" />
           <folding />
         </state>
       </provider>
