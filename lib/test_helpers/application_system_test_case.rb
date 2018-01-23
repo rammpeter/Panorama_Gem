@@ -4,7 +4,7 @@
 
 
 Capybara.register_driver :headless_chrome do |app|
-  args = ['window-size=800,1000']                                               # window must be large enough in Y-dimension to paint full menu
+  args = ['window-size=1200,1000']                                              # window must be large enough in Y-dimension to paint full menu
   args.concat %w[headless disable-gpu] if RbConfig::CONFIG['host_os'] != 'darwin' # run headless if not Mac-OS
 
   capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
@@ -128,6 +128,20 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   def assert_ajax_success
     wait_for_ajax
     assert_not error_dialog_open?
+  end
+
+  # click first occurrence of tag in xpath expression and wait for successful ajax action
+  def click_first_xpath_hit(xpath_expression, comment, tag = 'a')
+    xpath_object = page.first(:xpath, xpath_expression)
+    raise "xpath expression not found\n#{xpath_expression}\n#{comment}" if xpath_object.nil?
+
+    tag_object = xpath_object.first(tag)
+
+    raise "tag '#{tag}' in xpath expression not found\n#{xpath_expression}\n#{comment}" if tag_object.nil?
+    raise "tag '#{tag}' in xpath expression not visible\n#{xpath_expression}\n#{comment}" if !tag_object.visible?
+
+    tag_object.click
+    assert_ajax_success
   end
 
 end

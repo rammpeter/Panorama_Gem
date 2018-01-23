@@ -23,18 +23,15 @@ class DbaGeneralTest < ApplicationSystemTestCase
     assert_ajax_success
     assert_text 'DML Database locks (from GV$Lock)'
 
-    # click first row column "SID/SN" in grid
-    page.first(:xpath, "//div[contains(@class, 'slick-cell') and contains(@class, 'l0') and contains(@class, 'r0')]").first('a').click
-    assert_ajax_success
+    click_first_xpath_hit("//div[contains(@class, 'slick-cell') and contains(@class, 'l0') and contains(@class, 'r0')]",
+                          'click first row column "SID/SN" in grid')
     assert_text 'Details for session SID='
 
-    # click first row column "Module" in grid
-    page.first(:xpath, "//div[contains(@class, 'slick-inner-cell') and contains(@row, '0') and contains(@column, 'col2')]").first('a').click
-    assert_ajax_success
+    click_first_xpath_hit("//div[contains(@class, 'slick-inner-cell') and contains(@row, '0') and contains(@column, 'col2')]",
+                          'click first row column "Module" in grid')
 
-    # click first row column "Action" in grid
-    page.first(:xpath, "//div[contains(@class, 'slick-inner-cell') and contains(@row, '0') and contains(@column, 'col3')]").first('a').click
-    assert_ajax_success
+    click_first_xpath_hit("//div[contains(@class, 'slick-inner-cell') and contains(@row, '0') and contains(@column, 'col3')]",
+                          'click first row column "Action" in grid')
 
     page.click_button 'button_blocking_dml_locks'
     assert_ajax_success
