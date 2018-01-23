@@ -129,7 +129,11 @@ end
 <% if get_db_version >= '11.1' %>
   <% @update_area_sql_baseline = get_unique_area_id %>
   <script type="text/javascript">
-      ajax_html('<%= @update_area_sql_baseline %>', 'dba_sga', 'show_plan_baselines', {update_area: "<%= @update_area_sql_baseline %>", force_matching_signature: "<%= @sql.force_signature %>"}, {retain_status_message: true});
+      ajax_html('<%= @update_area_sql_baseline %>', 'dba_sga', 'show_plan_baselines', {
+          update_area: "<%= @update_area_sql_baseline %>",
+          force_matching_signature: "<%= @sql.force_signature %>",
+          exact_matching_signature: "<%= @sql.exact_signature %>"
+      }, {retain_status_message: true});
   </script>
   <div id="<%= @update_area_sql_baseline %>"></div>
 <% end %>

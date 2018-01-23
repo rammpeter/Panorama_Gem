@@ -1971,6 +1971,7 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
     @min_snap_id                = params[:min_snap_id]
     @max_snap_id                = params[:max_snap_id]
     @force_matching_signature   = params[:force_matching_signature]
+    @exact_matching_signature   = params[:exact_matching_signature]
 
     @plans = sql_select_all ["SELECT s.Plan_Hash_Value,
                                     MIN(ss.Begin_Interval_Time) First_Occurrence,
@@ -1994,6 +1995,7 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
     max_snap_id                 = params[:max_snap_id].to_i
     plan_hash_value             = params[:plan_hash_value]
     force_matching_signature    = params[:force_matching_signature]
+    exact_matching_signature    = params[:exact_matching_signature]
 
 
     sts_name = 'PANORAMA_STS'
@@ -2056,8 +2058,10 @@ BEGIN
   -- if you want to check the result of the tunning set than comment out DBMS_SQLTUNE.DROP_SQLSET and execute
   -- SELECT * FROM TABLE(DBMS_SQLTUNE.SELECT_SQLSET(sqlset_name => '#{sts_name}'));
 
-  -- Get access criteria for the new create baseline
-  SELECT SQL_Handle, Plan_Name INTO sql_handle, plan_name FROM DBA_SQL_Plan_Baselines WHERE Signature = #{force_matching_signature};
+  -- Get access criteria for the new created baseline based on exact- or force-signature
+  SELECT SQL_Handle, Plan_Name INTO sql_handle, plan_name FROM DBA_SQL_Plan_Baselines
+  WHERE  (Signature = #{force_matching_signature} OR Signature = #{exact_matching_signature})
+  AND    Created > SYSDATE-0.1;
 
   -- Set this baseline as fixed
   hit_count := DBMS_SPM.ALTER_SQL_PLAN_BASELINE(SQL_Handle => sql_handle, Plan_Name => plan_name, Attribute_Name => 'fixed', Attribute_Value => 'YES');

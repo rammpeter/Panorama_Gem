@@ -1363,18 +1363,36 @@ class DbaSgaController < ApplicationController
   # Existierende SQL-Plan Baselines
   def show_plan_baselines
     @force_matching_signature = params[:force_matching_signature]
-    @force_matching_signature = nil if @force_matching_signature == ''
+    @force_matching_signature = nil if params[:force_matching_signature] == ''
 
+    @exact_matching_signature = params[:exact_matching_signature]
+    @exact_matching_signature = nil if params[:exact_matching_signature] == ''
 
-    @baselines = sql_select_all ["SELECT b.*, em.SGA_Usages
+    where_string = ''
+    where_values = []
+
+    if @force_matching_signature || @exact_matching_signature
+      where_string << " WHERE Signature IN (?,?)"
+      where_values << @force_matching_signature
+      where_values << @exact_matching_signature
+    end
+
+    if @force_matching_signature && @exact_matching_signature &&
+        sql_select_one(["SELECT COUNT(*) FROM DBA_SQL_Plan_Baselines #{where_string}"].concat(where_values)) == 0
+      @baselines = []                                                           # Suppress long running SQL if there is no result
+    else
+      @baselines = sql_select_all ["SELECT b.*, em.SGA_Usages, em.SQL_ID, em.Inst_ID
                                   FROM   DBA_SQL_Plan_Baselines b
-                                  LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ SQL_Plan_Baseline, COUNT(*) SGA_Usages
+                                  LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ SQL_Plan_Baseline, COUNT(*) SGA_Usages,
+                                                            MIN(SQL_ID) SQL_ID,
+                                                            MIN(Inst_ID) KEEP (DENSE_RANK FIRST ORDER BY SQL_ID) Inst_ID /* Inst_ID according to MIN(SQL_ID) */
                                                      FROM   gv$SQLArea
                                                      WHERE  SQL_Plan_Baseline IS NOT NULL
                                                      GROUP BY SQL_Plan_Baseline
                                                     ) em ON em.SQL_Plan_Baseline = b.Plan_Name
-                                  #{"WHERE b.Signature = ?" unless @force_matching_signature.nil?}
-                                 "].concat(@force_matching_signature.nil? ? [] : [@force_matching_signature])
+                                  #{where_string}
+                                   "].concat(where_values)
+    end
     render_partial
   end
 
