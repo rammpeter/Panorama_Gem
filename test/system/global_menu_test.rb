@@ -41,15 +41,16 @@ class GlobalMenuTest < ApplicationSystemTestCase
         rescue Exception=>e
           raise "Exception #{e.class}: #{e.message}\nProcessing hover on menues of #{menu_link[:id]} at menu node #{menu_node_id}"
         end
-        #sleep(0.1)
+        sleep(0.1)
       end
       begin
-        Capybara.ignore_hidden_elements = false
+        # Capybara.ignore_hidden_elements = false
         link_to_click = page.find(:css, '#main_menu #'+menu_link[:id])
         raise "Menu-link not found for '#main_menu #'#{menu_link[:id]}" if link_to_click.nil?
+        raise "Menu-link not visible '#main_menu #'#{menu_link[:id]}"   if !link_to_click.visible?
         puts "click #{link_to_click.text}"
         link_to_click.click
-        Capybara.ignore_hidden_elements = true
+        # Capybara.ignore_hidden_elements = true
         assert_ajax_success
         close_possible_popup_message                                            # close potential popup message from call
       rescue Exception=>e
