@@ -51,6 +51,7 @@ class GlobalMenuTest < ApplicationSystemTestCase
 
           if menu_node.text['Segment Statistics']
             save_screenshot('/tmp/after.png')
+            puts "Searching '#{menu_link[:id]}'"
           end
         rescue Exception=>e
           raise "Exception #{e.class}: #{e.message}\nProcessing hover on menues of #{menu_link[:id]} at menu node #{menu_node_id}"

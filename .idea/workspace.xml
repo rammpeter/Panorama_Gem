@@ -175,8 +175,8 @@
       <file leaf-file-name="global_menu_test.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test/system/global_menu_test.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="436">
-              <caret line="51" column="49" lean-forward="false" selection-start-line="51" selection-start-column="49" selection-end-line="51" selection-end-column="49" />
+            <state relative-caret-position="451">
+              <caret line="52" column="45" lean-forward="true" selection-start-line="52" selection-start-column="45" selection-end-line="52" selection-end-column="45" />
               <folding />
             </state>
           </provider>
@@ -1195,14 +1195,7 @@
       <workItem from="1516216659403" duration="10632000" />
       <workItem from="1516372976933" duration="570000" />
       <workItem from="1516560037914" duration="39560000" />
-      <workItem from="1516806218400" duration="946000" />
-    </task>
-    <task id="LOCAL-01182" summary="Retry if connection pool is full, size 100">
-      <created>1513341014045</created>
-      <option name="number" value="01182" />
-      <option name="presentableId" value="LOCAL-01182" />
-      <option name="project" value="LOCAL" />
-      <updated>1513341014046</updated>
+      <workItem from="1516806218400" duration="1052000" />
     </task>
     <task id="LOCAL-01183" summary="Retry if connection pool is full, size 100">
       <created>1513341034155</created>
@@ -1540,7 +1533,14 @@
       <option name="project" value="LOCAL" />
       <updated>1516801405663</updated>
     </task>
-    <option name="localTasksCounter" value="1231" />
+    <task id="LOCAL-01231" summary="Harden tests">
+      <created>1516807170171</created>
+      <option name="number" value="01231" />
+      <option name="presentableId" value="LOCAL-01231" />
+      <option name="project" value="LOCAL" />
+      <updated>1516807170172</updated>
+    </task>
+    <option name="localTasksCounter" value="1232" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1576,7 +1576,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2719372000" />
+    <option name="totallyTimeSpent" value="2719478000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1790,7 +1790,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="ruby-line">
           <url>file://$PROJECT_DIR$/test/system/global_menu_test.rb</url>
-          <line>60</line>
+          <line>61</line>
           <option name="timeStamp" value="1357" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="ruby-line">
@@ -2225,8 +2225,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/system/global_menu_test.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="436">
-          <caret line="51" column="49" lean-forward="false" selection-start-line="51" selection-start-column="49" selection-end-line="51" selection-end-column="49" />
+        <state relative-caret-position="451">
+          <caret line="52" column="45" lean-forward="true" selection-start-line="52" selection-start-column="45" selection-end-line="52" selection-end-column="45" />
           <folding />
         </state>
       </provider>
