@@ -44,13 +44,13 @@ class GlobalMenuTest < ApplicationSystemTestCase
           puts "hover #{menu_node.text}"
 
           if menu_node.text == 'Segment Statistics'
-            save_screenshot('before.png')
+            save_screenshot('/tmp/before.png')
           end
 
           menu_node.hover
 
           if menu_node.text == 'Segment Statistics'
-            save_screenshot('after.png')
+            save_screenshot('/tmp/after.png')
           end
         rescue Exception=>e
           raise "Exception #{e.class}: #{e.message}\nProcessing hover on menues of #{menu_link[:id]} at menu node #{menu_node_id}"
