@@ -35,7 +35,13 @@ class GlobalMenuTest < ApplicationSystemTestCase
     @menu_links.each do |menu_link|
       menu_link[:click_tree_ids].each do |menu_node_id|
         begin
-          menu_node = page.find(:css, '#main_menu #'+menu_node_id, visible: false)              # find menu node by id again
+          #menu_node = page.find(:css, '#main_menu #'+menu_node_id, visible: false)              # find menu node by id again
+          menu_node = page.find(:css, '#main_menu #'+menu_node_id)              # find menu node by id again
+          if !menu_node.visible?
+            puts "Sleeping waiting for menu node '#main_menu ##{menu_node_id}'"
+            sleep 1
+            raise "Menu node '#main_menu ##{menu_node_id}' not visible" if !menu_node.visible?
+          end
           puts "hover #{menu_node.text}"
           menu_node.hover
         rescue Exception=>e
