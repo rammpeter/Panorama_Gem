@@ -37,12 +37,21 @@ class GlobalMenuTest < ApplicationSystemTestCase
         begin
           menu_node = page.find(:css, '#main_menu #'+menu_node_id, visible: false)              # find menu node by id again
           if !menu_node.visible?
-            puts "Sleeping waiting for menu node '#main_menu ##{menu_node_id}'"
+            puts "Sleeping waiting for menu node '#main_menu ##{menu_node_id}' to become visible"
             sleep 1
             raise "Menu node '#main_menu ##{menu_node_id}' not visible" if !menu_node.visible?
           end
           puts "hover #{menu_node.text}"
+
+          if menu_node.text == 'Segment Statistics'
+            save_screenshot('before.png')
+          end
+
           menu_node.hover
+
+          if menu_node.text == 'Segment Statistics'
+            save_screenshot('after.png')
+          end
         rescue Exception=>e
           raise "Exception #{e.class}: #{e.message}\nProcessing hover on menues of #{menu_link[:id]} at menu node #{menu_node_id}"
         end
@@ -51,7 +60,7 @@ class GlobalMenuTest < ApplicationSystemTestCase
         # Capybara.ignore_hidden_elements = false
         link_to_click = page.find(:css, '#main_menu #'+menu_link[:id], visible: false)
         if !link_to_click.visible?
-          puts "Sleeping waiting for menu node '#main_menu ##{menu_link[:id]}'"
+          puts "Sleeping waiting for menu node '#main_menu ##{menu_link[:id]}' to become visible"
           sleep 1
           raise "Menu-link not visible '#main_menu #'#{menu_link[:id]}"   if !link_to_click.visible?
         end

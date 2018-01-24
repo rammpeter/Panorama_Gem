@@ -195,8 +195,8 @@
       <file leaf-file-name="global_menu_test.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test/system/global_menu_test.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="581">
-              <caret line="56" column="0" lean-forward="false" selection-start-line="56" selection-start-column="0" selection-end-line="56" selection-end-column="0" />
+            <state relative-caret-position="521">
+              <caret line="52" column="34" lean-forward="false" selection-start-line="52" selection-start-column="34" selection-end-line="52" selection-end-column="34" />
               <folding />
             </state>
           </provider>
@@ -272,16 +272,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="panorama_test.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/panorama_test.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
     </leaf>
   </component>
   <component name="FindInProjectRecents">
@@ -310,12 +300,12 @@
       <find>baseline</find>
       <find>generate</find>
       <find>assert_text</find>
-      <find>click</find>
       <find>caption</find>
       <find>name</find>
       <find>container_id</find>
       <find>table_id</find>
       <find>Please choose saved connection</find>
+      <find>click</find>
     </findStrings>
     <replaceStrings>
       <replace>dLast_Load_Time</replace>
@@ -1294,14 +1284,7 @@
       <workItem from="1515868645033" duration="30940000" />
       <workItem from="1516216659403" duration="10632000" />
       <workItem from="1516372976933" duration="570000" />
-      <workItem from="1516560037914" duration="32064000" />
-    </task>
-    <task id="LOCAL-01178" summary="Test perepared but not ready">
-      <created>1513100297327</created>
-      <option name="number" value="01178" />
-      <option name="presentableId" value="LOCAL-01178" />
-      <option name="project" value="LOCAL" />
-      <updated>1513100297327</updated>
+      <workItem from="1516560037914" duration="33388000" />
     </task>
     <task id="LOCAL-01179" summary="Fix missing browser_tab_id">
       <created>1513159514568</created>
@@ -1639,7 +1622,14 @@
       <option name="project" value="LOCAL" />
       <updated>1516767926880</updated>
     </task>
-    <option name="localTasksCounter" value="1227" />
+    <task id="LOCAL-01227" summary="Harden capybara test">
+      <created>1516769667840</created>
+      <option name="number" value="01227" />
+      <option name="presentableId" value="LOCAL-01227" />
+      <option name="project" value="LOCAL" />
+      <updated>1516769667840</updated>
+    </task>
+    <option name="localTasksCounter" value="1228" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1675,7 +1665,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2710930000" />
+    <option name="totallyTimeSpent" value="2712254000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1930,14 +1920,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/helpers/menu_extension_helper.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="22" lean-forward="false" selection-start-line="4" selection-start-column="22" selection-end-line="4" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/addition_controller.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="220">
@@ -2355,10 +2337,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/.rvm/gems/jruby-9.1.15.0/gems/selenium-webdriver-3.8.0/lib/selenium/webdriver/common/driver_extensions/takes_screenshot.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="307">
+          <caret line="34" column="42" lean-forward="true" selection-start-line="34" selection-start-column="42" selection-end-line="34" selection-end-column="42" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/test/system/global_menu_test.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="581">
-          <caret line="56" column="0" lean-forward="false" selection-start-line="56" selection-start-column="0" selection-end-line="56" selection-end-column="0" />
+        <state relative-caret-position="521">
+          <caret line="52" column="34" lean-forward="false" selection-start-line="52" selection-start-column="34" selection-end-line="52" selection-end-column="34" />
           <folding />
         </state>
       </provider>
