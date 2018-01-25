@@ -100,17 +100,17 @@ module SlickgridHelper
 
   def prepare_js_global_options_for_slickgrid(table_id, global_options)
     output = '{'
-    output << "  maxHeight:            #{global_options[:max_height]},"       if global_options[:max_height]      # max. Höhe in Pixel
-    output << "  plot_area:            '#{global_options[:plot_area_id]}',"   if global_options[:plot_area_id]    # DIV-ID für Diagramm
-    output << "  caption:              '#{global_options[:caption]}',"
-    output << "  width:                '#{global_options[:width].to_s}',"
-    output << "  multiple_y_axes:      #{global_options[:multiple_y_axes]},"
-    output << "  show_y_axes:          #{global_options[:show_y_axes]},"
-    output << "  line_height_single:   #{global_options[:line_height_single]},"
-    output << "  data_filter:          #{global_options[:data_filter]},"      if global_options[:data_filter]
-    output << "  locale:               '#{get_locale}',"
-    output << "  command_menu_entries: #{global_options[:command_menu_entries].to_json},"    if global_options[:command_menu_entries]
-    output << '}'
+    output << "\n  maxHeight:            #{global_options[:max_height]},"       if global_options[:max_height]      # max. Höhe in Pixel
+    output << "\n  plot_area:            '#{global_options[:plot_area_id]}',"   if global_options[:plot_area_id]    # DIV-ID für Diagramm
+    output << "\n  caption:              '#{global_options[:caption]}',"
+    output << "\n  width:                '#{global_options[:width].to_s}',"
+    output << "\n  multiple_y_axes:      #{global_options[:multiple_y_axes]},"
+    output << "\n  show_y_axes:          #{global_options[:show_y_axes]},"
+    output << "\n  line_height_single:   #{global_options[:line_height_single]},"
+    output << "\n  data_filter:          #{global_options[:data_filter]},"      if global_options[:data_filter]
+    output << "\n  locale:               '#{get_locale}',"
+    output << "\n  command_menu_entries: #{global_options[:command_menu_entries].to_json},"    if global_options[:command_menu_entries]
+    output << "\n}"
     output
 
   end

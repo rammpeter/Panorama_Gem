@@ -37,12 +37,17 @@
 }
 
 .slick-caption {
-    text-align: center;
+/*    text-align: center; */
     background: url(greychrome.gif) repeat-x scroll left top #FFFFFF;
     width:100%;
     margin-top:10px;
     padding-top: 4px;
     padding-bottom: 4px;
+    display:flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    overflow-x: auto;                                                           /* let header content scroll if grid is too narrow */
 }
 
 /* Übersteuern Struktur eines slick-Spaltenheaders */

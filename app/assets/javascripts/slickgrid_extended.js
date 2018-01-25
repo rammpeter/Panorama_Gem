@@ -308,7 +308,14 @@ function SlickGridExtended(container_id, options){
 
         // set caption and additional menu actions
         if (options['caption'] && options['caption'] !== ""){
-            var caption = jQuery("<div id='caption_"+container_id.replace(/#/, "")+"' class='slick-caption slick-shadow'></div>").insertBefore('#'+container_id);
+            var caption = jQuery("<div id='caption_"+container_id+"' class='slick-caption slick-shadow'></div>").insertBefore('#'+container_id);
+
+            var caption_left_box  = jQuery("<span></span>");
+            var caption_right_box = jQuery("<span></span>");
+            caption.append(caption_left_box);
+            caption.append(options['caption']);                                 // Add header text itself
+            caption.append(caption_right_box);
+
 
             if (options['command_menu_entries']){
                 var show_command_entry_menu = false;                            // assume not showing menu until menu entry requests this
@@ -320,33 +327,28 @@ function SlickGridExtended(container_id, options){
                 }
 
                 if (show_command_entry_menu) {                                  // Showing menu not suppressed for at least one entry
-                    var command_menu_id = 'command_menu_'+container_id.replace(/#/, "");
+                    var command_menu_id = 'cmd_menu_'+container_id;
 
                     var command_menu_context_id = command_menu_id+'_context_menu';
 
-                    caption.append('<div style="float:left; margin-left:5px; margin-right:5px;" class="slick-shadow">' +
-                        '<div id="'+command_menu_id+'" style="padding-left: 10px; padding-right: 10px; background-color: #E0E0E0; cursor: pointer;">' +
+                    caption_left_box.append('<div style="margin-left:5px; margin-right:5px;" class="slick-shadow">' +
+                        '<div id="'+command_menu_id+'" style="padding-left: 10px; padding-right: 10px; background-color: #E0E0E0; cursor: pointer;" title="'+locale_translate('slickgrid_menu_hint')+'">' +
                         '\u2261' + // 3 waagerechte Striche ≡
                         '<div class="contextMenu" id="'+command_menu_context_id+'" style="display:none;">' +
                         '</div></div></div>'
                     );
 
                     var command_menu_list = '<ul>';
+                    var bindings = {};
 
                     for (var cmd_index in options['command_menu_entries']) {
                         var cmd = options['command_menu_entries'][cmd_index];
                         command_menu_list = command_menu_list +
-                            '<li id="'+command_menu_id+'_'+cmd['name']+'" title="'+cmd['hint']+'"><span class="'+cmd['icon_class']+'" style="float:left"></span><span>'+cmd['caption']+'</span></li>'
+                            '<li id="'+command_menu_id+'_'+cmd['name']+'" title="'+cmd['hint']+'"><span class="'+cmd['icon_class']+'" style="float:left;"></span><span>'+cmd['caption']+'</span></li>';
+                        bindings[command_menu_id+'_'+cmd['name']] = new Function(cmd['action']); // create function from text
                     }
                     command_menu_list = command_menu_list + '</ul>';
                     jQuery('#'+command_menu_context_id).html(command_menu_list);
-
-
-                    var bindings = {};
-                    for (var cmd_index in options['command_menu_entries']) {
-                        var cmd = options['command_menu_entries'][cmd_index];
-                        bindings[command_menu_id+'_'+cmd['name']] = function(){ eval(cmd['action']); }
-                    }
 
                     jQuery("#"+command_menu_id).contextMenu(command_menu_context_id, {
                         menuStyle: {  width: '330px' },
@@ -367,23 +369,22 @@ function SlickGridExtended(container_id, options){
                 for (var cmd_index in options['command_menu_entries']) {
                     var cmd = options['command_menu_entries'][cmd_index];
                     if (cmd['show_icon_in_caption'] && cmd['show_icon_in_caption'] !== 'right' ){   // show icon in caption line of grid ?
-                        caption.append('<div style="float:left; margin-left:5px; margin-right:5px; margin-top:4px; cursor: pointer;"'+
+                        caption_left_box.append('<div style="margin-left:5px; margin-right:5px; margin-top:4px; cursor: pointer;"'+
                             'title="'+cmd['hint'] + '" onclick="'+ cmd['action'] +'">' +
-                            '<span class="'+cmd['icon_class']+'" style="float:left"></span>' +
+                            '<span class="'+cmd['icon_class']+'"></span>' +
                             '</div>');
                     }
                 }
             }
 
-            caption.append(options['caption']);                                 // Add content after eventually menu
 
             if (options['command_menu_entries']){                               // Check for icons in caption line
                 for (var cmd_index in options['command_menu_entries']) {
                     var cmd = options['command_menu_entries'][cmd_index];
                     if (cmd['show_icon_in_caption'] === 'right' ){              // show icon in caption line of grid but right ?
-                        caption.append('<div style="float:right; margin-left:5px; margin-right:5px; margin-top:4px; cursor: pointer;"'+
+                        caption_right_box.append('<div style="margin-left:5px; margin-right:5px; margin-top:4px; cursor: pointer;"'+
                             'title="'+cmd['hint'] + '" onclick="'+ cmd['action'] +'">' +
-                            '<span class="'+cmd['icon_class']+'" style="float:right"></span>' +
+                            '<span class="'+cmd['icon_class']+'"></span>' +
                             '</div>');
                     }
                 }
@@ -1641,17 +1642,15 @@ function get_slickgrid_translations() {
             'en': 'Filter by exact value (incl. thousands-delimiter and comma)',
             'de': 'Filtern nach exaktem Wert (incl. Tausender-Trennung und Komma)'
         },
+        'slickgrid_menu_hint': {
+            'en': 'Show menu with local functions for this table',
+            'de': 'Zeige Menü mit lokalen Funktionen für diese Tabelle'
+        },
         'slickgrid_pct_hint': {
             'en': 'of column sum',
             'de': 'der Spaltensumme von'
         }
     }
 }
-
-
-
-
-
-
 
 

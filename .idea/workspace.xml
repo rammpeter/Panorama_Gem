@@ -9,7 +9,9 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/test/system/global_menu_test.rb" afterPath="$PROJECT_DIR$/test/system/global_menu_test.rb" />
+      <change beforePath="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" afterPath="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" />
+      <change beforePath="$PROJECT_DIR$/app/assets/stylesheets/slickgrid_extended.css" afterPath="$PROJECT_DIR$/app/assets/stylesheets/slickgrid_extended.css" />
+      <change beforePath="$PROJECT_DIR$/app/helpers/slickgrid_helper.rb" afterPath="$PROJECT_DIR$/app/helpers/slickgrid_helper.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -124,7 +126,7 @@
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_list_sysaux_occupants_with_xhr__true__Panorama_Gem.coverage" NAME="test_list_sysaux_occupants_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1505584097096" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__DbaSgaControllerTest___Panorama_Gem.coverage" NAME="Run test 'DbaSgaControllerTest': Panorama_Gem Coverage Results" MODIFIED="1512638127731" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_object_increase_timeline_with_xhr__true__Panorama_Gem.coverage" NAME="test_object_increase_timeline_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1501070169123" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
-    <SUITE FILE_PATH="coverage/Panorama_Gem@Development__Panorama_Gem.coverage" NAME="Development: Panorama_Gem Coverage Results" MODIFIED="1516800738069" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
+    <SUITE FILE_PATH="coverage/Panorama_Gem@Development__Panorama_Gem.coverage" NAME="Development: Panorama_Gem Coverage Results" MODIFIED="1516890429174" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_dba__Panorama_Gem.coverage" NAME="test_dba: Panorama_Gem Coverage Results" MODIFIED="1468855552397" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_dummy_with_xhr__true__Panorama_Gem.coverage" NAME="test_dummy_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1503408571446" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_sql_detail_historic_with_xhr__true__Panorama_Gem.coverage" NAME="test_sql_detail_historic_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1511442945153" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
@@ -172,11 +174,71 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="global_menu_test.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="global_menu_test.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/system/global_menu_test.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="451">
-              <caret line="52" column="45" lean-forward="true" selection-start-line="52" selection-start-column="45" selection-end-line="52" selection-end-column="45" />
+            <state relative-caret-position="357">
+              <caret line="52" column="45" lean-forward="false" selection-start-line="52" selection-start-column="45" selection-end-line="52" selection-end-column="45" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/system/index.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="360">
+              <caret line="24" column="0" lean-forward="false" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
+              <folding>
+                <element signature="n#style#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="slickgrid_extended.css" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/assets/stylesheets/slickgrid_extended.css">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="399">
+              <caret line="49" column="130" lean-forward="false" selection-start-line="49" selection-start-column="130" selection-end-line="49" selection-end-column="130" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="slickgrid_extended.js" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="248">
+              <caret line="334" column="196" lean-forward="false" selection-start-line="334" selection-start-column="196" selection-end-line="334" selection-end-column="196" />
+              <folding>
+                <marker date="1516890787083" expanded="true" signature="16168:16197" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="18063:18097" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="18186:18270" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="18480:18493" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="19020:19031" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="20485:20552" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="21269:21336" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="23367:23467" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="23513:23555" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="23726:23829" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="23994:24110" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="44668:44681" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="44828:44841" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="45302:45312" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="64529:64568" ph="..." />
+                <marker date="1516890787083" expanded="true" signature="83354:83860" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="slickgrid_helper.rb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/helpers/slickgrid_helper.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="303">
+              <caret line="231" column="0" lean-forward="false" selection-start-line="231" selection-start-column="0" selection-end-line="231" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -186,11 +248,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>GLOBAL'</find>
-      <find>SQLA</find>
-      <find>show_rowid</find>
-      <find>Error at server   : this ensures that content is rendered in JS -method ajax_error</find>
-      <find>bind</find>
       <find>child</find>
       <find>patch</find>
       <find>plan_base</find>
@@ -212,10 +269,15 @@
       <find>assert_text</find>
       <find>caption</find>
       <find>name</find>
-      <find>container_id</find>
       <find>table_id</find>
       <find>click</find>
       <find>Please choose saved connection</find>
+      <find>float</find>
+      <find>contextMenu</find>
+      <find>container_id</find>
+      <find>bindings</find>
+      <find>comman</find>
+      <find>Binding</find>
     </findStrings>
     <replaceStrings>
       <replace>dLast_Load_Time</replace>
@@ -237,8 +299,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/views/active_session_history/_show_session_statistics_historic.html.erb" />
-        <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dragnet/_show_selection.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_history/_show_awr_global_report.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_history/_show_ash_report.html.erb" />
@@ -283,11 +343,13 @@
         <option value="$PROJECT_DIR$/app/controllers/dba_sga_controller.rb" />
         <option value="$PROJECT_DIR$/test/system/dba_general_test.rb" />
         <option value="$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb" />
-        <option value="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" />
         <option value="$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb" />
-        <option value="$PROJECT_DIR$/app/helpers/slickgrid_helper.rb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
         <option value="$PROJECT_DIR$/test/system/global_menu_test.rb" />
+        <option value="$PROJECT_DIR$/app/assets/stylesheets/slickgrid_extended.css" />
+        <option value="$PROJECT_DIR$/test/system/index.html" />
+        <option value="$PROJECT_DIR$/app/helpers/slickgrid_helper.rb" />
+        <option value="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" />
       </list>
     </option>
   </component>
@@ -311,11 +373,10 @@
     <option name="FILTER_DEBUG" value="true" />
     <option name="CUSTOM_FILTER" />
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="x" value="554" />
-    <option name="y" value="37" />
-    <option name="width" value="1981" />
-    <option name="height" value="1381" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="y" value="23" />
+    <option name="width" value="1630" />
+    <option name="height" value="1027" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -634,7 +695,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Test::Unit/Shoulda/Minitest.Run test 'GlobalMenuTest': Panorama_Gem">
+  <component name="RunManager" selected="Rails.Development: Panorama_Gem">
     <configuration name="Run test 'DbaGeneralTest': Panorama_Gem" type="TestUnitRunConfigurationType" factoryName="Test::Unit/Shoulda/Minitest" temporary="true">
       <predefined_log_file id="RUBY_TESTUNIT" enabled="true" />
       <module name="Panorama_Gem" />
@@ -1195,14 +1256,7 @@
       <workItem from="1516216659403" duration="10632000" />
       <workItem from="1516372976933" duration="570000" />
       <workItem from="1516560037914" duration="39560000" />
-      <workItem from="1516806218400" duration="1052000" />
-    </task>
-    <task id="LOCAL-01183" summary="Retry if connection pool is full, size 100">
-      <created>1513341034155</created>
-      <option name="number" value="01183" />
-      <option name="presentableId" value="LOCAL-01183" />
-      <option name="project" value="LOCAL" />
-      <updated>1513341034155</updated>
+      <workItem from="1516806218400" duration="8759000" />
     </task>
     <task id="LOCAL-01184" summary="Fix diagram for ASH, some browswer_tab_id">
       <created>1513366289986</created>
@@ -1540,7 +1594,14 @@
       <option name="project" value="LOCAL" />
       <updated>1516807170172</updated>
     </task>
-    <option name="localTasksCounter" value="1232" />
+    <task id="LOCAL-01232" summary="Harden tests">
+      <created>1516807276569</created>
+      <option name="number" value="01232" />
+      <option name="presentableId" value="LOCAL-01232" />
+      <option name="project" value="LOCAL" />
+      <updated>1516807276569</updated>
+    </task>
+    <option name="localTasksCounter" value="1233" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1576,7 +1637,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2719478000" />
+    <option name="totallyTimeSpent" value="2727185000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1588,20 +1649,20 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="554" y="37" width="1981" height="1381" extended-state="0" />
+    <frame x="50" y="23" width="1630" height="1027" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24755028" sideWeight="0.6147239" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.30226701" sideWeight="0.6140625" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30472103" sideWeight="0.48770103" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2532189" sideWeight="0.31801006" order="10" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26633167" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2532189" sideWeight="0.48806533" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34836704" sideWeight="0.6819899" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24755028" sideWeight="0.38527608" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.30226701" sideWeight="0.3859375" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18776824" sideWeight="0.4952343" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27812895" sideWeight="0.3464837" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.36625195" sideWeight="0.8073048" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31330472" sideWeight="0.8073048" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32967034" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22854078" sideWeight="0.45896465" order="12" side_tool="false" content_ui="tabs" />
@@ -1867,20 +1928,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_db_cache_content.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="5" lean-forward="false" selection-start-line="4" selection-start-column="5" selection-end-line="4" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_db_cache_by_object_id.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="1" column="8" lean-forward="false" selection-start-line="1" selection-start-column="8" selection-end-line="1" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/helpers/dba_helper.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="155">
@@ -1950,6 +1997,15 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="138">
           <caret line="72" column="88" lean-forward="true" selection-start-line="72" selection-start-column="88" selection-end-line="72" selection-end-column="88" />
+          <folding>
+            <marker date="1516565386829" expanded="true" signature="3360:3429" ph="..." />
+            <marker date="1516565386829" expanded="true" signature="3505:3604" ph="..." />
+            <marker date="1516565386829" expanded="true" signature="3807:3831" ph="..." />
+            <marker date="1516565386829" expanded="true" signature="4864:4877" ph="..." />
+            <marker date="1516565386829" expanded="true" signature="5025:5066" ph="..." />
+            <marker date="1516565386829" expanded="true" signature="5335:5345" ph="..." />
+            <marker date="1516565386829" expanded="true" signature="14261:14270" ph="..." />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -2158,20 +2214,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-268">
-          <caret line="322" column="70" lean-forward="false" selection-start-line="322" selection-start-column="58" selection-end-line="322" selection-end-column="70" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/helpers/slickgrid_helper.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="189">
-          <caret line="225" column="68" lean-forward="false" selection-start-line="225" selection-start-column="68" selection-end-line="225" selection-end-column="68" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/models/worker_thread_test.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
@@ -2225,9 +2267,61 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/system/global_menu_test.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="451">
-          <caret line="52" column="45" lean-forward="true" selection-start-line="52" selection-start-column="45" selection-end-line="52" selection-end-column="45" />
+        <state relative-caret-position="357">
+          <caret line="52" column="45" lean-forward="false" selection-start-line="52" selection-start-column="45" selection-end-line="52" selection-end-column="45" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/assets/stylesheets/slickgrid_extended.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="399">
+          <caret line="49" column="130" lean-forward="false" selection-start-line="49" selection-start-column="130" selection-end-line="49" selection-end-column="130" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/system/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="24" column="0" lean-forward="false" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
+          <folding>
+            <element signature="n#style#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/helpers/slickgrid_helper.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="303">
+          <caret line="231" column="0" lean-forward="false" selection-start-line="231" selection-start-column="0" selection-end-line="231" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="248">
+          <caret line="334" column="196" lean-forward="false" selection-start-line="334" selection-start-column="196" selection-end-line="334" selection-end-column="196" />
+          <folding>
+            <marker date="1516890787083" expanded="true" signature="16168:16197" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="18063:18097" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="18186:18270" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="18480:18493" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="19020:19031" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="20485:20552" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="21269:21336" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="23367:23467" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="23513:23555" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="23726:23829" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="23994:24110" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="44668:44681" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="44828:44841" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="45302:45312" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="64529:64568" ph="..." />
+            <marker date="1516890787083" expanded="true" signature="83354:83860" ph="..." />
+          </folding>
         </state>
       </provider>
     </entry>
