@@ -61,6 +61,7 @@ function SlickGridExtended(container_id, options){
     var last_slickgrid_contexmenu_col_header    = null;                         // globale Variable mit jQuery-Objekt des Spalten-Header der Spalte, in der Context-Menu zuletzt gerufen wurd
     var last_slickgrid_contexmenu_column_name   = '';                           // globale Variable mit Spalten-Name der Spalte, in der Context-Menu zuletzt gerufen wurd
     var last_slickgrid_contexmenu_field_content = '';                           // globale Variable mit Inhalt des Feldes auf dem Context-Menu aufgerufen wurde
+    var pinned                          = false;                                // is table pinned ?
 
     this.gridContainer = jQuery('#'+container_id);                              // Puffern des jQuery-Objektes
     this.gridContainer.addClass('slickgrid_top');                               // css-Klasse setzen zur Wiedererkennung
@@ -310,86 +311,117 @@ function SlickGridExtended(container_id, options){
         if (options['caption'] && options['caption'] !== ""){
             var caption = jQuery("<div id='caption_"+container_id+"' class='slick-caption slick-shadow'></div>").insertBefore('#'+container_id);
 
-            var caption_left_box  = jQuery("<span></span>");
-            var caption_right_box = jQuery("<span></span>");
+            var caption_left_box  = jQuery("<span class='slick_header_left_box'></span>");
+            var caption_right_box = jQuery("<span class='slick_header_right_box'></span>");
             caption.append(caption_left_box);
-            caption.append(options['caption']);                                 // Add header text itself
+            caption.append('<span class="slick_header_middle_box">'+options['caption']+'</span>');                                 // Add header text itself
             caption.append(caption_right_box);
 
+            // add default command menu entries
+            if (!options['command_menu_entries']){
+                options['command_menu_entries'] = [];
+            }
 
-            if (options['command_menu_entries']){
-                var show_command_entry_menu = false;                            // assume not showing menu until menu entry requests this
-                for (var cmd_index in options['command_menu_entries']) {
-                    var cmd = options['command_menu_entries'][cmd_index];
-                    if (cmd['show_icon_in_caption'] !== 'only' && cmd['show_icon_in_caption'] !== 'right'){
-                        show_command_entry_menu = true;
-                    }
-                }
+            if (options['show_pin_icon']){
+                options['command_menu_entries'].push({
+                    name:                  'pin_grid_global',
+                    caption:                'Pin table',
+                    hint:                   "Pin this table global.\nPrevent it from being overwritten by any menu action",
+                    icon_class:             'ui-icon ui-icon-pin-w',
+                    show_icon_in_caption:   'right',
+                    action:                 "jQuery('#"+container_id+"').data('slickgridextended').pin_grid(true);",
+                    unvisible:              true
+                });
+                options['command_menu_entries'].push({
+                    name:                  'pin_grid_local',
+                    caption:                'Pin table',
+                    hint:                   "Pin this table.\nPrevent it from being overwritten by parent reload",
+                    icon_class:             'ui-icon ui-icon-pin-w',
+                    show_icon_in_caption:   'right',
+                    action:                 "jQuery('#"+container_id+"').data('slickgridextended').pin_grid(false);"
+                });
+            }
 
-                if (show_command_entry_menu) {                                  // Showing menu not suppressed for at least one entry
-                    var command_menu_id = 'cmd_menu_'+container_id;
+            options['command_menu_entries'].push({
+                name:                   'remove_table_from_page',
+                caption:                'Close table',
+                hint:                   'Remove this table from page',
+                icon_class:             'ui-icon ui-icon-close',
+                show_icon_in_caption:   'right',
+                action:                 "jQuery('#"+container_id+"').data('slickgridextended').remove_grid();"
+            });
 
-                    var command_menu_context_id = command_menu_id+'_context_menu';
 
-                    caption_left_box.append('<div style="margin-left:5px; margin-right:5px;" class="slick-shadow">' +
-                        '<div id="'+command_menu_id+'" style="padding-left: 10px; padding-right: 10px; background-color: #E0E0E0; cursor: pointer;" title="'+locale_translate('slickgrid_menu_hint')+'">' +
-                        '\u2261' + // 3 waagerechte Striche ≡
-                        '<div class="contextMenu" id="'+command_menu_context_id+'" style="display:none;">' +
-                        '</div></div></div>'
-                    );
-
-                    var command_menu_list = '<ul>';
-                    var bindings = {};
-
-                    for (var cmd_index in options['command_menu_entries']) {
-                        var cmd = options['command_menu_entries'][cmd_index];
-                        command_menu_list = command_menu_list +
-                            '<li id="'+command_menu_id+'_'+cmd['name']+'" title="'+cmd['hint']+'"><span class="'+cmd['icon_class']+'" style="float:left;"></span><span>'+cmd['caption']+'</span></li>';
-                        bindings[command_menu_id+'_'+cmd['name']] = new Function(cmd['action']); // create function from text
-                    }
-                    command_menu_list = command_menu_list + '</ul>';
-                    jQuery('#'+command_menu_context_id).html(command_menu_list);
-
-                    jQuery("#"+command_menu_id).contextMenu(command_menu_context_id, {
-                        menuStyle: {  width: '330px' },
-                        bindings:   bindings, onContextMenu : function(event, menu) // dynamisches Anpassen des Context-Menü
-                        {
-                            return true;
-                        }
-                    });
-
-                    jQuery("#"+command_menu_id).bind('click' , function( event) {
-                        jQuery("#"+command_menu_id).trigger("contextmenu", event);
-                        return false;
-                    });
+            var show_command_entry_menu = false;                            // assume not showing menu until menu entry requests this
+            for (var cmd_index in options['command_menu_entries']) {
+                var cmd = options['command_menu_entries'][cmd_index];
+                if (cmd['show_icon_in_caption'] !== 'only' && cmd['show_icon_in_caption'] !== 'right'){
+                    show_command_entry_menu = true;
                 }
             }
 
-            if (options['command_menu_entries']){                               // Check for icons in caption line
+            if (show_command_entry_menu) {                                  // Showing menu not suppressed for at least one entry
+                var command_menu_id = 'cmd_menu_'+container_id;
+
+                var command_menu_context_id = command_menu_id+'_context_menu';
+
+                caption_left_box.append('<div style="margin-left:5px; margin-right:5px;" class="slick-shadow">' +
+                    '<div id="'+command_menu_id+'" style="padding-left: 10px; padding-right: 10px; background-color: #E0E0E0; cursor: pointer;" title="'+locale_translate('slickgrid_menu_hint')+'">' +
+                    '\u2261' + // 3 waagerechte Striche ≡
+                    '<div class="contextMenu" id="'+command_menu_context_id+'" style="display:none;">' +
+                    '</div></div></div>'
+                );
+
+                var command_menu_list = '<ul>';
+                var bindings = {};
+
                 for (var cmd_index in options['command_menu_entries']) {
                     var cmd = options['command_menu_entries'][cmd_index];
-                    if (cmd['show_icon_in_caption'] && cmd['show_icon_in_caption'] !== 'right' ){   // show icon in caption line of grid ?
-                        caption_left_box.append('<div style="margin-left:5px; margin-right:5px; margin-top:4px; cursor: pointer;"'+
-                            'title="'+cmd['hint'] + '" onclick="'+ cmd['action'] +'">' +
-                            '<span class="'+cmd['icon_class']+'"></span>' +
-                            '</div>');
+                    command_menu_list = command_menu_list +
+                        '<li id="'+command_menu_id+'_'+cmd['name']+'" title="'+cmd['hint']+'"><span class="'+cmd['icon_class']+'" style="float:left;"></span><span>'+cmd['caption']+'</span></li>';
+                    bindings[command_menu_id+'_'+cmd['name']] = new Function(cmd['action']); // create function from text
+                }
+                command_menu_list = command_menu_list + '</ul>';
+                jQuery('#'+command_menu_context_id).html(command_menu_list);
+
+                jQuery("#"+command_menu_id).contextMenu(command_menu_context_id, {
+                    menuStyle: {  width: '330px' },
+                    bindings:   bindings, onContextMenu : function(event, menu) // dynamisches Anpassen des Context-Menü
+                    {
+                        return true;
                     }
+                });
+
+                jQuery("#"+command_menu_id).bind('click' , function( event) {
+                    jQuery("#"+command_menu_id).trigger("contextmenu", event);
+                    return false;
+                });
+            }
+
+
+            // Check for icons in left box of caption line
+            for (var cmd_index in options['command_menu_entries']) {
+                var cmd = options['command_menu_entries'][cmd_index];
+                if (cmd['show_icon_in_caption'] && cmd['show_icon_in_caption'] !== 'right' ){   // show icon in caption line of grid ?
+                    caption_left_box.append('<div style="margin-left:5px; margin-top:4px; cursor: pointer;"'+
+                        'title="'+cmd['hint'] + '" onclick="'+ cmd['action'] +'">' +
+                        '<span class="'+cmd['icon_class']+'"></span>' +
+                        '</div>');
                 }
             }
 
 
-            if (options['command_menu_entries']){                               // Check for icons in caption line
-                for (var cmd_index in options['command_menu_entries']) {
-                    var cmd = options['command_menu_entries'][cmd_index];
-                    if (cmd['show_icon_in_caption'] === 'right' ){              // show icon in caption line of grid but right ?
-                        caption_right_box.append('<div style="margin-left:5px; margin-right:5px; margin-top:4px; cursor: pointer;"'+
-                            'title="'+cmd['hint'] + '" onclick="'+ cmd['action'] +'">' +
-                            '<span class="'+cmd['icon_class']+'"></span>' +
-                            '</div>');
-                    }
+            // Check for icons in right box of caption
+            for (var cmd_index in options['command_menu_entries']) {
+                var cmd = options['command_menu_entries'][cmd_index];
+                if (cmd['show_icon_in_caption'] === 'right' ){              // show icon in caption line of grid but right ?
+                    caption_right_box.append('<span id="'+container_id+'_header_left_box_'+cmd['name']+'"'+
+                        ' style="margin-right:5px; margin-top:4px; cursor: pointer;'+((cmd['unvisible']) ? 'display: none;' : '')+'"'+
+                        ' title="'+cmd['hint'] + '" onclick="'+ cmd['action'] +'">' +
+                        '<span class="'+cmd['icon_class']+'"></span>' +
+                        '</span>');
                 }
             }
-
         }
 
         dataView.setFilter(options["data_filter"]);                             // optinaler Filter auf Daten
@@ -1344,6 +1376,65 @@ function SlickGridExtended(container_id, options){
         return thiz.js_test_cell.scrollHeight;
     }
 
+    // public function to pin all elements of grid
+    // Move Grid to another new parent to prevent it from being overwritten by parent reload
+    // this requires all belonging elements of slickgrid (incl. external javascript etc.) are within the parent
+    // Parameter: pin_at_toplevel   - boolean
+    this.pin_grid = function(pin_at_toplevel){
+        if (!options['top_level_container_id']){
+            throw "Value for SlickGridExtended-option 'top_level_container_id' ist needed to process pin_grid"
+        }
+
+        var grid_parent = thiz.gridContainer.parent();
+
+        if (pin_at_toplevel){
+            var target_for_pinned = jQuery('#'+options['top_level_container_id']);
+            var pin_button_outer_span = jQuery('#'+container_id+'_header_left_box_pin_grid_global');
+            var new_title = 'Table is pinned at top_level. Click Close-icon to remove table.';
+            jQuery('#'+container_id+'_header_left_box_pin_grid_local').css('display', 'none');      // hide local pin button if global was hit
+
+        } else {
+            var target_for_pinned = grid_parent;
+            var pin_button_outer_span = jQuery('#'+container_id+'_header_left_box_pin_grid_local');
+            var new_title = 'Table is pinned. Click Close-icon to remove table.';
+            jQuery('#'+container_id+'_header_left_box_pin_grid_global').css('display', 'inline');      // show global pin button after local pin
+
+            for (var i = 1; i < options['show_pin_icon']; i++) {                // step up for parents according to number of parent_tree_depth
+                target_for_pinned = target_for_pinned.parent();
+            }
+            if (target_for_pinned.attr('id') == options['top_level_container_id']){
+                thiz.pin_grid(true);                                            // treat as top level pin if called from directly from first page after menu action
+                return;
+            }
+        }
+
+        var new_parent = jQuery('<div id="pinned_container_'+container_id+'"></div>').insertBefore(target_for_pinned);
+        new_parent.append(grid_parent.children());                                  // move all elements of grid's parent to new paren
+
+        var pin_button_span = pin_button_outer_span.find('.ui-icon-pin-w');
+        pin_button_span.removeClass('ui-icon-pin-w');
+        pin_button_span.addClass('ui-icon-pin-s');
+        pin_button_span.parent()
+            .attr('title', new_title)
+            .css('cursor', 'default')
+            .attr('onclick', null)
+        ;
+        thiz.pinned = true;                                                     // remember pinned-status for close-handling
+    };
+
+
+    this.remove_grid = function(){
+        if (thiz.pinned){                                                       // remove whole parent div including descendants of grid
+            jQuery('#'+container_id).parent().remove();
+        } else {                                                                // remove detailed elements of grid from parent
+            jQuery('#caption_'+container_id).remove();
+            jQuery('#'+container_id).remove();
+            jQuery('#menu_'+container_id).remove();
+        }
+    }
+
+
+
 } // Ende SlickGridExtended
 
 
@@ -1652,5 +1743,6 @@ function get_slickgrid_translations() {
         }
     }
 }
+
 
 

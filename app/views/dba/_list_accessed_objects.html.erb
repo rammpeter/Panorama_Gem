@@ -9,7 +9,8 @@
 %>
 <%= gen_slickgrid(@objects, column_options, {
     :caption => "Objects accessed in library cache by instance = #{@instance}, SID = #{@sid} (from GV$Access)",
-    :max_height=>450
+    :max_height=>450,
+    show_pin_icon: 1
 })
 %>
 

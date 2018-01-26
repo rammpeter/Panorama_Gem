@@ -38,7 +38,8 @@
   %>
 <%= gen_slickgrid(@ddl_locks, column_options, {
         :caption => "Blocking DDL-Locks in Library Cache (from DBA_KGLLock)",
-        :max_height=>450
+        :max_height=>450,
+        show_pin_icon: 1
 })
 %>
 

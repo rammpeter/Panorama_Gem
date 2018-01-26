@@ -43,7 +43,8 @@
 %>
 <%= gen_slickgrid(@locks, column_options, {
         :caption => "Current DB-locks for instance=#{@instance}, SID=#{@sid}",
-        :width=>:auto
+        :width=>:auto,
+        show_pin_icon: 1
 }) %>
 <div id="<%= @update_area %>"></div>
 

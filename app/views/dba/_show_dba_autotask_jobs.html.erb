@@ -14,8 +14,9 @@
       ]
 
 %>
-<%= gen_slickgrid(@windows, column_options, {:caption=>'Maintenance windows from DBA_Autotask_Window_Clients' , :width=>:auto}) %>
-
+<div>
+<%= gen_slickgrid(@windows, column_options, {:caption=>'Maintenance windows from DBA_Autotask_Window_Clients' , :width=>:auto, show_pin_icon: 2}) %>
+</div>
 
 
 <%
@@ -57,6 +58,8 @@
 ]
 
 %>
-<%= gen_slickgrid(@tasks, column_options, {:caption=>'Automated Maintenance Tasks Clients from DBA_Autotask_Client' , :width=>:auto}) %>
+<div>
+  <%= gen_slickgrid(@tasks, column_options, {:caption=>'Automated Maintenance Tasks Clients from DBA_Autotask_Client' , :width=>:auto, show_pin_icon: 2}) %>
+</div>
 
 <div id="<%= @update_area %>"></div>

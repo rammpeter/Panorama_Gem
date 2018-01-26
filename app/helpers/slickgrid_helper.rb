@@ -100,16 +100,18 @@ module SlickgridHelper
 
   def prepare_js_global_options_for_slickgrid(table_id, global_options)
     output = '{'
-    output << "\n  maxHeight:            #{global_options[:max_height]},"       if global_options[:max_height]      # max. Höhe in Pixel
-    output << "\n  plot_area:            '#{global_options[:plot_area_id]}',"   if global_options[:plot_area_id]    # DIV-ID für Diagramm
-    output << "\n  caption:              '#{global_options[:caption]}',"
-    output << "\n  width:                '#{global_options[:width].to_s}',"
-    output << "\n  multiple_y_axes:      #{global_options[:multiple_y_axes]},"
-    output << "\n  show_y_axes:          #{global_options[:show_y_axes]},"
-    output << "\n  line_height_single:   #{global_options[:line_height_single]},"
-    output << "\n  data_filter:          #{global_options[:data_filter]},"      if global_options[:data_filter]
-    output << "\n  locale:               '#{get_locale}',"
-    output << "\n  command_menu_entries: #{global_options[:command_menu_entries].to_json},"    if global_options[:command_menu_entries]
+    output << "\n  caption:                 '#{global_options[:caption]}',"
+    output << "\n  command_menu_entries:    #{global_options[:command_menu_entries].to_json},"    if global_options[:command_menu_entries]
+    output << "\n  data_filter:             #{global_options[:data_filter]},"      if global_options[:data_filter]
+    output << "\n  line_height_single:      #{global_options[:line_height_single]},"
+    output << "\n  locale:                  '#{get_locale}',"
+    output << "\n  maxHeight:               #{global_options[:max_height]},"       if global_options[:max_height]      # max. Höhe in Pixel
+    output << "\n  multiple_y_axes:         #{global_options[:multiple_y_axes]},"
+    output << "\n  plot_area:               '#{global_options[:plot_area_id]}',"   if global_options[:plot_area_id]    # DIV-ID für Diagramm
+    output << "\n  show_pin_icon:           #{global_options[:show_pin_icon]},"    if global_options[:show_pin_icon]
+    output << "\n  show_y_axes:             #{global_options[:show_y_axes]},"
+    output << "\n  top_level_container_id:  'content_for_layout',"
+    output << "\n  width:                   '#{global_options[:width].to_s}',"
     output << "\n}"
     output
 
@@ -137,19 +139,12 @@ module SlickgridHelper
   # Parameter:
   #   data:     Array mit Objekt je auszugebende Zeile
   #   column_options:  Array mit Hash je Spalte
-  #     :caption              => Spalten-Header
-  #     :data                 => Ausdruch für Ausgabe der Daten (rec = aktuelles Zeilen-Objekt
-  #     :title                => MouseOver-Hint für Spaltenheader und Spaltendaten
-  #     :data_title           => MouseOver-Hint für Spaltendaten (:title genutzt, wenn nicht definiert), "%t" innerhalb des data_title wird mit Inhalt von :title ersetzt
-  #     :style                => Style für Spaltenheader und Spaltendaten
-  #     :data_style           => Style für Spaltendaten (:style genutzt, wenn nicht definiert)
   #     :align                => Ausrichtung
-  #     :plot_master          => Spalte ist X-Achse für Diagramm-Darstellung <true>
-  #     :plot_master_time     => Spalte ist x-Achse mit Datum/Zeit, die als Zeitstrahl dargestellt werden soll <true>
+  #     :caption              => Spalten-Header
   #     :css_class            => class für Feld
-  #     :header_class         => class-Ausdruck für <th> Spaltenheader
-  #     :show_pct_hint        => true für Anzeige des %-Anteil des Feldes an der Summe aller Records als Zusatz zum MouseOver-Hint
-  #     :show_pct_background  => true für Anzeige des %-Anteil des Feldes an der Summe aller Records als transparenter horizontaler Füllstand
+  #     :data                 => Ausdruch für Ausgabe der Daten (rec = aktuelles Zeilen-Objekt
+  #     :data_style           => Style für Spaltendaten (:style genutzt, wenn nicht definiert)
+  #     :data_title           => MouseOver-Hint für Spaltendaten (:title genutzt, wenn nicht definiert), "%t" innerhalb des data_title wird mit Inhalt von :title ersetzt
   #     :field_decorator_function => Javascript-Funktionskörper, return cell-html, folgenden Variablen sind belegt:
   #         slickGrid           Referenz auf SlickGridExtended-Objekt
   #         row_no,cell_no      Nr. beginnend mit 0
@@ -157,25 +152,33 @@ module SlickgridHelper
   #         full_cell_value     Wert der Zelle in dataContext['metadata']['columns'][columnDef['field']['fulldata'], sonst identisch mit cell_value
   #         columnDef:    Spaltendefinition
   #         dataContext:  komplette Zeile aus data-Array
-  #     :no_wrap              => Keinen Umbruch in Spalte akzeptieren <true|false>, Default = false
-  #     :max_wrap_width       => Maximale Breite der Spalte in Pixel im Umbruchmodus (Es wird versucht, durch Reduktion der Spaltenbreiten die Tabelle ohne hor. Scrollbar darzustellen)
   #     :hidden               => true für Unterdrücken Anzeige der Spalte
+  #     :header_class         => class-Ausdruck für <th> Spaltenheader
+  #     :max_wrap_width       => Maximale Breite der Spalte in Pixel im Umbruchmodus (Es wird versucht, durch Reduktion der Spaltenbreiten die Tabelle ohne hor. Scrollbar darzustellen)
+  #     :no_wrap              => Keinen Umbruch in Spalte akzeptieren <true|false>, Default = false
+  #     :plot_master          => Spalte ist X-Achse für Diagramm-Darstellung <true>
+  #     :plot_master_time     => Spalte ist x-Achse mit Datum/Zeit, die als Zeitstrahl dargestellt werden soll <true>
+  #     :show_pct_background  => true für Anzeige des %-Anteil des Feldes an der Summe aller Records als transparenter horizontaler Füllstand
+  #     :show_pct_hint        => true für Anzeige des %-Anteil des Feldes an der Summe aller Records als Zusatz zum MouseOver-Hint
+  #     :style                => Style für Spaltenheader und Spaltendaten
+  #     :title                => MouseOver-Hint für Spaltenheader und Spaltendaten
   #   global_options: Hash mit globalen Optionen
   #     :caption              => Titel vor Anzeige der Tabelle, darf keine "'" enthalten
   #     :caption_style        => Style-Attribute für caption der Tabelle
-  #     :no_wrap              => Keinen Umbruch aller Spalten akzeptieren <true|false>, Default = false
-  #     :width                => Weite der Tabelle (Default="100%", :auto=nicht volle Breite)
-  #     :height               => Höhe der Tabelle in Pixel oder '100%' für Parent ausfüllen oder :auto für dynam. Hoehe in Anhaengigkeit der Anzahl Zeilen, Default=:auto
-  #     :max_height           => max. Höhe Höhe der Tabelle in Pixel (px) als numerischen Wert, oder JavaScript-Ausdruck
-  #     :plot_area_id         => div für Anzeige des Diagrammes (überschreibt Default hinter table)
-  #     :div_style            => Einpacken der Tabelle in Div mit diesem Style
-  #     :multiple_y_axes      => Jedem Wert im Diagramm seinen eigenen 100%-Wertebereich der y-Achse zuweisen (true|false)
-  #     :show_y_axes          => Anzeige der y-Achsen links im Diagramm? (true|false)
-  #     :context_menu_entries => Array mit Hashes bzw. einzelner Hash mit weiterem Eintrag für Context-Menu: :label, :icon, :action
   #     :command_menu_entries => Array with hashes or single hash for actions available in caption bar: :name, :caption, :hint, :icon_class=>"ui-icon xxx", :show_icon_in_caption=>true|false|:only\:right ,  :action=>javascript
-  #     :line_height_single   => Einzeilige Anzeige in Zeile der Tabelle oder mehrzeilige Anzeige wenn durch Umburch im Feld nötig (true|false)
+  #     :context_menu_entries => Array mit Hashes bzw. einzelner Hash mit weiterem Eintrag für Context-Menu: :label, :icon, :action
+  #     :div_style            => Einpacken der Tabelle in Div mit diesem Style
   #     :data_filter          => Name der JavaScript-Methode für filtern der angezeigten Zeilen: Methode muss einen Parameter "item" besitzen mit aktuell zu prüfender Zeile
   #     :grid_id              => DOM-ID des DIV-Elementes für slickgrid
+  #     :height               => Höhe der Tabelle in Pixel oder '100%' für Parent ausfüllen oder :auto für dynam. Hoehe in Anhaengigkeit der Anzahl Zeilen, Default=:auto
+  #     :line_height_single   => Einzeilige Anzeige in Zeile der Tabelle oder mehrzeilige Anzeige wenn durch Umburch im Feld nötig (true|false)
+  #     :max_height           => max. Höhe Höhe der Tabelle in Pixel (px) als numerischen Wert, oder JavaScript-Ausdruck
+  #     :multiple_y_axes      => Jedem Wert im Diagramm seinen eigenen 100%-Wertebereich der y-Achse zuweisen (true|false)
+  #     :no_wrap              => Keinen Umbruch aller Spalten akzeptieren <true|false>, Default = false
+  #     :plot_area_id         => div für Anzeige des Diagrammes (überschreibt Default hinter table)
+  #     :show_pin_icon        => Show pin icon at right header box to prevent grid from being overwritten by parent refresh: 0..n for number of parents to step up in DOM until moving content to new div
+  #     :show_y_axes          => Anzeige der y-Achsen links im Diagramm? (true|false)
+  #     :width                => Weite der Tabelle (Default="100%", :auto=nicht volle Breite)
 
   def gen_slickgrid(data, column_options, global_options={})
 
@@ -217,17 +220,6 @@ module SlickgridHelper
     else
       table_id  = "grid_#{rand(99999999)}"                                      # Zufallszahl für html-ID
     end
-
-    global_options[:command_menu_entries] = [] if global_options[:command_menu_entries].nil?
-    global_options[:command_menu_entries] <<
-        {
-            :name                  => :remove_table_from_page,
-            :caption               => 'Close table',
-            :hint                  => "Remove this table from page",
-            :icon_class            => 'ui-icon ui-icon-close',
-            :show_icon_in_caption  => :right,
-            :action                => "jQuery('#caption_#{table_id}').remove(); jQuery('##{table_id}').remove(); jQuery('#menu_#{table_id}').remove();"
-        }
 
     output = ''
     output << "<div id='#{table_id}' style='"

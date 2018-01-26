@@ -9,7 +9,9 @@
   ]
 
 %>
-<%= gen_slickgrid(@waits, column_options, :caption => "Current wait status for instance=#{@instance}, SID=#{@sid}", :width=>:auto) %>
+<div>
+  <%= gen_slickgrid(@waits, column_options, :caption => "Current wait status for instance=#{@instance}, SID=#{@sid}", :width=>:auto, show_pin_icon: 2) %>
+</div>
 
 
 <% if @pq_waits.length > 0 %>
@@ -28,6 +30,8 @@
       {:caption=>"State",            :data=>proc{|rec| rec.state},                              :title=>"Status", :data_title=>proc{|rec| explain_wait_state(rec.state)}},
     ]
   %>
-  <%= gen_slickgrid(@pq_waits, column_options,{:caption=>"Parallel query slave processes", :width=>:auto}) %>
+  <div>
+    <%= gen_slickgrid(@pq_waits, column_options,{:caption=>"Parallel query slave processes", :width=>:auto, show_pin_icon: 2}) %>
+  </div>
 <% end %>
 

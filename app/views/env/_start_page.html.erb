@@ -33,10 +33,12 @@
 
 
 %>
+<div>
 <%= gen_slickgrid(@instance_data, column_options, {
-    :caption => "Instance data", :width => :auto
+    :caption => "Instance data", :width => :auto, show_pin_icon: 2
 })
 %>
+</div>
 
 <% @update_area_dbids = get_unique_area_id %>
 <script type="text/javascript">
@@ -79,10 +81,12 @@
 
 
     %>
+  <div>
     <%= gen_slickgrid(@containers, column_options, {
-        :caption => "Pluggable database info from gv$Containers", :max_height=>200, :width => :auto
+        :caption => "Pluggable database info from gv$Containers", :max_height=>200, :width => :auto, show_pin_icon: 2
     })
     %>
+  </div>
 <% end %>
 
 <h2><%= t :env_licensing_header, :default=>"Licensing" %></h2>

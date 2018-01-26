@@ -88,7 +88,8 @@ column_options =
 
 <%= gen_slickgrid(@locks, column_options, {
         :caption => "Blocking Locks zwischen #{@time_selection_start} und #{@time_selection_end} verdichtet auf #{@timeslice} Minuten",
-        :max_height=>450
+        :max_height=>450,
+        show_pin_icon: 1
 }) %>
 
 <div id="<%= @update_area %>" style="float:left; width:100%;">

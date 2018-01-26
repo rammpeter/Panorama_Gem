@@ -9,7 +9,11 @@
 
 %>
 <%= gen_slickgrid(@stats, column_options,
-                  {:caption=>"Session-statistics from gv$SessStat for Instance=#{@instance} , SID=#{@sid},<br/> 0-values are suppressed in listing", :width=>:auto}
+                  {:caption=>"Session-statistics from gv$SessStat for Instance=#{@instance} , SID=#{@sid},<br/> 0-values are suppressed in listing",
+                   max_height: 450,
+                   :width=>:auto,
+                   show_pin_icon: 1
+                  }
 )%>
 
 <div id="<%= @update_area%>"></div>

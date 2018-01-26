@@ -56,7 +56,8 @@
 
   gen_slickgrid(@sql_monitor_records, column_options, {
       :max_height => 450,
-      :caption    => caption
+      :caption    => caption,
+      show_pin_icon: 1
   })
 %>
 <div id="<%= @update_area %>"></div>

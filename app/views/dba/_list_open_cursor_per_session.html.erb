@@ -48,7 +48,8 @@
 <%= gen_slickgrid(@opencursors, column_options, {
         :caption    => "Offene Cursoren für Instance=#{@instance}, SID=#{@sid}",
         :max_height => 450,
-        :width      => :auto
+        :width      => :auto,
+        show_pin_icon: 1
 }) %>
 
 <div style="clear: both;"></div>

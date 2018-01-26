@@ -8,5 +8,7 @@ column_options << {:caption=>'Value',         :data=>proc{|rec| rec.value },    
 %>
 <%= gen_slickgrid(@env, column_options, {
                                 :caption => "Optimizer environment for instance=#{@instance}, SID=#{@sid}",
-                                :width=>:auto
+                                max_height: 450,
+                                :width=>:auto,
+                                show_pin_icon: 1
                         }) %>

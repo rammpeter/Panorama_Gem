@@ -13,4 +13,4 @@
       ]
 
 %>
-<%= gen_slickgrid(@result, column_options, :caption => "Server log from #{@time_selection_start} until #{@time_selection_end}", :max_height=>450) %>
+<%= gen_slickgrid(@result, column_options, :caption => "Server log from #{@time_selection_start} until #{@time_selection_end}", :max_height=>450, show_pin_icon: 1) %>

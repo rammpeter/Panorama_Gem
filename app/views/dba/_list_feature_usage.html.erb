@@ -13,7 +13,9 @@
       ]
 
 %>
-<%= gen_slickgrid(@pack_usage, column_options, {:caption => 'Management pack usage info from DBA_FEATURE_USAGE_STATISTICS. According to MOS-note 1317265.1',:max_height=>450}) %>
+<div>
+  <%= gen_slickgrid(@pack_usage, column_options, {:caption => 'Management pack usage info from DBA_FEATURE_USAGE_STATISTICS. According to MOS-note 1317265.1',:max_height=>450, show_pin_icon: 2}) %>
+</div>
 
 
 
@@ -43,7 +45,9 @@
       ]
 
 %>
-<%= gen_slickgrid(@feature_usage, column_options, {:caption => 'Feature and management pack usage info from DBA_FEATURE_USAGE_STATISTICS', :max_height=>450}) %>
+<div>
+  <%= gen_slickgrid(@feature_usage, column_options, {:caption => 'Feature and management pack usage info from DBA_FEATURE_USAGE_STATISTICS', :max_height=>450, show_pin_icon: 2}) %>
+</div>
 
 <div id="<%= @update_area %>" class="yellow-panel" style="margin-top:10px;">
 </div>
