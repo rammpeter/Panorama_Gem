@@ -64,6 +64,8 @@
 
 %>
 
-<%= gen_slickgrid(@data, column_options, {:caption=>"Temp-Segment Usage from GV$TempSeg_Usage (Sum: #{@temp_size} MB)", :max_height => 450}) %>
+<div>
+  <%= gen_slickgrid(@data, column_options, {:caption=>"Temp-Segment Usage from GV$TempSeg_Usage (Sum: #{@temp_size} MB)", :max_height => 450, show_pin_icon: 1}) %>
 
-<div id="<%= @update_area %>" style="float:left; width:100%;"></div>
+  <div id="<%= @update_area %>"></div>
+</div>

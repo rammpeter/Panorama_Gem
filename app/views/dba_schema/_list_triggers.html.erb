@@ -29,7 +29,7 @@
 <%=
     gen_slickgrid(@triggers, column_options, {
                                       :caption => "Triggers for  #{@table_type} #{@owner}.#{@table_name}",
-                                      :max_height => 450
+                                      :max_height => 450, show_pin_icon: 1
                               })
 %>
 

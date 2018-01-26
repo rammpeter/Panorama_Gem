@@ -17,9 +17,8 @@
 <%= gen_slickgrid(@temp_usage, column_options, {
     :max_height       => 450,
     :caption          => "TEMP-usage between #{localeDateTime(@time_selection_start)} and #{localeDateTime(@time_selection_end)}",
-    :multiple_y_axes  => false
-
+    :multiple_y_axes  => false,
+    show_pin_icon: 1
 }) %>
 
-<div id="<%= @update_area %>" style="clear: both;">
-</div>
+<div id="<%= @update_area %>"></div>

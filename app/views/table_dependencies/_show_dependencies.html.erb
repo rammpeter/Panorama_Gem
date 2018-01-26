@@ -13,8 +13,7 @@
 
 %>
 
-<%= gen_slickgrid(@dependencies, column_options, :caption => "Abhängigkeiten für Tabelle #{@username}.#{@tablename}") %>
+<%= gen_slickgrid(@dependencies, column_options, :caption => "Abhängigkeiten für Tabelle #{@username}.#{@tablename}", show_pin_icon: 1) %>
 
 
-<div id="<%= @update_area %>">
-</div>
+<div id="<%= @update_area %>"></div>

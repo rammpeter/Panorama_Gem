@@ -23,4 +23,4 @@
 
 %>
 
-<%= gen_slickgrid(@caches, column_options, {:caption => "DB cache usage for #{@object_row.owner}.#{@object_row.object_name}"}) %>
+<%= gen_slickgrid(@caches, column_options, {:caption => "DB cache usage for #{@object_row.owner}.#{@object_row.object_name}", show_pin_icon: 1}) %>

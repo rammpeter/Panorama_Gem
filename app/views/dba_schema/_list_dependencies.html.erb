@@ -49,24 +49,25 @@
 
 
 %>
+<div class="flex-row-container">
+  <div class="flex-row-element">
+    <%=
+      gen_slickgrid(@dependencies_from_me, column_options_from_me, {
+          :caption => "Objects that are depending from #{@object_type} #{@owner}.#{@object_name}",
+          :max_height => 450, :width=>:auto
+      })
+    %>
+  </div>
+  <div class="flex-row-element">
+    <%=
 
-<div class="float_left">
-  <%=
-    gen_slickgrid(@dependencies_from_me, column_options_from_me, {
-        :caption => "Objects that are depending from #{@object_type} #{@owner}.#{@object_name}",
-        :max_height => 450, :width=>:auto
-    })
-  %>
+      gen_slickgrid(@dependencies_im_from, column_options_im_from, {
+          :caption => "Objects, #{@object_type} #{@owner}.#{@object_name} depends from",
+          :max_height => 450, :width=>:auto
+      })
+    %>
+  </div>
 </div>
-<div class="float_left">
-  <%=
-
-    gen_slickgrid(@dependencies_im_from, column_options_im_from, {
-        :caption => "Objects, #{@object_type} #{@owner}.#{@object_name} depends from",
-        :max_height => 450, :width=>:auto
-    })
-  %>
-</div>
 
 
-<div style="clear: both" id="<%= @update_area %>"></div>
+<div id="<%= @update_area %>"></div>

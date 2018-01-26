@@ -11,7 +11,7 @@
 
 %>
 
-<%= gen_slickgrid(@attribs, column_options, {:caption => "Description of #{@object_type} #{@owner}.#{@object_name}", :height => :auto}) %>
+<%= gen_slickgrid(@attribs, column_options, {:caption => "Description of #{@object_type} #{@owner}.#{@object_name}", :height => :auto, show_pin_icon: 1}) %>
 
 
 <div id="<%= @update_area %>_spec">
@@ -22,15 +22,17 @@
   render_yellow_pre("<%= @update_area %>_spec");
 </script>
 
-
-<div class="float_left">
-  <%= ajax_submit("#{@dependencies} Dependencies", {
-                                 :update_area  => @update_area,
-                                 :action       => :list_dependencies,
-                                 :owner        => @owner,
-                                 :object_name  => @object_name,
-                                 :object_type  => @object_type
-      },:title => "Show object dependencies for #{@object_type} #{@owner}.#{@table_name}")
-  %>
+<div class="flex-row-container">
+  <div class="flex-row-element">
+    <%= ajax_submit("#{@dependencies} Dependencies", {
+        :update_area  => @update_area,
+        :action       => :list_dependencies,
+        :owner        => @owner,
+        :object_name  => @object_name,
+        :object_type  => @object_type
+    },:title => "Show object dependencies for #{@object_type} #{@owner}.#{@table_name}")
+    %>
+  </div>
 </div>
-<div id="<%= @update_area %>" style="clear:both;"></div>
+
+<div id="<%= @update_area %>"></div>

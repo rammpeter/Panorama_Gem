@@ -80,9 +80,8 @@ column_options =
 
 <%= gen_slickgrid(@mvs, column_options, {
         :max_height => 450,
-        :caption => "Data from DBA_MViews (without remote MViews via DB-link)"
-
+        :caption => "Data from DBA_MViews (without remote MViews via DB-link)",
+        show_pin_icon: 1
 }) %>
 
-<div id="<%= @update_area %>" style="clear: both;">
-</div>
+<div id="<%= @update_area %>"></div>
