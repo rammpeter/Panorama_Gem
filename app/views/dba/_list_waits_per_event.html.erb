@@ -35,7 +35,8 @@
 
 <%= gen_slickgrid(@waits, column_options, {
         :caption => "Session-Waits: Event='#{@event}', Instance=#{@instance}, #{localeDateTime(Time.now)}",
-        :max_height => 450
+        :max_height => 450,
+        show_pin_icon: 1
 }) %>
 
 <div id="<%= @update_area %>" style="float:left; width:100%;"></div>

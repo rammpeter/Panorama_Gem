@@ -4,7 +4,7 @@
 
 <%= ajax_form(:controller=>:active_session_history, :action=>:list_session_statistic_historic, :update_area=>@update_area) do %>
 
-  <%= include_start_end_timepicker %>
+  <%= include_start_end_timepicker_float_left %>
 
   <div class="float_left" title="<%= t(:active_session_history_show_session_statistics_historic_idle_hint, :default=>'Should idle-waits (e.g. PX Deq Credit: send blkd) be considered?')%>">
     Idle-Waits

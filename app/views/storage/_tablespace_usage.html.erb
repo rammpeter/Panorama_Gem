@@ -1,6 +1,7 @@
 <% @update_area = get_unique_area_id %>
 
 <div class="page_caption"><%= t(:storage_tablespace_usage_header_caption, :default=>'Storage-objects for database')%>  <%= get_current_database[:sid] %> <%= localeDateTime(Time.now, :minutes) %></div>
+<div class="flex-row-container">
 
 <%
 def total_data_style(rec)
@@ -17,7 +18,7 @@ column_options =
 ]
 
 %>
-<div>
+<div class="flex-row-element">
   <%= gen_slickgrid(@totals, column_options, {:caption=>t(:storage_tablespace_usage_total_caption, :default=>'Sums total'), :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
 </div>
 
@@ -30,87 +31,10 @@ column_options =
 
 %>
 
-<div>
+<div class="flex-row-element">
   <%= gen_slickgrid(@segments, column_options, {:caption =>t(:storage_tablespace_usage_segment_caption, :default=>'Net sums in TS by segment types'), :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
 </div>
 
-<%
-
-  def link_mb_used(rec)
-    if rec.contents == 'PERMANENT'
-      ajax_link(fn(rec.mbused),
-                         {:controller   => :dba_schema,
-                          :action       => :list_objects,
-                          :tablespace   => {:name => rec.tablespace_name},
-                          :update_area  => @update_area,
-                         },
-                 :title=>t(:storage_tablespace_usage_tablespaces_link_hint, :default=>'Show objects of this tablespace with their sizes')
-     )
-    else
-      fn rec.mbused
-    end
-  end
-
-  def link_mb_free(rec)
-    if rec.contents == 'PERMANENT'
-      ajax_link(fn(rec.mbfree),
-                         {:controller   => :storage,
-                          :action       => :list_free_extents,
-                          :tablespace   => rec.tablespace_name,
-                          :update_area  => @update_area,
-                         },
-                 :title=>t(:storage_tablespace_usage_tablespaces_mbfree_hint, :default=>"Show free extents of tablespace and their size distribution.\nAllows you to evaluate fragmentation of free extents of this tablespace.")
-     )
-    else
-      fn rec.mbfree
-    end
-  end
-
-  def link_ts_details(rec)
-    case rec.tablespace_name
-      when 'SYSAUX' then
-        ajax_link('v$SYSAUX_Occupants',
-                         {:controller   => :storage,
-                          :action       => :list_sysaux_occupants,
-                          :update_area  => @update_area,
-                         },
-                 :title=>"Show detailed usage of SYSAUX storage from v$SYSAUX_Occupants"
-                 )
-    end
-  end
-
-   column_options =
-[
-  {:caption=>"Tablespace",          :data=>proc{|rec| rec.tablespace_name},             :title=>t(:storage_tablespace_usage_tablespace_name_hint, :default=>'Name of tablespace')},
-  {:caption=>"Contents",            :data=>proc{|rec| rec.contents},                    :title=>t(:storage_tablespace_usage_tablespace_content_hint, :default=>'Type/content of tablespace') },
-  {:caption=>"Block size",          :data=>proc{|rec| formattedNumber(rec.blocksize)},  :title=>t(:storage_tablespace_usage_tablespace_blocksize_hint, :default=>'Blocksize of tablespace in Bytes'),        :align=>:right},
-  {:caption=>"MB Total",            :data=>proc{|rec| formattedNumber(rec.mbtotal)},    :title=>"Größe des Tablespace gesamt in MB",        :align=>:right},
-  {:caption=>"MB Used",             :data=>proc{|rec| link_mb_used(rec) },              :title=>"Genutzter Platz des Tablespaces in MB",    :align=>:right},
-  {:caption=>"MB Free",             :data=>proc{|rec| link_mb_free(rec)},               :title=>"Freier Platz des Tablespaces in MB",       :align=>:right},
-  {:caption=>"% used",              :data=>proc{|rec| formattedNumber(rec.pctused,1)},  :title=>"Prozentuale Auslastung",                   :align=>:right},
-  {:caption=>"Status",              :data=>proc{|rec| rec.status}},
-  {:caption=>"Content",             :data=>proc{|rec| rec.contents}},
-  {:caption=>"Logging",             :data=>proc{|rec| rec.logging}},
-  {:caption=>"Force log.",          :data=>proc{|rec| rec.force_logging}},
-  {:caption=>"Extent mgmt.",        :data=>proc{|rec| rec.extent_management},           :title=>'Extent management'},
-  {:caption=>"Allocation Type",     :data=>proc{|rec| rec.allocation_type}},
-  {:caption=>"Pl. in",              :data=>proc{|rec| rec.plugged_in},                  :title=>'Indicates whether the tablespace is plugged in '},
-  {:caption=>"Segment Space Mgmt.", :data=>proc{|rec| rec.segment_space_management},    :title=>'Indicates whether the free and used segment space in the tablespace is managed using free lists (MANUAL) or bitmaps (AUTO)'}
-]
-  column_options << {:caption=>"Def. table compression", :data=>proc{|rec| rec.def_tab_compression},      :title=>'Indicates whether default table compression is enabled (ENABLED) or not (DISABLED)', :data_title=>proc{|rec| get_db_version >= '11.2' ? "%t\nCompress For = #{rec.compress_for}" : "%t"}}
-  column_options << {:caption=>'Big file',            :data=>proc{|rec| rec.bigfile},                     :title=>'Indicates whether the tablespace is a bigfile tablespace (YES) or a smallfile tablespace (NO)'}
-  column_options << {:caption=>"Auto ext.",           :data=>proc{|rec| rec.autoextensible},              :title=>"Auto-Extensible ?"}
-  column_options << {:caption=>'Encrypt.',            :data=>proc{|rec| rec.encrypted},                   :title=>"Indicates whether the tablespace is encrypted"} if get_db_version >= '11.2'
-  column_options << {:caption=>'Def. in memory',      :data=>proc{|rec| rec.def_inmemory},                :title=>"Indicates whether the In-Memory Column Store (IM column store) is by default enabled (ENABLED) or disabled (DISABLED) for tables in this tablespace"} if get_db_version >= '12.1' && PanoramaConnection.edition == :enterprise
-  column_options << {:caption=>'Details',             :data=>proc{|rec| link_ts_details(rec)},            :title=>"Tablespace-specific details"}
-
-
-
-%>
-
-<div>
-  <%= gen_slickgrid(@tablespaces, column_options, {:caption => "Tablespace-Usage", :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
-</div>
 
 <% if @fra_usage.length > 0 %>
 
@@ -124,7 +48,7 @@ column_options =
 
 %>
 
-<div>
+<div class="flex-row-element">
   <%= gen_slickgrid(@fra_usage, column_options, {:caption=> "Usage of fast recovery area (FRA), total FRA size = #{fn(@fra_size_bytes/(1024*1024*1024),2) } GB", :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
 </div>
 
@@ -155,9 +79,90 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
 
 %>
 
-<div>
+<div class="flex-row-element">
   <%= gen_slickgrid(@schemas, column_options, {:caption=> "Schema-Usage ( if > 1 MB)", :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
 </div>
 
-<div id="<%= @update_area %>" style="clear: both;">
+  <%
+
+    def link_mb_used(rec)
+      if rec.contents == 'PERMANENT'
+        ajax_link(fn(rec.mbused),
+                           {:controller   => :dba_schema,
+                            :action       => :list_objects,
+                            :tablespace   => {:name => rec.tablespace_name},
+                            :update_area  => @update_area,
+                           },
+                   :title=>t(:storage_tablespace_usage_tablespaces_link_hint, :default=>'Show objects of this tablespace with their sizes')
+       )
+      else
+        fn rec.mbused
+      end
+    end
+
+    def link_mb_free(rec)
+      if rec.contents == 'PERMANENT'
+        ajax_link(fn(rec.mbfree),
+                           {:controller   => :storage,
+                            :action       => :list_free_extents,
+                            :tablespace   => rec.tablespace_name,
+                            :update_area  => @update_area,
+                           },
+                   :title=>t(:storage_tablespace_usage_tablespaces_mbfree_hint, :default=>"Show free extents of tablespace and their size distribution.\nAllows you to evaluate fragmentation of free extents of this tablespace.")
+       )
+      else
+        fn rec.mbfree
+      end
+    end
+
+    def link_ts_details(rec)
+      case rec.tablespace_name
+        when 'SYSAUX' then
+          ajax_link('v$SYSAUX_Occupants',
+                           {:controller   => :storage,
+                            :action       => :list_sysaux_occupants,
+                            :update_area  => @update_area,
+                           },
+                   :title=>"Show detailed usage of SYSAUX storage from v$SYSAUX_Occupants"
+                   )
+      end
+    end
+
+    column_options =
+        [
+            {:caption=>"Tablespace",          :data=>proc{|rec| rec.tablespace_name},             :title=>t(:storage_tablespace_usage_tablespace_name_hint, :default=>'Name of tablespace')},
+            {:caption=>"Contents",            :data=>proc{|rec| rec.contents},                    :title=>t(:storage_tablespace_usage_tablespace_content_hint, :default=>'Type/content of tablespace') },
+            {:caption=>"Block size",          :data=>proc{|rec| formattedNumber(rec.blocksize)},  :title=>t(:storage_tablespace_usage_tablespace_blocksize_hint, :default=>'Blocksize of tablespace in Bytes'),        :align=>:right},
+            {:caption=>"MB Total",            :data=>proc{|rec| formattedNumber(rec.mbtotal)},    :title=>"Größe des Tablespace gesamt in MB",        :align=>:right},
+            {:caption=>"MB Used",             :data=>proc{|rec| link_mb_used(rec) },              :title=>"Genutzter Platz des Tablespaces in MB",    :align=>:right},
+            {:caption=>"MB Free",             :data=>proc{|rec| link_mb_free(rec)},               :title=>"Freier Platz des Tablespaces in MB",       :align=>:right},
+            {:caption=>"% used",              :data=>proc{|rec| formattedNumber(rec.pctused,1)},  :title=>"Prozentuale Auslastung",                   :align=>:right},
+            {:caption=>"Status",              :data=>proc{|rec| rec.status}},
+            {:caption=>"Content",             :data=>proc{|rec| rec.contents}},
+            {:caption=>"Logging",             :data=>proc{|rec| rec.logging}},
+            {:caption=>"Force log.",          :data=>proc{|rec| rec.force_logging}},
+            {:caption=>"Extent mgmt.",        :data=>proc{|rec| rec.extent_management},           :title=>'Extent management'},
+            {:caption=>"Allocation Type",     :data=>proc{|rec| rec.allocation_type}},
+            {:caption=>"Pl. in",              :data=>proc{|rec| rec.plugged_in},                  :title=>'Indicates whether the tablespace is plugged in '},
+            {:caption=>"Segment Space Mgmt.", :data=>proc{|rec| rec.segment_space_management},    :title=>'Indicates whether the free and used segment space in the tablespace is managed using free lists (MANUAL) or bitmaps (AUTO)'}
+        ]
+    column_options << {:caption=>"Def. table compression", :data=>proc{|rec| rec.def_tab_compression},      :title=>'Indicates whether default table compression is enabled (ENABLED) or not (DISABLED)', :data_title=>proc{|rec| get_db_version >= '11.2' ? "%t\nCompress For = #{rec.compress_for}" : "%t"}}
+    column_options << {:caption=>'Big file',            :data=>proc{|rec| rec.bigfile},                     :title=>'Indicates whether the tablespace is a bigfile tablespace (YES) or a smallfile tablespace (NO)'}
+    column_options << {:caption=>"Auto ext.",           :data=>proc{|rec| rec.autoextensible},              :title=>"Auto-Extensible ?"}
+    column_options << {:caption=>'Encrypt.',            :data=>proc{|rec| rec.encrypted},                   :title=>"Indicates whether the tablespace is encrypted"} if get_db_version >= '11.2'
+    column_options << {:caption=>'Def. in memory',      :data=>proc{|rec| rec.def_inmemory},                :title=>"Indicates whether the In-Memory Column Store (IM column store) is by default enabled (ENABLED) or disabled (DISABLED) for tables in this tablespace"} if get_db_version >= '12.1' && PanoramaConnection.edition == :enterprise
+    column_options << {:caption=>'Details',             :data=>proc{|rec| link_ts_details(rec)},            :title=>"Tablespace-specific details"}
+
+
+
+  %>
+
+  <div class="flex-row-element">
+    <%= gen_slickgrid(@tablespaces, column_options, {:caption => "Tablespace-Usage", :width=>:auto, :max_height=>450, :no_wrap=>true, show_pin_icon: 2}) %>
+
+    <!-- Update area clipped to tablespace usage because this grid is the only pinnable at this page -->
+    <div id="<%= @update_area %>"></div>
+  </div>
+
 </div>
+

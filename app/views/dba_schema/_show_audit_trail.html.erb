@@ -3,7 +3,7 @@
 <div class="page_caption">Audit Trail records from DBA_AUDIT_TRAIL</div>
 
 <%= ajax_form(:controller => :dba_schema, :action=>:list_audit_trail, :update_area=>@update_area)  do %>
-  <%= include_start_end_timepicker %>
+  <%= include_start_end_timepicker_float_left %>
     <div class="float_left" title="optional filter for session-ID (AUDSID) (exact match)">
       Session-ID
       <%= text_field_tag(:sessionid, '', :size=>10) %>

@@ -31,9 +31,9 @@
 
 <%= gen_slickgrid(@undo_history, column_options, {
         :max_height => 450,
-        :caption => "UNDO history"
+        :caption => "UNDO history",
+        show_pin_icon: 1
 
 }) %>
 
-<div id="<%= @update_area %>" style="clear: both;">
-</div>
+<div id="<%= @update_area %>"></div>

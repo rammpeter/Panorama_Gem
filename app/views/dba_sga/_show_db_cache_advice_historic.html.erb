@@ -3,7 +3,7 @@
 <div class="page_caption">Historic DB-cache advice from DBA_Hist_DB_Cache_Advice</div>
 
 <%= ajax_form(:controller=>:dba_sga, :action=>:list_db_cache_advice_historic, :update_area=>@update_area)  do %>
-    <%= include_start_end_timepicker %>
+    <%= include_start_end_timepicker_float_left %>
     <div class="float_left" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
       Instance
       <%= text_field_tag(:instance, read_from_client_info_store(:instance), :size=>1) %>

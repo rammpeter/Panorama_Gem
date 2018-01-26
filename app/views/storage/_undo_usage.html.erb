@@ -15,10 +15,12 @@
 
 %>
 
-<%= gen_slickgrid(@undo_tablespaces, column_options, {
-        :caption => 'Current UNDO tablespaces'
-
-}) %>
+<div>
+  <%= gen_slickgrid(@undo_tablespaces, column_options, {
+      :caption => 'Current UNDO tablespaces',
+      show_pin_icon: 2
+  }) %>
+</div>
 
 
 <%
@@ -48,12 +50,13 @@
 
 %>
 
-<%= gen_slickgrid(@undo_segments, column_options, {
-        :max_height => 450,
-        :caption => 'Current UNDO segments'
+<div>
+  <%= gen_slickgrid(@undo_segments, column_options, {
+      :max_height => 450, show_pin_icon: 2,
+      :caption => 'Current UNDO segments'
 
-}) %>
+  }) %>
 
-<div id="<%= @update_area %>" style="clear: both; width:100%;">
+  <div id="<%= @update_area %>"></div>
 </div>
 

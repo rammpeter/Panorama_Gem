@@ -30,7 +30,7 @@ column_options =
 
 <%= gen_slickgrid(@statistics, column_options, {
       :caption    => "System-Statistics from #{@time_selection_start} until #{@time_selection_end}#{" for instance #{@instance}" if @instance}",
-      :max_height => 450
+      :max_height => 450, show_pin_icon: 1
 
 })
 %>

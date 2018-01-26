@@ -32,11 +32,13 @@
 
 %>
 
-<%= gen_slickgrid(@wait_sums, column_options, {
-        :width=>:auto,
-        :caption=>"Session-Waits (Summary) at #{localeDateTime(Time.now)}",
-        :max_height => 450
-}) %>
+<div>
+  <%= gen_slickgrid(@wait_sums, column_options, {
+      :width=>:auto,
+      :caption=>"Session-Waits (Summary) at #{localeDateTime(Time.now)}",
+      :max_height => 450
+  }) %>
+</div>
 
 <%
 
@@ -88,17 +90,17 @@ column_options =
   ]
 %>
 
-<%= gen_slickgrid(@blocking_waits, column_options, {
-        :caption=>"Blocking Session-Waits from gv$Session at #{localeDateTime(Time.now)}",
-        :max_height => 450
-}) %>
-
-
-
-
-<div id="<%= @update_area %>">
-
+<div>
+  <%= gen_slickgrid(@blocking_waits, column_options, {
+      :caption=>"Blocking Session-Waits from gv$Session at #{localeDateTime(Time.now)}",
+      :max_height => 450, show_pin_icon: 2
+  }) %>
+  <div id="<%= @update_area %>"></div>
 </div>
+
+
+
+
 
 
 

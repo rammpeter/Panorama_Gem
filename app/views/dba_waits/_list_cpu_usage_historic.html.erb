@@ -20,7 +20,7 @@
 <%=
     gen_slickgrid(@waits, column_options, {:width     => :auto,
                                            :caption   => "Number of Sessions on CPU by Active Session History from #{@time_selection_start} until #{@time_selection_end}#{ " Instance=#{@instance}" if @instance}",
-                                           :max_height=>450
+                                           :max_height=>450, show_pin_icon: 1
                                           },
     )
 %>

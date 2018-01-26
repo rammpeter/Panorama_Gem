@@ -150,13 +150,26 @@ a:hover {
   background-color: silver;
 }
 
-/* Horizontal angeordnete DIVs*/
+/* Horizontal angeordnete DIVs, alte Variante*/
 div.float_left {
   float:left;
   padding-top:5px;
   padding-bottom:5px;
   padding-right:10px;
 }
+
+.flex-row-container {
+  display:flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.flex-row-element {
+  padding-top:5px;
+  padding-bottom:5px;
+  padding-right:10px;
+}
+
 
 
 table,th,td{

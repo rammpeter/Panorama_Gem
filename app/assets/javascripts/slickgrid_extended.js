@@ -416,7 +416,7 @@ function SlickGridExtended(container_id, options){
                 var cmd = options['command_menu_entries'][cmd_index];
                 if (cmd['show_icon_in_caption'] === 'right' ){              // show icon in caption line of grid but right ?
                     caption_right_box.append('<span id="'+container_id+'_header_left_box_'+cmd['name']+'"'+
-                        ' style="margin-right:5px; margin-top:4px; cursor: pointer;'+((cmd['unvisible']) ? 'display: none;' : '')+'"'+
+                        ' style="margin-right:3px; margin-top:4px; cursor: pointer;'+((cmd['unvisible']) ? 'display: none;' : '')+'"'+
                         ' title="'+cmd['hint'] + '" onclick="'+ cmd['action'] +'">' +
                         '<span class="'+cmd['icon_class']+'"></span>' +
                         '</span>');
