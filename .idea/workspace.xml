@@ -9,35 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" afterPath="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/slickgrid_helper.rb" afterPath="$PROJECT_DIR$/app/helpers/slickgrid_helper.rb" />
-      <change beforePath="$PROJECT_DIR$/app/views/active_session_history/_list_blocking_locks_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/active_session_history/_list_blocking_locks_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/active_session_history/_list_session_statistic_historic_grouping_table_def.html.erb" afterPath="$PROJECT_DIR$/app/views/active_session_history/_list_session_statistic_historic_grouping_table_def.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/addition/_list_blocking_locks_history_hierarchy.html.erb" afterPath="$PROJECT_DIR$/app/views/addition/_list_blocking_locks_history_hierarchy.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/addition/_list_blocking_locks_history_sum.html.erb" afterPath="$PROJECT_DIR$/app/views/addition/_list_blocking_locks_history_sum.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_accessed_objects.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_accessed_objects.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_blocking_dml_locks.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_blocking_dml_locks.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_database_triggers.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_database_triggers.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_ddl_locks.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_ddl_locks.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_dml_locks.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_dml_locks.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_feature_usage.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_feature_usage.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_open_cursor_per_session.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_open_cursor_per_session.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_pending_two_phase_commits.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_pending_two_phase_commits.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_redologs_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_redologs_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_server_log_groups.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_server_log_groups.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_server_logs.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_server_logs.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_session_details.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_session_details.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_session_details_locks.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_session_details_locks.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_session_details_temp.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_session_details_temp.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_session_details_waits.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_session_details_waits.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_session_optimizer_environment.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_session_optimizer_environment.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_session_statistic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_session_statistic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_sessions.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_sessions.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_show_dba_autotask_jobs.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_show_dba_autotask_jobs.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_show_redologs.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_show_redologs.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_schema/_list_audit_trail.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_schema/_list_audit_trail.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_monitor_sessions.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_monitor_sessions.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/env/_start_page.html.erb" afterPath="$PROJECT_DIR$/app/views/env/_start_page.html.erb" />
+      <change beforePath="$PROJECT_DIR$/test/system/global_menu_test.rb" afterPath="$PROJECT_DIR$/test/system/global_menu_test.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -190,11 +162,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="_oracle_parameter.html.erb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/views/dba/_oracle_parameter.html.erb">
+      <file leaf-file-name="global_menu_test.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/test/system/global_menu_test.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="18" column="150" lean-forward="false" selection-start-line="18" selection-start-column="150" selection-end-line="18" selection-end-column="150" />
+            <state relative-caret-position="357">
+              <caret line="52" column="29" lean-forward="true" selection-start-line="52" selection-start-column="29" selection-end-line="52" selection-end-column="29" />
               <folding />
             </state>
           </provider>
@@ -266,28 +238,28 @@
             <state relative-caret-position="212">
               <caret line="1427" column="55" lean-forward="true" selection-start-line="1427" selection-start-column="55" selection-end-line="1427" selection-end-column="55" />
               <folding>
-                <marker date="1516961910442" expanded="true" signature="16269:16298" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="20046:20080" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="20165:20249" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="20451:20464" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="20959:20970" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="22276:22325" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="23015:23065" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="25111:25211" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="25257:25299" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="25470:25573" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="25738:25854" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="46412:46425" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="46572:46585" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="47046:47056" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="66273:66312" ph="..." />
-                <marker date="1516961910442" expanded="true" signature="88292:88798" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="16269:16298" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="20046:20080" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="20165:20249" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="20451:20464" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="20959:20970" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="22276:22325" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="23015:23065" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="25111:25211" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="25257:25299" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="25470:25573" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="25738:25854" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="46412:46425" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="46572:46585" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="47046:47056" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="66273:66312" ph="..." />
+                <marker date="1516962252183" expanded="true" signature="88293:88799" ph="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_list_session_statistic_historic_grouping_table_def.html.erb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="_list_session_statistic_historic_grouping_table_def.html.erb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/views/active_session_history/_list_session_statistic_historic_grouping_table_def.html.erb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="837">
@@ -379,7 +351,6 @@
         <option value="$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb" />
         <option value="$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
-        <option value="$PROJECT_DIR$/test/system/global_menu_test.rb" />
         <option value="$PROJECT_DIR$/test/system/index.html" />
         <option value="$PROJECT_DIR$/app/assets/stylesheets/slickgrid_extended.css" />
         <option value="$PROJECT_DIR$/app/views/active_session_history/_list_session_statistic_historic_grouping_table_def.html.erb" />
@@ -413,6 +384,7 @@
         <option value="$PROJECT_DIR$/app/views/dba/_list_feature_usage.html.erb" />
         <option value="$PROJECT_DIR$/app/helpers/slickgrid_helper.rb" />
         <option value="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" />
+        <option value="$PROJECT_DIR$/test/system/global_menu_test.rb" />
       </list>
     </option>
   </component>
@@ -640,12 +612,6 @@
               <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
               <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
               <item name="test" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
-              <item name="test" type="462c0819:PsiDirectoryNode" />
-              <item name="controllers" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
@@ -1333,14 +1299,7 @@
       <workItem from="1516216659403" duration="10632000" />
       <workItem from="1516372976933" duration="570000" />
       <workItem from="1516560037914" duration="39560000" />
-      <workItem from="1516806218400" duration="29687000" />
-    </task>
-    <task id="LOCAL-01185" summary="Fix diagram for ASH, some browswer_tab_id">
-      <created>1513366483633</created>
-      <option name="number" value="01185" />
-      <option name="presentableId" value="LOCAL-01185" />
-      <option name="project" value="LOCAL" />
-      <updated>1513366483633</updated>
+      <workItem from="1516806218400" duration="29768000" />
     </task>
     <task id="LOCAL-01186" summary="Test sampling with PL/SQL-Packages">
       <created>1513455662903</created>
@@ -1678,7 +1637,14 @@
       <option name="project" value="LOCAL" />
       <updated>1516890871246</updated>
     </task>
-    <option name="localTasksCounter" value="1234" />
+    <task id="LOCAL-01234" summary="Differentiate grid pin local and global">
+      <created>1516962253349</created>
+      <option name="number" value="01234" />
+      <option name="presentableId" value="LOCAL-01234" />
+      <option name="project" value="LOCAL" />
+      <updated>1516962253349</updated>
+    </task>
+    <option name="localTasksCounter" value="1235" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1714,7 +1680,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2748113000" />
+    <option name="totallyTimeSpent" value="2748194000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1796,7 +1762,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="List SQl patches in Menu and SQL details: Show SQL&#10;request_counter without reset at start" />
     <MESSAGE value="without poltergeist" />
     <MESSAGE value="must_have_content -&gt; assert_text" />
     <MESSAGE value="Use real Snapshots in test for time selection" />
@@ -1821,7 +1786,8 @@
     <MESSAGE value="Use calculated force_matching_signature if no record in DBA_Hist_SQLStat is hit" />
     <MESSAGE value="Harden tests" />
     <MESSAGE value="Fix identical function for multiple grid menu entries" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix identical function for multiple grid menu entries" />
+    <MESSAGE value="Differentiate grid pin local and global" />
+    <option name="LAST_COMMIT_MESSAGE" value="Differentiate grid pin local and global" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2125,14 +2091,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/system/global_menu_test.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="357">
-          <caret line="52" column="45" lean-forward="false" selection-start-line="52" selection-start-column="45" selection-end-line="52" selection-end-column="45" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/system/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
@@ -2394,22 +2352,22 @@
         <state relative-caret-position="212">
           <caret line="1427" column="55" lean-forward="true" selection-start-line="1427" selection-start-column="55" selection-end-line="1427" selection-end-column="55" />
           <folding>
-            <marker date="1516961910442" expanded="true" signature="16269:16298" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="20046:20080" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="20165:20249" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="20451:20464" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="20959:20970" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="22276:22325" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="23015:23065" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="25111:25211" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="25257:25299" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="25470:25573" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="25738:25854" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="46412:46425" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="46572:46585" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="47046:47056" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="66273:66312" ph="..." />
-            <marker date="1516961910442" expanded="true" signature="88292:88798" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="16269:16298" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="20046:20080" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="20165:20249" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="20451:20464" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="20959:20970" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="22276:22325" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="23015:23065" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="25111:25211" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="25257:25299" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="25470:25573" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="25738:25854" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="46412:46425" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="46572:46585" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="47046:47056" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="66273:66312" ph="..." />
+            <marker date="1516962252183" expanded="true" signature="88293:88799" ph="..." />
           </folding>
         </state>
       </provider>
@@ -2418,6 +2376,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="837">
           <caret line="230" column="35" lean-forward="false" selection-start-line="230" selection-start-column="35" selection-end-line="230" selection-end-column="35" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/system/global_menu_test.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="52" column="29" lean-forward="true" selection-start-line="52" selection-start-column="29" selection-end-line="52" selection-end-column="29" />
           <folding />
         </state>
       </provider>

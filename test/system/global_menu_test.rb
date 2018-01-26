@@ -44,13 +44,13 @@ class GlobalMenuTest < ApplicationSystemTestCase
           puts "hover #{menu_node.text}"
 
           if menu_node.text['Segment Statistics']
-            save_screenshot('/tmp/before.png')
+            save_screenshot('before.png')
           end
 
           menu_node.hover
 
           if menu_node.text['Segment Statistics']
-            save_screenshot('/tmp/after.png')
+            save_screenshot('after.png')
             puts "Searching '#{menu_link[:id]}'"
           end
         rescue Exception=>e
