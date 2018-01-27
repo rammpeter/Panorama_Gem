@@ -54,7 +54,7 @@
 <!-- <div style="float:left; width:100%; max-height:450px; overflow:scroll; "> -->
   <%= gen_slickgrid(@entries, column_options,
                      {
-                             :max_height => 450,
+                             :max_height => 450, show_pin_icon: 1,
                              :caption=> "DB-cache usage between #{@time_selection_start} and #{@time_selection_end} #{"Instance=#{@instance}" if @instance }",
                              :context_menu_entries=>{:label=>"Show Top 10 on time line",
                                                      :action=>"$('#list_db_cache_historic_hidden_link_timeline').click();" }

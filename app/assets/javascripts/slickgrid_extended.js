@@ -1392,7 +1392,7 @@ function SlickGridExtended(container_id, options){
             var pin_button_outer_span = jQuery('#'+container_id+'_header_left_box_pin_grid_global');
             var new_title = 'Table is pinned at top_level. Click Close-icon to remove table.';
             jQuery('#'+container_id+'_header_left_box_pin_grid_local').css('display', 'none');      // hide local pin button if global was hit
-
+            pin_button_outer_span.css('background-color', 'lightgray');         // mark pin button special as global pin
         } else {
             var target_for_pinned = grid_parent;
             var pin_button_outer_span = jQuery('#'+container_id+'_header_left_box_pin_grid_local');
@@ -1419,6 +1419,11 @@ function SlickGridExtended(container_id, options){
             .css('cursor', 'default')
             .attr('onclick', null)
         ;
+
+        // set new titile for close button: closes also descendants
+        jQuery('#'+container_id+'_header_left_box_remove_table_from_page').attr('title', 'Remove this table and all it\'s possible descendants from page');
+
+
         thiz.pinned = true;                                                     // remember pinned-status for close-handling
     };
 

@@ -11,10 +11,12 @@ column_options =
 ]
 
 %>
-<%= gen_slickgrid(@sums, column_options, {
-        :caption => "Summary by pools from gv$SGAStat#{" for instance = #{@instance}" if @instance}",
-        :max_height => 450
-}) %>
+<div>
+  <%= gen_slickgrid(@sums, column_options, {
+      :caption => "Summary by pools from gv$SGAStat#{" for instance = #{@instance}" if @instance}",
+      :max_height => 450, show_pin_icon: 1
+  }) %>
+</div>
 
 <%
    def link_name(rec)

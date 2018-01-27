@@ -250,11 +250,12 @@
             :line_height_single => true,
             :data_filter        => 'filter_collapsed_item_rows',
             :grid_id            => @grid_id,
-            :max_height         => "jQuery(window).height()*0.9"  # Max. 90 % of browsers client height
+            :max_height         => "jQuery(window).height()*0.9",  # Max. 90 % of browsers client height
+            show_pin_icon:      1
     }) %>
 
 
 <% end %>
 
-<div id="<%= @update_area %>" style="clear:both; width:100%; "></div>
+<div id="<%= @update_area %>"></div>
 

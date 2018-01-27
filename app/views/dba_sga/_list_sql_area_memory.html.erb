@@ -23,7 +23,7 @@
 
 <%= gen_slickgrid(@sga_mems, column_options, {
     :caption => "Usage of SQL-Area memory from GV$SQLArea for instance=#{@instance}",
-    :max_height => 450
+    :max_height => 450, show_pin_icon: 1
 }) %>
 
 <div id="<%= @update_area %>"></div>

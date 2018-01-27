@@ -3,19 +3,20 @@
 <% @update_area = get_unique_area_id %>
 
 <%= ajax_form(:controller => :dba_history, :action => :show_using_sqls_historic, :update_area => @update_area)  do %>
+  <div class="flex-row-container">
+    <%= include_start_end_timepicker %>
 
-  <%= include_start_end_timepicker_float_left %>
-
-  <div class="float_left">
-    Objekt-Owner
-    <%= text_field_tag(:ObjectOwner, "", :size=>40, :title=>"Schema-Name des Objektes (optional)") %>
-  </div>
-  <div class="float_left">
-    Objekt-Name
-    <%= text_field_tag(:ObjectName, "", :size=>40, :title=>"Name des Objektes (optional % als Windcard)") %>
-  </div>
-  <div class="float_left">
-    <%= submit_tag("SQL's suchen", :title => "das Objekt nutzende SQL's anzeigen") %>
+    <div class="flex-row-element">
+      Objekt-Owner
+      <%= text_field_tag(:ObjectOwner, "", :size=>40, :title=>"Schema-Name des Objektes (optional)") %>
+    </div>
+    <div class="flex-row-element">
+      Objekt-Name
+      <%= text_field_tag(:ObjectName, "", :size=>40, :title=>"Name des Objektes (optional % als Windcard)") %>
+    </div>
+    <div class="flex-row-element">
+      <%= submit_tag("SQL's suchen", :title => "das Objekt nutzende SQL's anzeigen") %>
+    </div>
   </div>
 <% end %>
 

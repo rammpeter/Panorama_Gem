@@ -78,7 +78,7 @@ column_options =
 
 <%= gen_slickgrid(@diffs, column_options, {
         :caption => "#{t(:dba_history_listcompare_sql_area_historic_caption, :default=>"Comparison of SQL runtimes of two days: Day 1 '%{tag1}', Day 2 '%{tag2}'", :tag1=>@tag1, :tag2 => @tag2)} #{" Instance = #{@instance}" if @instance}#{" Filter = '#{@filter}'" if @filter}#{" SQL_ID = '#{@sql_id}'" if @sql_id}",
-        :max_height => 450
+        :max_height => 450, show_pin_icon: 1
 }) %>
 
 

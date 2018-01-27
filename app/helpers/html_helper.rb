@@ -35,11 +35,11 @@ module HtmlHelper
     additional_title = "\n#{additional_title}" unless additional_title.nil?
 
     "
-    <div class='flex-element' title=\"#{t :time_selection_start_hint, :default=>"Start of considered time period in format"} '#{human_datetime_minute_mask}'#{additional_title}\">
+    <div class='flex-row-element' title=\"#{t :time_selection_start_hint, :default=>"Start of considered time period in format"} '#{human_datetime_minute_mask}'#{additional_title}\">
       #{t :time_selection_start_caption, :default=>"Start"}
     #{ text_field_tag(:time_selection_start, default_time_selection_start, :size=>16, :id=>start_id) }
     </div>
-    <div class='flex-element' title=\"#{t :time_selection_end_hint, :default=>"End of considered time period in format"} '#{human_datetime_minute_mask}'#{additional_title}\">
+    <div class='flex-row-element' title=\"#{t :time_selection_end_hint, :default=>"End of considered time period in format"} '#{human_datetime_minute_mask}'#{additional_title}\">
       #{t :time_selection_end_caption, :default=>"End"}
     #{ text_field_tag(:time_selection_end, default_time_selection_end, :size=>16, :id=>end_id) }
     </div>

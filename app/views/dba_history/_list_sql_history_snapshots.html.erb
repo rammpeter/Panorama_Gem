@@ -111,26 +111,17 @@ end)
 caption << "</div>"
 
 
-
-
-
-
-
-
-
 gen_slickgrid(@hist, column_options, {  :plot_area_id => "#{@update_area}_plot_area",
                                         :div_style   => "float:left; width:100%; max-height:450px; overflow:scroll;",
                                         :caption     => caption.html_safe,
-                                        :max_height  => 450
+                                        :max_height  => 450, show_pin_icon: 1
                                      })
 %>
 
-<div id="<%= @update_area %>_plot_area" style="float:left; width:100%; ">
-</div>
+<div id="<%= @update_area %>_plot_area"></div>
 
 
-<div id="<%= @update_area %>" style="float:left; width:100%; ">
-</div>
+<div id="<%= @update_area %>"></div>
 
 <script type="text/javascript">
     $("#<%= @time_selection_start_id %>").datetimepicker();
