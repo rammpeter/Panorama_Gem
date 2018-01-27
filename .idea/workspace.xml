@@ -8,65 +8,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
+      <change beforePath="" afterPath="$PROJECT_DIR$/app/views/dba_history/_list_binds_historic.html.erb" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/html_helper.rb" afterPath="$PROJECT_DIR$/app/helpers/html_helper.rb" />
-      <change beforePath="$PROJECT_DIR$/app/views/active_session_history/_list_pga_usage_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/active_session_history/_list_pga_usage_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/active_session_history/_show_blocking_locks_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/active_session_history/_show_blocking_locks_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/active_session_history/_show_pga_usage_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/active_session_history/_show_pga_usage_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/active_session_history/_show_prepared_active_session_history.html.erb" afterPath="$PROJECT_DIR$/app/views/active_session_history/_show_prepared_active_session_history.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/active_session_history/_show_session_statistics_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/active_session_history/_show_session_statistics_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/active_session_history/_show_temp_usage_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/active_session_history/_show_temp_usage_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/addition/_show_blocking_locks_history.html.erb" afterPath="$PROJECT_DIR$/app/views/addition/_show_blocking_locks_history.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/addition/_show_object_increase.html.erb" afterPath="$PROJECT_DIR$/app/views/addition/_show_object_increase.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_session_details.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_session_details.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_show_locks.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_show_locks.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_show_redologs_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_show_redologs_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_show_server_logs.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_show_server_logs.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_show_sessions.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_show_sessions.html.erb" />
+      <change beforePath="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
       <change beforePath="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_segment_stat_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_segment_stat_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_show_ash_global_report.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_show_ash_global_report.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_show_ash_report.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_show_ash_report.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_show_awr_global_report.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_show_awr_global_report.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_show_awr_report.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_show_awr_report.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_show_enqueue_statistics_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_show_enqueue_statistics_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_show_latch_statistics_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_show_latch_statistics_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_show_mutex_statistics_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_show_mutex_statistics_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_show_resource_limits_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_show_resource_limits_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_show_sysmetric_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_show_sysmetric_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_show_system_events_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_show_system_events_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_show_system_statistics_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_show_system_statistics_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_schema/_list_cluster.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_schema/_list_cluster.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_schema/_list_plsql_description.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_schema/_list_plsql_description.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_schema/_show_audit_trail.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_schema/_show_audit_trail.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_schema/_show_object_size.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_schema/_show_object_size.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_list_result_cache.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_result_cache.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_list_result_cache_dependencies.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_result_cache_dependencies.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_list_result_cache_single_results.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_result_cache_single_results.html.erb" />
+      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_list_bind_variables.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_bind_variables.html.erb" />
       <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_show_compare_execution_plans.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_show_compare_execution_plans.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_show_plan_baselines.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_show_plan_baselines.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_show_profiles.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_show_profiles.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_show_result_cache.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_show_result_cache.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_show_sga_components.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_show_sga_components.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_show_sql_patches.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_show_sql_patches.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_show_sql_plan_management.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_show_sql_plan_management.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_show_sql_translations.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_show_sql_translations.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_show_stored_outlines.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_show_stored_outlines.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dragnet/_list_dragnet_sql_result.html.erb" afterPath="$PROJECT_DIR$/app/views/dragnet/_list_dragnet_sql_result.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dragnet/_show_selection.html.erb" afterPath="$PROJECT_DIR$/app/views/dragnet/_show_selection.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" afterPath="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/help/version_history.html" afterPath="$PROJECT_DIR$/app/views/help/version_history.html" />
-      <change beforePath="$PROJECT_DIR$/app/views/io/_show_io_file_history.html.erb" afterPath="$PROJECT_DIR$/app/views/io/_show_io_file_history.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/io/_show_iostat_detail_history.html.erb" afterPath="$PROJECT_DIR$/app/views/io/_show_iostat_detail_history.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/io/_show_iostat_filetype_history.html.erb" afterPath="$PROJECT_DIR$/app/views/io/_show_iostat_filetype_history.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/layouts/application.html.erb" afterPath="$PROJECT_DIR$/app/views/layouts/application.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb" afterPath="$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/storage/_show_materialized_views.html.erb" afterPath="$PROJECT_DIR$/app/views/storage/_show_materialized_views.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/storage/_show_temp_usage_sysmetric_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/storage/_show_temp_usage_sysmetric_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/storage/_show_undo_history.html.erb" afterPath="$PROJECT_DIR$/app/views/storage/_show_undo_history.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/table_dependencies/_show_frame.html.erb" afterPath="$PROJECT_DIR$/app/views/table_dependencies/_show_frame.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/table_dependencies/_show_tables.html.erb" afterPath="$PROJECT_DIR$/app/views/table_dependencies/_show_tables.html.erb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -181,7 +128,7 @@
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_list_sysaux_occupants_with_xhr__true__Panorama_Gem.coverage" NAME="test_list_sysaux_occupants_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1505584097096" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__DbaSgaControllerTest___Panorama_Gem.coverage" NAME="Run test 'DbaSgaControllerTest': Panorama_Gem Coverage Results" MODIFIED="1512638127731" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_object_increase_timeline_with_xhr__true__Panorama_Gem.coverage" NAME="test_object_increase_timeline_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1501070169123" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
-    <SUITE FILE_PATH="coverage/Panorama_Gem@Development__Panorama_Gem.coverage" NAME="Development: Panorama_Gem Coverage Results" MODIFIED="1517085150030" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
+    <SUITE FILE_PATH="coverage/Panorama_Gem@Development__Panorama_Gem.coverage" NAME="Development: Panorama_Gem Coverage Results" MODIFIED="1517087112389" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_dba__Panorama_Gem.coverage" NAME="test_dba: Panorama_Gem Coverage Results" MODIFIED="1468855552397" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_dummy_with_xhr__true__Panorama_Gem.coverage" NAME="test_dummy_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1503408571446" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_sql_detail_historic_with_xhr__true__Panorama_Gem.coverage" NAME="test_sql_detail_historic_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1511442945153" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
@@ -218,12 +165,53 @@
     <favorites_list name="Panorama_Gem" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="_list_sql_sga_stat_footer.html.erb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="75">
+              <caret line="5" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
+              <folding>
+                <element signature="e#563#667#0#ruby" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="dba_history_controller.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/controllers/dba_history_controller.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-548">
+              <caret line="485" column="0" lean-forward="false" selection-start-line="485" selection-start-column="0" selection-end-line="485" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="de.yml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/config/locales/de.yml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="179">
+              <caret line="238" column="2" lean-forward="false" selection-start-line="238" selection-start-column="2" selection-end-line="238" selection-end-column="2" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="_list_sql_detail_historic.html.erb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="176">
+              <caret line="281" column="6" lean-forward="true" selection-start-line="280" selection-start-column="0" selection-end-line="281" selection-end-column="6" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>caption</find>
-      <find>name</find>
       <find>Please choose saved connection</find>
       <find>contextMenu</find>
       <find>Binding</find>
@@ -252,6 +240,8 @@
       <find>pin_</find>
       <find>float</find>
       <find>float_left</find>
+      <find>bind</find>
+      <find>list_bind_sam</find>
     </findStrings>
     <replaceStrings>
       <replace>dLast_Load_Time</replace>
@@ -278,9 +268,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/views/dba_sga/_show_plan_baselines.html.erb" />
-        <option value="$PROJECT_DIR$/app/views/dba_sga/_show_stored_outlines.html.erb" />
-        <option value="$PROJECT_DIR$/app/views/dba_sga/_show_sql_translations.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_show_sql_patches.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dragnet/_list_dragnet_sql_result.html.erb" />
         <option value="$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb" />
@@ -297,7 +284,6 @@
         <option value="$PROJECT_DIR$/app/views/dba_sga/_show_sga_components.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_show_compare_execution_plans.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_show_sql_plan_management.html.erb" />
-        <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dragnet/_show_selection.html.erb" />
         <option value="$PROJECT_DIR$/app/views/layouts/application.html.erb" />
         <option value="$PROJECT_DIR$/app/views/storage/_show_materialized_views.html.erb" />
@@ -322,13 +308,17 @@
         <option value="$PROJECT_DIR$/app/views/dba_history/_show_system_statistics_historic.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_schema/_show_audit_trail.html.erb" />
         <option value="$PROJECT_DIR$/app/views/storage/_show_temp_usage_sysmetric_historic.html.erb" />
-        <option value="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_schema/_list_cluster.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_schema/_list_plsql_description.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_schema/_show_object_size.html.erb" />
         <option value="$PROJECT_DIR$/app/views/table_dependencies/_show_frame.html.erb" />
         <option value="$PROJECT_DIR$/app/views/table_dependencies/_show_tables.html.erb" />
         <option value="$PROJECT_DIR$/app/helpers/html_helper.rb" />
+        <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb" />
+        <option value="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
+        <option value="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" />
+        <option value="$PROJECT_DIR$/app/views/dba_sga/_list_bind_variables.html.erb" />
+        <option value="$PROJECT_DIR$/app/views/dba_history/_list_binds_historic.html.erb" />
       </list>
     </option>
   </component>
@@ -1250,14 +1240,7 @@
       <workItem from="1516216659403" duration="10632000" />
       <workItem from="1516372976933" duration="570000" />
       <workItem from="1516560037914" duration="39560000" />
-      <workItem from="1516806218400" duration="47998000" />
-    </task>
-    <task id="LOCAL-01190" summary="Fix warnings">
-      <created>1513464960714</created>
-      <option name="number" value="01190" />
-      <option name="presentableId" value="LOCAL-01190" />
-      <option name="project" value="LOCAL" />
-      <updated>1513464960715</updated>
+      <workItem from="1516806218400" duration="50584000" />
     </task>
     <task id="LOCAL-01191" summary="New PARALLEL_xx for 12.1">
       <created>1513699499308</created>
@@ -1595,7 +1578,14 @@
       <option name="project" value="LOCAL" />
       <updated>1517045892476</updated>
     </task>
-    <option name="localTasksCounter" value="1239" />
+    <task id="LOCAL-01239" summary="provide pin for grids">
+      <created>1517085204593</created>
+      <option name="number" value="01239" />
+      <option name="presentableId" value="LOCAL-01239" />
+      <option name="project" value="LOCAL" />
+      <updated>1517085204594</updated>
+    </task>
+    <option name="localTasksCounter" value="1240" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1631,7 +1621,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2766424000" />
+    <option name="totallyTimeSpent" value="2769010000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1644,6 +1634,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="50" y="23" width="1630" height="1027" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27959698" sideWeight="0.6131261" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30472103" sideWeight="0.48770103" order="7" side_tool="false" content_ui="tabs" />
@@ -1656,7 +1647,7 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27959698" sideWeight="0.38687393" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18776824" sideWeight="0.4952343" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27812895" sideWeight="0.3464837" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.37875536" sideWeight="0.8073048" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.37875536" sideWeight="0.8073048" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32967034" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22854078" sideWeight="0.45896465" order="12" side_tool="false" content_ui="tabs" />
@@ -1828,11 +1819,6 @@
           <option name="timeStamp" value="1260" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="ruby-line">
-          <url>file://$PROJECT_DIR$/app/controllers/dba_history_controller.rb</url>
-          <line>533</line>
-          <option name="timeStamp" value="1353" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="ruby-line">
           <url>file://$PROJECT_DIR$/test/system/global_menu_test.rb</url>
           <line>46</line>
           <option name="timeStamp" value="1355" />
@@ -1861,7 +1847,7 @@
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="1360" />
+      <option name="time" value="1364" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="RakeRunConfigurationType">
@@ -1926,38 +1912,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_show_sql_patches.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="380">
-          <caret line="51" column="101" lean-forward="false" selection-start-line="51" selection-start-column="101" selection-end-line="51" selection-end-column="101" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_show_sql_translations.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="380">
-          <caret line="57" column="102" lean-forward="false" selection-start-line="57" selection-start-column="102" selection-end-line="57" selection-end-column="102" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_show_stored_outlines.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="19" column="128" lean-forward="false" selection-start-line="19" selection-start-column="128" selection-end-line="19" selection-end-column="128" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_show_plan_baselines.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="380">
-          <caret line="53" column="99" lean-forward="false" selection-start-line="53" selection-start-column="99" selection-end-line="53" selection-end-column="99" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-6">
@@ -2094,14 +2048,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="202">
           <caret line="53" column="9" lean-forward="true" selection-start-line="53" selection-start-column="9" selection-end-line="53" selection-end-column="9" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="337">
-          <caret line="123" column="11" lean-forward="true" selection-start-line="123" selection-start-column="11" selection-end-line="123" selection-end-column="11" />
           <folding />
         </state>
       </provider>
@@ -2334,14 +2280,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1213">
-          <caret line="289" column="46" lean-forward="true" selection-start-line="289" selection-start-column="46" selection-end-line="289" selection-end-column="46" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/dba_schema/_list_plsql_description.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="318">
@@ -2378,6 +2316,56 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="4" column="2" lean-forward="false" selection-start-line="4" selection-start-column="2" selection-end-line="4" selection-end-column="2" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
+          <folding>
+            <element signature="e#563#667#0#ruby" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/locales/de.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="179">
+          <caret line="238" column="2" lean-forward="false" selection-start-line="238" selection-start-column="2" selection-end-line="238" selection-end-column="2" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="176">
+          <caret line="281" column="6" lean-forward="true" selection-start-line="280" selection-start-column="0" selection-end-line="281" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_bind_variables.html.erb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="17" column="0" lean-forward="true" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/dba_history/_list_binds_historic.html.erb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="448">
+          <caret line="36" column="7" lean-forward="false" selection-start-line="17" selection-start-column="0" selection-end-line="36" selection-end-column="7" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/dba_history_controller.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-548">
+          <caret line="485" column="0" lean-forward="false" selection-start-line="485" selection-start-column="0" selection-end-line="485" selection-end-column="0" />
           <folding />
         </state>
       </provider>

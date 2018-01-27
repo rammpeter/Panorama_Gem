@@ -464,22 +464,10 @@ class DbaHistoryController < ApplicationController
     end
 
     if  @sql.hit_count == 0
-      @binds = []
+      @binds_count = 0
     else
-      @binds = sql_select_all ["\
-        SELECT /* Panorama-Tool Ramm */ Instance_Number, Name, Position, DataType_String, Last_Captured,
-               CASE DataType_String
-                 WHEN 'TIMESTAMP' THEN TO_CHAR(ANYDATA.AccessTimestamp(Value_AnyData), '#{sql_datetime_minute_mask}')
-               ELSE Value_String END Value_String,
-               NLS_CHARSET_NAME(Character_SID) Character_Set, Precision, Scale, Max_Length,
-               (SELECT COUNT(*)
-                FROM   DBA_Hist_SQLBind i
-                WHERE  i.DBID            = b.DBID
-                AND    i.Snap_ID BETWEEN ? AND ?
-                AND    i.Instance_Number = b.Instance_Number
-                AND    i.SQL_ID          = b.SQL_ID
-                AND    i.Position        = b.Position
-               ) Samples
+      @binds_count = sql_select_one ["\
+        SELECT COUNT(*)
         FROM   DBA_Hist_SQLBind b
         WHERE  DBID            = ?
         AND    SQL_ID          = ?
@@ -490,8 +478,7 @@ class DbaHistoryController < ApplicationController
                                               AND    Snap_ID BETWEEN ? AND ?
                                               #{'AND Instance_Number=?' if @instance}
                                              )
-        ORDER BY Position
-        ", @sql.min_snap_id, @sql.max_snap_id, @dbid, @sql_id, @dbid, @sql_id, @sql.min_snap_id, @sql.max_snap_id].concat(@instance ? [@instance] : [])
+        ", @dbid, @sql_id, @dbid, @sql_id, @sql.min_snap_id, @sql.max_snap_id].concat(@instance ? [@instance] : [])
 
 
     end
@@ -537,6 +524,44 @@ class DbaHistoryController < ApplicationController
 
     render_partial :list_sql_detail_historic
   end #list_sql_detail_historic
+
+  def list_binds_historic
+    @sql_id         = params[:sql_id]
+    @instance       = prepare_param_instance
+    @min_snap_id    = params[:min_snap_id]
+    @max_snap_id    = params[:max_snap_id]
+    @dbid           = prepare_param_dbid
+
+    @binds = sql_select_all ["\
+      SELECT /* Panorama-Tool Ramm */ Instance_Number, Name, Position, DataType_String, Last_Captured,
+             CASE DataType_String
+               WHEN 'TIMESTAMP' THEN TO_CHAR(ANYDATA.AccessTimestamp(Value_AnyData), '#{sql_datetime_minute_mask}')
+             ELSE Value_String END Value_String,
+             NLS_CHARSET_NAME(Character_SID) Character_Set, Precision, Scale, Max_Length,
+             (SELECT COUNT(*)
+              FROM   DBA_Hist_SQLBind i
+              WHERE  i.DBID            = b.DBID
+              AND    i.Snap_ID BETWEEN ? AND ?
+              AND    i.Instance_Number = b.Instance_Number
+              AND    i.SQL_ID          = b.SQL_ID
+              AND    i.Position        = b.Position
+             ) Samples
+      FROM   DBA_Hist_SQLBind b
+      WHERE  DBID            = ?
+      AND    SQL_ID          = ?
+      AND    (Snap_ID, Instance_Number) IN (SELECT MAX(Snap_ID), MAX(Instance_Number) KEEP (DENSE_RANK LAST ORDER BY Snap_ID)
+                                            FROM   DBA_Hist_SQLBind
+                                            WHERE  DBID   = ?
+                                            AND    SQL_ID = ?
+                                            AND    Snap_ID BETWEEN ? AND ?
+                                            #{'AND Instance_Number=?' if @instance}
+                                           )
+      ORDER BY Position
+      ", @min_snap_id, @max_snap_id, @dbid, @sql_id, @dbid, @sql_id, @min_snap_id, @max_snap_id].concat(@instance ? [@instance] : [])
+
+
+    render_partial
+  end
 
   def list_bind_samples_historic
     @instance    = prepare_param_instance         # optional

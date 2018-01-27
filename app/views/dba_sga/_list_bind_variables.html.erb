@@ -13,5 +13,5 @@
           {:caption=>"Max. length",   :data=>proc{|rec| fn rec.max_length},               :title=>"Maximum bind length"},
       ]
 %>
-<%= gen_slickgrid(@binds, column_options, {:caption => "#{t(:dba_sga_list_sql_detail_sql_id_bind_caption, :default=>'Bind variables of last execution')}, Instance = #{@instance}, SQL-ID = '#{@sql_id}' ", :max_height => 120, :width=>:auto, show_pin_icon: 1}) %>
+<%= gen_slickgrid(@binds, column_options, {:caption => "#{t(:dba_sga_list_sql_detail_sql_id_bind_caption, :default=>'Bind variables of last execution')}, Instance = #{@instance}, SQL-ID = '#{@sql_id}' ", :max_height => 450, :width=>:auto, show_pin_icon: 1}) %>
 

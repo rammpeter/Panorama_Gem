@@ -1,5 +1,6 @@
 <!-- @update_area muss durch Aufrufer gesetzt sein -->
 <br/>
+
 <div class="flex-row-container">
   <% if @sql_bind_count > 0 %>
     <div class="flex-row-element">
@@ -15,9 +16,7 @@
       %>
     </div>
   <% end %>
-</div>
 
-<div class="flex-row-container">
   <div class="flex-row-element">
     <%= ajax_submit(t(:dba_sga_list_sql_sga_stat_footer_complete_timeline_caption, :default=>'Full history'), {
         :update_area => @update_area,
