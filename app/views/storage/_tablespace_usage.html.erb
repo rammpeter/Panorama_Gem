@@ -158,11 +158,9 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
   %>
 
   <div class="flex-row-element">
-    <%= gen_slickgrid(@tablespaces, column_options, {:caption => "Tablespace-Usage", :width=>:auto, :max_height=>450, :no_wrap=>true, show_pin_icon: 2}) %>
-
-    <!-- Update area clipped to tablespace usage because this grid is the only pinnable at this page -->
-    <div id="<%= @update_area %>"></div>
+    <%= gen_slickgrid(@tablespaces, column_options, {:caption => "Tablespace-Usage", :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
   </div>
 
 </div>
+<div id="<%= @update_area %>"></div>
 
