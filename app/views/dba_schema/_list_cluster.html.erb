@@ -34,26 +34,29 @@
 })
 %>
 
+<div class="flex-row-container">
+  <div class="flex-row-element">
+    <%= ajax_submit("#{@tables} Tables", {
+        :update_area => @update_area,
+        :action      => :list_cluster_tables,
+        :owner       => @owner,
+        :cluster_name  => @cluster_name
+    }, :title => "Show indexes for object #{@owner}.#{@cluster_name}")
+    %>
+  </div>
 
-<div class="float_left">
-  <%= ajax_submit("#{@tables} Tables", {
-                                 :update_area => @update_area,
-                                 :action      => :list_cluster_tables,
-                                 :owner       => @owner,
-                                 :cluster_name  => @cluster_name
-      }, :title => "Show indexes for object #{@owner}.#{@cluster_name}")
-  %>
+  <div class="flex-row-element">
+    <%= ajax_submit("#{@indexes} Indexes", {
+        :update_area => @update_area,
+        :action      => :list_indexes,
+        :owner       => @owner,
+        :table_name  => @cluster_name
+    }, :title => "Show indexes for object #{@owner}.#{@cluster_name}")
+    %>
+  </div>
+
 </div>
 
-<div class="float_left">
-  <%= ajax_submit("#{@indexes} Indexes", {
-                                 :update_area => @update_area,
-                                 :action      => :list_indexes,
-                                 :owner       => @owner,
-                                 :table_name  => @cluster_name
-      }, :title => "Show indexes for object #{@owner}.#{@cluster_name}")
-  %>
-</div>
 
 
-<div id="<%= @update_area %>" style="clear:both;"></div>
+<div id="<%= @update_area %>"></div>

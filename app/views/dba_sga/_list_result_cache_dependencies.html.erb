@@ -38,7 +38,7 @@
 %>
 <%= gen_slickgrid(@dependencies, column_options, {
                                   :caption => "Dependencies for instance=#{@instance}#{", ID=#{@id}" if @id}#{", status='#{@status}'" if @status}#{", name='#{@name}'" if @name}#{", namespace='#{@namespace}'" if @namespace}",
-                                  :max_height => 450
+                                  :max_height => 450, show_pin_icon: 1,
                           }) %>
 
 

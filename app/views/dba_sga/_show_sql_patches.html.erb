@@ -49,7 +49,7 @@
     caption = "SQL-Patches from DBA_SQL_Patches"
   end
 
-  gen_slickgrid(@sql_patches, column_options, :caption => caption, :max_height=>450) if (@exact_signature.nil? && @force_signature.nil?) || @sql_patches.count > 0
+  gen_slickgrid(@sql_patches, column_options, :caption => caption, :max_height=>450, show_pin_icon: 1) if (@exact_signature.nil? && @force_signature.nil?) || @sql_patches.count > 0
 %>
 
 <div id="<%= @update_area %>"></div>

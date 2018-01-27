@@ -1,15 +1,16 @@
 <div class="page_caption">Enqueue-Statistics from DBA_Hist_Enqueue_Stat</div>
 
 <%= ajax_form(:controller => :dba_history, :action => :list_enqueue_statistics_historic, :update_area => :list_enqueue_statistics_historic_area) do %>
+  <div class="flex-row-container">
+    <%= include_start_end_timepicker %>
 
-  <%= include_start_end_timepicker_float_left %>
-
-  <div class="float_left" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
-    Instance
-    <%= text_field_tag(:instance, "", :size=>1) %>
-  </div>
-  <div class="float_left">
-    <%= submit_tag("Show Enqueue-Info", :title => "Show Enqueue-Info") %>
+    <div class="flex-row-element" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
+      Instance
+      <%= text_field_tag(:instance, "", :size=>1) %>
+    </div>
+    <div class="flex-row-element">
+      <%= submit_tag("Show Enqueue-Info", :title => "Show Enqueue-Info") %>
+    </div>
   </div>
 <% end %>
 <div id="list_enqueue_statistics_historic_area" style="float:left; width:100%; ">

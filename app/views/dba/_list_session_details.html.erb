@@ -94,8 +94,8 @@ column_options =
 %>
 <%= gen_slickgrid(@pmems, column_options, :caption=> "Process Memory (incl. PQ-Server) from GV$Process_Memory", :width=>:auto) %>
 
-<div style="clear:both;">
-  <div class="float_left">
+<div class="flex-row-container">
+  <div class="flex-row-element">
     <%= ajax_submit("Wait-Status", {
                :action => :show_session_details_waits,
                :update_area => @update_area,
@@ -105,7 +105,7 @@ column_options =
         }, :title => t(:dba_list_session_details_link_wait, :default=>'Show current wait status of session') )
     %>
   </div>
-  <div class="float_left">
+  <div class="flex-row-element">
     <%= ajax_submit("Locks", {
                :action => :show_session_details_locks,
                :update_area => @update_area,
@@ -115,7 +115,7 @@ column_options =
         }, :title => t(:dba_list_session_details_link_locks, :default=>'Show locks of session') )
     %>
   </div>
-  <div class="float_left">
+  <div class="flex-row-element">
     <%= ajax_submit("Temp-Usage", {
                :action => :show_session_details_temp,
                :update_area => @update_area,
@@ -126,7 +126,7 @@ column_options =
         }, :title => t(:dba_list_session_details_link_temp, :default=>'Show TEMP-usage of session') )
     %>
   </div>
-  <div class="float_left">
+  <div class="flex-row-element">
       <%=
         ajax_submit("#{@open_cursor_counts.total} #{t(:dba_list_session_details_link_open_cursor_caption, :default=>'open cursor')}", {
                    :action => "list_open_cursor_per_session",
@@ -138,7 +138,7 @@ column_options =
         }, :title=> t(:dba_list_session_details_link_open_cursor_hint, :default=>'Show open cursor of session (GV$OPEN_CURSOR) %{own_saddr} with identical SAddr', :own_saddr=>@open_cursor_counts.own_saddr))
       %>
   </div>
-  <div class="float_left">
+  <div class="flex-row-element">
     <%=
         ajax_submit('Objects accessed', {
                                    :controller  => :dba,
@@ -149,7 +149,7 @@ column_options =
         }, :title=> 'List objects accessed by this session in library cache (from GV$Access)')
     %>
   </div>
-  <div class="float_left">
+  <div class="flex-row-element">
       <%=
         ajax_submit("Active Session History", {
                    :action => :show_prepared_active_session_history,
@@ -161,7 +161,7 @@ column_options =
         }, :title=> t(:dba_list_session_details_link_ash, :default=>'Show wait history of session from Active Session History'))
       %>
   </div>
-  <div class="float_left">
+  <div class="flex-row-element">
       <%=
         ajax_submit("Session-Statistics", {
                    :action => :list_session_statistic,
@@ -171,7 +171,7 @@ column_options =
         }, :title=> t(:dba_list_session_details_link_stat, :default=>'Show session statistics from V$SessStat'))
       %>
   </div>
-  <div class="float_left">
+  <div class="flex-row-element">
       <%=
         ajax_submit("Audit Trail", {
                                    :controller   => :dba_schema,
@@ -182,7 +182,7 @@ column_options =
         )
       %>
   </div>
-  <div class="float_left">
+  <div class="flex-row-element">
     <%=
         ajax_submit("Optimizer Env.", {
                                    :controller   => :dba,
@@ -194,7 +194,7 @@ column_options =
         )
     %>
   </div>
-  <div class="float_left">
+  <div class="flex-row-element">
     <%= ajax_submit("SQL Monitor", {
                                            :controller   => :dba_sga,
                                            :action       => :list_sql_monitor_sessions,

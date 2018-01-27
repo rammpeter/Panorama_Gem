@@ -55,7 +55,7 @@
     caption = "SQL-translations from DBA_SQL_Translations"
   end
 
-  gen_slickgrid(@translations, column_options, :caption => caption, :max_height=>450) if @translated_sql_id.nil? || @translations.count > 0
+  gen_slickgrid(@translations, column_options, :caption => caption, :max_height=>450, show_pin_icon: 1) if @translated_sql_id.nil? || @translations.count > 0
 %>
 
 <div id="<%= @update_area %>"></div>

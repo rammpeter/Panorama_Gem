@@ -8,21 +8,22 @@
                              :update_area => @update_area
                      ) do
 %>
-  <%= include_start_end_timepicker_float_left %>
+  <div class="flex-row-container">
+    <%= include_start_end_timepicker %>
 
-  <div class="float_left" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
-    Instance
-    <%= text_field_tag(:instance, "", :size=>1) %>
-  </div>
-  <div class="float_left">
-    <%= submit_tag("Blocker-Sessions", :title =>t(:show_mutex_statistics_historic_blocker_hint, :default=>"Mutex-Sleep-History grouped by blocker-sessions"), :name=>"Blocker") %>
-  </div>
-    <div class="float_left">
+    <div class="flex-row-element" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
+      Instance
+      <%= text_field_tag(:instance, "", :size=>1) %>
+    </div>
+    <div class="flex-row-element">
+      <%= submit_tag("Blocker-Sessions", :title =>t(:show_mutex_statistics_historic_blocker_hint, :default=>"Mutex-Sleep-History grouped by blocker-sessions"), :name=>"Blocker") %>
+    </div>
+    <div class="flex-row-element">
       <%= submit_tag("Waiter-Sessions", :title =>t(:show_mutex_statistics_historic_waiter_hint, :default=>"Mutex-Sleep-History grouped by waiter-sessions"), :name=>"Waiter") %>
     </div>
-    <div class="float_left">
+    <div class="flex-row-element">
       <%= submit_tag(t(:show_mutex_statistics_historic_timeline_caption, :default=>"Historic timeline"), :title =>t(:show_mutex_statistics_historic_timeline_hint, :default=> "Mutex-Sleep-History grouped at timeline"), :name=>"Timeline") %>
     </div>
+  </div>
 <% end %>
-<div id="<%= @update_area %>" style="float:left; width:100%; ">
-</div>
+<div id="<%= @update_area %>"></div>

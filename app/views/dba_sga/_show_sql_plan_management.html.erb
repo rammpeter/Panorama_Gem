@@ -2,8 +2,9 @@
 
 <%= render_page_caption("SQL plan management directives") %>
 
-<% unless @profile_count.nil? %>
-    <div class="float_left">
+<div class="flex-row-container">
+  <% unless @profile_count.nil? %>
+    <div class="flex-row-element">
       <%=
         ajax_submit("SQL profiles (#{@profile_count})", {
             :update_area => @update_area,
@@ -12,10 +13,10 @@
         )
       %>
     </div>
-<% end %>
+  <% end %>
 
-<% unless @baseline_count.nil? %>
-    <div class="float_left">
+  <% unless @baseline_count.nil? %>
+    <div class="flex-row-element">
       <%=
         ajax_submit("SQL plan baselines (#{@baseline_count})", {
             :update_area => @update_area,
@@ -24,20 +25,20 @@
         )
       %>
     </div>
-<% end %>
+  <% end %>
 
-<div class="float_left">
-  <%=
-    ajax_submit("Stored outlines (#{@outline_count})", {
-        :update_area => @update_area,
-        :action      => :show_stored_outlines,
-    }, :title =>t(:menu_sga_pga_stored_outlines_hint, :default=> 'Show all stored outlines for this database')
-    )
-  %>
-</div>
+  <div class="flex-row-element">
+    <%=
+      ajax_submit("Stored outlines (#{@outline_count})", {
+          :update_area => @update_area,
+          :action      => :show_stored_outlines,
+      }, :title =>t(:menu_sga_pga_stored_outlines_hint, :default=> 'Show all stored outlines for this database')
+      )
+    %>
+  </div>
 
-<% unless @translation_count.nil? %>
-    <div class="float_left">
+  <% unless @translation_count.nil? %>
+    <div class="flex-row-element">
       <%=
         ajax_submit("SQL translations (#{@translation_count})", {
             :update_area => @update_area,
@@ -46,10 +47,10 @@
         )
       %>
     </div>
-<% end %>
+  <% end %>
 
-<% unless @patches_count.nil? %>
-    <div class="float_left">
+  <% unless @patches_count.nil? %>
+    <div class="flex-row-element">
       <%=
         ajax_submit("SQL patches (#{@patches_count})", {
             :update_area => @update_area,
@@ -58,9 +59,7 @@
         )
       %>
     </div>
-<% end %>
-
-
-
-<div id="<%= @update_area %>" style="clear: both;">
+  <% end %>
 </div>
+
+<div id="<%= @update_area %>"></div>

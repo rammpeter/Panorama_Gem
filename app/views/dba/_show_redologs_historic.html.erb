@@ -4,15 +4,18 @@
 
 
 <%= ajax_form(:controller => :dba, :action => :list_redologs_historic, :update_area => @update_area) do %>
-    <%= include_start_end_timepicker_float_left %>
+  <div class="flex-row-container">
+    <%= include_start_end_timepicker %>
 
-    <div class="float_left" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
-        Instance
-        <%= text_field_tag(:instance, read_from_client_info_store(:instance), :size=>1) %>
+    <div class="flex-row-element" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
+      Instance
+      <%= text_field_tag(:instance, read_from_client_info_store(:instance), :size=>1) %>
     </div>
-    <div class="float_left">
-        <%= submit_tag("Show redo log info", :title => "Show historic redo log info") %>
+    <div class="flex-row-element">
+      <%= submit_tag("Show redo log info", :title => "Show historic redo log info") %>
     </div>
+
+  </div>
 <% end %>
 
 <div id="<%= @update_area %>" style="clear:both;">

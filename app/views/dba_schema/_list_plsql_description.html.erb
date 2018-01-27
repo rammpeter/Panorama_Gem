@@ -1,4 +1,4 @@
-  <% @update_area = get_unique_area_id %>
+<% @update_area = get_unique_area_id %>
 
 <%
   column_options =
@@ -14,53 +14,54 @@
 
 <%= render_yellow_pre(@source, 450) %>
 
-<% if @object_type == 'PACKAGE' %>
-    <div class="float_left">
+<div class="flex-row-container">
+  <% if @object_type == 'PACKAGE' %>
+    <div class="flex-row-element">
       <%= ajax_submit("Package Body", {
-                                     :update_area  => @update_area,
-                                     :action       => :list_plsql_description,
-                                     :owner        => @owner,
-                                     :object_name  => @object_name,
-                                     :object_type  => 'PACKAGE BODY'
-          }, :title => "Show description of package body for #{@owner}.#{@table_name}")
+          :update_area  => @update_area,
+          :action       => :list_plsql_description,
+          :owner        => @owner,
+          :object_name  => @object_name,
+          :object_type  => 'PACKAGE BODY'
+      }, :title => "Show description of package body for #{@owner}.#{@table_name}")
       %>
     </div>
-<% end %>
+  <% end %>
 
-<% if @object_type == 'PACKAGE BODY' %>
-    <div class="float_left">
+  <% if @object_type == 'PACKAGE BODY' %>
+    <div class="flex-row-element">
       <%= ajax_submit("Package", {
-                                     :update_area  => @update_area,
-                                     :action       => :list_plsql_description,
-                                     :owner        => @owner,
-                                     :object_name  => @object_name,
-                                     :object_type  => 'PACKAGE'
-          }, :title => "Show description of package spec for #{@owner}.#{@table_name}")
+          :update_area  => @update_area,
+          :action       => :list_plsql_description,
+          :owner        => @owner,
+          :object_name  => @object_name,
+          :object_type  => 'PACKAGE'
+      }, :title => "Show description of package spec for #{@owner}.#{@table_name}")
       %>
     </div>
-<% end %>
+  <% end %>
 
-<div class="float_left">
-  <%= ajax_submit("#{@dependencies} Dependencies", {
-                                 :update_area  => @update_area,
-                                 :action       => :list_dependencies,
-                                 :owner        => @owner,
-                                 :object_name  => @object_name,
-                                 :object_type  => @object_type
-      }, :title => "Show object dependencies for #{@object_type} #{@owner}.#{@table_name}")
-  %>
-</div>
-<div class="float_left">
-  <%= ajax_submit("#{@grants} Grants", {
-                                 :update_area => @update_area,
-                                 :action      => :list_grants,
-                                 :owner       => @owner,
-                                 :object_name => @object_name
-      }, :title => "Show grants for #{@object_type} #{@owner}.#{@object_name}")
-  %>
-</div>
+  <div class="flex-row-element">
+    <%= ajax_submit("#{@dependencies} Dependencies", {
+        :update_area  => @update_area,
+        :action       => :list_dependencies,
+        :owner        => @owner,
+        :object_name  => @object_name,
+        :object_type  => @object_type
+    }, :title => "Show object dependencies for #{@object_type} #{@owner}.#{@table_name}")
+    %>
+  </div>
+  <div class="flex-row-element">
+    <%= ajax_submit("#{@grants} Grants", {
+        :update_area => @update_area,
+        :action      => :list_grants,
+        :owner       => @owner,
+        :object_name => @object_name
+    }, :title => "Show grants for #{@object_type} #{@owner}.#{@object_name}")
+    %>
+  </div>
 
-  <div class="float_left">
+  <div class="flex-row-element">
     <%= ajax_submit(@show_line_numbers ? 'Hide line numbers' : 'Show line numbers', {
         :action             => :list_plsql_description,
         :owner              => @owner,
@@ -72,4 +73,7 @@
     %>
   </div>
 
-  <div id="<%= @update_area %>" style="clear:both;"></div>
+</div>
+
+
+<div id="<%= @update_area %>"></div>

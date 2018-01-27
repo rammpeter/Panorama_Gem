@@ -2,14 +2,16 @@
 
 
 <%= form_tag(url_for(:controller=>:dba_history, :action=>:list_ash_global_report_html, browser_tab_id: @browser_tab_id), {:method => 'post', :target=>'_blank'}) do %>
-    <%= include_start_end_timepicker_float_left %>
+  <div class="flex-row-container">
+    <%= include_start_end_timepicker %>
 
-    <div class="float_left" title="Filter on specific RAC instance (mandatory)">
+    <div class="flex-row-element" title="Filter on specific RAC instance (mandatory)">
       Instance
       <%= text_field_tag(:instance, (read_from_client_info_store(:instance).nil? ? 1 : read_from_client_info_store(:instance)), :size=>1) %>
     </div>
-    <div class="float_left">
+    <div class="flex-row-element">
       <%= submit_tag('Generate ASH report', :title =>'Generate ASH-report by executing DBMS_WORKLOAD_REPOSITORY.ASH_REPORT_HTML') %>
     </div>
+  </div>
 <% end %>
 

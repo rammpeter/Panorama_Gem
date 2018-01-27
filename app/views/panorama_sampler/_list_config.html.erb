@@ -142,7 +142,7 @@ Limit for long lasting DB-locks = #{fn(rec[:blocking_locks_long_locks_limit])} s
 
 <%= gen_slickgrid(@sampler_config, column_options, {
     :caption => "Panorama-Sampler configuration (stored in local file system at Panorama server)",
-    :max_height=>450,
+    :max_height=>450, show_pin_icon: 1,
     :command_menu_entries => [   {
                                      :name                  => :refresh_list,
                                      :caption               => 'Refresh list',

@@ -2,12 +2,14 @@
 
 
 <%= ajax_form(:controller=>:dba_sga, :action=>:list_result_cache, :update_area=>:show_result_cache_detail_area) do %>
-  <div class="float_left" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
-    Instance
-    <%= text_field_tag(:instance, "", :size=>1) %>
-  </div>
-  <div class="float_left">
-  <%= submit_tag("Show", :title => "Show usage / contents of result cache") %>
+  <div class="flex-row-container">
+    <div class="flex-row-element" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
+      Instance
+      <%= text_field_tag(:instance, "", :size=>1) %>
+    </div>
+    <div class="flex-row-element">
+      <%= submit_tag("Show", :title => "Show usage / contents of result cache") %>
+    </div>
   </div>
 <% end %>
 <div id="show_result_cache_detail_area" style="float:left; width:100%;">

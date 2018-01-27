@@ -169,72 +169,74 @@ column_options = [
 }) %>
 
 <br><b><%= t(:additional_infos, :default=>'Additional information') %></b><br><br>
-<div class="float_left">
+
+<div class="flex-row-container">
+  <div class="flex-row-element">
     <%= ajax_submit("Execution-Plan (#{@sql.plan_hash_value_count})", {
-             :update_area          => @update_area,
-             :action               => :list_sql_historic_execution_plan,
-             :controller           => :dba_history,
-             :instance             => @instance,
-             :sql_id               => @sql_id,
-             :parsing_schema_name  => @parsing_schema_name,
-             :time_selection_start => @time_selection_start,
-             :time_selection_end   => @time_selection_end
-        }, :title => "Show execution plan(s) in given time period")
+        :update_area          => @update_area,
+        :action               => :list_sql_historic_execution_plan,
+        :controller           => :dba_history,
+        :instance             => @instance,
+        :sql_id               => @sql_id,
+        :parsing_schema_name  => @parsing_schema_name,
+        :time_selection_start => @time_selection_start,
+        :time_selection_end   => @time_selection_end
+    }, :title => "Show execution plan(s) in given time period")
     %>
-</div>
-&nbsp;
-<div class="float_left">
-  <%= ajax_submit(t(:dba_history_list_sql_detail_historic_complete_timeline_caption, :default=>'Full history'), {
-      :update_area => @update_area,
-      :action      => :list_sql_history_snapshots,
-      :controller  => :dba_history,
-      :instance    => @instance,
-      :dbid        => @dbid,
-      :sql_id      => @sql_id,
-      :groupby     => :day,
-      :parsing_schema_name => @parsing_schema_name
-  }, :title => t(:dba_history_list_sql_detail_historic_complete_timeline_hint, :default=>'List complete history of SQL in time'))
-  %>
-</div>
+  </div>
+  &nbsp;
+  <div class="flex-row-element">
+    <%= ajax_submit(t(:dba_history_list_sql_detail_historic_complete_timeline_caption, :default=>'Full history'), {
+        :update_area => @update_area,
+        :action      => :list_sql_history_snapshots,
+        :controller  => :dba_history,
+        :instance    => @instance,
+        :dbid        => @dbid,
+        :sql_id      => @sql_id,
+        :groupby     => :day,
+        :parsing_schema_name => @parsing_schema_name
+    }, :title => t(:dba_history_list_sql_detail_historic_complete_timeline_hint, :default=>'List complete history of SQL in time'))
+    %>
+  </div>
 
-<div class="float_left">
+  <div class="flex-row-element">
     <%=
-        groupfilter = {:DBID                   => @dbid,
-                       :Idle_Wait1             => "PX Deq Credit: send blkd",
-                       :Min_Snap_ID            => @sql.min_snap_id,
-                       :Max_Snap_ID            => @sql.max_snap_id,
-                       :time_selection_start   => @time_selection_start,
-                       :time_selection_end     => @time_selection_end ,
-                       "SQL-ID"                => @sql_id
-        }
+      groupfilter = {:DBID                   => @dbid,
+                     :Idle_Wait1             => "PX Deq Credit: send blkd",
+                     :Min_Snap_ID            => @sql.min_snap_id,
+                     :Max_Snap_ID            => @sql.max_snap_id,
+                     :time_selection_start   => @time_selection_start,
+                     :time_selection_end     => @time_selection_end ,
+                     "SQL-ID"                => @sql_id
+      }
 
-        groupfilter[:Instance] = @instance if @instance
-        groupfilter['User'] = @parsing_schema_name if @parsing_schema_name
+      groupfilter[:Instance] = @instance if @instance
+      groupfilter['User'] = @parsing_schema_name if @parsing_schema_name
 
 
-        ajax_submit("Active Session History", {
-             :update_area => @update_area,
-             :action      => :list_session_statistic_historic_grouping,
-             :controller  => :active_session_history,
-             :groupfilter => groupfilter,
-             :groupby     => "SQL-ID"
-        }, :title =>t(:list_session_statistic_historic_grouping_link_title, :default=>"Show wait states of SQL in Active Session History for given time period") )
-  %>
-</div>&nbsp;
-&nbsp;
-<div class="float_left">
-    <%= ajax_submit(t(:dba_history_list_sql_detail_historic_current_sga_caption, :default=>'SQL in current SGA'), {
-             :update_area    => @update_area,
-             :controller     => :dba_sga,
-             :action         => :list_sql_detail_sql_id,
-             :instance       => @instance,
-             :sql_id         => @sql_id
-        }, :title => t(:dba_history_list_sql_detail_historic_current_sga_hint, :default=>'Show data of SQL from current SGA (if still exists in SGA)'))
+      ajax_submit("Active Session History", {
+          :update_area => @update_area,
+          :action      => :list_session_statistic_historic_grouping,
+          :controller  => :active_session_history,
+          :groupfilter => groupfilter,
+          :groupby     => "SQL-ID"
+      }, :title =>t(:list_session_statistic_historic_grouping_link_title, :default=>"Show wait states of SQL in Active Session History for given time period") )
     %>
-</div>
-<% if @instance && (get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack || get_current_database[:management_pack_license] == :diagnostics_pack) %>
+  </div>&nbsp;
+  &nbsp;
+  <div class="flex-row-element">
+    <%= ajax_submit(t(:dba_history_list_sql_detail_historic_current_sga_caption, :default=>'SQL in current SGA'), {
+        :update_area    => @update_area,
+        :controller     => :dba_sga,
+        :action         => :list_sql_detail_sql_id,
+        :instance       => @instance,
+        :sql_id         => @sql_id
+    }, :title => t(:dba_history_list_sql_detail_historic_current_sga_hint, :default=>'Show data of SQL from current SGA (if still exists in SGA)'))
+    %>
+  </div>
+  <% if @instance && (get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack || get_current_database[:management_pack_license] == :diagnostics_pack) %>
     &nbsp;
-    <div class="float_left">
+    <div class="flex-row-element">
       <%= form_tag(url_for(:controller            => :dba_history,
                            :action                => :list_awr_sql_report_html,
                            :instance              => @instance,
@@ -246,9 +248,9 @@ column_options = [
         <%= submit_tag('SQL report', :title =>t(:dba_history_list_sql_detail_historic_current_sga_hint, :default=>'Generate genuine Oracle SQL report by executing DBMS_WORKLOAD_REPOSITORY.AWR_SQL_REPORT_HTML')) %>
       <% end %>
     </div>
-<% end %>
-<% if get_db_version >= '11.2' %>
-  <div class="float_left">
+  <% end %>
+  <% if get_db_version >= '11.2' %>
+    <div class="flex-row-element">
       <%=
         ajax_submit('SQL plan baseline', {
             :controller                 => :dba_history,
@@ -264,11 +266,11 @@ column_options = [
                     :title=> t(:dba_history_list_sql_detail_historic_create_baseline_hint, :default=>"Generate script to fix exactly this execution plan as SQL-baseline for this SQL."))
 
       %>
-  </div>
-<% end %>
+    </div>
+  <% end %>
 
-<% if get_db_version >= '12.1' %>
-    <div class="float_left">
+  <% if get_db_version >= '12.1' %>
+    <div class="flex-row-element">
       <%=
         ajax_submit('SQL-Translation', {
             :controller           => :dba_sga,
@@ -279,10 +281,10 @@ column_options = [
         }, :title=> t(:dba_history_list_sql_detail_historic_create_translation_hint, :default=>"Generate script to create profile for SQL-translation-framework for this SQL."))
       %>
     </div>
-<% end %>
+  <% end %>
 
-<% if get_db_version >= '11.1' %>
-    <div class="float_left">
+  <% if get_db_version >= '11.1' %>
+    <div class="flex-row-element">
       <%=
         ajax_submit('SQL-Patch', {
             :controller           => :dba_sga,
@@ -292,7 +294,9 @@ column_options = [
         }, :title=> t(:dba_history_list_sql_detail_historic_create_sql_patch_hint, :default=>"Generate script to create SQL patch for this SQL."))
       %>
     </div>
-<% end %>
+  <% end %>
+
+</div>
 
 <div id="<%= @update_area %>" style="clear:both; width:100%;">
 </div>

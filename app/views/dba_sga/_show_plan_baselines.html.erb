@@ -51,7 +51,7 @@
     caption = "SQL plan baselines from DBA_SQL_Plan_Baselines"
   end
 
-  gen_slickgrid(@baselines, column_options, :caption => caption, :max_height=>450) if @force_matching_signature.nil? || @baselines.count > 0
+  gen_slickgrid(@baselines, column_options, :caption => caption, :max_height=>450, show_pin_icon: 1) if @force_matching_signature.nil? || @baselines.count > 0
 %>
 
 <div id="<%= @update_area %>"></div>

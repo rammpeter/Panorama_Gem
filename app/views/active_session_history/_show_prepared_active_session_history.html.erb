@@ -10,11 +10,12 @@
                              :groupby     => @groupby
                             ) do
 %>
+  <div class="flex-row-container">
+    <%= include_start_end_timepicker(:show_prepare_active_session_history) %>
 
-  <%= include_start_end_timepicker_float_left(:show_prepare_active_session_history) %>
-
-  <div class="float_left">
-    <%= submit_tag("Show waits", :title => "Show condensed session waits from Active Session History") %>
+    <div class="flex-row-element">
+      <%= submit_tag("Show waits", :title => "Show condensed session waits from Active Session History") %>
+    </div>
   </div>
 <% end %>
 <div id="<%= @update_area %>" style="float:left; width:100%; ">

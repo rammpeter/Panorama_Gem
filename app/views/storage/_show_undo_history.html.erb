@@ -2,15 +2,17 @@
 
 <% update_area = get_unique_area_id %>
 <%= ajax_form(:controller=>:storage, :action=>:list_undo_history, :update_area=>update_area) do %>
-    <%= include_start_end_timepicker_float_left %>
-    <div class="float_left">
-        RAC-Instance
-        <%= text_field_tag(:instance, read_from_client_info_store(:instance), :size=>3, :title => "RAC-Instance") %>
+  <div class="flex-row-container">
+    <%= include_start_end_timepicker %>
+    <div class="flex-row-element">
+      RAC-Instance
+      <%= text_field_tag(:instance, read_from_client_info_store(:instance), :size=>3, :title => "RAC-Instance") %>
     </div>
 
-    <div class="float_left" >
-        <%= submit_tag('Show undo usage', :title => 'Show undo usage for given time period') %>
+    <div class="flex-row-element" >
+      <%= submit_tag('Show undo usage', :title => 'Show undo usage for given time period') %>
     </div>
+  </div>
 <% end %>
 
 <div id="<%= update_area %>" style="clear: both; width:100%;">

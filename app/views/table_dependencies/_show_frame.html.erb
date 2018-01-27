@@ -2,11 +2,13 @@
 
 <div id="schema_selection" style="float:left; ">
 <%= ajax_form(:controller=>:table_dependencies, :action=>:select_schema, :update_area => :table_selection) do %>
-    <div class="float_left" title="Auswahl Schema für Tabelle deren abhängige Tabellen gesucht werden">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
-      <%= collection_select(:all_user, :username, @all_users, :username, :username, {}) %>
-    </div>
-    <div class="float_left">
-      <%= submit_tag("Tabellen anzeigen", :title => "Anzeige der Tabellen des Schemas") %>
+    <div class="flex-row-container">
+      <div class="flex-row-element" title="Auswahl Schema für Tabelle deren abhängige Tabellen gesucht werden">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
+        <%= collection_select(:all_user, :username, @all_users, :username, :username, {}) %>
+      </div>
+      <div class="flex-row-element">
+        <%= submit_tag("Tabellen anzeigen", :title => "Anzeige der Tabellen des Schemas") %>
+      </div>
     </div>
 <% end %>
 </div>
