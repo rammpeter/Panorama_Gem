@@ -1036,8 +1036,12 @@ ORDER BY Column_ID
       check_view(view) if view[:domain] == domain
     end
 
-    # Check if accessing v$-tables from within PL/SQL-Package is possible
-    PanoramaSamplerConfig.check_for_select_any_table!(@sampler_config)
+    if  ENV['RAILS_ENV'] != 'test'
+      msg = "Running test with @sampler_config[:select_any_table] = #{@sampler_config[:select_any_table]}"
+      Rails.logger.info msg
+      puts msg
+    end
+
 
     if @sampler_config[:select_any_table]                                       # call PL/SQL package? v$Tables with SELECT_ANY_CATALOG-role are accessible in PL/SQL only if SELECT ANY TABLE is granted
       case domain
@@ -1054,7 +1058,6 @@ ORDER BY Column_ID
           create_or_check_package(filename, panorama_sampler_blocking_locks_spec, 'PANORAMA_SAMPLER_BLOCK_LOCKS', :spec)
           create_or_check_package(filename, panorama_sampler_blocking_locks_body, 'PANORAMA_SAMPLER_BLOCK_LOCKS', :body)
         else
-          raise "Unknown value #{domain} for domain"
       end
     end
   end

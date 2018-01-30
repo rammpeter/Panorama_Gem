@@ -9,7 +9,8 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+      <change beforePath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" afterPath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
+      <change beforePath="$PROJECT_DIR$/app/models/worker_thread.rb" afterPath="$PROJECT_DIR$/app/models/worker_thread.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -87,7 +88,7 @@
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_DB_Locks___Blocking_locks_historic__Panorama_Gem.coverage" NAME="test_DB-Locks_/_Blocking_locks_historic: Panorama_Gem Coverage Results" MODIFIED="1516715772268" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__PanoramaSamplerStructureCheckTest___Panorama_Gem.coverage" NAME="Run test 'PanoramaSamplerStructureCheckTest': Panorama_Gem Coverage Results" MODIFIED="1502791780007" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_list_iostat_detail_history_samples__Panorama_Gem.coverage" NAME="test_list_iostat_detail_history_samples: Panorama_Gem Coverage Results" MODIFIED="1475164930508" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
-    <SUITE FILE_PATH="coverage/Panorama_Gem@test_do_sampling_awr_ash__Panorama_Gem.coverage" NAME="test_do_sampling_awr_ash: Panorama_Gem Coverage Results" MODIFIED="1517316926771" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
+    <SUITE FILE_PATH="coverage/Panorama_Gem@test_do_sampling_awr_ash__Panorama_Gem.coverage" NAME="test_do_sampling_awr_ash: Panorama_Gem Coverage Results" MODIFIED="1517324207761" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__SpecAdditionsTest___Panorama_Gem.coverage" NAME="Run test 'SpecAdditionsTest': Panorama_Gem Coverage Results" MODIFIED="1491233637394" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_adjust_table_name__Panorama_Gem.coverage" NAME="test_adjust_table_name: Panorama_Gem Coverage Results" MODIFIED="1502540486990" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_should_connect_to_test_db_with_xhr__true__Panorama_Gem.coverage" NAME="test_should_connect_to_test-db_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1501069028013" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
@@ -124,7 +125,7 @@
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_list_sysaux_occupants_with_xhr__true__Panorama_Gem.coverage" NAME="test_list_sysaux_occupants_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1505584097096" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__DbaSgaControllerTest___Panorama_Gem.coverage" NAME="Run test 'DbaSgaControllerTest': Panorama_Gem Coverage Results" MODIFIED="1512638127731" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_object_increase_timeline_with_xhr__true__Panorama_Gem.coverage" NAME="test_object_increase_timeline_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1501070169123" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
-    <SUITE FILE_PATH="coverage/Panorama_Gem@Development__Panorama_Gem.coverage" NAME="Development: Panorama_Gem Coverage Results" MODIFIED="1517304455257" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
+    <SUITE FILE_PATH="coverage/Panorama_Gem@Development__Panorama_Gem.coverage" NAME="Development: Panorama_Gem Coverage Results" MODIFIED="1517323060851" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_dba__Panorama_Gem.coverage" NAME="test_dba: Panorama_Gem Coverage Results" MODIFIED="1468855552397" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_dummy_with_xhr__true__Panorama_Gem.coverage" NAME="test_dummy_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1503408571446" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_sql_detail_historic_with_xhr__true__Panorama_Gem.coverage" NAME="test_sql_detail_historic_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1511442945153" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
@@ -162,7 +163,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="60">
@@ -172,29 +173,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_show_session_statistics_historic.html.erb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/views/active_session_history/_show_session_statistics_historic.html.erb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
-              <caret line="5" column="29" lean-forward="false" selection-start-line="5" selection-start-column="29" selection-end-line="5" selection-end-column="29" />
-              <folding>
-                <element signature="e#93#119#1#ruby" expanded="true" />
-                <element signature="e#206#230#1#ruby" expanded="true" />
-                <element signature="e#573#720#0#ruby" expanded="true" />
-                <element signature="e#1006#1063#0#ruby" expanded="true" />
-                <element signature="e#1079#1113#0#ruby" expanded="true" />
-                <element signature="e#1814#1912#0#ruby" expanded="true" />
-                <element signature="e#1924#2037#0#ruby" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="panorama_sampler_structure_check.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="panorama_sampler_structure_check.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="256">
-              <caret line="1039" column="26" lean-forward="false" selection-start-line="1039" selection-start-column="26" selection-end-line="1039" selection-end-column="26" />
+            <state relative-caret-position="430">
+              <caret line="1037" column="0" lean-forward="true" selection-start-line="1037" selection-start-column="0" selection-end-line="1037" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -203,8 +186,179 @@
       <file leaf-file-name="panorama_sampler_config.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_config.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="266">
-              <caret line="159" column="11" lean-forward="false" selection-start-line="159" selection-start-column="11" selection-end-line="159" selection-end-column="11" />
+            <state relative-caret-position="418">
+              <caret line="162" column="0" lean-forward="false" selection-start-line="162" selection-start-column="0" selection-end-line="162" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test.log" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/dummy/log/test.log">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="0">
+              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding>
+                <marker date="1517324314688" expanded="false" signature="471:480" ph="" />
+                <marker date="1517324314688" expanded="false" signature="506:510" ph="" />
+                <marker date="1517324314688" expanded="false" signature="512:521" ph="" />
+                <marker date="1517324314688" expanded="false" signature="594:598" ph="" />
+                <marker date="1517324314688" expanded="false" signature="601:610" ph="" />
+                <marker date="1517324314688" expanded="false" signature="636:640" ph="" />
+                <marker date="1517324314688" expanded="false" signature="642:651" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1263:1267" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1270:1279" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1305:1309" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1311:1320" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1384:1388" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1391:1400" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1409:1413" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1415:1424" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1482:1486" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1550:1559" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1583:1587" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1589:1598" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1649:1653" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1684:1693" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1717:1721" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1723:1732" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1843:1847" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1878:1887" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1911:1915" ph="" />
+                <marker date="1517324314688" expanded="false" signature="1917:1926" ph="" />
+                <marker date="1517324314688" expanded="false" signature="2026:2030" ph="" />
+                <marker date="1517324314688" expanded="false" signature="2061:2070" ph="" />
+                <marker date="1517324314688" expanded="false" signature="2094:2098" ph="" />
+                <marker date="1517324314688" expanded="false" signature="2100:2109" ph="" />
+                <marker date="1517324314688" expanded="false" signature="2219:2223" ph="" />
+                <marker date="1517324314688" expanded="false" signature="2254:2263" ph="" />
+                <marker date="1517324314688" expanded="false" signature="2287:2291" ph="" />
+                <marker date="1517324314688" expanded="false" signature="2293:2302" ph="" />
+                <marker date="1517324314688" expanded="false" signature="2382:2386" ph="" />
+                <marker date="1517324314688" expanded="false" signature="2417:2426" ph="" />
+                <marker date="1517324314688" expanded="false" signature="2451:2455" ph="" />
+                <marker date="1517324314688" expanded="false" signature="2457:2466" ph="" />
+                <marker date="1517324314688" expanded="false" signature="2949:2953" ph="" />
+                <marker date="1517324314688" expanded="false" signature="2984:2993" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3017:3021" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3023:3032" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3096:3100" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3131:3140" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3163:3167" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3169:3178" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3282:3286" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3317:3326" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3348:3352" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3354:3363" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3412:3416" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3447:3456" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3479:3483" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3485:3494" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3549:3553" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3584:3593" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3616:3620" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3622:3631" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3682:3686" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3717:3726" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3756:3760" ph="" />
+                <marker date="1517324314688" expanded="false" signature="3762:3771" ph="" />
+                <marker date="1517324314688" expanded="false" signature="4128:4132" ph="" />
+                <marker date="1517324314688" expanded="false" signature="4216:4225" ph="" />
+                <marker date="1517324314688" expanded="false" signature="4248:4252" ph="" />
+                <marker date="1517324314688" expanded="false" signature="4254:4263" ph="" />
+                <marker date="1517324314688" expanded="false" signature="4787:4791" ph="" />
+                <marker date="1517324314688" expanded="false" signature="4875:4884" ph="" />
+                <marker date="1517324314688" expanded="false" signature="4914:4918" ph="" />
+                <marker date="1517324314688" expanded="false" signature="4920:4929" ph="" />
+                <marker date="1517324314688" expanded="false" signature="5286:5290" ph="" />
+                <marker date="1517324314688" expanded="false" signature="5379:5388" ph="" />
+                <marker date="1517324314688" expanded="false" signature="5411:5415" ph="" />
+                <marker date="1517324314688" expanded="false" signature="5417:5426" ph="" />
+                <marker date="1517324314688" expanded="false" signature="5950:5954" ph="" />
+                <marker date="1517324314688" expanded="false" signature="6299:6308" ph="" />
+                <marker date="1517324314688" expanded="false" signature="6316:6320" ph="" />
+                <marker date="1517324314688" expanded="false" signature="6322:6331" ph="" />
+                <marker date="1517324314688" expanded="false" signature="6389:6393" ph="" />
+                <marker date="1517324314688" expanded="false" signature="6458:6467" ph="" />
+                <marker date="1517324314688" expanded="false" signature="6490:6494" ph="" />
+                <marker date="1517324314688" expanded="false" signature="6496:6505" ph="" />
+                <marker date="1517324314688" expanded="false" signature="6591:6595" ph="" />
+                <marker date="1517324314688" expanded="false" signature="6993:7002" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7010:7014" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7016:7025" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7083:7087" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7142:7151" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7174:7178" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7180:7189" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7240:7244" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7275:7284" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7308:7312" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7314:7323" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7434:7438" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7469:7478" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7502:7506" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7508:7517" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7617:7621" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7652:7661" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7685:7689" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7691:7700" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7810:7814" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7845:7854" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7878:7882" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7884:7893" ph="" />
+                <marker date="1517324314688" expanded="false" signature="7973:7977" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8008:8017" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8042:8046" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8048:8057" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8540:8544" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8575:8584" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8608:8612" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8614:8623" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8687:8691" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8722:8731" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8755:8759" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8761:8770" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8874:8878" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8909:8918" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8940:8944" ph="" />
+                <marker date="1517324314688" expanded="false" signature="8946:8955" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9004:9008" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9039:9048" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9071:9075" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9077:9086" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9141:9145" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9176:9185" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9208:9212" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9214:9223" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9274:9278" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9309:9318" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9346:9350" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9352:9361" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9718:9722" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9811:9820" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9843:9847" ph="" />
+                <marker date="1517324314688" expanded="false" signature="9849:9858" ph="" />
+                <marker date="1517324314688" expanded="false" signature="10382:10386" ph="" />
+                <marker date="1517324314688" expanded="false" signature="10475:10484" ph="" />
+                <marker date="1517324314688" expanded="false" signature="10512:10516" ph="" />
+                <marker date="1517324314688" expanded="false" signature="10518:10527" ph="" />
+                <marker date="1517324314688" expanded="false" signature="10884:10888" ph="" />
+                <marker date="1517324314688" expanded="false" signature="10982:10991" ph="" />
+                <marker date="1517324314688" expanded="false" signature="11014:11018" ph="" />
+                <marker date="1517324314688" expanded="false" signature="11020:11029" ph="" />
+                <marker date="1517324314688" expanded="false" signature="11553:11557" ph="" />
+                <marker date="1517324314688" expanded="false" signature="11651:11660" ph="" />
+                <marker date="1517324314688" expanded="false" signature="11688:11692" ph="" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="panorama_sampler_job.rb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/jobs/panorama_sampler_job.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="318">
+              <caret line="29" column="0" lean-forward="false" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -253,18 +407,8 @@
       <file leaf-file-name="worker_thread.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/models/worker_thread.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="271">
-              <caret line="60" column="38" lean-forward="true" selection-start-line="60" selection-start-column="38" selection-end-line="60" selection-end-column="38" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="panorama_sampler_controller.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/controllers/panorama_sampler_controller.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="780">
-              <caret line="52" column="0" lean-forward="false" selection-start-line="52" selection-start-column="0" selection-end-line="52" selection-end-column="0" />
+            <state relative-caret-position="286">
+              <caret line="20" column="0" lean-forward="false" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -330,8 +474,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/views/io/_show_iostat_detail_history.html.erb" />
-        <option value="$PROJECT_DIR$/app/views/io/_show_io_file_history.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba/_list_session_details.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba/_show_locks.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba/_show_redologs_historic.html.erb" />
@@ -379,8 +521,10 @@
         <option value="$PROJECT_DIR$/app/views/active_session_history/_show_session_statistics_historic.html.erb" />
         <option value="$PROJECT_DIR$/app/assets/stylesheets/panorama.scss" />
         <option value="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" />
-        <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+        <option value="$PROJECT_DIR$/app/models/worker_thread.rb" />
+        <option value="$PROJECT_DIR$/test/dummy/log/test.log" />
+        <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
       </list>
     </option>
   </component>
@@ -1305,14 +1449,7 @@
       <workItem from="1516372976933" duration="570000" />
       <workItem from="1516560037914" duration="39560000" />
       <workItem from="1516806218400" duration="51674000" />
-      <workItem from="1517229112144" duration="12043000" />
-    </task>
-    <task id="LOCAL-01199" summary="must_have_content -&gt; assert_text">
-      <created>1515613032995</created>
-      <option name="number" value="01199" />
-      <option name="presentableId" value="LOCAL-01199" />
-      <option name="project" value="LOCAL" />
-      <updated>1515613032995</updated>
+      <workItem from="1517229112144" duration="13949000" />
     </task>
     <task id="LOCAL-01200" summary="Use real Snapshots in test for time selection">
       <created>1515655493816</created>
@@ -1650,25 +1787,17 @@
       <option name="project" value="LOCAL" />
       <updated>1517322213189</updated>
     </task>
-    <option name="localTasksCounter" value="1248" />
+    <task id="LOCAL-01248" summary="Bugfix test for valid values of domain">
+      <created>1517322428747</created>
+      <option name="number" value="01248" />
+      <option name="presentableId" value="LOCAL-01248" />
+      <option name="project" value="LOCAL" />
+      <updated>1517322428747</updated>
+    </task>
+    <option name="localTasksCounter" value="1249" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Run_test_'GlobalMenuTest'__Panorama_Gem - 2018.01.23 at 19h 34m 08s.xml">
-      <configuration name="Run test 'GlobalMenuTest': Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="Run_test_'GlobalMenuTest'__Panorama_Gem - 2018.01.24 at 16h 04m 54s.xml">
-      <configuration name="Run test 'GlobalMenuTest': Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="Run_test_'GlobalMenuTest'__Panorama_Gem - 2018.01.24 at 16h 09m 49s.xml">
-      <configuration name="Run test 'GlobalMenuTest': Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="Run_test_'WorkerThreadTest'__Panorama_Gem - 2018.01.23 at 20h 27m 10s.xml">
-      <configuration name="Run test 'WorkerThreadTest': Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="test_All_menu_entries__Panorama_Gem - 2018.01.23 at 15h 02m 44s.xml">
-      <configuration name="test_All_menu_entries: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
-    </history-entry>
     <history-entry file="test_All_menu_entries__Panorama_Gem - 2018.01.23 at 15h 08m 05s.xml">
       <configuration name="test_All_menu_entries: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
     </history-entry>
@@ -1684,9 +1813,24 @@
     <history-entry file="test_do_sampling_awr_ash__Panorama_Gem - 2018.01.30 at 13h 58m 13s.xml">
       <configuration name="test_do_sampling_awr_ash: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
     </history-entry>
+    <history-entry file="test_do_sampling_awr_ash__Panorama_Gem - 2018.01.30 at 15h 30m 57s.xml">
+      <configuration name="test_do_sampling_awr_ash: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
+    </history-entry>
+    <history-entry file="test_do_sampling_awr_ash__Panorama_Gem - 2018.01.30 at 15h 39m 13s.xml">
+      <configuration name="test_do_sampling_awr_ash: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
+    </history-entry>
+    <history-entry file="test_do_sampling_awr_ash__Panorama_Gem - 2018.01.30 at 15h 42m 50s.xml">
+      <configuration name="test_do_sampling_awr_ash: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
+    </history-entry>
+    <history-entry file="test_do_sampling_awr_ash__Panorama_Gem - 2018.01.30 at 15h 48m 14s.xml">
+      <configuration name="test_do_sampling_awr_ash: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
+    </history-entry>
+    <history-entry file="test_do_sampling_awr_ash__Panorama_Gem - 2018.01.30 at 15h 52m 36s.xml">
+      <configuration name="test_do_sampling_awr_ash: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
+    </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2782143000" />
+    <option name="totallyTimeSpent" value="2784049000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1701,16 +1845,16 @@
     <frame x="55" y="23" width="2505" height="1417" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2817702" sideWeight="0.60788864" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2817702" sideWeight="0.6079295" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30472103" sideWeight="0.48770103" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2532189" sideWeight="0.31801006" order="10" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26633167" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.34795764" sideWeight="0.6819899" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34795764" sideWeight="0.6819899" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2532189" sideWeight="0.48806533" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2817702" sideWeight="0.39211136" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2817702" sideWeight="0.39207047" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18776824" sideWeight="0.4952343" order="14" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31316188" sideWeight="0.8073048" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31316188" sideWeight="0.8073048" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27812895" sideWeight="0.3464837" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32967034" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -1903,11 +2047,16 @@
           <line>17</line>
           <option name="timeStamp" value="1359" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="ruby-line">
+          <url>file://$PROJECT_DIR$/app/models/panorama_sampler_config.rb</url>
+          <line>162</line>
+          <option name="timeStamp" value="1368" />
+        </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="1368" />
+      <option name="time" value="1371" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="RakeRunConfigurationType">
@@ -1935,15 +2084,17 @@
         <watch expression="control_management_pack_access['TUNING']" language="ruby" />
       </configuration>
       <configuration name="TestUnitRunConfigurationType">
-        <watch expression="menu_li.id" language="ruby" />
-        <watch expression="menu_ul.all(:xpath, './li', visible: false)[0][:id]" language="ruby" />
-        <watch expression="menu_link[:id]" language="ruby" />
-        <watch expression="menu_node.text" language="ruby" />
+        <watch expression="@sampler_config[:select_any_table]  " language="ruby" />
       </configuration>
     </watches-manager>
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="watch">
+      <expression>
+        <expression-string>@sampler_config[:select_any_table]</expression-string>
+        <language-id>ruby</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
       <expression>
         <expression-string>menu_link[:id]</expression-string>
         <language-id>ruby</language-id>
@@ -1972,20 +2123,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_show_sql_plan_management.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="202">
-          <caret line="53" column="9" lean-forward="true" selection-start-line="53" selection-start-column="9" selection-end-line="53" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/dragnet/_show_selection.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="377">
-          <caret line="102" column="0" lean-forward="true" selection-start-line="102" selection-start-column="0" selection-end-line="102" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/layouts/application.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="162">
@@ -2253,22 +2390,14 @@
         <state relative-caret-position="75">
           <caret line="5" column="29" lean-forward="false" selection-start-line="5" selection-start-column="29" selection-end-line="5" selection-end-column="29" />
           <folding>
-            <element signature="e#93#119#1#ruby" expanded="true" />
-            <element signature="e#206#230#1#ruby" expanded="true" />
-            <element signature="e#573#720#0#ruby" expanded="true" />
-            <element signature="e#1006#1063#0#ruby" expanded="true" />
-            <element signature="e#1079#1113#0#ruby" expanded="true" />
-            <element signature="e#1814#1912#0#ruby" expanded="true" />
-            <element signature="e#1924#2037#0#ruby" expanded="true" />
+            <element signature="e#93#119#1#ruby" expanded="false" />
+            <element signature="e#206#230#1#ruby" expanded="false" />
+            <element signature="e#573#720#0#ruby" expanded="false" />
+            <element signature="e#1006#1063#0#ruby" expanded="false" />
+            <element signature="e#1079#1113#0#ruby" expanded="false" />
+            <element signature="e#1814#1912#0#ruby" expanded="false" />
+            <element signature="e#1924#2037#0#ruby" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/panorama_sampler_controller.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="780">
-          <caret line="52" column="0" lean-forward="false" selection-start-line="52" selection-start-column="0" selection-end-line="52" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2312,6 +2441,46 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/panorama_sampler_controller.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="694">
+          <caret line="98" column="24" lean-forward="false" selection-start-line="98" selection-start-column="24" selection-end-line="98" selection-end-column="24" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/models/worker_thread.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="286">
+          <caret line="20" column="0" lean-forward="false" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/jobs/panorama_sampler_job.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="318">
+          <caret line="29" column="0" lean-forward="false" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_config.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="418">
+          <caret line="162" column="0" lean-forward="false" selection-start-line="162" selection-start-column="0" selection-end-line="162" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/test/models/worker_thread_test.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="375">
@@ -2320,34 +2489,169 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/worker_thread.rb">
+    <entry file="file://$PROJECT_DIR$/test/dummy/log/test.log">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="271">
-          <caret line="60" column="38" lean-forward="true" selection-start-line="60" selection-start-column="38" selection-end-line="60" selection-end-column="38" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_config.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="266">
-          <caret line="159" column="11" lean-forward="false" selection-start-line="159" selection-start-column="11" selection-end-line="159" selection-end-column="11" />
-          <folding />
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <marker date="1517324314688" expanded="false" signature="471:480" ph="" />
+            <marker date="1517324314688" expanded="false" signature="506:510" ph="" />
+            <marker date="1517324314688" expanded="false" signature="512:521" ph="" />
+            <marker date="1517324314688" expanded="false" signature="594:598" ph="" />
+            <marker date="1517324314688" expanded="false" signature="601:610" ph="" />
+            <marker date="1517324314688" expanded="false" signature="636:640" ph="" />
+            <marker date="1517324314688" expanded="false" signature="642:651" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1263:1267" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1270:1279" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1305:1309" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1311:1320" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1384:1388" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1391:1400" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1409:1413" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1415:1424" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1482:1486" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1550:1559" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1583:1587" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1589:1598" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1649:1653" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1684:1693" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1717:1721" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1723:1732" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1843:1847" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1878:1887" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1911:1915" ph="" />
+            <marker date="1517324314688" expanded="false" signature="1917:1926" ph="" />
+            <marker date="1517324314688" expanded="false" signature="2026:2030" ph="" />
+            <marker date="1517324314688" expanded="false" signature="2061:2070" ph="" />
+            <marker date="1517324314688" expanded="false" signature="2094:2098" ph="" />
+            <marker date="1517324314688" expanded="false" signature="2100:2109" ph="" />
+            <marker date="1517324314688" expanded="false" signature="2219:2223" ph="" />
+            <marker date="1517324314688" expanded="false" signature="2254:2263" ph="" />
+            <marker date="1517324314688" expanded="false" signature="2287:2291" ph="" />
+            <marker date="1517324314688" expanded="false" signature="2293:2302" ph="" />
+            <marker date="1517324314688" expanded="false" signature="2382:2386" ph="" />
+            <marker date="1517324314688" expanded="false" signature="2417:2426" ph="" />
+            <marker date="1517324314688" expanded="false" signature="2451:2455" ph="" />
+            <marker date="1517324314688" expanded="false" signature="2457:2466" ph="" />
+            <marker date="1517324314688" expanded="false" signature="2949:2953" ph="" />
+            <marker date="1517324314688" expanded="false" signature="2984:2993" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3017:3021" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3023:3032" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3096:3100" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3131:3140" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3163:3167" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3169:3178" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3282:3286" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3317:3326" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3348:3352" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3354:3363" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3412:3416" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3447:3456" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3479:3483" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3485:3494" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3549:3553" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3584:3593" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3616:3620" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3622:3631" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3682:3686" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3717:3726" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3756:3760" ph="" />
+            <marker date="1517324314688" expanded="false" signature="3762:3771" ph="" />
+            <marker date="1517324314688" expanded="false" signature="4128:4132" ph="" />
+            <marker date="1517324314688" expanded="false" signature="4216:4225" ph="" />
+            <marker date="1517324314688" expanded="false" signature="4248:4252" ph="" />
+            <marker date="1517324314688" expanded="false" signature="4254:4263" ph="" />
+            <marker date="1517324314688" expanded="false" signature="4787:4791" ph="" />
+            <marker date="1517324314688" expanded="false" signature="4875:4884" ph="" />
+            <marker date="1517324314688" expanded="false" signature="4914:4918" ph="" />
+            <marker date="1517324314688" expanded="false" signature="4920:4929" ph="" />
+            <marker date="1517324314688" expanded="false" signature="5286:5290" ph="" />
+            <marker date="1517324314688" expanded="false" signature="5379:5388" ph="" />
+            <marker date="1517324314688" expanded="false" signature="5411:5415" ph="" />
+            <marker date="1517324314688" expanded="false" signature="5417:5426" ph="" />
+            <marker date="1517324314688" expanded="false" signature="5950:5954" ph="" />
+            <marker date="1517324314688" expanded="false" signature="6299:6308" ph="" />
+            <marker date="1517324314688" expanded="false" signature="6316:6320" ph="" />
+            <marker date="1517324314688" expanded="false" signature="6322:6331" ph="" />
+            <marker date="1517324314688" expanded="false" signature="6389:6393" ph="" />
+            <marker date="1517324314688" expanded="false" signature="6458:6467" ph="" />
+            <marker date="1517324314688" expanded="false" signature="6490:6494" ph="" />
+            <marker date="1517324314688" expanded="false" signature="6496:6505" ph="" />
+            <marker date="1517324314688" expanded="false" signature="6591:6595" ph="" />
+            <marker date="1517324314688" expanded="false" signature="6993:7002" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7010:7014" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7016:7025" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7083:7087" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7142:7151" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7174:7178" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7180:7189" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7240:7244" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7275:7284" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7308:7312" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7314:7323" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7434:7438" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7469:7478" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7502:7506" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7508:7517" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7617:7621" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7652:7661" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7685:7689" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7691:7700" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7810:7814" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7845:7854" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7878:7882" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7884:7893" ph="" />
+            <marker date="1517324314688" expanded="false" signature="7973:7977" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8008:8017" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8042:8046" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8048:8057" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8540:8544" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8575:8584" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8608:8612" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8614:8623" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8687:8691" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8722:8731" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8755:8759" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8761:8770" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8874:8878" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8909:8918" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8940:8944" ph="" />
+            <marker date="1517324314688" expanded="false" signature="8946:8955" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9004:9008" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9039:9048" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9071:9075" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9077:9086" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9141:9145" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9176:9185" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9208:9212" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9214:9223" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9274:9278" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9309:9318" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9346:9350" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9352:9361" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9718:9722" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9811:9820" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9843:9847" ph="" />
+            <marker date="1517324314688" expanded="false" signature="9849:9858" ph="" />
+            <marker date="1517324314688" expanded="false" signature="10382:10386" ph="" />
+            <marker date="1517324314688" expanded="false" signature="10475:10484" ph="" />
+            <marker date="1517324314688" expanded="false" signature="10512:10516" ph="" />
+            <marker date="1517324314688" expanded="false" signature="10518:10527" ph="" />
+            <marker date="1517324314688" expanded="false" signature="10884:10888" ph="" />
+            <marker date="1517324314688" expanded="false" signature="10982:10991" ph="" />
+            <marker date="1517324314688" expanded="false" signature="11014:11018" ph="" />
+            <marker date="1517324314688" expanded="false" signature="11020:11029" ph="" />
+            <marker date="1517324314688" expanded="false" signature="11553:11557" ph="" />
+            <marker date="1517324314688" expanded="false" signature="11651:11660" ph="" />
+            <marker date="1517324314688" expanded="false" signature="11688:11692" ph="" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="256">
-          <caret line="1039" column="26" lean-forward="false" selection-start-line="1039" selection-start-column="26" selection-end-line="1039" selection-end-column="26" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
+        <state relative-caret-position="430">
+          <caret line="1037" column="0" lean-forward="true" selection-start-line="1037" selection-start-column="0" selection-end-line="1037" selection-end-column="0" />
           <folding />
         </state>
       </provider>

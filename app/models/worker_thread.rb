@@ -16,6 +16,10 @@ class WorkerThread
 
   # Generic create snapshot
   def self.create_snapshot(sampler_config, snapshot_time, domain)
+
+    # Check if accessing v$-tables from within PL/SQL-Package is possible
+    PanoramaSamplerConfig.check_for_select_any_table!(sampler_config)
+
     if domain == :AWR_ASH
       WorkerThread.new(sampler_config, 'check_structure_synchron').check_structure_synchron # Ensure existence of objects necessary for both Threads, synchron with job's thread
       thread = Thread.new{WorkerThread.new(sampler_config, 'ash_sampler_daemon').create_ash_sampler_daemon(snapshot_time)} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
