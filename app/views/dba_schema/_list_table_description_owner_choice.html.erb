@@ -15,7 +15,7 @@
 
 <%= gen_slickgrid(@objects, column_options, {
                                   :caption => "Object #{@object_name} exists in multiple schemas, please select",
-                                  :height => :auto, :width=>:auto
+                                  :max_height=>450, :width=>:auto
                           })
 %>
 <div style="padding-top: 10px;" id="<%= @update_area %>"></div>
