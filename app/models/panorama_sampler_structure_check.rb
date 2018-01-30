@@ -370,7 +370,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Blocking_Client_Info',           column_type:   'VARCHAR2',  precision: 64,                  comment: 'Client info of blocking session'},
               { column_name:  'Blocking_Module',                column_type:   'VARCHAR2',  precision: 48,                  comment: 'Module of blocking session' },
               { column_name:  'Blocking_Action',                column_type:   'VARCHAR2',  precision: 32,                  comment: 'Action of blocking session' },
-              { column_name:  'Blocking_User_Name',             column_type:   'VARCHAR2',  precision: 128, not_null: true, comment: 'Owner of blocking session' },
+              { column_name:  'Blocking_User_Name',             column_type:   'VARCHAR2',  precision: 128,                 comment: 'Owner of blocking session' },
               { column_name:  'Blocking_Machine',               column_type:   'VARCHAR2',  precision: 64,                  comment: 'Machine of blocking session' },
               { column_name:  'Blocking_OS_User',               column_type:   'VARCHAR2',  precision: 128,                 comment: 'OS-user of blocking session' },
               { column_name:  'Blocking_Process',               column_type:   'VARCHAR2',  precision: 12,                  comment: 'Process-ID of blocking session' },
