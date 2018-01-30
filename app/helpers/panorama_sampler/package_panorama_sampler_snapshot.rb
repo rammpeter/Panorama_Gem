@@ -94,6 +94,15 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_Log;
 
+  PROCEDURE Snap_Resource_Limit(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_Resource_Limit (Snap_ID, DBID, Instance_Number, Resource_Name, Current_Utilization, Max_Utilization, Initial_Allocation, Limit_Value, Con_DBID, Con_ID)
+    SELECT p_Snap_ID, p_DBID, p_Instance, Resource_Name, Current_Utilization, Max_Utilization, Initial_Allocation, Limit_Value, p_Con_DBID,
+           #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+    FROM   v$Resource_Limit
+    ;
+  END Snap_Resource_Limit;
+
   PROCEDURE Snap_Seg_Stat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO Panorama_Seg_Stat (SNAP_ID, DBID, INSTANCE_NUMBER, TS#, OBJ#, DATAOBJ#,
@@ -463,6 +472,7 @@ END Panorama_Sampler_Snapshot;
     Snap_DB_cache_Advice      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Latch                (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_Resource_Limit       (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Service_Name         (p_DBID,      p_Con_DBID);
     Snap_Seg_Stat             (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     -- call Snap_SQLStat before any dependent statistic, because dependents record only for SQLs already in SQLStat

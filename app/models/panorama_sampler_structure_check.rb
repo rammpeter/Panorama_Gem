@@ -477,6 +477,23 @@ class PanoramaSamplerStructureCheck
           primary_key: ['Owner', 'Segment_Name', 'Segment_Type', 'Tablespace_Name', 'Gather_Date']
       },
       {
+          table_name: 'Panorama_Resource_Limit',
+          domain: :AWR,
+          columns: [
+              { column_name:  'Snap_ID',                        column_type:  'NUMBER',                     not_null: true },
+              { column_name:  'DBID',                           column_type:  'NUMBER',                     not_null: true },
+              { column_name:  'Instance_Number',                column_type:  'NUMBER',                     not_null: true },
+              { column_name:  'Resource_Name',                  column_type:  'VARCHAR2',   precision: 30,  not_null: true },
+              { column_name:  'Current_Utilization',            column_type:  'NUMBER'  },
+              { column_name:  'Max_Utilization',                column_type:  'NUMBER'  },
+              { column_name:  'Initial_Allocation',             column_type:  'VARCHAR2',   precision: 10,  not_null: true },
+              { column_name:  'Limit_Value',                    column_type:  'VARCHAR2',   precision: 10,  not_null: true },
+              { column_name:  'Con_DBID',                       column_type:  'NUMBER',     not_null: true  },
+              { column_name:  'Con_ID',                         column_type:  'NUMBER' },
+          ],
+          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'RESOURCE_NAME', 'CON_DBID']
+      },
+      {
           table_name: 'Panorama_Seg_Stat',
           domain: :AWR,
           columns: [
