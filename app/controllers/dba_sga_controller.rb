@@ -1331,6 +1331,19 @@ class DbaSgaController < ApplicationController
     @patches_count = nil
     @patches_count = sql_select_one "SELECT COUNT(*) FROM DBA_SQL_Patches" if get_db_version >= '11.1'
 
+    sql_management_config = sql_select_all "SELECT * FROM DBA_SQL_Management_Config"
+
+    column_options = []
+    record = {}
+
+    sql_management_config.each do |rec|
+      record[rec.parameter_name] = rec.parameter_value
+
+      column_options << {:caption=>rec.parameter_name,   :data=>proc{|irec| irec[rec.parameter_name]}, :title=>rec.parameter_name}
+    end
+
+    @sql_management_config = gen_slickgrid([record], column_options, :caption => "Config data from DBA_SQL_Management_Config", width: :auto)
+
     render_partial
   end
 

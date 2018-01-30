@@ -217,6 +217,7 @@ class DbaSchemaController < ApplicationController
 
     @owner                = object.owner
     @object_type          = object.object_type
+    @object_name          = object.object_name
     params[:owner]        = @owner                                              # Vorbelegung falls Funktionsaufruf weitergegeben wird
     params[:object_name]  = @object_name                                        # Vorbelegung falls Funktionsaufruf weitergegeben wird
     params[:object_type]  = @object_type                                        # Vorbelegung falls Funktionsaufruf weitergegeben wird
@@ -281,6 +282,8 @@ class DbaSchemaController < ApplicationController
       else
         raise PopupMessageException.new("Segment #{@owner}.#{@object_name} is of unsupported type #{object.object_type}")
     end
+
+    # assuming it is a table now
 
     @attribs = sql_select_all ["SELECT t.*, o.Created, o.Last_DDL_Time, o.Object_ID Table_Object_ID,
                                        m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments,

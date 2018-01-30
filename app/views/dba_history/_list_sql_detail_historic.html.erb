@@ -229,9 +229,13 @@ end
       <% end %>
     </div>
   <% end %>
-  <% if get_db_version >= '11.2' %>
+  <% if get_db_version >= '11.1' %>
     <div class="flex-row-element">
       <%=
+        disabled = @sql.plan_hash_value_count < 1 || PanoramaConnection.edition != :enterprise || PanoramaConnection.get_config[:management_pack_license] != :diagnostics_and_tuning_pack
+        title = t(:dba_history_list_sql_detail_historic_create_baseline_hint, :default=>"Generate script to fix exactly this execution plan as SQL-baseline for this SQL.")
+        title = "Generation of SQL plan baseline from AWR requires Enterprise Edition with Diagnostics and Tuning Pack.\nYou may try to load SQLplan baseline from cursor cache instead (from current SGA)." if PanoramaConnection.edition != :enterprise || PanoramaConnection.get_config[:management_pack_license] != :diagnostics_and_tuning_pack
+
         ajax_submit('SQL plan baseline', {
             :controller                 => :dba_history,
             :action                     => (@sql.plan_hash_value_count > 1 ? :select_plan_hash_value_for_baseline : :generate_baseline_creation),
@@ -242,8 +246,7 @@ end
             :max_snap_id                => @sql.max_snap_id,
             :force_matching_signature   => @sql.force_matching_signature.to_s,
             :exact_matching_signature   => @exact_matching_signature.to_s
-        }, :disabled => (@sql.plan_hash_value_count < 1),
-                    :title=> t(:dba_history_list_sql_detail_historic_create_baseline_hint, :default=>"Generate script to fix exactly this execution plan as SQL-baseline for this SQL."))
+        }, :disabled => disabled, :title=> title)
 
       %>
     </div>
