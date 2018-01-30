@@ -53,22 +53,19 @@ class DbaSchemaControllerTest < ActionController::TestCase
   test "list_objects with xhr: true"           do post :list_objects, :params => {:format=>:html, :tablespace=>{:name=>"USERS"}, :schema=>{:name=>"SCOTT"}, :update_area=>:hugo };       assert_response :success; end
 
   test "list_table_description with xhr: true" do
-    get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"AUD$", :update_area=>:hugo }
-    assert_response :success
+    [
+        {owner: 'SYS',      segment_name: 'AUD$'},                              # Table
+        {owner: 'SYS',      segment_name: 'AUD$%'},                             # Table (Wildcard with one hit)
+        {owner: 'SYS',      segment_name: 'AU$%'},                              # (Wildcard with multiple hit)
+        {owner: 'SYS',      segment_name: 'TAB$'},                              # Table
+        {owner: 'SYS',      segment_name: 'COL$'},                              # Table
+        {owner: 'PUBLIC',   segment_name: 'V$ARCHIVE'},                         # Synonym
+        {owner: 'SYS',      segment_name: 'DBMS_LOCK'},                         # Package oder Body
+    ].each do |object|
+      get :list_object_description, :params => {format: :html, owner: object[:owner], segment_name: object[:segment_name], :update_area=>:hugo }
+      assert_response :success
+    end
 
-    get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"TAB$", :update_area=>:hugo }
-    assert_response :success
-
-    get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"COL$", :update_area=>:hugo }
-    assert_response :success
-
-    post :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"COL$", :update_area=>:hugo }
-    assert_response :success
-
-    get :list_object_description, :params => {:format=>:html, :owner=>"PUBLIC", :segment_name=>"V$ARCHIVE", :update_area=>:hugo } # Synonym
-    assert_response :success
-    get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"DBMS_LOCK", :update_area=>:hugo }     # Package oder Body
-    assert_response :success
     get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"DBMS_LOCK", :object_type=>'PACKAGE', :update_area=>:hugo }
     assert_response :success
     get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"DBMS_LOCK", :object_type=>'PACKAGE BODY', :update_area=>:hugo }
