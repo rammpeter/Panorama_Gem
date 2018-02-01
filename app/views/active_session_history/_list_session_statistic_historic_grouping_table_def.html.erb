@@ -215,17 +215,35 @@
     @hidden_link_timeline_id = get_unique_area_id
 
     context_menu_entries = []
-    def create_context_menu_entry(seconds)
-      {:label   => t(:active_session_history_show_top_ten ,     :sec=>seconds, :default=>"Show Top 10 in time line, condensed by %{sec} seconds"),
-       :hint    => t(:active_session_history_show_top_ten_hint, :sec=>seconds, :default=>"Show Top 10 ordered by total time waited in time line, each point in graph for sum over %{sec} seconds"),
-       :ui_icon => "ui-icon-image",
-       :action  => "$('##{@hidden_link_timeline_id}_#{seconds}').click();"
-      }
+    command_menu_entries = [get_recall_params_info_for_render_page_caption]
+
+    def create_context_menu_entry(seconds, context_menu_entries, command_menu_entries)
+      label   = t(:active_session_history_show_top_ten, :sec=>seconds, :default=>"Show Top 10 in time line, condensed by %{sec} seconds")
+      hint    = t(:active_session_history_show_top_ten_hint, :sec=>seconds, :default=>"Show Top 10 ordered by total time waited in time line, each point in graph for sum over %{sec} seconds")
+      icon    = "ui-icon-image"
+      action  = "$('##{@hidden_link_timeline_id}_#{seconds}').click();"
+
+      context_menu_entries << {
+                                :label   => label,
+                                :hint    => hint,
+                                :ui_icon => icon,
+                                :action  => action
+                              }
+
+      command_menu_entries << {
+                                name:                 "command_menu_timeline_#{seconds}",
+                                caption:              label,
+                                hint:                 hint,
+                                icon_class:           "ui-icon #{icon}",
+                                show_icon_in_caption: true,
+                                action:               action
+                              }
     end
 
-    context_menu_entries << create_context_menu_entry(60)
-    context_menu_entries << create_context_menu_entry(10)
-    context_menu_entries << create_context_menu_entry(1)
+    create_context_menu_entry(60, context_menu_entries, command_menu_entries)
+    create_context_menu_entry(10, context_menu_entries, command_menu_entries)
+    create_context_menu_entry(1, context_menu_entries, command_menu_entries)
+
 
     gen_slickgrid(@sessions,
                    @column_options,
@@ -233,7 +251,7 @@
                        :caption => @caption ? @caption : "",
                        :max_height => 450,
                        :context_menu_entries => context_menu_entries,
-                       :command_menu_entries => get_recall_params_info_for_render_page_caption,
+                       :command_menu_entries => command_menu_entries,
                        show_pin_icon: 1
                    }
                   )

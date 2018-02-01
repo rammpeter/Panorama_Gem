@@ -1394,20 +1394,45 @@ class DbaSgaController < ApplicationController
         sql_select_one(["SELECT COUNT(*) FROM DBA_SQL_Plan_Baselines #{where_string}"].concat(where_values)) == 0
       @baselines = []                                                           # Suppress long running SQL if there is no result
     else
-      @baselines = sql_select_all ["SELECT b.*, em.SGA_Usages, em.SQL_ID, em.Inst_ID
-                                  FROM   DBA_SQL_Plan_Baselines b
-                                  LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ SQL_Plan_Baseline, COUNT(*) SGA_Usages,
-                                                            MIN(SQL_ID) SQL_ID,
-                                                            MIN(Inst_ID) KEEP (DENSE_RANK FIRST ORDER BY SQL_ID) Inst_ID /* Inst_ID according to MIN(SQL_ID) */
-                                                     FROM   gv$SQLArea
-                                                     WHERE  SQL_Plan_Baseline IS NOT NULL
-                                                     GROUP BY SQL_Plan_Baseline
-                                                    ) em ON em.SQL_Plan_Baseline = b.Plan_Name
-                                  #{where_string}
-                                   "].concat(where_values)
+      @baselines = sql_select_all ["SELECT b.*, em.SGA_Usages, em.SQL_ID, em.Inst_ID, NVL(so.comp_data_count, 0) comp_data_count
+                                    FROM   DBA_SQL_Plan_Baselines b
+                                    LEFT OUTER JOIN (SELECT so.Name, so.Signature, COUNT(*) Comp_Data_Count
+                                                     FROM   sys.SQLOBJ$ so
+                                                     JOIN sys.sqlobj$data sod ON   sod.signature = so.signature
+                                                                              AND  sod.category  = so.category
+                                                                              AND  sod.obj_type  = so.obj_type
+                                                                              AND  sod.plan_id   = so.plan_id
+                                                      WHERE so.Obj_Type = 2 /* SQL plan baseline */
+                                                      GROUP BY so.Name, so.Signature
+                                                    ) so ON so.Name = b.Plan_Name AND so.Signature = b.Signature
+                                    LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ SQL_Plan_Baseline, COUNT(*) SGA_Usages,
+                                                              MIN(SQL_ID) SQL_ID,
+                                                              MIN(Inst_ID) KEEP (DENSE_RANK FIRST ORDER BY SQL_ID) Inst_ID /* Inst_ID according to MIN(SQL_ID) */
+                                                       FROM   gv$SQLArea
+                                                       WHERE  SQL_Plan_Baseline IS NOT NULL
+                                                       GROUP BY SQL_Plan_Baseline
+                                                      ) em ON em.SQL_Plan_Baseline = b.Plan_Name
+                                    #{where_string}
+                                     "].concat(where_values)
     end
     render_partial
   end
+
+  def list_plan_baseline_hints
+    @plan_name = params[:plan_name]
+    @signature = params[:signature]
+
+    @baseline_hints = sql_select_all ["SELECT sod.comp_data
+                                       FROM   sys.SQLOBJ$ so
+                                       JOIN   sys.sqlobj$data sod ON  sod.signature = so.signature
+                                                                  AND  sod.category  = so.category
+                                                                  AND  sod.obj_type  = so.obj_type
+                                                                  AND  sod.plan_id   = so.plan_id
+                                       WHERE  so.Name = ? AND so.Signature = ? AND so.Obj_Type = 2 /* SQL plan baseline */
+                                     ", @plan_name, @signature]
+    render_partial
+  end
+
 
   def list_sql_plan_baseline_sqltext
     @sql = sql_select_one ["SELECT SQL_Text FROM  DBA_SQL_Plan_Baselines WHERE Plan_Name = ?", params[:plan_name]]

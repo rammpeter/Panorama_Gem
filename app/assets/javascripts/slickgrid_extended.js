@@ -365,7 +365,7 @@ function SlickGridExtended(container_id, options){
 
                 var command_menu_context_id = command_menu_id+'_context_menu';
 
-                caption_left_box.append('<div style="margin-left:5px; margin-right:5px;" class="slick-shadow">' +
+                caption_left_box.append('<div style="margin-left:5px; margin-right:5px; display: inline-block;" class="slick-shadow">' +
                     '<div id="'+command_menu_id+'" style="padding-left: 10px; padding-right: 10px; background-color: #E0E0E0; cursor: pointer;" title="'+locale_translate('slickgrid_menu_hint')+'">' +
                     '\u2261' + // 3 waagerechte Striche ≡
                     '<div class="contextMenu" id="'+command_menu_context_id+'" style="display:none;">' +
@@ -377,9 +377,12 @@ function SlickGridExtended(container_id, options){
 
                 for (var cmd_index in options['command_menu_entries']) {
                     var cmd = options['command_menu_entries'][cmd_index];
-                    command_menu_list = command_menu_list +
-                        '<li id="'+command_menu_id+'_'+cmd['name']+'" title="'+cmd['hint']+'"><span class="'+cmd['icon_class']+'" style="float:left;"></span><span>'+cmd['caption']+'</span></li>';
-                    bindings[command_menu_id+'_'+cmd['name']] = new Function(cmd['action']); // create function from text
+                    if (cmd['show_icon_in_caption'] != 'only' && cmd['show_icon_in_caption'] != 'right'){
+                        command_menu_list = command_menu_list +
+                            '<li id="'+command_menu_id+'_'+cmd['name']+'" title="'+cmd['hint']+'"><span class="'+cmd['icon_class']+'" style="float:left;"></span><span>'+cmd['caption']+'</span></li>';
+                        bindings[command_menu_id+'_'+cmd['name']] = new Function(cmd['action']); // create function from text
+
+                    }
                 }
                 command_menu_list = command_menu_list + '</ul>';
                 jQuery('#'+command_menu_context_id).html(command_menu_list);
@@ -403,7 +406,7 @@ function SlickGridExtended(container_id, options){
             for (var cmd_index in options['command_menu_entries']) {
                 var cmd = options['command_menu_entries'][cmd_index];
                 if (cmd['show_icon_in_caption'] && cmd['show_icon_in_caption'] !== 'right' ){   // show icon in caption line of grid ?
-                    caption_left_box.append('<div style="margin-left:5px; margin-top:4px; cursor: pointer;"'+
+                    caption_left_box.append('<div style="margin-left:5px; margin-top:4px; cursor: pointer; display: inline-block;"'+
                         'title="'+cmd['hint'] + '" onclick="'+ cmd['action'] +'">' +
                         '<span class="'+cmd['icon_class']+'"></span>' +
                         '</div>');

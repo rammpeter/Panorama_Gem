@@ -16,8 +16,26 @@
     "#{fn(rec.sga_usages)}\n#{link_sql_id(@update_area, rec.inst_id, rec.sql_id)}"
   end
 
+  link_comp_data = proc do |rec|
+    data = "<&nbsp;#{rec.comp_data_count}&nbsp;>".html_safe
+    if rec.comp_data_count > 0
+      ajax_link(data, {
+                         :controller    => :dba_sga,
+                         :action        => :list_plan_baseline_hints,
+                         :plan_name     => rec.plan_name,
+                         :signature     => rec.signature.to_s,
+                         :update_area   => @update_area,
+                         },
+                         :title         => 'Show optimizer hints of SQL plan baseline'
+       )
+    else
+      data
+    end
+  end
+
+
    column_options = [
-    {:caption=>'SQL handle / plan name', :data=>proc{|rec| "#{rec.sql_handle}\n#{rec.plan_name}"}, :title=>"Name of the SQL handle: Uniquely identifies the SQL. Use this for dropping all plan baselines of a SQL\nName of baseline plan: Identifies a unique execution plan within a SQL handle.", data_title: proc{|rec| "%t\nSQL handle = #{rec.sql_handle}\nPlan name = #{rec.plan_name}"}},
+    {:caption=>'SQL handle / plan name', :data=>proc{|rec| "#{rec.sql_handle}\n#{rec.plan_name}"}, :title=>"Name of the SQL handle: Uniquely identifies the SQL. Use this for dropping all plan baselines of a SQL\nName of baseline plan: Identifies a unique execution plan within a SQL handle.", data_title: proc{|rec| "%t\nSQL handle = #{rec.sql_handle}\nPlan name = #{rec.plan_name}\nSignature = #{rec.signature.to_s}"}},
     {:caption=>"Creator",       :data=>proc{|rec| rec.creator},                         :title=>"Name of creator"},
     {:caption=>"Origin",        :data=>proc{|rec| rec.origin},                          :title=>"how plan baseline was created" },
     {:caption=>"Parsing schema name", :data=>proc{|rec| rec.parsing_schema_name},       :title=>"Parsing schema name" },
@@ -35,6 +53,7 @@
     {:caption=>'Optim. costs',  :data=>proc{|rec| fn(rec.optimizer_cost)},              :title=>"Optimizer cost at the time the plan baseline was created", :align=>:right },
     {:caption=>'Usages in SGA', :data=>link_sql_id,                                     :title=>"Number of current usage of this baseline in SGA (by gv$SQLArea.SQL_Plan_Baseline)\nand SQL-ID of one usage", :align=>:right },
     {:caption=>"SQL",           :data=>link_sql_text,                                   :title=>"Un-normalized SQL text" },
+    {:caption=>"Hints",         :data=>link_comp_data,                                  :title=>"Number of optimizer-hints of plan baseline" },
     {:caption=>'Module',        :data=>proc{|rec| rec.module},                          :title=>"Module at plan create" },
     {:caption=>'Action',        :data=>proc{|rec| rec.action},                          :title=>"Action at plan create" },
     {:caption=>"Executions",    :data=>proc{|rec| fn(rec.executions)},                  :title=>"Number of executions at the time the plan baseline was created", :align=>:right },
