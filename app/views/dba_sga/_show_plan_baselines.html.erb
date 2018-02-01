@@ -33,9 +33,20 @@
     end
   end
 
+  link_plan_name = proc do |rec|
+    ajax_link("#{rec.sql_handle}\n#{rec.plan_name}", {
+                       :controller    => :dba_sga,
+                       :action        => :list_plan_baseline_dbms_xplan,
+                       :plan_name     => rec.plan_name,
+                       :sql_handle    => rec.sql_handle,
+                       :update_area   => @update_area,
+                       },
+                       :title         => "Show SQL plan baseline info from DBMS_XPLAN.Display_SQL_Plan_Baseline. This output shows the plan hash value and resulting execution plan of the baseline"
+     )
+  end
 
    column_options = [
-    {:caption=>'SQL handle / plan name', :data=>proc{|rec| "#{rec.sql_handle}\n#{rec.plan_name}"}, :title=>"Name of the SQL handle: Uniquely identifies the SQL. Use this for dropping all plan baselines of a SQL\nName of baseline plan: Identifies a unique execution plan within a SQL handle.", data_title: proc{|rec| "%t\nSQL handle = #{rec.sql_handle}\nPlan name = #{rec.plan_name}\nSignature = #{rec.signature.to_s}"}},
+    {:caption=>'SQL handle / plan name', :data=>link_plan_name, :title=>"Name of the SQL handle: Uniquely identifies the SQL. Use this for dropping all plan baselines of a SQL\nName of baseline plan: Identifies a unique execution plan within a SQL handle.", data_title: proc{|rec| "%t\nSQL handle = #{rec.sql_handle}\nPlan name = #{rec.plan_name}\nSignature = #{rec.signature.to_s}"}},
     {:caption=>"Creator",       :data=>proc{|rec| rec.creator},                         :title=>"Name of creator"},
     {:caption=>"Origin",        :data=>proc{|rec| rec.origin},                          :title=>"how plan baseline was created" },
     {:caption=>"Parsing schema name", :data=>proc{|rec| rec.parsing_schema_name},       :title=>"Parsing schema name" },

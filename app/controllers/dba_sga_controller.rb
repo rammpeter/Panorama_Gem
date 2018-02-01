@@ -1433,6 +1433,17 @@ class DbaSgaController < ApplicationController
     render_partial
   end
 
+  def list_plan_baseline_dbms_xplan
+    baselines = sql_select_all ["SELECT Plan_Table_Output FROM TABLE(DBMS_XPLAN.display_sql_plan_baseline(?, ?))", params[:sql_handle], params[:plan_name]]
+    baseline = ''
+    baselines.each do |b|
+      baseline << my_html_escape(b.plan_table_output)
+      baseline << "<br/>"
+    end
+    respond_to do |format|
+      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap;'>#{baseline}</pre>".html_safe }
+    end
+  end
 
   def list_sql_plan_baseline_sqltext
     @sql = sql_select_one ["SELECT SQL_Text FROM  DBA_SQL_Plan_Baselines WHERE Plan_Name = ?", params[:plan_name]]
