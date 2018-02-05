@@ -2100,15 +2100,21 @@ END;
 -- You can check the existence of the baseline now by executing:
 -- SELECT * FROM dba_sql_plan_baselines;
 -- or by looking at SQL details page for your SQL with Panorama
-
--- Next commands remove possibly existing cursors of this SQL from SGA to ensure hard parse with SQL plan baseline at next execution
--- If you are working on a RAC system you should execute this 'DBMS_SHARED_POOL.PURGE'-commands once again connected on the appropriate RAC-instance
-
 "
-    sql_select_all(["SELECT Inst_ID, RAWTOHEX(Address) Address, Hash_Value FROM gv$SQLArea WHERE SQL_ID=?", sql_id]).each do |r|
+    cursors = sql_select_all(["SELECT Inst_ID, RAWTOHEX(Address) Address, Hash_Value FROM gv$SQLArea WHERE SQL_ID=?", sql_id])
+    if cursors.count > 0
+      result << "
+-- Next commands remove the current existing cursors of this SQL from SGA to ensure hard parse with SQL plan baseline at next execution
+-- If you are working on a RAC system you should execute this 'DBMS_SHARED_POOL.PURGE'-commands once again connected on the appropriate RAC-instance
+      "
+    end
+    cursors.each do |r|
       result << "-- For instance = #{r.inst_id}:
 exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
+"
+    end
 
+    result << "
 -- ######### to remove an existing SQL plan baseline execute the following:
 -- Get the SQL-Handle of your baseline from Panorama's selections or by
 -- SELECT * FROM dba_sql_plan_baselines WHERE SQL_Text LIKE '%<your SQL>%';
@@ -2123,7 +2129,6 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
 -- /
 
 "
-    end
 
     respond_to do |format|
       format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap; padding: 10px;'>#{my_html_escape(result)}</pre>".html_safe }

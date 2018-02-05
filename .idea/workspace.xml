@@ -7,10 +7,11 @@
     <bookmark url="file://$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb" line="66" mnemonic="7" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="Show hint of SQL plan baselines">
+    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
       <change beforePath="$PROJECT_DIR$/app/controllers/dba_sga_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/dba_sga_controller.rb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_show_plan_baselines.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_show_plan_baselines.html.erb" />
+      <change beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -126,7 +127,7 @@
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_list_sysaux_occupants_with_xhr__true__Panorama_Gem.coverage" NAME="test_list_sysaux_occupants_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1505584097096" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__DbaSgaControllerTest___Panorama_Gem.coverage" NAME="Run test 'DbaSgaControllerTest': Panorama_Gem Coverage Results" MODIFIED="1512638127731" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_object_increase_timeline_with_xhr__true__Panorama_Gem.coverage" NAME="test_object_increase_timeline_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1501070169123" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
-    <SUITE FILE_PATH="coverage/Panorama_Gem@Development__Panorama_Gem.coverage" NAME="Development: Panorama_Gem Coverage Results" MODIFIED="1517328932704" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
+    <SUITE FILE_PATH="coverage/Panorama_Gem@Development__Panorama_Gem.coverage" NAME="Development: Panorama_Gem Coverage Results" MODIFIED="1517827959275" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_dba__Panorama_Gem.coverage" NAME="test_dba: Panorama_Gem Coverage Results" MODIFIED="1468855552397" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_dummy_with_xhr__true__Panorama_Gem.coverage" NAME="test_dummy_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1503408571446" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_sql_detail_historic_with_xhr__true__Panorama_Gem.coverage" NAME="test_sql_detail_historic_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1511442945153" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
@@ -167,8 +168,28 @@
       <file leaf-file-name="dba_sga_controller.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/controllers/dba_sga_controller.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="666">
-              <caret line="1439" column="52" lean-forward="false" selection-start-line="1439" selection-start-column="52" selection-end-line="1439" selection-end-column="52" />
+            <state relative-caret-position="290">
+              <caret line="1711" column="35" lean-forward="false" selection-start-line="1711" selection-start-column="35" selection-end-line="1711" selection-end-column="35" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="_list_sql_sga_stat_footer.html.erb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-97">
+              <caret line="18" column="0" lean-forward="true" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="75">
+              <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
               <folding />
             </state>
           </provider>
@@ -188,13 +209,13 @@
         <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_profile_detail.html.erb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="390">
-              <caret line="26" column="0" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
+              <caret line="26" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_show_plan_baselines.html.erb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="_show_plan_baselines.html.erb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_show_plan_baselines.html.erb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="557">
@@ -204,12 +225,20 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="dba_history_controller.rb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/controllers/dba_history_controller.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="401">
+              <caret line="2105" column="0" lean-forward="false" selection-start-line="2105" selection-start-column="0" selection-end-line="2105" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
     </leaf>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>menu</find>
-      <find>bindings</find>
       <find>slickgrid_pin_grid</find>
       <find>container_id</find>
       <find>initialize_slickgrid</find>
@@ -238,6 +267,8 @@
       <find>Drop connection and look for next one from pool</find>
       <find>sqlobj</find>
       <find>SQLOB</find>
+      <find>generate</find>
+      <find>db_trigger_name</find>
     </findStrings>
     <replaceStrings>
       <replace>dLast_Load_Time</replace>
@@ -293,14 +324,12 @@
         <option value="$PROJECT_DIR$/app/views/table_dependencies/_show_tables.html.erb" />
         <option value="$PROJECT_DIR$/app/helpers/html_helper.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb" />
-        <option value="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_bind_variables.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_history/_list_binds_historic.html.erb" />
         <option value="$PROJECT_DIR$/app/views/storage/_tablespace_usage.html.erb" />
         <option value="$PROJECT_DIR$/app/views/active_session_history/_show_session_statistics_historic.html.erb" />
         <option value="$PROJECT_DIR$/app/assets/stylesheets/panorama.scss" />
         <option value="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" />
-        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/app/models/worker_thread.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" />
@@ -313,8 +342,10 @@
         <option value="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_show_sql_patches.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_plan_baseline_hints.html.erb" />
-        <option value="$PROJECT_DIR$/app/controllers/dba_sga_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_show_plan_baselines.html.erb" />
+        <option value="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
+        <option value="$PROJECT_DIR$/app/controllers/dba_sga_controller.rb" />
+        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
       </list>
     </option>
   </component>
@@ -338,11 +369,11 @@
     <option name="FILTER_DEBUG" value="true" />
     <option name="CUSTOM_FILTER" />
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="55" />
-    <option name="y" value="23" />
-    <option name="width" value="1630" />
-    <option name="height" value="1027" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="77" />
+    <option name="y" value="51" />
+    <option name="width" value="2415" />
+    <option name="height" value="1339" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -379,9 +410,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="RailsProjectView" />
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -616,6 +644,9 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
+      <pane id="Scratches" />
+      <pane id="RailsProjectView" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -675,7 +706,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Test::Unit/Shoulda/Minitest.test_list_table_description_with_xhr:_true: Panorama_Gem">
+  <component name="RunManager" selected="Rails.Development: Panorama_Gem">
     <configuration name="Run test 'GlobalMenuTest': Panorama_Gem" type="TestUnitRunConfigurationType" factoryName="Test::Unit/Shoulda/Minitest" temporary="true">
       <predefined_log_file id="RUBY_TESTUNIT" enabled="true" />
       <module name="Panorama_Gem" />
@@ -1238,14 +1269,8 @@
       <workItem from="1516372976933" duration="570000" />
       <workItem from="1516560037914" duration="39560000" />
       <workItem from="1516806218400" duration="51674000" />
-      <workItem from="1517229112144" duration="30825000" />
-    </task>
-    <task id="LOCAL-01205" summary="Switch test do new super class">
-      <created>1515851427337</created>
-      <option name="number" value="01205" />
-      <option name="presentableId" value="LOCAL-01205" />
-      <option name="project" value="LOCAL" />
-      <updated>1515851427337</updated>
+      <workItem from="1517229112144" duration="31881000" />
+      <workItem from="1517827859437" duration="2950000" />
     </task>
     <task id="LOCAL-01206" summary="Separate strategy for SQL-Patch 12.1 and 12.2">
       <created>1515875339497</created>
@@ -1583,7 +1608,14 @@
       <option name="project" value="LOCAL" />
       <updated>1517472379493</updated>
     </task>
-    <option name="localTasksCounter" value="1254" />
+    <task id="LOCAL-01254" summary="Show plan hash value and plan of SQL plan baselines">
+      <created>1517474059957</created>
+      <option name="number" value="01254" />
+      <option name="presentableId" value="LOCAL-01254" />
+      <option name="project" value="LOCAL" />
+      <updated>1517474059958</updated>
+    </task>
+    <option name="localTasksCounter" value="1255" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1619,7 +1651,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2800925000" />
+    <option name="totallyTimeSpent" value="2804931000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1631,20 +1663,20 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="55" y="23" width="2505" height="1417" extended-state="6" />
+    <frame x="77" y="51" width="2415" height="1339" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2817702" sideWeight="0.6079734" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.416772" sideWeight="0.5981308" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30472103" sideWeight="0.48770103" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2532189" sideWeight="0.31801006" order="10" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26633167" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34795764" sideWeight="0.6819899" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2532189" sideWeight="0.48806533" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2817702" sideWeight="0.39202657" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.39790997" sideWeight="0.6819899" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.416772" sideWeight="0.40186915" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18776824" sideWeight="0.4952343" order="14" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31694403" sideWeight="0.8073048" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27812895" sideWeight="0.3464837" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4495708" sideWeight="0.8073048" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32967034" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22854078" sideWeight="0.45896465" order="12" side_tool="false" content_ui="tabs" />
@@ -1701,7 +1733,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Accept nil for wait_secs" />
     <MESSAGE value="SQL-.ID accepted as filter in Session waits historic" />
     <MESSAGE value="SQL patch available also for 11g" />
     <MESSAGE value="Drop info for SQL plan baselines" />
@@ -1726,7 +1757,8 @@
     <MESSAGE value="Bugfix test: Test both values for SELECT ANY TABLE and not" />
     <MESSAGE value="Bugfix: Describe object : unique object name" />
     <MESSAGE value="Show hint of SQL plan baselines" />
-    <option name="LAST_COMMIT_MESSAGE" value="Show hint of SQL plan baselines" />
+    <MESSAGE value="Show plan hash value and plan of SQL plan baselines" />
+    <option name="LAST_COMMIT_MESSAGE" value="Show plan hash value and plan of SQL plan baselines" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2031,21 +2063,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/dba_history_controller.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-548">
-          <caret line="485" column="0" lean-forward="false" selection-start-line="485" selection-start-column="0" selection-end-line="485" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/config/locales/de.yml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="179">
@@ -2058,7 +2075,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1078">
           <caret line="160" column="137" lean-forward="false" selection-start-line="160" selection-start-column="137" selection-end-line="160" selection-end-column="137" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2066,7 +2082,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="324">
           <caret line="164" column="22" lean-forward="false" selection-start-line="164" selection-start-column="22" selection-end-line="164" selection-end-column="22" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2074,15 +2089,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
           <caret line="5" column="29" lean-forward="false" selection-start-line="5" selection-start-column="29" selection-end-line="5" selection-end-column="29" />
-          <folding>
-            <element signature="e#93#119#1#ruby" expanded="false" />
-            <element signature="e#206#230#1#ruby" expanded="false" />
-            <element signature="e#573#720#0#ruby" expanded="false" />
-            <element signature="e#1006#1063#0#ruby" expanded="false" />
-            <element signature="e#1079#1113#0#ruby" expanded="false" />
-            <element signature="e#1814#1912#0#ruby" expanded="false" />
-            <element signature="e#1924#2037#0#ruby" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -2090,7 +2096,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="677">
           <caret line="95" column="142" lean-forward="false" selection-start-line="27" selection-start-column="0" selection-end-line="95" selection-end-column="142" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2098,7 +2103,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2106,7 +2110,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="610">
           <caret line="97" column="7" lean-forward="false" selection-start-line="97" selection-start-column="7" selection-end-line="97" selection-end-column="7" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2114,7 +2117,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1734">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2122,7 +2124,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="694">
           <caret line="98" column="24" lean-forward="false" selection-start-line="98" selection-start-column="24" selection-end-line="98" selection-end-column="24" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2130,7 +2131,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="286">
           <caret line="20" column="0" lean-forward="false" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2138,7 +2138,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="318">
           <caret line="29" column="0" lean-forward="false" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2146,7 +2145,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="375">
           <caret line="25" column="16" lean-forward="false" selection-start-line="25" selection-start-column="16" selection-end-line="25" selection-end-column="16" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2154,7 +2152,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="418">
           <caret line="162" column="0" lean-forward="false" selection-start-line="162" selection-start-column="0" selection-end-line="162" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2170,30 +2167,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="754">
           <caret line="248" column="33" lean-forward="false" selection-start-line="248" selection-start-column="33" selection-end-line="248" selection-end-column="33" />
-          <folding>
-            <element signature="e#1316#1400#1#ruby" expanded="false" />
-            <element signature="e#1564#1592#1#ruby" expanded="false" />
-            <element signature="n#t#0;n#!!top" expanded="false" />
-            <element signature="n#t#1;n#!!top" expanded="false" />
-            <element signature="n#t#2;n#!!top" expanded="false" />
-            <element signature="e#3844#3941#0#ruby" expanded="false" />
-            <element signature="n#t#3;n#!!top" expanded="false" />
-            <element signature="e#4591#4688#0#ruby" expanded="false" />
-            <element signature="n#t#4;n#!!top" expanded="false" />
-            <element signature="n#t#5;n#!!top" expanded="false" />
-            <element signature="e#11587#11679#0#ruby" expanded="false" />
-            <element signature="e#12011#12124#0#ruby" expanded="false" />
-            <element signature="e#13080#13220#0#ruby" expanded="false" />
-            <element signature="e#13238#13244#0#HTML" expanded="false" />
-            <element signature="e#13247#13253#0#HTML" expanded="false" />
-            <element signature="e#13307#13399#0#ruby" expanded="false" />
-            <element signature="e#13623#13752#0#ruby" expanded="false" />
-            <element signature="e#13950#13956#0#HTML" expanded="false" />
-            <element signature="e#14595#14758#0#ruby" expanded="false" />
-            <element signature="e#15085#15240#0#ruby" expanded="false" />
-            <element signature="e#16775#16930#0#ruby" expanded="false" />
-            <element signature="e#17303#17428#0#ruby" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -2201,7 +2174,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="390">
           <caret line="26" column="0" lean-forward="false" selection-start-line="8" selection-start-column="1" selection-end-line="26" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2209,7 +2181,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="4" column="26" lean-forward="false" selection-start-line="4" selection-start-column="4" selection-end-line="4" selection-end-column="26" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2217,7 +2188,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="255">
           <caret line="17" column="50" lean-forward="false" selection-start-line="17" selection-start-column="50" selection-end-line="17" selection-end-column="50" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2225,7 +2195,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="505">
           <caret line="158" column="0" lean-forward="false" selection-start-line="158" selection-start-column="0" selection-end-line="158" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2233,15 +2202,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="421">
           <caret line="174" column="224" lean-forward="true" selection-start-line="174" selection-start-column="48" selection-end-line="174" selection-end-column="224" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2249,7 +2209,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="396">
           <caret line="63" column="7" lean-forward="false" selection-start-line="63" selection-start-column="7" selection-end-line="63" selection-end-column="7" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2265,7 +2224,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="448">
           <caret line="167" column="177" lean-forward="false" selection-start-line="167" selection-start-column="157" selection-end-line="167" selection-end-column="177" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2281,26 +2239,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="858">
           <caret line="408" column="129" lean-forward="false" selection-start-line="408" selection-start-column="129" selection-end-line="408" selection-end-column="129" />
-          <folding>
-            <marker date="1517396007922" expanded="true" signature="16269:16298" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="20046:20080" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="20046:20103" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="20188:20272" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="20474:20487" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="21096:21107" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="22440:22489" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="22440:22512" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="23202:23252" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="25298:25398" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="25444:25486" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="25657:25760" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="25925:26041" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="46599:46612" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="46759:46772" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="47233:47243" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="66460:66499" ph="..." />
-            <marker date="1517396007922" expanded="true" signature="88827:89333" ph="..." />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -2316,7 +2254,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="318">
           <caret line="370" column="5" lean-forward="false" selection-start-line="370" selection-start-column="5" selection-end-line="370" selection-end-column="5" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2324,23 +2261,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
           <caret line="24" column="0" lean-forward="true" selection-start-line="15" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_profile_detail.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="26" column="0" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/dba_sga_controller.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="666">
-          <caret line="1439" column="52" lean-forward="false" selection-start-line="1439" selection-start-column="52" selection-end-line="1439" selection-end-column="52" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2352,10 +2272,50 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_profile_detail.html.erb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="390">
+          <caret line="26" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_show_plan_baselines.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="557">
           <caret line="43" column="180" lean-forward="false" selection-start-line="43" selection-start-column="180" selection-end-line="43" selection-end-column="180" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/dba_history_controller.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="401">
+          <caret line="2105" column="0" lean-forward="false" selection-start-line="2105" selection-start-column="0" selection-end-line="2105" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/dba_sga_controller.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="290">
+          <caret line="1711" column="35" lean-forward="false" selection-start-line="1711" selection-start-column="35" selection-end-line="1711" selection-end-column="35" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-97">
+          <caret line="18" column="0" lean-forward="true" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
           <folding />
         </state>
       </provider>

@@ -1385,13 +1385,13 @@ class DbaSgaController < ApplicationController
     where_values = []
 
     if @force_matching_signature || @exact_matching_signature
-      where_string << " WHERE Signature IN (?,?)"
+      where_string << " WHERE b.Signature IN (?,?)"
       where_values << @force_matching_signature
       where_values << @exact_matching_signature
     end
 
     if @force_matching_signature && @exact_matching_signature &&
-        sql_select_one(["SELECT COUNT(*) FROM DBA_SQL_Plan_Baselines #{where_string}"].concat(where_values)) == 0
+        sql_select_one(["SELECT COUNT(*) FROM DBA_SQL_Plan_Baselines b #{where_string}"].concat(where_values)) == 0
       @baselines = []                                                           # Suppress long running SQL if there is no result
     else
       @baselines = sql_select_all ["SELECT b.*, em.SGA_Usages, em.SQL_ID, em.Inst_ID, NVL(so.comp_data_count, 0) comp_data_count
@@ -1708,7 +1708,7 @@ class DbaSgaController < ApplicationController
       end
     end
 
-    db_trigger_name     = "Panorama_Transl_#{user_name}"[0, 30]
+    db_trigger_name     = 'SYS.' + "Panorama_Transl_#{user_name}"[0, 30]
     profile_name        = "Panorama_Transl_#{user_name}".upcase[0, 30]
 
     sql_text = sql_select_one ["SELECT SQL_FullText FROM gv$SQLArea WHERE SQL_ID = ?", @sql_id]
