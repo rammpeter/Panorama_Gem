@@ -9,8 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/app/models/worker_thread.rb" afterPath="$PROJECT_DIR$/app/models/worker_thread.rb" />
-      <change beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+      <change beforePath="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" afterPath="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -184,12 +183,41 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="75">
               <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="slickgrid_extended.js" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="78">
+              <caret line="182" column="20" lean-forward="false" selection-start-line="182" selection-start-column="15" selection-end-line="182" selection-end-column="20" />
+              <folding>
+                <marker date="1518085896867" expanded="true" signature="16269:16298" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="20820:20854" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="20820:20877" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="20962:21046" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="21248:21261" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="21870:21881" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="23214:23263" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="23214:23286" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="23976:24026" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="26072:26172" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="26218:26260" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="26431:26534" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="26699:26815" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="47373:47386" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="47533:47546" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="48007:48017" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="67246:67285" ph="..." />
+                <marker date="1518085896867" expanded="true" signature="89579:90085" ph="..." />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -228,13 +256,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>container_id</find>
-      <find>initialize_slickgrid</find>
-      <find>click</find>
-      <find>data</find>
-      <find>initSlickGridExtended</find>
-      <find>options</find>
-      <find>pin_grid</find>
       <find>remove_grid</find>
       <find>@update_area</find>
       <find>box</find>
@@ -258,6 +279,13 @@
       <find>generate</find>
       <find>db_trigger_name</find>
       <find>WorkerThread.create_snapshot</find>
+      <find>switch_slickgrid_filter_row()</find>
+      <find>switch_slickgrid_filter_row</find>
+      <find>push</find>
+      <find>Pin this table.</find>
+      <find>Table is pinned at top_level</find>
+      <find>descendants</find>
+      <find>Quick</find>
     </findStrings>
     <replaceStrings>
       <replace>dLast_Load_Time</replace>
@@ -327,7 +355,6 @@
         <option value="$PROJECT_DIR$/app/views/dba_schema/_list_table_description_owner_choice.html.erb" />
         <option value="$PROJECT_DIR$/test/controllers/dba_schema_controller_test.rb" />
         <option value="$PROJECT_DIR$/app/views/active_session_history/_list_session_statistic_historic_grouping_table_def.html.erb" />
-        <option value="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_show_sql_patches.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_plan_baseline_hints.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_show_plan_baselines.html.erb" />
@@ -335,6 +362,7 @@
         <option value="$PROJECT_DIR$/app/controllers/dba_sga_controller.rb" />
         <option value="$PROJECT_DIR$/app/models/worker_thread.rb" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+        <option value="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" />
       </list>
     </option>
   </component>
@@ -1259,14 +1287,7 @@
       <workItem from="1516560037914" duration="39560000" />
       <workItem from="1516806218400" duration="51674000" />
       <workItem from="1517229112144" duration="31881000" />
-      <workItem from="1517827859437" duration="7458000" />
-    </task>
-    <task id="LOCAL-01207" summary="SQL patch succeeded">
-      <created>1515944439592</created>
-      <option name="number" value="01207" />
-      <option name="presentableId" value="LOCAL-01207" />
-      <option name="project" value="LOCAL" />
-      <updated>1515944439592</updated>
+      <workItem from="1517827859437" duration="13204000" />
     </task>
     <task id="LOCAL-01208" summary="Browser_tab-Support for usage/info">
       <created>1516029413525</created>
@@ -1604,7 +1625,14 @@
       <option name="project" value="LOCAL" />
       <updated>1517834265139</updated>
     </task>
-    <option name="localTasksCounter" value="1256" />
+    <task id="LOCAL-01256" summary="Bugfix Panorama-Sampler: Call PanoramaSamplerConfig.check_for_select_any_table! in new Thread only">
+      <created>1518080333849</created>
+      <option name="number" value="01256" />
+      <option name="presentableId" value="LOCAL-01256" />
+      <option name="project" value="LOCAL" />
+      <updated>1518080333849</updated>
+    </task>
+    <option name="localTasksCounter" value="1257" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1640,7 +1668,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2809439000" />
+    <option name="totallyTimeSpent" value="2815185000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1722,7 +1750,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="SQL patch available also for 11g" />
     <MESSAGE value="Drop info for SQL plan baselines" />
     <MESSAGE value="Corrections of inspect warnings" />
     <MESSAGE value="Fix for license_type, SQL-Baselines packed" />
@@ -1747,7 +1774,8 @@
     <MESSAGE value="Show hint of SQL plan baselines" />
     <MESSAGE value="Show plan hash value and plan of SQL plan baselines" />
     <MESSAGE value="Fix for show SQL plan baselines" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix for show SQL plan baselines" />
+    <MESSAGE value="Bugfix Panorama-Sampler: Call PanoramaSamplerConfig.check_for_select_any_table! in new Thread only" />
+    <option name="LAST_COMMIT_MESSAGE" value="Bugfix Panorama-Sampler: Call PanoramaSamplerConfig.check_for_select_any_table! in new Thread only" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2209,6 +2237,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="448">
           <caret line="167" column="177" lean-forward="false" selection-start-line="167" selection-start-column="157" selection-end-line="167" selection-end-column="177" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2217,13 +2246,6 @@
         <state relative-caret-position="583">
           <caret line="233" column="54" lean-forward="false" selection-start-line="233" selection-start-column="54" selection-end-line="233" selection-end-column="54" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="858">
-          <caret line="408" column="129" lean-forward="false" selection-start-line="408" selection-start-column="129" selection-end-line="408" selection-end-column="129" />
         </state>
       </provider>
     </entry>
@@ -2327,6 +2349,33 @@
         <state relative-caret-position="75">
           <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="78">
+          <caret line="182" column="20" lean-forward="false" selection-start-line="182" selection-start-column="15" selection-end-line="182" selection-end-column="20" />
+          <folding>
+            <marker date="1518085896867" expanded="true" signature="16269:16298" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="20820:20854" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="20820:20877" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="20962:21046" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="21248:21261" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="21870:21881" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="23214:23263" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="23214:23286" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="23976:24026" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="26072:26172" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="26218:26260" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="26431:26534" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="26699:26815" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="47373:47386" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="47533:47546" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="48007:48017" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="67246:67285" ph="..." />
+            <marker date="1518085896867" expanded="true" signature="89579:90085" ph="..." />
+          </folding>
         </state>
       </provider>
     </entry>

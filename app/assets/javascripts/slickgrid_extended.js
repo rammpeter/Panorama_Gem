@@ -322,11 +322,23 @@ function SlickGridExtended(container_id, options){
                 options['command_menu_entries'] = [];
             }
 
+            options['command_menu_entries'].reverse();                          // allow pushed element to be at first position
+            options['command_menu_entries'].push({
+                name:                   'toggle_search_filter',
+                caption:                locale_translate("slickgrid_context_menu_search_filter"),
+                hint:                   locale_translate("slickgrid_context_menu_search_filter_hint"),
+                icon_class:             'ui-icon ui-icon-zoomin',
+                show_icon_in_caption:   'only',
+                action:                 "jQuery('#"+container_id+"').data('slickgridextended').switch_slickgrid_filter_row();"
+            });
+            options['command_menu_entries'].reverse();                          // restore previous order of elements
+
+
             if (options['show_pin_icon']){
                 options['command_menu_entries'].push({
                     name:                  'pin_grid_global',
                     caption:                'Pin table',
-                    hint:                   "Pin this table global.\nPrevent it from being overwritten by any menu action",
+                    hint:                   locale_translate('slickgrid_pin_global_hint'),
                     icon_class:             'ui-icon ui-icon-pin-w',
                     show_icon_in_caption:   'right',
                     action:                 "jQuery('#"+container_id+"').data('slickgridextended').pin_grid(true);",
@@ -335,7 +347,7 @@ function SlickGridExtended(container_id, options){
                 options['command_menu_entries'].push({
                     name:                  'pin_grid_local',
                     caption:                'Pin table',
-                    hint:                   "Pin this table.\nPrevent it from being overwritten by parent reload",
+                    hint:                   locale_translate('slickgrid_pin_local_hint'),
                     icon_class:             'ui-icon ui-icon-pin-w',
                     show_icon_in_caption:   'right',
                     action:                 "jQuery('#"+container_id+"').data('slickgridextended').pin_grid(false);"
@@ -345,7 +357,7 @@ function SlickGridExtended(container_id, options){
             options['command_menu_entries'].push({
                 name:                   'remove_table_from_page',
                 caption:                'Close table',
-                hint:                   'Remove this table from page',
+                hint:                   locale_translate('slickgrid_close_hint'),
                 icon_class:             'ui-icon ui-icon-close',
                 show_icon_in_caption:   'right',
                 action:                 "jQuery('#"+container_id+"').data('slickgridextended').remove_grid();"
@@ -853,7 +865,7 @@ function SlickGridExtended(container_id, options){
         }
 
         menu_entry("sort_column",       "ui-icon ui-icon-carat-2-n-s",      function(){ thiz.last_slickgrid_contexmenu_col_header.click();} );                  // Menu-Eintrag Sortieren
-        menu_entry("search_filter",     "ui-icon ui-icon-zoomin",           function(){ switch_slickgrid_filter_row();} );                                 // Menu-Eintrag Filter einblenden / verstecken
+        menu_entry("search_filter",     "ui-icon ui-icon-zoomin",           function(){ thiz.switch_slickgrid_filter_row();} );                                 // Menu-Eintrag Filter einblenden / verstecken
         menu_entry("export_csv",        "ui-icon ui-icon-document",         function(){ grid2CSV(table_id);} );                                            // Menu-Eintrag Export CSV
         menu_entry("column_sum",        "ui-icon ui-icon-document",         function(){ show_column_stats(thiz.last_slickgrid_contexmenu_column_name);} );      // Menu-Eintrag Spaltensumme
         menu_entry("field_content",     "ui-icon ui-icon-arrow-4-diag",     function(){ show_full_cell_content(thiz.last_slickgrid_contexmenu_field_content);} ); // Menu-Eintrag Feld-Inhalt
@@ -942,7 +954,7 @@ function SlickGridExtended(container_id, options){
     /**
      * Ein- / Ausblenden der Filter-Inputs in Header-Rows des Slickgrids
      */
-    function switch_slickgrid_filter_row(){
+    this.switch_slickgrid_filter_row = function(){
         var options = thiz.grid.getOptions();
         if (options["showHeaderRow"]) {
             thiz.grid.setHeaderRowVisibility(false);
@@ -954,7 +966,7 @@ function SlickGridExtended(container_id, options){
         thiz.grid.setColumns(thiz.grid.getColumns());                                     // Auslösen/Provozieren des Events onHeaderRowCellRendered für slickGrid
         thiz.force_height_calculation = true;                                   // Sicherstellen, dass Höhenberechnung nicht wegoptimiert wird
         thiz.calculate_current_grid_column_widths("switch_slickgrid_filter_row");  // Höhe neu berechnen
-    }
+    };
 
     function grid2CSV(grid_id) {
         function escape(cell){
@@ -1393,13 +1405,13 @@ function SlickGridExtended(container_id, options){
         if (pin_at_toplevel){
             var target_for_pinned = jQuery('#'+options['top_level_container_id']);
             var pin_button_outer_span = jQuery('#'+container_id+'_header_left_box_pin_grid_global');
-            var new_title = 'Table is pinned at top_level. Click Close-icon to remove table.';
+            var new_title = locale_translate('slickgrid_pinned_global_hint');
             jQuery('#'+container_id+'_header_left_box_pin_grid_local').css('display', 'none');      // hide local pin button if global was hit
             pin_button_outer_span.css('background-color', 'lightgray');         // mark pin button special as global pin
         } else {
             var target_for_pinned = grid_parent;
             var pin_button_outer_span = jQuery('#'+container_id+'_header_left_box_pin_grid_local');
-            var new_title = 'Table is pinned. Click Close-icon to remove table.';
+            var new_title = locale_translate('slickgrid_pinned_local_hint');
             jQuery('#'+container_id+'_header_left_box_pin_grid_global').css('display', 'inline');      // show global pin button after local pin
 
             for (var i = 1; i < options['show_pin_icon']; i++) {                // step up for parents according to number of parent_tree_depth
@@ -1424,7 +1436,7 @@ function SlickGridExtended(container_id, options){
         ;
 
         // set new titile for close button: closes also descendants
-        jQuery('#'+container_id+'_header_left_box_remove_table_from_page').attr('title', 'Remove this table and all it\'s possible descendants from page');
+        jQuery('#'+container_id+'_header_left_box_remove_table_from_page').attr('title', locale_translate('slickgrid_close_descendants_hint'));
 
 
         thiz.pinned = true;                                                     // remember pinned-status for close-handling
@@ -1642,6 +1654,14 @@ function trace_log(msg){
  */
 function get_slickgrid_translations() {
     return {
+        'slickgrid_close_hint': {
+            'en': 'Remove this table from page',
+            'de': 'Entfernen der Tabelle von Seite'
+        },
+        'slickgrid_close_descendants_hint': {
+            'en': "Remove this table and all it's possible descendants from page",
+            'de': "Entfernen der Tabelle und aller ihrer eventuellen Nachkömmlinge von Seite"
+        },
         'slickgrid_context_menu_column_sum': {
             'en': 'Sums of all rows of this column',
             'de': 'Summen der Werte dieser Spalte'
@@ -1744,6 +1764,22 @@ function get_slickgrid_translations() {
         'slickgrid_menu_hint': {
             'en': 'Show menu with local functions for this table',
             'de': 'Zeige Menü mit lokalen Funktionen für diese Tabelle'
+        },
+        'slickgrid_pin_global_hint': {
+            'en': "Pin this table global.\nPrevent it from being overwritten by any menu action",
+            'de': "Pinnen der Tabelle global.\nVerhindern des Überschreibens durch jegliche Menü-Aktion"
+        },
+        'slickgrid_pin_local_hint': {
+            'en': "Pin this table.\nPrevent it from being overwritten by parent reload",
+            'de': "Pinnen der Tabelle.\nVerhindern des Überschreibens beim Reload der Parent-Information"
+        },
+        'slickgrid_pinned_global_hint': {
+            'en': "Table is pinned at top_level.\nClick Close-icon to remove table.",
+            'de': "Tabelle ist global auf top-level gepinnt.\nZum Entfernen Close-icon klicken"
+        },
+        'slickgrid_pinned_local_hint': {
+            'en': "Table is pinned.\nClick Close-icon to remove table.",
+            'de': "Tabelle ist gepinnt.\nZum Entfernen Close-icon klicken"
         },
         'slickgrid_pct_hint': {
             'en': 'of column sum',
