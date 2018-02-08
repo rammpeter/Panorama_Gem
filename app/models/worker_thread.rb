@@ -17,9 +17,6 @@ class WorkerThread
   # Generic create snapshot
   def self.create_snapshot(sampler_config, snapshot_time, domain)
 
-    # Check if accessing v$-tables from within PL/SQL-Package is possible
-    PanoramaSamplerConfig.check_for_select_any_table!(sampler_config)
-
     if domain == :AWR_ASH
       WorkerThread.new(sampler_config, 'check_structure_synchron').check_structure_synchron # Ensure existence of objects necessary for both Threads, synchron with job's thread
       thread = Thread.new{WorkerThread.new(sampler_config, 'ash_sampler_daemon').create_ash_sampler_daemon(snapshot_time)} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
@@ -95,6 +92,11 @@ class WorkerThread
     end
 
     @@synchron__structure_checks[@sampler_config[:id]] = true                   # Create semaphore for thread, begin processing
+
+    # TODO: move sampler_config from Hash to intance of PanoramaSamplerConfig! Remove check_for_select_any_table! here and place it in getter of PanoramaSamplerConfig to be executed at first call
+    # Check if accessing v$-tables from within PL/SQL-Package is possible
+    PanoramaSamplerConfig.check_for_select_any_table!(@sampler_config)
+
     PanoramaSamplerStructureCheck.do_check(@sampler_config, :ASH)               # Check data structure preconditions, but only for ASH-tables
     @@synchron__structure_checks.delete(@sampler_config[:id])                   # Remove semaphore
     PanoramaConnection.release_connection                                       # Free DB connection in Pool
@@ -156,10 +158,13 @@ class WorkerThread
   def create_snapshot_internal(snapshot_time, domain)
     snapshot_semaphore_key = "#{@sampler_config[:id]}_#{domain}"
     if @@active_snapshots[snapshot_semaphore_key]
-      Rails.logger.error("Previous #{domain} snapshot not yet finshed for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]}), new object size snapshot not started! Restart Panorama server if this problem persists.")
-      PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Previous #{domain} snapshot not yet finshed, new object size snapshot not started! Restart Panorama server if this problem persists.")
+      Rails.logger.error("Previous #{domain} snapshot not yet finshed for ID=#{@sampler_config[:id]} (#{@sampler_config[:name]}), new #{domain} snapshot not started! Restart Panorama server if this problem persists.")
+      PanoramaSamplerConfig.set_error_message(@sampler_config[:id], "Previous #{domain} snapshot not yet finshed, new #{domain} snapshot not started! Restart Panorama server if this problem persists.")
       return
     end
+
+    # Check if accessing v$-tables from within PL/SQL-Package is possible
+    PanoramaSamplerConfig.check_for_select_any_table!(@sampler_config)
 
     Rails.logger.info "#{Time.now}: Create new #{domain} snapshot for ID=#{@sampler_config[:id]}, Name='#{@sampler_config[:name]}'"
 
