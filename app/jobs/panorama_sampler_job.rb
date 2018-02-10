@@ -23,7 +23,7 @@ class PanoramaSamplerJob < ApplicationJob
     end
 
     # Iterate over PanoramaSampler entries
-    PanoramaSamplerConfig.get_cloned_config_array.each do |config|
+    PanoramaSamplerConfig.get_config_array.each do |config|
       check_for_sampling(config, snapshot_time, :AWR_ASH)
       check_for_sampling(config, snapshot_time, :OBJECT_SIZE, 60)
       check_for_sampling(config, snapshot_time, :CACHE_OBJECTS)
@@ -38,15 +38,15 @@ class PanoramaSamplerJob < ApplicationJob
 
   private
   def check_for_sampling(config, snapshot_time, domain, minute_factor = 1)
-    last_snapshot_start_key = "last_#{domain.downcase}_snapshot_start".to_sym
-    config_active           = config["#{domain.downcase}_active".to_sym]
-    snapshot_cycle_minutes  = config["#{domain.downcase}_snapshot_cycle".to_sym] * minute_factor
-    last_snapshot_start     = config[last_snapshot_start_key]
 
-    if config_active && (snapshot_time.min % snapshot_cycle_minutes == 0  ||  # exact startup time at full hour + x*snapshot_cycle
+    last_snapshot_start_key = "last_#{domain.downcase}_snapshot_start".to_sym
+    snapshot_cycle_minutes  = config.get_domain_snapshot_cycle(domain) * minute_factor
+    last_snapshot_start     = config.get_Last_domain_snapshot_start(domain)
+
+    if config.get_domain_active(domain) && (snapshot_time.min % snapshot_cycle_minutes == 0  ||  # exact startup time at full hour + x*snapshot_cycle
         snapshot_time.min == 0 && snapshot_time.hour % snapshot_cycle_minutes/60 == 0)  # Full hour for snapshot cycle = n*hour
       if  last_snapshot_start.nil? || (last_snapshot_start + snapshot_cycle_minutes.minutes <= snapshot_time+SECONDS_LATE_ALLOWED)  # snapshot_cycle expired ?, 2 seconds delay are allowed
-        PanoramaSamplerConfig.modify_config_entry(config[:id], {last_snapshot_start_key => snapshot_time})
+        config.set_domain_last_snapshot_start(domain, snapshot_time)
         WorkerThread.create_snapshot(config, snapshot_time, domain)
       else
         Rails.logger.error "#{Time.now}: Last #{domain} snapshot start (#{last_snapshot_start}) not old enough to expire next snapshot after #{snapshot_cycle_minutes} minutes for ID=#{config[:id]} '#{config[:name]}'"

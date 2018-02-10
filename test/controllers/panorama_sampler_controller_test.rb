@@ -45,6 +45,11 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "clear_config_error with xhr: true" do
+    post '/panorama_sampler/clear_config_error',  :params => {:format=>:html, :id=>1}
+    assert_response :success
+  end
+
   test "save_config with xhr: true" do
     ['Save', 'Test connection'].each do |button|                                # Simulate pressed button "Save" or "Test connection"
       ['Existing', 'New'].each do |mode|                                        # Simulate change of existing or new record

@@ -32,7 +32,11 @@ require File.expand_path("../../lib/test_helpers/application_system_test_case", 
 # run at /home/ramm/.rvm/gems/jruby-9.1.7.0/gems/railties-5.0.1/lib/rails/test_unit/minitest_plugin.rb:73
 # block in autorun at /home/ramm/.rvm/gems/jruby-9.1.7.0/gems/minitest-5.10.2/lib/minitest.rb:63
 # rake aborted!
-Minitest::Reporters.use!
+
+Minitest::Reporters.use!(
+    Minitest::Reporters::DefaultReporter.new,
+    ENV, Minitest.backtrace_filter
+)
 
 # Load fixtures from the engine
 #if ActiveSupport::TestCase.respond_to?(:fixture_path=)
@@ -92,7 +96,7 @@ class ActiveSupport::TestCase
     sampler_config[:blocking_locks_active]          = true
 
     sampler_config[:awr_ash_snapshot_cycle]         = 1                         # Ensure small runtime of test run
-    sampler_config = PanoramaSamplerConfig.initialize_defaults(sampler_config)
+    sampler_config = PanoramaSamplerConfig.new(sampler_config).get_cloned_config_hash
   end
 
 
@@ -116,16 +120,17 @@ class ActiveSupport::TestCase
 
     set_panorama_sampler_config_defaults!(sampler_config)
 
+    config_object = PanoramaSamplerConfig.get_config_entry_by_id_or_nil(sampler_config[:id])
 
-    if PanoramaSamplerConfig.config_entry_exists?(sampler_config[:id])
-      PanoramaSamplerConfig.modify_config_entry(sampler_config[:id], sampler_config)
-    else
+    if config_object.nil?
       PanoramaSamplerConfig.add_config_entry(sampler_config)
+    else
+      config_object.modify(sampler_config)
     end
 
     PanoramaConnection.set_connection_info_for_request(sampler_config)
 
-    sampler_config
+    PanoramaSamplerConfig.get_config_entry_by_id(sampler_config[:id])
   end
 
 end

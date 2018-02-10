@@ -26,7 +26,7 @@ class WorkerThreadTest < ActiveSupport::TestCase
   test "do_sampling_awr_ash" do
     # Test-user needs SELECT ANY TABLE for read access on V$-Tables from PL/SQL-Packages
     [true, false].each do |select_any_table|                                    # Test package and anonymous PL/SQL
-      @sampler_config[:select_any_table] = select_any_table
+      @sampler_config.set_select_any_table(select_any_table)
       WorkerThread.new(@sampler_config, 'test_check_structure_synchron').check_structure_synchron
       WorkerThread.new(@sampler_config, 'test_create_ash_sampler_daemon').create_ash_sampler_daemon(Time.now.round)
       WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called

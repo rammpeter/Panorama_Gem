@@ -116,8 +116,8 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
     @sampler_config_entry[:owner]                          = @sampler_config_entry[:user] # Default
 
     # Create test data
-    PanoramaSamplerSampling.do_sampling(@sampler_config_entry, @ttime_selection_start, :OBJECT_SIZE)
-    PanoramaSamplerSampling.do_sampling(@sampler_config_entry, @ttime_selection_end,   :OBJECT_SIZE)
+    PanoramaSamplerSampling.do_sampling(PanoramaSamplerConfig.new(@sampler_config_entry), @ttime_selection_start, :OBJECT_SIZE)
+    PanoramaSamplerSampling.do_sampling(PanoramaSamplerConfig.new(@sampler_config_entry), @ttime_selection_end,   :OBJECT_SIZE)
 
     ['Segment_Type', 'Tablespace_Name', 'Owner'].each do |gruppierung_tag|
       [{:detail=>1}, {:timeline=>1}].each do |submit_tag|

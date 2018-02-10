@@ -78,7 +78,7 @@ class PanoramaSamplerStructureCheck
   end
 
   def log(message)
-    Rails.logger.info "PanoramaSamplerStructureCheck: #{message} for config ID=#{@sampler_config[:id]} (#{@sampler_config[:name]}) "
+    Rails.logger.info "PanoramaSamplerStructureCheck: #{message} for config ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) "
   end
 
 =begin
@@ -999,27 +999,27 @@ ORDER BY Column_ID
   # Check data structures, for ASH-Thread or snapshot thread
   def do_check_internal(domain)
 
-    @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config[:owner].upcase]
-    @ora_tab_privs    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM ALL_TAB_PRIVS WHERE Table_Schema = ?  AND Privilege = 'SELECT'  AND Grantee = 'PUBLIC'",  @sampler_config[:owner].upcase]
+    @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config.get_owner.upcase]
+    @ora_tab_privs    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM ALL_TAB_PRIVS WHERE Table_Schema = ?  AND Privilege = 'SELECT'  AND Grantee = 'PUBLIC'",  @sampler_config.get_owner.upcase]
 
     TABLES.each do |table|
       check_table_existence(table) if table[:domain] == domain
     end
 
-    @ora_tab_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config[:owner].upcase]
-    @ora_tab_colnull  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name, Nullable FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config[:owner].upcase]
+    @ora_tab_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config.get_owner.upcase]
+    @ora_tab_colnull  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name, Nullable FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config.get_owner.upcase]
     TABLES.each do |table|
       check_table_columns(table) if table[:domain] == domain
     end
 
-    @ora_tab_pkeys    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Constraints WHERE Owner = ? AND Constraint_Type='P'", @sampler_config[:owner].upcase]
+    @ora_tab_pkeys    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Constraints WHERE Owner = ? AND Constraint_Type='P'", @sampler_config.get_owner.upcase]
     @ora_tab_pk_cols  = PanoramaConnection.sql_select_all ["SELECT cc.Table_Name, cc.Column_Name, cc.Position
                                                             FROM All_Cons_Columns cc
                                                             JOIN All_Constraints c ON c.Owner = cc.Owner AND c.Table_Name = cc.Table_Name AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'P'
                                                             WHERE cc.Owner = ?
-                                                          ", @sampler_config[:owner].upcase]
-    @ora_indexes      = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name FROM All_Indexes WHERE Owner = ?", @sampler_config[:owner].upcase]
-    @ora_ind_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Column_Name, Column_Position FROM All_Ind_Columns WHERE Table_Owner = ?", @sampler_config[:owner].upcase]
+                                                          ", @sampler_config.get_owner.upcase]
+    @ora_indexes      = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name FROM All_Indexes WHERE Owner = ?", @sampler_config.get_owner.upcase]
+    @ora_ind_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Column_Name, Column_Position FROM All_Ind_Columns WHERE Table_Owner = ?", @sampler_config.get_owner.upcase]
     TABLES.each do |table|
       check_table_pkey(table) if table[:domain] == domain
     end
@@ -1029,21 +1029,21 @@ ORDER BY Column_ID
     end
 
 
-    @ora_views        = PanoramaConnection.sql_select_all ["SELECT View_Name FROM All_Views WHERE Owner = ?",  @sampler_config[:owner].upcase]
-    @ora_view_texts   = PanoramaConnection.sql_select_all ["SELECT View_Name, Text FROM All_Views WHERE Owner = ?",  @sampler_config[:owner].upcase]
-    @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config[:owner].upcase]
+    @ora_views        = PanoramaConnection.sql_select_all ["SELECT View_Name FROM All_Views WHERE Owner = ?",  @sampler_config.get_owner.upcase]
+    @ora_view_texts   = PanoramaConnection.sql_select_all ["SELECT View_Name, Text FROM All_Views WHERE Owner = ?",  @sampler_config.get_owner.upcase]
+    @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config.get_owner.upcase]
     VIEWS.each do |view|
       check_view(view) if view[:domain] == domain
     end
 
-    if  ENV['RAILS_ENV'] != 'test'
-      msg = "Running test with @sampler_config[:select_any_table] = #{@sampler_config[:select_any_table]}"
+    if  ENV['RAILS_ENV'] == 'test'
+      msg = "Running test with @sampler_config.get_select_any_table = #{@sampler_config.get_select_any_table}"
       Rails.logger.info msg
       puts msg
     end
 
 
-    if @sampler_config[:select_any_table]                                       # call PL/SQL package? v$Tables with SELECT_ANY_CATALOG-role are accessible in PL/SQL only if SELECT ANY TABLE is granted
+    if @sampler_config.get_select_any_table                                     # call PL/SQL package? v$Tables with SELECT_ANY_CATALOG-role are accessible in PL/SQL only if SELECT ANY TABLE is granted
       case domain
         when :AWR then
           filename = PanoramaSampler::PackagePanoramaSamplerSnapshot.instance_method(:panorama_sampler_snapshot_spec).source_location[0]
@@ -1067,22 +1067,22 @@ ORDER BY Column_ID
                                                     FROM   All_Objects
                                                     WHERE  Owner=? AND Object_Type = 'PACKAGE'
                                                     AND    Object_Name IN ('PANORAMA_SAMPLER_SNAPSHOT', 'PANORAMA_SAMPLER_ASH')
-                                                   ", @sampler_config[:owner].upcase]
+                                                   ", @sampler_config.get_owner.upcase]
     packages.each do |package|
-      PanoramaConnection.sql_execute("DROP PACKAGE #{@sampler_config[:owner]}.#{package.object_name}")
+      PanoramaConnection.sql_execute("DROP PACKAGE #{@sampler_config.get_owner}.#{package.object_name}")
     end
 
-    ora_tables = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config[:owner].upcase]
+    ora_tables = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config.get_owner.upcase]
     TABLES.each do |table|
       if ora_tables.include?({'table_name' => table[:table_name].upcase})
         begin
           ############# Drop Table
-          sql = "DROP TABLE #{@sampler_config[:owner]}.#{table[:table_name]}"
+          sql = "DROP TABLE #{@sampler_config.get_owner}.#{table[:table_name]}"
           log(sql)
           PanoramaConnection.sql_execute(sql)
           log "Table #{table[:table_name]} dropped"
         rescue Exception => e
-          Rails.logger.error "Error #{e.message} dropping table #{@sampler_config[:owner]}.#{table[:table_name]}"
+          Rails.logger.error "Error #{e.message} dropping table #{@sampler_config.get_owner}.#{table[:table_name]}"
           log_exception_backtrace(e, 40)
           raise e
         end
@@ -1091,7 +1091,7 @@ ORDER BY Column_ID
   end
 
   def self.translate_plsql_aliases(config, source_buffer)
-    translated_source_buffer = source_buffer.gsub(/PANORAMA\./i, "#{config[:owner].upcase}.")    # replace PANORAMA. with the real owner
+    translated_source_buffer = source_buffer.gsub(/PANORAMA\./i, "#{config.get_owner.upcase}.")    # replace PANORAMA. with the real owner
     translated_source_buffer.gsub!(/COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME/, Time.now.to_s) # change source to provocate change of LAST_DDL_TIME even content is still the same
     translated_source_buffer.gsub!(/PANORAMA_VERSION/, PanoramaGem::VERSION) # stamp version to file
     translated_source_buffer
@@ -1114,7 +1114,7 @@ ORDER BY Column_ID
                                                WHERE  Object_Type = ?
                                                AND    Owner       = ?
                                                AND    Object_Name = ?
-                                              ", (type == :spec ? 'PACKAGE' : 'PACKAGE BODY'), @sampler_config[:owner].upcase, package_name.upcase]
+                                              ", (type == :spec ? 'PACKAGE' : 'PACKAGE BODY'), @sampler_config.get_owner.upcase, package_name.upcase]
   end
 
   # type :spec or :body
@@ -1126,7 +1126,7 @@ ORDER BY Column_ID
                                                           AND    Name  = ?
                                                           AND    Type  = ?
                                                           AND    Text LIKE '%Panorama-Version%'
-                                                         ", @sampler_config[:owner].upcase, package_name.upcase, (type==:spec ? 'PACKAGE' : 'PACKAGE BODY')]
+                                                         ", @sampler_config.get_owner.upcase, package_name.upcase, (type==:spec ? 'PACKAGE' : 'PACKAGE BODY')]
     package_version.delete!("\n") if !package_version.nil?                      # remove trailing line feed
 
     if package_obj.nil? ||
@@ -1134,7 +1134,7 @@ ORDER BY Column_ID
         package_obj.status != 'VALID' ||
         package_version != PanoramaGem::VERSION
       # Compile package
-      Rails.logger.info "Package #{'body ' if type==:body}#{@sampler_config[:owner].upcase}.#{package_name} needs #{package_obj.nil? ? 'creation' : 'recompile'}"
+      Rails.logger.info "Package #{'body ' if type==:body}#{@sampler_config.get_owner.upcase}.#{package_name} needs #{package_obj.nil? ? 'creation' : 'recompile'}"
 
       translated_source_buffer = PanoramaSamplerStructureCheck.translate_plsql_aliases(@sampler_config, source_buffer)
 
@@ -1146,20 +1146,20 @@ ORDER BY Column_ID
         errors.each do |e|
           Rails.logger.error "Line=#{e.line} position=#{e.position}: #{e.text}"
         end
-        raise "Error compiling package #{'body ' if type==:body}#{@sampler_config[:owner].upcase}.#{package_name}. See previous lines"
+        raise "Error compiling package #{'body ' if type==:body}#{@sampler_config.get_owner.upcase}.#{package_name}. See previous lines"
       end
     end
   end
 
 
   def check_table_existence(table)
-    @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config[:owner].upcase] unless @ora_tables
-    @ora_tab_privs    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM ALL_TAB_PRIVS WHERE Table_Schema = ?  AND Privilege = 'SELECT'  AND Grantee = 'PUBLIC'",  @sampler_config[:owner].upcase] unless @ora_tab_privs
+    @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config.get_owner.upcase] unless @ora_tables
+    @ora_tab_privs    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM ALL_TAB_PRIVS WHERE Table_Schema = ?  AND Privilege = 'SELECT'  AND Grantee = 'PUBLIC'",  @sampler_config.get_owner.upcase] unless @ora_tab_privs
 
     if !@ora_tables.include?({'table_name' => table[:table_name].upcase})
       ############# Check Table existence
       log "Table #{table[:table_name]} does not exist"
-      sql = "CREATE TABLE #{@sampler_config[:owner]}.#{table[:table_name]} ("
+      sql = "CREATE TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ("
       table[:columns].each do |column|
         sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]} ,"
       end
@@ -1178,7 +1178,7 @@ ORDER BY Column_ID
     table[:columns].each do |column|
       # Check column existence
       if !@ora_tab_columns.include?({'table_name' => table[:table_name].upcase, 'column_name' => column[:column_name].upcase})
-        sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} ADD ("
+        sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ADD ("
         sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]}"
         sql << ")"
         log(sql)
@@ -1187,7 +1187,7 @@ ORDER BY Column_ID
 
       # check column null state
       if !@ora_tab_colnull.include?({'table_name' => table[:table_name].upcase, 'column_name' => column[:column_name].upcase, 'nullable' => (column[:not_null] ? 'N' : 'Y')})
-        sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} MODIFY ("
+        sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} MODIFY ("
         sql << "#{column[:column_name]} #{column[:not_null] ? 'NOT NULL' : 'NULL'}"
         sql << ")"
         log(sql)
@@ -1206,7 +1206,7 @@ ORDER BY Column_ID
           end
         end
         if !should_exist
-          sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} DROP COLUMN #{tcol.column_name}"
+          sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} DROP COLUMN #{tcol.column_name}"
           log(sql)
           PanoramaConnection.sql_execute(sql)
         end
@@ -1226,11 +1226,11 @@ ORDER BY Column_ID
         table[:primary_key].each_index do |index|
           column = table[:primary_key][index]
           if !@ora_tab_pk_cols.include?({'table_name' => table[:table_name].upcase, 'column_name' => column.upcase, 'position' => index+1}) || existing_pk_columns_count != table[:primary_key].count
-            sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} DROP CONSTRAINT #{pk_name}"
+            sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} DROP CONSTRAINT #{pk_name}"
             log(sql)
             PanoramaConnection.sql_execute(sql)
 
-            sql = "DROP INDEX #{@sampler_config[:owner]}.#{pk_name}"
+            sql = "DROP INDEX #{@sampler_config.get_owner}.#{pk_name}"
             log(sql)
             PanoramaConnection.sql_execute(sql)
             break
@@ -1244,7 +1244,7 @@ ORDER BY Column_ID
 
       ######## Check existence of PK-Constraint
       if !@ora_tab_pkeys.include?({'table_name' => table[:table_name].upcase})   # PKey does not exist
-        sql = "ALTER TABLE #{@sampler_config[:owner]}.#{table[:table_name]} ADD CONSTRAINT #{pk_name} PRIMARY KEY ("
+        sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ADD CONSTRAINT #{pk_name} PRIMARY KEY ("
         table[:primary_key].each do |pk|
           sql << "#{pk},"
         end
@@ -1277,7 +1277,7 @@ ORDER BY Column_ID
       columns.each_index do |i|
         column = columns[i]
         if !@ora_ind_columns.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase, 'column_name' => column.upcase, 'column_position' => i+1}) || existing_index_columns_count != columns.count
-          sql = "DROP INDEX #{@sampler_config[:owner]}.#{index_name}"
+          sql = "DROP INDEX #{@sampler_config.get_owner}.#{index_name}"
           log(sql)
           PanoramaConnection.sql_execute(sql)
           break
@@ -1287,7 +1287,7 @@ ORDER BY Column_ID
 
     ########### Check existence of index
     if !@ora_indexes.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase}) # Index does not exists
-      sql = "CREATE INDEX #{@sampler_config[:owner]}.#{index_name} ON #{@sampler_config[:owner]}.#{table_name}("
+      sql = "CREATE INDEX #{@sampler_config.get_owner}.#{index_name} ON #{@sampler_config.get_owner}.#{table_name}("
       columns.each do |column|
         sql << "#{column},"
       end
@@ -1301,7 +1301,7 @@ ORDER BY Column_ID
   # Check existence and structure of view
   def check_view(view)
     if @ora_tables.include?({'table_name' => view[:view_name].upcase})
-      sql = "DROP TABLE #{@sampler_config[:owner]}.#{view[:view_name]}"         # Remove table from previous releases with same name
+      sql = "DROP TABLE #{@sampler_config.get_owner}.#{view[:view_name]}"         # Remove table from previous releases with same name
       log(sql)
       PanoramaConnection.sql_execute(sql)
     end
@@ -1310,7 +1310,7 @@ ORDER BY Column_ID
       index = @ora_view_texts.find_index { |view_text| view_text.view_name ==  view[:view_name].upcase}
       select = @ora_view_texts[index].text
       if select != view[:view_select].call                                      # Recreate view
-        sql = "DROP VIEW #{@sampler_config[:owner]}.#{view[:view_name]}"
+        sql = "DROP VIEW #{@sampler_config.get_owner}.#{view[:view_name]}"
         log(sql)
         PanoramaConnection.sql_execute(sql)
         create_view(view)
@@ -1322,7 +1322,7 @@ ORDER BY Column_ID
   end
 
   def create_view(view)
-    sql = "CREATE VIEW #{@sampler_config[:owner]}.#{view[:view_name]} AS\n#{view[:view_select].call}"
+    sql = "CREATE VIEW #{@sampler_config.get_owner}.#{view[:view_name]} AS\n#{view[:view_select].call}"
     log(sql)
     PanoramaConnection.sql_execute(sql)
   end
@@ -1330,7 +1330,7 @@ ORDER BY Column_ID
   def check_object_privs(object_name)
     ############ Check table or view privileges
     if !@ora_tab_privs.include?({'table_name' => object_name.upcase})
-      sql = "GRANT SELECT ON #{@sampler_config[:owner]}.#{object_name} TO PUBLIC"
+      sql = "GRANT SELECT ON #{@sampler_config.get_owner}.#{object_name} TO PUBLIC"
       log(sql)
       PanoramaConnection.sql_execute(sql)
     end
