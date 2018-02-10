@@ -188,7 +188,7 @@ class PanoramaSamplerConfig
       # Allow wrong values if master password is test password
       raise PopupMessageException.new "AWR/ASH-snapshot cycle must be a multiple of 5 minutes\nand divisible without remainder from 60 minutes or multiple of 60 minutes\ne.g. 5, 10, 15, 20, 30, 60 or 120 minutes" if EngineConfig.config.panorama_sampler_master_password != 'hugo'
     end
-    raise PopupMessageException.new "AWR/ASH-napshot retention must be >= 1 day" if config_hash[:awr_ash_snapshot_retention] < 1
+    raise PopupMessageException.new "AWR/ASH-napshot retention must be >= 1 day" if config_hash[:awr_ash_snapshot_retention].nil? || config_hash[:awr_ash_snapshot_retention] < 1
 
     if config_hash[:object_size_snapshot_cycle].nil? || config_hash[:object_size_snapshot_cycle] <=0 || 24 % config_hash[:object_size_snapshot_cycle] != 0 || config_hash[:object_size_snapshot_cycle]  > 24
       raise PopupMessageException.new "Object size snapshot cycle must be a divisible without remainder from 24 hours and max. 24 hours\ne.g. 1, 2, 3, 4, 6, 8, 12 or 24 hours"

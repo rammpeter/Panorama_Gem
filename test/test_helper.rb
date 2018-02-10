@@ -96,7 +96,7 @@ class ActiveSupport::TestCase
     sampler_config[:blocking_locks_active]          = true
 
     sampler_config[:awr_ash_snapshot_cycle]         = 1                         # Ensure small runtime of test run
-    sampler_config = PanoramaSamplerConfig.new(sampler_config).get_cloned_config_hash
+    sampler_config.merge!(PanoramaSamplerConfig.new(sampler_config).get_cloned_config_hash)
   end
 
 
