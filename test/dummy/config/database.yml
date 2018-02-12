@@ -88,6 +88,13 @@ test_12.2_CDB:
   test_username: c##panorama_test
   test_password: Ddcwovsfanax12#
 
+test_12.2_SE2_CDB:
+  adapter: nulldb
+
+  test_url:      jdbc:oracle:thin:@localhost:1522/orclcdb
+  test_username: c##panorama_test
+  test_password: panorama_test
+
 
 production:
   <<: *default

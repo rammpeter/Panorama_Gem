@@ -203,8 +203,8 @@ module ApplicationHelper
 
   # Zeistempel in sprach-lokaler Notation ausgeben
   def localeDateTime(timestamp, format = :seconds)
-    return '' unless timestamp                    # Leere Ausgabe, wenn nil
-    timestamp = timestamp.to_datetime             # Sicherstellen, dass vom Typ DateTime
+    return '' if timestamp.nil?                                                 # Leere Ausgabe, wenn nil
+    timestamp = timestamp.to_datetime if timestamp.class == Time                # Sicherstellen, dass vom Typ DateTime and local timezone
     case format
       when :days    then timestamp.strftime(strftime_format_with_days)
       when :seconds then timestamp.strftime(strftime_format_with_seconds)

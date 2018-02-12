@@ -986,7 +986,10 @@ class DbaSchemaController < ApplicationController
 
   private
   def audit_mode_xml?
-    sql_select_one("SELECT Value FROM v$Parameter WHERE Name = 'audit_trail'")['XML'] != nil
+    if !defined?(@audit_mode_xml)
+      @audit_mode_xml = sql_select_one("SELECT Value FROM v$Parameter WHERE Name = 'audit_trail'")['XML'] != nil
+    end
+    @audit_mode_xml
   end
 
   def audit_source
@@ -1041,7 +1044,7 @@ WHERE RowNum < 100
 
     if params[:time_selection_start] && params[:time_selection_end]
       save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
-      where_string << " AND  Timestamp >= TO_DATE(?, '#{sql_datetime_minute_mask}') AND Timestamp <  TO_DATE(?, '#{sql_datetime_minute_mask}')"
+      where_string << " AND Timestamp >= TO_DATE(?, '#{sql_datetime_minute_mask}') AND Timestamp <  TO_DATE(?, '#{sql_datetime_minute_mask}')"
       where_values << @time_selection_start
       where_values << @time_selection_end
     end
@@ -1085,8 +1088,6 @@ WHERE RowNum < 100
     if params[:grouping] && params[:grouping] != "none"
       list_audit_trail_grouping(params[:grouping], where_string, where_values, params[:top_x].to_i)
     else
-      audit_mode_xml = sql_select_one("SELECT Value FROM v$Parameter WHERE Name = 'audit_trail'")['XML'] != nil
-
       @audit_source = audit_source
       @audits = sql_select_iterator ["\
                      SELECT /*+ FIRST_ROWS(1) Panorama Ramm */ *

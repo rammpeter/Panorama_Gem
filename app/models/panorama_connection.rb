@@ -8,6 +8,7 @@ require 'active_record/connection_adapters/oracle_enhanced/quoting'
 require 'encryption'
 require 'pack_license'
 require 'select_hash_helper'
+require 'java'
 
 # Helper-class to allow usage of method "type_cast"
 class TypeMapper < ActiveRecord::ConnectionAdapters::AbstractAdapter
@@ -443,6 +444,14 @@ class PanoramaConnection
       end
 
       retval = PanoramaConnection.new(jdbc_connection)
+
+      tz_stmt = "ALTER SESSION SET Time_Zone = '#{java.util.TimeZone.get_default.get_id}'"
+      begin
+        jdbc_connection.exec_update(tz_stmt, 'set timezone', [])
+      rescue Exception => e
+          Rails.logger.error "Error '#{e.message}' while setting client timezone with '#{tz_stmt}'"
+      end
+
       begin
         retval.read_initial_attributes
       rescue Exception => e
