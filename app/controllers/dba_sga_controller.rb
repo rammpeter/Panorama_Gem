@@ -831,12 +831,13 @@ class DbaSgaController < ApplicationController
         ) BH
         LEFT OUTER JOIN DBA_Objects o ON o.Data_Object_ID = bh.ObjD
         LEFT OUTER JOIN sys.TS$ ts ON ts.TS# = bh.TS#
-        LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Object# Object_ID, COUNT(DISTINCT SQL_ID) SQL_ID_Count
-                         FROM   gv$SQL_Plan
-                         WHERE  Object# IS NOT NULL
-                         AND    Inst_ID = ?
-                         GROUP BY Object#
-                        ) sqls ON sqls.Object_ID = o.Object_ID
+        LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ o.Owner, o.Object_Name, COUNT(DISTINCT p.SQL_ID) SQL_ID_Count
+                         FROM   gv$SQL_Plan p
+                         JOIN   DBA_Objects o ON o.Object_ID = p.Object#
+                         WHERE  p.Object# IS NOT NULL
+                         AND    p.Inst_ID = ?
+                         GROUP BY o.Owner, o.Object_Name
+                        ) sqls ON sqls.Owner = o.Owner AND sqls.Object_Name = o.Object_Name
       GROUP BY NVL(o.Owner,'[UNKNOWN]'), NVL(o.Object_Name,'TS='||ts.Name)#{@show_partitions=="1" ? ", o.SubObject_Name" : ""}
       ORDER BY 7 DESC", @instance, @instance]
     @total_blocks = 0                  # Summation der Blockanzahl des Caches
