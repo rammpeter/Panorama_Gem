@@ -98,11 +98,15 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    get '/addition/list_db_cache_historic_snap', :params => { :format=>:html,
-        :snapshot_timestamp =>"01.01.2011 00:00",
-        :instance  => "1",
-        :update_area=>:hugo } if ENV['DB_VERSION'] >= '11.2'
-    assert_response :success
+    [nil,1].each do |show_partitions|
+      get '/addition/list_db_cache_historic_snap', :params => { :format=>:html,
+                                                                :snapshot_timestamp =>"01.01.2011 00:00",
+                                                                :instance  => "1",
+                                                                show_partitions: show_partitions,
+                                                                :update_area=>:hugo } if ENV['DB_VERSION'] >= '11.2'
+      assert_response :success
+    end
+
   end
 
   test "object_increase with xhr: true" do

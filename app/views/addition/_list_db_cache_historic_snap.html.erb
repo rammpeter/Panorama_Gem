@@ -15,13 +15,14 @@
   end
 
   show_name = proc do |rec|
-    "#{rec.owner.downcase}.#{rec.name}#{" (#{rec.partitionname})" if @show_partitions == '1' && rec.partitionname}"
+    "#{rec.owner.downcase}.#{rec.name}#{" (#{rec.partition_name})" if @show_partitions == '1' && rec.partition_name}"
   end
 
 column_options =
  [
    {:caption=>"Name",   :data=>proc{|rec| link_object_description(@update_area, rec.owner, rec.name, show_name.call(rec)) },  :title=>"Object-Name"},
    {:caption=>"Blocks", :data=>proc{|rec| formattedNumber(rec.blocks_total)},       :title=>"Number of DB-blocks in cache used by object",        :align=>:right},
+   {:caption=>'%',      :data=>proc{|rec| fn((rec.blocks_total*100.0/rec.sum_total_per_snapshot rescue nil), 2)},     :title=>"Percent of total cached blocks for this object", data_title: proc{|rec| "%t\nTotal number of cached blocks = #{fn(rec.sum_total_per_snapshot)}"}, :align=>"right"},
    {:caption=>"Dirty",  :data=>proc{|rec| formattedNumber(rec.blocks_dirty)},       :title=>"Number of dirty DB-blocks in cache used by object",  :align=>:right},
    {:caption=>'SQLs',   :data=>link_sqls,                                                                :title=>"Show SQLs using this object in choosen time period"},
  ]
