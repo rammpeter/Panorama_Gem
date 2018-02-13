@@ -473,6 +473,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Tablespace_Name',                column_type:  'VARCHAR2', precision: 128,  not_null: true },
               { column_name:  'Gather_Date',                    column_type:  'DATE',     not_null: true },
               { column_name:  'Bytes',                          column_type:  'NUMBER',   not_null: true },
+              { column_name:  'Num_Rows',                       column_type:  'NUMBER'   },
           ],
           primary_key: ['Owner', 'Segment_Name', 'Segment_Type', 'Tablespace_Name', 'Gather_Date']
       },

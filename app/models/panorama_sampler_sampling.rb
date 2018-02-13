@@ -143,11 +143,23 @@ class PanoramaSamplerSampling
   end
 
   def do_object_size_sampling(snapshot_time)
-    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config.get_owner}.Panorama_Object_Sizes (Owner, Segment_Name, Segment_Type, Tablespace_Name, Gather_Date, Bytes)
-                                     SELECT Owner, Segment_Name, Segment_Type, Tablespace_Name, TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS'), NVL(SUM(Bytes), 0)
-                                     FROM   DBA_Segments
-                                     WHERE  Segment_Type NOT IN ('TYPE2 UNDO', 'TEMPORARY')
-                                     GROUP BY Owner, Segment_Name, Segment_Type, Tablespace_Name
+    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config.get_owner}.Panorama_Object_Sizes (Owner, Segment_Name, Segment_Type, Tablespace_Name, Gather_Date, Bytes, Num_Rows)
+                                     SELECT s.*, n.Num_Rows
+                                     FROM   (
+                                             SELECT Owner, Segment_Name, Segment_Type, Tablespace_Name, TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS'), NVL(SUM(Bytes), 0)
+                                             FROM   DBA_Segments
+                                             WHERE  Segment_Type NOT IN ('TYPE2 UNDO', 'TEMPORARY')
+                                             GROUP BY Owner, Segment_Name, Segment_Type, Tablespace_Name
+                                            ) s
+                                     LEFT OUTER JOIN (
+                                                      SELECT Owner, Index_Name Object_Name, Num_Rows, 'INDEX' Type
+                                                      FROM DBA_Indexes
+                                                      WHERE Num_Rows IS NOT NULL
+                                                      UNION ALL
+                                                      SELECT Owner, Table_Name Object_Name, Num_Rows, 'TABLE' Type
+                                                      FROM DBA_Tables
+                                                      WHERE Num_Rows IS NOT NULL
+                                                     ) n ON n.Owner = s.Owner AND n.Object_Name = s.Segment_Name AND INSTR(s.Segment_Type, n.Type) > 0
                                     ",
                                     snapshot_time.strftime('%Y-%m-%d %H:%M:%S')
                                    ]

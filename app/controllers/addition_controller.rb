@@ -671,8 +671,8 @@ class AdditionController < ApplicationController
     @min_gather_date = sql_select_one ["SELECT MIN(Gather_Date) FROM #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes WHERE Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_start]
     @max_gather_date = sql_select_one ["SELECT MAX(Gather_Date) FROM #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes WHERE Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_end]
 
-    raise PopupMessageException.new("No data found after start time #{localeDateTime(@time_selection_start)}") if @min_gather_date.nil?
-    raise PopupMessageException.new("No data found before end time #{localeDateTime(@time_selection_end)}")  if @max_gather_date.nil?
+    raise PopupMessageException.new("No data found after start time #{@time_selection_start}") if @min_gather_date.nil?
+    raise PopupMessageException.new("No data found before end time #{@time_selection_end}")  if @max_gather_date.nil?
 
     @incs = sql_select_all ["
       SELECT s.*,
@@ -684,6 +684,8 @@ class AdditionController < ApplicationController
                      SUM(CASE WHEN s.Gather_Date = dates.Min_Gather_Date THEN Bytes END)/(1024*1024) Start_Mbytes,
                      SUM(CASE WHEN s.Gather_Date = dates.Max_Gather_Date THEN Bytes END)/(1024*1024) End_Mbytes,
                      REGR_SLOPE(Bytes, Gather_Date-TO_DATE('1900', 'YYYY')) Anstieg,
+                     SUM(CASE WHEN s.Gather_Date = dates.Min_Gather_Date THEN Num_Rows END) Start_Num_Rows,
+                     SUM(CASE WHEN s.Gather_Date = dates.Max_Gather_Date THEN Num_Rows END) End_Num_Rows,
                      COUNT(Distinct Gather_Date) Samples
               FROM   (SELECT ? Min_Gather_Date, ? Max_Gather_Date FROM DUAL) dates
               CROSS JOIN #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
@@ -800,10 +802,11 @@ class AdditionController < ApplicationController
     name  = params[:name]
 
     @sizes = sql_select_all ["
-      SELECT Gather_Date, MBytes,  MBytes - LAG(MBytes, 1, MBytes) OVER (ORDER BY Gather_Date) Increase_MB
+      SELECT Gather_Date, MBytes, Num_Rows,  MBytes - LAG(MBytes, 1, MBytes) OVER (ORDER BY Gather_Date) Increase_MB
       FROM   (
               SELECT Gather_Date,
-                     SUM(Bytes)/(1024*1024) MBytes
+                     SUM(Bytes)/(1024*1024) MBytes,
+                     SUM(Num_Rows) Num_Rows
               FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
               WHERE  Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')
               AND    Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')
@@ -816,9 +819,10 @@ class AdditionController < ApplicationController
 
     column_options =
         [
-            {:caption=>"Datum",           :data=>proc{|rec| localeDateTime(rec.gather_date)},         :title=>"Timestamp of gathering object size",       :plot_master_time=>true},
-            {:caption=>"Größe MB",        :data=>proc{|rec| formattedNumber(rec.mbytes, 2)},          :title=>"Size of object in MB at gather time",      :align=>"right" },
-            {:caption=>"Increase (MB)",   :data=>proc{|rec| formattedNumber(rec.increase_mb, 2)},     :title=>"Size increase in MB since last snapshot",  :align=>"right" }
+            {:caption=>"Date",            :data=>proc{|rec| localeDateTime(rec.gather_date)},         :title=>"Timestamp of gathering object size",       :plot_master_time=>true},
+            {:caption=>"Size MB",         :data=>proc{|rec| formattedNumber(rec.mbytes, 2)},          :title=>"Size of object in MB at gather time",      :align=>"right" },
+            {:caption=>"Increase (MB)",   :data=>proc{|rec| formattedNumber(rec.increase_mb, 2)},     :title=>"Size increase in MB since last snapshot",  :align=>"right" },
+            {:caption=>"Num. rows",       :data=>proc{|rec| fn(rec.num_rows)},                        :title=>"Number of rows of object at snapshot time (from last preceding analyze run)",              :align=>:right},
         ]
 
     output = gen_slickgrid(@sizes,

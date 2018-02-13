@@ -36,15 +36,17 @@
 
 column_options =
   [
-    {:caption=>"Owner",           :data=>proc{|rec| rec.owner},                      :title=>"Object-owner"},
+    {:caption=>"Owner",           :data=>proc{|rec| rec.owner},                       :title=>"Object-owner"},
     {:caption=>"Name", :data=>proc{|rec| link_object_description(@update_area, rec.owner, rec.segment_name, rec.segment_name)}, :title=>"Segment-name"},
-    {:caption=>"Type",            :data=>proc{|rec| rec.segment_type},               :title=>"Segment-type"},
+    {:caption=>"Type",            :data=>proc{|rec| rec.segment_type},                :title=>"Segment-type"},
     {:caption=>"Tablespace",      :data=>proc{|rec| show_ts(rec)},                    :title=>"Tablespace of object at the end of considered period"},
-    {:caption=>"MB Start",        :data=>proc{|rec| formattedNumber(rec.start_mbytes, 2)}, :title=>"Size of object in MB at start of considered period",              :align=>:right},
-    {:caption=>"MB End",          :data=>proc{|rec| formattedNumber(rec.end_mbytes, 2)}, :title=>"Size of object in MB at end of considered period",                 :align=>:right},
-    {:caption=>"MB Change",     :data=>proc{|rec| formattedNumber(rec.aenderung_abs, 2)}, :title=>"Change of object size in MB within considered period",  :align=>:right},
-    {:caption=>"% Change",      :data=>proc{|rec| formattedNumber(rec.aenderung_pct,2)}, :title=>"Change of object size in % within considered period", :align=>:right},
+    {:caption=>"MB start",        :data=>proc{|rec| fn(rec.start_mbytes, 2)},         :title=>"Size of object in MB at start of considered period",              :align=>:right},
+    {:caption=>"MB end",          :data=>proc{|rec| fn(rec.end_mbytes, 2)},           :title=>"Size of object in MB at end of considered period",                 :align=>:right},
+    {:caption=>"MB change",       :data=>proc{|rec| fn(rec.aenderung_abs, 2)},        :title=>"Change of object size in MB within considered period",  :align=>:right},
+    {:caption=>"% Change",        :data=>proc{|rec| fn(rec.aenderung_pct,2)},         :title=>"Change of object size in % within considered period", :align=>:right},
 #    {:caption=>"Anstieg je Tag in MB", :data=>proc{|rec| formattedNumber(rec.anstieg,2)},    :title=>'Anstieg je Tag in MB lt. linearer Regression "REGR_SLOPE(MBytes, Gather_Date-TO_DATE(\'1900\', \'YYYY\'))"' , :align=>:right},
+    {:caption=>"Num. rows start", :data=>proc{|rec| fn(rec.start_num_rows)},          :title=>"Number of rows of object at start of considered period (from last preceding analyze run)",              :align=>:right},
+    {:caption=>"Num. rows end",   :data=>proc{|rec| fn(rec.end_num_rows)},            :title=>"Number of rows of object at end of considered period (from last preceding analyze run)",                 :align=>:right},
     {:caption=>'Action',          :data=>proc{|rec| render_action_buttons(rec)},      :title=>"Execute action for selected row" },
   ]
 %>
