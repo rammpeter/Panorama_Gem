@@ -167,6 +167,8 @@ class EnvController < ApplicationController
       raise PopupMessageException.new("Your user is missing SELECT-right on gv$Instance, gv$Database.<br/>Please ensure that your user has granted SELECT ANY DICTIONARY.<br/>Panorama is not usable with this user account!\n\n".html_safe, e)
     end
 
+    @panorama_sampler_data = PanoramaSamplerStructureCheck.panorama_sampler_schemas(:full)
+
     @dictionary_access_problem = true unless select_any_dictionary?(@dictionary_access_msg)
     @dictionary_access_problem = true unless x_memory_table_accessible?("BH", @dictionary_access_msg )
 
@@ -468,22 +470,6 @@ public
 
   def list_management_pack_license
     @control_management_pack_access = read_control_management_pack_access       # ab Oracle 11 belegt
-
-    if PackLicense.panorama_sampler_active?
-      @panorama_sampler_data = PanoramaSamplerStructureCheck.panorama_sampler_schemas
-      @panorama_sampler_data.each do |ps|
-        last_dbid = sql_select_one "SELECT MAX(DBID) KEEP (DENSE_RANK LAST ORDER BY End_Interval_Time) FROM #{ps.owner}.PANORAMA_SNAPSHOT"
-        instances = sql_select_one ["SELECT COUNT(DISTINCT Instance_Number) FROM #{ps.owner}.PANORAMA_SNAPSHOT WHERE DBID = ?", last_dbid] if last_dbid
-        ps_val = sql_select_first_row ["SELECT MIN(Begin_Interval_Time) Min_Time, MAX(End_Interval_Time) Max_Time FROM #{ps.owner}.PANORAMA_SNAPSHOT WHERE DBID = ?", last_dbid] if last_dbid
-        ps_wr = sql_select_first_row ["SELECT MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM #{ps.owner}.PANORAMA_WR_Control WHERE DBID = ?", last_dbid] if last_dbid
-        ps[:last_dbid]      = last_dbid
-        ps[:instances]      = instances
-        ps[:min_time]       = ps_val.min_time if ps_val
-        ps[:max_time]       = ps_val.max_time if ps_val
-        ps[:snap_interval]  = ps_wr.snap_interval_minutes if ps_wr
-        ps[:snap_retention] = ps_wr.snap_retention_days   if ps_wr
-      end
-    end
 
     render_partial :list_management_pack_license
   rescue Exception => e

@@ -22,13 +22,19 @@ class PanoramaSamplerStructureCheck
   end
 
   # Schemas with valid Panorama-Sampler structures for start
-  def self.panorama_sampler_schemas
-    sql = "SELECT DISTINCT Owner FROM ("
+  def self.panorama_sampler_schemas(option = nil)
+    sql = "SELECT Owner,
+                  NVL(SUM(CASE WHEN Table_Name = 'PANORAMA_SNAPSHOT'        THEN 1 END), 0) snapshot_count,
+                  NVL(SUM(CASE WHEN Table_Name = 'PANORAMA_WR_CONTROL'      THEN 1 END), 0) wr_control_count,
+                  NVL(SUM(CASE WHEN Table_Name = 'PANORAMA_OBJECT_SIZES'    THEN 1 END), 0) object_sizes_count,
+                  NVL(SUM(CASE WHEN Table_Name = 'PANORAMA_CACHE_OBJECTS'   THEN 1 END), 0) cache_objects_count,
+                  NVL(SUM(CASE WHEN Table_Name = 'PANORAMA_BLOCKING_LOCKS'  THEN 1 END), 0) blocking_locks_count
+           FROM ("
 
     # check existence of table with full set of columns
-    ['PANORAMA_SNAPSHOT', 'PANORAMA_OBJECT_SIZES', 'PANORAMA_CACHE_OBJECTS', 'PANORAMA_BLOCKING_LOCKS'].each do |test_table|
+    ['PANORAMA_SNAPSHOT', 'PANORAMA_WR_CONTROL', 'PANORAMA_OBJECT_SIZES', 'PANORAMA_CACHE_OBJECTS', 'PANORAMA_BLOCKING_LOCKS'].each do |test_table|
       sql << "\nUNION ALL\n" if test_table != 'PANORAMA_SNAPSHOT'                 # not the first table
-      sql << "SELECT Owner
+      sql << "SELECT Owner, Table_Name
               FROM   All_Tab_Columns
               WHERE  Table_Name = '#{test_table}'
               AND    Column_Name IN ("
@@ -38,34 +44,50 @@ class PanoramaSamplerStructureCheck
             sql << "'#{column[:column_name].upcase}',"
           end
           sql[(sql.length) - 1] = ' '                                           # remove last ,
-          sql << ") GROUP BY Owner HAVING COUNT(*) = #{table[:columns].count}"  # all columns exists in tables?
-
+          sql << ")
+          GROUP BY Owner, Table_Name HAVING COUNT(*) = #{table[:columns].count}"  # all columns exists in tables?
         end
       end
     end
-    sql << ")"
+    sql << ") GROUP BY Owner"
 
-    PanoramaConnection.sql_select_all sql
-=begin
-    PanoramaConnection.sql_select_all "SELECT DISTINCT Owner
-                                       FROM   (
-                                               SELECT Owner
-                                               FROM   All_Tab_Columns
-                                               WHERE  Table_Name IN ('PANORAMA_SNAPSHOT', 'PANORAMA_WR_CONTROL')
-                                               AND    Column_Name IN ('SNAP_ID', 'DBID', 'INSTANCE_NUMBER', 'BEGIN_INTERVAL_TIME', 'END_INTERVAL_TIME',
-                                                                      'SNAP_INTERVAL', 'RETENTION')
-                                               GROUP BY Owner
-                                               HAVING COUNT(*) = 8 /* DBID exists in both tables */
-                                               UNION ALL
-                                               SELECT Owner
-                                               FROM   All_Tab_Columns
-                                               WHERE  Table_Name IN ('PANORAMA_OBJECT_SIZES')
-                                               AND    Column_Name IN ('OWNER', 'SEGMENT_NAME', 'SEGMENT_TYPE', 'TABLESPACE_NAME', 'GATHER_DATE', 'BYTES')
-                                               GROUP BY Owner
-                                               HAVING COUNT(*) = 6 /* all columns exists in tables */
-                                              )
-                                      "
-=end
+    panorama_sampler_data = PanoramaConnection.sql_select_all sql
+
+    if option == :full
+      panorama_sampler_data.each do |ps|
+
+        if ps.snapshot_count > 0
+          ps[:last_dbid]  = PanoramaConnection.sql_select_one "SELECT MAX(DBID) KEEP (DENSE_RANK LAST ORDER BY End_Interval_Time) FROM #{ps.owner}.PANORAMA_SNAPSHOT"
+          ps[:instances]  = PanoramaConnection.sql_select_one ["SELECT COUNT(DISTINCT Instance_Number) FROM #{ps.owner}.PANORAMA_SNAPSHOT WHERE DBID = ?", ps[:last_dbid]] if !ps[:last_dbid].nil?
+          ps[:min_time]   = PanoramaConnection.sql_select_one ["SELECT MIN(Begin_Interval_Time) FROM #{ps.owner}.PANORAMA_SNAPSHOT WHERE DBID = ?", ps[:last_dbid]] if !ps[:last_dbid].nil?
+          ps[:max_time]   = PanoramaConnection.sql_select_one ["SELECT MAX(End_Interval_Time)   FROM #{ps.owner}.PANORAMA_SNAPSHOT WHERE DBID = ?", ps[:last_dbid]] if !ps[:last_dbid].nil?
+        end
+
+        if ps.wr_control_count > 0
+          ps_wr = PanoramaConnection.sql_select_first_row ["SELECT MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM #{ps.owner}.PANORAMA_WR_Control WHERE DBID = ?", ps[:last_dbid]] if !ps[:last_dbid].nil?
+          ps[:snap_interval]  = ps_wr.snap_interval_minutes if ps_wr
+          ps[:snap_retention] = ps_wr.snap_retention_days   if ps_wr
+        end
+
+        if ps.object_sizes_count > 0
+          ps[:object_sizes_min_gather_date] = PanoramaConnection.sql_select_one "SELECT MIN(Gather_Date) FROM #{ps.owner}.PANORAMA_OBJECT_SIZES"
+          ps[:object_sizes_max_gather_date] = PanoramaConnection.sql_select_one "SELECT MAX(Gather_Date) FROM #{ps.owner}.PANORAMA_OBJECT_SIZES"
+        end
+
+        if ps.cache_objects_count > 0
+          ps[:cache_objects_min_snapshot] = PanoramaConnection.sql_select_one "SELECT MIN(Snapshot_Timestamp) FROM #{ps.owner}.PANORAMA_CACHE_OBJECTS"
+          ps[:cache_objects_max_snapshot] = PanoramaConnection.sql_select_one "SELECT MAX(Snapshot_Timestamp) FROM #{ps.owner}.PANORAMA_CACHE_OBJECTS"
+        end
+
+        if ps.blocking_locks_count > 0
+          ps[:blocking_locks_min_snapshot] = PanoramaConnection.sql_select_one "SELECT MIN(Snapshot_Timestamp) FROM #{ps.owner}.PANORAMA_BLOCKING_LOCKS"
+          ps[:blocking_locks_max_snapshot] = PanoramaConnection.sql_select_one "SELECT MAX(Snapshot_Timestamp) FROM #{ps.owner}.PANORAMA_BLOCKING_LOCKS"
+        end
+      end
+
+    end
+
+    panorama_sampler_data
   end
 
   def self.panorama_table_exists?(table_name)
@@ -378,6 +400,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Waiting_For_PK_Column_Name',     column_type:   'VARCHAR2',  precision: 300,                 comment: 'Column name(s) of primary key of table waiting for unblocking' },
               { column_name:  'Waiting_For_PK_Value',           column_type:   'VARCHAR2',  precision: 48,                  comment: 'Primary key content of table-record waiting for unblocking' },
           ],
+          indexes: [ {index_name: 'Panorama_Blocking_Locks_TS', columns: ['Snapshot_Timestamp'] } ]
       },
       {
           table_name: 'Panorama_Cache_Objects',
@@ -475,7 +498,8 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Bytes',                          column_type:  'NUMBER',   not_null: true },
               { column_name:  'Num_Rows',                       column_type:  'NUMBER'   },
           ],
-          primary_key: ['Owner', 'Segment_Name', 'Segment_Type', 'Tablespace_Name', 'Gather_Date']
+          primary_key: ['Owner', 'Segment_Name', 'Segment_Type', 'Tablespace_Name', 'Gather_Date'],
+          indexes: [ {index_name: 'Panorama_Object_Sizes_Gather', columns: ['Gather_Date'] } ]
       },
       {
           table_name: 'Panorama_Resource_Limit',
