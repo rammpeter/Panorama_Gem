@@ -9,11 +9,8 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/env_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/env_controller.rb" />
-      <change beforePath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" afterPath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
-      <change beforePath="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" afterPath="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/env/_start_page.html.erb" afterPath="$PROJECT_DIR$/app/views/env/_start_page.html.erb" />
-      <change beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+      <change beforePath="$PROJECT_DIR$/app/controllers/dba_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/dba_controller.rb" />
+      <change beforePath="$PROJECT_DIR$/app/views/dba/_show_redologs.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_show_redologs.html.erb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -223,7 +220,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="105">
@@ -233,11 +230,30 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="_show_redologs.html.erb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/views/dba/_show_redologs.html.erb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="105">
+              <caret line="7" column="87" lean-forward="false" selection-start-line="7" selection-start-column="87" selection-end-line="7" selection-end-column="87" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="dba_controller.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/controllers/dba_controller.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="244">
+              <caret line="385" column="19" lean-forward="false" selection-start-line="385" selection-start-column="19" selection-end-line="385" selection-end-column="19" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
     </leaf>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>client_info</find>
       <find>check_for_open_connection</find>
       <find>@sql_stmt_in_execution</find>
       <find>register_sql_execution</find>
@@ -267,6 +283,7 @@
       <find>def</find>
       <find>PANORAMA_BLOCKING_LOCKS</find>
       <find>@panorama_sampler_data</find>
+      <find>show_redologs</find>
     </findStrings>
     <replaceStrings>
       <replace>dLast_Load_Time</replace>
@@ -295,8 +312,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/views/storage/_show_temp_usage_sysmetric_historic.html.erb" />
-        <option value="$PROJECT_DIR$/app/views/dba_schema/_list_cluster.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_schema/_list_plsql_description.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_schema/_show_object_size.html.erb" />
         <option value="$PROJECT_DIR$/app/views/table_dependencies/_show_frame.html.erb" />
@@ -346,6 +361,8 @@
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
         <option value="$PROJECT_DIR$/app/views/env/_start_page.html.erb" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+        <option value="$PROJECT_DIR$/app/controllers/dba_controller.rb" />
+        <option value="$PROJECT_DIR$/app/views/dba/_show_redologs.html.erb" />
       </list>
     </option>
   </component>
@@ -1302,14 +1319,7 @@
       <workItem from="1517229112144" duration="31881000" />
       <workItem from="1517827859437" duration="31446000" />
       <workItem from="1518214030894" duration="18155000" />
-      <workItem from="1518439346812" duration="36137000" />
-    </task>
-    <task id="LOCAL-01217" summary="Corrections of inspect warnings">
-      <created>1516567654932</created>
-      <option name="number" value="01217" />
-      <option name="presentableId" value="LOCAL-01217" />
-      <option name="project" value="LOCAL" />
-      <updated>1516567654932</updated>
+      <workItem from="1518439346812" duration="36598000" />
     </task>
     <task id="LOCAL-01218" summary="Fix for license_type, SQL-Baselines packed">
       <created>1516638944719</created>
@@ -1647,7 +1657,14 @@
       <option name="project" value="LOCAL" />
       <updated>1518791208786</updated>
     </task>
-    <option name="localTasksCounter" value="1266" />
+    <task id="LOCAL-01266" summary="Always show Panorama-Sampler-data at start page">
+      <created>1518816189934</created>
+      <option name="number" value="01266" />
+      <option name="presentableId" value="LOCAL-01266" />
+      <option name="project" value="LOCAL" />
+      <updated>1518816189934</updated>
+    </task>
+    <option name="localTasksCounter" value="1267" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1683,7 +1700,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2887719000" />
+    <option name="totallyTimeSpent" value="2888180000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1765,7 +1782,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Fix identical function for multiple grid menu entries" />
     <MESSAGE value="Differentiate grid pin local and global" />
     <MESSAGE value="png test" />
     <MESSAGE value="provide pin for grids" />
@@ -1790,7 +1806,8 @@
     <MESSAGE value="Show percentage in DB cache historic" />
     <MESSAGE value="Record number of rows for object size history" />
     <MESSAGE value="Fix localeDate-Misusage" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix localeDate-Misusage" />
+    <MESSAGE value="Always show Panorama-Sampler-data at start page" />
+    <option name="LAST_COMMIT_MESSAGE" value="Always show Panorama-Sampler-data at start page" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2000,20 +2017,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-97">
-          <caret line="18" column="0" lean-forward="false" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="78">
-          <caret line="182" column="20" lean-forward="false" selection-start-line="182" selection-start-column="15" selection-end-line="182" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-446">
@@ -2398,6 +2401,22 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
           <caret line="7" column="43" lean-forward="true" selection-start-line="7" selection-start-column="43" selection-end-line="7" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/dba/_show_redologs.html.erb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="87" lean-forward="false" selection-start-line="7" selection-start-column="87" selection-end-line="7" selection-end-column="87" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/dba_controller.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="244">
+          <caret line="385" column="19" lean-forward="false" selection-start-line="385" selection-start-column="19" selection-end-line="385" selection-end-column="19" />
           <folding />
         </state>
       </provider>

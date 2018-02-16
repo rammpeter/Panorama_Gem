@@ -383,7 +383,7 @@ class DbaController < ApplicationController
         TO_CHAR(Group#) GroupNo,                                
         (Bytes/1024) KByte,                                     
         Status,                                                 
-        TO_CHAR(First_Time,'#{sql_datetime_second_mask}') StartTime,
+        First_Time,
         (Next_Time - First_Time) * 86400 Log_Switch_Interval_Secs,
         Members, Archived
       FROM gV$LOG
