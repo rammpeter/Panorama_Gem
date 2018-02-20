@@ -384,7 +384,7 @@ class DbaController < ApplicationController
         (Bytes/1024) KByte,                                     
         Status,                                                 
         First_Time,
-        (Next_Time - First_Time) * 86400 Log_Switch_Interval_Secs,
+        #{"(Next_Time - First_Time) * 86400 Log_Switch_Interval_Secs," if get_db_version >= '11.1'}
         Members, Archived
       FROM gV$LOG
       WHERE Inst_ID = Thread#  -- im gv$-View werden jeweils die Logs der anderen Instanzen noch einmal in jeder Instance mit Thread# getzeigt, dies verhindert die Dopplung

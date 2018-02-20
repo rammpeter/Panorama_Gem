@@ -32,38 +32,4 @@ Aims to issues that are inadequately analyzed and presented by other existing to
 
   #s.add_dependency  'turbolinks'                                                # needed for redirect_to
 
-=begin
-  # Rails 4 Varianten
-
-  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  spec.test_files = Dir["test/**/*"]
-  #spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
-  spec.require_paths = ["lib"]
-
-  spec.add_dependency 'rails-html-sanitizer'
-  spec.add_dependency 'activerecord-nulldb-adapter'
-  spec.add_dependency 'activerecord-oracle_enhanced-adapter'     # lokal in Gemfile überschreiben mit : gem 'activerecord-oracle_enhanced-adapter', github: 'rsim/oracle-enhanced', branch: 'rails42'
-  spec.add_dependency "mime-types"	    # Prevent Gem::InstallError: mime-types-data requires Ruby version >= 2.0.
-
-  # JavaScript-Runtime für Server-Seite, wenn kein lokaler installiert ist wie z.B. nodejs (oft unter Linux der Fall)
-  # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-  spec.add_dependency  'therubyrhino'
-  spec.add_dependency  'therubyrhino_jar'
-
-  spec.add_dependency  'multi_json'
-  spec.add_dependency  'uglifier'
-  spec.add_dependency  'sass'
-  spec.add_dependency  'jquery-rails'
-  spec.add_dependency  'tzinfo-data'    # Fixes error " No source of timezone data could be found " on windows systems
-
-  # some Linux systems require krypt gem to fix following error
-  # jruby.home/lib/ruby/shared/krypt/provider/jdk.rb:33 warning: no super class for `Krypt::Provider::JDK', Object assumed
-  spec.add_dependency 'krypt-core'
-  spec.add_dependency 'krypt-provider-jdk'
-
-  spec.add_development_dependency "bundler", "~> 1.6"
-  spec.add_development_dependency "rake"
-
-=end
-
 end

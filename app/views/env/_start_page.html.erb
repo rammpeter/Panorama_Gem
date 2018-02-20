@@ -136,7 +136,7 @@
     if @panorama_sampler_data.count > 1
       caption = '<span style="color: red">Multiple schemas of this DB contains Panorama-Sampler workload data! Please select your preferred schema</span>'.html_safe
     else
-      caption = 'Panorama-Sampler workload data found on this database'
+      caption = 'Panorama-Sampler workload data found on this database  '
     end
 
     gen_slickgrid(@panorama_sampler_data, column_options, {

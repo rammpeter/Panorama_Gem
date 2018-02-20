@@ -1408,7 +1408,7 @@
     Panorama nutzt seine eigene aufgezeichnete Workload-Historie, die durch den Prozess "Panorama-Sampler" erzeugt wird.
     Es wird weder Oracle's 'Diagnostic Pack' noch 'Tuning Pack' nutzen wenn diese Option gewählt ist.
     Die Funktion "Panorama-Sampler" ist verfügbar für alle Datenbank-Editionen einschliesslich Standard-Edition.
-    Die Option kann nur gewählt werden, wenn Panorama-Sampler für diese Datenbank-Instanz aktiviert wurde.
+    Die Option kann nur gewählt werden, wenn AWR-ASH-Sampling des Panorama-Sampler für diese Datenbank-Instanz aktiviert wurde.
 
   env_list_management_pack_license_setting:                 Der Init-Parameter der aktuellen Datenbank
   env_list_management_pack_license_tp_caption:              Nutze die lizensierten Diagnostics Pack und Tuning Pack

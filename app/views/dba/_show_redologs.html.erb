@@ -8,8 +8,10 @@ column_options =
   {:caption=>"Start timestamp",     :data=>proc{|rec| localeDateTime(rec.first_time)},     :title=>"Timestamp for start of recording in logfile"},
   {:caption=>"Members",             :data=>proc{|rec| rec.members},                        :title=>"Number of members", :align=>"right"},
   {:caption=>"Archived",            :data=>proc{|rec| rec.archived},                       :title=>"Archived"},
-  {:caption=>'Log switch interval', :data=>proc{|rec| fn(rec.log_switch_interval_secs)}, :title=>"Interval in seconds this file has been written by log writer in current mode", :align=>:right},
 ]
+
+column_options << {:caption=>'Log switch interval', :data=>proc{|rec| fn(rec.log_switch_interval_secs)}, :title=>"Interval in seconds this file has been written by log writer in current mode", :align=>:right} if get_db_version >= '11.1'
+
 
 %>
 
