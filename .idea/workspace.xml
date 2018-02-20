@@ -9,8 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" afterPath="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" />
-      <change beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+      <change beforePath="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" afterPath="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -167,7 +166,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="60">
@@ -202,6 +201,16 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="282">
               <caret line="38" column="40" lean-forward="false" selection-start-line="36" selection-start-column="14" selection-end-line="38" selection-end-column="40" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="oracle_connection_test_helper.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="204">
+              <caret line="54" column="171" lean-forward="false" selection-start-line="54" selection-start-column="171" selection-end-line="54" selection-end-column="171" />
               <folding />
             </state>
           </provider>
@@ -301,7 +310,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/views/table_dependencies/_show_tables.html.erb" />
         <option value="$PROJECT_DIR$/app/helpers/html_helper.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_bind_variables.html.erb" />
@@ -352,6 +360,7 @@
         <option value="$PROJECT_DIR$/app/views/dba/_show_redologs.html.erb" />
         <option value="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+        <option value="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" />
       </list>
     </option>
   </component>
@@ -1308,14 +1317,7 @@
       <workItem from="1517229112144" duration="31881000" />
       <workItem from="1517827859437" duration="31446000" />
       <workItem from="1518214030894" duration="18155000" />
-      <workItem from="1518439346812" duration="42707000" />
-    </task>
-    <task id="LOCAL-01221" summary="Harden tests">
-      <created>1516715216953</created>
-      <option name="number" value="01221" />
-      <option name="presentableId" value="LOCAL-01221" />
-      <option name="project" value="LOCAL" />
-      <updated>1516715216954</updated>
+      <workItem from="1518439346812" duration="43477000" />
     </task>
     <task id="LOCAL-01222" summary="Harden tests">
       <created>1516715936800</created>
@@ -1653,7 +1655,14 @@
       <option name="project" value="LOCAL" />
       <updated>1519128340743</updated>
     </task>
-    <option name="localTasksCounter" value="1270" />
+    <task id="LOCAL-01270" summary="Allow choice of diagnostics and tuning pack if DB &lt;= 11.1">
+      <created>1519129222454</created>
+      <option name="number" value="01270" />
+      <option name="presentableId" value="LOCAL-01270" />
+      <option name="project" value="LOCAL" />
+      <updated>1519129222454</updated>
+    </task>
+    <option name="localTasksCounter" value="1271" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1689,7 +1698,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2894289000" />
+    <option name="totallyTimeSpent" value="2895059000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1704,14 +1713,14 @@
     <frame x="51" y="23" width="1629" height="1027" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21361059" sideWeight="0.8666667" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13169502" sideWeight="0.8666667" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30472103" sideWeight="0.48269352" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35622317" sideWeight="0.14114682" order="10" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26633167" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.37982833" sideWeight="0.8954001" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2532189" sideWeight="0.48806533" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21361059" sideWeight="0.13333334" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13169502" sideWeight="0.13333334" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18776824" sideWeight="0.4952343" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35622317" sideWeight="0.85885316" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27812895" sideWeight="0.3464837" order="2" side_tool="true" content_ui="tabs" />
@@ -1771,7 +1780,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Bind variables as button function" />
     <MESSAGE value="Version++" />
     <MESSAGE value="Fix pin disk storage summary" />
     <MESSAGE value="Alignment center" />
@@ -1796,7 +1804,8 @@
     <MESSAGE value="Select DATE for redologs" />
     <MESSAGE value="Downward compatibility for Oracle 10" />
     <MESSAGE value="Downward compatibility for Oracle 10, Panorama-Sampler choosable only if AWR/ASH is active" />
-    <option name="LAST_COMMIT_MESSAGE" value="Downward compatibility for Oracle 10, Panorama-Sampler choosable only if AWR/ASH is active" />
+    <MESSAGE value="Allow choice of diagnostics and tuning pack if DB &lt;= 11.1" />
+    <option name="LAST_COMMIT_MESSAGE" value="Allow choice of diagnostics and tuning pack if DB &lt;= 11.1" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2079,14 +2088,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="750">
           <caret line="50" column="2" lean-forward="false" selection-start-line="50" selection-start-column="2" selection-end-line="50" selection-end-column="2" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="495">
-          <caret line="33" column="6" lean-forward="false" selection-start-line="33" selection-start-column="6" selection-end-line="33" selection-end-column="6" />
           <folding />
         </state>
       </provider>
@@ -2409,6 +2410,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="54" column="171" lean-forward="false" selection-start-line="54" selection-start-column="171" selection-end-line="54" selection-end-column="171" />
           <folding />
         </state>
       </provider>
