@@ -209,8 +209,8 @@
       <file leaf-file-name="oracle_connection_test_helper.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="204">
-              <caret line="54" column="171" lean-forward="false" selection-start-line="54" selection-start-column="171" selection-end-line="54" selection-end-column="171" />
+            <state relative-caret-position="230">
+              <caret line="51" column="116" lean-forward="true" selection-start-line="51" selection-start-column="82" selection-end-line="51" selection-end-column="116" />
               <folding />
             </state>
           </provider>
@@ -1317,14 +1317,7 @@
       <workItem from="1517229112144" duration="31881000" />
       <workItem from="1517827859437" duration="31446000" />
       <workItem from="1518214030894" duration="18155000" />
-      <workItem from="1518439346812" duration="43477000" />
-    </task>
-    <task id="LOCAL-01222" summary="Harden tests">
-      <created>1516715936800</created>
-      <option name="number" value="01222" />
-      <option name="presentableId" value="LOCAL-01222" />
-      <option name="project" value="LOCAL" />
-      <updated>1516715936800</updated>
+      <workItem from="1518439346812" duration="44216000" />
     </task>
     <task id="LOCAL-01223" summary="Harden tests">
       <created>1516716711882</created>
@@ -1662,7 +1655,14 @@
       <option name="project" value="LOCAL" />
       <updated>1519129222454</updated>
     </task>
-    <option name="localTasksCounter" value="1271" />
+    <task id="LOCAL-01271" summary="Allow panorama_sampler as MANAGEMENT_PACK_LICENCSE for test">
+      <created>1519130570420</created>
+      <option name="number" value="01271" />
+      <option name="presentableId" value="LOCAL-01271" />
+      <option name="project" value="LOCAL" />
+      <updated>1519130570421</updated>
+    </task>
+    <option name="localTasksCounter" value="1272" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1698,7 +1698,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2895059000" />
+    <option name="totallyTimeSpent" value="2895798000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1780,7 +1780,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Version++" />
     <MESSAGE value="Fix pin disk storage summary" />
     <MESSAGE value="Alignment center" />
     <MESSAGE value="Blocking_User_Name NOT NULL" />
@@ -1805,7 +1804,8 @@
     <MESSAGE value="Downward compatibility for Oracle 10" />
     <MESSAGE value="Downward compatibility for Oracle 10, Panorama-Sampler choosable only if AWR/ASH is active" />
     <MESSAGE value="Allow choice of diagnostics and tuning pack if DB &lt;= 11.1" />
-    <option name="LAST_COMMIT_MESSAGE" value="Allow choice of diagnostics and tuning pack if DB &lt;= 11.1" />
+    <MESSAGE value="Allow panorama_sampler as MANAGEMENT_PACK_LICENCSE for test" />
+    <option name="LAST_COMMIT_MESSAGE" value="Allow panorama_sampler as MANAGEMENT_PACK_LICENCSE for test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2416,8 +2416,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="54" column="171" lean-forward="false" selection-start-line="54" selection-start-column="171" selection-end-line="54" selection-end-column="171" />
+        <state relative-caret-position="230">
+          <caret line="51" column="116" lean-forward="true" selection-start-line="51" selection-start-column="82" selection-end-line="51" selection-end-column="116" />
           <folding />
         </state>
       </provider>

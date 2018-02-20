@@ -49,6 +49,7 @@ class ActiveSupport::TestCase
     end
 
     db_config[:user]         = test_config["test_username"]
+    db_config[:panorama_sampler_schema] = db_config[:user]                      # Use test user for panorama-sampler
     db_config[:tns]          = test_config['test_url'].split('@')[1]     # Alles nach jdbc:oracle:thin@
 
     if ENV['MANAGEMENT_PACK_LICENCSE']
