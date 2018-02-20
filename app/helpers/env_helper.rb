@@ -18,7 +18,9 @@ module EnvHelper
   end
 
   def read_control_management_pack_access                                       # returns either NONE | DIAGNOSTIC | DIAGNOSTIC+TUNING
-    sql_select_one "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"  # ab Oracle 11 belegt
+    result = sql_select_one "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"  # ab Oracle 11 belegt
+    result = 'NONE' if result.nil?                                              # downward compatibility for Oracle 10
+    result
   end
 
   # Einlesen last_logins aus client_info-store
