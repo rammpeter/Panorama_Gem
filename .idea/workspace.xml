@@ -9,14 +9,8 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/dba_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/dba_controller.rb" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/env_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/env_controller.rb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_show_redologs.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_show_redologs.html.erb" />
       <change beforePath="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" afterPath="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/env/_start_page.html.erb" afterPath="$PROJECT_DIR$/app/views/env/_start_page.html.erb" />
-      <change beforePath="$PROJECT_DIR$/config/locales/de.yml" afterPath="$PROJECT_DIR$/config/locales/de.yml" />
       <change beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
-      <change beforePath="$PROJECT_DIR$/panorama_gem.gemspec" afterPath="$PROJECT_DIR$/panorama_gem.gemspec" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -173,41 +167,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="60">
               <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="dba_controller.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/controllers/dba_controller.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="328">
-              <caret line="386" column="68" lean-forward="false" selection-start-line="386" selection-start-column="44" selection-end-line="386" selection-end-column="68" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="_show_redologs.html.erb" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/app/views/dba/_show_redologs.html.erb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="17" column="3" lean-forward="true" selection-start-line="17" selection-start-column="3" selection-end-line="17" selection-end-column="3" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="panorama_gem.gemspec" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/panorama_gem.gemspec">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="401">
-              <caret line="32" column="105" lean-forward="false" selection-start-line="32" selection-start-column="105" selection-end-line="32" selection-end-column="105" />
               <folding />
             </state>
           </provider>
@@ -246,9 +210,11 @@
       <file leaf-file-name="_list_management_pack_license.html.erb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="341">
-              <caret line="29" column="87" lean-forward="false" selection-start-line="29" selection-start-column="87" selection-end-line="29" selection-end-column="87" />
-              <folding />
+            <state relative-caret-position="236">
+              <caret line="22" column="161" lean-forward="false" selection-start-line="22" selection-start-column="161" selection-end-line="22" selection-end-column="161" />
+              <folding>
+                <element signature="n#t#4;n#!!top" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -381,11 +347,11 @@
         <option value="$PROJECT_DIR$/panorama_gem.gemspec" />
         <option value="$PROJECT_DIR$/app/views/env/_start_page.html.erb" />
         <option value="$PROJECT_DIR$/app/controllers/env_controller.rb" />
-        <option value="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" />
         <option value="$PROJECT_DIR$/config/locales/de.yml" />
-        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/dba/_show_redologs.html.erb" />
+        <option value="$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb" />
+        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
       </list>
     </option>
   </component>
@@ -1342,14 +1308,7 @@
       <workItem from="1517229112144" duration="31881000" />
       <workItem from="1517827859437" duration="31446000" />
       <workItem from="1518214030894" duration="18155000" />
-      <workItem from="1518439346812" duration="41835000" />
-    </task>
-    <task id="LOCAL-01220" summary="Harden tests">
-      <created>1516714476860</created>
-      <option name="number" value="01220" />
-      <option name="presentableId" value="LOCAL-01220" />
-      <option name="project" value="LOCAL" />
-      <updated>1516714476860</updated>
+      <workItem from="1518439346812" duration="42707000" />
     </task>
     <task id="LOCAL-01221" summary="Harden tests">
       <created>1516715216953</created>
@@ -1687,7 +1646,14 @@
       <option name="project" value="LOCAL" />
       <updated>1519123111324</updated>
     </task>
-    <option name="localTasksCounter" value="1269" />
+    <task id="LOCAL-01269" summary="Downward compatibility for Oracle 10, Panorama-Sampler choosable only if AWR/ASH is active">
+      <created>1519128340743</created>
+      <option name="number" value="01269" />
+      <option name="presentableId" value="LOCAL-01269" />
+      <option name="project" value="LOCAL" />
+      <updated>1519128340743</updated>
+    </task>
+    <option name="localTasksCounter" value="1270" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1723,7 +1689,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2893417000" />
+    <option name="totallyTimeSpent" value="2894289000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1805,7 +1771,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="provide pin for grids" />
     <MESSAGE value="Bind variables as button function" />
     <MESSAGE value="Version++" />
     <MESSAGE value="Fix pin disk storage summary" />
@@ -1830,7 +1795,8 @@
     <MESSAGE value="Always show Panorama-Sampler-data at start page" />
     <MESSAGE value="Select DATE for redologs" />
     <MESSAGE value="Downward compatibility for Oracle 10" />
-    <option name="LAST_COMMIT_MESSAGE" value="Downward compatibility for Oracle 10" />
+    <MESSAGE value="Downward compatibility for Oracle 10, Panorama-Sampler choosable only if AWR/ASH is active" />
+    <option name="LAST_COMMIT_MESSAGE" value="Downward compatibility for Oracle 10, Panorama-Sampler choosable only if AWR/ASH is active" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2413,18 +2379,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb">
+    <entry file="file://$PROJECT_DIR$/app/views/dba/_show_redologs.html.erb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="341">
-          <caret line="29" column="87" lean-forward="false" selection-start-line="29" selection-start-column="87" selection-end-line="29" selection-end-column="87" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
+        <state relative-caret-position="255">
+          <caret line="17" column="3" lean-forward="false" selection-start-line="17" selection-start-column="3" selection-end-line="17" selection-end-column="3" />
           <folding />
         </state>
       </provider>
@@ -2437,10 +2395,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/dba/_show_redologs.html.erb">
+    <entry file="file://$PROJECT_DIR$/app/views/env/_list_management_pack_license.html.erb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" column="3" lean-forward="true" selection-start-line="17" selection-start-column="3" selection-end-line="17" selection-end-column="3" />
+        <state relative-caret-position="236">
+          <caret line="22" column="161" lean-forward="false" selection-start-line="22" selection-start-column="161" selection-end-line="22" selection-end-column="161" />
+          <folding>
+            <element signature="n#t#4;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
           <folding />
         </state>
       </provider>
