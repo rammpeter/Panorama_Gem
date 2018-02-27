@@ -710,12 +710,22 @@ class DbaSgaController < ApplicationController
   def list_sga_components
     @instance        = prepare_param_instance
     @sums = sql_select_all ["\
-      SELECT /* Panorama-Tool Ramm */
-             Inst_ID, NVL(Pool, Name) Pool, sum(Bytes) Bytes, NULL Parameter
-      FROM   gv$sgastat
-      #{@instance ? "WHERE  Inst_ID = ?" : ""}
-      GROUP BY Inst_ID, NVL(Pool, Name)
-      ORDER BY 3 DESC", @instance]
+      SELECT s.Inst_ID, s.Pool, s.Bytes, NULL Parameter, r.Resize_Ops
+      FROM   (
+              SELECT /*+ NO_MERGE */ Inst_ID, NVL(Pool, Name) Pool, sum(Bytes) Bytes
+              FROM   gv$sgastat
+              #{@instance ? "WHERE  Inst_ID = ?" : ""}
+              GROUP BY Inst_ID, NVL(Pool, Name)
+             ) s
+      LEFT OUTER JOIN (
+              SELECT Inst_ID, Component, COUNT(*) Resize_Ops
+              FROM   (SELECT Inst_ID, CASE WHEN Component LIKE '%buffer cache' THEN 'buffer_cache' ELSE Component END Component
+                      FROM   gv$SGA_Resize_Ops
+                     )
+              GROUP BY Inst_ID, Component
+             ) r ON r.Inst_ID = s.Inst_ID AND r.Component = s.Pool
+      ORDER BY s.Bytes DESC
+      ", @instance]
 
     @sums.each do |s|
       s['parameter'] =
@@ -755,6 +765,30 @@ class DbaSgaController < ApplicationController
       GROUP BY Inst_ID, Type, Namespace, DB_Link, Kept
       ORDER BY 6 DESC", @instance]
 
+
+    render_partial
+  end
+
+  def list_resize_ops_per_component
+    @instance        = prepare_param_instance
+    @pool            = params[:pool]
+
+    where_string = "Inst_ID = ? AND "
+    where_values = [@instance]
+
+    if @pool == 'buffer_cache'
+      where_string << "Component LIKE '%buffer cache'"
+    else
+      where_string << "Component = ?"
+      where_values << @pool
+    end
+
+    @ops = sql_select_iterator [
+        "SELECT *
+         FROM   gv$SGA_Resize_Ops
+         WHERE  #{where_string}
+         ORDER BY Start_Time
+        ", ].concat(where_values)
 
     render_partial
   end

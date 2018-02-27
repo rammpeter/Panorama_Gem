@@ -1,13 +1,28 @@
 <% @update_area = get_unique_area_id %>
 <%
+
+  link_resize_ops = proc do |rec|
+    ajax_link(fn(rec.resize_ops), {
+                          :controller   => :dba_sga,
+                          :action       => :list_resize_ops_per_component,
+                          :instance     => rec.inst_id,
+                          :pool         => rec.pool,
+                          :update_area  => @update_area
+                      },
+                 :title => 'Show memory resize operations for this pool'
+    )
+  end
+
+
 column_options =
 [
-  {:caption=>"I",         :data=>proc{|rec| rec.inst_id},                                        :title=>"Instance"},
-  {:caption=>"Pool",      :data=>proc{|rec| rec.pool},                                           :title=>"Pool within the SGA"},
-  {:caption=>"Bytes",     :data=>proc{|rec| formattedNumber(rec.bytes)},                         :title=>"Size in bytes", :align=>"right"},
-  {:caption=>"MBytes",    :data=>proc{|rec| formattedNumber(rec.bytes/(1024*1024).to_f,2)},      :title=>"Size in megabytes", :align=>"right"},
-  {:caption=>"GBytes",    :data=>proc{|rec| formattedNumber(rec.bytes/(1024*1024*1024).to_f,2)}, :title=>"Size in gigabytes", :align=>"right"},
-  {:caption=>"Parameter", :data=>proc{|rec| rec.parameter},                                      :title=>"Corresponding initialization parameter of instance"},
+  {:caption=>"I",           :data=>proc{|rec| rec.inst_id},                                        :title=>"Instance"},
+  {:caption=>"Pool",        :data=>proc{|rec| rec.pool},                                           :title=>"Pool within the SGA"},
+  {:caption=>"Bytes",       :data=>proc{|rec| formattedNumber(rec.bytes)},                         :title=>"Size in bytes", :align=>"right"},
+  {:caption=>"MBytes",      :data=>proc{|rec| formattedNumber(rec.bytes/(1024*1024).to_f,2)},      :title=>"Size in megabytes", :align=>"right"},
+  {:caption=>"GBytes",      :data=>proc{|rec| formattedNumber(rec.bytes/(1024*1024*1024).to_f,2)}, :title=>"Size in gigabytes", :align=>"right"},
+  {:caption=>"Parameter",   :data=>proc{|rec| rec.parameter},                                      :title=>"Corresponding initialization parameter of instance"},
+  {:caption=>'Resize ops.', :data=>link_resize_ops,                                                :title=>"Number of resize operations (from gv$SGA_Resize_Ops)", align: :right},
 ]
 
 %>
