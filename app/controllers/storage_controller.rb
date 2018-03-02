@@ -420,14 +420,18 @@ class StorageController < ApplicationController
              d.BYTES/1048576                   FileSize,
              (d.Bytes-NVL(f.Bytes,0))/d.BYTES  PctUsed,
              MaxBytes/1048576                  MaxMB,
-             Increment_By/1048576              Increment_ByMB
-      FROM   (SELECT File_Name, File_ID, Tablespace_Name, Bytes, Blocks,
-                     Status, AutoExtensible, MaxBytes, Increment_By, Online_Status
-              FROM   DBA_Data_Files
+             Increment_By*Block_size/1048576   Increment_ByMB,
+             Increment_By,
+             Block_Size
+      FROM   (SELECT f.File_Name, f.File_ID, f.Tablespace_Name, f.Bytes, f.Blocks,
+                     f.Status, f.AutoExtensible, f.MaxBytes, f.Increment_By, f.Online_Status, t.Block_Size
+              FROM   DBA_Data_Files f
+              LEFT OUTER JOIN DBA_Tablespaces t ON t.Tablespace_Name = f.Tablespace_Name
               UNION ALL
-              SELECT File_Name, File_ID, Tablespace_Name, Bytes, Blocks,
-                     Status, AutoExtensible, MaxBytes, Increment_By, '[UNKNOWN]' Online_Status
-              FROM   DBA_Temp_Files
+              SELECT f.File_Name, f.File_ID, f.Tablespace_Name, f.Bytes, f.Blocks,
+                     f.Status, f.AutoExtensible, f.MaxBytes, f.Increment_By, '[UNKNOWN]' Online_Status, t.Block_Size
+              FROM   DBA_Temp_Files f
+              LEFT OUTER JOIN DBA_Tablespaces t ON t.Tablespace_Name = f.Tablespace_Name
              )d
       LEFT JOIN (SELECT File_ID, Tablespace_Name, SUM(Bytes) Bytes
                  FROM   DBA_FREE_SPACE
