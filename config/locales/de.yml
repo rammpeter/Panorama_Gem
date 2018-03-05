@@ -445,10 +445,22 @@
   dba_sga_list_sql_sga_stat_cpu_hint:                       CPU-Zeit gesamt in Sekunden, Summe über alle PQ-Prozesse wenn parallel ausgeführt
   dba_sga_list_sql_sga_stat_elapsed_hint:                   Laufzeit gesamt in Sekunden, Summe über alle PQ-Prozesse wenn parallel ausgeführt
   dba_sga_list_sql_sga_stat_hit_ration_hint:                Verhältnis Cache-Hits zu Buffer Gets
+  dba_sga_list_sql_sga_stat_metrics_sql_hint:               Metriken sind kumuliert seit %{last_load_time}
+  dba_sga_list_sql_sga_stat_metrics_sqlarea_hint:           Metriken sind kumuliert als Summe über alle %{child_count} Child-Cursoren die starteten zwischen %{min_last_load_time} und %{last_load_time}
   dba_sga_list_sql_sga_stat_object_state_hint:              Object-Status des SQL
-  dba_sga_list_sql_sga_stat_first_load_hint:                Erstes Auftreten des SQL in SGA
   dba_sga_list_sql_sga_stat_last_active_hint:               Ende der letzten Ausführung des SQL
-  dba_sga_list_sql_sga_stat_last_load_hint:                 Letztes Laden des SQL in SGA, Startzeitpunkt für Kumulation der Statistiken
+  dba_sga_list_sql_sga_stat_last_load_sql_hint: |-
+    Load time des SQL Child-Cursor in SGA
+    %{metrics_start_hint}
+    Erstes Auftreten des SQL in SGA = %{first_load_time}
+    Anzahl Ladevorgänge des Objektes nach Invalidisierung des Cursors = %{loads}
+
+  dba_sga_list_sql_sga_stat_last_load_sqlarea_hint: |-
+    Letzte Load-Time eines Child-Cursors dieses SQLs in SGA
+    %{metrics_start_hint}
+    Erstes Auftreten des SQL in SGA = %{first_load_time}
+    Anzahl Ladevorgänge des Objektes nach Invalidisierung des Cursors = %{loads}
+
   dba_sga_list_sql_sga_stat_opt_env_hint:                   Hash-Value über gesamtes Environment des Optimizers
   dba_sga_list_sql_sga_stat_module_hint:                    Module und Action der Session, von der Statement geparst wurde
   dba_sga_list_sql_sga_stat_module_link_hint:               Anzeige weiterer Details zum Modul-Namen wenn verfügbar

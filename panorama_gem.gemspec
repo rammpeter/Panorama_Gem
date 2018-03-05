@@ -22,7 +22,7 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   # s.add_dependency "rails", "~> 5.0.0", ">= 5.0.0.1"
   #  use exactly this rails version
   #s.add_dependency "rails", "5.0.1"
-  s.add_dependency "rails", "5.1.4"
+  s.add_dependency "rails", "5.1.5"
 
   s.add_dependency 'activerecord-nulldb-adapter'
   s.add_dependency 'activerecord-oracle_enhanced-adapter'     # lokal in Gemfile überschreiben mit : gem 'activerecord-oracle_enhanced-adapter', github: 'rsim/oracle-enhanced', branch: 'rails42'

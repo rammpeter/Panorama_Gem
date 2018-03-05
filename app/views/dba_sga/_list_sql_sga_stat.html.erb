@@ -79,17 +79,27 @@ end
             }, :title=>"Show PL/SQL details at lower bound of browser page")
           %></td>
         </tr>
-        <tr title="<%= t(:dba_sga_list_sql_sga_stat_first_load_hint, :default=>'First occurrence of SQL in SGA') %>">            <td>First Load Time</td><td align="center"><%= localeDateTime(@sql.first_load_time) %></td>        </tr>
-        <tr title="<%= t(:dba_sga_list_sql_sga_stat_last_load_hint, :default=>'Last load time of SQL in SGA, this is start time for cumulative statistics in SGA') %>">            <td>Last Load Time</td><td align="center"><%= localeDateTime(@sql.last_load_time) %></td>        </tr>
-        <tr title="<%= t(:dba_sga_list_sql_sga_stat_last_active_hint, :default=>'End of last execution of SQL') %>">            <td>Last Active Time</td><td align="center"><%= @sql.last_active_time %></td>        </tr>
+        <% if @modus == "GV$SQL"
+             metrics_start_hint = t(:dba_sga_list_sql_sga_stat_metrics_sql_hint, default: "Metrics are cumulated starting at %{last_load_time}", last_load_time: localeDateTime(@sql.last_load_time))
+        %>
+          <tr title="<%= t(:dba_sga_list_sql_sga_stat_last_load_sql_hint, :default=>"Load time of SQL child cursor in SGA\n%{metrics_start_hint}\nFirst occurrence of SQL in SGA = %{first_load_time}\nNumber of times the object was loaded or reloaded after invalidisation of cursor = %{loads}", metrics_start_hint: metrics_start_hint, first_load_time: localeDateTime(@sql.first_load_time), loads: fn(@sql.loads)) %>">
+            <td>Load Time</td><td align="center"><%= localeDateTime(@sql.last_load_time) %></td>
+          </tr>
+        <% else # gv$SQLArea
+             metrics_start_hint = t(:dba_sga_list_sql_sga_stat_metrics_sqlarea_hint, default: "Metrics are cumulated as sum over all %{child_count} child cursors that started between %{min_last_load_time} and %{last_load_time}", child_count: @sql.child_count, min_last_load_time: localeDateTime(@sql.min_last_load_time),last_load_time: localeDateTime(@sql.last_load_time))
+        %>
+          <tr title="<%= t(:dba_sga_list_sql_sga_stat_last_load_sqlarea_hint, :default=>"Last load time of one child cursor of this SQL in SGA\n%{metrics_start_hint}\nFirst occurrence of SQL in SGA = %{first_load_time}\nNumber of times the object was loaded or reloaded after invalidisation of cursor = %{loads}", metrics_start_hint: metrics_start_hint, first_load_time: localeDateTime(@sql.first_load_time), loads: fn(@sql.loads)) %>">
+            <td>Load Time</td><td align="center"><%= localeDateTime(@sql.last_load_time) %></td>
+          </tr>
+        <% end %>
+        <tr title="<%= t(:dba_sga_list_sql_sga_stat_last_active_hint, :default=>'End of last execution of SQL') %>">            <td>Last Active Time</td><td align="center"><%= localeDateTime(@sql.last_active_time) %></td>        </tr>
         <tr title="<%= t(:dba_sga_list_sql_sga_stat_hit_ration_hint, :default=>'Ratio cache hits to buffer gets') %>">            <td>Buffer cache hit ratio</td><td align="center"><%= fn(@sql.hit_ratio, 2) %></td>        </tr>
-        <tr title="Number of times the object was loaded or reloaded after invalidisation of cursor">            <td>Loads</td><td align="center"><%= fn(@sql.loads) %></td>        </tr>
       </table>
 
        <table id="<%= "#{@table_id_prefix}_right_table" %>" border="1" width="100%" style="font-size:small;">
-         <tr><th>Metric-Name</th><th>Total</th><th>Per Exec.</th></tr>
+         <tr  title="<%= metrics_start_hint %>"><th>Metric-Name</th><th>Total</th><th>Per Exec.</th></tr>
          <%= show_single_value("Executions", @sql.executions,0, "Number of executions") %>
-         <%= show_both_values("Parse calls", @sql.parse_calls,0, "Number of parse calls", true) %>
+         <%= show_both_values("Parse calls", @sql.parse_calls,0, "Number of parse calls\nIncludes soft and hard parses at opening of new cursor.\nRegardless wether parsed SQL can be reused or not", true) %>
          <%= show_both_values("Fetches ", @sql.fetches, 0, "Number of fetches (Avg. #{@sql.rows_processed/@sql.fetches rescue nil} rows per fetch)")%>
          <%= show_both_values("Sorts", @sql.sorts,0, "Number of sort operations") %>
          <%= show_both_values("Rows processed", @sql.rows_processed,0, "Number of rows processed") %>

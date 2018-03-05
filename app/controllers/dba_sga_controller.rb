@@ -96,9 +96,9 @@ class DbaSgaController < ApplicationController
                 ROUND(s.CPU_TIME / 1000000, 3) CPU_TIME_SECS,
                 ROUND(s.Cluster_Wait_Time / 1000000, 3) Cluster_Wait_Time_SECS,
                 ROUND((s.CPU_TIME / 1000000) / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS), 3) AS CPU_TIME_SECS_PER_EXECUTE,
-                s.SQL_ID, s.Plan_Hash_Value, s.Object_Status, s.Last_Active_Time,
+                s.SQL_ID, s.Plan_Hash_Value, s.Object_Status,
                 c.Child_Count, c.Plans
-                #{modus=="GV$SQL" ? ", s.Child_Number, RAWTOHEX(s.Child_Address) Child_Address" : ", c.Child_Number, c.Child_Address, s.Version_Count" }
+                #{modus=="GV$SQL" ? ", s.Child_Number, RAWTOHEX(s.Child_Address) Child_Address, s.Last_Active_Time" : ", c.Child_Number, c.Child_Address, s.Version_Count, TO_DATE(s.Last_Active_Time, 'YYYY-MM-DD/HH24:MI:SS') Last_Active_Time" }
            FROM #{modus} s
            JOIN DBA_USERS u ON u.User_ID = s.Parsing_User_ID
            JOIN (SELECT /*+ NO_MERGE */ Inst_ID, SQL_ID, COUNT(*) Child_Count, MIN(Child_Number) Child_Number, MIN(RAWTOHEX(Child_Address)) Child_Address,
@@ -227,9 +227,13 @@ class DbaSgaController < ApplicationController
       sql[:child_count] = 1                                                    # not from DB
       sql[:plan_hash_value_count] = 1                                          # not from DB
     else
-      sql_counts = sql_select_first_row ["SELECT COUNT(*) child_count, COUNT(DISTINCT Plan_Hash_Value) Plan_Hash_Value_Count FROM GV$SQL c WHERE c.Inst_ID = ? AND c.SQL_ID = ?", @instance, @sql_id]
+      sql_counts = sql_select_first_row ["SELECT COUNT(*) child_count, COUNT(DISTINCT Plan_Hash_Value) Plan_Hash_Value_Count,
+                                                 MIN(TO_DATE(c.Last_Load_Time, 'YYYY-MM-DD/HH24:MI:SS')) Min_Last_Load_Time
+                                          FROM   GV$SQL c
+                                          WHERE c.Inst_ID = ? AND c.SQL_ID = ?", @instance, @sql_id]
       sql[:child_count]            = sql_counts.child_count
       sql[:plan_hash_value_count]  = sql_counts.plan_hash_value_count
+      sql[:min_last_load_time]     = sql_counts.min_last_load_time
     end
 
     sql

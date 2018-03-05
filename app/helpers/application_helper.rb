@@ -280,10 +280,12 @@ module ApplicationHelper
       AND    DBID            = ?
       #{additional_where}",
                             time_selection_start, time_selection_end, prepare_param_dbid].concat(additional_binds)
-    raise "Kein Snapshot gefunden zwischen #{time_selection_start} und #{time_selection_end} für Instance #{instance}" if snaps.length == 0
+    no_snaps_message = "No snapshot found between #{time_selection_start} and #{time_selection_end} for instance #{instance}"
+
+    raise no_snaps_message if snaps.length == 0
     @min_snap_id = snaps[0].min_snap_id      # Kleinste ID
     @max_snap_id = snaps[0].max_snap_id      # Groesste ID
-    raise "Kein Snapshot gefunden zwischen #{time_selection_start} und #{time_selection_end} für Instance #{instance}" unless @min_snap_id
+    raise no_snaps_message unless @min_snap_id
   end
 
   # Generische Methode zum Fuellen von Collections
@@ -346,8 +348,8 @@ module ApplicationHelper
       raise "#{t(:ajax_helper_link_sql_id_title_prefix, :default=>'Invalid format of timestamp')} '#{ts}'. #{t(:ajax_helper_link_wait_params_hint, :default=>'Expected is')} '#{human_datetime_minute_mask}'! Problem: #{e.message}"
     end
 
-    raise "Parameter 'time_selection_start' missung in hash 'params'" unless params[:time_selection_start]
-    raise "Parameter 'time_selection_end' missung in hash 'params'"   unless params[:time_selection_end]
+    raise "Parameter 'time_selection_start' missing in hash 'params'" unless params[:time_selection_start]
+    raise "Parameter 'time_selection_end' missing in hash 'params'"   unless params[:time_selection_end]
     @time_selection_start = params[:time_selection_start].rstrip
     @time_selection_end   = params[:time_selection_end].rstrip
 
@@ -623,7 +625,7 @@ module ApplicationHelper
     end
 
     if sqls.size == 0
-      "< Kein SQL-Text zu ermitteln füer SQL-ID='#{sql_id}' >"
+      "< No SQL-text found for SQL-ID='#{sql_id}' >"
     else
       sqls[0].sql_text
     end

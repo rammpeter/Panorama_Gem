@@ -31,7 +31,7 @@ end
 
 ActiveRecord::ConnectionAdapters::OracleEnhancedJDBCConnection.class_eval do
 
-  def log(sql, name = "SQL", binds = [], statement_name = nil)
+  def log(sql, name = "SQL", binds = [], statement_name = '[not defined]')
     ActiveSupport::Notifications.instrumenter.instrument(
         "sql.active_record",
         :sql            => sql,
@@ -502,7 +502,7 @@ class PanoramaConnection
 
   def self.set_application_info
     # This method raises connection exception at first database access
-    Thread.current[:panorama_connection_connection_object].jdbc_connection.exec_update("call dbms_application_info.set_Module('Panorama', :action)", nil,
+    Thread.current[:panorama_connection_connection_object].jdbc_connection.exec_update("call dbms_application_info.set_Module('Panorama', :action)", 'set_application_info',
                                   [ActiveRecord::Relation::QueryAttribute.new(':action', "#{Thread.current[:panorama_connection_connect_info][:current_controller_name]}/#{Thread.current[:panorama_connection_connect_info][:current_action_name]}", ActiveRecord::Type::Value.new)]
     )
   end
