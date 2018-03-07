@@ -133,7 +133,7 @@ class EnvController < ApplicationController
                                                       (SELECT n.Value FROM gv$NLS_Parameters n WHERE n.Inst_ID = gi.Inst_ID AND n.Parameter='NLS_NCHAR_CHARACTERSET') NLS_NChar_CharacterSet,
                                                       (SELECT p.Value FROM GV$Parameter p WHERE p.Inst_ID = gi.Inst_ID AND LOWER(p.Name) = 'cpu_count') CPU_Count,
                                                       (SELECT p.Value FROM GV$Parameter p WHERE p.Inst_ID = gi.Inst_ID AND LOWER(p.Name) = 'resource_manager_plan') Resource_Manager_Plan,
-                                                      d.DBID, d.Open_Mode, d.Protection_Mode, d.Protection_Level, d.Switchover_Status, d.Dataguard_Broker, d.Force_Logging,
+                                                      d.DBID, d.Open_Mode, d.Protection_Mode, d.Protection_Level, d.Switchover_Status, d.Dataguard_Broker, d.Force_Logging, d.Database_Role,
                                                       ws.Snap_Interval_Minutes, ws.Snap_Retention_Days
                                                       #{", CDB" if get_db_version >= '12.1'}
                                                FROM  GV$Instance gi

@@ -31,14 +31,16 @@ end
 
 ActiveRecord::ConnectionAdapters::OracleEnhancedJDBCConnection.class_eval do
 
-  def log(sql, name = "SQL", binds = [], statement_name = '[not defined]')
+  def log(sql, name = "SQL", binds = [], type_casted_binds = [], statement_name = '[not defined]')
     ActiveSupport::Notifications.instrumenter.instrument(
         "sql.active_record",
-        :sql            => sql,
-        :name           => name,
-        :connection_id  => object_id,
-        :statement_name => statement_name,
-        :binds          => binds) { yield }
+        :sql                => sql,
+        :name               => name,
+        :connection_id      => object_id,
+        :statement_name     => statement_name,
+        :binds              => binds,
+        :type_casted_binds  => type_casted_binds
+    ) { yield }
   end
 
   # Method comparable with ActiveRecord::ConnectionAdapters::OracleEnhancedDatabaseStatements.exec_query,
@@ -47,7 +49,7 @@ ActiveRecord::ConnectionAdapters::OracleEnhancedJDBCConnection.class_eval do
     # Variante für Rails 5
     type_casted_binds = binds.map { |attr| TypeMapper.new.type_cast(attr.value_for_database) }
 
-    log(sql, name, binds) do
+    log(sql, name, binds, type_casted_binds) do
       cursor = nil
       cursor = prepare(sql)
       cursor.bind_params(type_casted_binds) if !binds.empty?
@@ -82,7 +84,7 @@ ActiveRecord::ConnectionAdapters::OracleEnhancedJDBCConnection.class_eval do
   def exec_update(sql, name, binds)
     type_casted_binds = binds.map { |attr| TypeMapper.new.type_cast(attr.value_for_database) }
 
-    log(sql, name, binds) do
+    log(sql, name, binds, type_casted_binds) do
       cursor = prepare(sql)
       cursor.bind_params(type_casted_binds) if !binds.empty?
       res = cursor.exec_update
