@@ -436,6 +436,7 @@ module KeyExplanationHelper
           'PX Deq: Parse Reply'               => 'Query Coordinator waiting for the slaves to parse their SQL statements. Examine trace files of PQ-slaves for reason.',
           'PX Deq: Table Q Normal'            => 'Consumer slave set ist waiting for data-rows from producer slave set',
           'PX qref latch'                     => 'The PX qref latch event can often mean that the Producers are producing data quicker than the Consumers can consume it. Make sure that PARALLEL_EXECUTION_MESSAGE_SIZE is set to 16384 in order to avoid many small communications and reduce this kind of contention.',
+          'reliable message'                  =>  "Waiting for a response from the other instances in a RAC cluster.\nP1 can be evaluated from x$ksrcdes, x$ksrcctx, GV$CHANNEL_WAITS",
           'SGA: allocation forcing component growth' => "Process waiting on an immediate mode memory transfer with auto-tune SGA after a 4031 for MMAN to get the memory and post it.",
           'SQL*Net message from client'       => 'Server (shadow process) waiting for client action (idle wait)',
           'SQL*Net message from dblink'       => 'Waiting for data transfer or remote execution across DB-link',

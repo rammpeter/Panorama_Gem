@@ -198,6 +198,20 @@ class PanoramaConnection
     end
   end
 
+  # disconnect connections that are not used for x seconds
+  def self.disconnect_aged_connections(min_age_for_disconnect)
+    @@connection_pool_mutex.synchronize do
+      @@connection_pool.clone.each do |conn|                                    # clone to ensure eqch connection is checked even if Array-nodes are removed between
+        if !conn.used_in_thread && conn.last_used_time < Time.now - min_age_for_disconnect
+          config = conn.jdbc_connection.instance_variable_get(:@config)
+          Rails.logger.info "Disconnect DB connection because last used is older than #{min_age_for_disconnect} seconds: URL='#{config[:url]}' User='#{config[:username]}' Last used=#{conn.last_used_time}"
+          destroy_connection_in_mutexed_pool(conn)
+        end
+      end
+    end
+  end
+
+
   def self.get_connection_pool                                                  # get pool info, for read access only
     @@connection_pool
   end
@@ -219,13 +233,13 @@ class PanoramaConnection
 
   def self.destroy_connection_in_mutexed_pool(destroy_conn)
     config = destroy_conn.jdbc_connection.instance_variable_get(:@config)
-    Rails.logger.info "Database connection destroyed: URL='#{config[:url]}' User='#{config[:username]}' Last used=#{destroy_conn.last_used_time} Pool size=#{@@connection_pool.count}"
     begin
       destroy_conn.jdbc_connection.logoff
     rescue Exception => e
       Rails.logger.info "destroy_connection_in_mutexed_pool: Exception #{e.message} during logoff. URL='#{config[:url]}' User='#{config[:username]}' Last used=#{destroy_conn.last_used_time}"
     end
     @@connection_pool.delete(destroy_conn)
+    Rails.logger.info "Database connection destroyed: URL='#{config[:url]}' User='#{config[:username]}' Last used=#{destroy_conn.last_used_time} Remaining pool size=#{@@connection_pool.count}"
   end
 
   def self.get_host_tns(current_database)                                            # JDBC-URL for host/port/sid
