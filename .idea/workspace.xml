@@ -8,11 +8,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" afterPath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/dba_helper.rb" afterPath="$PROJECT_DIR$/app/helpers/dba_helper.rb" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" afterPath="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" />
-      <change beforePath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" afterPath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
+      <change beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -179,7 +176,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="75">
@@ -219,7 +216,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="package_panorama_sampler_snapshot.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="package_panorama_sampler_snapshot.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="259">
@@ -368,10 +365,10 @@
         <option value="$PROJECT_DIR$/config/initializers/initialize_jobs.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_connection.rb" />
         <option value="$PROJECT_DIR$/app/jobs/connection_terminate_job.rb" />
-        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/app/helpers/dba_helper.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
         <option value="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" />
+        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
       </list>
     </option>
   </component>
@@ -1309,14 +1306,7 @@
       <workItem from="1519716080542" duration="6767000" />
       <workItem from="1519749274759" duration="59000" />
       <workItem from="1519990819009" duration="12716000" />
-      <workItem from="1520416011490" duration="15473000" />
-    </task>
-    <task id="LOCAL-01231" summary="Harden tests">
-      <created>1516807170171</created>
-      <option name="number" value="01231" />
-      <option name="presentableId" value="LOCAL-01231" />
-      <option name="project" value="LOCAL" />
-      <updated>1516807170172</updated>
+      <workItem from="1520416011490" duration="15540000" />
     </task>
     <task id="LOCAL-01232" summary="Harden tests">
       <created>1516807276569</created>
@@ -1654,7 +1644,14 @@
       <option name="project" value="LOCAL" />
       <updated>1520499455143</updated>
     </task>
-    <option name="localTasksCounter" value="1280" />
+    <task id="LOCAL-01280" summary="DBA_Hist_IOStat_Filetype added in Panorama-Sampler">
+      <created>1520776841281</created>
+      <option name="number" value="01280" />
+      <option name="presentableId" value="LOCAL-01280" />
+      <option name="project" value="LOCAL" />
+      <updated>1520776841281</updated>
+    </task>
+    <option name="localTasksCounter" value="1281" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1690,7 +1687,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2940439000" />
+    <option name="totallyTimeSpent" value="2940506000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1772,7 +1769,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Show hint of SQL plan baselines" />
     <MESSAGE value="Show plan hash value and plan of SQL plan baselines" />
     <MESSAGE value="Fix for show SQL plan baselines" />
     <MESSAGE value="Bugfix Panorama-Sampler: Call PanoramaSamplerConfig.check_for_select_any_table! in new Thread only" />
@@ -1797,7 +1793,8 @@
     <MESSAGE value="Translation + explanation" />
     <MESSAGE value="Show dataguard role, &#10;fix logging issue with type_casted_binds" />
     <MESSAGE value="Terminate idle connections after 10 minutes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Terminate idle connections after 10 minutes" />
+    <MESSAGE value="DBA_Hist_IOStat_Filetype added in Panorama-Sampler" />
+    <option name="LAST_COMMIT_MESSAGE" value="DBA_Hist_IOStat_Filetype added in Panorama-Sampler" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2326,14 +2323,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/helpers/dba_helper.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="283">
@@ -2378,6 +2367,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="259">
           <caret line="86" column="104" lean-forward="false" selection-start-line="86" selection-start-column="104" selection-end-line="86" selection-end-column="104" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="39" lean-forward="false" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
           <folding />
         </state>
       </provider>
