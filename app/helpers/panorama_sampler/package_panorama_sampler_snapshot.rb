@@ -73,6 +73,23 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_DB_cache_Advice;
 
+  PROCEDURE Snap_IOStat_Filetype(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_IOStat_Filetype (SNAP_ID, DBID, INSTANCE_NUMBER, FILETYPE_ID, FILETYPE_NAME,
+                                          SMALL_READ_MEGABYTES, SMALL_WRITE_MEGABYTES, LARGE_READ_MEGABYTES, LARGE_WRITE_MEGABYTES,
+                                          SMALL_READ_REQS, SMALL_WRITE_REQS, SMALL_SYNC_READ_REQS, LARGE_READ_REQS, LARGE_WRITE_REQS,
+                                          SMALL_READ_SERVICETIME, SMALL_WRITE_SERVICETIME, SMALL_SYNC_READ_LATENCY, LARGE_READ_SERVICETIME, LARGE_WRITE_SERVICETIME,
+                                          RETRIES_ON_ERROR, CON_DBID, CON_ID
+    ) SELECT p_SNAP_ID, p_DBID, p_INSTANCE, FILETYPE_ID, MIN(FILETYPE_NAME),
+             SUM(SMALL_READ_MEGABYTES), SUM(SMALL_WRITE_MEGABYTES), SUM(LARGE_READ_MEGABYTES), SUM(LARGE_WRITE_MEGABYTES),
+             SUM(SMALL_READ_REQS), SUM(SMALL_WRITE_REQS), SUM(SMALL_SYNC_READ_REQS), SUM(LARGE_READ_REQS), SUM(LARGE_WRITE_REQS),
+             SUM(SMALL_READ_SERVICETIME), SUM(SMALL_WRITE_SERVICETIME), SUM(SMALL_SYNC_READ_LATENCY), SUM(LARGE_READ_SERVICETIME), SUM(LARGE_WRITE_SERVICETIME),
+             SUM(RETRIES_ON_ERROR), p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "MIN(Con_ID)" : "0"}
+      FROM   V$IOSTAT_FILE
+      GROUP BY FILETYPE_ID
+    ;
+  END Snap_IOStat_Filetype;
+
   PROCEDURE Snap_Latch(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO Panorama_Latch (SNAP_ID, DBID, INSTANCE_NUMBER, LATCH_HASH, LATCH_NAME, LEVEL#, GETS, MISSES, SLEEPS, IMMEDIATE_GETS, IMMEDIATE_MISSES,
@@ -491,6 +508,7 @@ END Panorama_Sampler_Snapshot;
   BEGIN
     Move_ASH_To_Snapshot_Table(p_Snap_ID,   p_DBID,     p_Con_DBID);
     Snap_DB_cache_Advice      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_IOStat_Filetype      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Latch                (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Resource_Limit       (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);

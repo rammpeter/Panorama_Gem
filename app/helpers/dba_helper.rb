@@ -87,7 +87,7 @@ module DbaHelper
         result = "Nothing found in x$kglob for p1" unless result
         result
       else
-        "[kein Objekt zu ermitteln für diese Deutung p1, p2]"
+        "[No object can be determined for parameters p1, p2]"
     end
   end
 
