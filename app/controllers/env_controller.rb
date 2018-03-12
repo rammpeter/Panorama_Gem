@@ -281,27 +281,8 @@ class EnvController < ApplicationController
       current_database[:tns]       = PanoramaConnection.get_host_tns(current_database)             # Evtl. existierenden TNS-String mit Angaben von Host etc. ueberschreiben
     end
 
-    # Temporaerer Schutz des Produktionszuganges bis zur Implementierung LDAP-Autorisierung    
-    if current_database[:host].upcase.rindex("DM03-SCAN") && current_database[:sid].upcase.rindex("NOADB")
-      if params[:database][:authorization]== nil  || params[:database][:authorization]==""
-        respond_to do |format|
-          format.js {render :js => "show_status_bar_message('zusätzliche Autorisierung erforderlich fuer CORE-Produktionssystem');
-                                    jQuery('#login_dialog_authorization').show();
-                                    jQuery('#login_dialog').effect('shake', { times:3 }, 100);
-                                   "
-          }
-        end
-        return
-      end
-      if params[:database][:authorization]== nil || params[:database][:authorization]!="meyer"
-        respond_to do |format|
-          format.js {render :js => "show_status_bar_message('Autorisierung \"#{params[:database][:authorization]}\" ungueltig fuer CORE-Produktionssystem');
-                                    jQuery('#login_dialog').effect('shake', { times:3 }, 100);
-                                   "
-          }
-        end
-        return
-      end
+    if !check_credentials(current_database)
+      return                                                                    # check_credentials renders self if returns false
     end
 
     set_current_database(current_database)                                      # Persist current database setting in cache

@@ -5,6 +5,7 @@ require 'encryption'
 
 module EnvHelper
   include DatabaseHelper
+  include EnvExtensionHelper
 
   def init_management_pack_license(current_database)
     if current_database[:management_pack_license].nil?                          # not already set, calculate initial value
