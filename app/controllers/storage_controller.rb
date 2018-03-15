@@ -1165,4 +1165,17 @@ class StorageController < ApplicationController
     @occupants = sql_select_iterator "SELECT * FROM V$SYSAUX_Occupants ORDER BY Space_Usage_KBytes DESC"
     render_partial
   end
+
+  def list_recycle_bin
+    @recycle_bin = sql_select_iterator "SELECT b.*,
+                                               TO_DATE(CreateTime, 'YYYY-MM-DD:HH24:MI:SS') CreateTime_Dt,
+                                               TO_DATE(DropTime,   'YYYY-MM-DD:HH24:MI:SS') DropTime_Dt,
+                                               b.Space * ts.Block_Size / (1024*1024) Size_MB
+                                        FROM   DBA_RecycleBin b
+                                        LEFT OUTER JOIN DBA_Tablespaces ts ON ts.Tablespace_Name = b.TS_Name
+                                        ORDER BY b.Space DESC NULLS LAST
+                                       "
+    render_partial
+  end
+
 end

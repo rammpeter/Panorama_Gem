@@ -110,6 +110,7 @@ module MenuHelper
             .concat(
                 [
                     {:class=> 'item', :caption=> 'Describe object',     :controller=>:dba_schema,       :action=>:describe_object,  :hint=>'Describe database object (table, index, materialized view ...)' },
+                    {:class=> 'item', :caption=> 'Recycle bin',     :controller=>:storage,       :action=>:list_recycle_bin,  :hint=>'Show content of recycle bin' },
                     {:class=> 'item', :caption=> 'Materialized view structures',         :controller=>:storage,   :action=> 'show_materialized_views',  :hint=>t(:menu_storage_matview_hint, :default=> 'Show structure of materialzed views and MV-logs')   },
                     {:class=> 'item', :caption=> t(:menu_storage_table_dependency_caption, :default=>'Table-dependencies'),         :controller=> 'table_dependencies',  :action=> 'show_frame',            :hint=> t(:menu_storage_table_dependency_hint, :default=>'Direct and indirect referential dependencies of tables')},
                     { :class=> 'menu', :caption=> 'Temp usage', :content=>[
