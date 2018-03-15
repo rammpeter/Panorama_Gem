@@ -106,7 +106,7 @@ Retention time for DB-cache objects snapshot data before deletion = #{fn(rec[:ca
 
   @title_blocking_locks_sampling = proc do |rec|
     "Blocking locks sampling = #{rec[:blocking_locks_active] ? 'Active' : 'Inactive'}
-Delay between snapshots of blocking locks = #{fn(rec[:blocking_locks_snapshot_cycle])} hours
+Delay between snapshots of blocking locks = #{fn(rec[:blocking_locks_snapshot_cycle])} minutes
 Retention time for blocking locks snapshot data before deletion = #{fn(rec[:blocking_locks_snapshot_retention])} days
 Limit for long lasting DB-locks = #{fn(rec[:blocking_locks_long_locks_limit])} seconds"
   end
