@@ -333,7 +333,6 @@ class DbaSgaController < ApplicationController
   # Erzeugt Daten für execution plan
   #def get_sga_execution_plan(modus, sql_id, instance, child_number, child_address, restrict_ash_to_child)
   def list_sql_detail_execution_plan
-    @modus                  = params[:modus]
     @sql_id                 = params[:sql_id]
     @instance               = prepare_param_instance
     @child_number           = (params[:child_number].nil? || params[:child_number] == '') ? nil : (params[:child_number].to_i rescue nil)
@@ -353,10 +352,6 @@ class DbaSgaController < ApplicationController
     end
 
     @include_ash_in_sql = get_db_version >= "11.2" && (PackLicense.diagnostics_pack_licensed? || PackLicense.panorama_sampler_active?)
-
-
-
-
 
     @multiplans = sql_select_all ["\
       SELECT Plan_Hash_Value, COUNT(DISTINCT Child_Number) Child_Count, MIN(Child_Number) Min_Child_Number

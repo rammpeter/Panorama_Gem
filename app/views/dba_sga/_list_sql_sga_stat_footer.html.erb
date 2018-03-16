@@ -9,7 +9,6 @@
         action:                 :list_sql_detail_execution_plan,
         instance:               @sql.inst_id,
         sql_id:                 @sql.sql_id,
-        modus:                  @modus,
         child_number:           (@modus == 'GV$SQL' ? @child_number : nil),
         child_address:          (@modus == 'GV$SQL' ? @child_address : nil),
     }, :title =>t(:dba_sga_list_sql_sga_stat_footer_plan_hint, :default=>"Show execution plan of SQL (or plans if there are multiple)"))

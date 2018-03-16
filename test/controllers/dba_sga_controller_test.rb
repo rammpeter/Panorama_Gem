@@ -94,6 +94,18 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
 
   end
 
+  test "list_sql_detail_execution_plan with xhr: true" do
+    post '/dba_sga/list_sql_detail_execution_plan' , params: {format: :html, instance: "1", sql_id: @hist_sql_id, update_area: :hugo }
+    assert_response :success
+    post '/dba_sga/list_sql_detail_execution_plan' , params: {format: :html, instance: "1", sql_id: @hist_sql_id, child_number: 1, child_address: 'ABC', update_area: :hugo }
+    assert_response :success
+  end
+
+  test "list_sql_child_cursors with xhr: true" do
+    post '/dba_sga/list_sql_child_cursors' , params: {format: :html, instance: '1', sql_id: @hist_sql_id, update_area: :hugo }
+    assert_response :success
+  end
+
   test "list_bind_variables_per_sql with xhr: true" do
     post '/dba_sga/list_bind_variables', :params => {format: :html, instance: 1, sql_id: @hist_sql_id, update_area: :hugo }
     assert_response :success
