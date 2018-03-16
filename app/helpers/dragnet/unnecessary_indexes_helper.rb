@@ -72,11 +72,7 @@ Additional info about usage of index can be gained by querying DBA_Hist_Seg_Stat
                             i.Owner \"Owner\", i.Table_Name, Index_Name, Index_Type, BLevel, Distinct_Keys,
                             ROUND(i.Num_Rows/DECODE(i.Distinct_Keys,0,1,i.Distinct_Keys)) \"Rows per Key\",
                             i.Num_Rows \"Rows Index\", t.Num_Rows \"Rows Table\", t.Num_Rows-i.Num_Rows \"Possible NULLs\", t.IOT_Type,
-                            (SELECT  /*+ NO_MERGE */ ROUND(SUM(bytes)/(1024*1024),1) MBytes
-                                     FROM   DBA_SEGMENTS s
-                             WHERE s.SEGMENT_NAME = i.Index_Name
-                             AND     s.Owner                = i.Owner
-                            ) MBytes,
+                            s.MBytes,
                             (SELECT CASE WHEN SUM(DECODE(Nullable, 'N', 1, 0)) = COUNT(*) THEN 'NOT NULL' ELSE 'NULLABLE' END
                              FROM DBA_Ind_Columns ic
                              JOIN DBA_Tab_Columns tc ON tc.Owner = ic.Table_Owner AND tc.Table_Name = ic.Table_Name AND tc.Column_Name = ic.Column_Name
@@ -84,6 +80,10 @@ Additional info about usage of index can be gained by querying DBA_Hist_Seg_Stat
                             ) Nullable
                      FROM   DBA_Indexes i
                      JOIN   DBA_Tables t ON t.Owner=i.Table_Owner AND t.Table_Name=i.Table_Name
+                     LEFT OUTER JOIN (SELECT  /*+ NO_MERGE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes
+                                      FROM   DBA_SEGMENTS s
+                                      GROUP BY Owner, Segment_Name
+                                     ) s ON s.SEGMENT_NAME = i.Index_Name AND s.Owner = i.Owner
                      WHERE   i.Num_Rows >= ?
                      AND     i.Distinct_Keys<=?
                      ORDER BY i.Num_Rows*t.Num_Rows DESC NULLS LAST

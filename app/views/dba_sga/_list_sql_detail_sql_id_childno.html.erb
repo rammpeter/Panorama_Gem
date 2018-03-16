@@ -6,20 +6,6 @@
 
 <div style="padding: 5px"></div>
 
-<div id="<%= "#{@update_area}_execution_plan" %>"></div>
-<script type="text/javascript">
-  ajax_html('<%= "#{@update_area}_execution_plan" %>', 'dba_sga', 'list_sql_detail_execution_plan', {
-    update_area:      "<%= "#{@update_area}_execution_plan" %>",
-    modus:            "<%= @modus %>",
-    sql_id:           "<%= @sql_id %>",
-    instance:         "<%= @instance %>",
-    child_number:     "<%= @child_number %>",
-    child_address:    "<%= @child_address %>",
-    restrict_ash_to_child: true,
-    next_update_area: "<%= @update_area %>"
-  }, {retain_status_message: true});
-</script>
-
 <%
    def link_session(instance, sid, serialno)
      link_session_details(@update_area, instance, sid, serialno)

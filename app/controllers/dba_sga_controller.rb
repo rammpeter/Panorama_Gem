@@ -300,11 +300,22 @@ class DbaSgaController < ApplicationController
       AND    SQL_ID  = ?
       #{" AND Child_Number  = ?" unless child_number.nil?}
       #{" AND Child_Address = HEXTORAW(?)" unless child_address.nil?}
-      ORDER BY Position
       ", instance, sql_id ]
                                 .concat(child_number.nil?  ? [] : [child_number])
                                 .concat(child_address.nil? ? [] : [child_address])
+  end
 
+  def get_execution_plan_count(instance, sql_id, child_number = nil, child_address = nil)
+    sql_select_one ["\
+      SELECT COUNT(DISTINCT Plan_Hash_Value)
+      FROM   gv$SQL_Plan
+      WHERE  Inst_ID = ?
+      AND    SQL_ID  = ?
+      #{" AND Child_Number  = ?" unless child_number.nil?}
+                    #{" AND Child_Address = HEXTORAW(?)" unless child_address.nil?}
+      ", instance, sql_id ]
+                       .concat(child_number.nil?  ? [] : [child_number])
+                       .concat(child_address.nil? ? [] : [child_address])
   end
 
   public
@@ -325,25 +336,40 @@ class DbaSgaController < ApplicationController
     @modus                  = params[:modus]
     @sql_id                 = params[:sql_id]
     @instance               = prepare_param_instance
-    @child_number           = params[:child_number].to_i rescue nil
-    @child_address          = params[:child_address]
-    @restrict_ash_to_child  = params[:restrict_ash_to_child]
-    @update_area            = params[:next_update_area]                         # div-ID for next detail request
-
+    @child_number           = (params[:child_number].nil? || params[:child_number] == '') ? nil : (params[:child_number].to_i rescue nil)
+    @child_address          = params[:child_address] == '' ? nil : params[:child_address]
 
     where_string = ''
     where_values = []
 
-    if !@child_address.nil? && @child_address != ''
-      where_string << 'AND Child_Address = HEXTORAW(?)'
+    if !@child_number.nil?
+      where_string << ' AND Child_Number = ?'
+      where_values << @child_number
+    end
+
+    if !@child_address.nil?
+      where_string << ' AND Child_Address = HEXTORAW(?)'
       where_values << @child_address
     end
 
     @include_ash_in_sql = get_db_version >= "11.2" && (PackLicense.diagnostics_pack_licensed? || PackLicense.panorama_sampler_active?)
 
-    @plans = sql_select_all ["\
+
+
+
+
+    @multiplans = sql_select_all ["\
+      SELECT Plan_Hash_Value, COUNT(DISTINCT Child_Number) Child_Count, MIN(Child_Number) Min_Child_Number
+      FROM   gv$SQL_Plan p
+      WHERE  SQL_ID  = ?
+      AND    Inst_ID = ?
+      #{where_string}
+      GROUP BY Plan_Hash_Value
+      ", @sql_id, @instance].concat(where_values)
+
+    all_plans = sql_select_all ["\
         SELECT /* Panorama-Tool Ramm */
-          Operation, Options, Object_Owner, Object_Name, Object_Type, Object_Alias, QBlock_Name, p.Timestamp, p.Optimizer,
+          Operation, Options, Object_Owner, Object_Name, Object_Type, Object_Alias, QBlock_Name, p.Timestamp, p.Optimizer, Plan_Hash_Value,
           DECODE(Other_Tag,
                  'PARALLEL_COMBINED_WITH_PARENT', 'PCWP',
                  'PARALLEL_COMBINED_WITH_CHILD' , 'PCWC',
@@ -354,7 +380,7 @@ class DbaSgaController < ApplicationController
                  'SINGLE_COMBINED_WITH_PARENT',   'SCWP',
                  Other_Tag
                 ) Parallel_Short,
-          Other_Tag, Other_XML, Other,
+          Other_Tag, Other_XML, Other, Version_Orange_Count, Version_Red_Count, Child_Number,
           Depth, Access_Predicates, Filter_Predicates, Projection, p.temp_Space/(1024*1024) Temp_Space_MB, Distribution,
           ID, Parent_ID, Executions, p.Search_Columns,
           Last_Starts, Starts, Last_Output_Rows, Output_Rows, Last_CR_Buffer_Gets, CR_Buffer_Gets,
@@ -366,7 +392,25 @@ class DbaSgaController < ApplicationController
           (SELECT SUM(Bytes)/(1024*1024) FROM DBA_Segments s WHERE s.Owner=p.Object_Owner AND s.Segment_Name=p.Object_Name) MBytes
           #{", a.DB_Time_Seconds, a.CPU_Seconds, a.Waiting_Seconds, a.Read_IO_Requests, a.Write_IO_Requests,
                a.IO_Requests, a.Read_IO_Bytes, a.Write_IO_Bytes, a.Interconnect_IO_Bytes, a.Min_Sample_Time, a.Max_Sample_Time, a.Max_Temp_ASH_MB, a.Max_PGA_ASH_MB, a.Max_PQ_Sessions " if @include_ash_in_sql}
-        FROM  gV$SQL_Plan_Statistics_All p
+        FROM   (SELECT /*+ NO_MERGE */ p.*,
+                       Count(*) OVER (PARTITION BY p.Parent_ID, p.Operation, p.Options, p.Object_Owner,    -- p.ID nicht abgleichen, damit Verschiebungen im Plan toleriert werden
+                                     CASE WHEN p.Object_Name LIKE ':TQ%'
+                                       THEN 'Hugo'
+                                       ELSE p.Object_Name END,
+                                     p.Other_Tag, p.Depth,
+                                     p.Access_Predicates, p.Filter_Predicates, p.Distribution
+                       ) Version_Orange_Count,
+                         Count(*) OVER (PARTITION BY p.Parent_ID, p.Operation, p.Options, p.Object_Owner,     -- p.ID nicht abgleichen, damit Verschiebungen im Plan toleriert werden
+                                     CASE WHEN p.Object_Name LIKE ':TQ%'
+                                       THEN 'Hugo'
+                                       ELSE p.Object_Name END,
+                                    p.Depth
+                       ) Version_Red_Count
+                FROM   gV$SQL_Plan_Statistics_All p
+                WHERE  p.Inst_ID         = ?
+                AND    p.SQL_ID          = ?
+                #{where_string}
+               ) p
         LEFT OUTER JOIN DBA_Tables  t ON t.Owner=p.Object_Owner AND t.Table_Name=p.Object_Name
         LEFT OUTER JOIN DBA_Indexes i ON i.Owner=p.Object_Owner AND i.Index_Name=p.Object_Name
         #{" LEFT OUTER JOIN (SELECT SQL_PLan_Line_ID, SQL_Plan_Hash_Value,
@@ -401,87 +445,96 @@ class DbaSgaController < ApplicationController
                                             SUM(PGA_Allocated)                PGA,
                                             COUNT(DISTINCT CASE WHEN QC_Session_ID IS NULL OR QC_Session_ID = Session_ID THEN NULL ELSE Session_ID END) PQ_Sessions   -- Anzahl unterschiedliche PQ-Slaves + Koordinator für diese Koordiantor-Session
                                      FROM   gv$Active_Session_History
-                                     WHERE  SQL_ID  = ?
-                                     AND    Inst_ID = ?
-                                     #{(@modus == 'GV$SQL' && @restrict_ash_to_child ) ? 'AND    SQL_Child_Number = ?' : ''}   -- auch andere Child-Cursoren von PQ beruecksichtigen wenn Child-uebergreifend angefragt
+                                     WHERE  SQL_ID              = ?
+                                     AND    Inst_ID             = ?
+                                     #{"AND SQL_Child_Number = ?" if !@child_number.nil?}   -- auch andere Child-Cursoren von PQ beruecksichtigen wenn Child-uebergreifend angefragt
                                      GROUP BY SQL_Plan_Line_ID, SQL_Plan_Hash_Value, NVL(QC_Session_ID, Session_ID), Sample_ID   -- Alle PQ-Werte mit auf Session kumulieren
                                     )
                              GROUP BY SQL_Plan_Line_ID, SQL_Plan_Hash_Value
                  ) a ON a.SQL_Plan_Line_ID = p.ID AND a.SQL_Plan_Hash_Value = p.Plan_Hash_Value
           " if @include_ash_in_sql}
-        WHERE SQL_ID  = ?
-        AND   Inst_ID = ?
-        AND   Child_Number = ?
-        #{where_string}
-        ORDER BY ID"
-        ].concat(@include_ash_in_sql ? [@sql_id, @instance].concat((@modus == 'GV$SQL' && @restrict_ash_to_child) ? [@child_number] : []) : []).concat([@sql_id, @instance, @child_number]).concat(where_values)
+        ORDER BY ID
+        ", @instance, @sql_id]
+                                   .concat(where_values)
+                                   .concat(@include_ash_in_sql ? [@sql_id, @instance].concat(!@child_number.nil? ? [@child_number] : []) : [])
 
-    @additional_ash_message = nil
-    if @modus == 'GV$SQL' && @restrict_ash_to_child
-      child_count = sql_select_one ["SELECT COUNT(*) FROM gv$SQL WHERE Inst_ID = ? AND SQL_ID = ?", @instance, @sql_id]
-      @additional_ash_message = "ASH-values are for child_number=#{@child_number} only but #{child_count} children exists for this SQL-ID and Instance" if child_count > 1
-    end
 
-    # Vergabe der exec-Order im Explain
-    # iteratives neu durchsuchen der Liste nach folgenden erfuellten Kriterien
-    # - ID tritt nicht als Parent auf
-    # - alle Children als Parent sind bereits mit ExecOrder versehen
-    # gefundene Records werden mit aufteigender Folge versehen und im folgenden nicht mehr betrachtet
+    @multiplans.each do |mp|
+      mp[:plans] = []
+      all_plans.each do |p|
+        if p.plan_hash_value == mp.plan_hash_value && p.child_number == mp.min_child_number
+          mp[:plans] << p
+        end
+      end
 
-    # Array mit den Positionen der Objekte in plans anlegen
-    pos_array = []
-    0.upto(@plans.length-1) {|i|  pos_array << i }
+      # Vergabe der exec-Order im Explain
+      # iteratives neu durchsuchen der Liste nach folgenden erfuellten Kriterien
+      # - ID tritt nicht als Parent auf
+      # - alle Children als Parent sind bereits mit ExecOrder versehen
+      # gefundene Records werden mit aufteigender Folge versehen und im folgenden nicht mehr betrachtet
 
-    other_xml = nil
-    @plans.each do |p|
-      p[:is_parent] = false                                                     # Vorbelegung
-      other_xml = p.other_xml if get_db_version >= "11.2" && !p.other_xml.nil?  # Only one record per plan has values
-    end
+      # Array mit den Positionen der Objekte in plans anlegen
+      pos_array = []
+      0.upto(mp[:plans].length-1) {|i|  pos_array << i }
 
-    curr_execorder = 1                                             # Startwert
-    while pos_array.length > 0                                     # Bis alle Records im PosArray mit Folge versehen sind
-      pos_array.each {|i|                                          # Iteration ueber Verbliebene Records
-        is_parent = false                                          # Default-Annahme, wenn kein Child gefunden
-        pos_array.each {|x|                                        # Suchen, ob noch ein Child zum Parent existiert in verbliebener Menge
-          if @plans[i].id == @plans[x].parent_id                     # Doch noch ein Child zum Parent gefunden
-            is_parent = true
-            @plans[i][:is_parent] = true                            # Merken Status als Knoten
-            break                                                  # Braucht nicht weiter gesucht werden
+      other_xml = nil
+      mp[:plans].each do |p|
+        p[:is_parent] = false                                                     # Vorbelegung
+        other_xml = p.other_xml if get_db_version >= "11.2" && !p.other_xml.nil?  # Only one record per plan has values
+      end
+
+      curr_execorder = 1                                             # Startwert
+      while pos_array.length > 0                                     # Bis alle Records im PosArray mit Folge versehen sind
+        pos_array.each {|i|                                          # Iteration ueber Verbliebene Records
+          is_parent = false                                          # Default-Annahme, wenn kein Child gefunden
+          pos_array.each {|x|                                        # Suchen, ob noch ein Child zum Parent existiert in verbliebener Menge
+            if mp[:plans][i].id == mp[:plans][x].parent_id           # Doch noch ein Child zum Parent gefunden
+              is_parent = true
+              mp[:plans][i][:is_parent] = true                       # Merken Status als Knoten
+              break                                                  # Braucht nicht weiter gesucht werden
+            end
+          }
+          unless is_parent
+            mp[:plans][i].execorder = curr_execorder                      # Vergabe Folge
+            curr_execorder = curr_execorder + 1
+            pos_array.delete(i)                                      # entwerten der verarbeiten Zeile fuer Folgebetrachtung
+            break                                                    # Neue Suche vom Beginn an
           end
         }
-        unless is_parent
-          @plans[i].execorder = curr_execorder                      # Vergabe Folge
-          curr_execorder = curr_execorder + 1
-          pos_array.delete(i)                                      # entwerten der verarbeiten Zeile fuer Folgebetrachtung
-          break                                                    # Neue Suche vom Beginn an
+      end
+
+      # Segmentation of XML document
+      mp[:plan_additions] = []
+      begin
+        xml_doc = Nokogiri::XML(other_xml)
+        xml_doc.xpath('//info').each do |info|
+          mp[:plan_additions] << ({
+              :record_type  => 'Info',
+              :attribute    => info.attributes['type'].to_s,
+              :value        => info.children.text
+          }.extend SelectHashHelper)
         end
-      }
+        xml_doc.xpath('//hint').each do |hint|
+          mp[:plan_additions] << ({
+              :record_type  => 'Hint',
+              :attribute    => nil,
+              :value        => hint.children.text
+          }.extend SelectHashHelper)
+        end
+      rescue Exception => e
+        mp[:plan_additions] << ({
+            :record_type  => 'Exception while processing XML document',
+            :attribute => e.message,
+            :value => my_html_escape(other_xml).gsub(/&lt;info/, "<br/>&lt;info").gsub(/&lt;hint/, "<br/>&lt;hint")
+        }.extend SelectHashHelper)
+      end
+
     end
 
-    # Segmentation of XML document
-    @plan_additions = []
-    begin
-      xml_doc = Nokogiri::XML(other_xml)
-      xml_doc.xpath('//info').each do |info|
-        @plan_additions << ({
-            :record_type  => 'Info',
-            :attribute    => info.attributes['type'].to_s,
-            :value        => info.children.text
-        }.extend SelectHashHelper)
-      end
-      xml_doc.xpath('//hint').each do |hint|
-        @plan_additions << ({
-            :record_type  => 'Hint',
-            :attribute    => nil,
-            :value        => hint.children.text
-        }.extend SelectHashHelper)
-      end
-    rescue Exception => e
-      @plan_additions << ({
-          :record_type  => 'Exception while processing XML document',
-          :attribute => e.message,
-          :value => my_html_escape(other_xml).gsub(/&lt;info/, "<br/>&lt;info").gsub(/&lt;hint/, "<br/>&lt;hint")
-      }.extend SelectHashHelper)
+    @additional_ash_message = nil
+    if !@child_number.nil?
+      child_count = sql_select_one ["SELECT COUNT(*) FROM gv$SQL WHERE Inst_ID = ? AND SQL_ID = ?", @instance, @sql_id]
+      @additional_ash_message = "ASH-values are for child_number=#{@child_number} only but #{child_count} children exists for this SQL-ID and Instance" if child_count > 1
     end
 
     render_partial :list_sql_detail_execution_plan
@@ -497,16 +550,15 @@ class DbaSgaController < ApplicationController
     @child_address = params[:child_address]
     @object_status= params[:object_status]
     @object_status='VALID' if @object_status.nil? || @object_status == ''  # wenn kein status als Parameter uebergeben, dann VALID voraussetzen
-    @parsing_schema_name = params[:parsing_schema_name]
+    @parsing_schema_name  = params[:parsing_schema_name]
 
-    @sql                 = fill_sql_sga_stat("GV$SQL", @instance, @sql_id, @object_status, @child_number, @parsing_schema_name, @child_address)
+    @sql                  = fill_sql_sga_stat("GV$SQL", @instance, @sql_id, @object_status, @child_number, @parsing_schema_name, @child_address)
 
-    @sql_statement       = get_sga_sql_statement(@instance, @sql_id)
-    @sql_profiles        = get_sql_profiles(@sql)
-    @sql_outlines        = get_sql_outlines(@sql)
-    @sql_bind_count      = get_sql_bind_count(@instance, @sql_id, @child_number, @child_address)
-
-    #@plans               = get_sga_execution_plan(@modus, @sql_id, @instance, @child_number, @child_address, true)
+    @sql_statement        = get_sga_sql_statement(@instance, @sql_id)
+    @sql_profiles         = get_sql_profiles(@sql)
+    @sql_outlines         = get_sql_outlines(@sql)
+    @sql_bind_count       = get_sql_bind_count(@instance, @sql_id, @child_number, @child_address)
+    @execution_plan_count = get_execution_plan_count(@instance, @sql_id, @child_number, @child_address)
 
     # PGA-Workarea-Nutzung
     @workareas = sql_select_all ["\
@@ -519,22 +571,6 @@ class DbaSgaController < ApplicationController
       WHERE  w.SQL_ID = ?
       ORDER BY w.QCSID, w.SID
       ",  @sql_id]
-
-    # Bindevariablen des Cursors
-    @binds = sql_select_all ["\
-      SELECT /* Panorama-Tool Ramm */ Name, Position, DataType_String, Last_Captured,
-             CASE DataType_String
-               WHEN 'TIMESTAMP' THEN TO_CHAR(ANYDATA.AccessTimestamp(Value_AnyData), '#{sql_datetime_minute_mask}')
-             ELSE Value_String END Value_String,
-             Child_Number,
-             NLS_CHARSET_NAME(Character_SID) Character_Set, Precision, Scale, Max_Length
-      FROM   gv$SQL_Bind_Capture c
-      WHERE  Inst_ID = ?
-      AND    SQL_ID  = ?
-      AND    Child_Number = ?
-      #{" AND Child_Address = HEXTORAW(?)" unless @child_address.nil?}
-      ORDER BY Position
-      ", @instance, @sql_id, @child_number ].concat(@child_address.nil? ? [] : [@child_address])
 
     @open_cursors         = get_open_cursor_count(@instance, @sql_id)
 
@@ -551,19 +587,14 @@ class DbaSgaController < ApplicationController
     @status_message = ''                                                       # Initialization
 
     @instance = prepare_param_instance
-    @sql_id   = params[:sql_id]
+    @sql_id   = params[:sql_id].strip
     @object_status= params[:object_status]
     @object_status='VALID' if @object_status.nil? || @object_status == ''  # wenn kein status als Parameter uebergeben, dann VALID voraussetzen
     @con_id  = params[:con_id]
     @con_id  = nil if @con_id == ''
 
-    @filters = {
-        :instance => @instance,
-        :sql_id   => (params[:sql_id]   =="" ? nil : params[:sql_id].strip),
-    }
-
     # Liste der Child-Cursoren
-    @sqls = fill_sql_area_list("GV$SQL", @filters, 100, nil)
+    @sqls = sql_select_all ["SELECT Inst_ID, Child_Number FROM gv$SQL WHERE Inst_ID = ? AND SQL_ID = ?", @instance, @sql_id]
 
     if @sqls.count == 0
       show_popup_message "SQL-ID '#{@sql_id}' not found in GV$SQL for instance = #{@instance} !"
@@ -593,24 +624,11 @@ class DbaSgaController < ApplicationController
 
     @sql = fill_sql_sga_stat("GV$SQLArea", @instance, @sql_id, @object_status, nil, nil, nil, @con_id)
 
-    @sql_statement         = get_sga_sql_statement(@instance, params[:sql_id])
-    @sql_profiles          = get_sql_profiles(@sql)
-    @sql_outlines          = get_sql_outlines(@sql)
-    @sql_bind_count        = get_sql_bind_count(@instance, @sql_id)
-
-    # Bindevariablen des Cursors
-    @binds = sql_select_all ["\
-      SELECT /* Panorama-Tool Ramm */ Name, Position, DataType_String, Last_Captured,
-             CASE DataType_String
-               WHEN 'TIMESTAMP' THEN TO_CHAR(ANYDATA.AccessTimestamp(Value_AnyData), '#{sql_datetime_minute_mask}')
-             ELSE Value_String END Value_String,
-             Child_Number,
-             NLS_CHARSET_NAME(Character_SID) Character_Set, Precision, Scale, Max_Length
-      FROM   gv$SQL_Bind_Capture c
-      WHERE  Inst_ID = ?
-      AND    SQL_ID  = ?
-      ORDER BY Child_Number, Position
-      ", @instance, @sql_id]
+    @sql_statement        = get_sga_sql_statement(@instance, params[:sql_id])
+    @sql_profiles         = get_sql_profiles(@sql)
+    @sql_outlines         = get_sql_outlines(@sql)
+    @sql_bind_count       = get_sql_bind_count(@instance, @sql_id)
+    @execution_plan_count = get_execution_plan_count(@instance, @sql_id)
 
     @open_cursors          = get_open_cursor_count(@instance, @sql_id)
     @sql_monitor_sessions  = sql_monitor_session_count(@instance, @sql_id)
@@ -628,6 +646,22 @@ class DbaSgaController < ApplicationController
     end
 
     render_partial :list_sql_detail_sql_id, (@status_message.length > 0 ? {:status_bar_message => my_html_escape(@status_message)} : {})
+  end
+
+  def list_sql_child_cursors
+    @instance       = prepare_param_instance
+    @sql_id         = params[:sql_id].strip
+
+    @filters = {
+        :instance => @instance,
+        :sql_id   => @sql_id
+    }
+
+    # Liste der Child-Cursoren
+    @modus = 'GV$SQL'
+    @sqls = fill_sql_area_list(@modus, @filters, 1000, nil)
+
+    render_partial :list_sql_area
   end
 
   def list_bind_variables

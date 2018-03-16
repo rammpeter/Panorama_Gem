@@ -2,20 +2,45 @@
 <br/>
 
 <div class="flex-row-container">
-  <% if @sql_bind_count > 0 %>
+  <div class="flex-row-element">
+    <%= ajax_submit("Execution-Plan (#{@execution_plan_count})", {
+        update_area:            @update_area,
+        controller:             :dba_sga,
+        action:                 :list_sql_detail_execution_plan,
+        instance:               @sql.inst_id,
+        sql_id:                 @sql.sql_id,
+        modus:                  @modus,
+        child_number:           (@modus == 'GV$SQL' ? @child_number : nil),
+        child_address:          (@modus == 'GV$SQL' ? @child_address : nil),
+    }, :title =>t(:dba_sga_list_sql_sga_stat_footer_plan_hint, :default=>"Show execution plan of SQL (or plans if there are multiple)"))
+    %>
+  </div>
+
+  <% if @sql.child_count > 1 %>
     <div class="flex-row-element">
-      <%= ajax_submit("Bind variables (#{@sql_bind_count})", {
+      <%= ajax_submit("Child cursors (#{@sql.child_count})", {
           :update_area    => @update_area,
           :controller     => :dba_sga,
-          :action         => :list_bind_variables,
+          :action         => :list_sql_child_cursors,
           :instance       => @sql.inst_id,
           :sql_id         => @sql.sql_id,
-          :child_number   => @sql['child_number'],
-          :child_address  => @sql['child_address'],
-      }, :title =>t(:dba_sga_list_sql_sga_stat_footer_bind_hint, :default=>"Show bind variables of last execution of SQL"))
+      }, :title =>t(:dba_sga_list_sql_sga_stat_footer_child_hint, :default=>"Show child cursors of SQL from gv$SQL"))
       %>
     </div>
   <% end %>
+
+  <div class="flex-row-element">
+    <%= ajax_submit("Bind variables (#{@sql_bind_count})", {
+        :update_area    => @update_area,
+        :controller     => :dba_sga,
+        :action         => :list_bind_variables,
+        :instance       => @sql.inst_id,
+        :sql_id         => @sql.sql_id,
+        :child_number   => @sql['child_number'],
+        :child_address  => @sql['child_address'],
+    }, :title =>t(:dba_sga_list_sql_sga_stat_footer_bind_hint, :default=>"Show bind variables of last execution of SQL"))
+    %>
+  </div>
 
   <div class="flex-row-element">
     <%= ajax_submit(t(:dba_sga_list_sql_sga_stat_footer_complete_timeline_caption, :default=>'Full history'), {

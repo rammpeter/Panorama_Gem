@@ -911,7 +911,7 @@ class DbaHistoryController < ApplicationController
       #{@parsing_schema_name ? "AND    s.Parsing_Schema_Name = ?" : ""  }
       #{@instance            ? "AND    s.Instance_Number     = ?" : ""  }
       GROUP BY #{@begin_interval_sql}, #{@end_interval_sql}
-      ORDER BY #{@begin_interval_sql}
+      ORDER BY #{@begin_interval_sql} DESC
       ", @dbid, @sql_id, @time_selection_start, @time_selection_end].
                                concat(@parsing_schema_name ? [@parsing_schema_name] : []).
                                concat(@instance            ? [@instance]            : [])

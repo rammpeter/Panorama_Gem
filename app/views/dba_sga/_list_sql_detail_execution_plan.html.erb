@@ -49,61 +49,64 @@
 
 </script>
 
+<% @update_area = get_unique_area_id %>
+
+<% @multiplans.each do |mp| %>
 
 
-<%
-   @toggle_id_prefix = get_unique_area_id
-   @grid_id          = get_unique_area_id                                     # DOM-ID des DIVs mit SlickGrid
-   @indent_vector    = []                                                     # Array mit Hashes für jede Einrückung: :parent_id, :last_exists_id
+  <%
+     @toggle_id_prefix = get_unique_area_id
+     @grid_id          = get_unique_area_id                                     # DOM-ID des DIVs mit SlickGrid
+     @indent_vector    = []                                                     # Array mit Hashes für jede Einrückung: :parent_id, :last_exists_id
 
-   def avg_read_bytes(rec)
-     fn(rec.read_io_bytes/rec.read_io_requests) if rec.read_io_bytes && rec.read_io_requests && rec.read_io_requests > 0
-   end
+     def avg_read_bytes(rec)
+       fn(rec.read_io_bytes/rec.read_io_requests) if rec.read_io_bytes && rec.read_io_requests && rec.read_io_requests > 0
+     end
 
-   def avg_write_bytes(rec)
-     fn(rec.write_io_bytes/rec.write_io_requests) if rec.write_io_bytes && rec.write_io_requests && rec.write_io_requests > 0
-   end
+     def avg_write_bytes(rec)
+       fn(rec.write_io_bytes/rec.write_io_requests) if rec.write_io_bytes && rec.write_io_requests && rec.write_io_requests > 0
+     end
 
-   sql_starts = 1   # Default falls keine andere Aussage wegen division / 0
-   sql_starts = @plans[0].starts if @plans[0] && @plans[0].starts && @plans[0].starts > 0
+     sql_starts = 1   # Default falls keine andere Aussage wegen division / 0
+     sql_starts = mp[:plans][0].starts if mp[:plans][0] && mp[:plans][0].starts && mp[:plans][0].starts > 0
 
-     if @include_ash_in_sql
-       @sum_io_requests = 0
-       @sum_interconnect_io_bytes = 0
-       @sum_cpu_seconds = 0                             # Anzahl der Samples
-       @sum_waiting_seconds = 0                         # Anzahl der Samples
-       @sum_db_time_seconds = 0
-       @min_sample_time     = nil
-       @plans.each do |p|
-         @sum_io_requests           += p.io_requests             if p.io_requests
-         @sum_interconnect_io_bytes += p.interconnect_io_bytes   if p.interconnect_io_bytes
-         @sum_cpu_seconds           += p.cpu_seconds             if p.cpu_seconds
-         @sum_waiting_seconds       += p.waiting_seconds         if p.waiting_seconds
-         @sum_db_time_seconds       += p.db_time_seconds         if p.db_time_seconds
-         @min_sample_time           =  p.min_sample_time         if @min_sample_time.nil? || p.min_sample_time && p.min_sample_time < @min_sample_time  # Kleinste Aufzeichnung eines Samples
+       if @include_ash_in_sql
+         @sum_io_requests = 0
+         @sum_interconnect_io_bytes = 0
+         @sum_cpu_seconds = 0                             # Anzahl der Samples
+         @sum_waiting_seconds = 0                         # Anzahl der Samples
+         @sum_db_time_seconds = 0
+         @min_sample_time     = nil
+         mp[:plans].each do |p|
+           @sum_io_requests           += p.io_requests             if p.io_requests
+           @sum_interconnect_io_bytes += p.interconnect_io_bytes   if p.interconnect_io_bytes
+           @sum_cpu_seconds           += p.cpu_seconds             if p.cpu_seconds
+           @sum_waiting_seconds       += p.waiting_seconds         if p.waiting_seconds
+           @sum_db_time_seconds       += p.db_time_seconds         if p.db_time_seconds
+           @min_sample_time           =  p.min_sample_time         if @min_sample_time.nil? || p.min_sample_time && p.min_sample_time < @min_sample_time  # Kleinste Aufzeichnung eines Samples
+         end
        end
-     end
 
-     def link_column_wait(rec, value)
-       ajax_link(value, {
-                               :controller     => :active_session_history,
-                               :action         => :list_session_statistic_historic_grouping,
-                               :groupfilter    => {
-                                       :DBID                   => get_dbid,
-                                       :Instance               => @instance,
-                                       "SQL-ID"                => @sql_id,
-                                       #"Plan-Hash-Value"       => @mp.plan_hash_value,
-                                       :Plan_Line_ID           => rec.id,
-                                       :time_selection_start   => localeDateTime(rec.min_sample_time, :minutes),
-                                       :time_selection_end     => localeDateTime((rec.max_sample_time+60 rescue nil), :minutes),   # add 60 seconds to ensure cut by minute covers exact sample time
-                                       :Idle_Wait1             => "PX Deq Credit: send blkd"
-                               },
-                               :groupby        => "Event",
-                               :update_area    => @update_area
-                       },
-                       :title => "Show wait events for operation in Active Session History"
-       )
-     end
+     link_column_wait = proc do |rec|
+         ajax_link(fn(nn_pct(rec.waiting_seconds, @sum_waiting_seconds),1), {
+                                 :controller     => :active_session_history,
+                                 :action         => :list_session_statistic_historic_grouping,
+                                 :groupfilter    => {
+                                         :DBID                   => get_dbid,
+                                         :Instance               => @instance,
+                                         "SQL-ID"                => @sql_id,
+                                         #"Plan-Hash-Value"       => @mp.plan_hash_value,
+                                         :Plan_Line_ID           => rec.id,
+                                         :time_selection_start   => localeDateTime(rec.min_sample_time, :minutes),
+                                         :time_selection_end     => localeDateTime((rec.max_sample_time+60 rescue nil), :minutes),   # add 60 seconds to ensure cut by minute covers exact sample time
+                                         :Idle_Wait1             => "PX Deq Credit: send blkd"
+                                 },
+                                 :groupby        => "Event",
+                                 :update_area    => @update_area
+                         },
+                         :title => "Show wait events for operation in Active Session History"
+         )
+       end
 
      # Anzeige %-Wert wenn != 0
      def nn_pct(single, sum)
@@ -111,13 +114,13 @@
        retval == 0 ? nil : retval
      end
 
-     def list_operation(rec)
+     list_operation = proc do |rec|
        tab = ""
        toggle_id = "#{@toggle_id_prefix}_#{rec.id}"
 
        if rec.depth > @indent_vector.count                                        # Einrückung gegenüber Vorgänger
          last_exists_id = 0                                                       # ID des letzten Records, für den die selbe parent_id existiert
-         @plans.each do |p|
+         mp[:plans].each do |p|
            if p.id > rec.id &&  p.parent_id == rec.parent_id                      # nur Nachfolger des aktuellen testen, letzte Existenz des parent_id suchen
              last_exists_id = p.id
            end
@@ -146,7 +149,7 @@
            tab << "<a class=\"toggle collapse\" id=\"#{toggle_id}\" onclick=\"toggle_expand('#{toggle_id}', #{rec.id}, #{rec.depth}, '#{@grid_id}');\"></a>"
          end
        else
-         if @plans.count > rec.id+1 && @plans[rec.id+1].parent_id == rec.parent_id # Es gibt noch einen unmittelbaren Nachfolger mit selber Parent-ID
+         if mp[:plans].count > rec.id+1 && mp[:plans][rec.id+1].parent_id == rec.parent_id # Es gibt noch einen unmittelbaren Nachfolger mit selber Parent-ID
            tab << "<span class=\"toggle vertical-corner-line\"></span>"         # durchgehende Linie mit abzweig
          else
            tab << "<span class=\"toggle corner-line\"></span>"                  # Nur Linie mit Abzweig
@@ -156,104 +159,127 @@
        "<span style=\"color: lightgray;\">#{tab}</span>#{rec.operation} #{rec.options}".html_safe
      end
 
-   def parallel_text(rec)
-     output = "#{rec.parallel_short}"
-     output << "&nbsp;#{rec.max_pq_sessions}" if rec.max_pq_sessions && rec.max_pq_sessions > 0 if @include_ash_in_sql
-     output
-   end
-
-   def parallel_title(rec)
-     output = "%t:\n#{rec.other_tag}"
-     output << "\n\nMaximum number of different active PQ slaves within one ASH sample = #{rec.max_pq_sessions}" if rec.max_pq_sessions && rec.max_pq_sessions > 0 if @include_ash_in_sql
-     output
-   end
-
-   def link_real_num_rows(rec)
-     object_type = rec.object_type
-     object_type = 'INDEX' if !rec.object_type.nil? && rec.object_type['INDEX']
-
-     if object_type == 'TABLE' || object_type == 'INDEX'
-       update_area = "#{@update_area}_#{rec.id}"
-       ajax_link(rec.num_rows ? fn(rec.num_rows) : "[No analyze]", {
-                               :controller      => :storage,
-                               :action          => :list_real_num_rows,
-                               :owner           => rec.object_owner,
-                               :name            => rec.object_name,
-                               :object_type     => object_type,
-                               :update_area     => update_area
-                              },
-                       :title=>"Count current number of rows in Table. CAUTION: May be long running!")+"&nbsp;<span id=\"#{update_area}\"></span>".html_safe
-     else
-       fn(rec.num_rows)
+     parallel_text = proc do |rec|
+       output = "#{rec.parallel_short}"
+       output << "&nbsp;#{rec.max_pq_sessions}" if rec.max_pq_sessions && rec.max_pq_sessions > 0 if @include_ash_in_sql
+       output
      end
-   end
 
-   column_options =
-[
-  {:caption=>"Operation",   :data=>proc{|rec| list_operation(rec)}, :no_wrap=>true, :title=>'Kind of data access', :data_title=>proc{|rec| "%t:\nOperation = #{rec.operation}\nOptions = #{rec.options}\n\n#{explain_data_access("#{rec.operation} #{rec.options}")}#{"\n\nOther = #{rec.other}" if rec.other }"}},
-  {:caption=>"ID",          :data=>proc{|rec| rec.id },  :align=>:right,                    :title=>'ID of operation',             :data_title=>proc{|rec| "%t: Parent_ID=#{rec.parent_id}"} },
-  {:caption=>"R.",          :data=>proc{|rec| rec.execorder },  :align=>:right,             :title=>'Execution order of operation',    :data_title=>proc{|rec| "%t: ID=#{rec.id}\nParent_ID=#{rec.parent_id}"} },
-  {:caption=>"Object-name", :data=>proc{|rec| link_object_description(@update_area, rec.object_owner, rec.object_name)}, :title=>'Name of accessed object', :data_title=>proc{|rec| "%t: Type = #{rec.object_type},\nAlias = #{rec.object_alias},\nQuery block name = #{rec.qblock_name}#{"\nOther = #{rec.other}" if rec.other }"} },
-  {:caption=>"Rows",        :data=>proc{|rec| link_real_num_rows(rec) },                    :title=>"Number of rows of object (from analyze info)",     :align=>:right, :data_title=>proc{|rec| "%t, Last_Analyzed=#{localeDateTime(rec.last_analyzed)}"}  },
-  {:caption=>"MB",          :data=>proc{|rec| fn(rec.mbytes) },                             :title=>"Size of object in MBytes",     :align=>:right },
-  {:caption=>"Cost",        :data=>proc{|rec| fn(rec.cost) },                               :title=>"Costs calculated by optimizer + additional optimizer calculations", :align=>:right, :data_title=>proc{|rec| "%t\nCPU cost = #{fn rec.cpu_cost}\nIO cost = #{fn rec.io_cost}\nestimated bytes = #{fn rec.bytes},\nestimated time (secs.) = #{fn rec.time}\npartition start = #{rec.partition_start}\npartition stop = #{rec.partition_stop}\npartition ID = #{rec.partition_id}"} },
-  {:caption=>'Card.',       :data=>proc{|rec| fn(rec.cardinality) },                        :title=>'Estimated number of rows produced by the operation', :align=>:right, :data_title=>proc{|rec| "%t\nCPU cost = #{fn rec.cpu_cost}\nIO cost = #{fn rec.io_cost}\nestimated bytes = #{fn rec.bytes}\nestimated time (secs.) = #{fn rec.time}\nPartition_Start = #{rec.partition_start}\nPartition_Stop = #{rec.partition_stop}\nPartition_ID = #{rec.partition_id}"} },
-  {:caption=>"Parallel",    :data=>proc{|rec| parallel_text(rec) },                         :title=>"Parallelization (from Other_Tag)", :data_title=>proc{|rec| parallel_title(rec) } },
-  {:caption=>"Access",      :data=>proc{|rec| html_escape expand_compare_spaces(rec.access_predicates) },   :title=>'Access criteria for data object', :max_wrap_width=>300, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape rec.access_predicates}\nNumber of index columns with matching predicates = #{rec.search_columns}"} },
-  {:caption=>"Filter",      :data=>proc{|rec| html_escape expand_compare_spaces(rec.filter_predicates) },   :title=>'Filter criteria for data object (after access)',  :max_wrap_width=>300, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape rec.filter_predicates}"} },
-  {:caption=>'Temp est.',   :data=>proc{|rec| fn(rec.temp_space_mb) },                      :title=>"Temp-space in MB (estimated forecast by optimizer)", :align=>:right},
-]
-column_options << {:caption=>'Temp max.',   :data=>proc{|rec| fn(rec.max_temp_ash_mb) },                      :title=>'Maximum amount of Temp-space in MB allocated by one session (incl. PQ-server) during execution of this plan line', :align=>:right }  if @include_ash_in_sql
-column_options << {:caption=>"DB time",     :data=>proc{|rec| fn(nn_pct(rec.db_time_seconds, @sum_db_time_seconds),1) }, :align=>:right, :data_title=>proc{|rec| "%t\nDB-time: #{fn(rec.db_time_seconds)} seconds" }, :title=>"Percentage of total DB-time in % (from active session history / ASH)", :show_pct_background=>true } if @include_ash_in_sql
-column_options << {:caption=>"CPU",         :data=>proc{|rec| fn(nn_pct(rec.cpu_seconds, @sum_cpu_seconds),1)  },        :align=>:right, :data_title=>proc{|rec| "%t\nCPU: #{fn(rec.cpu_seconds)} seconds" }, :title=>"Percentage of CPU usage in % (from active session history / ASH). Part of DB-time.", :show_pct_background=>true } if @include_ash_in_sql
-column_options << {:caption=>"Waits",       :data=>proc{|rec| link_column_wait(rec, fn(nn_pct(rec.waiting_seconds, @sum_waiting_seconds),1))},:align=>:right, :data_title=>proc{|rec| "%t\nWaiting: #{fn(rec.waiting_seconds)} seconds" }, :title=>"Percentage of wait events % (from active session history / ASH). Part of DB-time.", :show_pct_background=>true } if @include_ash_in_sql
-column_options << {:caption=>"I/O",         :data=>proc{|rec| fn(nn_pct(rec.io_requests, @sum_io_requests),1)},          :align=>:right, :data_title=>proc{|rec| "%t\nIO-Requests: #{fn(rec.read_io_requests)} reads, #{fn(rec.write_io_requests)} writes, avg.read=#{avg_read_bytes(rec)} bytes, avg.write=#{avg_write_bytes(rec)} bytes" }, :title=>"Percentage of  I/O-Requests in % (from active session history / ASH)", :show_pct_background=>true } if @include_ash_in_sql
-column_options << {:caption=>"IC",          :data=>proc{|rec| fn(nn_pct(rec.interconnect_io_bytes, @sum_interconnect_io_bytes),1)}, :align=>:right, :data_title=>proc{|rec| "%t\nInterconnect IO (kBytes): #{fn(rec.interconnect_io_bytes ? rec.interconnect_io_bytes/1024 : nil)}" }, :title=>"Percentage of  Interconnect-I/O in % (from active session history / ASH)", :show_pct_background=>true } if @include_ash_in_sql
-column_options << {:caption=>"Dist",        :data=>proc{|rec| rec.distribution },                           :title=>"Strategy of PQ-distribution" }
-column_options << {:caption=>'PGA max.',    :data=>proc{|rec| fn(rec.max_pga_ash_mb) },                     :title=>'Maximum amount of PGA in MB allocated by one session (incl. PQ-server) during execution of this plan line', :align=>:right }  if @include_ash_in_sql
+     parallel_title = proc do |rec|
+       output = "%t:\n#{rec.other_tag}"
+       output << "\n\nMaximum number of different active PQ slaves within one ASH sample = #{rec.max_pq_sessions}" if rec.max_pq_sessions && rec.max_pq_sessions > 0 if @include_ash_in_sql
+       output
+     end
 
+     link_real_num_rows = proc do |rec|
+       object_type = rec.object_type
+       object_type = 'INDEX' if !rec.object_type.nil? && rec.object_type['INDEX']
 
-column_options.concat [
-  {:caption=>"Proj.",       :data=>proc{|rec| html_escape expand_compare_spaces(rec.projection) },       :title=>"Projection: table- and index-columns gotten by this operation", :max_wrap_width=>80, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape expand_compare_spaces(rec.projection)}"} },
-  {:caption=>"Starts",      :data=>proc{|rec| fn(rec.starts/sql_starts)         if rec.starts },         :align=>:right, :data_title=>proc{|rec| "%t: Total=#{fn(rec.starts)         }, Last=#{fn(rec.last_starts)}" },              :title=>t(:dba_sga_list_sql_detail_execution_plan_starts_title, :default=>'Avg. number of operation starts per execution of SQL') },
-  {:caption=>"Rows",        :data=>proc{|rec| fn(rec.output_rows/sql_starts)    if rec.output_rows },    :align=>:right, :data_title=>proc{|rec| "%t: Total=#{fn(rec.output_rows)    }, Last=#{fn(rec.last_output_rows)}" },         :title=>t(:dba_sga_list_sql_detail_execution_plan_rows_title, :default=>'Avg. number of rows for operation per execution of SQL') },
-  {:caption=>"CR",          :data=>proc{|rec| fn(rec.cr_buffer_gets/sql_starts) if rec.cr_buffer_gets }, :align=>:right, :data_title=>proc{|rec| "%t: Total=#{fn(rec.cr_buffer_gets) }, Last=#{fn(rec.last_cr_buffer_gets)}" },      :title=>t(:dba_sga_list_sql_detail_execution_plan_cr_title, :default=>'Avg, number of buffer gets in consistent mode (mostly for query) for operation per execution of SQL, cumulative incl. all subordinated operations') },
-  {:caption=>"CU",          :data=>proc{|rec| fn(rec.cu_buffer_gets/sql_starts) if rec.cu_buffer_gets }, :align=>:right, :data_title=>proc{|rec| "%t: Total=#{fn(rec.cu_buffer_gets) }, Last=#{fn(rec.last_cu_buffer_gets)}" },      :title=>t(:dba_sga_list_sql_detail_execution_plan_cu_title, :default=>'Avg, number of buffer gets in current mode (mostly for insert/update/delete) for operation per execution of SQL, cumulative incl. all subordinated operations') },
-  {:caption=>"Disk R",      :data=>proc{|rec| fn(rec.disk_reads/sql_starts) if rec.disk_reads },         :align=>:right, :data_title=>proc{|rec| "%t: Total=#{fn(rec.disk_reads)     }, Last=#{fn(rec.last_disk_reads)}" },          :title=>t(:dba_sga_list_sql_detail_execution_plan_disk_reads_title, :default=>'Avg. number of physical disk reads for operation per execution of SQL') },
-  {:caption=>"Disk W",      :data=>proc{|rec| fn(rec.disk_writes/sql_starts) if rec.disk_writes },       :align=>:right, :data_title=>proc{|rec| "%t: Total=#{fn(rec.disk_writes)    }, Last=#{fn(rec.last_disk_writes)}" },         :title=>t(:dba_sga_list_sql_detail_execution_plan_disk_writes_title, :default=>'Avg. number of physical disk writes for operation per execution of SQL')  },
-  {:caption=>"Ela.",        :data=>proc{|rec| fn(rec.elapsed_time/sql_starts,3) if rec.elapsed_time },   :align=>:right, :data_title=>proc{|rec| "%t: Total=#{fn(rec.elapsed_time,3) } ms, Last=#{fn(rec.last_elapsed_time,3)} ms" },:title=>t(:dba_sga_list_sql_detail_execution_plan_elapsed_title, :default=>'Avg. runtime of operation in ms per execution of SQL') },
-]
-
-
-   @caption = "Explain Plan"
-   if @plans.length > 0
-     @caption << " parsed at #{localeDateTime(@plans[0].timestamp)}, Optimizer-Mode=#{@plans[0].optimizer}, Executions=#{fn(@plans[0].executions)}#{", first ASH-Sample in SGA from #{localeDateTime(@min_sample_time)}" if @min_sample_time}"
-     @caption << "\n#{@additional_ash_message}" if @additional_ash_message
-   end
-
-%>
-
-<%= gen_slickgrid(@plans, column_options,
-                  {
-                      :caption            => @caption,
-                      :line_height_single => true,
-                      :data_filter        => 'filter_collapsed_item_rows',
-                      :grid_id            => @grid_id,
-                      :max_height         => "jQuery(window).height()*0.9"  # Max. 90 % of browsers client height
-
-                  }) %>
-
-
-
-
-<%
-  column_options = [
-      {:caption=>'Type',        :data=>proc{|rec| rec.record_type },  :title=>'Type of record in Other_XML'},
-      {:caption=>'Attribute',   :data=>proc{|rec| rec.attribute },    :title=>'Name of record in Other_XML'},
-      {:caption=>'Value',       :data=>proc{|rec| rec.value },        :title=>'Value of record in Other_XML'},
+       if object_type == 'TABLE' || object_type == 'INDEX'
+         update_area = "#{@update_area}_#{rec.id}"
+         ajax_link(rec.num_rows ? fn(rec.num_rows) : "[No analyze]", {
+                                 :controller      => :storage,
+                                 :action          => :list_real_num_rows,
+                                 :owner           => rec.object_owner,
+                                 :name            => rec.object_name,
+                                 :object_type     => object_type,
+                                 :update_area     => update_area
+                                },
+                         :title=>"Count current number of rows in Table. CAUTION: May be long running!")+"&nbsp;<span id=\"#{update_area}\"></span>".html_safe
+       else
+         fn(rec.num_rows)
+       end
+     end
+     column_options =
+  [
+    {:caption=>"Operation",   :data=>list_operation, :no_wrap=>true,                         :title=>'Kind of data access', :data_title=>proc{|rec| "%t:\nOperation = #{rec.operation}\nOptions = #{rec.options}\n\n#{explain_data_access("#{rec.operation} #{rec.options}")}#{"\n\nOther = #{rec.other}" if rec.other }"}},
+    {:caption=>"ID",          :data=>proc{|rec| rec.id },  :align=>:right,                    :title=>'ID of operation',             :data_title=>proc{|rec| "%t: Parent_ID=#{rec.parent_id}"} },
+    {:caption=>"R.",          :data=>proc{|rec| rec.execorder },  :align=>:right,             :title=>'Execution order of operation',    :data_title=>proc{|rec| "%t: ID=#{rec.id}\nParent_ID=#{rec.parent_id}"} },
+    {:caption=>"Object-name", :data=>proc{|rec| link_object_description(@update_area, rec.object_owner, rec.object_name)}, :title=>'Name of accessed object', :data_title=>proc{|rec| "%t: Type = #{rec.object_type},\nAlias = #{rec.object_alias},\nQuery block name = #{rec.qblock_name}#{"\nOther = #{rec.other}" if rec.other }"} },
+    {:caption=>"Rows",        :data=>link_real_num_rows,                                      :title=>"Number of rows of object (from analyze info)",     :align=>:right, :data_title=>proc{|rec| "%t, Last_Analyzed=#{localeDateTime(rec.last_analyzed)}"}  },
+    {:caption=>"MB",          :data=>proc{|rec| fn(rec.mbytes) },                             :title=>"Size of object in MBytes",     :align=>:right },
+    {:caption=>"Cost",        :data=>proc{|rec| fn(rec.cost) },                               :title=>"Costs calculated by optimizer + additional optimizer calculations", :align=>:right, :data_title=>proc{|rec| "%t\nCPU cost = #{fn rec.cpu_cost}\nIO cost = #{fn rec.io_cost}\nestimated bytes = #{fn rec.bytes},\nestimated time (secs.) = #{fn rec.time}\npartition start = #{rec.partition_start}\npartition stop = #{rec.partition_stop}\npartition ID = #{rec.partition_id}"} },
+    {:caption=>'Card.',       :data=>proc{|rec| fn(rec.cardinality) },                        :title=>'Estimated number of rows produced by the operation', :align=>:right, :data_title=>proc{|rec| "%t\nCPU cost = #{fn rec.cpu_cost}\nIO cost = #{fn rec.io_cost}\nestimated bytes = #{fn rec.bytes}\nestimated time (secs.) = #{fn rec.time}\nPartition_Start = #{rec.partition_start}\nPartition_Stop = #{rec.partition_stop}\nPartition_ID = #{rec.partition_id}"} },
+    {:caption=>"Parallel",    :data=>parallel_text,                                           :title=>"Parallelization (from Other_Tag)", :data_title=>parallel_title },
+    {:caption=>"Access",      :data=>proc{|rec| html_escape expand_compare_spaces(rec.access_predicates) },   :title=>'Access criteria for data object', :max_wrap_width=>300, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape rec.access_predicates}\nNumber of index columns with matching predicates = #{rec.search_columns}"} },
+    {:caption=>"Filter",      :data=>proc{|rec| html_escape expand_compare_spaces(rec.filter_predicates) },   :title=>'Filter criteria for data object (after access)',  :max_wrap_width=>300, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape rec.filter_predicates}"} },
+    {:caption=>'Temp est.',   :data=>proc{|rec| fn(rec.temp_space_mb) },                      :title=>"Temp-space in MB (estimated forecast by optimizer)", :align=>:right},
   ]
-%>
+  column_options << {:caption=>'Temp max.',   :data=>proc{|rec| fn(rec.max_temp_ash_mb) },                      :title=>'Maximum amount of Temp-space in MB allocated by one session (incl. PQ-server) during execution of this plan line', :align=>:right }  if @include_ash_in_sql
+  column_options << {:caption=>"DB time",     :data=>proc{|rec| fn(nn_pct(rec.db_time_seconds, @sum_db_time_seconds),1) }, :align=>:right, :data_title=>proc{|rec| "%t\nDB-time: #{fn(rec.db_time_seconds)} seconds" }, :title=>"Percentage of total DB-time in % (from active session history / ASH)", :show_pct_background=>true } if @include_ash_in_sql
+  column_options << {:caption=>"CPU",         :data=>proc{|rec| fn(nn_pct(rec.cpu_seconds, @sum_cpu_seconds),1)  },        :align=>:right, :data_title=>proc{|rec| "%t\nCPU: #{fn(rec.cpu_seconds)} seconds" }, :title=>"Percentage of CPU usage in % (from active session history / ASH). Part of DB-time.", :show_pct_background=>true } if @include_ash_in_sql
+  column_options << {:caption=>"Waits",       :data=>link_column_wait,                          :align=>:right, :data_title=>proc{|rec| "%t\nWaiting: #{fn(rec.waiting_seconds)} seconds" }, :title=>"Percentage of wait events % (from active session history / ASH). Part of DB-time.", :show_pct_background=>true } if @include_ash_in_sql
+  column_options << {:caption=>"I/O",         :data=>proc{|rec| fn(nn_pct(rec.io_requests, @sum_io_requests),1)},          :align=>:right, :data_title=>proc{|rec| "%t\nIO-Requests: #{fn(rec.read_io_requests)} reads, #{fn(rec.write_io_requests)} writes, avg.read=#{avg_read_bytes(rec)} bytes, avg.write=#{avg_write_bytes(rec)} bytes" }, :title=>"Percentage of  I/O-Requests in % (from active session history / ASH)", :show_pct_background=>true } if @include_ash_in_sql
+  column_options << {:caption=>"IC",          :data=>proc{|rec| fn(nn_pct(rec.interconnect_io_bytes, @sum_interconnect_io_bytes),1)}, :align=>:right, :data_title=>proc{|rec| "%t\nInterconnect IO (kBytes): #{fn(rec.interconnect_io_bytes ? rec.interconnect_io_bytes/1024 : nil)}" }, :title=>"Percentage of  Interconnect-I/O in % (from active session history / ASH)", :show_pct_background=>true } if @include_ash_in_sql
+  column_options << {:caption=>"Dist",        :data=>proc{|rec| rec.distribution },                           :title=>"Strategy of PQ-distribution" }
+  column_options << {:caption=>'PGA max.',    :data=>proc{|rec| fn(rec.max_pga_ash_mb) },                     :title=>'Maximum amount of PGA in MB allocated by one session (incl. PQ-server) during execution of this plan line', :align=>:right }  if @include_ash_in_sql
 
 
-<%= gen_slickgrid(@plan_additions, column_options, { :caption => 'Additional info for explain plan from gv$SQL_PLan.Other_XML', :width=>:auto, :max_height => 120 }) %>
+  column_options.concat [
+    {:caption=>"Proj.",       :data=>proc{|rec| html_escape expand_compare_spaces(rec.projection) },       :title=>"Projection: table- and index-columns gotten by this operation", :max_wrap_width=>80, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape expand_compare_spaces(rec.projection)}"} },
+    {:caption=>"Starts",      :data=>proc{|rec| fn(rec.starts/sql_starts)         if rec.starts },         :align=>:right, :data_title=>proc{|rec| "%t: Total=#{fn(rec.starts)         }, Last=#{fn(rec.last_starts)}" },              :title=>t(:dba_sga_list_sql_detail_execution_plan_starts_title, :default=>'Avg. number of operation starts per execution of SQL') },
+    {:caption=>"Rows",        :data=>proc{|rec| fn(rec.output_rows/sql_starts)    if rec.output_rows },    :align=>:right, :data_title=>proc{|rec| "%t: Total=#{fn(rec.output_rows)    }, Last=#{fn(rec.last_output_rows)}" },         :title=>t(:dba_sga_list_sql_detail_execution_plan_rows_title, :default=>'Avg. number of rows for operation per execution of SQL') },
+    {:caption=>"CR",          :data=>proc{|rec| fn(rec.cr_buffer_gets/sql_starts) if rec.cr_buffer_gets }, :align=>:right, :data_title=>proc{|rec| "%t: Total=#{fn(rec.cr_buffer_gets) }, Last=#{fn(rec.last_cr_buffer_gets)}" },      :title=>t(:dba_sga_list_sql_detail_execution_plan_cr_title, :default=>'Avg, number of buffer gets in consistent mode (mostly for query) for operation per execution of SQL, cumulative incl. all subordinated operations') },
+    {:caption=>"CU",          :data=>proc{|rec| fn(rec.cu_buffer_gets/sql_starts) if rec.cu_buffer_gets }, :align=>:right, :data_title=>proc{|rec| "%t: Total=#{fn(rec.cu_buffer_gets) }, Last=#{fn(rec.last_cu_buffer_gets)}" },      :title=>t(:dba_sga_list_sql_detail_execution_plan_cu_title, :default=>'Avg, number of buffer gets in current mode (mostly for insert/update/delete) for operation per execution of SQL, cumulative incl. all subordinated operations') },
+    {:caption=>"Disk R",      :data=>proc{|rec| fn(rec.disk_reads/sql_starts) if rec.disk_reads },         :align=>:right, :data_title=>proc{|rec| "%t: Total=#{fn(rec.disk_reads)     }, Last=#{fn(rec.last_disk_reads)}" },          :title=>t(:dba_sga_list_sql_detail_execution_plan_disk_reads_title, :default=>'Avg. number of physical disk reads for operation per execution of SQL') },
+    {:caption=>"Disk W",      :data=>proc{|rec| fn(rec.disk_writes/sql_starts) if rec.disk_writes },       :align=>:right, :data_title=>proc{|rec| "%t: Total=#{fn(rec.disk_writes)    }, Last=#{fn(rec.last_disk_writes)}" },         :title=>t(:dba_sga_list_sql_detail_execution_plan_disk_writes_title, :default=>'Avg. number of physical disk writes for operation per execution of SQL')  },
+    {:caption=>"Ela.",        :data=>proc{|rec| fn(rec.elapsed_time/sql_starts,3) if rec.elapsed_time },   :align=>:right, :data_title=>proc{|rec| "%t: Total=#{fn(rec.elapsed_time,3) } ms, Last=#{fn(rec.last_elapsed_time,3)} ms" },:title=>t(:dba_sga_list_sql_detail_execution_plan_elapsed_title, :default=>'Avg. runtime of operation in ms per execution of SQL') },
+  ]
+
+     column_options.each do |c|
+       c[:data_style] = proc do|rec|
+          if rec.version_red_count < @multiplans.count
+            'background-color:coral;'
+          else
+            if rec.version_orange_count < @multiplans.count
+              'background-color:orange;'
+            end
+         end
+       end
+     end
+
+     add_column_options = [
+         {:caption=>'Type',        :data=>proc{|rec| rec.record_type },  :title=>'Type of record in Other_XML'},
+         {:caption=>'Attribute',   :data=>proc{|rec| rec.attribute },    :title=>'Name of record in Other_XML'},
+         {:caption=>'Value',       :data=>proc{|rec| rec.value },        :title=>'Value of record in Other_XML'},
+     ]
+
+
+     @caption = "Explain Plan"
+     if mp[:plans].length > 0
+       @caption << " of Child=#{mp.min_child_number} parsed at #{localeDateTime(mp[:plans][0].timestamp)}, Optimizer-Mode=#{mp[:plans][0].optimizer}, Executions=#{fn(mp[:plans][0].executions)}#{", first ASH-Sample in SGA from #{localeDateTime(@min_sample_time)}" if @min_sample_time}"
+       @caption << "\n#{@additional_ash_message}" if @additional_ash_message
+     end
+
+  %>
+
+  <div>
+    <%= gen_slickgrid(mp[:plans], column_options,
+                      {
+                          :caption            => @caption,
+                          :line_height_single => true,
+                          :data_filter        => 'filter_collapsed_item_rows',
+                          :grid_id            => @grid_id,
+                          :max_height         => "jQuery(window).height()*0.9",  # Max. 90 % of browsers client height
+                          show_pin_icon:      2
+
+                      }) %>
+  </div>
+
+  <div>
+    <%= gen_slickgrid(mp[:plan_additions], add_column_options, {
+        :caption => 'Additional info for explain plan from gv$SQL_PLan.Other_XML',
+        :width=>:auto,
+        :max_height => 120,
+        show_pin_icon:      2
+    }) %>
+  </div>
+<% end %>
+
+
+
+
+
+
+
 

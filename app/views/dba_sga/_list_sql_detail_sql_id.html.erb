@@ -3,27 +3,8 @@
 <% @modus = "GV$SQLArea" # Ab jetzt Summen-Info anzeigen%>
 <%= render :partial=>"list_sql_sga_stat" %>
 
-<% if @sql_child_info.plan_count == 1 %>
-    <div id="<%= "#{@update_area}_execution_plan" %>"></div>
-    <script type="text/javascript">
-        ajax_html('<%= "#{@update_area}_execution_plan" %>', 'dba_sga', 'list_sql_detail_execution_plan', {
-            update_area:      "<%= "#{@update_area}_execution_plan" %>",
-            modus:            "GV$SQLArea",
-            sql_id:           "<%= @sql_id %>",
-            instance:         "<%= @instance %>",
-            child_number:     "<%= @sql_child_info.min_child_number %>",
-            child_address:    "<%= @sql_child_info.min_child_address %>",
-            restrict_ash_to_child: false,
-            next_update_area: "<%= @update_area %>"
-        }, {retain_status_message: true});
-    </script>
-<% end %>
-
 <% @modus = "GV$SQLArea" # Ab jetzt wieder Summen-Info anzeigen%>
 <%= render :partial=>"list_sql_sga_stat_footer" %>
-
-<% @modus = "GV$SQL" # Ab jetzt Child-Info anzeigen%>
-<%= render :partial=>"list_sql_area" %>
 
 <div style="clear: both;" id="<%= @update_area %>"></div>
 
