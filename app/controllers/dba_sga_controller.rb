@@ -589,7 +589,7 @@ class DbaSgaController < ApplicationController
     @con_id  = nil if @con_id == ''
 
     # Liste der Child-Cursoren
-    @sqls = sql_select_all ["SELECT Inst_ID, Child_Number FROM gv$SQL WHERE Inst_ID = ? AND SQL_ID = ?", @instance, @sql_id]
+    @sqls = sql_select_all ["SELECT Inst_ID, Child_Number FROM gv$SQL WHERE SQL_ID = ?#{" AND Inst_ID = ?" if @instance}", @sql_id].concat(@instance ? [@instance]: [])
 
     if @sqls.count == 0
       show_popup_message "SQL-ID '#{@sql_id}' not found in GV$SQL for instance = #{@instance} !"

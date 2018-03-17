@@ -136,6 +136,7 @@ class PackLicense
 
     # Packages Tables etc. belonging to tuning pack
     test_array = [
+        'DBA_HIST_REPORTS',                                                     # SQL-Monitoring: DBA_HIST_REPORTS, DBA_HIST_REPORTS_DETAILS
         'DBMS_ADVISOR',                                                         # DIAGNOSTIC PACK if advisor_name => ADDM OR task_name LIKE ADDM% TUNING PACK - where advisor_name => SQL Tuning Advisor
         'DBMS_SQLTUNE.ADD_SQLSET_REFERENCE',                                    # Only this methods are part of Tuning Pack
         'DBMS_SQLTUNE.CAPTURE_CURSOR_CACHE_SQLSETS',

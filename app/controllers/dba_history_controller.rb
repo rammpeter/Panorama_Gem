@@ -1,4 +1,7 @@
 # encoding: utf-8
+
+require 'net/ping'                                                              # for method ping
+
 class DbaHistoryController < ApplicationController
   include DbaHelper
   include ActionView::Helpers::SanitizeHelper
@@ -463,9 +466,11 @@ class DbaHistoryController < ApplicationController
       return
     end
 
-    if  @sql.hit_count == 0
-      @binds_count = 0
-    else
+    # Count-Defaults if not directly selected
+    @binds_count                = 0
+    @sql_monitor_reports_count  = 0
+
+    if  @sql.hit_count > 0
       @binds_count = sql_select_one ["\
         SELECT COUNT(*)
         FROM   DBA_Hist_SQLBind b
@@ -479,8 +484,20 @@ class DbaHistoryController < ApplicationController
                                               #{'AND Instance_Number=?' if @instance}
                                              )
         ", @dbid, @sql_id, @dbid, @sql_id, @sql.min_snap_id, @sql.max_snap_id].concat(@instance ? [@instance] : [])
+    end
 
-
+    if @sql.hit_count > 0 && get_db_version >= '12.1' && get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack
+      @sql_monitor_reports_count = sql_select_one ["\
+        SELECT COUNT(*)
+        FROM   DBA_HIST_Reports
+        WHERE  DBID           = ?
+        AND    Component_Name = 'sqlmonitor'
+        AND    Key1           = ?
+        AND    (    Period_Start_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                OR  Period_End_Time   BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+               )
+        #{'AND Instance_Number=?' if @instance}
+        ", @dbid, @sql_id, @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end].concat(@instance ? [@instance] : [])
     end
 
     sql_statement = sql_select_first_row(["\
@@ -2133,6 +2150,46 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     respond_to do |format|
       format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap; padding: 10px;'>#{my_html_escape(result)}</pre>".html_safe }
     end
+  end
+
+  def list_sql_monitor_reports
+    @dbid        = prepare_param_dbid
+    @instance    = prepare_param_instance
+    @sql_id      = params[:sql_id]
+    save_session_time_selection   # werte in session puffern
+
+    @sql_monitor_reports = sql_select_all ["\
+      SELECT r.*,
+             r.Session_Serial#                                  Session_SerialNo,
+             (r.Period_End_Time - r.Period_Start_Time) * 86400  Duration,
+             TO_DATE(r.Key3, 'MM:DD:YYYY HH24:MI:SS')           SQL_Exec_Start
+      FROM   DBA_HIST_Reports r
+      WHERE  DBID           = ?
+      AND    Component_Name = 'sqlmonitor'
+      AND    Key1           = ?
+      AND    (    Period_Start_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+              OR  Period_End_Time   BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+             )
+      #{'AND Instance_Number=?' if @instance}
+      ", @dbid, @sql_id, @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end].concat(@instance ? [@instance] : [])
+
+    render_partial
+  end
+
+  def list_awr_sql_monitor_report_html
+    report_id = params[:report_id]
+
+    # Check availability of internet access
+    oracle_host = 'download.oracle.com'
+    if Net::Ping::HTTP.new(oracle_host).ping
+      type = 'ACTIVE'                                                               # Active content with download from oracle
+    else
+      Rails.logger.error "SQL Monitor report type switched from ACTIVE to HTTP because host '#{oracle_host}' is unreachable"
+      type = 'HTML'                                                             # Static content without download from oracle
+    end
+
+    report = sql_select_one ["SELECT DBMS_AUTO_REPORT.REPORT_REPOSITORY_DETAIL(RID => ?, TYPE => ?) FROM Dual", report_id, type]
+    render :html => report.html_safe
   end
 
 end #DbaHistoryController

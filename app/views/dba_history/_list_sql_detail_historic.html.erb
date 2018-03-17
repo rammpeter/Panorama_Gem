@@ -229,6 +229,21 @@ end
       <% end %>
     </div>
   <% end %>
+
+  <% if get_db_version >= '12.1' && get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack %>
+    <div class="flex-row-element">
+      <%= ajax_submit("SQL-Monitor (#{@sql_monitor_reports_count})", {
+          :action                => :list_sql_monitor_reports,
+          update_area:           @update_area,
+          :instance              => @instance,
+          :sql_id                => @sql_id,
+          :time_selection_start  => @time_selection_start,
+          :time_selection_end    => @time_selection_end,
+      }, title: t(:dba_history_list_sql_detail_historic_sql_montior_hint, :default=>'List recorded SQL-Monitor reports from DBA_HIST_Reports'))
+      %>
+    </div>
+  <% end %>
+
   <% if get_db_version >= '11.1' %>
     <div class="flex-row-element">
       <%=

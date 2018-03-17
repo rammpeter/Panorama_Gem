@@ -386,6 +386,9 @@ class ActiveSessionHistoryController < ApplicationController
   # Auswahl von/bis
   # Vorbelegungen von diversen Filtern durch Übergabe im Param-Hash
   def show_prepared_active_session_history
+    set_cached_time_selection_start(params[:time_selection_start]) if params[:time_selection_start] && params[:time_selection_start] != ''
+    set_cached_time_selection_end(  params[:time_selection_end])   if params[:time_selection_end]   && params[:time_selection_end]   != ''
+
     @groupfilter = {:DBID       => prepare_param_dbid }
 
     @groupfilter[:Instance]             =  params[:instance]  if params[:instance]
