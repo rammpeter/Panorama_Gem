@@ -17,16 +17,13 @@
 
   link_session = proc do |rec|
     ajax_link("#{rec.session_id}, #{rec.session_serialno}", {
-             :controller => :active_session_history,
-             :action => :show_prepared_active_session_history,
-             :update_area => @update_area,
-             :instance  => rec.instance_number,
-             sql_id:                @sql_id,
+             controller:            :active_session_history,
+             action:                :show_prepared_active_session_history,
+             update_area:           @update_area,
+             instance:              rec.instance_number,
              sid:                   rec.session_id,
              serialno:              rec.session_serialno,
-             #time_selection_start:  localeDateTime(rec.sql_exec_start),
-             #time_selection_end:    localeDateTime(rec.period_end_time),
-  }, :title=> t(:dba_list_session_details_link_ash, :default=>'Show wait history of session from Active Session History')
+  }.merge(@sql_id.nil? ? {} : {sql_id: @sql_id}), :title=> t(:dba_list_session_details_link_ash, :default=>'Show wait history of session from Active Session History')
   )
 end
 
@@ -37,10 +34,16 @@ column_options =
         {:caption=>'SQL-ID',                      :data=>link_sql,                                          :title=>'SQL-ID of executed SQL statement'},
         {:caption=>'Sessio-ID / Serialno.',       :data=>link_session,                                      :title=>'Session-ID and serial number of the session corresponding to the captured report (currently used only for SQL Monitor reports)'},
         {:caption=>'Start time',                  :data=>proc{|rec| localeDateTime(rec.period_start_time)}, :title=>'Start of recorded activity'},
-        {:caption=>'End time',                    :data=>proc{|rec| localeDateTime(rec.period_end_time)},   :title=>'End of recorded activity'},
-        {:caption=>'Duration (Sec.)',             :data=>proc{|rec| fn(rec.duration)},                      :title=>'Duration of activity in seconds', align: :right},
+        {:caption=>'End time',                    :data=>proc{|rec| localeDateTime(rec.period_end_time)},   :title=>"End of recorded activity.\nLasts until the last fetch call of this statement execution"},
+        {:caption=>'Duration (Sec.)',             :data=>proc{|rec| fn(rec.duration)},                      :title=>"Duration between start and end of recorded statement execution in seconds\nIncludes also fetch phase after execute", align: :right},
         {:caption=>'SQL exec ID',                 :data=>proc{|rec| fn(rec.key2)},                          :title=>'SQL execution ID', align: :right},
         {:caption=>'SQL exec start',              :data=>proc{|rec| localeDateTime(rec.sql_exec_start)},    :title=>'Start time of execution for this SQL execution ID'},
+        {:caption=>'Elapsed time (Sec.)',         :data=>proc{|rec| fn(rec.elapsed_time_secs, 1)},          :title=>"Elapsed execution time in seconds", align: :right},
+        {:caption=>'CPU time (Sec.)',             :data=>proc{|rec| fn(rec.cpu_time_secs, 1)},              :title=>"CPU time in seconds", align: :right},
+        {:caption=>'User I/O wait time (Sec.)',   :data=>proc{|rec| fn(rec.user_io_wait_time_secs, 1)},     :title=>"User I/O wait time in seconds", align: :right},
+        {:caption=>'Appl. wait time (Sec.)',      :data=>proc{|rec| fn(rec.application_wait_time_secs, 1)}, :title=>"Application wait time in seconds", align: :right},
+        {:caption=>'Cluster wait time (Sec.)',    :data=>proc{|rec| fn(rec.cluster_wait_time_secs, 1)},     :title=>"Cluster wait time in seconds", align: :right},
+        {:caption=>'Other wait time (Sec.)',      :data=>proc{|rec| fn(rec.other_wait_time_secs, 1)},       :title=>"Other wait time in seconds", align: :right},
         {:caption=>'User',                        :data=>proc{|rec| rec.username},                          :title=>'DB-user executing this SQL'},
         {:caption=>'Status',                      :data=>proc{|rec| rec.status},                            :title=>'Module of this SQL-execution'},
         {:caption=>'Module',                      :data=>proc{|rec| rec.module},                            :title=>'Action of this SQL-execution'},

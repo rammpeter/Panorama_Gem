@@ -2177,24 +2177,32 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     end
 
     @sql_monitor_reports = sql_select_iterator ["\
-      SELECT r.*,
-             r.Session_Serial#                                                                  Session_SerialNo,
-             (r.Period_End_Time - r.Period_Start_Time) * 86400                                  Duration,
-             TO_DATE(r.Key3, 'MM:DD:YYYY HH24:MI:SS')                                           SQL_Exec_Start,
-             EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/user')       UserName,
-             EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/status')     Status,
-             EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/module')     Module,
-             EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/action')     Action,
-             EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/program')    Program,
-             SUBSTR(EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/sql_text'),1, 60) SQL_Text_Substr
-      FROM   DBA_HIST_Reports r
-      WHERE  DBID           = ?
-      AND    Component_Name = 'sqlmonitor'
-      AND    (    Period_Start_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-              OR  Period_End_Time   BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+      SELECT *
+      FROM   (SELECT r.*,
+                     r.Session_Serial#                                                                  Session_SerialNo,
+                     (r.Period_End_Time - r.Period_Start_Time) * 86400                                  Duration,
+                     TO_DATE(r.Key3, 'MM:DD:YYYY HH24:MI:SS')                                           SQL_Exec_Start,
+                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/user')       UserName,
+                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/status')     Status,
+                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/module')     Module,
+                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/action')     Action,
+                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/program')    Program,
+                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"elapsed_time\"]')/1000000           Elapsed_Time_Secs,
+                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"cpu_time\"]')/1000000               CPU_Time_Secs,
+                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"user_io_wait_time\"]')/1000000      User_IO_Wait_Time_Secs,
+                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"application_wait_time\"]')/1000000  Application_Wait_Time_Secs,
+                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"cluster_wait_time\"]')/1000000      Cluster_Wait_Time_Secs,
+                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"other_wait_time\"]')/1000000        Other_Wait_Time_Secs,
+                     SUBSTR(EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/sql_text'),1, 60) SQL_Text_Substr
+              FROM   DBA_HIST_Reports r
+              WHERE  DBID           = ?
+              AND    Component_Name = 'sqlmonitor'
+              AND    (    Period_Start_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                      OR  Period_End_Time   BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                     )
+              #{where_string}
              )
-      #{where_string}
-      ORDER BY r.Period_End_Time - r.Period_Start_Time DESC
+      ORDER BY Elapsed_Time_Secs DESC NULLS LAST
       ", @dbid, @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end].concat(where_values)
 
     render_partial
