@@ -346,7 +346,7 @@ class DbaHistoryController < ApplicationController
               when "BufferGets"            then "Buffer_gets DESC"
               when "ClusterWaits"          then "Cluster_Wait_Time DESC"
         else  "[Unknown]"
-        end } 
+        end } NULLS LAST
       )
       #{'WHERE ROWNUM < ?' if maxResultCount}
       ORDER BY
@@ -362,7 +362,7 @@ class DbaHistoryController < ApplicationController
               when "BufferGets"            then "Buffer_gets DESC"
               when "ClusterWaits"          then "Cluster_Wait_Time DESC"
         else  "[Unknown]"
-        end }"
+        end } NULLS LAST"
      ].concat(where_values)
 
     render_partial :list_sql_area_historic
@@ -2152,26 +2152,50 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     end
   end
 
+  def show_sql_monitor_reports
+    raise PopupMessageException.new("Sorry, accessing DBA_HIST_Reports requires licensing of Diagnostics and Tuning Pack") if get_current_database[:management_pack_license] != :diagnostics_and_tuning_pack
+    render_partial
+  end
+
   def list_sql_monitor_reports
     @dbid        = prepare_param_dbid
     @instance    = prepare_param_instance
-    @sql_id      = params[:sql_id]
+    @sql_id      = params[:sql_id] == '' ? nil : params[:sql_id]
     save_session_time_selection   # werte in session puffern
 
-    @sql_monitor_reports = sql_select_all ["\
+    where_string = ''
+    where_values = []
+
+    if @instance
+      where_string << " AND Instance_Number = ?"
+      where_values << @instance
+    end
+
+    if @sql_id
+      where_string << " AND Key1 = ?"
+      where_values << @sql_id
+    end
+
+    @sql_monitor_reports = sql_select_iterator ["\
       SELECT r.*,
-             r.Session_Serial#                                  Session_SerialNo,
-             (r.Period_End_Time - r.Period_Start_Time) * 86400  Duration,
-             TO_DATE(r.Key3, 'MM:DD:YYYY HH24:MI:SS')           SQL_Exec_Start
+             r.Session_Serial#                                                                  Session_SerialNo,
+             (r.Period_End_Time - r.Period_Start_Time) * 86400                                  Duration,
+             TO_DATE(r.Key3, 'MM:DD:YYYY HH24:MI:SS')                                           SQL_Exec_Start,
+             EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/user')       UserName,
+             EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/status')     Status,
+             EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/module')     Module,
+             EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/action')     Action,
+             EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/program')    Program,
+             SUBSTR(EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/sql_text'),1, 60) SQL_Text_Substr
       FROM   DBA_HIST_Reports r
       WHERE  DBID           = ?
       AND    Component_Name = 'sqlmonitor'
-      AND    Key1           = ?
       AND    (    Period_Start_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
               OR  Period_End_Time   BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
              )
-      #{'AND Instance_Number=?' if @instance}
-      ", @dbid, @sql_id, @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end].concat(@instance ? [@instance] : [])
+      #{where_string}
+      ORDER BY r.Period_End_Time - r.Period_Start_Time DESC
+      ", @dbid, @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end].concat(where_values)
 
     render_partial
   end
@@ -2189,7 +2213,11 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     end
 
     report = sql_select_one ["SELECT DBMS_AUTO_REPORT.REPORT_REPOSITORY_DETAIL(RID => ?, TYPE => ?) FROM Dual", report_id, type]
-    render :html => report.html_safe
+    if report.nil?
+      render :html => "No SQL-Monitor report found for ID=#{report_id}"
+    else
+      render :html => report.html_safe
+    end
   end
 
 end #DbaHistoryController

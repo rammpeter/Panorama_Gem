@@ -1,0 +1,21 @@
+<%= render_page_caption("Historic SQL-Monitor reports from DBA_HIST_Reports") %>
+
+<% @update_area = get_unique_area_id %>
+
+<%= ajax_form(:controller=>:dba_history, :action=>:list_sql_monitor_reports, :update_area=>@update_area) do %>
+  <div class="flex-row-container">
+    <%= include_start_end_timepicker %>
+
+    <div class="flex-row-element" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
+      Instance
+      <%= text_field_tag(:instance, read_from_client_info_store(:instance), :size=>1) %>
+    </div>
+
+    <div class="flex-row-element">
+      <%= submit_tag('Show SQL-Monitor reports', :title => 'Show SQL-Monitor reports according to filter conditions') %>
+    </div>
+
+  </div>
+<% end %>
+
+<div id="<%= @update_area %>"></div>

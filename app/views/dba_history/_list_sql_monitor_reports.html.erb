@@ -11,35 +11,46 @@
             )
    end
 
-  link_session = proc do |rec|
-    ajax_link("#{rec.session_id}, #{rec.session_serialno}", {
-               :controller => :active_session_history,
-               :action => :show_prepared_active_session_history,
-               :update_area => @update_area,
-               :instance  => rec.instance_number,
-               sql_id:                @sql_id,
-               sid:                   rec.session_id,
-               serialno:              rec.session_serialno,
-               #time_selection_start:  localeDateTime(rec.sql_exec_start),
-               #time_selection_end:    localeDateTime(rec.period_end_time),
-    }, :title=> t(:dba_list_session_details_link_ash, :default=>'Show wait history of session from Active Session History')
-    )
+  link_sql = proc do |rec|
+    link_historic_sql_id(rec.instance_number, rec.key1, localeDateTime(rec.period_start_time), localeDateTime(rec.period_end_time), @update_area, nil, rec.key1)
   end
 
-  column_options =
-      [
-          {:caption=>'Report ID',                   :data=>link_report_id,                                    :title=>'ID of the captured report', align: :right},
-          {:caption=>'Inst.',                       :data=>proc{|rec| rec.instance_number},                   :title=>'Instance number'},
-          {:caption=>'Sessio-ID / Serialno.',       :data=>link_session,                                      :title=>'Session-ID and serial number of the session corresponding to the captured report (currently used only for SQL Monitor reports)'},
-          {:caption=>'Start time',                  :data=>proc{|rec| localeDateTime(rec.period_start_time)}, :title=>'Start of recorded activity'},
-          {:caption=>'End time',                    :data=>proc{|rec| localeDateTime(rec.period_end_time)},   :title=>'End of recorded activity'},
-          {:caption=>'Duration (Sec.)',             :data=>proc{|rec| fn(rec.duration)},                      :title=>'Duration of activity in seconds', align: :right},
-          {:caption=>'SQL exec ID',                 :data=>proc{|rec| fn(rec.key2)},                          :title=>'SQL execution ID', align: :right},
-          {:caption=>'SQL exec start',              :data=>proc{|rec| localeDateTime(rec.sql_exec_start)},    :title=>'Start time of execution for this SQL execution ID'},
-          {:caption=>'Generation time',             :data=>proc{|rec| localeDateTime(rec.generation_time)},   :title=>'Time when this report was generated'},
+  link_session = proc do |rec|
+    ajax_link("#{rec.session_id}, #{rec.session_serialno}", {
+             :controller => :active_session_history,
+             :action => :show_prepared_active_session_history,
+             :update_area => @update_area,
+             :instance  => rec.instance_number,
+             sql_id:                @sql_id,
+             sid:                   rec.session_id,
+             serialno:              rec.session_serialno,
+             #time_selection_start:  localeDateTime(rec.sql_exec_start),
+             #time_selection_end:    localeDateTime(rec.period_end_time),
+  }, :title=> t(:dba_list_session_details_link_ash, :default=>'Show wait history of session from Active Session History')
+  )
+end
+
+column_options =
+    [
+        {:caption=>'Report ID',                   :data=>link_report_id,                                    :title=>'ID of the captured report', align: :right},
+        {:caption=>'Inst.',                       :data=>proc{|rec| rec.instance_number},                   :title=>'Instance number'},
+        {:caption=>'SQL-ID',                      :data=>link_sql,                                          :title=>'SQL-ID of executed SQL statement'},
+        {:caption=>'Sessio-ID / Serialno.',       :data=>link_session,                                      :title=>'Session-ID and serial number of the session corresponding to the captured report (currently used only for SQL Monitor reports)'},
+        {:caption=>'Start time',                  :data=>proc{|rec| localeDateTime(rec.period_start_time)}, :title=>'Start of recorded activity'},
+        {:caption=>'End time',                    :data=>proc{|rec| localeDateTime(rec.period_end_time)},   :title=>'End of recorded activity'},
+        {:caption=>'Duration (Sec.)',             :data=>proc{|rec| fn(rec.duration)},                      :title=>'Duration of activity in seconds', align: :right},
+        {:caption=>'SQL exec ID',                 :data=>proc{|rec| fn(rec.key2)},                          :title=>'SQL execution ID', align: :right},
+        {:caption=>'SQL exec start',              :data=>proc{|rec| localeDateTime(rec.sql_exec_start)},    :title=>'Start time of execution for this SQL execution ID'},
+        {:caption=>'User',                        :data=>proc{|rec| rec.username},                          :title=>'DB-user executing this SQL'},
+        {:caption=>'Status',                      :data=>proc{|rec| rec.status},                            :title=>'Module of this SQL-execution'},
+        {:caption=>'Module',                      :data=>proc{|rec| rec.module},                            :title=>'Action of this SQL-execution'},
+        {:caption=>'Action',                      :data=>proc{|rec| rec.action},                            :title=>'Client program name of this SQL-execution'},
+        {:caption=>'Program',                      :data=>proc{|rec| rec.program},                          :title=>'Status of this SQL-execution'},
+        {:caption=>'Generation time',             :data=>proc{|rec| localeDateTime(rec.generation_time)},   :title=>'Time when this report was generated'},
+        {:caption=>'SQL text',                    :data=>proc{|rec| rec.sql_text_substr},                   :title=>'First 60 characters of SQL text'},
 
 
-      ]
+    ]
 
 %>
 

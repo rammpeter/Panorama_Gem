@@ -140,10 +140,12 @@ module MenuHelper
         },
         { :class=> 'menu', :caption=> 'SGA/PGA-Details', :content=>[
             { :class=> 'menu', :caption=> 'SQL-Area', :content=>[
-                {:class=> 'item', :caption=>t(:menu_sga_pga_sqlarea_current_sqlid_caption, :default=> 'Current (SQL-ID)'),            :controller=> 'dba_sga',     :action=> 'show_sql_area_sql_id',          :hint=>t(:menu_sga_pga_sqlarea_current_sqlid_hint, :default=> 'Analysis of current SQL in SGA at level SQL-ID (cumulated across child-cursors)') },
-                {:class=> 'item', :caption=>t(:menu_sga_pga_sqlarea_current_sqlid_childno_caption, :default=> 'Current (SQL-ID / child-no.)'),:controller=> 'dba_sga',     :action=> 'show_sql_area_sql_id_childno',  :hint=>t(:menu_sga_pga_sqlarea_current_sqlid_childno_hint, :default=> 'Analysis of current SQL in SGA at level SQL-ID, child-no.') },
-                {:class=> 'item', :caption=>t(:menu_historic_caption, :default=> 'Historic'),                  :controller=> 'dba_history', :action=> 'show_sql_area_historic',        :hint=>t(:menu_sga_pga_sqlarea_historic_hint, :default=> 'Analysis of historic SQL from DBA_Hist_SQLStat') },
-                ]
+                {:class=> 'item', :caption=>t(:menu_sga_pga_sqlarea_current_sqlid_caption, :default=> 'Current SQLs (SQL-ID)'),            :controller=> 'dba_sga',     :action=> 'show_sql_area_sql_id',          :hint=>t(:menu_sga_pga_sqlarea_current_sqlid_hint, :default=> 'Analysis of current SQL in SGA at level SQL-ID (cumulated across child-cursors)') },
+                {:class=> 'item', :caption=>t(:menu_sga_pga_sqlarea_current_sqlid_childno_caption, :default=> 'Current SQLs (SQL-ID / child-no.)'),:controller=> 'dba_sga',     :action=> 'show_sql_area_sql_id_childno',  :hint=>t(:menu_sga_pga_sqlarea_current_sqlid_childno_hint, :default=> 'Analysis of current SQL in SGA at level SQL-ID, child-no.') },
+                {:class=> 'item', :caption=>t(:menu_sga_pga_sqlarea_historic_caption, :default=> 'Historic SQLs'),                  :controller=> 'dba_history', :action=> 'show_sql_area_historic',        :hint=>t(:menu_sga_pga_sqlarea_historic_hint, :default=> 'Analysis of historic SQL from DBA_Hist_SQLStat') },
+                ].concat(get_db_version >= '12.1' ?
+                [{:class=> 'item', :caption=> t(:menu_sga_pga_sqlarea_historic_sql_monitor_caption, :default=>'SQL-Monitor reports historic') , controller: :dba_history, :action=> :show_sql_monitor_reports,     :hint=>t(:menu_sga_pga_sqlarea_historic_sql_monitor_hint, :default=>'Show recorded SQL-Monitor reports from DBA_HIST_Reports') }] : []
+            )
             },
             {:class=> 'item', :caption=>t(:menu_sga_pga_day_compare_caption, :default=> 'SQL-Area day comparison'),         :controller=> 'dba_history', :action=> 'compare_sql_area_historic',     :hint=>t(:menu_sga_pga_day_compare_hint, :default=> 'Comparison of SQL-statements from two different days') },
             {:class=> 'item', :caption=>t(:menu_sga_pga_sga_components_caption, :default=> 'SGA-components'),                 :controller=> 'dba_sga',     :action=> 'show_sga_components',           :hint=>t(:menu_sga_pga_sga_components_hint, :default=> 'Show components of current SGA') },

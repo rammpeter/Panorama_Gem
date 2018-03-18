@@ -307,11 +307,11 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
     end
   end
 
-  #test "list_awr_sql_monitor_report_html with xhr: true" do
-  #  if get_db_version >= '12.1' && get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack
-  #    post '/dba_history/list_awr_sql_monitor_report_html', params: {format: :html, report_id: 1, update_area: :hugo }
-  #    assert_response :success
-  #  end
-  #end
+  test "list_awr_sql_monitor_report_html with xhr: true" do
+    if get_db_version >= '12.1' && get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack
+      post '/dba_history/list_awr_sql_monitor_report_html', params: {format: :html, report_id: 1, update_area: :hugo }
+      assert_response :success
+    end
+  end
 
 end
