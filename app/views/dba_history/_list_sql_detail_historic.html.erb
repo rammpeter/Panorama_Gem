@@ -214,7 +214,7 @@ end
     }, :title => t(:dba_history_list_sql_detail_historic_current_sga_hint, :default=>'Show data of SQL from current SGA (if still exists in SGA)'))
     %>
   </div>
-  <% if @instance && (get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack || get_current_database[:management_pack_license] == :diagnostics_pack) %>
+  <% if @instance && PackLicense.diagnostics_pack_licensed? %>
     &nbsp;
     <div class="flex-row-element">
       <%= form_tag(url_for(:controller            => :dba_history,
@@ -230,7 +230,7 @@ end
     </div>
   <% end %>
 
-  <% if get_db_version >= '11.1' && get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack %>
+  <% if get_db_version >= '11.1' && PackLicense.tuning_pack_licensed? %>
     <div class="flex-row-element">
       <%= ajax_submit("SQL-Monitor (#{@sql_monitor_reports_count})", {
           :action                => :list_sql_monitor_reports,
@@ -239,7 +239,7 @@ end
           :sql_id                => @sql_id,
           :time_selection_start  => @time_selection_start,
           :time_selection_end    => @time_selection_end,
-      }, title: t(:dba_history_list_sql_detail_historic_sql_montior_hint, :default=>'List recorded SQL-Monitor reports from gv$SQL_Monitor and DBA_HIST_Reports'))
+      }, title: strings(:sql_monitor_list_title))
       %>
     </div>
   <% end %>

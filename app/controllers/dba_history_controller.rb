@@ -2148,7 +2148,9 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
   def list_sql_monitor_reports
     @dbid        = prepare_param_dbid
     @instance    = prepare_param_instance
-    @sql_id      = params[:sql_id] == '' ? nil : params[:sql_id]
+    @sql_id      = params[:sql_id]    == '' ? nil : params[:sql_id]
+    @sid         = params[:sid]       == '' ? nil : params[:sid]
+    @serialno    = params[:serialno]  == '' ? nil : params[:serialno]
     save_session_time_selection   # werte in session puffern
 
     where_string_hist = ''
@@ -2165,6 +2167,18 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
       where_string_sga  << " AND SQL_ID = ?"
       where_string_hist << " AND Key1 = ?"
       where_values << @sql_id
+    end
+
+    if @sid
+      where_string_sga  << " AND SID = ?"
+      where_string_hist << " AND Session_ID = ?"
+      where_values << @sid
+    end
+
+    if @serialno
+      where_string_sga  << " AND Session_Serial# = ?"
+      where_string_hist << " AND Session_Serial# = ?"
+      where_values << @serialno
     end
 
     # at first look for gv$SQL_Monitor

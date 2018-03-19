@@ -720,6 +720,7 @@ Solution: Execute as user 'SYS':
   end
   
   def show_session_detail
+    @dbid        = prepare_param_dbid
     @instance    = prepare_param_instance
     @sid         = params[:sid].to_i
     @serialno    = params[:serialno].to_i
@@ -817,20 +818,7 @@ Solution: Execute as user 'SYS':
             GROUP BY pm.Category
             ", @instance, @sid, @serialno, @instance, @sid, @serialno]
 
-    begin       # Test, ob Daten für Session in gv$SQL_Monitor existieren, Problem: Kann Nutzung der Option Tuning Pack aktivieren, wenn diese nicht per Init-Parameter 'control_management_pack_access' deaktiviert ist
-      @sql_monitor_exists = false
-      if PackLicense.tuning_pack_licensed?
-        @sql_monitor_exists = sql_select_one ["SELECT 1
-                                               FROM   gv$SQL_Monitor
-                                               WHERE  Inst_ID         = ?
-                                               AND    SID             = ?
-                                               AND    Session_Serial# = ?
-                                              ", @instance, @sid, @serialno]
-      end
-    rescue
-      @sql_monitor_exists = false
-    end
-
+    @sql_monitor_reports_count = get_sql_monitor_count(@dbid, @instance, nil, localeDateTime(@dbsession.logon_time, :minutes), localeDateTime(Time.now, :minutes), @sid, @serialno)
 
     if @dbsession
       render_partial :list_session_details

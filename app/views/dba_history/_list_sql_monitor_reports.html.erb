@@ -13,7 +13,7 @@
                     sql_exec_id:           rec.sql_exec_id,
                     origin:                rec.origin,
                     browser_tab_id:        @browser_tab_id
-                   ), {method: 'post', target: '_blank', title: "Show SQL-Monitor report in separate browser tab"}
+                   ), {method: 'post', target: '_blank', title: "Show generated SQL-Monitor report in separate browser tab (requires internet connection and Adobe Flash)"}
             )
    end
 
@@ -64,7 +64,7 @@ column_options =
 
 <%=
   gen_slickgrid(@sql_monitor_reports, column_options, {
-    caption:        "SQL executions recorded by SQL-Monitor for SQL-ID=#{@sql_id}#{" Instance=#{@instance}" if @instance} from gv$SQL_Monitor and DBA_Hist_Reports",
+    caption:        "SQL executions recorded by SQL-Monitor for#{" Instance=#{@instance}" if @instance}#{" SQL-ID=#{@sql_id}" if @sql_id}#{" SID=#{@sid}" if @sid}#{" Serial#=#{@serialno}" if @serialno} from gv$SQL_Monitor and DBA_Hist_Reports",
     max_height:     450,
     show_pin_icon: 1
 })

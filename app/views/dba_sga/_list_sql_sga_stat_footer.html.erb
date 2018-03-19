@@ -112,7 +112,7 @@
           sql_id:                @sql_id,
           time_selection_start:  localeDateTime(@sql.first_load_time, :minutes),
           time_selection_end:    localeDateTime(Time.now, :minutes),
-         }, title: t(:dba_history_list_sql_detail_historic_sql_montior_hint, :default=>'List recorded SQL-Monitor reports from gv$SQL_Monitor and DBA_HIST_Reports'))
+         }, title: strings(:sql_monitor_list_title))
       %>
     </div>
   <% end %>

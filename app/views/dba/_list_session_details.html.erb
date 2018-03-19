@@ -195,15 +195,16 @@ column_options =
     %>
   </div>
   <div class="flex-row-element">
-    <%= ajax_submit("SQL Monitor", {
-                                           :controller   => :dba_sga,
-                                           :action       => :list_sql_monitor_sessions,
-                                           :instance     => @instance,
-                                           :sid          => @sid,
-                                           :serialno     => @serialno,
-                                           :update_area  => @update_area
-        }, {:disabled=>!@sql_monitor_exists, :title =>strings(:sql_monitor_link_title) }
-        )
+    <%= ajax_submit("SQL-Monitor (#{@sql_monitor_reports_count})", {
+          controller:            :dba_history,
+          action:                :list_sql_monitor_reports,
+          update_area:           @update_area,
+          instance:              @instance,
+          sid:                   @sid,
+          serialno:              @serialno,
+          time_selection_start:  localeDateTime(@dbsession.logon_time, :minutes),
+          time_selection_end:    localeDateTime(Time.now, :minutes),
+      }, title: strings(:sql_monitor_list_title))
       %>
   </div>
 </div>
