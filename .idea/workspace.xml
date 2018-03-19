@@ -7,18 +7,9 @@
     <bookmark url="file://$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb" line="66" mnemonic="7" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="AWR SQL Monitor reports for Session">
+    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/dba_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/dba_controller.rb" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/dba_helper.rb" afterPath="$PROJECT_DIR$/app/helpers/dba_helper.rb" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/strings_helper.rb" afterPath="$PROJECT_DIR$/app/helpers/strings_helper.rb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_session_details.html.erb" afterPath="$PROJECT_DIR$/app/views/dba/_list_session_details.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_list_sql_monitor_reports.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_list_sql_monitor_reports.html.erb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat_footer.html.erb" />
-      <change beforePath="$PROJECT_DIR$/config/locales/de.yml" afterPath="$PROJECT_DIR$/config/locales/de.yml" />
-      <change beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+      <change beforePath="$PROJECT_DIR$/test/controllers/dba_sga_controller_test.rb" afterPath="$PROJECT_DIR$/test/controllers/dba_sga_controller_test.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -179,11 +170,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="60">
               <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="dba_sga_controller_test.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/test/controllers/dba_sga_controller_test.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="504">
+              <caret line="229" column="0" lean-forward="false" selection-start-line="229" selection-start-column="0" selection-end-line="229" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -375,7 +376,6 @@
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_detail_execution_plan.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_detail_sql_id.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat.html.erb" />
-        <option value="$PROJECT_DIR$/test/controllers/dba_sga_controller_test.rb" />
         <option value="$PROJECT_DIR$/app/models/pack_license.rb" />
         <option value="$PROJECT_DIR$/app/controllers/active_session_history_controller.rb" />
         <option value="$PROJECT_DIR$/panorama_gem.gemspec" />
@@ -395,6 +395,7 @@
         <option value="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_history/_list_sql_monitor_reports.html.erb" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+        <option value="$PROJECT_DIR$/test/controllers/dba_sga_controller_test.rb" />
       </list>
     </option>
   </component>
@@ -634,13 +635,6 @@
               <item name="test" type="462c0819:PsiDirectoryNode" />
               <item name="dummy" type="462c0819:PsiDirectoryNode" />
               <item name="config" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
-              <item name="test" type="462c0819:PsiDirectoryNode" />
-              <item name="dummy" type="462c0819:PsiDirectoryNode" />
-              <item name="log" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
@@ -1348,14 +1342,7 @@
       <workItem from="1519990819009" duration="12716000" />
       <workItem from="1520416011490" duration="18609000" />
       <workItem from="1520942599999" duration="609000" />
-      <workItem from="1521031060797" duration="67177000" />
-    </task>
-    <task id="LOCAL-01243" summary="Alignment center">
-      <created>1517229423583</created>
-      <option name="number" value="01243" />
-      <option name="presentableId" value="LOCAL-01243" />
-      <option name="project" value="LOCAL" />
-      <updated>1517229423584</updated>
+      <workItem from="1521031060797" duration="67854000" />
     </task>
     <task id="LOCAL-01244" summary="Blocking_User_Name NOT NULL">
       <created>1517303560649</created>
@@ -1693,7 +1680,14 @@
       <option name="project" value="LOCAL" />
       <updated>1521452338721</updated>
     </task>
-    <option name="localTasksCounter" value="1292" />
+    <task id="LOCAL-01292" summary="AWR SQL Monitor reports for Session">
+      <created>1521471628113</created>
+      <option name="number" value="01292" />
+      <option name="presentableId" value="LOCAL-01292" />
+      <option name="project" value="LOCAL" />
+      <updated>1521471628113</updated>
+    </task>
+    <option name="localTasksCounter" value="1293" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1729,7 +1723,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3011361000" />
+    <option name="totallyTimeSpent" value="3012038000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1811,7 +1805,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Record number of rows for object size history" />
     <MESSAGE value="Fix localeDate-Misusage" />
     <MESSAGE value="Always show Panorama-Sampler-data at start page" />
     <MESSAGE value="Select DATE for redologs" />
@@ -1836,7 +1829,8 @@
     <MESSAGE value="AWR SQL Monitor reports as complete list, Fix filter issue for ASH" />
     <MESSAGE value="AWR SQL Monitor reports as complete list, Elapsed times" />
     <MESSAGE value="AWR SQL Monitor reports for SGA view" />
-    <option name="LAST_COMMIT_MESSAGE" value="AWR SQL Monitor reports for SGA view" />
+    <MESSAGE value="AWR SQL Monitor reports for Session" />
+    <option name="LAST_COMMIT_MESSAGE" value="AWR SQL Monitor reports for Session" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2225,14 +2219,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/controllers/dba_sga_controller_test.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
-          <caret line="3" column="14" lean-forward="false" selection-start-line="3" selection-start-column="14" selection-end-line="3" selection-end-column="14" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/dummy/log/test.log">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-76471">
@@ -2488,6 +2474,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="4" column="19" lean-forward="false" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/controllers/dba_sga_controller_test.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="504">
+          <caret line="229" column="0" lean-forward="false" selection-start-line="229" selection-start-column="0" selection-end-line="229" selection-end-column="0" />
           <folding />
         </state>
       </provider>
