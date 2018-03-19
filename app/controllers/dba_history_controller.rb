@@ -484,20 +484,8 @@ class DbaHistoryController < ApplicationController
                                               #{'AND Instance_Number=?' if @instance}
                                              )
         ", @dbid, @sql_id, @dbid, @sql_id, @sql.min_snap_id, @sql.max_snap_id].concat(@instance ? [@instance] : [])
-    end
 
-    if @sql.hit_count > 0 && get_db_version >= '12.1' && get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack
-      @sql_monitor_reports_count = sql_select_one ["\
-        SELECT COUNT(*)
-        FROM   DBA_HIST_Reports
-        WHERE  DBID           = ?
-        AND    Component_Name = 'sqlmonitor'
-        AND    Key1           = ?
-        AND    (    Period_Start_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-                OR  Period_End_Time   BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-               )
-        #{'AND Instance_Number=?' if @instance}
-        ", @dbid, @sql_id, @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end].concat(@instance ? [@instance] : [])
+      @sql_monitor_reports_count = get_sql_monitor_count(@dbid, @instance, @sql_id, @time_selection_start, @time_selection_end)
     end
 
     sql_statement = sql_select_first_row(["\
@@ -2163,53 +2151,99 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     @sql_id      = params[:sql_id] == '' ? nil : params[:sql_id]
     save_session_time_selection   # werte in session puffern
 
-    where_string = ''
+    where_string_hist = ''
+    where_string_sga  = ''
     where_values = []
 
     if @instance
-      where_string << " AND Instance_Number = ?"
+      where_string_sga  << " AND Inst_ID = ?"
+      where_string_hist << " AND Instance_Number = ?"
       where_values << @instance
     end
 
     if @sql_id
-      where_string << " AND Key1 = ?"
+      where_string_sga  << " AND SQL_ID = ?"
+      where_string_hist << " AND Key1 = ?"
       where_values << @sql_id
     end
 
-    @sql_monitor_reports = sql_select_iterator ["\
-      SELECT *
-      FROM   (SELECT r.*,
-                     r.Session_Serial#                                                                  Session_SerialNo,
-                     (r.Period_End_Time - r.Period_Start_Time) * 86400                                  Duration,
-                     TO_DATE(r.Key3, 'MM:DD:YYYY HH24:MI:SS')                                           SQL_Exec_Start,
-                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/user')       UserName,
-                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/status')     Status,
-                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/module')     Module,
-                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/action')     Action,
-                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/program')    Program,
-                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"elapsed_time\"]')/1000000           Elapsed_Time_Secs,
-                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"cpu_time\"]')/1000000               CPU_Time_Secs,
-                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"user_io_wait_time\"]')/1000000      User_IO_Wait_Time_Secs,
-                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"application_wait_time\"]')/1000000  Application_Wait_Time_Secs,
-                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"cluster_wait_time\"]')/1000000      Cluster_Wait_Time_Secs,
-                     EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"other_wait_time\"]')/1000000        Other_Wait_Time_Secs,
-                     SUBSTR(EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/sql_text'),1, 60) SQL_Text_Substr
-              FROM   DBA_HIST_Reports r
-              WHERE  DBID           = ?
-              AND    Component_Name = 'sqlmonitor'
-              AND    (    Period_Start_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-                      OR  Period_End_Time   BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-                     )
-              #{where_string}
+    # at first look for gv$SQL_Monitor
+    sql_stmt = "SELECT * FROM ("
+
+    sql_stmt << "\
+      SELECT #{get_db_version >= '12.1' ? 'Report_ID' : '0'} Report_ID,
+             Inst_ID Instance_Number, SID Session_ID, Session_Serial# Session_SerialNo,
+             First_Refresh_Time Period_Start_time, Last_Refresh_Time Period_End_Time, SQL_ID, SQL_Exec_ID, NULL Generation_Time,
+             Last_Refresh_Time -  First_Refresh_Time Duration, SQL_Exec_Start, #{get_db_version >= '12.1' ? 'UserName' : "''"} UserName,
+             Status,
+             #{get_db_version >= '11.2' ? 'Module'  : "''"} Module,
+             #{get_db_version >= '11.2' ? 'Action'  : "''"} Action,
+             #{get_db_version >= '11.2' ? 'Program' : "''"} Program,
+             Elapsed_Time         /1000000                    Elapsed_Time_Secs,
+             CPU_Time             /1000000                    CPU_Time_Secs,
+             User_IO_Wait_Time    /1000000                    User_IO_Wait_Time_Secs,
+             Application_Wait_Time/1000000                    Application_Wait_Time_Secs,
+             Cluster_Wait_Time    /1000000                    Cluster_Wait_Time_Secs,
+             0                                                Other_Wait_Time_Secs,
+             #{get_db_version >= '11.2' ? "SUBSTR(SQL_Text, 1, 60)" : "''"} SQL_Text_Substr,
+             'gv$SQL_Monitor'                                 Origin
+      FROM   gv$SQL_Monitor
+      WHERE  (    First_Refresh_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+              OR  Last_Refresh_Time  BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
              )
-      ORDER BY Elapsed_Time_Secs DESC NULLS LAST
-      ", @dbid, @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end].concat(where_values)
+      AND    Process_Name = 'ora' /* Foreground process, not PQ-slave */
+      #{where_string_sga}
+      "
+
+    global_where_value = [@time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end].concat(where_values)
+
+    if get_db_version >= '12.1'                                                 # look also at DBA_Hist_Reports
+      sql_stmt << "\
+      UNION ALL
+        SELECT r.Report_ID, r.Instance_Number, r.Session_ID,
+               r.Session_Serial#                                                                  Session_SerialNo,
+               r.Period_Start_time, r.Period_End_Time, r.Key1 SQL_ID, TO_NUMBER(r.Key2) SQL_Exec_ID, r.Generation_Time,
+               (r.Period_End_Time - r.Period_Start_Time) * 86400                                  Duration,
+               TO_DATE(r.Key3, 'MM:DD:YYYY HH24:MI:SS')                                           SQL_Exec_Start,
+               EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/user')       UserName,
+               EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/status')     Status,
+               EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/module')     Module,
+               EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/action')     Action,
+               EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/program')    Program,
+               EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"elapsed_time\"]')/1000000           Elapsed_Time_Secs,
+               EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"cpu_time\"]')/1000000               CPU_Time_Secs,
+               EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"user_io_wait_time\"]')/1000000      User_IO_Wait_Time_Secs,
+               EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"application_wait_time\"]')/1000000  Application_Wait_Time_Secs,
+               EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"cluster_wait_time\"]')/1000000      Cluster_Wait_Time_Secs,
+               EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/stats/stat[@name=\"other_wait_time\"]')/1000000        Other_Wait_Time_Secs,
+               SUBSTR(EXTRACTVALUE(XMLTYPE(REPORT_SUMMARY), '/report_repository_summary/sql/sql_text'),1, 60)                               SQL_Text_Substr,
+               'DBA_Hist_Reports'                                                                                                           Origin
+        FROM   DBA_HIST_Reports r
+        WHERE  DBID           = ?
+        AND    Component_Name = 'sqlmonitor'
+        AND    (    Period_Start_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                OR  Period_End_Time   BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+               )
+        #{where_string_hist}
+        "
+      global_where_value.concat([@dbid, @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end]).concat(where_values)
+    end
+
+    sql_stmt << ") ORDER BY Elapsed_Time_Secs DESC NULLS LAST"
+
+    @sql_monitor_reports = sql_select_iterator [sql_stmt].concat(global_where_value)
 
     render_partial
   end
 
   def list_awr_sql_monitor_report_html
-    report_id = params[:report_id]
+    report_id   = params[:report_id]
+    instance    = params[:instance]
+    sid         = params[:sid]
+    serialno    = params[:serialno]
+    sql_id      = params[:sql_id]
+    sql_exec_id = params[:sql_exec_id]
+    origin      = params[:origin]
 
     # Check availability of internet access
     oracle_host = 'download.oracle.com'
@@ -2220,7 +2254,26 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
       type = 'HTML'                                                             # Static content without download from oracle
     end
 
-    report = sql_select_one ["SELECT DBMS_AUTO_REPORT.REPORT_REPOSITORY_DETAIL(RID => ?, TYPE => ?) FROM Dual", report_id, type]
+    if origin.upcase == 'DBA_HIST_REPORTS'
+      report = sql_select_one ["SELECT DBMS_AUTO_REPORT.REPORT_REPOSITORY_DETAIL(RID => ?, TYPE => ?) FROM Dual", report_id, type]
+    else
+      report = sql_select_one ["SELECT DBMS_SQLTUNE.report_sql_monitor(
+                                      sql_id          => ?,
+                                      Session_ID      => ?,
+                                      Session_Serial  => ?,
+                                      SQL_Exec_ID     => ?,
+                                      Inst_ID         => ?,
+                                      --type            => 'HTML',
+                                      type            => 'ACTIVE',
+                                      report_level    => 'ALL'
+                                    )
+                             FROM dual", sql_id, sid, serialno, sql_exec_id, instance]
+    end
+
+    if request.original_url['https://']                                         # Request kommt mit https, dann müssen <script>-Includes auch per https abgerufen werden, sonst wird page geblockt wegen insecure content
+      report.gsub!(/http:/, 'https:')
+    end
+
     if report.nil?
       render :html => "No SQL-Monitor report found for ID=#{report_id}"
     else

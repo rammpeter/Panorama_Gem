@@ -6,13 +6,19 @@
             url_for(controller:            :dba_history,
                     action:                :list_awr_sql_monitor_report_html,
                     report_id:             rec.report_id,
+                    instance:              rec.instance_number,
+                    sid:                   rec.session_id,
+                    serialno:              rec.session_serialno,
+                    sql_id:                rec.sql_id,
+                    sql_exec_id:           rec.sql_exec_id,
+                    origin:                rec.origin,
                     browser_tab_id:        @browser_tab_id
                    ), {method: 'post', target: '_blank', title: "Show SQL-Monitor report in separate browser tab"}
             )
    end
 
   link_sql = proc do |rec|
-    link_historic_sql_id(rec.instance_number, rec.key1, localeDateTime(rec.period_start_time), localeDateTime(rec.period_end_time), @update_area, nil, rec.key1)
+    link_historic_sql_id(rec.instance_number, rec.sql_id, localeDateTime(rec.period_start_time), localeDateTime(rec.period_end_time), @update_area, nil, rec.sql_id)
   end
 
   link_session = proc do |rec|
@@ -36,7 +42,7 @@ column_options =
         {:caption=>'Start time',                  :data=>proc{|rec| localeDateTime(rec.period_start_time)}, :title=>'Start of recorded activity'},
         {:caption=>'End time',                    :data=>proc{|rec| localeDateTime(rec.period_end_time)},   :title=>"End of recorded activity.\nLasts until the last fetch call of this statement execution"},
         {:caption=>'Duration (Sec.)',             :data=>proc{|rec| fn(rec.duration)},                      :title=>"Duration between start and end of recorded statement execution in seconds\nIncludes also fetch phase after execute", align: :right},
-        {:caption=>'SQL exec ID',                 :data=>proc{|rec| fn(rec.key2)},                          :title=>'SQL execution ID', align: :right},
+        {:caption=>'SQL exec ID',                 :data=>proc{|rec| fn(rec.sql_exec_id)},                   :title=>'SQL execution ID', align: :right},
         {:caption=>'SQL exec start',              :data=>proc{|rec| localeDateTime(rec.sql_exec_start)},    :title=>'Start time of execution for this SQL execution ID'},
         {:caption=>'Elapsed time (Sec.)',         :data=>proc{|rec| fn(rec.elapsed_time_secs, 1)},          :title=>"Elapsed execution time in seconds", align: :right},
         {:caption=>'CPU time (Sec.)',             :data=>proc{|rec| fn(rec.cpu_time_secs, 1)},              :title=>"CPU time in seconds", align: :right},
@@ -51,15 +57,14 @@ column_options =
         {:caption=>'Program',                      :data=>proc{|rec| rec.program},                          :title=>'Status of this SQL-execution'},
         {:caption=>'Generation time',             :data=>proc{|rec| localeDateTime(rec.generation_time)},   :title=>'Time when this report was generated'},
         {:caption=>'SQL text',                    :data=>proc{|rec| rec.sql_text_substr},                   :title=>'First 60 characters of SQL text'},
-
-
+        {:caption=>'Origin',                      :data=>proc{|rec| rec.origin},                            :title=>'Origin of SQL-monitor data'},
     ]
 
 %>
 
 <%=
   gen_slickgrid(@sql_monitor_reports, column_options, {
-    caption:        "SQL executions recorded by SQL-Monitor for SQL-ID=#{@sql_id}#{" Instance=#{@instance}" if @instance} from DBA_Hist_Reports",
+    caption:        "SQL executions recorded by SQL-Monitor for SQL-ID=#{@sql_id}#{" Instance=#{@instance}" if @instance} from gv$SQL_Monitor and DBA_Hist_Reports",
     max_height:     450,
     show_pin_icon: 1
 })

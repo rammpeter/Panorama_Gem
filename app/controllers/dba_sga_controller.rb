@@ -249,35 +249,6 @@ class DbaSgaController < ApplicationController
         instance, sql_id]
   end
 
-  def sql_monitor_session_count(instance, sql_id, plan_hash_value = nil)
-    if get_db_version >= "11.1" && PackLicense.tuning_pack_licensed?
-      where_string = ''
-      where_values = []
-
-      if instance
-        where_string << " AND Inst_ID = ?"
-        where_values << instance
-      end
-
-      if plan_hash_value
-        where_string << " AND SQL_Plan_Hash_Value = ?"
-        where_values << plan_hash_value
-      end
-
-      sql_select_one ["SELECT /* Panorama-Tool Ramm */ COUNT(*)
-                       FROM   (SELECT SQL_ID, SQL_Exec_ID, SQL_Exec_Start
-                               FROM   gv$SQL_Monitor
-                               WHERE  SQL_ID = ? #{where_string}
-                               GROUP BY SQL_ID, SQL_Exec_ID, SQL_Exec_Start
-                               HAVING SUM(DECODE(Process_Name, 'ora', 1, 0)) > 0 /* mindestens ein Record muss Process_Name = ora haben */
-
-                              )
-                      ", sql_id].concat(where_values)
-    else
-      0
-    end
-  end
-
   # Existierende SQL-Profiles, Parameter: Result-Zeile eines selects
   def get_sql_profiles(sql_row)
     sql_select_all ["SELECT * FROM DBA_SQL_Profiles WHERE Signature = TO_NUMBER(?) OR  Signature = TO_NUMBER(?) #{'OR Name = ?' if sql_row.sql_profile}
@@ -539,6 +510,7 @@ class DbaSgaController < ApplicationController
   # Anzeige Einzeldetails des SQL
   def list_sql_detail_sql_id_childno
     @modus = "GV$SQL"   # Detaillierung SQL-ID, ChildNo
+    @dbid         = prepare_param_dbid
     @instance     = prepare_param_instance
     @sql_id       = params[:sql_id]
     @child_number = params[:child_number].to_i
@@ -570,7 +542,8 @@ class DbaSgaController < ApplicationController
     @open_cursors         = get_open_cursor_count(@instance, @sql_id)
 
     if @sql
-      @sql_monitor_sessions = sql_monitor_session_count(@instance, @sql_id, @sql.plan_hash_value)
+      @sql_monitor_reports_count = get_sql_monitor_count(@dbid, @instance, @sql_id, localeDateTime(@sql.first_load_time, :minutes), localeDateTime(Time.now, :minutes))
+
       render_partial :list_sql_detail_sql_id_childno
     else
       show_popup_message("#{t(:dba_sga_list_sql_detail_sql_id_childno_no_hit_msg, :default=>'No record found in GV$SQL for')} SQL_ID='#{@sql_id}', Instance=#{@instance}, Child_Number=#{@child_number}")
@@ -581,6 +554,7 @@ class DbaSgaController < ApplicationController
   def list_sql_detail_sql_id
     @status_message = ''                                                       # Initialization
 
+    @dbid         = prepare_param_dbid
     @instance = prepare_param_instance
     @sql_id   = params[:sql_id].strip
     @object_status= params[:object_status]
@@ -626,7 +600,7 @@ class DbaSgaController < ApplicationController
     @execution_plan_count = get_execution_plan_count(@instance, @sql_id)
 
     @open_cursors          = get_open_cursor_count(@instance, @sql_id)
-    @sql_monitor_sessions  = sql_monitor_session_count(@instance, @sql_id)
+    @sql_monitor_reports_count = get_sql_monitor_count(@dbid, @instance, @sql_id, localeDateTime(@sql.first_load_time, :minutes), localeDateTime(Time.now, :minutes))
 
     @sql_child_info = sql_select_first_row ["SELECT COUNT(DISTINCT plan_hash_value) Plan_Count,
                                                    MIN(Child_Number)          Min_Child_Number,
@@ -1623,137 +1597,6 @@ class DbaSgaController < ApplicationController
                             'inst_id = #{instance} AND sql_id = ''#{sql_id}'' AND child_number = #{child_number} AND Child_Address=HEXTORAW(''#{child_address}'')'
                           ))"]
     render_partial
-  end
-
-  def list_sql_monitor
-    instance    = params[:instance]
-    sid         = params[:sid]
-    serialno    = params[:serialno]
-    sql_id      = params[:sql_id]
-    sql_exec_id = params[:sql_exec_id]
-
-    result = sql_select_one ["SELECT DBMS_SQLTUNE.report_sql_monitor(
-                                      sql_id          => ?,
-                                      Session_ID      => ?,
-                                      Session_Serial  => ?,
-                                      SQL_Exec_ID     => ?,
-                                      Inst_ID         => ?,
-                                      --type            => 'HTML',
-                                      type            => 'ACTIVE',
-                                      report_level    => 'ALL'
-                                    )
-                             FROM dual", sql_id, sid, serialno, sql_exec_id, instance]
-
-    if request.original_url['https://']                                         # Request kommt mit https, dann müssen <script>-Includes auch per https abgerufen werden, sonst wird page geblockt wegen insecure content
-      result.gsub!(/http:/, 'https:')
-    end
-
-    render :html => result.html_safe
-  end
-
-  def list_sql_monitor_sessions
-    @instance         = params[:instance]
-    @sql_id           = params[:sql_id]
-    @plan_hash_value  = params[:plan_hash_value]
-    @sid              = params[:sid]
-    @serialno         = params[:serialno]
-
-    where_string = ''
-    where_values = []
-
-    if @instance
-      where_string << " AND Inst_ID = ?"
-      where_values << @instance
-    end
-
-    if @sql_id
-      where_string << " AND SQL_ID = ?"
-      where_values << @sql_id
-    end
-
-    if @plan_hash_value
-      where_string << " AND SQL_Plan_Hash_Value = ?"
-      where_values << @plan_hash_value
-    end
-
-    if @sid
-      where_string << " AND SID = ?"
-      where_values << @sid
-    end
-
-    if @serialno
-      where_string << " AND Session_Serial# = ?"
-      where_values << @serialno
-    end
-
-    @sql_monitor_records = sql_select_all ["SELECT /* Panorama-Tool Ramm */
-                                                   SQL_ID, SQL_Exec_Start, SQL_Exec_ID,
-                                                   CASE WHEN COUNT(DISTINCT Inst_ID) > 1 THEN '<'||COUNT(DISTINCT Inst_ID)||'>' ELSE TO_CHAR(MIN(Inst_ID)) END Inst_ID,
-                                                   CASE WHEN COUNT(DISTINCT Status) > 1 THEN  '<'||COUNT(DISTINCT Status) ||'>' ELSE MIN(Status) END Status,
-                                                   MIN(RAWTOHEX(SQL_Child_Address))       Hex_SQL_Child_Address,
-                                                   MIN(First_Refresh_Time)                First_Refresh_Time,
-                                                   MAX(Last_Refresh_Time)                 Last_Refresh_Time,
-                                                   MAX(Refresh_Count)                     Refresh_Count,
-                                                   MAX(CASE WHEN Process_Name = 'ora' THEN SID END) SID,   /* SID des QC */
-                                                   MIN(SQL_Plan_hash_Value)               SQL_Plan_Hash_Value,
-                                                   MAX(CASE WHEN Process_Name = 'ora' THEN Session_Serial# END) Session_Serial#,   /* Session_Serial# des QC */
-                                                   SUM(ELAPSED_TIME)                      ELAPSED_TIME,
-                                                   SUM(CPU_TIME)                          CPU_TIME,
-                                                   SUM(FETCHES)                           FETCHES,
-                                                   SUM(BUFFER_GETS)                       BUFFER_GETS,
-                                                   SUM(DISK_READS)                        DISK_READS,
-                                                   SUM(DIRECT_WRITES)                     DIRECT_WRITES,
-                                                   SUM(APPLICATION_WAIT_TIME)             APPLICATION_WAIT_TIME,
-                                                   SUM(CONCURRENCY_WAIT_TIME)             CONCURRENCY_WAIT_TIME,
-                                                   SUM(CLUSTER_WAIT_TIME)                 CLUSTER_WAIT_TIME,
-                                                   SUM(USER_IO_WAIT_TIME)                 USER_IO_WAIT_TIME,
-                                                   SUM(PLSQL_EXEC_TIME)                   PLSQL_EXEC_TIME,
-                                                   SUM(JAVA_EXEC_TIME)                    JAVA_EXEC_TIME
-                                            FROM   gv$SQL_Monitor m
-                                            WHERE  1=1 #{where_string}
-                                            GROUP BY SQL_ID, SQL_EXEC_START, SQL_EXEC_ID
-                                            HAVING SUM(DECODE(Process_Name, 'ora', 1, 0)) > 0 /* mindestens ein Record muss Process_Name = ora haben */
-                                          "].concat(where_values)
-
-    raise PopupMessageException.new("No records found in gv$SQL_Monitor for SQL-ID='#{@sql_id}'#{", Instance=#{@instance}" if @instance}#{", Plan-Hash-Value=#{@plan_hash_value}" if @plan_hash_value}") if @sql_monitor_records.count == 0
-
-    if @sql_monitor_records.count == 1
-      params[:instance]   = @sql_monitor_records[0].inst_id
-      params[:sid]        = @sql_monitor_records[0].sid
-      params[:serialno]   = @sql_monitor_records[0]['session_serial#']
-      params[:sql_id]     = @sql_monitor_records[0].sql_id
-      params[:sql_exec_id]= @sql_monitor_records[0].sql_exec_id
-
-      start_sql_monitor_in_new_window
-    else
-      render_partial
-    end
-
-  end
-
-  def start_sql_monitor_in_new_window
-    @instance     = params[:instance]
-    @sid          = params[:sid]
-    @serialno     = params[:serialno]
-    @sql_id       = params[:sql_id]
-    @sql_exec_id  = params[:sql_exec_id]
-
-    record_count = sql_select_one ["SELECT /* Panorama-Tool Ramm */ count(*)
-                                    FROM   gv$SQL_Monitor
-                                    WHERE  Inst_ID          = ?
-                                    AND    SID              = ?
-                                    AND    Session_Serial#  = ?
-                                    AND    SQL_ID           = ?
-                                    AND    SQL_Exec_ID      = ?",
-                                   @instance, @sid, @serialno, @sql_id, @sql_exec_id]
-
-    if record_count == 0
-      show_popup_message "No data found in gv$SQL_Monitor for Instance=#{@instance}, SID=#{@sid}, Serial#=#{@serialno}, SQL-ID='#{@sql_id}', SQL_Exec_ID=#{@sql_exec_id}"
-    else
-      @button_id = get_unique_area_id
-      #render_partial(:start_sql_monitor_in_new_window, :additional_javascript_string => "jQuery('##{@button_id}').click();")
-      render_partial :start_sql_monitor_in_new_window
-    end
   end
 
   def generate_sql_translation

@@ -103,4 +103,39 @@ module DbaHelper
     origin
   end
 
+  def get_sql_monitor_count(dbid, instance, sql_id, time_selection_start, time_selection_end)
+    if get_db_version >= '11.1' && get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack
+      sql_monitor_reports_count = sql_select_one ["\
+                SELECT COUNT(*) Amount
+                FROM   gv$SQL_Monitor
+                WHERE  SQL_ID = ?
+                AND    Process_Name = 'ora' /* Foreground process, not PQ-slave */
+                AND    (    First_Refresh_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                        OR  Last_Refresh_Time  BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                       )
+                #{'AND Inst_ID = ?' if instance}
+                                                   ", sql_id, time_selection_start, time_selection_end, time_selection_start, time_selection_end].concat(instance ? [instance] : [])
+
+      if get_db_version >= '12.1'                                               # Also look for historic reports
+        reports_count = sql_select_one ["\
+          SELECT COUNT(*) Amount
+          FROM   DBA_HIST_Reports
+          WHERE  DBID           = ?
+          AND    Component_Name = 'sqlmonitor'
+          AND    Key1           = ?
+          AND    (    Period_Start_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                  OR  Period_End_Time   BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                 )
+          #{'AND Instance_Number=?' if instance}
+                                        ", dbid, sql_id, time_selection_start, time_selection_end, time_selection_start, time_selection_end].concat(instance ? [instance] : [])
+        sql_monitor_reports_count += reports_count
+      end
+      sql_monitor_reports_count
+    else
+      0
+    end
+  end
+
+
+
 end
