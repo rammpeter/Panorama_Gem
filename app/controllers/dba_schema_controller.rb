@@ -767,6 +767,40 @@ class DbaSchemaController < ApplicationController
     render_partial
   end
 
+  def list_dependencies_from_me_tree
+    @owner       = params[:owner]
+    @object_name = params[:object_name]
+    @object_type = params[:object_type]
+
+    @dependencies_from_me = sql_select_iterator ["\
+      SELECT Level, DECODE(CONNECT_BY_ISCYCLE, 1, 'YES') CONNECT_BY_ISCYCLE, d.*
+      FROM   DBA_Dependencies d
+      CONNECT BY NOCYCLE PRIOR Owner = Referenced_Owner AND PRIOR Name = Referenced_Name AND PRIOR Type = Referenced_Type
+      START WITH Referenced_Owner = ?
+      AND        Referenced_Name  = ?
+      AND        Referenced_Type  = ?
+      ", @owner, @object_name, @object_type]
+
+    render_partial
+  end
+
+  def list_dependencies_im_from_tree
+    @owner       = params[:owner]
+    @object_name = params[:object_name]
+    @object_type = params[:object_type]
+
+    @dependencies_im_from = sql_select_iterator ["\
+      SELECT Level, DECODE(CONNECT_BY_ISCYCLE, 1, 'YES') CONNECT_BY_ISCYCLE, d.*
+      FROM   DBA_Dependencies d
+      CONNECT BY NOCYCLE PRIOR Referenced_Owner = Owner AND PRIOR Referenced_Name = Name AND PRIOR Referenced_Type = Type
+      START WITH Owner = ?
+      AND        Name  = ?
+      AND        Type  = ?
+      ", @owner, @object_name, @object_type]
+
+    render_partial
+  end
+
   def list_grants
     @owner       = params[:owner]
     @object_name = params[:object_name]

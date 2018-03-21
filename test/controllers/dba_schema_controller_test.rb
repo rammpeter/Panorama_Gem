@@ -137,6 +137,12 @@ class DbaSchemaControllerTest < ActionController::TestCase
     post :list_dependencies, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBMS_LOCK", :object_type=>'PACKAGE BODY', :update_area=>:hugo }
     assert_response :success
 
+    post :list_dependencies_from_me_tree, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBMS_LOCK", :object_type=>'PACKAGE BODY', :update_area=>:hugo }
+    assert_response :success
+
+    post :list_dependencies_im_from_tree, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBMS_LOCK", :object_type=>'PACKAGE BODY', :update_area=>:hugo }
+    assert_response :success
+
     post :list_grants, :params => {:format=>:html, :owner=>"SYS", :object_name=>"AUD$", :update_area=>:hugo }
     assert_response :success
 

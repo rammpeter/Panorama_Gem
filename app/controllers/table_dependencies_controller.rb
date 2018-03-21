@@ -29,7 +29,7 @@ public
 
     noa_users = sql_select_all "SELECT * FROM DBA_Users ORDER BY UserName"
     @dependencies = sql_select_all "\
-      SELECT Level, x.*, RowNum RN FROM
+      SELECT Level, DECODE(CONNECT_BY_ISCYCLE, 1, 'YES') CONNECT_BY_ISCYCLE, x.*, RowNum RN FROM
       (
         SELECT  DISTINCT
           child.Owner       ChildOwner,
@@ -37,7 +37,9 @@ public
           child.Owner||'.'||child.Table_Name ChildOwnerTable,
           parent.Owner      ParentOwner,
           parent.Table_Name ParentTable,
-          parent.Owner||'.'||parent.Table_Name ParentOwnerTable
+          parent.Owner||'.'||parent.Table_Name ParentOwnerTable,
+          parent.Constraint_Name Parent_Constraint_Name,
+          child.Constraint_Name Child_Constraint_Name
         FROM  DBA_constraints child,
               DBA_constraints parent
         WHERE   child.Constraint_Type='R'

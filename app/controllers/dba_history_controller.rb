@@ -2277,11 +2277,10 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
                                       Session_Serial  => ?,
                                       SQL_Exec_ID     => ?,
                                       Inst_ID         => ?,
-                                      --type            => 'HTML',
-                                      type            => 'ACTIVE',
+                                      type            => ?,
                                       report_level    => 'ALL'
                                     )
-                             FROM dual", sql_id, sid, serialno, sql_exec_id, instance]
+                             FROM Dual", sql_id, sid, serialno, sql_exec_id, instance, type]
     end
 
     if request.original_url['https://']                                         # Request kommt mit https, dann müssen <script>-Includes auch per https abgerufen werden, sonst wird page geblockt wegen insecure content

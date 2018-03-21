@@ -301,7 +301,7 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
   end
 
   test "list_sql_monitor_reports with xhr: true" do
-    if get_db_version >= '11.2' && get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack
+    if get_db_version >= '11.1' && get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack
       [nil,1].each do |instance |
         [{sql_id: @hist_sql_id}, {sid: 1, serialno: 2}].each do |p|
           post '/dba_history/list_sql_monitor_reports', params: {format: :html, instance: instance, sql_id: p[:sql_id], sid: p[:sid], serialno: p[:serialno],
@@ -314,8 +314,18 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
 
   test "list_awr_sql_monitor_report_html with xhr: true" do
     if get_db_version >= '11.2' && get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack
-      post '/dba_history/list_awr_sql_monitor_report_html', params: {format: :html, report_id: 1, update_area: :hugo }
-      assert_response :success
+      ['DBA_Hist_Reports', 'GV$SQL_MONITOR'].each do |origin|
+        post '/dba_history/list_awr_sql_monitor_report_html', params: {format: :html,
+                                                                       report_id:             1,
+                                                                       instance:              1,
+                                                                       sid:                   1,
+                                                                       serialno:              1,
+                                                                       sql_id:                '1',
+                                                                       sql_exec_id:           1,
+                                                                       origin:                origin,
+                                                                       update_area: :hugo }
+        assert_response :success
+      end
     end
   end
 
