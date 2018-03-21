@@ -514,7 +514,7 @@ class DbaSgaController < ApplicationController
     @instance     = prepare_param_instance
     @sql_id       = params[:sql_id]
     @child_number = params[:child_number].to_i
-    @child_address = params[:child_address]
+    @child_address  = params[:child_address] == '' ? nil : params[:child_address]
     @object_status= params[:object_status]
     @object_status='VALID' if @object_status.nil? || @object_status == ''  # wenn kein status als Parameter uebergeben, dann VALID voraussetzen
     @parsing_schema_name  = params[:parsing_schema_name]
@@ -636,10 +636,8 @@ class DbaSgaController < ApplicationController
   def list_bind_variables
     @instance       = prepare_param_instance
     @sql_id         = params[:sql_id]
-    @child_number   = params[:child_number]
-    @child_address  = params[:child_address]
-    @child_number   = nil if @child_number  == ''
-    @child_address  = nil if @child_address == ''
+    @child_number   = params[:child_number]  == '' ? nil : params[:child_number]
+    @child_address  = params[:child_address] == '' ? nil : params[:child_address]
 
     # Bindevariablen des Cursors
     @binds = sql_select_all ["\

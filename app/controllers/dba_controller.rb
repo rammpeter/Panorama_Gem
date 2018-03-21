@@ -818,9 +818,10 @@ Solution: Execute as user 'SYS':
             GROUP BY pm.Category
             ", @instance, @sid, @serialno, @instance, @sid, @serialno]
 
-    @sql_monitor_reports_count = get_sql_monitor_count(@dbid, @instance, nil, localeDateTime(@dbsession.logon_time, :minutes), localeDateTime(Time.now, :minutes), @sid, @serialno)
 
     if @dbsession
+      @sql_monitor_reports_count = get_sql_monitor_count(@dbid, @instance, nil, localeDateTime(@dbsession.logon_time, :minutes), localeDateTime(Time.now, :minutes), @sid, @serialno)
+
       render_partial :list_session_details
     else
       show_popup_message "Session #{@sid}/#{@serialno} does not exist anymore at instance #{@instance}!"

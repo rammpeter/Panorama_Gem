@@ -201,15 +201,19 @@ module AjaxHelper
 
 
   def link_session_details(update_area, instance, sid, serialno)
-    ajax_link("#{sid}, #{serialno}",
-                    {       :controller   => :dba,
-                            :action       => :show_session_detail,
-                            :instance     => instance,
-                            :sid          => sid,
-                            :serialno     => serialno,
-                            :update_area  => update_area
-                    },
-                    :title=>t(:dba_list_sessions_show_session_hint, :default=>'Show session details') )
+    if instance.nil? || sid.nil? || serialno.nil?
+      ''
+    else
+      ajax_link("#{sid}, #{serialno}",
+                {       :controller   => :dba,
+                        :action       => :show_session_detail,
+                        :instance     => instance,
+                        :sid          => sid,
+                        :serialno     => serialno,
+                        :update_area  => update_area
+                },
+                :title=>t(:dba_list_sessions_show_session_hint, :default=>'Show session details') )
+    end
   end
 
 
