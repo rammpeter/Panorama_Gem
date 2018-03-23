@@ -167,6 +167,31 @@ May be it their value is redundant to other columns of that table. In this case 
                       WHERE  Dropped = 'YES'
                       ORDER BY Num_Rows DESC NULLS LAST",
         },
+        {
+            :name  => t(:dragnet_helper_137_name, default: 'CHAR-columns filled with unnecessary blanks'),
+            :desc  => t(:dragnet_helper_137_desc, default: "Column type CHAR is only useful if you have the majority of contents with the full character length of the column precision.
+Otherwise you are storing lots of unnecessary blanks because CHAR-columns are filled with blanks until column precision.
+Use data type VARCHAR2 instead in such cases.
+The selection is based on two sample values per column (the lowest and the highest) and sorted by the total size of unnecessary blanks per column."),
+            :sql=> "SELECT *
+                    FROM   (
+                            SELECT Owner, Table_Name, Column_Name, 'CHAR ('||CHAR_LENGTH||')' Data_Type, Low_Value_Char, High_Value_Char, Avg_Col_Len, (LENGTH(Low_Value_Char)+LENGTH(High_Value_Char))/2 Sample_Char_Length,
+                                   Num_Rows, ROUND(Num_Rows*Char_Length / (1024*1024), 2) MB_Total,
+                                   ROUND(Num_Rows*(Char_Length -  (LENGTH(Low_Value_Char)+LENGTH(High_Value_Char))/2) / (1024*1024), 2) MB_Only_For_Blanks
+                            FROM   (
+                                    SELECT c.*, RTRIM(UTL_I18N.RAW_TO_CHAR(Low_Value)) Low_Value_Char, RTRIM(UTL_I18N.RAW_TO_CHAR(High_Value)) High_Value_Char,
+                                           t.Num_Rows
+                                    FROM   DBA_Tab_Columns c
+                                    JOIN   DBA_Tables t ON t.Owner = c.Owner AND t.Table_Name = c.Table_Name
+                                    WHERE  c.Data_Type = 'CHAR'
+                                    AND    c.Owner NOT IN ('SYS', 'SYSTEM', 'DBSNMP', 'XDB', 'WMSYS')
+                                    AND    c.Data_Length > 1
+                                   )
+                            WHERE (LENGTH(Low_Value_Char)+LENGTH(High_Value_Char))/2 < CHAR_LENGTH
+                           )
+                    ORDER BY MB_Only_For_Blanks DESC
+                    ",
+        },
 
     ]
   end # unused_tables

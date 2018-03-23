@@ -1379,6 +1379,14 @@
   dragnet_helper_136_name: |-
     Eventuell fehlender NOT NULL-Constraint obwohl keine NULL-Werte in Spalte enthalten sind
 
+  dragnet_helper_137_desc: |-
+    Der Spaltentyp CHAR ist nur sinnvoll, wenn die Masse der Inhalte in der Zeichenlänge die Spalte auch voll ausfüllt.
+    Ansonsten wird eine unnötige Menge an Leerzeichen gespeichert, da CHAR-Spalten immer volständig mit Leerzeichen aufgefüllt werden.
+    In diesen Fällen sollte statt dessen der Spaltentyp VARCHAR2 verwendet werden.
+    Diese Selektion basiert auf zwei Beispielen je Spalte (niedrigster und höchster Wert) und ist sortiert nach der Menge der überflüssigen Leerzeichen pro Spalte.
+  dragnet_helper_137_name: |-
+    CHAR-Spalten aufgefüllt mit unnötigen Leerzeichen
+
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 
   dragnet_show_personal_selection_form_caption:             Erweitern der Rasterfahndungs-SQLs um persönliche Abfragen
