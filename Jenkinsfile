@@ -1,19 +1,17 @@
 pipeline {
   agent any
   stages {
-    stage('prepare') {
+    stage('Prepare') {
       steps {
-        sh '''rm -f Gemfile.lock
-rm -rf client_info.store
-rm -f Usage.log'''
-        sh '''rvm list
-bundle install'''
-        sh '''docker start oracle112
-docker start oracle121se'''
+        sh 'rm -f Gemfile.lock'
+        sh 'rm -rf client_info.store'
+        sh 'rm -f Usage.log'
+        sh 'rvm list'
+        sh 'bundle install'
         sh 'rm -f test/dummy/log/test.log'
       }
     }
-    stage('Test 11.2') {
+    stage('Test') {
       parallel {
         stage('Test 11.2') {
           steps {
