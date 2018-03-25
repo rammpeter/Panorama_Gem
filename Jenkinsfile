@@ -10,7 +10,7 @@ rm -f Usage.log'''
 bundle install'''
         sh '''docker start oracle112
 docker start oracle121
-docker start oracle112_se'''
+docker start oracle121_se'''
       }
     }
   }
