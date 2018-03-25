@@ -8,10 +8,9 @@ class DbaControllerTest < ActionController::TestCase
   setup do
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context
-    time_selection_end  = Time.new
-    time_selection_start  = time_selection_end-10000
-    @time_selection_end = time_selection_end.strftime("%d.%m.%Y %H:%M")
-    @time_selection_start = time_selection_start.strftime("%d.%m.%Y %H:%M")
+
+    initialize_min_max_snap_id_and_times
+
     @DBA_KGLLOCK_exists = sql_select_one("select COUNT(*) from dba_views where view_name='DBA_KGLLOCK' ")
   end
 

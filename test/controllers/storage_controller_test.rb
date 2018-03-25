@@ -6,10 +6,7 @@ class StorageControllerTest < ActionController::TestCase
   setup do
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context
-    time_selection_end  = Time.new
-    time_selection_start  = time_selection_end-10000
-    @time_selection_end = time_selection_end.strftime("%d.%m.%Y %H:%M")
-    @time_selection_start = time_selection_start.strftime("%d.%m.%Y %H:%M")
+    initialize_min_max_snap_id_and_times
     @tablespace_name = sql_select_one "SELECT MIN(Tablespace_Name) FROM DBA_Tablespaces"
   end
 

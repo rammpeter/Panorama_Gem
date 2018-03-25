@@ -7,29 +7,12 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context
 
-    #time_selection_end  = Time.new
-    # TODO: Additional test with overlapping start and end (first snapshot after start and last snapshot before end)
-    # End with latest existing sample
-    time_selection_end = sql_select_one "SELECT /* Panorama-Tool Ramm */ MAX(End_Interval_Time) FROM DBA_Hist_Snapshot"
-    prev_start_time = sql_select_one "SELECT /* Panorama-Tool Ramm */ MAX(Begin_Interval_Time) FROM DBA_Hist_Snapshot WHERE Snap_ID < (SELECT MAX(Snap_ID) FROM DBA_Hist_Snapshot)"
+    initialize_min_max_snap_id_and_times
 
-    time_selection_start  = prev_start_time-4000          # x Sekunden Abstand
-    @time_selection_end = time_selection_end.strftime("%d.%m.%Y %H:%M")
-    @time_selection_start = time_selection_start.strftime("%d.%m.%Y %H:%M")
-    @min_snap_id = sql_select_one ["SELECT  /* Panorama-Tool Ramm */ MIN(Snap_ID)
-                                   FROM    DBA_Hist_Snapshot
-                                   WHERE   Begin_Interval_Time >= TO_DATE(?, 'DD.MM.YYYY HH24:MI')", @time_selection_start ]
-    raise "No snapshot found after #{time_selection_start}" if @min_snap_id.nil?
-
-    @max_snap_id = sql_select_one ["SELECT  /* Panorama-Tool Ramm */ MAX(Snap_ID)
-                                   FROM    DBA_Hist_Snapshot
-                                   WHERE   Begin_Interval_Time <= TO_DATE(?, 'DD.MM.YYYY HH24:MI')", @time_selection_end ]
     @sga_sql_id_without_history = sql_select_one "SELECT SQL_ID
                                                   FROM   v$SQLArea
                                                   WHERE  SQL_ID NOT IN (SELECT SQL_ID FROM DBA_Hist_SQLText)
                                                   AND    RowNum < 2"
-    raise "No snapshot found before #{time_selection_end}" if @max_snap_id.nil?
-
     # Find a SQL_ID that surely exists in History
     sql_row = sql_select_first_row "SELECT MAX(SQL_ID)              KEEP (DENSE_RANK LAST ORDER BY Occurs) SQL_ID,
                                            MAX(Parsing_Schema_Name) KEEP (DENSE_RANK LAST ORDER BY Occurs) Parsing_Schema_Name

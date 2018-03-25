@@ -107,6 +107,7 @@ class ActiveSupport::TestCase
     cookies['client_key']  = Encryption.encrypt_value(100, cookies['client_salt'])
 
     connect_oracle_db
+
     db_session = sql_select_first_row "select Inst_ID, SID, Serial# SerialNo, RawToHex(Saddr)Saddr FROM gV$Session s WHERE SID=UserEnv('SID')  AND Inst_ID = USERENV('INSTANCE')"
     @instance = db_session.inst_id
     @sid      = db_session.sid
@@ -116,5 +117,37 @@ class ActiveSupport::TestCase
     yield if block_given?                                                       # Ausführen optionaler Blöcke mit Anweisungen, die gegen die Oracle-Connection verarbeitet werden
 
     # Rückstellen auf NullDB kann man sich hier sparen
+  end
+
+  def initialize_min_max_snap_id_and_times
+    # Get 2 subsequent snapshots in the middle of 4 snapshots with same startup time
+    snaps = sql_select_all "SELECT *
+                            FROM   (
+                                    SELECT x.*, RowNum Row_Num
+                                    FROM   (
+                                            SELECT s.*,
+                                                   LAG(Startup_Time, 1, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_1,
+                                                   LAG(Startup_Time, 2, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_2,
+                                                   LAG(Startup_Time, 3, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_3,
+                                                   LAG(Startup_Time, 3, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_4
+                                            FROM   DBA_Hist_Snapshot s
+                                            ORDER BY Snap_ID DESC
+                                           ) x
+                                    WHERE  Startup_Time = Startup_1
+                                    AND    Startup_Time = Startup_2
+                                    AND    Startup_Time = Startup_3
+                                    AND    Startup_Time = Startup_4
+                                    ORDER BY Snap_ID DESC
+                                   )
+                            WHERE  Row_Num IN (2,3)
+                            "
+
+    raise "No 4 subsequent snapshots with same startup_time found in DBA_Hist_Snapshot" if snaps.count < 2
+
+    @min_snap_id = snaps[1].snap_id
+    @max_snap_id = snaps[0].snap_id
+
+    @time_selection_start = (snaps[1].begin_interval_time-100).strftime("%d.%m.%Y %H:%M")
+    @time_selection_end   = snaps[0].end_interval_time.strftime("%d.%m.%Y %H:%M")
   end
 end

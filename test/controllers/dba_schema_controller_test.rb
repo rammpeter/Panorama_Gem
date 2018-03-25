@@ -6,10 +6,8 @@ class DbaSchemaControllerTest < ActionController::TestCase
   setup do
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context
-    time_selection_end  = Time.new
-    time_selection_start  = time_selection_end-100000
-    @time_selection_end = time_selection_end.strftime("%d.%m.%Y %H:%M")
-    @time_selection_start = time_selection_start.strftime("%d.%m.%Y %H:%M")
+
+    initialize_min_max_snap_id_and_times
 
     lob_part_table = sql_select_first_row "SELECT Table_Owner, Table_Name, Lob_Name FROM DBA_Lob_Partitions WHERE RowNum < 2"
     if lob_part_table
