@@ -1,8 +1,5 @@
 pipeline {
   agent any
-  environment {
-    JRUBY_OPTS = '-J-Xmx1024m'
-  }
   stages {
     stage('Prepare') {
       steps {
@@ -15,9 +12,9 @@ pipeline {
       }
     }
     stage('Test diagnostics_and_tuning_pack') {
-    environment {
-      MANAGEMENT_PACK_LICENCSE = 'diagnostics_and_tuning_pack'
-    }
+      environment {
+        MANAGEMENT_PACK_LICENCSE = 'diagnostics_and_tuning_pack'
+      }
       parallel {
         stage('Test 11.2') {
           environment {
@@ -41,5 +38,13 @@ pipeline {
         }
       }
     }
+    stage('Test without tuning pack') {
+      steps {
+        sleep 1
+      }
+    }
+  }
+  environment {
+    JRUBY_OPTS = '-J-Xmx1024m'
   }
 }
