@@ -173,8 +173,8 @@
       <file leaf-file-name="Jenkinsfile" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Jenkinsfile">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1770">
-              <caret line="118" column="0" lean-forward="false" selection-start-line="118" selection-start-column="0" selection-end-line="118" selection-end-column="0" />
+            <state relative-caret-position="451">
+              <caret line="103" column="23" lean-forward="false" selection-start-line="103" selection-start-column="23" selection-end-line="103" selection-end-column="23" />
               <folding />
             </state>
           </provider>
@@ -1260,14 +1260,7 @@
       <workItem from="1519990819009" duration="12716000" />
       <workItem from="1520416011490" duration="18609000" />
       <workItem from="1520942599999" duration="609000" />
-      <workItem from="1521031060797" duration="98327000" />
-    </task>
-    <task id="LOCAL-01253" summary="Show hint of SQL plan baselines">
-      <created>1517472379493</created>
-      <option name="number" value="01253" />
-      <option name="presentableId" value="LOCAL-01253" />
-      <option name="project" value="LOCAL" />
-      <updated>1517472379493</updated>
+      <workItem from="1521031060797" duration="98688000" />
     </task>
     <task id="LOCAL-01254" summary="Show plan hash value and plan of SQL plan baselines">
       <created>1517474059957</created>
@@ -1605,7 +1598,14 @@
       <option name="project" value="LOCAL" />
       <updated>1522009876957</updated>
     </task>
-    <option name="localTasksCounter" value="1302" />
+    <task id="LOCAL-01302" summary="Jenkinsfile without parallel">
+      <created>1522011430425</created>
+      <option name="number" value="01302" />
+      <option name="presentableId" value="LOCAL-01302" />
+      <option name="project" value="LOCAL" />
+      <updated>1522011430425</updated>
+    </task>
+    <option name="localTasksCounter" value="1303" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1641,7 +1641,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3042511000" />
+    <option name="totallyTimeSpent" value="3042872000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1723,7 +1723,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Use test user for panorama-sampler" />
     <MESSAGE value="DBA_HIST_SYSMETRIC_SUMMARY covered by panorama_sampler" />
     <MESSAGE value="Show memory resize operations in SGA components" />
     <MESSAGE value="Autoincrement increase size" />
@@ -1748,7 +1747,8 @@
     <MESSAGE value="Fix routing error" />
     <MESSAGE value="Fix test error for 11.2" />
     <MESSAGE value="Test independent from instance startup time" />
-    <option name="LAST_COMMIT_MESSAGE" value="Test independent from instance startup time" />
+    <MESSAGE value="Jenkinsfile without parallel" />
+    <option name="LAST_COMMIT_MESSAGE" value="Jenkinsfile without parallel" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2355,8 +2355,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Jenkinsfile">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1770">
-          <caret line="118" column="0" lean-forward="false" selection-start-line="118" selection-start-column="0" selection-end-line="118" selection-end-column="0" />
+        <state relative-caret-position="451">
+          <caret line="103" column="23" lean-forward="false" selection-start-line="103" selection-start-column="23" selection-end-line="103" selection-end-column="23" />
           <folding />
         </state>
       </provider>

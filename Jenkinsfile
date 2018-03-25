@@ -101,7 +101,7 @@ pipeline {
          sleep 20
        }
     }
-    stage('Test 12.1 without diagnostics and tuning pack') {
+    stage('Test 12.1 SE without diagnostics and tuning pack') {
       environment {
         DB_VERSION = '12.1_SE'
         MANAGEMENT_PACK_LICENCSE = 'none'
