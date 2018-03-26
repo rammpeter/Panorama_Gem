@@ -112,6 +112,7 @@ This selection shows the relevance of access on chained rows compared to total a
 Chained rows can be avoided by adjusting PCTFREE and reorganization of affected table.
 
 This selection cannot be directly executed. Please copy PL/SQL-Code and execute external in SQL*Plus !!!'),
+            not_executable: true,
             :sql=> "
 SET SERVEROUT ON;
 

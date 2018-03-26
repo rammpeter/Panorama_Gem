@@ -165,15 +165,17 @@ Listed functions should be checked if they can be expanded by pragma PARALLEL_EN
                                    )
                             WHERE  Owner NOT IN ('SYS', 'WMSYS', 'PERFSTAT', 'CTXSYS', 'XDB', 'EXFSYS')
                             AND    Parallel = 'NO'
-                       ),
-                      SQLs AS (
+                       )
+                      SELECT /*+ ORDERED */
+                             s.FullText, s.SQL_ID, p.Owner, p.Object_Name, p.Procedure_Name, p.Object_Type, s.Elapsed_Secs, s.Fundort
+                      FROM   (
                               SELECT /*+ NO_MERGE MATERIALIZE  */  *
                               FROM   (
                                       SELECT /*+ NO_MERGE */ UPPER(SQL_FullText) FullText, Elapsed_Time/1000000 Elapsed_Secs, 'SGA' Fundort, S.SQL_ID
                                       FROM gv$SQL s
                                       WHERE UPPER(s.SQL_FullText) LIKE '%PARALLEL%'   /* Hint im SQL verwendet */
                                       UNION ALL
-                                      SELECT /*+ NO_MERGE MATERIALIZE PARALLEL(t,4) */ UPPER(t.SQL_Text) FullText, s.Elapsed_Secs, 'History' Fundort, s.SQL_ID
+                                      SELECT /*+ NO_MERGE PARALLEL(t,4) */ UPPER(t.SQL_Text) FullText, s.Elapsed_Secs, 'History' Fundort, s.SQL_ID
                                       FROM   (
                                               SELECT /*+ NO_MERGE PARALLEL(s,4) PARALLEL(ss,4) */
                                                      s.DBID, s.SQL_ID, Plan_Hash_Value, SUM(s.Elapsed_Time_Delta)/1000000 Elapsed_Secs
@@ -190,10 +192,7 @@ Listed functions should be checked if they can be expanded by pragma PARALLEL_EN
                               AND    NOT REGEXP_LIKE(FullText, '^[[:space:]]*EXPLAIN')
                               AND    INSTR(FullText, 'DBMS_STATS') = 0              /* Aussschluss Table-Analyse*/
                               AND    Elapsed_Secs > ?
-                      )
-                      SELECT /*+ PARALLEL(p,4) PARALLEL(s,4) */
-                             s.FullText, s.SQL_ID, p.Owner, p.Object_Name, p.Procedure_Name, p.Object_Type, s.Elapsed_Secs, s.Fundort
-                      FROM   SQLs s,
+                             ) s,
                              ProcLines p
                       -- INSTR-Test vorab, da schneller als RegExp_Like
                       -- Match auf ProcName vorangestellt und gefolgt von keinem Buchstaben

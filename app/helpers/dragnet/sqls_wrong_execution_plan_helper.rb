@@ -260,7 +260,7 @@ Results are from DBA_Hist_SQL_Plan'),
                       FROM   (
                               SELECT /*+ LEADING(p) */ s.Instance_Number, p.SQL_ID, p.Plan_Hash_Value, p.Operation, p.Options, p.Object_Owner, p.Object_Name, p.ID Line_ID, p.Parent_ID,
                                      SUM(s.Executions_Delta) Executions, SUM(s.Elapsed_Time_Delta/1000000) Elapsed_Time_Secs
-                              FROM   (WITH plans AS (SELECT /*+ NO_MERGE LEADING(i) USE_NL(i o) */ o.*
+                              FROM   (WITH plans AS (SELECT /*+ NO_MERGE MATERIALIZE */ o.*
                                                      FROM   (SELECT /*+ PARALLEL(i,2) */ DISTINCT DBID, SQL_ID, Plan_Hash_Value FROM DBA_Hist_SQL_Plan i WHERE options = 'CARTESIAN') i
                                                      JOIN   DBA_Hist_SQL_Plan o ON o.DBID=i.DBID AND o.SQL_ID=I.SQL_ID AND o.Plan_Hash_Value = i.Plan_Hash_Value
                                                     )

@@ -57,13 +57,17 @@ Sensible architecture pattern is, to use views only in one dimension without fur
                       CROSS JOIN Views v
                       WHERE /*+ ORDERED_PREDICATES */
                             s.Command_Type IN (2,3,6,7) -- Insert/Update/Delete/SELECT
+                      AND   s.Elapsed_Time > ? * 1000000
                       AND   UPPER(s.SQL_FullText) LIKE '%'||v.Root_View_Name||'%'
                       AND   (    REGEXP_LIKE(SQL_FullText, '[ ,.]'||Root_View_Name||'[ ,.]', 'im')
                               OR REGEXP_LIKE(SQL_FullText, '[ ,.]'||Root_View_Name||'$', 'im')
                               OR REGEXP_LIKE(SQL_FullText, '^'||Root_View_Name||'[ ,.]', 'im')
                             )
                       ORDER BY s.Elapsed_Time DESC
-            "
+            ",
+            :parameter=>[
+                {:name=>t(:dragnet_helper_param_minimal_elapsed_name, :default=>'Minimum total elapsed time (sec.)'), :size=>8, :default=>60, :title=>t(:dragnet_helper_param_minimal_elapsed_hint, :default=>'Minimum total elapsed time in seconds for consideration in selection') }]
+
         },
         {
             :name  => t(:dragnet_helper_99_name, :default=>'SQLs using Cascading views (views with dependency from other views), evaluation of AWH History'),
@@ -99,6 +103,7 @@ Sensible architecture pattern is, to use views only in one dimension without fur
                                            )si
                                     JOIN   DBA_Hist_SQLText t ON t.DBID = si.DBID AND t.SQL_ID = si.SQL_ID
                                     WHERE  t.Command_Type IN (2,3,6,7) -- Insert/Update/Delete/SELECT
+                                    AND    Elapsed_Time_Secs > ?
                                   )
                       SELECT /*+ NO_MERGE MATERIALIZE */ s.SQL_ID, Elapsed_Time_Secs, Executions,
                              v.Dependency_Depth, v.Considered_View, v.Referencing_View, v.Referenced_View,
@@ -114,7 +119,9 @@ Sensible architecture pattern is, to use views only in one dimension without fur
                       ORDER BY s.Elapsed_Time_Secs DESC
             ",
             :parameter=>[
-                {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') }]
+                {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
+                {:name=>t(:dragnet_helper_param_minimal_elapsed_name, :default=>'Minimum total elapsed time (sec.)'), :size=>8, :default=>60, :title=>t(:dragnet_helper_param_minimal_elapsed_hint, :default=>'Minimum total elapsed time in seconds for consideration in selection') }
+            ]
         },
     ]
   end

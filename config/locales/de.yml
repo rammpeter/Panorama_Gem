@@ -594,6 +594,9 @@
   dragnet_helper_param_minimal_rows_hint:                   Minimale Anzahl Rows in Table für Aufnahme in Selektion
   dragnet_helper_param_minimal_rows_name:                   Minimale Anzahl Rows in Table
 
+  dragnet_helper_param_minimal_elapsed_hint:                Minimale gesamte elapsed time in Sekunden für Aufnahme in Selektion
+  dragnet_helper_param_minimal_elapsed_name:                Minimale gesamte elapsed time (Sec.)
+
   dragnet_helper_param_minimal_ela_per_exec_hint:           Minimale elapsed time per execution in Sekunden für Aufnahme in Selektion
   dragnet_helper_param_minimal_ela_per_exec_name:           Minimale elapsed time/Execution (Sec.)
 

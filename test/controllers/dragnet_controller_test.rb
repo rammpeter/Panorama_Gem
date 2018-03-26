@@ -34,7 +34,7 @@ class DragnetControllerTest < ActionController::TestCase
         execute_tree(entry['children'])        # Test subnode's entries
       else
         # _1_1_4 excluded because ORA600 on Oracle12.1
-        if !['_0_7', '_1_1_4', '_3_5', '_3_6', '_7_1'].include?(entry['id'])            # Exclude selections from test which are not executable, start with 0 instead of 1
+        if !['_3_6', '_7_1'].include?(entry['id'])            # Exclude selections from test which are not executable, start with 0 instead of 1
           full_entry = extract_entry_by_entry_id(entry['id'])                 # Get SQL from id
 
           params = {:format=>:html, :dragnet_hidden_entry_id=>entry['id'], :update_area=>:hugo}
@@ -44,8 +44,13 @@ class DragnetControllerTest < ActionController::TestCase
               params[p[:name]] = p[:default]
             end
           end
-          post  :exec_dragnet_sql, :params => params                          # call execution of SQL
-          assert_response(:success, "Error testing dragnet SQL #{entry['id']} #{full_entry[:name]}")
+
+          if !full_entry[:not_executable]
+            start_time = Time.now
+            post  :exec_dragnet_sql, :params => params                          # call execution of SQL
+            assert_response(:success, "Error testing dragnet SQL #{entry['id']} #{full_entry[:name]}")
+            puts "%6.1f secs: #{entry['id']} Dragnet execution time for #{full_entry[:name]}" % (Time.now - start_time)
+          end
 
           params[:commit_show] = 'hugo'
           post  :exec_dragnet_sql, :params => params                          # Call show SQL text

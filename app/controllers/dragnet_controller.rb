@@ -89,7 +89,7 @@ class DragnetController < ApplicationController
       format.js {render :js => "$('#show_selection_header_area').html('<b>#{j my_html_escape(entry[:name]) }</b>');
                                 $('#show_selection_hint_area').html('#{j my_html_escape(entry[:desc]) }');
                                 $('#show_selection_param_area').html('#{j parameter }');
-                                $('#dragnet_show_selection_do_selection').prop('disabled', #{entry[:sql] ? 'false' : 'true'});
+                                $('#dragnet_show_selection_do_selection').prop('disabled', #{entry[:sql] && !entry[:not_executable] ? 'false' : 'true'});
                                 $('#dragnet_show_selection_show_sql').prop('disabled', #{entry[:sql] ? 'false' : 'true'});
                                 $('#dragnet_drop_personal_selection_button').#{entry[:personal] ? 'show' : 'hide'}();
                                 $('#dragnet_hidden_entry_id').val('#{params[:entry_id]}');
