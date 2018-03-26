@@ -49,7 +49,7 @@ class DragnetControllerTest < ActionController::TestCase
             start_time = Time.now
             post  :exec_dragnet_sql, :params => params                          # call execution of SQL
             assert_response(:success, "Error testing dragnet SQL #{entry['id']} #{full_entry[:name]}")
-            puts "%6.1f secs: #{entry['id']} Dragnet execution time for #{full_entry[:name]}" % (Time.now - start_time)
+            # puts "%6.1f secs: #{entry['id']} Dragnet execution time for #{full_entry[:name]}" % (Time.now - start_time)
           end
 
           params[:commit_show] = 'hugo'
