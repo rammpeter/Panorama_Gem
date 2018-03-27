@@ -124,7 +124,7 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
                                                       :update_area          => :hugo }
 
           if sql_id == @sga_sql_id_without_history
-            assert_response :redirect
+            assert_response management_pack_license == :none ? :error : :redirect
           else
             assert_response management_pack_license == :none ? :error : :success
           end
