@@ -24,7 +24,7 @@ pipeline {
     stage('Test 12.1 diagnostics_and_tuning_pack') {
       environment {
         DB_VERSION = '12.1'
-        MANAGEMENT_PACK_LICENCSE = 'diagnostics_and_tuning_pack'
+        MANAGEMENT_PACK_LICENSE = 'diagnostics_and_tuning_pack'
       }
       steps {
          sh 'rake TESTOPTS="-v" test'
@@ -33,7 +33,7 @@ pipeline {
     stage('Test 12.1 without tuning pack') {
       environment {
         DB_VERSION = '12.1'
-        MANAGEMENT_PACK_LICENCSE = 'diagnostics_pack'
+        MANAGEMENT_PACK_LICENSE = 'diagnostics_pack'
       }
       steps {
          sh 'rake TESTOPTS="-v" test'
@@ -42,7 +42,7 @@ pipeline {
     stage('Test 12.1 without diagnostics and tuning pack') {
       environment {
         DB_VERSION = '12.1'
-        MANAGEMENT_PACK_LICENCSE = 'none'
+        MANAGEMENT_PACK_LICENSE = 'none'
       }
       steps {
          sh 'rake TESTOPTS="-v" test'
@@ -64,7 +64,7 @@ pipeline {
     stage('Test 11.2 diagnostics_and_tuning_pack') {
       environment {
         DB_VERSION = '11.2'
-        MANAGEMENT_PACK_LICENCSE = 'diagnostics_and_tuning_pack'
+        MANAGEMENT_PACK_LICENSE = 'diagnostics_and_tuning_pack'
       }
       steps {
          sh 'rake TESTOPTS="-v" test'
@@ -73,7 +73,7 @@ pipeline {
     stage('Test 11.2 without tuning pack') {
       environment {
         DB_VERSION = '11.2'
-        MANAGEMENT_PACK_LICENCSE = 'diagnostics_pack'
+        MANAGEMENT_PACK_LICENSE = 'diagnostics_pack'
       }
       steps {
          sh 'rake TESTOPTS="-v" test'
@@ -82,7 +82,7 @@ pipeline {
     stage('Test 11.2 without diagnostics and tuning pack') {
       environment {
         DB_VERSION = '11.2'
-        MANAGEMENT_PACK_LICENCSE = 'none'
+        MANAGEMENT_PACK_LICENSE = 'none'
       }
       steps {
          sh 'rake TESTOPTS="-v" test'
@@ -104,7 +104,7 @@ pipeline {
     stage('Test 12.1 SE without diagnostics and tuning pack') {
       environment {
         DB_VERSION = '12.1_SE'
-        MANAGEMENT_PACK_LICENCSE = 'none'
+        MANAGEMENT_PACK_LICENSE = 'none'
       }
       steps {
          sh 'rake TESTOPTS="-v" test'
