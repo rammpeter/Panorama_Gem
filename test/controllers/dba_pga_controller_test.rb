@@ -17,7 +17,7 @@ class DbaPgaControllerTest < ActionController::TestCase
 
   test "list_pga_stat_historic with xhr: true" do
     post :list_pga_stat_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :instance =>1 }
-    assert_response :success
+    assert_response management_pack_license == :none ? :error : :success
   end
 
 end

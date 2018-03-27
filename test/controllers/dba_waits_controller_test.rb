@@ -33,7 +33,7 @@ class DbaWaitsControllerTest < ActionController::TestCase
 
   test "list_gc_request_latency_history with xhr: true" do
     get :list_gc_request_latency_history, :params => {:format=>:html, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo }
-    assert_response :success
+    assert_response management_pack_license == :none ? :error : :success
   end
 
   test "show_ges_blocking_enqueue with xhr: true" do

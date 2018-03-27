@@ -91,7 +91,7 @@ class StorageControllerTest < ActionController::TestCase
 
   test "temp with xhr: true" do
     post :list_temp_usage_sysmetric_historic, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end}
-    assert_response :success
+    assert_response management_pack_license == :none ? :error : :success
   end
 
   test "extents with xhr: true" do

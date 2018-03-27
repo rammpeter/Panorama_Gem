@@ -1715,8 +1715,14 @@ END;
     patch_name     = "Panorama-Patch #{@sql_id}"
 
     sql_text = sql_select_one ["SELECT SQL_FullText FROM gv$SQLArea WHERE SQL_ID = ?", @sql_id]
-    sql_text = sql_select_one ["SELECT SQL_Text FROM DBA_Hist_SQLText WHERE DBID = ? AND SQL_ID = ?", get_dbid, @sql_id] if sql_text.nil?
-    raise "No SQL text found for SQL-ID='#{@sql_id}' in gv$SQLArea or DBA_Hist_SQLText" if sql_text.nil?
+    if sql_text.nil?
+      if PackLicense.none_licensed?
+        raise "No SQL text found for SQL-ID='#{@sql_id}' in gv$SQLArea"
+      else
+        sql_text = sql_select_one ["SELECT SQL_Text FROM DBA_Hist_SQLText WHERE DBID = ? AND SQL_ID = ?", get_dbid, @sql_id]
+        raise "No SQL text found for SQL-ID='#{@sql_id}' in gv$SQLArea or DBA_Hist_SQLText" if sql_text.nil?
+      end
+    end
 
     existing_patch_for_sql = sql_select_one ["SELECT Name
                                               FROM   DBA_SQL_Patches p

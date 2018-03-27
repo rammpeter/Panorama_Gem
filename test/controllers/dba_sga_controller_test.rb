@@ -175,7 +175,7 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
 
   test "list_db_cache_advice_historic with xhr: true" do
     post '/dba_sga/list_db_cache_advice_historic', :params => {:format=>:html, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo }
-    assert_response :success
+    assert_response management_pack_license == :none ? :error : :success
   end
 
   test "list_db_cache_by_object_id with xhr: true" do
