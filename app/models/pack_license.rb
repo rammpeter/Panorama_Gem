@@ -19,6 +19,10 @@ class PackLicense
     PanoramaConnection.get_config[:management_pack_license].to_sym == :panorama_sampler
   end
 
+  def self.none_licensed?
+    PanoramaConnection.get_config[:management_pack_license].to_sym == :none
+  end
+
   # Filter SQL string or array for unlicensed Table Access
   def self.filter_sql_for_pack_license(sql, management_pack_license)
     case sql.class.name

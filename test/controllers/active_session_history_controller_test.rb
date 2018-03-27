@@ -66,10 +66,10 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
     # Iteration über Gruppierungskriterien
     session_statistics_key_rules.each do |groupby, value|
       post :list_session_statistic_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
-      assert_response :success
+      assert_response management_pack_license == :none ? :error : :success
 
       post :list_session_statistic_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :filter=>'sys', :update_area=>:hugo}
-      assert_response :success
+      assert_response management_pack_license == :none ? :error : :success
     end
   end
 
@@ -79,25 +79,25 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
       # Test mit realem Wert
       add_filter = {groupby => bind_value_from_key_rule(groupby)}
       post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
-      assert_response :success
+      assert_response management_pack_license == :none ? :error : :success
 
       post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge(:Additional_Filter=>'sys'), :update_area=>:hugo }
-      assert_response :success
+      assert_response management_pack_license == :none ? :error : :success
 
       # Test mit NULL als Filterkriterium
       add_filter = {groupby => nil}
       post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
-      assert_response :success
+      assert_response management_pack_license == :none ? :error : :success
 
       post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge(:Additional_Filter=>'sys'), :update_area=>:hugo }
-      assert_response :success
+      assert_response management_pack_license == :none ? :error : :success
     end
   end
 
   test "refresh_time_selection with xhr: true" do
     session_statistics_key_rules.each do |groupby, value|
       post :refresh_time_selection, :params => {:format=>:html, :groupfilter=>@groupfilter, :groupby=>groupby, :repeat_action => :list_session_statistic_historic_grouping, :update_area=>:hugo }
-      assert_response :success   # redirect_to schwierig im Test?
+      assert_response management_pack_license == :none ? :error : :success   # redirect_to schwierig im Test?
     end
   end
 
@@ -106,7 +106,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
       add_filter = {groupby => bind_value_from_key_rule(groupby)}
       post :list_session_statistic_historic_single_record, :params => {:format=>:html, :groupby=>groupby,
            :groupfilter=>@groupfilter.merge(add_filter), :update_area=>:hugo }
-      assert_response :success
+      assert_response management_pack_license == :none ? :error : :success
     end
   end
 
@@ -116,7 +116,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
       post :list_session_statistic_historic_timeline, :params => {:format=>:html, :groupby=>groupby,
            :groupfilter=>@groupfilter.merge(add_filter),
            :top_values => ["1", "2", "3"], :group_seconds=>60, :update_area=>:hugo }
-      assert_response :success
+      assert_response management_pack_license == :none ? :error : :success
     end
   end
 
@@ -127,7 +127,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
         temp_historic_grouping_options.each do |time_groupby, inner_value|
           add_filter = {outer_filter => bind_value_from_key_rule(outer_filter)}
           post :list_temp_usage_historic, :params => {:format=>:html, :time_groupby=>time_groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
-          assert_response :success
+          assert_response management_pack_license == :none ? :error : :success
         end
       end
     end
@@ -140,7 +140,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
         temp_historic_grouping_options.each do |time_groupby, inner_value|
           add_filter = {outer_filter => bind_value_from_key_rule(outer_filter)}
           post :list_pga_usage_historic, :params => {:format=>:html, :time_groupby=>time_groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
-          assert_response :success
+          assert_response management_pack_license == :none ? :error : :success
         end
       end
     end
@@ -162,12 +162,12 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
          },
          :time_selection_start => @time_selection_start,
          :time_selection_end   => @time_selection_end, :update_area=>:hugo }
-    assert_response :success
+    assert_response management_pack_license == :none ? :error : :success
   end
 
   test "blocking_locks_historic with xhr: true" do
     post :list_blocking_locks_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end }
-    assert_response :success
+    assert_response management_pack_license == :none ? :error : :success
   end
 
 

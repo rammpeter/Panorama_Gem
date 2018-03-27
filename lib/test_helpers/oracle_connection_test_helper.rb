@@ -31,6 +31,15 @@ class ActiveSupport::TestCase
   #  {:client_key => 100 }
   #end
 
+  def management_pack_license
+    if ENV['MANAGEMENT_PACK_LICENSE']
+      raise "Wrong environment value MANAGEMENT_PACK_LICENSE=#{ENV['MANAGEMENT_PACK_LICENSE']}" if !['diagnostics_pack', 'diagnostics_and_tuning_pack', 'panorama_sampler', 'none'].include?(ENV['MANAGEMENT_PACK_LICENSE'])
+      ENV['MANAGEMENT_PACK_LICENSE'].to_sym
+    else
+      :diagnostics_and_tuning_pack  # Allow access on management packs, Default if nothing else specified
+    end
+  end
+
   def create_prepared_database_config(test_config)
     db_config = {}
     test_url = test_config['test_url'].split(":")
@@ -52,12 +61,7 @@ class ActiveSupport::TestCase
     db_config[:panorama_sampler_schema] = db_config[:user]                      # Use test user for panorama-sampler
     db_config[:tns]          = test_config['test_url'].split('@')[1]     # Alles nach jdbc:oracle:thin@
 
-    if ENV['MANAGEMENT_PACK_LICENSE']
-      raise "Wrong environment value MANAGEMENT_PACK_LICENSE=#{ENV['MANAGEMENT_PACK_LICENSE']}" if !['diagnostics_pack', 'diagnostics_and_tuning_pack', 'panorama_sampler', 'none'].include?(ENV['MANAGEMENT_PACK_LICENSE'])
-      db_config[:management_pack_license] = ENV['MANAGEMENT_PACK_LICENSE'].to_sym
-    else
-      db_config[:management_pack_license] = :diagnostics_and_tuning_pack  # Allow access on management packs, Default if nothing else specified
-    end
+    db_config[:management_pack_license] = management_pack_license
 
     db_config
   end
