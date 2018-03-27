@@ -126,7 +126,7 @@ function register_tooltip(jquery_object){
         show: {
             effect: "slideDown",
             duration: "fast",
-            delay: 1000
+            delay: 2000
         },
         hide: {
             effect: "slideUp"

@@ -35,3 +35,6 @@ Turns out this is a known bug that's fixed in the upcoming 9.1.9.0 release of jR
 warble with bundler v 1.16.0 and jruby 1.9.14 leads to:
 Unable to detect bundler spec under '/Users/pramm/.rvm/gems/jruby-9.1.14.0/gems/bundler-1.16.0'' and its sub-dirs
 bundler 1.15.4 runs ok
+
+27.03.2018 chromedriver-helper relies on 2.34, but current chrome 65.0 only works with chromedriver 2.36
+Solution: remove chromedriver from jruby/bin

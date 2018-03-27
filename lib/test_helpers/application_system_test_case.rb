@@ -144,6 +144,11 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
     tag_object.click
     assert_ajax_success
+  rescue Exception => e
+    message = "Exception '#{e.class}': '#{e.message}' for '#{comment}'"
+    Rails.logger.error message                                                # Show message in test.log
+    puts message                                                              # Show message in test output
+    raise
   end
 
   def get_time_string(minutes_back = 0, mask = :minutes)
