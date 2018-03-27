@@ -239,7 +239,6 @@ class DbaController < ApplicationController
   # Anzeige der ApplInfo auf Basis der Client_Info aus v$session
   def explain_info
     @info = params[:info]
-    @update_area = params[:update_area]
 
     res = explain_application_info(@info)
     if res[:short_info]

@@ -263,6 +263,7 @@
         <envs>
           <env name="RAILS_ENV" value="test" />
           <env name="JRUBY_OPTS" value="-X+O" />
+          <env name="MANAGEMENT_PACK_LICENSE" value="none" />
         </envs>
         <EXTENSION ID="BundlerRunConfigurationExtension" bundleExecEnabled="true" />
         <EXTENSION ID="JRubyRunConfigurationExtension" NailgunExecEnabled="false" />

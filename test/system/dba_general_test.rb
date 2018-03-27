@@ -27,8 +27,9 @@ class DbaGeneralTest < ApplicationSystemTestCase
                           'click first row column "SID/SN" in grid')
     assert_text 'Details for session SID='
 
-    click_first_xpath_hit("//div[contains(@class, 'slick-inner-cell') and contains(@row, '0') and contains(@column, 'col2')]",
-                          'click first row column "Module" in grid')
+# Click on Module removes title
+#    click_first_xpath_hit("//div[contains(@class, 'slick-inner-cell') and contains(@row, '0') and contains(@column, 'col2')]",
+#                          'click first row column "Module" in grid')
 
     click_first_xpath_hit("//div[contains(@class, 'slick-inner-cell') and contains(@row, '0') and contains(@column, 'col3')]",
                           'click first row column "Action" in grid')

@@ -28,9 +28,9 @@ class DbaControllerTest < ActionController::TestCase
     assert_response :success
 
     post :list_redologs_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
-    assert_response :success
+    assert_response management_pack_license == :none ? :error : :success
     post :list_redologs_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :update_area=>:hugo }
-    assert_response :success
+    assert_response management_pack_license == :none ? :error : :success
   end
 
   test "locks with xhr: true"       do
