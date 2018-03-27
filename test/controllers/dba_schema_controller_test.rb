@@ -61,7 +61,6 @@ class DbaSchemaControllerTest < ActionController::TestCase
         {owner: 'SYS',      segment_name: 'DBMS_LOCK'},                         # Package oder Body
     ].each do |object|
       get :list_object_description, :params => {format: :html, owner: object[:owner], segment_name: object[:segment_name], :update_area=>:hugo }
-      #puts @response.parsed_body
       assert_response :success
     end
 
