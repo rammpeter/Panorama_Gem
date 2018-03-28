@@ -33,7 +33,7 @@ class PanoramaSamplerConfig
   end
 
   def get_config_value(key)
-    raise "Missing hash key '#{key}' for config" if !@config_hash.has_key?(key);
+    raise "Missing hash key '#{key}' of class '#{key.class}' for panorama-sampler config" if !@config_hash.has_key?(key);
     @config_hash[key]
   end
 

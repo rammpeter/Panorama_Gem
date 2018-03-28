@@ -8,6 +8,7 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
     EngineConfig.config.panorama_sampler_master_password = 'hugo'
 
     @config_entry_without_id                                  = get_current_database
+    @config_entry_without_id[:hugo]                           = 'Hugo'
     @config_entry_without_id[:password]                       = Encryption.decrypt_value(@config_entry_without_id[:password], cookies['client_salt'])
     @config_entry_without_id[:owner]                          = @config_entry_without_id[:user] # Default
 
