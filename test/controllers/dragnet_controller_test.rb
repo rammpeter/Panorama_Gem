@@ -36,7 +36,6 @@ class DragnetControllerTest < ActionController::TestCase
         # _1_1_4 excluded because ORA600 on Oracle12.1
         if !['_3_6', '_7_1'].include?(entry['id'])            # Exclude selections from test which are not executable, start with 0 instead of 1
           full_entry = extract_entry_by_entry_id(entry['id'])                 # Get SQL from id
-
           params = {:format=>:html, :dragnet_hidden_entry_id=>entry['id'], :update_area=>:hugo}
 
           if full_entry[:parameter]
@@ -46,9 +45,19 @@ class DragnetControllerTest < ActionController::TestCase
           end
 
           if !full_entry[:not_executable]
+            # Check if result should by error or success, Without management pack license execution should result in error if SQL contains DBA_HIST etc.
+            expected_result = :success
+            begin
+              PackLicense.filter_sql_for_pack_license(full_entry[:sql], management_pack_license)
+            rescue Exception
+              expected_result = :error
+            end
+
             start_time = Time.now
             post  :exec_dragnet_sql, :params => params                          # call execution of SQL
-            assert_response(:success, "Error testing dragnet SQL #{entry['id']} #{full_entry[:name]}")
+
+            # Without management pack license execution should result in error if SQL contains DBA_HIST
+            assert_response(expected_result, "Error testing dragnet SQL #{entry['id']} #{full_entry[:name]}")
             # puts "%6.1f secs: #{entry['id']} Dragnet execution time for #{full_entry[:name]}" % (Time.now - start_time)
           end
 
