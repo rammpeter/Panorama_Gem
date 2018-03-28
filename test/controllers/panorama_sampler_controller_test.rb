@@ -22,34 +22,34 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
 
   test "show_config with xhr: true" do
     get '/panorama_sampler/show_config',  :params => {:format=>:html}
-    assert_response :success
+    assert_response :success, 'show_config'
   end
 
   test "request_master_password with xhr: true" do
     get '/panorama_sampler/request_master_password',  :params => {:format=>:html}
-    assert_response :success
+    assert_response :success, 'request_master_password'
   end
 
   test "check_master_password with xhr: true" do
     get '/panorama_sampler/check_master_password',  :params => {:format=>:html, :master_password=>'hugo'}
-    assert_response :success
+    assert_response :success, 'check_master_password should connect'
     get '/panorama_sampler/check_master_password',  :params => {:format=>:js, :master_password=>'wrong'}
-    assert_response :success
+    assert_response :success, 'check_master_password should produce connect error'
   end
 
   test "show_new_config_form with xhr: true" do
     get '/panorama_sampler/show_new_config_form',  :params => {:format=>:html}
-    assert_response :success
+    assert_response :success, 'show_new_config_form'
   end
 
   test "show_edit_config_form with xhr: true" do
     get '/panorama_sampler/show_edit_config_form',  :params => {:format=>:html, :id=>1}
-    assert_response :success
+    assert_response :success, 'show_edit_config_form'
   end
 
   test "clear_config_error with xhr: true" do
     post '/panorama_sampler/clear_config_error',  :params => {:format=>:html, :id=>1}
-    assert_response :success
+    assert_response :success, 'clear_config_error'
   end
 
   test "save_config with xhr: true" do
@@ -70,7 +70,7 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
                   :id     => id,
                   :config => config
               }
-          assert_response :success
+          assert_response :success, "save_config for button='#{button}', mode='#{mode}', right='#{right}'"
 
         end
       end
@@ -79,7 +79,7 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
 
   test "delete_config with xhr: true" do
     get '/panorama_sampler/delete_config',  :params => {:format=>:html, :id=>PanoramaSamplerConfig.get_max_id }
-    assert_response :success
+    assert_response :success, 'delete_config'
   end
 
 end
