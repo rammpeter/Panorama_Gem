@@ -81,7 +81,7 @@ segment_statistics = false
         puts "click #{link_to_click.text}"
         link_to_click.click
         # Capybara.ignore_hidden_elements = true
-        assert_ajax_success
+        assert_ajax_success_or_access_denied
         close_possible_popup_message                                            # close potential popup message from call
       rescue Exception=>e
 #        save_and_open_screenshot

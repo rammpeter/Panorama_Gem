@@ -132,6 +132,18 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     assert_not error_dialog_open?
   end
 
+  # accept error due to missing management pack license
+  def assert_ajax_success_or_access_denied
+    wait_for_ajax
+    if error_dialog_open?
+      if management_pack_license == :none
+        message = 'ApplicationSystemTestCase.assert_ajax_success_or_access_denied: Error dialog raised but not because missing management pack license'
+        assert_text('Access denied on table', message)
+        assert_text('because of missing license for ', message)
+      end
+    end
+  end
+
   # click first occurrence of tag in xpath expression and wait for successful ajax action
   def click_first_xpath_hit(xpath_expression, comment, tag = 'a')
     xpath_object = page.first(:xpath, xpath_expression)
