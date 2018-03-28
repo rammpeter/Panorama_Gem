@@ -1729,13 +1729,14 @@ END;
                                               CROSS JOIN (SELECT /*+ NO_MERGE */ SQL_Text
                                                           FROM   (
                                                                   SELECT SQL_FullText SQL_Text FROM gv$SQLArea WHERE SQL_ID = ?
-                                                                  UNION ALL
-                                                                  SELECT SQL_Text FROM DBA_Hist_SQLText WHERE DBID = ? AND SQL_ID = ?
+                                                                  #{"UNION ALL
+                                                                  SELECT SQL_Text FROM DBA_Hist_SQLText WHERE DBID = ? AND SQL_ID = ?" if !PackLicense.none_licensed?
+                                                                  }
                                                                  )
                                                           WHERE  RowNum < 2
                                                          ) s
                                               WHERE  DBMS_LOB.Compare(p.SQL_Text, s.SQL_Text) = 0
-                                             ", @sql_id, get_dbid, @sql_id]
+                                             ", @sql_id].concat(!PackLicense.none_licensed? ? [get_dbid, @sql_id] : [])
 
     result = "
 -- Script for establishing SQL patch for SQL-ID='#{@sql_id}'
