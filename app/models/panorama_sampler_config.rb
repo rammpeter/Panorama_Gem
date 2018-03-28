@@ -32,29 +32,34 @@ class PanoramaSamplerConfig
     retval
   end
 
-  def get_id;                                 @config_hash[:id];                                  end
-  def get_awr_ash_active;                     @config_hash[:awr_ash_active];                      end
-  def get_awr_ash_snapshot_cycle;             @config_hash[:awr_ash_snapshot_cycle];              end
-  def get_awr_ash_snapshot_retention;         @config_hash[:awr_ash_snapshot_retention];          end
-  def get_blocking_locks_active;              @config_hash[:blocking_locks_active];               end
-  def get_blocking_locks_long_locks_limit;    @config_hash[:blocking_locks_long_locks_limit];     end
-  def get_blocking_locks_snapshot_cycle;      @config_hash[:blocking_locks_snapshot_cycle];       end
-  def get_blocking_locks_snapshot_retention;  @config_hash[:blocking_locks_snapshot_retention];   end
-  def get_cache_objects_active;               @config_hash[:cache_objects_active];                end
-  def get_cache_objects_snapshot_cycle;       @config_hash[:cache_objects_snapshot_cycle];        end
-  def get_cache_objects_snapshot_retention;   @config_hash[:cache_objects_snapshot_retention];    end
-  def get_dbid;                               @config_hash[:dbid];                                end
-  def get_name;                               @config_hash[:name];                                end
-  def get_object_size_active;                 @config_hash[:object_size_active];                  end
-  def get_object_size_snapshot_cycle;         @config_hash[:object_size_snapshot_cycle];          end
-  def get_object_size_snapshot_retention;     @config_hash[:object_size_snapshot_retention];      end
-  def get_owner;                              @config_hash[:owner];                               end
-  def get_sql_min_no_of_execs;                @config_hash[:sql_min_no_of_execs];                 end
-  def get_sql_min_runtime_millisecs;          @config_hash[:sql_min_runtime_millisecs];           end
+  def get_config_value(key)
+    raise "Missing hash key '#{key}' for config" if !@config_hash.has_key?(key);
+    @config_hash[key]
+  end
 
-  def get_domain_active(domain);              @config_hash["#{domain.downcase}_active".to_sym];               end
-  def get_domain_snapshot_cycle(domain);      @config_hash["#{domain.downcase}_snapshot_cycle".to_sym];       end
-  def get_Last_domain_snapshot_start(domain); @config_hash["last_#{domain.downcase}_snapshot_start".to_sym];  end
+  def get_id;                                 get_config_value(:id);                                  end
+  def get_awr_ash_active;                     get_config_value(:awr_ash_active);                      end
+  def get_awr_ash_snapshot_cycle;             get_config_value(:awr_ash_snapshot_cycle);              end
+  def get_awr_ash_snapshot_retention;         get_config_value(:awr_ash_snapshot_retention);          end
+  def get_blocking_locks_active;              get_config_value(:blocking_locks_active);               end
+  def get_blocking_locks_long_locks_limit;    get_config_value(:blocking_locks_long_locks_limit);     end
+  def get_blocking_locks_snapshot_cycle;      get_config_value(:blocking_locks_snapshot_cycle);       end
+  def get_blocking_locks_snapshot_retention;  get_config_value(:blocking_locks_snapshot_retention);   end
+  def get_cache_objects_active;               get_config_value(:cache_objects_active);                end
+  def get_cache_objects_snapshot_cycle;       get_config_value(:cache_objects_snapshot_cycle);        end
+  def get_cache_objects_snapshot_retention;   get_config_value(:cache_objects_snapshot_retention);    end
+  def get_dbid;                               get_config_value(:dbid);                                end
+  def get_name;                               get_config_value(:name);                                end
+  def get_object_size_active;                 get_config_value(:object_size_active);                  end
+  def get_object_size_snapshot_cycle;         get_config_value(:object_size_snapshot_cycle);          end
+  def get_object_size_snapshot_retention;     get_config_value(:object_size_snapshot_retention);      end
+  def get_owner;                              get_config_value(:owner);                               end
+  def get_sql_min_no_of_execs;                get_config_value(:sql_min_no_of_execs);                 end
+  def get_sql_min_runtime_millisecs;          get_config_value(:sql_min_runtime_millisecs);           end
+
+  def get_domain_active(domain);              get_config_value("#{domain.downcase}_active".to_sym);               end
+  def get_domain_snapshot_cycle(domain);      get_config_value("#{domain.downcase}_snapshot_cycle".to_sym);       end
+  def get_Last_domain_snapshot_start(domain); get_config_value("last_#{domain.downcase}_snapshot_start".to_sym);  end
 
   def get_select_any_table
     if !@config_hash.key?(:select_any_table)
