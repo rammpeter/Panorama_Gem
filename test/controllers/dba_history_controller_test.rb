@@ -41,16 +41,16 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
 
   test "segment_stat_historic with xhr: true" do
     post '/dba_history/list_segment_stat_historic_sum', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
-    assert_response management_pack_license == :none ? :error : :success
+    assert_response_success_or_management_pack_violation('list_segment_stat_historic_sum')
     post '/dba_history/list_segment_stat_historic_sum', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :update_area=>:hugo }
-    assert_response management_pack_license == :none ? :error : :success
+    assert_response_success_or_management_pack_violation('list_segment_stat_historic_sum with instance')
 
     post '/dba_history/list_segment_stat_hist_detail', :params => {:format=>:html, :instance=>1, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
          :owner=>'sys', :object_name=>'SEG$', :update_area=>:hugo }
-    assert_response management_pack_license == :none ? :error : :success
+    assert_response_success_or_management_pack_violation('list_segment_stat_hist_detail')
 
     post '/dba_history/list_segment_stat_hist_sql', :params => {:format=>:html, :instance=>1,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :owner =>"sys", :object_name=> "all_tables", :update_area=>:hugo }
-    assert_response management_pack_license == :none ? :error : :success
+    assert_response_success_or_management_pack_violation('list_segment_stat_hist_sql')
   end
 
   test "sql_area_historic with xhr: true" do
