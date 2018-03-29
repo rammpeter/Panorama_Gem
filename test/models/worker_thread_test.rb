@@ -21,6 +21,14 @@ class WorkerThreadTest < ActiveSupport::TestCase
     PanoramaSamplerStructureCheck.domains.each do |domain|
       PanoramaSamplerStructureCheck.do_check(@sampler_config, domain)
     end                                                                         # leave all objects existing because other tests rely on
+
+    # Recreate 5 snapshots to stay until next execution
+    @sampler_config.set_select_any_table(false)
+    WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
+    WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
+    WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
+    WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
+    WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
   end
 
   test "do_sampling_awr_ash" do
@@ -29,9 +37,6 @@ class WorkerThreadTest < ActiveSupport::TestCase
       @sampler_config.set_select_any_table(select_any_table)
       WorkerThread.new(@sampler_config, 'test_check_structure_synchron').check_structure_synchron
       WorkerThread.new(@sampler_config, 'test_create_ash_sampler_daemon').create_ash_sampler_daemon(Time.now.round)
-      WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
-      WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
-      WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
       WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
     end
   end
