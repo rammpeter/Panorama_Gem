@@ -49,7 +49,8 @@ class DragnetControllerTest < ActionController::TestCase
             expected_result = :success
             begin
               PackLicense.filter_sql_for_pack_license(full_entry[:sql], management_pack_license)
-            rescue Exception
+            rescue Exception => e
+              Rails.logger.error "Expected result = error due to exception #{e.class} #{e.message}"
               expected_result = :error
             end
 
