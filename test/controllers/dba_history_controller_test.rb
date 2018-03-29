@@ -47,7 +47,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
 
     post '/dba_history/list_segment_stat_hist_detail', :params => {:format=>:html, :instance=>1, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
          :owner=>'sys', :object_name=>'SEG$', :update_area=>:hugo }
-    assert_response_success_or_management_pack_violation('list_segment_stat_hist_detail')
+    assert_response :success  # DBA_Hist_Seg_Stat does not require diagnostics pack
 
     post '/dba_history/list_segment_stat_hist_sql', :params => {:format=>:html, :instance=>1,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :owner =>"sys", :object_name=> "all_tables", :update_area=>:hugo }
     assert_response_success_or_management_pack_violation('list_segment_stat_hist_sql')

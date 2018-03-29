@@ -133,6 +133,10 @@ class ActiveSupport::TestCase
     PanoramaSamplerConfig.get_config_entry_by_id(sampler_config[:id])
   end
 
+  def assert_response_success_or_management_pack_violation(comment = '')
+    assert_response(management_pack_license == :none ? :error : :success, comment)
+  end
+
 end
 
 class PanoramaTestConfig

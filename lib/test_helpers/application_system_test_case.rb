@@ -147,11 +147,6 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     end
   end
 
-  def assert_response_success_or_management_pack_violation(comment = '')
-    assert_response(management_pack_license == :none ? :error : :success, comment)
-  end
-
-
   # click first occurrence of tag in xpath expression and wait for successful ajax action
   def click_first_xpath_hit(xpath_expression, comment, tag = 'a')
     xpath_object = page.first(:xpath, xpath_expression)
