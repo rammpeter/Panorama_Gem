@@ -134,7 +134,12 @@ class ActiveSupport::TestCase
   end
 
   def assert_response_success_or_management_pack_violation(comment = '')
-    assert_response(management_pack_license == :none ? :error : :success, comment)
+    if management_pack_license == :none
+      sleep(0.5)                                                                # ensure moderate allocation of new DB-sessions beacause current session is destroyed
+      assert_response(:error, "Expected :error but response is #{@response.response_code}: #{comment}")
+    else
+      assert_response(:success, "Expected :success but response is #{@response.response_code}: #{comment}")
+    end
   end
 
 end
