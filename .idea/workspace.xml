@@ -9,8 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/panorama_sampler_controller.rb" afterPath="$PROJECT_DIR$/app/controllers/panorama_sampler_controller.rb" />
-      <change beforePath="$PROJECT_DIR$/test/controllers/panorama_sampler_controller_test.rb" afterPath="$PROJECT_DIR$/test/controllers/panorama_sampler_controller_test.rb" />
+      <change beforePath="$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb" afterPath="$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -196,11 +195,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="panorama_sampler_controller.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="panorama_sampler_controller.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/controllers/panorama_sampler_controller.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="308">
               <caret line="40" column="11" lean-forward="false" selection-start-line="40" selection-start-column="11" selection-end-line="40" selection-end-column="11" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="dba_history_controller_test.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="252">
+              <caret line="205" column="24" lean-forward="false" selection-start-line="205" selection-start-column="24" selection-end-line="205" selection-end-column="24" />
               <folding />
             </state>
           </provider>
@@ -316,9 +325,9 @@
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" />
         <option value="$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb" />
         <option value="$PROJECT_DIR$/test/test_helper.rb" />
-        <option value="$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb" />
         <option value="$PROJECT_DIR$/test/controllers/panorama_sampler_controller_test.rb" />
         <option value="$PROJECT_DIR$/app/controllers/panorama_sampler_controller.rb" />
+        <option value="$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb" />
       </list>
     </option>
   </component>
@@ -1267,14 +1276,7 @@
       <workItem from="1520942599999" duration="609000" />
       <workItem from="1521031060797" duration="108720000" />
       <workItem from="1522139375092" duration="1186000" />
-      <workItem from="1522141025764" duration="27819000" />
-    </task>
-    <task id="LOCAL-01278" summary="Show dataguard role, &#10;fix logging issue with type_casted_binds">
-      <created>1520419797339</created>
-      <option name="number" value="01278" />
-      <option name="presentableId" value="LOCAL-01278" />
-      <option name="project" value="LOCAL" />
-      <updated>1520419797339</updated>
+      <workItem from="1522141025764" duration="28967000" />
     </task>
     <task id="LOCAL-01279" summary="Terminate idle connections after 10 minutes">
       <created>1520499455143</created>
@@ -1612,7 +1614,14 @@
       <option name="project" value="LOCAL" />
       <updated>1522315549890</updated>
     </task>
-    <option name="localTasksCounter" value="1327" />
+    <task id="LOCAL-01327" summary="Instrumenting test">
+      <created>1522330875772</created>
+      <option name="number" value="01327" />
+      <option name="presentableId" value="LOCAL-01327" />
+      <option name="project" value="LOCAL" />
+      <updated>1522330875772</updated>
+    </task>
+    <option name="localTasksCounter" value="1328" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1648,7 +1657,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3081909000" />
+    <option name="totallyTimeSpent" value="3083057000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1730,7 +1739,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Fix test error for 11.2" />
     <MESSAGE value="Test independent from instance startup time" />
     <MESSAGE value="Jenkinsfile without parallel" />
     <MESSAGE value="Speed up tests" />
@@ -1755,7 +1763,8 @@
     <MESSAGE value="Debug output for housekeeping" />
     <MESSAGE value="Comment in error" />
     <MESSAGE value="Fix tests" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix tests" />
+    <MESSAGE value="Instrumenting test" />
+    <option name="LAST_COMMIT_MESSAGE" value="Instrumenting test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2303,14 +2312,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="175">
-          <caret line="49" column="83" lean-forward="false" selection-start-line="49" selection-start-column="83" selection-end-line="49" selection-end-column="83" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/system/global_menu_test.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="582">
@@ -2347,6 +2348,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="308">
           <caret line="40" column="11" lean-forward="false" selection-start-line="40" selection-start-column="11" selection-end-line="40" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="252">
+          <caret line="205" column="24" lean-forward="false" selection-start-line="205" selection-start-column="24" selection-end-line="205" selection-end-column="24" />
           <folding />
         </state>
       </provider>

@@ -198,20 +198,22 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
   end
 
   test "mutex_statistics_historic with xhr: true" do
-    [:Blocker, :Waiter, :Timeline].each do |submit_name|
-      post '/dba_history/list_mutex_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, submit_name=>"Hugo", :update_area=>:hugo }
-      assert_response management_pack_license == :none ? :error : :success
-      post '/dba_history/list_mutex_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, submit_name=>"Hugo", :update_area=>:hugo }
-      assert_response management_pack_license == :none ? :error : :success
+    if management_pack_license != :none
+      [:Blocker, :Waiter, :Timeline].each do |submit_name|
+        post '/dba_history/list_mutex_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, submit_name=>"Hugo", :update_area=>:hugo }
+        assert_response management_pack_license == :none ? :error : :success
+        post '/dba_history/list_mutex_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, submit_name=>"Hugo", :update_area=>:hugo }
+        assert_response :success
+      end
+
+      get '/dba_history/list_mutex_statistics_historic_samples', :params => {:format=>:html, :instance=>1, :mutex_type=>:Hugo, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
+                                                                             :filter=>:Blocking_Session, :filter_session=>@sid, :update_area=>:hugo }
+      assert_response :success
+
+      get '/dba_history/list_mutex_statistics_historic_samples', :params => {:format=>:html, :instance=>1, :mutex_type=>:Hugo, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
+                                                                             :filter=>:Requesting_Session, :filter_session=>@sid, :update_area=>:hugo }
+      assert_response :success
     end
-
-    get '/dba_history/list_mutex_statistics_historic_samples', :params => {:format=>:html, :instance=>1, :mutex_type=>:Hugo, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-        :filter=>:Blocking_Session, :filter_session=>@sid, :update_area=>:hugo }
-    assert_response :success
-
-    get '/dba_history/list_mutex_statistics_historic_samples', :params => {:format=>:html, :instance=>1, :mutex_type=>:Hugo, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-        :filter=>:Requesting_Session, :filter_session=>@sid, :update_area=>:hugo }
-    assert_response :success
   end
 
   test "latch_statistics_historic with xhr: true" do
@@ -263,8 +265,10 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
   end
 
   test "generate_baseline_creation with xhr: true" do
-    post '/dba_history/generate_baseline_creation', :params => {:format=>:html, :sql_id=>@hist_sql_id, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :plan_hash_value=>1234567, :update_area=>:hugo }
-    assert_response management_pack_license == :none ? :error : :success
+    if management_pack_license != :none
+      post '/dba_history/generate_baseline_creation', :params => {:format=>:html, :sql_id=>@hist_sql_id, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :plan_hash_value=>1234567, :update_area=>:hugo }
+      assert_response :success
+    end
   end
 
   test "select_plan_hash_value_for_baseline with xhr: true" do
@@ -274,17 +278,19 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
   end
 
   test "list_resource_limits_historic with xhr: true" do
-    sql_select_all("SELECT DISTINCT Resource_Name FROM DBA_Hist_Resource_Limit").each do |resname_rec|
-      [1, nil].each do |instance|
-        post '/dba_history/list_resource_limits_historic', params: {
-            format:               :html,
-            time_selection_start: @time_selection_start,
-            time_selection_end:   @time_selection_end,
-            instance:             instance,
-            resource:             {name: resname_rec.resource_name},
-            update_area:          :hugo
-        }
-        assert_response management_pack_license == :none ? :error : :success
+    if management_pack_license != :none
+      sql_select_all("SELECT DISTINCT Resource_Name FROM DBA_Hist_Resource_Limit").each do |resname_rec|
+        [1, nil].each do |instance|
+          post '/dba_history/list_resource_limits_historic', params: {
+              format:               :html,
+              time_selection_start: @time_selection_start,
+              time_selection_end:   @time_selection_end,
+              instance:             instance,
+              resource:             {name: resname_rec.resource_name},
+              update_area:          :hugo
+          }
+          assert_response :success
+        end
       end
     end
   end
