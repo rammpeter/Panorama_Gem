@@ -146,7 +146,7 @@ class ActiveSupport::TestCase
                             WHERE  Row_Num IN (2,3)
                             "
 
-    raise "No 4 subsequent snapshots with same startup_time found in DBA_Hist_Snapshot" if snaps.count < 2
+    raise "No 4 subsequent snapshots with same startup_time found in DBA_Hist_Snapshot (only #{snaps.count} snapshots found)" if snaps.count < 2
 
     @min_snap_id = snaps[1].snap_id
     @max_snap_id = snaps[0].snap_id
