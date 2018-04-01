@@ -141,7 +141,7 @@ class ActiveSupport::TestCase
                                     AND    Startup_Time = NVL(Startup_2, Startup_Time)
                                     AND    Startup_Time = NVL(Startup_3, Startup_Time)
                                     AND    Startup_Time = NVL(Startup_4, Startup_Time)
-                                    ORDER BY Snap_ID DESC
+                                     ORDER BY Snap_ID DESC
                                    )
                             WHERE  Row_Num IN (2,3)
                             "
