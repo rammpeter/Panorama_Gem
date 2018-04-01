@@ -58,7 +58,7 @@ END Panorama_Sampler_Snapshot;
     COMMIT;
   END Move_ASH_To_Snapshot_Table;
 
-  PROCEDURE Snap_DB_cache_Advice(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  PROCEDURE Snap_DB_Cache_Advice(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO Panorama_DB_Cache_Advice (SNAP_ID, DBID, INSTANCE_NUMBER, BPID, BUFFERS_FOR_ESTIMATE, NAME, BLOCK_SIZE, ADVICE_STATUS, SIZE_FOR_ESTIMATE,
     SIZE_FACTOR, PHYSICAL_READS, BASE_PHYSICAL_READS, ACTUAL_PHYSICAL_READS, ESTD_PHYSICAL_READ_TIME, CON_DBID, CON_ID
@@ -72,6 +72,18 @@ END Panorama_Sampler_Snapshot;
       FROM   v$DB_Cache_Advice
     ;
   END Snap_DB_cache_Advice;
+
+  PROCEDURE Snap_Enqueue_Stat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_Enqueue_Stat (SNAP_ID, DBID, INSTANCE_NUMBER, EQ_TYPE, REQ_REASON, TOTAL_REQ#, TOTAL_WAIT#, SUCC_REQ#, FAILED_REQ#,
+                                       CUM_WAIT_TIME, EVENT#, CON_DBID, CON_ID
+    ) SELECT p_Snap_ID, p_DBID, p_Instance,
+             EQ_TYPE, REQ_REASON, TOTAL_REQ#, TOTAL_WAIT#, SUCC_REQ#, FAILED_REQ#, CUM_WAIT_TIME, EVENT#,
+             p_Con_DBID,
+             #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+      FROM   v$Enqueue_Statistics
+    ;
+  END Snap_Enqueue_Stat;
 
   PROCEDURE Snap_IOStat_Filetype(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
@@ -508,6 +520,7 @@ END Panorama_Sampler_Snapshot;
   BEGIN
     Move_ASH_To_Snapshot_Table(p_Snap_ID,   p_DBID,     p_Con_DBID);
     Snap_DB_cache_Advice      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_Enqueue_Stat         (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_IOStat_Filetype      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Latch                (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);

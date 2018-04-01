@@ -440,6 +440,25 @@ class PanoramaSamplerStructureCheck
           primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'BPID', 'BUFFERS_FOR_ESTIMATE', 'CON_DBID'],
       },
       {
+          table_name: 'Panorama_Enqueue_Stat',
+          domain: :AWR,
+          columns: [
+              { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
+              { column_name:  'EQ_TYPE',                        column_type:   'VARCHAR2',  not_null: true, precision: 2 },
+              { column_name:  'REQ_REASON',                     column_type:   'VARCHAR2',  not_null: true, precision: 64 },
+              { column_name:  'TOTAL_REQ#',                     column_type:   'NUMBER' },
+              { column_name:  'TOTAL_WAIT#',                    column_type:   'NUMBER' },
+              { column_name:  'SUCC_REQ#',                      column_type:   'NUMBER' },
+              { column_name:  'FAILED_REQ#',                    column_type:   'NUMBER' },
+              { column_name:  'CUM_WAIT_TIME',                  column_type:   'NUMBER' },
+              { column_name:  'EVENT#',                         column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
+          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'EQ_TYPE', 'REQ_REASON', 'CON_DBID'],
+      },
+      {
           table_name: 'Panorama_IOStat_Filetype',
           domain: :AWR,
           columns: [
