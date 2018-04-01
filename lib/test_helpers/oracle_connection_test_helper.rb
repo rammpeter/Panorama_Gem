@@ -137,10 +137,10 @@ class ActiveSupport::TestCase
                                             FROM   DBA_Hist_Snapshot s
                                             ORDER BY Snap_ID DESC
                                            ) x
-                                    WHERE  Startup_Time = Startup_1
-                                    AND    Startup_Time = Startup_2
-                                    AND    Startup_Time = Startup_3
-                                    AND    Startup_Time = Startup_4
+                                    WHERE  Startup_Time = NVL(Startup_1, Startup_Time)
+                                    AND    Startup_Time = NVL(Startup_2, Startup_Time)
+                                    AND    Startup_Time = NVL(Startup_3, Startup_Time)
+                                    AND    Startup_Time = NVL(Startup_4, Startup_Time)
                                     ORDER BY Snap_ID DESC
                                    )
                             WHERE  Row_Num IN (2,3)

@@ -9,7 +9,6 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" afterPath="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" />
       <change beforePath="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" afterPath="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
@@ -105,7 +104,7 @@
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_set_management_pack_license_with_xhr__true__Panorama_Gem.coverage" NAME="test_set_management_pack_license_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1503319268330" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_generate_sql_patch_with_xhr__true__Panorama_Gem.coverage" NAME="test_generate_sql_patch_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1515655220893" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__DragnetControllerTest___Panorama_Gem.coverage" NAME="Run test 'DragnetControllerTest': Panorama_Gem Coverage Results" MODIFIED="1478013177463" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
-    <SUITE FILE_PATH="coverage/Panorama_Gem@test_list_sql_area_sql_id_with_xhr__true__Panorama_Gem.coverage" NAME="test_list_sql_area_sql_id_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1512490716197" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
+    <SUITE FILE_PATH="coverage/Panorama_Gem@test_list_sql_area_sql_id_with_xhr__true__Panorama_Gem.coverage" NAME="test_list_sql_area_sql_id_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1522580702984" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_segment_stat_historic_with_xhr__true__Panorama_Gem.coverage" NAME="test_segment_stat_historic_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1522315503112" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_test_controllers_menu_entries_with_actions__Panorama_Gem.coverage" NAME="test_test_controllers_menu_entries_with_actions: Panorama_Gem Coverage Results" MODIFIED="1484481782493" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__AdditionControllerTest___Panorama_Gem.coverage" NAME="Run test 'AdditionControllerTest': Panorama_Gem Coverage Results" MODIFIED="1512638889890" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
@@ -236,11 +235,21 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="dba_sga_controller_test.rb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/controllers/dba_sga_controller_test.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="279">
+              <caret line="41" column="23" lean-forward="false" selection-start-line="41" selection-start-column="23" selection-end-line="41" selection-end-column="23" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="oracle_connection_test_helper.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="620">
-              <caret line="145" column="51" lean-forward="true" selection-start-line="145" selection-start-column="51" selection-end-line="145" selection-end-column="51" />
+            <state relative-caret-position="306">
+              <caret line="143" column="0" lean-forward="false" selection-start-line="143" selection-start-column="0" selection-end-line="143" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -270,7 +279,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>panorama_snapshot</find>
       <find>:not_null</find>
       <find>ALTER TABLE panorama.Panorama_Snapshot MODIFY (Startup_Time NULL)no</find>
       <find>not_null: false</find>
@@ -297,9 +305,10 @@
       <find>list_session_statistic_historic_timeline</find>
       <find>assert_response management_pack_license</find>
       <find>remove_tables</find>
-      <find>Error testing dragnet SQL</find>
       <find>Running test with @sampler_config.get_select_any_table</find>
       <find>PanoramaSampler_Sampling.do_awr_housekeepin</find>
+      <find>Error testing dragnet SQL</find>
+      <find>list_sql_area_sql_id</find>
     </findStrings>
     <replaceStrings>
       <replace>dLast_Load_Time</replace>
@@ -328,7 +337,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/views/table_dependencies/_show_frame.html.erb" />
         <option value="$PROJECT_DIR$/app/views/table_dependencies/_show_tables.html.erb" />
         <option value="$PROJECT_DIR$/app/controllers/table_dependencies_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/table_dependencies/_show_dependencies.html.erb" />
@@ -378,6 +386,7 @@
         <option value="$PROJECT_DIR$/test/models/worker_thread_test.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" />
+        <option value="$PROJECT_DIR$/test/dummy/log/test.log" />
         <option value="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" />
       </list>
     </option>
@@ -692,7 +701,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Test::Unit/Shoulda/Minitest.test_show_edit_config_form_with_xhr:_true: Panorama_Gem">
+  <component name="RunManager" selected="Test::Unit/Shoulda/Minitest.test_list_sql_area_sql_id_with_xhr:_true: Panorama_Gem">
     <configuration name="Test 12.2_PDB reduziert auf eine Klasse" type="RakeRunConfigurationType" factoryName="Rake">
       <module name="Panorama_Gem" />
       <RAKE_RUN_CONFIG_SETTINGS_ID NAME="RUBY_ARGS" VALUE="-e $stdout.sync=true;$stderr.sync=true;load($0=ARGV.shift)" />
@@ -803,7 +812,7 @@
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="SPRING" VALUE="false" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="RUNNER_OPTIONS" VALUE="" />
     </configuration>
-    <configuration name="test_exec_dragnet_sql_with_xhr:_true: Panorama_Gem" type="TestUnitRunConfigurationType" factoryName="Test::Unit/Shoulda/Minitest" temporary="true">
+    <configuration name="test_list_sql_area_sql_id_with_xhr:_true: Panorama_Gem" type="TestUnitRunConfigurationType" factoryName="Test::Unit/Shoulda/Minitest" temporary="true">
       <predefined_log_file id="RUBY_TESTUNIT" enabled="true" />
       <module name="Panorama_Gem" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="RUBY_ARGS" VALUE="-e $stdout.sync=true;$stderr.sync=true;load($0=ARGV.shift) -Itest" />
@@ -814,7 +823,8 @@
       <envs>
         <env name="RAILS_ENV" value="test" />
         <env name="JRUBY_OPTS" value="-X+O" />
-        <env name="MANAGEMENT_PACK_LICENSE" value="none" />
+        <env name="MANAGEMENT_PACK_LICENSE" value="panorama_sampler" />
+        <env name="DB_VERSION" value="12.1_SE" />
       </envs>
       <EXTENSION ID="BundlerRunConfigurationExtension" bundleExecEnabled="true" />
       <EXTENSION ID="JRubyRunConfigurationExtension" NailgunExecEnabled="false" />
@@ -824,9 +834,9 @@
         </COVERAGE_PATTERN>
       </EXTENSION>
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TESTS_FOLDER_PATH" VALUE="" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_SCRIPT_PATH" VALUE="$MODULE_DIR$/test/controllers/dragnet_controller_test.rb" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_SCRIPT_PATH" VALUE="$MODULE_DIR$/test/controllers/dba_sga_controller_test.rb" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_FILE_MASK" VALUE="" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_METHOD_NAME" VALUE="test_exec_dragnet_sql_with_xhr:_true" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_METHOD_NAME" VALUE="test_list_sql_area_sql_id_with_xhr:_true" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_TEST_TYPE" VALUE="TEST_METHOD" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="DRB" VALUE="false" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="ZEUS" VALUE="false" />
@@ -1119,19 +1129,19 @@
       <item index="12" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_DB-Locks_/_current: Panorama_Gem" />
       <item index="13" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_exadata_with_xhr:_true: Panorama_Gem" />
       <item index="14" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'SpecAdditionsTest': Panorama_Gem" />
-      <item index="15" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_exec_dragnet_sql_with_xhr:_true: Panorama_Gem" />
-      <item index="16" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_All_menu_entries: Panorama_Gem" />
-      <item index="17" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'PanoramaSamplerControllerTest': Panorama_Gem" />
-      <item index="18" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_segment_stat_historic_with_xhr:_true: Panorama_Gem" />
-      <item index="19" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_show_edit_config_form_with_xhr:_true: Panorama_Gem" />
+      <item index="15" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_All_menu_entries: Panorama_Gem" />
+      <item index="16" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'PanoramaSamplerControllerTest': Panorama_Gem" />
+      <item index="17" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_segment_stat_historic_with_xhr:_true: Panorama_Gem" />
+      <item index="18" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_show_edit_config_form_with_xhr:_true: Panorama_Gem" />
+      <item index="19" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_list_sql_area_sql_id_with_xhr:_true: Panorama_Gem" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_show_edit_config_form_with_xhr:_true: Panorama_Gem" />
-        <item index="1" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_segment_stat_historic_with_xhr:_true: Panorama_Gem" />
-        <item index="2" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'PanoramaSamplerControllerTest': Panorama_Gem" />
-        <item index="3" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_All_menu_entries: Panorama_Gem" />
-        <item index="4" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_exec_dragnet_sql_with_xhr:_true: Panorama_Gem" />
+        <item index="0" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_list_sql_area_sql_id_with_xhr:_true: Panorama_Gem" />
+        <item index="1" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_show_edit_config_form_with_xhr:_true: Panorama_Gem" />
+        <item index="2" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_segment_stat_historic_with_xhr:_true: Panorama_Gem" />
+        <item index="3" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.Run test 'PanoramaSamplerControllerTest': Panorama_Gem" />
+        <item index="4" class="java.lang.String" itemvalue="Test::Unit/Shoulda/Minitest.test_All_menu_entries: Panorama_Gem" />
       </list>
     </recent_temporary>
   </component>
@@ -1327,14 +1337,7 @@
       <workItem from="1520942599999" duration="609000" />
       <workItem from="1521031060797" duration="108720000" />
       <workItem from="1522139375092" duration="1186000" />
-      <workItem from="1522141025764" duration="32095000" />
-    </task>
-    <task id="LOCAL-01285" summary="Move SGA execution plan behind button, allow compare of SGA execution plan">
-      <created>1521229893663</created>
-      <option name="number" value="01285" />
-      <option name="presentableId" value="LOCAL-01285" />
-      <option name="project" value="LOCAL" />
-      <updated>1521229893663</updated>
+      <workItem from="1522141025764" duration="33238000" />
     </task>
     <task id="LOCAL-01286" summary="Tests added">
       <created>1521230484620</created>
@@ -1672,15 +1675,19 @@
       <option name="project" value="LOCAL" />
       <updated>1522394207920</updated>
     </task>
-    <option name="localTasksCounter" value="1334" />
+    <task id="LOCAL-01334" summary="test logging">
+      <created>1522394454979</created>
+      <option name="number" value="01334" />
+      <option name="presentableId" value="LOCAL-01334" />
+      <option name="project" value="LOCAL" />
+      <updated>1522394454979</updated>
+    </task>
+    <option name="localTasksCounter" value="1335" />
     <servers />
   </component>
   <component name="TestHistory">
     <history-entry file="Run_test_'PanoramaSamplerControllerTest'__Panorama_Gem - 2018.03.28 at 22h 52m 55s.xml">
       <configuration name="Run test 'PanoramaSamplerControllerTest': Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="test_All_menu_entries__Panorama_Gem - 2018.03.28 at 22h 18m 11s.xml">
-      <configuration name="test_All_menu_entries: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
     </history-entry>
     <history-entry file="test_All_menu_entries__Panorama_Gem - 2018.03.28 at 22h 27m 41s.xml">
       <configuration name="test_All_menu_entries: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
@@ -1690,6 +1697,9 @@
     </history-entry>
     <history-entry file="test_All_menu_entries__Panorama_Gem - 2018.03.28 at 22h 53m 21s.xml">
       <configuration name="test_All_menu_entries: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
+    </history-entry>
+    <history-entry file="test_list_sql_area_sql_id_with_xhr__true__Panorama_Gem - 2018.04.01 at 12h 54m 58s.xml">
+      <configuration name="test_list_sql_area_sql_id_with_xhr:_true: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
     </history-entry>
     <history-entry file="test_segment_stat_historic_with_xhr__true__Panorama_Gem - 2018.03.29 at 11h 19m 18s.xml">
       <configuration name="test_segment_stat_historic_with_xhr:_true: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
@@ -1708,7 +1718,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3086185000" />
+    <option name="totallyTimeSpent" value="3087328000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1723,14 +1733,14 @@
     <frame x="39" y="23" width="1639" height="1027" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2510958" sideWeight="0.8304721" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2510958" sideWeight="0.82586205" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30472103" sideWeight="0.48269352" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.0" sideWeight="0.096499525" order="10" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26633167" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2532189" sideWeight="0.48806533" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.37768242" sideWeight="0.8921476" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2510958" sideWeight="0.1695279" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.37768242" sideWeight="0.8921476" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2510958" sideWeight="0.17413794" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18776824" sideWeight="0.4952343" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27805802" sideWeight="0.3464837" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36480686" sideWeight="0.9035005" order="3" side_tool="false" content_ui="tabs" />
@@ -2165,14 +2175,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/controllers/dba_sga_controller_test.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="196">
-          <caret line="177" column="72" lean-forward="false" selection-start-line="177" selection-start-column="72" selection-end-line="177" selection-end-column="72" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/io_controller.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="166">
@@ -2273,14 +2275,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="218">
           <caret line="148" column="2" lean-forward="false" selection-start-line="148" selection-start-column="2" selection-end-line="148" selection-end-column="2" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/dummy/log/test.log">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="8" column="70" lean-forward="true" selection-start-line="8" selection-start-column="70" selection-end-line="8" selection-end-column="70" />
           <folding />
         </state>
       </provider>
@@ -2405,10 +2399,26 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/test/dummy/log/test.log">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="388">
+          <caret line="1360" column="0" lean-forward="false" selection-start-line="1356" selection-start-column="0" selection-end-line="1360" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/controllers/dba_sga_controller_test.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="279">
+          <caret line="41" column="23" lean-forward="false" selection-start-line="41" selection-start-column="23" selection-end-line="41" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="620">
-          <caret line="145" column="51" lean-forward="true" selection-start-line="145" selection-start-column="51" selection-end-line="145" selection-end-column="51" />
+        <state relative-caret-position="306">
+          <caret line="143" column="0" lean-forward="false" selection-start-line="143" selection-start-column="0" selection-end-line="143" selection-end-column="0" />
           <folding />
         </state>
       </provider>
