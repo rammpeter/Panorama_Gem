@@ -550,6 +550,19 @@ class PanoramaSamplerStructureCheck
           indexes: [ {index_name: 'Panorama_Object_Sizes_Gather', columns: ['Gather_Date'] } ]
       },
       {
+          table_name: 'Panorama_PGAStat',
+          domain: :AWR,
+          columns: [
+              { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
+              { column_name:  'NAME',                           column_type:   'VARCHAR2',  not_null: true, precision: 64 },
+              { column_name:  'VALUE',                          column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
+          primary_key: ['DBID', 'Snap_ID', 'Instance_Number', 'Name', 'Con_DBID'],
+      },
+      {
           table_name: 'Panorama_Resource_Limit',
           domain: :AWR,
           columns: [
