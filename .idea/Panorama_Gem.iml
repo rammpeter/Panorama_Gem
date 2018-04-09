@@ -51,6 +51,8 @@
         <RAILS_SERVER_CONFIG_SETTINGS_ID NAME="myPassParentEnvs" VALUE="true" />
         <envs>
           <env name="PANORAMA_SAMPLER_MASTER_PASSWORD" value="hugo" />
+          <env name="TNS_ADMIN" value="" />
+          <env name="ORACLE_HOME" value="/tmp/oracle" />
         </envs>
         <EXTENSION ID="BundlerRunConfigurationExtension" bundleExecEnabled="false" />
         <EXTENSION ID="JRubyRunConfigurationExtension" NailgunExecEnabled="false" />
@@ -419,7 +421,7 @@
     <orderEntry type="library" scope="PROVIDED" name="minitest-rails (v3.0.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="minitest-rails-capybara (v3.0.1, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="minitest-reporters (v1.1.19, RVM: jruby-9.1.16.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="net-ping (v2.0.3, RVM: jruby-9.1.16.0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="net-ping (v2.0.4, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="nio4r (v2.3.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="nokogiri (v1.8.2, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="public_suffix (v3.0.2, RVM: jruby-9.1.16.0) [gem]" level="application" />
@@ -436,7 +438,6 @@
     <orderEntry type="library" scope="PROVIDED" name="ruby-plsql (v0.6.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="ruby-progressbar (v1.9.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rubyzip (v1.2.1, RVM: jruby-9.1.16.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="sass (v3.5.5, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sass-listen (v4.0.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sass-rails (v5.0.7, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="selenium-webdriver (v3.9.0, RVM: jruby-9.1.16.0) [gem]" level="application" />

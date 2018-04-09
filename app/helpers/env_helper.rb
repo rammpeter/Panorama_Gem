@@ -2,6 +2,7 @@
 
 require "zlib"
 require 'encryption'
+require 'java'
 
 module EnvHelper
   include DatabaseHelper
@@ -127,13 +128,18 @@ module EnvHelper
     write_to_client_info_store(:browser_tab_ids, tab_ids)
   end
 
-  # Einlesen und strukturieren der Datei tnsnames.ora
+  # Read tnsnames.ora
   def read_tnsnames
-    if ENV['TNS_ADMIN']
+    if ENV['TNS_ADMIN'] && ENV['TNS_ADMIN'] != ''
       tnsadmin = ENV['TNS_ADMIN']
     else
       if ENV['ORACLE_HOME']
         tnsadmin = "#{ENV['ORACLE_HOME']}/network/admin"
+
+        # tnsadmin = "#{ENV['ORACLE_HOME']}/network/admin" is not yet supported by Oracle_Enhanced-Adapter so we must ensure ourself that oracle.net.tns_admin is set
+        if !java.lang.System.get_property("oracle.net.tns_admin") || java.lang.System.get_property("oracle.net.tns_admin") == ''
+          java.lang.System.set_property("oracle.net.tns_admin", "#{ENV['ORACLE_HOME']}/network/admin")
+        end
       else
         logger.warn 'read_tnsnames: TNS_ADMIN or ORACLE_HOME not set in environment, no TNS names provided'
         return tnsnames # Leerer Hash
