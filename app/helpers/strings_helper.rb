@@ -8,7 +8,7 @@ module StringsHelper
 - Available only if data exists in gv$SQL_Monitor
 
 Click link at column 'SQL exec ID' to generate SQL-Monitor report if there are multiple results",
-      sql_monitor_list_title: I18n.t(:strings_sql_monitor_list_hint, "List recorded SQL-Monitor reports from gv$SQL_Monitor and DBA_HIST_Reports"),
+      sql_monitor_list_title: I18n.t(:strings_sql_monitor_list_hint, default: "List recorded SQL-Monitor reports from gv$SQL_Monitor and DBA_HIST_Reports\nClick Report-ID to show choosen SQL-Monitor report in separate browser tab."),
 
   }
   def strings(key)

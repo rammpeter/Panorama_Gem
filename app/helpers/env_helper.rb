@@ -135,11 +135,6 @@ module EnvHelper
     else
       if ENV['ORACLE_HOME']
         tnsadmin = "#{ENV['ORACLE_HOME']}/network/admin"
-
-        # tnsadmin = "#{ENV['ORACLE_HOME']}/network/admin" is not yet supported by Oracle_Enhanced-Adapter so we must ensure ourself that oracle.net.tns_admin is set
-        if !java.lang.System.get_property("oracle.net.tns_admin") || java.lang.System.get_property("oracle.net.tns_admin") == ''
-          java.lang.System.set_property("oracle.net.tns_admin", "#{ENV['ORACLE_HOME']}/network/admin")
-        end
       else
         logger.warn 'read_tnsnames: TNS_ADMIN or ORACLE_HOME not set in environment, no TNS names provided'
         return tnsnames # Leerer Hash

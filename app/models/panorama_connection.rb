@@ -493,6 +493,14 @@ class PanoramaConnection
   end
 
   def self.do_login
+    if (!ENV['TNS_ADMIN'] || ENV['TNS_ADMIN'] == '') && ENV['ORACLE_HOME'] && ENV['ORACLE_HOME'] != ''
+      # tnsadmin = "#{ENV['ORACLE_HOME']}/network/admin" is not yet supported by Oracle_Enhanced-Adapter so we must ensure ourself that oracle.net.tns_admin is set
+      # Otherwise JDBC-Error is raised when connecting with TNS-Alias: java.sql.SQLRecoverableException: I/O-Error: Unknown host specified
+      if !java.lang.System.get_property("oracle.net.tns_admin") || java.lang.System.get_property("oracle.net.tns_admin") == ''
+        java.lang.System.set_property("oracle.net.tns_admin", "#{ENV['ORACLE_HOME']}/network/admin")
+      end
+    end
+
     jdbc_connection = ActiveRecord::ConnectionAdapters::OracleEnhancedJDBCConnection.new(
         :adapter    => "oracle_enhanced",
         :driver     => "oracle.jdbc.driver.OracleDriver",

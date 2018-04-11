@@ -87,7 +87,8 @@ function hideIndicator(url) {
 function closeAllTooltips(self_tooltip){
     jQuery('.tooltip_class').each(function(){                                   // Test each open tooltip to be closed
         if (!self_tooltip || jQuery(this).attr('id') !== self_tooltip.attr('id')){   // down close requestung tooltip itself
-            jQuery(this).remove();                                              // close other tooltip than requesting
+//            jQuery(this).remove();                                              // close other tooltip than requesting
+            jQuery(this).fadeOut({duration: 200});                              // close other tooltip than requesting
         }
     });
 
@@ -125,11 +126,12 @@ function register_tooltip(jquery_object){
         },
         show: {
             effect: "slideDown",
-            duration: "fast",
-            delay: 2000
+            duration: 200,
+            delay: 1000
         },
         hide: {
-            effect: "slideUp"
+            effect: "slideUp",
+            duration: 200
         }
     });
 }

@@ -438,6 +438,7 @@
     <orderEntry type="library" scope="PROVIDED" name="ruby-plsql (v0.6.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="ruby-progressbar (v1.9.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rubyzip (v1.2.1, RVM: jruby-9.1.16.0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="sass (v3.5.6, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sass-listen (v4.0.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sass-rails (v5.0.7, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="selenium-webdriver (v3.9.0, RVM: jruby-9.1.16.0) [gem]" level="application" />

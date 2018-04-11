@@ -23,7 +23,7 @@ group :test do
   #gem 'childprocess'		# required by selenium-webdriver
   #gem 'rack-test'               # required by selenium-webdriver
   gem "chromedriver-helper"
-  gem "minitest-rails-capybara"
+  gem "minitest-rails-capybara", ">= 3.0.1" # Under Linux otherwise version 0.0.2 is installed
   gem "minitest-reporters"
 
   gem "capybara"
