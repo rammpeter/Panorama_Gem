@@ -357,16 +357,23 @@ class DbaController < ApplicationController
       pkey_cols << s.column_name
     end
 
-    pkey_sql = "SELECT #{pkey_cols} Line FROM #{object_rec.owner}.#{table_name} WHERE RowID=?"
     begin
-      pkey_vals = sql_select_all([pkey_sql, rowid])
+      pkey_vals = sql_select_first_row ["SELECT #{pkey_cols} FROM #{object_rec.owner}.#{table_name} WHERE RowID=?", rowid]
     rescue Exception => e
       show_popup_message "Error accessing data for RowID='#{rowid}'\n\n#{e.message}"
       return
     end
     raise PopupMessageException.new("No data found for SQL:\n\n#{pkey_sql}\n\nParameter RowID = '#{rowid}'") if pkey_vals.length == 0
 
-    result = "#{t(:table, :default=>'table')} #{table_name}, PKey (#{pkey_cols}) = '#{pkey_vals[0].line}'"
+    result = "#{t(:table, :default=>'table')} #{table_name}, PKey (#{pkey_cols}) = "
+
+    pstmt.each_index do |i|
+      column_value = pkey_vals[pstmt[i].column_name.downcase]
+      delimiter = ''
+      delimiter = "'" if [String, DateTime, Date, Time].include? column_value.class
+      result << "#{delimiter}#{column_value}#{delimiter}"
+      result << ", " if i < pkey_vals.count-1
+    end
 
     respond_to do |format|
       format.html {render :html => result }

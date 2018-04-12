@@ -128,4 +128,28 @@ class DbaControllerTest < ActionController::TestCase
     end
   end
 
+  test 'show_rowid_details with xhr: true' do
+
+    # Readable table with primary key and records
+    data_object = sql_select_first_row "SELECT o.Data_Object_ID, t.Owner, t.Table_Name
+                                        FROM   All_Tables t
+                                        JOIN   All_Constraints c ON c.Owner = t.Owner AND c.Table_Name = t.Table_Name AND c.Constraint_Type = 'P'
+                                        JOIN   DBA_Objects o ON o.Owner = t.Owner AND o.Object_Name = t.Table_Name
+                                        WHERE  t.Cluster_Name IS NULL
+                                        AND    t.IOT_Name IS NULL
+                                        AND    t.Table_Name NOT LIKE '%$%'
+                                        AND    t.Num_Rows > 0
+                                        AND    o.Data_Object_ID IS NOT NULL
+                                        AND    RowNum < 2
+                                        "
+
+    raise "No readable table with num_rows > 0 found in database" if data_object.nil?
+
+    waitingforrowid = sql_select_one "SELECT RowIDTOChar(RowID) FROM #{data_object.owner}.#{data_object.table_name} WHERE RowNum < 2"
+
+    post :show_rowid_details, :params => {format: :html, data_object_id: data_object.data_object_id, waitingforrowid: waitingforrowid, update_area: :hugo }
+    assert_response :success
+
+  end
+
 end
