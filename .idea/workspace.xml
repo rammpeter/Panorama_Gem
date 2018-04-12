@@ -209,8 +209,8 @@
       <file leaf-file-name="dba_history_controller_test.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="337">
-              <caret line="330" column="7" lean-forward="true" selection-start-line="330" selection-start-column="7" selection-end-line="330" selection-end-column="7" />
+            <state relative-caret-position="294">
+              <caret line="314" column="58" lean-forward="false" selection-start-line="314" selection-start-column="58" selection-end-line="314" selection-end-column="58" />
               <folding />
             </state>
           </provider>
@@ -1331,14 +1331,7 @@
       <workItem from="1522139375092" duration="1186000" />
       <workItem from="1522141025764" duration="38523000" />
       <workItem from="1523263089823" duration="13728000" />
-      <workItem from="1523427340212" duration="4834000" />
-    </task>
-    <task id="LOCAL-01294" summary="Fix tests">
-      <created>1521473866595</created>
-      <option name="number" value="01294" />
-      <option name="presentableId" value="LOCAL-01294" />
-      <option name="project" value="LOCAL" />
-      <updated>1521473866595</updated>
+      <workItem from="1523427340212" duration="4989000" />
     </task>
     <task id="LOCAL-01295" summary="Show dependency tree">
       <created>1521623710969</created>
@@ -1676,7 +1669,14 @@
       <option name="project" value="LOCAL" />
       <updated>1523540918272</updated>
     </task>
-    <option name="localTasksCounter" value="1343" />
+    <task id="LOCAL-01343" summary="Fix Test for SE">
+      <created>1523542195078</created>
+      <option name="number" value="01343" />
+      <option name="presentableId" value="LOCAL-01343" />
+      <option name="project" value="LOCAL" />
+      <updated>1523542195078</updated>
+    </task>
+    <option name="localTasksCounter" value="1344" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1712,7 +1712,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3111175000" />
+    <option name="totallyTimeSpent" value="3111330000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1794,7 +1794,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Fix dragnet test without management pack license" />
     <MESSAGE value="Fix SQL patch test without management pack license" />
     <MESSAGE value="Set name for sampler config" />
     <MESSAGE value="Allow error dialog for menu selenium tests if management_pack_license=none" />
@@ -1819,7 +1818,8 @@
     <MESSAGE value="Support for ORACLE_HOME/network/admin without TNS_ADMIN" />
     <MESSAGE value="minitest_rails_capybara version fixed" />
     <MESSAGE value="Show all PKey-columns of locked table records" />
-    <option name="LAST_COMMIT_MESSAGE" value="Show all PKey-columns of locked table records" />
+    <MESSAGE value="Fix Test for SE" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix Test for SE" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2398,8 +2398,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="337">
-          <caret line="330" column="7" lean-forward="true" selection-start-line="330" selection-start-column="7" selection-end-line="330" selection-end-column="7" />
+        <state relative-caret-position="294">
+          <caret line="314" column="58" lean-forward="false" selection-start-line="314" selection-start-column="58" selection-end-line="314" selection-end-column="58" />
           <folding />
         </state>
       </provider>

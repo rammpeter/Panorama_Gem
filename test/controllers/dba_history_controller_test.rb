@@ -312,7 +312,7 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
   end
 
   test "list_awr_sql_monitor_report_html with xhr: true" do
-    if get_db_version >= '11.1' && management_pack_license] == :diagnostics_and_tuning_pack
+    if get_db_version >= '11.1' && management_pack_license == :diagnostics_and_tuning_pack
       # DBA_Hist_Reports available beginning with 12.1
       origins = get_db_version >= '12.1' ? ['DBA_Hist_Reports', 'GV$SQL_MONITOR'] : ['GV$SQL_MONITOR']
 
