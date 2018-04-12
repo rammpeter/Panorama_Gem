@@ -338,7 +338,6 @@ class PanoramaConnection
   def self.sql_execute(sql, query_name = 'sql_execute')
     # raise 'binds are not yet supported for sql_execute' if sql.class != String
 
-
     check_for_open_connection                                                   # ensure opened Oracle-connection
     management_pack_license = Thread.current[:panorama_connection_connect_info][:management_pack_license]
     transformed_sql = PackLicense.filter_sql_for_pack_license(sql, management_pack_license)  # Check for lincense violation and possible statement transformation

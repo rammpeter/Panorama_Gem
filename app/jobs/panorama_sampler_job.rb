@@ -28,6 +28,7 @@ class PanoramaSamplerJob < ApplicationJob
       check_for_sampling(config, snapshot_time, :OBJECT_SIZE, 60)
       check_for_sampling(config, snapshot_time, :CACHE_OBJECTS)
       check_for_sampling(config, snapshot_time, :BLOCKING_LOCKS)
+      WorkerThread.check_analyze(config)
     end
   rescue Exception => e
     Rails.logger.error "Exception in PanoramaSamplerJob.perform:\n#{e.message}"

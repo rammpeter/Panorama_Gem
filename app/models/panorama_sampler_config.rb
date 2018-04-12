@@ -24,6 +24,7 @@ class PanoramaSamplerConfig
     @config_hash[:blocking_locks_snapshot_cycle]      = 2     if !@config_hash.has_key?(:blocking_locks_snapshot_cycle)
     @config_hash[:blocking_locks_snapshot_retention]  = 60    if !@config_hash.has_key?(:blocking_locks_snapshot_retention)
     @config_hash[:blocking_locks_long_locks_limit]    = 10000 if !@config_hash.has_key?(:blocking_locks_long_locks_limit)
+    @config_hash[:last_analyze_check_timestamp]       = nil   if !@config_hash.has_key?(:last_analyze_check_timestamp)
   end
 
   def get_cloned_config_hash
@@ -56,6 +57,7 @@ class PanoramaSamplerConfig
   def get_owner;                              get_config_value(:owner);                               end
   def get_sql_min_no_of_execs;                get_config_value(:sql_min_no_of_execs);                 end
   def get_sql_min_runtime_millisecs;          get_config_value(:sql_min_runtime_millisecs);           end
+  def get_last_analyze_check_timestamp;       get_config_value(:last_analyze_check_timestamp);        end
 
   def get_domain_active(domain);              get_config_value("#{domain.downcase}_active".to_sym);               end
   def get_domain_snapshot_cycle(domain);      get_config_value("#{domain.downcase}_snapshot_cycle".to_sym);       end
@@ -109,6 +111,13 @@ class PanoramaSamplerConfig
     @@config_access_mutex.synchronize do
       @config_hash[:last_successful_connect] = Time.now
       @config_hash["last_#{domain.downcase}_snapshot_instance".to_sym] = instance
+      PanoramaSamplerConfig.write_config_array_to_store
+    end
+  end
+
+  def set_last_analyze_check_timestamp
+    @@config_access_mutex.synchronize do
+      @config_hash[:last_analyze_check_timestamp] = Time.now
       PanoramaSamplerConfig.write_config_array_to_store
     end
   end

@@ -30,6 +30,11 @@ class WorkerThread
     # Don't raise exception because it should not stop calling job processing
   end
 
+  def self.check_analyze(sampler_config)
+    thread = Thread.new{WorkerThread.new(sampler_config, 'check_analyze').check_analyze_internal}
+  rescue Exception => e
+    Rails.logger.error "Exception #{e.message} raised in WorkerThread.check_analyze for config-ID=#{sampler_config.get_id}"
+  end
 
   ############################### inner implementation ###############################
 
@@ -192,6 +197,22 @@ class WorkerThread
   ensure
     @@active_snapshots.delete(snapshot_semaphore_key)                           # Remove semaphore
     PanoramaConnection.release_connection                                       # Free DB connection in Pool
+  end
+
+  DAYS_BETWEEN_ANALYZE_CHECK = 7
+  def check_analyze_internal
+    # Check analyze info once a week
+    if true
+#    if  @sampler_config.get_last_analyze_check_timestamp.nil? || get_last_analyze_check_timestamp < Time.now - 86400*DAYS_BETWEEN_ANALYZE_CHECK
+      @sampler_config.set_last_analyze_check_timestamp
+      tables = PanoramaConnection.sql_select_all ["SELECT User, Table_Name FROM User_Tables WHERE Last_Analyzed IS NULL OR Last_Analyzed < SYSDATE-?", DAYS_BETWEEN_ANALYZE_CHECK]
+      tables.each do |t|
+        start_time = Time.now
+        PanoramaConnection.sql_execute ["BEGIN DBMS_STATS.Gather_Table_Stats(?, ?); END;", t.user, t.table_name]
+        Rails.logger.info("Analyzed table #{t.user}.#{t.table_name} in #{Time.now-start_time} seconds")
+      end
+      @sampler_config.set_last_analyze_check_timestamp
+    end
   end
 
 end
