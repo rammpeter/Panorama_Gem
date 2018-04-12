@@ -10,10 +10,7 @@
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" afterPath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/app/models/panorama_connection.rb" afterPath="$PROJECT_DIR$/app/models/panorama_connection.rb" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" afterPath="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" />
-      <change beforePath="$PROJECT_DIR$/panorama_gem.gemspec" afterPath="$PROJECT_DIR$/panorama_gem.gemspec" />
-      <change beforePath="$PROJECT_DIR$/test/system/global_menu_test.rb" afterPath="$PROJECT_DIR$/test/system/global_menu_test.rb" />
+      <change beforePath="$PROJECT_DIR$/Gemfile" afterPath="$PROJECT_DIR$/Gemfile" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -201,7 +198,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="env_controller.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="env_controller.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/controllers/env_controller.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="171">
@@ -241,16 +238,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="dba_history_controller_test.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4155">
-              <caret line="277" column="31" lean-forward="false" selection-start-line="277" selection-start-column="31" selection-end-line="277" selection-end-column="31" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="_list_sql_detail_historic.html.erb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb">
           <provider selected="true" editor-type-id="text-editor">
@@ -266,6 +253,16 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="330">
               <caret line="22" column="35" lean-forward="false" selection-start-line="22" selection-start-column="35" selection-end-line="22" selection-end-column="35" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Gemfile" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Gemfile">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="375">
+              <caret line="25" column="60" lean-forward="false" selection-start-line="25" selection-start-column="60" selection-end-line="25" selection-end-column="60" />
               <folding />
             </state>
           </provider>
@@ -384,7 +381,6 @@
         <option value="$PROJECT_DIR$/app/assets/javascripts/application.js" />
         <option value="$PROJECT_DIR$/app/helpers/env_helper.rb" />
         <option value="$PROJECT_DIR$/app/helpers/strings_helper.rb" />
-        <option value="$PROJECT_DIR$/Gemfile" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_controller.rb" />
         <option value="$PROJECT_DIR$/test/controllers/dba_controller_test.rb" />
@@ -394,6 +390,7 @@
         <option value="$PROJECT_DIR$/app/views/dba_history/_list_sql_detail_historic.html.erb" />
         <option value="$PROJECT_DIR$/panorama_gem.gemspec" />
         <option value="$PROJECT_DIR$/app/models/panorama_connection.rb" />
+        <option value="$PROJECT_DIR$/Gemfile" />
       </list>
     </option>
   </component>
@@ -1392,14 +1389,7 @@
       <workItem from="1522141025764" duration="38523000" />
       <workItem from="1523263089823" duration="13728000" />
       <workItem from="1523427340212" duration="7218000" />
-      <workItem from="1523544687034" duration="2471000" />
-    </task>
-    <task id="LOCAL-01299" summary="Fix routing error">
-      <created>1521808074004</created>
-      <option name="number" value="01299" />
-      <option name="presentableId" value="LOCAL-01299" />
-      <option name="project" value="LOCAL" />
-      <updated>1521808074004</updated>
+      <workItem from="1523544687034" duration="3194000" />
     </task>
     <task id="LOCAL-01300" summary="Fix test error for 11.2">
       <created>1521967809183</created>
@@ -1737,7 +1727,14 @@
       <option name="project" value="LOCAL" />
       <updated>1523543498436</updated>
     </task>
-    <option name="localTasksCounter" value="1348" />
+    <task id="LOCAL-01348" summary="Switch to Rails 5.2.0">
+      <created>1523548113447</created>
+      <option name="number" value="01348" />
+      <option name="presentableId" value="LOCAL-01348" />
+      <option name="project" value="LOCAL" />
+      <updated>1523548113451</updated>
+    </task>
+    <option name="localTasksCounter" value="1349" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1773,7 +1770,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3116030000" />
+    <option name="totallyTimeSpent" value="3116753000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1855,7 +1852,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Allow error dialog for menu selenium tests if management_pack_license=none" />
     <MESSAGE value="Set name for sampler_config in test" />
     <MESSAGE value="Allow error dialog for DBA_HIST_Reports and manahement_pack_license=none" />
     <MESSAGE value="asserts with text" />
@@ -1880,7 +1876,8 @@
     <MESSAGE value="Fix Test for SE" />
     <MESSAGE value="Key explanation" />
     <MESSAGE value="Test fixed" />
-    <option name="LAST_COMMIT_MESSAGE" value="Test fixed" />
+    <MESSAGE value="Switch to Rails 5.2.0" />
+    <option name="LAST_COMMIT_MESSAGE" value="Switch to Rails 5.2.0" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2336,14 +2333,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Gemfile">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="26" column="0" lean-forward="false" selection-start-line="25" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/dummy/log/test.log">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="20400">
@@ -2356,6 +2345,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="209">
           <caret line="80" column="9" lean-forward="false" selection-start-line="80" selection-start-column="9" selection-end-line="80" selection-end-column="9" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2451,6 +2441,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="171">
           <caret line="324" column="0" lean-forward="false" selection-start-line="324" selection-start-column="0" selection-end-line="324" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Gemfile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="25" column="60" lean-forward="false" selection-start-line="25" selection-start-column="60" selection-end-line="25" selection-end-column="60" />
           <folding />
         </state>
       </provider>

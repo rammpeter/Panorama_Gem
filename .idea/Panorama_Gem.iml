@@ -401,7 +401,7 @@
     <orderEntry type="library" scope="PROVIDED" name="arel (v9.0.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="builder (v3.2.3, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="bundler (v1.16.1, RVM: jruby-9.1.16.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="capybara (v2.18.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="capybara (v3.0.1, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="childprocess (v0.9.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="chromedriver-helper (v1.2.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="concurrent-ruby (v1.0.5, RVM: jruby-9.1.16.0) [gem]" level="application" />
@@ -419,10 +419,6 @@
     <orderEntry type="library" scope="PROVIDED" name="mimemagic (v0.3.2, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="mini_mime (v1.0.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="minitest (v5.11.3, RVM: jruby-9.1.16.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="minitest-capybara (v0.8.2, RVM: jruby-9.1.16.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="minitest-metadata (v0.6.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="minitest-rails (v3.0.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="minitest-rails-capybara (v3.0.1, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="minitest-reporters (v1.2.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="net-ping (v2.0.4, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="nio4r (v2.3.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
