@@ -43,7 +43,7 @@ segment_statistics = false
             sleep 1
             raise "Menu node '#main_menu ##{menu_node_id}' not visible" if !menu_node.visible?
           end
-          puts "hover #{menu_node.text}"
+          #puts "hover #{menu_node.text}"
           sleep 1
           #if menu_node.text['Analyses / statistics']
           #  save_screenshot('analyses.png')
@@ -78,7 +78,7 @@ segment_statistics = false
           raise "Menu-link not visible '#main_menu #'#{menu_link[:id]}"   if !link_to_click.visible?
         end
         raise "Menu-link not found for '#main_menu #'#{menu_link[:id]}" if link_to_click.nil?
-        puts "click #{link_to_click.text}"
+        #puts "click #{link_to_click.text}"
         link_to_click.click
         # Capybara.ignore_hidden_elements = true
         assert_ajax_success_or_access_denied

@@ -19,7 +19,7 @@ class TypeMapper < ActiveRecord::ConnectionAdapters::AbstractAdapter
 end
 
 # expand class by getter to allow access on internal variable @raw_statement
-ActiveRecord::ConnectionAdapters::OracleEnhancedJDBCConnection::Cursor.class_eval do
+ActiveRecord::ConnectionAdapters::OracleEnhanced::JDBCConnection::Cursor.class_eval do
   def get_raw_statement
     @raw_statement
   end
@@ -29,7 +29,7 @@ end
 # does not work as Engine with Winstone application server, therefore hard manipulation of class ActiveRecord::ConnectionAdapters::OracleEnhancedAdapter
 # and extension with method iterate_query
 
-ActiveRecord::ConnectionAdapters::OracleEnhancedJDBCConnection.class_eval do
+ActiveRecord::ConnectionAdapters::OracleEnhanced::JDBCConnection.class_eval do
 
   def log(sql, name = "SQL", binds = [], type_casted_binds = [], statement_name = '[not defined]')
     ActiveSupport::Notifications.instrumenter.instrument(
@@ -60,7 +60,9 @@ ActiveRecord::ConnectionAdapters::OracleEnhancedJDBCConnection.class_eval do
 
       columns = cursor.get_col_names.map do |col_name|
         # @connection.oracle_downcase(col_name)                               # Rails 5-Variante
-        oracle_downcase(col_name).freeze
+        # oracle_downcase(col_name) moved to private _oracle_downcase
+        #col_name =~ /[a-z]/ ? col_name : col_name.downcase!
+        col_name.downcase!.freeze
       end
       fetch_options = {:get_lob_value => (name != 'Writable Large Object')}
       # noinspection RubyAssignmentExpressionInConditionalInspection
@@ -501,7 +503,7 @@ class PanoramaConnection
       end
     end
 
-    jdbc_connection = ActiveRecord::ConnectionAdapters::OracleEnhancedJDBCConnection.new(
+    jdbc_connection = ActiveRecord::ConnectionAdapters::OracleEnhanced::JDBCConnection.new(
         :adapter    => "oracle_enhanced",
         :driver     => "oracle.jdbc.driver.OracleDriver",
         :url        => jdbc_thin_url,
@@ -556,9 +558,9 @@ class PanoramaConnection
         :connection_id  => object_id,
         :statement_name => nil,
         :binds          => []) do
-      retval = jdbc_connection.select_one sql
+      retval = jdbc_connection.select sql
     end
-    retval
+    retval.first if retval
   end
 
   class SqlSelectIterator
