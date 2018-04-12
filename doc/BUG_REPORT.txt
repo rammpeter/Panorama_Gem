@@ -38,3 +38,7 @@ bundler 1.15.4 runs ok
 
 27.03.2018 chromedriver-helper relies on 2.34, but current chrome 65.0 only works with chromedriver 2.36
 Solution: remove chromedriver from jruby/bin
+
+12.04.2018
+Problem: NameError: uninitialized constant Minitest::Rails::TestUnit
+Solution: change "Rails" to "::Rails" in .rvm/gems/jruby-9.1.16.0/gems/railties-5.2.0/lib/minitest/rails_plugin.rb:16
