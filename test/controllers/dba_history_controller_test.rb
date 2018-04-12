@@ -247,25 +247,25 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
     end
 
     post '/dba_history/list_awr_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
-    assert_response management_pack_license_ok? ? :error : :success
+    assert_response management_pack_license_ok? ? :success : :error
 
-    post '/dba_history/list_awr_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
-    assert_response management_pack_license_ok? ? :error : :success
+        post '/dba_history/list_awr_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
+    assert_response management_pack_license_ok? ? :success : :error
 
     post '/dba_history/list_awr_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
-    assert_response management_pack_license_ok? ? :error : :success
+    assert_response management_pack_license_ok? ? :success : :error
 
     post '/dba_history/list_ash_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
-    assert_response management_pack_license_ok? ? :error : :success
+    assert_response management_pack_license_ok? ? :success : :error
 
     post '/dba_history/list_ash_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
-    assert_response management_pack_license_ok? ? :error : :success
+    assert_response management_pack_license_ok? ? :success : :error
 
     post '/dba_history/list_ash_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
-    assert_response management_pack_license_ok? ? :error : :success
+    assert_response management_pack_license_ok? ? :success : :error
 
     post '/dba_history/list_awr_sql_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :sql_id=>@hist_sql_id }
-    assert_response management_pack_license_ok? ? :error : :success
+    assert_response management_pack_license_ok? ? :success : :error
   end
 
   test "generate_baseline_creation with xhr: true" do
@@ -277,7 +277,7 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
 
   test "select_plan_hash_value_for_baseline with xhr: true" do
     post '/dba_history/select_plan_hash_value_for_baseline', :params => {:format=>:html, :sql_id=>@hist_sql_id, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :update_area=>:hugo }
-    assert_response [:diagnostics_pack, :diagnostics_and_tuning_pack].include? management_pack_license ? :error : :success
+    assert_response [:diagnostics_pack, :diagnostics_and_tuning_pack].include? management_pack_license ? :success : :error
 
   end
 
