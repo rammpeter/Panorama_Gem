@@ -218,6 +218,7 @@ module KeyExplanationHelper
           'db file sequential read'                             => 'A single-block read (i.e., index fetch by ROWID)',
           'db file scattered read'                              => 'A multiblock read (a full-table scan, OPQ, sorting)',
           'DFS lock handle'                                     => "The session waits for the lock handle of a global lock request.\nThe lock handle identifies a global lock.\nWith this lock handle, other operations can be performed on this global lock (to identify the global lock in future operations such as conversions or release).\nThe global lock is maintained by the DLM.",
+          'direct path read'                                    => "The session is waiting for a direct read to complete.\nA direct read is a physical I/O from a data file that bypasses the buffer cache and reads the data block directly into process-private memory.",
           'enq: AD - allocate AU'                               => 'Synchronizes accesses to a specific OSM disk AU',
           'enq: AD - deallocate AU'                             => 'Synchronizes accesses to a specific OSM disk AU',
           'enq: AF - task serialization'                        => 'This enqueue is used to serialize access to an advisor task',

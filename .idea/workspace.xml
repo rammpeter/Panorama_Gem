@@ -9,7 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb" afterPath="$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb" />
+      <change beforePath="$PROJECT_DIR$/app/helpers/key_explanation_helper.rb" afterPath="$PROJECT_DIR$/app/helpers/key_explanation_helper.rb" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -206,11 +206,31 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="dba_history_controller_test.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="dba_history_controller_test.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="294">
               <caret line="314" column="58" lean-forward="false" selection-start-line="314" selection-start-column="58" selection-end-line="314" selection-end-column="58" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Gemfile" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Gemfile">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="390">
+              <caret line="26" column="0" lean-forward="false" selection-start-line="25" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="key_explanation_helper.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/helpers/key_explanation_helper.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="345">
+              <caret line="220" column="123" lean-forward="false" selection-start-line="220" selection-start-column="123" selection-end-line="220" selection-end-column="123" />
               <folding />
             </state>
           </provider>
@@ -288,7 +308,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/helpers/ajax_helper.rb" />
         <option value="$PROJECT_DIR$/app/helpers/dragnet/unused_tables_helper.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_schema/_list_histogram.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_schema/_list_object_description.html.erb" />
@@ -339,6 +358,7 @@
         <option value="$PROJECT_DIR$/app/controllers/dba_controller.rb" />
         <option value="$PROJECT_DIR$/test/controllers/dba_controller_test.rb" />
         <option value="$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb" />
+        <option value="$PROJECT_DIR$/app/helpers/key_explanation_helper.rb" />
       </list>
     </option>
   </component>
@@ -1331,14 +1351,7 @@
       <workItem from="1522139375092" duration="1186000" />
       <workItem from="1522141025764" duration="38523000" />
       <workItem from="1523263089823" duration="13728000" />
-      <workItem from="1523427340212" duration="4989000" />
-    </task>
-    <task id="LOCAL-01295" summary="Show dependency tree">
-      <created>1521623710969</created>
-      <option name="number" value="01295" />
-      <option name="presentableId" value="LOCAL-01295" />
-      <option name="project" value="LOCAL" />
-      <updated>1521623710969</updated>
+      <workItem from="1523427340212" duration="5438000" />
     </task>
     <task id="LOCAL-01296" summary="Show execution plan update area">
       <created>1521651702308</created>
@@ -1676,7 +1689,14 @@
       <option name="project" value="LOCAL" />
       <updated>1523542195078</updated>
     </task>
-    <option name="localTasksCounter" value="1344" />
+    <task id="LOCAL-01344" summary="Fix Test for SE">
+      <created>1523542392791</created>
+      <option name="number" value="01344" />
+      <option name="presentableId" value="LOCAL-01344" />
+      <option name="project" value="LOCAL" />
+      <updated>1523542392791</updated>
+    </task>
+    <option name="localTasksCounter" value="1345" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1712,7 +1732,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3111330000" />
+    <option name="totallyTimeSpent" value="3111779000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -2019,14 +2039,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/test/controllers/addition_controller_test.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1188">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/io_controller.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="166">
@@ -2340,14 +2352,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Gemfile">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="495">
-          <caret line="33" column="3" lean-forward="true" selection-start-line="33" selection-start-column="3" selection-end-line="33" selection-end-column="3" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/helpers/strings_helper.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="150">
@@ -2400,6 +2404,22 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="294">
           <caret line="314" column="58" lean-forward="false" selection-start-line="314" selection-start-column="58" selection-end-line="314" selection-end-column="58" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Gemfile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="390">
+          <caret line="26" column="0" lean-forward="false" selection-start-line="25" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/helpers/key_explanation_helper.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="220" column="123" lean-forward="false" selection-start-line="220" selection-start-column="123" selection-end-line="220" selection-end-column="123" />
           <folding />
         </state>
       </provider>
