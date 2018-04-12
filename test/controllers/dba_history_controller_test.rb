@@ -242,30 +242,34 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
   end
 
   test "genuine_oracle_reports with xhr: true" do
+    def management_pack_license_ok?
+      [:diagnostics_pack, :diagnostics_and_tuning_pack].include? management_pack_license
+    end
+
     post '/dba_history/list_awr_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
-    assert_response management_pack_license == :none ? :error : :success
+    assert_response management_pack_license_ok? ? :error : :success
 
     post '/dba_history/list_awr_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
-    assert_response management_pack_license == :none ? :error : :success
+    assert_response management_pack_license_ok? ? :error : :success
 
     post '/dba_history/list_awr_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
-    assert_response management_pack_license == :none ? :error : :success
+    assert_response management_pack_license_ok? ? :error : :success
 
     post '/dba_history/list_ash_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
-    assert_response management_pack_license == :none ? :error : :success
+    assert_response management_pack_license_ok? ? :error : :success
 
     post '/dba_history/list_ash_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
-    assert_response management_pack_license == :none ? :error : :success
+    assert_response management_pack_license_ok? ? :error : :success
 
     post '/dba_history/list_ash_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
-    assert_response management_pack_license == :none ? :error : :success
+    assert_response management_pack_license_ok? ? :error : :success
 
     post '/dba_history/list_awr_sql_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :sql_id=>@hist_sql_id }
-    assert_response management_pack_license == :none ? :error : :success
+    assert_response management_pack_license_ok? ? :error : :success
   end
 
   test "generate_baseline_creation with xhr: true" do
-    if management_pack_license != :none
+    if [:diagnostics_pack, :diagnostics_and_tuning_pack].include? management_pack_license
       post '/dba_history/generate_baseline_creation', :params => {:format=>:html, :sql_id=>@hist_sql_id, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :plan_hash_value=>1234567, :update_area=>:hugo }
       assert_response :success
     end
@@ -273,7 +277,7 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
 
   test "select_plan_hash_value_for_baseline with xhr: true" do
     post '/dba_history/select_plan_hash_value_for_baseline', :params => {:format=>:html, :sql_id=>@hist_sql_id, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :update_area=>:hugo }
-    assert_response management_pack_license == :none ? :error : :success
+    assert_response [:diagnostics_pack, :diagnostics_and_tuning_pack].include? management_pack_license ? :error : :success
 
   end
 
@@ -296,7 +300,7 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
   end
 
   test "list_sql_monitor_reports with xhr: true" do
-    if get_db_version >= '11.1' && get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack
+    if get_db_version >= '11.1' && management_pack_license == :diagnostics_and_tuning_pack
       [nil,1].each do |instance |
         [{sql_id: @hist_sql_id}, {sid: 1, serialno: 2}].each do |p|
           post '/dba_history/list_sql_monitor_reports', params: {format: :html, instance: instance, sql_id: p[:sql_id], sid: p[:sid], serialno: p[:serialno],
@@ -308,7 +312,7 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
   end
 
   test "list_awr_sql_monitor_report_html with xhr: true" do
-    if get_db_version >= '11.1' && get_current_database[:management_pack_license] == :diagnostics_and_tuning_pack
+    if get_db_version >= '11.1' && management_pack_license] == :diagnostics_and_tuning_pack
       # DBA_Hist_Reports available beginning with 12.1
       origins = get_db_version >= '12.1' ? ['DBA_Hist_Reports', 'GV$SQL_MONITOR'] : ['GV$SQL_MONITOR']
 
