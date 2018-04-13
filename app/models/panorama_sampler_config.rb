@@ -25,6 +25,10 @@ class PanoramaSamplerConfig
     @config_hash[:blocking_locks_snapshot_retention]  = 60    if !@config_hash.has_key?(:blocking_locks_snapshot_retention)
     @config_hash[:blocking_locks_long_locks_limit]    = 10000 if !@config_hash.has_key?(:blocking_locks_long_locks_limit)
     @config_hash[:last_analyze_check_timestamp]       = nil   if !@config_hash.has_key?(:last_analyze_check_timestamp)
+    @config_hash[:last_awr_ash_snapshot_start]        = nil   if !@config_hash.has_key?(:last_awr_ash_snapshot_start)
+    @config_hash[:last_object_size_snapshot_start]    = nil   if !@config_hash.has_key?(:last_object_size_snapshot_start)
+    @config_hash[:last_cache_objects_snapshot_start]  = nil   if !@config_hash.has_key?(:last_cache_objects_snapshot_start)
+    @config_hash[:last_blocking_locks_snapshot_start] = nil   if !@config_hash.has_key?(:last_blocking_locks_snapshot_start)
   end
 
   def get_cloned_config_hash
@@ -34,7 +38,7 @@ class PanoramaSamplerConfig
   end
 
   def get_config_value(key)
-    raise "Missing hash key '#{key}' of class '#{key.class}' for panorama-sampler config" if !@config_hash.has_key?(key);
+    Rails.logger.info "PanoramaSamplerConfig.get_config_value: Missing hash key '#{key}' of class '#{key.class}' for panorama-sampler config with ID=#{get_id}" if !@config_hash.has_key?(key);
     @config_hash[key]
   end
 
