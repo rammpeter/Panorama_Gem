@@ -11,6 +11,7 @@ module Dragnet::ViewIssuesHelper
 Sorting should be placed in calling SQL instead of view if necessary.
 Selection is PL/SQL-Code so you have to execute it outside Panorama.
 '),
+            not_executable: true,
             :sql=> "SET SERVEROUTPUT ON;
 
 DECLARE

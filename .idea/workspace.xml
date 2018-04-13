@@ -9,8 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/panorama_sampler_config.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/panorama_sampler_config.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" beforeDir="false" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/helpers/dragnet/view_issues_helper.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/helpers/dragnet/view_issues_helper.rb" afterDir="false" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -179,11 +178,32 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="60">
               <caret line="4" column="19" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="view_issues_helper.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/helpers/dragnet/view_issues_helper.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="195">
+              <caret line="13" column="33" selection-start-line="13" selection-start-column="33" selection-end-line="13" selection-end-column="33" />
+              <folding>
+                <element signature="e#217#528#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="panorama_sampler_structure_check.rb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="187">
+              <caret line="1294" selection-start-line="1294" selection-end-line="1294" />
             </state>
           </provider>
         </entry>
@@ -313,12 +333,12 @@
         <option value="$USER_HOME$/.rvm/gems/jruby-9.1.16.0/gems/railties-5.2.0/lib/minitest/rails_plugin.rb" />
         <option value="$PROJECT_DIR$/doc/BUG_REPORT.txt" />
         <option value="$PROJECT_DIR$/app/helpers/dragnet_helper.rb" />
-        <option value="$PROJECT_DIR$/app/helpers/dragnet/view_issues_helper.rb" />
         <option value="$PROJECT_DIR$/config/locales/de.yml" />
         <option value="$PROJECT_DIR$/app/models/worker_thread.rb" />
-        <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_config.rb" />
+        <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+        <option value="$PROJECT_DIR$/app/helpers/dragnet/view_issues_helper.rb" />
       </list>
     </option>
   </component>
@@ -1322,21 +1342,7 @@
       <workItem from="1523263089823" duration="13728000" />
       <workItem from="1523427340212" duration="7218000" />
       <workItem from="1523544687034" duration="8323000" />
-      <workItem from="1523563864075" duration="7760000" />
-    </task>
-    <task id="LOCAL-01305" summary="suppress dragnet log output">
-      <created>1522069676380</created>
-      <option name="number" value="01305" />
-      <option name="presentableId" value="LOCAL-01305" />
-      <option name="project" value="LOCAL" />
-      <updated>1522069676380</updated>
-    </task>
-    <task id="LOCAL-01306" summary="2 seconds delay for tooltip">
-      <created>1522142384607</created>
-      <option name="number" value="01306" />
-      <option name="presentableId" value="LOCAL-01306" />
-      <option name="project" value="LOCAL" />
-      <updated>1522142384607</updated>
+      <workItem from="1523563864075" duration="8565000" />
     </task>
     <task id="LOCAL-01307" summary="MANAGEMENT_PACK_LICENSE spelled right">
       <created>1522143581199</created>
@@ -1667,7 +1673,21 @@
       <option name="project" value="LOCAL" />
       <updated>1523625318375</updated>
     </task>
-    <option name="localTasksCounter" value="1354" />
+    <task id="LOCAL-01354" summary="Allow sampler_config values without key">
+      <created>1523627371402</created>
+      <option name="number" value="01354" />
+      <option name="presentableId" value="LOCAL-01354" />
+      <option name="project" value="LOCAL" />
+      <updated>1523627371402</updated>
+    </task>
+    <task id="LOCAL-01355" summary="Fix bug nullable">
+      <created>1523627577964</created>
+      <option name="number" value="01355" />
+      <option name="presentableId" value="LOCAL-01355" />
+      <option name="project" value="LOCAL" />
+      <updated>1523627577964</updated>
+    </task>
+    <option name="localTasksCounter" value="1356" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1703,7 +1723,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3129642000" />
+    <option name="totallyTimeSpent" value="3130447000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1718,7 +1738,7 @@
     <frame x="51" y="23" width="2509" height="1417" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.7789001" visible="true" weight="0.1649777" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.7789001" visible="true" weight="0.1649777" />
       <window_info anchor="bottom" id="TODO" order="7" sideWeight="0.48269352" weight="0.30472103" />
       <window_info anchor="bottom" id="Docker" order="9" show_stripe_button="false" />
       <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.0968788" side_tool="true" visible="true" weight="0.125" />
@@ -1728,7 +1748,7 @@
       <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.48806533" weight="0.2532189" />
       <window_info id="Structure" order="1" sideWeight="0.22085202" side_tool="true" weight="0.009855453" />
       <window_info anchor="bottom" id="Terminal" order="15" sideWeight="0.4952343" weight="0.18776824" />
-      <window_info active="true" anchor="bottom" id="Debug" order="4" sideWeight="0.9031212" visible="true" weight="0.125" />
+      <window_info anchor="bottom" id="Debug" order="4" sideWeight="0.9031212" visible="true" weight="0.125" />
       <window_info id="Favorites" order="2" sideWeight="0.3464837" side_tool="true" weight="0.27805802" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection Results" order="1" sideWeight="0.49241465" weight="0.24650078" />
@@ -1786,8 +1806,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Comment in error" />
-    <MESSAGE value="Instrumenting test" />
     <MESSAGE value="Fix tests" />
     <MESSAGE value="4 snpshots in AWR-test" />
     <MESSAGE value="sleep after reconnect of session" />
@@ -1811,7 +1829,9 @@
     <MESSAGE value="Fix issue: NameError: uninitialized constant Minitest::Rails::TestUnit by changing .rvm/gems/jruby-9.1.16.0/gems/railties-5.2.0/lib/minitest/rails_plugin.rb" />
     <MESSAGE value="Dragnet view + analyze sampler" />
     <MESSAGE value="Sampler: null/not null setting only for existing columns" />
-    <option name="LAST_COMMIT_MESSAGE" value="Sampler: null/not null setting only for existing columns" />
+    <MESSAGE value="Allow sampler_config values without key" />
+    <MESSAGE value="Fix bug nullable" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix bug nullable" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2318,16 +2338,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/helpers/dragnet/view_issues_helper.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="9" column="41" selection-start-line="9" selection-start-column="41" selection-end-line="9" selection-end-column="41" />
-          <folding>
-            <element signature="e#487#556#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/config/locales/de.yml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="286">
@@ -2342,13 +2352,6 @@
           <folding>
             <marker date="1523616897038" expanded="true" signature="12626:13344" ph="if ... end" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="127">
-          <caret line="1290" column="16" lean-forward="true" selection-start-line="1290" selection-start-column="16" selection-end-line="1290" selection-end-column="16" />
         </state>
       </provider>
     </entry>
@@ -2373,10 +2376,27 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="1294" selection-start-line="1294" selection-end-line="1294" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="4" column="19" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/helpers/dragnet/view_issues_helper.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="13" column="33" selection-start-line="13" selection-start-column="33" selection-end-line="13" selection-end-column="33" />
+          <folding>
+            <element signature="e#217#528#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
