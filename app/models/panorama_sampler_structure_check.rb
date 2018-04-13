@@ -1290,15 +1290,15 @@ ORDER BY Column_ID
         sql << ")"
         log(sql)
         PanoramaConnection.sql_execute(sql)
-      end
-
-      # check column null state
-      if !@ora_tab_colnull.include?({'table_name' => table[:table_name].upcase, 'column_name' => column[:column_name].upcase, 'nullable' => (column[:not_null] ? 'N' : 'Y')})
-        sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} MODIFY ("
-        sql << "#{column[:column_name]} #{column[:not_null] ? 'NOT NULL' : 'NULL'}"
-        sql << ")"
-        log(sql)
-        PanoramaConnection.sql_execute(sql)
+      else                                                                      # Check NULL state for existing columns
+        if !@ora_tab_colnull.include?({'table_name' => table[:table_name].upcase, 'column_name' => column[:column_name].upcase, 'nullable' => (column[:not_null] ? 'N' : 'Y')})
+          current_null_state = PanoramaConnection.sql_select_one "SELECT Nullable "
+          sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} MODIFY ("
+          sql << "#{column[:column_name]} #{column[:not_null] ? 'NOT NULL' : 'NULL'}"
+          sql << ")"
+          log(sql)
+          PanoramaConnection.sql_execute(sql)
+        end
       end
     end
 

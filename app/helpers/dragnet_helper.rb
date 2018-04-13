@@ -18,6 +18,7 @@ include Dragnet::DragnetSqlsLogwriterRedoHelper
 include Dragnet::CascadingViewsHelper
 include Dragnet::SqlsConclusionApplicationHelper
 include Dragnet::PlSqlUsageHelper
+include Dragnet::ViewIssuesHelper
 
 module DragnetHelper
 
@@ -99,8 +100,12 @@ module DragnetHelper
           },
           {
               :name     => t(:dragnet_helper_group_conclusion_application,   :default=> 'Conclusions on appliction behaviour'),
-              :entries  => [ {   :name    => t(:dragnet_helper_group_cascading_views, :default=>'Views with cascading dependiencies (multiple hierarchy)'),
-                                 :entries => cascading_views
+              :entries  => [ {   :name    => t(:dragnet_helper_group_view_issues, :default=>'Potential in DB-Views'),
+                                 :entries => [{
+                                                  :name    => t(:dragnet_helper_group_cascading_views, :default=>'Views with cascading dependiencies (multiple hierarchy)'),
+                                                  :entries => cascading_views
+                                              }
+                                 ].concat(view_issues)
                              },
               ].concat(sqls_conclusion_application)
           },
