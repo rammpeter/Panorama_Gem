@@ -202,8 +202,7 @@ class WorkerThread
   DAYS_BETWEEN_ANALYZE_CHECK = 7
   def check_analyze_internal
     # Check analyze info once a week
-    if true
-#    if  @sampler_config.get_last_analyze_check_timestamp.nil? || get_last_analyze_check_timestamp < Time.now - 86400*DAYS_BETWEEN_ANALYZE_CHECK
+    if  @sampler_config.get_last_analyze_check_timestamp.nil? || get_last_analyze_check_timestamp < Time.now - 86400*DAYS_BETWEEN_ANALYZE_CHECK
       @sampler_config.set_last_analyze_check_timestamp
       tables = PanoramaConnection.sql_select_all ["SELECT User, Table_Name FROM User_Tables WHERE Last_Analyzed IS NULL OR Last_Analyzed < SYSDATE-?", DAYS_BETWEEN_ANALYZE_CHECK]
       tables.each do |t|

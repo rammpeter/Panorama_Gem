@@ -583,6 +583,7 @@
   dragnet_helper_group_unnecessary_high_execution_frequency:  Eventuell unnötig hohe Frequenz von Executes/Fetches von SQL-Statements
   dragnet_helper_group_unnecessary_indexes:                 Identifikation eventuell unnötiger Indizes
   dragnet_helper_group_unused_tables:                       Ermittlung ungenutzter Tabellen oder Spalten
+  dragnet_helper_group_view_issues:                         Potential in DB-Views
   dragnet_helper_group_wrong_execution_plan:                Ermittlung von SQL-Statements mit suboptimalem Ausführungsplan
 
   dragnet_helper_param_executions_hint:                     Minimale Anzahl Executions im Zeitraum für Aufnahme in Selektion
@@ -1389,6 +1390,14 @@
     Diese Selektion basiert auf zwei Beispielen je Spalte (niedrigster und höchster Wert) und ist sortiert nach der Menge der überflüssigen Leerzeichen pro Spalte.
   dragnet_helper_137_name: |-
     CHAR-Spalten aufgefüllt mit unnötigen Leerzeichen
+
+  dragnet_helper_138_desc: |-
+    Die Sortierung des SQL-Resultates innerhalb eines Views ist oft unnötig, da nicht bekannt ist wie das den View aufrufende SQL das Resultat weiterverarbeitet.
+    Statt dessen sollte die Sortierung wenn nötig in dem den View nutzenden SQL vorgenommen werden.
+    Die Selektion besteht aus PL/SQL-Code und sollte ausserhalb von Pnorama ausgeführt werden
+  dragnet_helper_138_name: |-
+    Views mit ORDER BY im View-SQL
+
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 
