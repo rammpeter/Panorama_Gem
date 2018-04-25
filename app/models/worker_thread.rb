@@ -116,8 +116,8 @@ class WorkerThread
       loop_count += 1
     end
     if @@active_ash_daemons[ @sampler_config.get_id]
-      Rails.logger.error("Previous ASH daemon not yet finshed for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}), new ASH daemon for snapshot not started! Restart Panorama server if this problem persists.")
-      @sampler_config.set_error_message("Previous ASH daemon not yet finshed, new ASH daemon for snapshot not started! Restart Panorama server if this problem persists.")
+      Rails.logger.error("Previous ASH daemon not yet finished for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}), new ASH daemon for snapshot not started! Restart Panorama server if this problem persists.")
+      @sampler_config.set_error_message("Previous ASH daemon not yet finished, new ASH daemon for snapshot not started! Restart Panorama server if this problem persists.")
       return
     end
 

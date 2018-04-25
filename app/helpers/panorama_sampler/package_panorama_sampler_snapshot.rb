@@ -110,6 +110,18 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_FileStatXS;
 
+  PROCEDURE Snap_IOStat_Detail(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_IOStat_Detail (SNAP_ID, DBID, INSTANCE_NUMBER, FUNCTION_ID, FUNCTION_NAME, FILETYPE_ID, FILETYPE_NAME, SMALL_READ_MEGABYTES, SMALL_WRITE_MEGABYTES, LARGE_READ_MEGABYTES, LARGE_WRITE_MEGABYTES,
+                                   SMALL_READ_REQS, SMALL_WRITE_REQS, LARGE_READ_REQS, LARGE_WRITE_REQS, NUMBER_OF_WAITS, WAIT_TIME, CON_DBID, CON_ID
+    ) SELECT p_SNAP_ID, p_DBID, p_INSTANCE, FUNCTION_ID, FUNCTION_NAME, FILETYPE_ID, FILETYPE_NAME, SMALL_READ_MEGABYTES, SMALL_WRITE_MEGABYTES, LARGE_READ_MEGABYTES, LARGE_WRITE_MEGABYTES,
+             SMALL_READ_REQS, SMALL_WRITE_REQS, LARGE_READ_REQS, LARGE_WRITE_REQS, NUMBER_OF_WAITS, WAIT_TIME,
+             p_Con_DBID,
+             #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+      FROM   v$IOStat_Function_Detail
+    ;
+  END Snap_IOStat_Detail;
+
   PROCEDURE Snap_IOStat_Filetype(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO Panorama_IOStat_Filetype (SNAP_ID, DBID, INSTANCE_NUMBER, FILETYPE_ID, FILETYPE_NAME,
@@ -582,6 +594,7 @@ END Panorama_Sampler_Snapshot;
     Snap_DB_cache_Advice      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Enqueue_Stat         (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_FileStatXS           (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_IOStat_Detail        (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_IOStat_Filetype      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Latch                (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);

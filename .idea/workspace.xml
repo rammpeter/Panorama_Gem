@@ -7,14 +7,11 @@
     <bookmark url="file://$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb" line="66" mnemonic="7" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="Prevent request_counter from concurrent access">
-      <change afterPath="$PROJECT_DIR$/docker_test_db/README" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/Development__Panorama_Gem.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/Development__Panorama_Gem.xml" afterDir="false" />
+    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="Sampling Panorama_FileStatXS and Panorama_TempStatXS">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/env_helper.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/helpers/env_helper.rb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/worker_thread.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/worker_thread.rb" afterDir="false" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -184,15 +181,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="60">
-              <caret line="4" column="19" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="README" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/docker_test_db/README">
           <provider selected="true" editor-type-id="text-editor">
@@ -227,8 +215,8 @@
       <file leaf-file-name="panorama_sampler_structure_check.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="143">
-              <caret line="1530" selection-start-line="1530" selection-end-line="1530" />
+            <state relative-caret-position="520">
+              <caret line="525" column="8" lean-forward="true" selection-start-line="525" selection-start-column="8" selection-end-line="525" selection-end-column="8" />
             </state>
           </provider>
         </entry>
@@ -236,17 +224,26 @@
       <file leaf-file-name="package_panorama_sampler_snapshot.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="529" column="5" lean-forward="true" selection-start-line="529" selection-start-column="5" selection-end-line="529" selection-end-column="5" />
+            <state relative-caret-position="444">
+              <caret line="117" column="30" selection-start-line="117" selection-start-column="30" selection-end-line="117" selection-end-column="30" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="io_controller.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="worker_thread.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/models/worker_thread.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="143">
+              <caret line="115" column="21" lean-forward="true" selection-start-line="115" selection-start-column="21" selection-end-line="115" selection-end-column="21" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="io_controller.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/controllers/io_controller.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="180">
-              <caret line="12" selection-start-line="12" selection-end-line="12" />
+            <state relative-caret-position="450">
+              <caret line="30" column="34" lean-forward="true" selection-start-line="30" selection-start-column="34" selection-end-line="30" selection-end-column="34" />
             </state>
           </provider>
         </entry>
@@ -377,7 +374,6 @@
         <option value="$PROJECT_DIR$/doc/BUG_REPORT.txt" />
         <option value="$PROJECT_DIR$/app/helpers/dragnet_helper.rb" />
         <option value="$PROJECT_DIR$/config/locales/de.yml" />
-        <option value="$PROJECT_DIR$/app/models/worker_thread.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_config.rb" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/app/helpers/dragnet/view_issues_helper.rb" />
@@ -387,6 +383,7 @@
         <option value="$PROJECT_DIR$/app/helpers/env_helper.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
         <option value="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" />
+        <option value="$PROJECT_DIR$/app/models/worker_thread.rb" />
       </list>
     </option>
   </component>
@@ -1339,14 +1336,7 @@
       <workItem from="1524402118904" duration="581000" />
       <workItem from="1524489237893" duration="6043000" />
       <workItem from="1524656133033" duration="225000" />
-      <workItem from="1524656408594" duration="7438000" />
-    </task>
-    <task id="LOCAL-01309" summary="Test without management_pack: dba_history">
-      <created>1522148725835</created>
-      <option name="number" value="01309" />
-      <option name="presentableId" value="LOCAL-01309" />
-      <option name="project" value="LOCAL" />
-      <updated>1522148725835</updated>
+      <workItem from="1524656408594" duration="9404000" />
     </task>
     <task id="LOCAL-01310" summary="Check for stale references">
       <created>1522149551480</created>
@@ -1684,7 +1674,14 @@
       <option name="project" value="LOCAL" />
       <updated>1523866443371</updated>
     </task>
-    <option name="localTasksCounter" value="1358" />
+    <task id="LOCAL-01358" summary="Sampling Panorama_FileStatXS and Panorama_TempStatXS">
+      <created>1524664644959</created>
+      <option name="number" value="01358" />
+      <option name="presentableId" value="LOCAL-01358" />
+      <option name="project" value="LOCAL" />
+      <updated>1524664644959</updated>
+    </task>
+    <option name="localTasksCounter" value="1359" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1720,7 +1717,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3148836000" />
+    <option name="totallyTimeSpent" value="3150802000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1735,17 +1732,18 @@
     <frame x="89" y="55" width="2452" height="1360" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.7789001" visible="true" weight="0.17634855" />
       <window_info anchor="bottom" id="TODO" order="7" sideWeight="0.48269352" weight="0.30472103" />
-      <window_info anchor="bottom" id="Docker" order="9" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Messages" order="13" sideWeight="0.45896465" weight="0.22854078" />
       <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.099170126" side_tool="true" visible="true" weight="0.4908947" />
-      <window_info anchor="right" id="Database" order="3" weight="0.26633167" />
       <window_info anchor="bottom" id="Database Changes" order="0" show_stripe_button="false" />
       <window_info anchor="bottom" id="Run" order="3" sideWeight="0.8912844" weight="0.3776722" />
       <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.48806533" weight="0.2532189" />
-      <window_info id="Structure" order="1" sideWeight="0.22085202" side_tool="true" weight="0.009855453" />
       <window_info anchor="bottom" id="Terminal" order="15" sideWeight="0.49495414" weight="0.18764846" />
-      <window_info active="true" anchor="bottom" id="Debug" order="4" sideWeight="0.90082985" visible="true" weight="0.4908947" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.7789001" visible="true" weight="0.17634855" />
+      <window_info anchor="bottom" id="Docker" order="9" show_stripe_button="false" />
+      <window_info anchor="right" id="Database" order="3" weight="0.26633167" />
+      <window_info id="Structure" order="1" sideWeight="0.22085202" side_tool="true" weight="0.009855453" />
+      <window_info anchor="bottom" id="Debug" order="4" sideWeight="0.90082985" visible="true" weight="0.4908947" />
       <window_info id="Favorites" order="2" sideWeight="0.3464837" side_tool="true" weight="0.27805802" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="8" visible="true" weight="0.39914164" />
@@ -1754,7 +1752,6 @@
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Changes" order="10" weight="0.32967034" />
       <window_info anchor="bottom" id="Application Servers" order="14" />
-      <window_info anchor="bottom" id="Messages" order="13" sideWeight="0.45896465" weight="0.22854078" />
       <window_info anchor="bottom" id="Message" order="2" />
       <window_info anchor="bottom" id="Cvs" order="6" weight="0.25" />
       <window_info anchor="bottom" id="Database Console" order="16" sideWeight="0.49341694" weight="0.32939914" />
@@ -1803,7 +1800,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="sleep after reconnect of session" />
     <MESSAGE value="Log exception for dragnet" />
     <MESSAGE value="Let 5 snapshots remain in panorama_snapshots" />
     <MESSAGE value="test logging" />
@@ -1828,7 +1824,8 @@
     <MESSAGE value="Fix bug nullable" />
     <MESSAGE value="not_executable: true," />
     <MESSAGE value="Prevent request_counter from concurrent access" />
-    <option name="LAST_COMMIT_MESSAGE" value="Prevent request_counter from concurrent access" />
+    <MESSAGE value="Sampling Panorama_FileStatXS and Panorama_TempStatXS" />
+    <option name="LAST_COMMIT_MESSAGE" value="Sampling Panorama_FileStatXS and Panorama_TempStatXS" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1932,11 +1929,6 @@
           <url>file://$PROJECT_DIR$/app/helpers/env_helper.rb</url>
           <line>139</line>
           <option name="timeStamp" value="1549" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="ruby-line">
-          <url>file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb</url>
-          <line>1366</line>
-          <option name="timeStamp" value="1557" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -2254,13 +2246,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/models/worker_thread.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="440">
-          <caret line="204" selection-start-line="204" selection-end-line="204" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/models/panorama_connection.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="40">
@@ -2366,24 +2351,31 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/io_controller.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="450">
+          <caret line="30" column="34" lean-forward="true" selection-start-line="30" selection-start-column="34" selection-end-line="30" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="143">
-          <caret line="1530" selection-start-line="1530" selection-end-line="1530" />
+        <state relative-caret-position="520">
+          <caret line="525" column="8" lean-forward="true" selection-start-line="525" selection-start-column="8" selection-end-line="525" selection-end-column="8" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="529" column="5" lean-forward="true" selection-start-line="529" selection-start-column="5" selection-end-line="529" selection-end-column="5" />
+        <state relative-caret-position="444">
+          <caret line="117" column="30" selection-start-line="117" selection-start-column="30" selection-end-line="117" selection-end-column="30" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/io_controller.rb">
+    <entry file="file://$PROJECT_DIR$/app/models/worker_thread.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="12" selection-start-line="12" selection-end-line="12" />
+        <state relative-caret-position="143">
+          <caret line="115" column="21" lean-forward="true" selection-start-line="115" selection-start-column="21" selection-end-line="115" selection-end-column="21" />
         </state>
       </provider>
     </entry>
