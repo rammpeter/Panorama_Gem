@@ -417,6 +417,22 @@ class PanoramaSamplerStructureCheck
           indexes: [ {index_name: 'Panorama_Cache_Objects_TS', columns: ['Snapshot_Timestamp', 'Instance_Number'] } ]
       },
       {
+          table_name: 'Panorama_Datafile',
+          domain: :AWR,
+          columns: [
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'FILE#',                          column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CREATION_CHANGE#',               column_type:   'NUMBER',    not_null: true },
+              { column_name:  'FILENAME',                       column_type:   'VARCHAR2',  not_null: true, precision: 513 },
+              { column_name:  'TS#',                            column_type:   'NUMBER',    not_null: true },
+              { column_name:  'TSNAME',                         column_type:   'VARCHAR2',  precision: 30 },
+              { column_name:  'BLOCK_SIZE',                     column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },
+          ],
+          primary_key: ['DBID', 'FILE#', 'CREATION_CHANGE#', 'CON_DBID'],
+      },
+      {
           table_name: 'Panorama_DB_Cache_Advice',
           domain: :AWR,
           columns: [
@@ -457,6 +473,30 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
           primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'EQ_TYPE', 'REQ_REASON', 'CON_DBID'],
+      },
+      {
+          table_name: 'Internal_FileStatXS',
+          domain: :AWR,
+          columns: [
+              { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
+              { column_name:  'FILE#',                          column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CREATION_CHANGE#',               column_type:   'NUMBER',    not_null: true },
+              { column_name:  'PHYRDS',                         column_type:   'NUMBER' },
+              { column_name:  'PHYWRTS',                        column_type:   'NUMBER' },
+              { column_name:  'SINGLEBLKRDS',                   column_type:   'NUMBER' },
+              { column_name:  'READTIM',                        column_type:   'NUMBER' },
+              { column_name:  'WRITETIM',                       column_type:   'NUMBER' },
+              { column_name:  'SINGLEBLKRDTIM',                 column_type:   'NUMBER' },
+              { column_name:  'PHYBLKRD',                       column_type:   'NUMBER' },
+              { column_name:  'PHYBLKWRT',                      column_type:   'NUMBER' },
+              { column_name:  'WAIT_COUNT',                     column_type:   'NUMBER' },
+              { column_name:  'TIME',                           column_type:   'NUMBER' },
+              { column_name:  'OPTIMIZED_PHYBLKRD',             column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
+          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'FILE#', 'CON_DBID'],
       },
       {
           table_name: 'Panorama_IOStat_Filetype',
@@ -929,6 +969,45 @@ class PanoramaSamplerStructureCheck
           primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'STAT_ID', 'CON_DBID'],
       },
       {
+          table_name: 'Panorama_Tempfile',
+          domain: :AWR,
+          columns: [
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'FILE#',                          column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CREATION_CHANGE#',               column_type:   'NUMBER',    not_null: true },
+              { column_name:  'FILENAME',                       column_type:   'VARCHAR2',  not_null: true, precision: 513 },
+              { column_name:  'TS#',                            column_type:   'NUMBER',    not_null: true },
+              { column_name:  'TSNAME',                         column_type:   'VARCHAR2',  precision: 30 },
+              { column_name:  'BLOCK_SIZE',                     column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },
+          ],
+          primary_key: ['DBID', 'FILE#', 'CREATION_CHANGE#', 'CON_DBID'],
+      },
+      {
+          table_name: 'Internal_TempStatXS',
+          domain: :AWR,
+          columns: [
+              { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
+              { column_name:  'FILE#',                          column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CREATION_CHANGE#',               column_type:   'NUMBER',    not_null: true },
+              { column_name:  'PHYRDS',                         column_type:   'NUMBER' },
+              { column_name:  'PHYWRTS',                        column_type:   'NUMBER' },
+              { column_name:  'SINGLEBLKRDS',                   column_type:   'NUMBER' },
+              { column_name:  'READTIM',                        column_type:   'NUMBER' },
+              { column_name:  'WRITETIM',                       column_type:   'NUMBER' },
+              { column_name:  'SINGLEBLKRDTIM',                 column_type:   'NUMBER' },
+              { column_name:  'PHYBLKRD',                       column_type:   'NUMBER' },
+              { column_name:  'PHYBLKWRT',                      column_type:   'NUMBER' },
+              { column_name:  'WAIT_COUNT',                     column_type:   'NUMBER' },
+              { column_name:  'TIME',                           column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
+          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'FILE#', 'CON_DBID'],
+      },
+      {
           table_name: 'Panorama_TopLevelCall_Name',
           domain: :ASH,
           columns: [
@@ -1029,6 +1108,16 @@ ORDER BY Column_ID
                               "}
         },
         {
+            view_name: 'Panorama_FileStatXS',
+            domain: :AWR,
+            view_select: proc{"SELECT f.SNAP_ID, f.DBID, f.INSTANCE_NUMBER, f.FILE#, f.CREATION_CHANGE#, d.FILENAME, d.TS#, d.TSNAME, d.BLOCK_SIZE,
+                                      f.PHYRDS, f.PHYWRTS, f.SINGLEBLKRDS, f.READTIM, f.WRITETIM, f.SINGLEBLKRDTIM, f.PHYBLKRD, f.PHYBLKWRT, f.WAIT_COUNT, f.TIME,
+                                      f.OPTIMIZED_PHYBLKRD, f.CON_DBID, f.CON_ID
+                               FROM   Internal_FileStatXS f
+                               JOIN   Panorama_DataFile d ON d.DBID = f.DBID AND d.File# = f.File# AND d.Creation_Change# = f.Creation_Change# AND d.Con_DBID = f.Con_DBID
+                              "}
+        },
+        {
             view_name: 'Panorama_Stat_Name',
             domain: :AWR,
             view_select: proc{"SELECT s.DBID, s.STAT_ID, s.NAME Stat_Name, s.CON_DBID, s.CON_ID
@@ -1041,6 +1130,16 @@ ORDER BY Column_ID
             view_select: proc{"SELECT s.SNAP_ID, s.DBID, s.INSTANCE_NUMBER, s.STAT_ID, n.NAME Stat_Name, s.VALUE, s.CON_DBID, s.CON_ID
                                FROM   Internal_SysStat s
                                LEFT OUTER JOIN Internal_StatName n ON n.Stat_ID = s.Stat_ID
+                              "}
+        },
+        {
+            view_name: 'Panorama_TempStatXS',
+            domain: :AWR,
+            view_select: proc{"SELECT f.SNAP_ID, f.DBID, f.INSTANCE_NUMBER, f.FILE#, f.CREATION_CHANGE#, d.FILENAME, d.TS#, d.TSNAME, d.BLOCK_SIZE,
+                                      f.PHYRDS, f.PHYWRTS, f.SINGLEBLKRDS, f.READTIM, f.WRITETIM, f.SINGLEBLKRDTIM, f.PHYBLKRD, f.PHYBLKWRT, f.WAIT_COUNT, f.TIME,
+                                      f.CON_DBID, f.CON_ID
+                               FROM   Internal_TempStatXS f
+                               JOIN   Panorama_DataFile d ON d.DBID = f.DBID AND d.File# = f.File# AND d.Creation_Change# = f.Creation_Change# AND d.Con_DBID = f.Con_DBID
                               "}
         },
     ]

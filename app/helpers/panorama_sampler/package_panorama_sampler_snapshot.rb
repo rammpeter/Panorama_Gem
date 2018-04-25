@@ -58,6 +58,18 @@ END Panorama_Sampler_Snapshot;
     COMMIT;
   END Move_ASH_To_Snapshot_Table;
 
+  PROCEDURE Snap_Datafile(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_Datafile (DBID, FILE#, CREATION_CHANGE#, FILENAME, TS#, TSNAME, BLOCK_SIZE, CON_DBID, CON_ID
+    ) SELECT p_DBID, d.File#, d.Creation_Change#, d.Name, d.TS#, ts.Name, d.Block_Size,
+             p_Con_DBID,
+             #{PanoramaConnection.db_version >= '12.1' ? "d.Con_ID" : "0"}
+      FROM   v$Datafile d
+      JOIN   v$Tablespace ts ON ts.ts# = d.ts#
+      AND    NOT EXISTS (SELECT 1 FROM Panorama_Datafile di WHERE di.DBID = p_DBID AND di.FILE# = d.FILE# AND di.CREATION_CHANGE# = d.CREATION_CHANGE# AND di.Con_DBID = p_Con_DBID)
+    ;
+  END Snap_Datafile;
+
   PROCEDURE Snap_DB_Cache_Advice(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO Panorama_DB_Cache_Advice (SNAP_ID, DBID, INSTANCE_NUMBER, BPID, BUFFERS_FOR_ESTIMATE, NAME, BLOCK_SIZE, ADVICE_STATUS, SIZE_FOR_ESTIMATE,
@@ -84,6 +96,19 @@ END Panorama_Sampler_Snapshot;
       FROM   v$Enqueue_Statistics
     ;
   END Snap_Enqueue_Stat;
+
+  PROCEDURE Snap_FileStatXS(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_FileStatXS (SNAP_ID, DBID, INSTANCE_NUMBER, FILE#, Creation_Change#,
+                                     PHYRDS, PHYWRTS, SINGLEBLKRDS, READTIM, WRITETIM, SINGLEBLKRDTIM, PHYBLKRD, PHYBLKWRT, WAIT_COUNT, TIME,
+                                     OPTIMIZED_PHYBLKRD, CON_DBID, CON_ID
+    ) SELECT p_Snap_ID, p_DBID, p_Instance, f.File#, d.Creation_Change#, f.PHYRDS, f.PHYWRTS, f.SINGLEBLKRDS, f.READTIM, f.WRITETIM, f.SINGLEBLKRDTIM, f.PHYBLKRD, f.PHYBLKWRT, NULL /* WAIT_COUNT */, NULL /* TIME */,
+             f.OPTIMIZED_PHYBLKRD, p_Con_DBID,
+             #{PanoramaConnection.db_version >= '12.1' ? "f.Con_ID" : "0"}
+      FROM   v$FileStat f
+      JOIN   v$Datafile d ON d.File# = f.File#
+    ;
+  END Snap_FileStatXS;
 
   PROCEDURE Snap_IOStat_Filetype(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
@@ -493,6 +518,31 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_SysStat;
 
+  PROCEDURE Snap_Tempfile(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_Tempfile (DBID, FILE#, CREATION_CHANGE#, FILENAME, TS#, TSNAME, BLOCK_SIZE, CON_DBID, CON_ID
+    ) SELECT p_DBID, d.File#, d.Creation_Change#, d.Name, d.TS#, ts.Name, d.Block_Size,
+             p_Con_DBID,
+             #{PanoramaConnection.db_version >= '12.1' ? "d.Con_ID" : "0"}
+      FROM   v$Tempfile d
+      JOIN   v$Tablespace ts ON ts.ts# = d.ts#
+      AND    NOT EXISTS (SELECT 1 FROM Panorama_Tempfile di WHERE di.DBID = p_DBID AND di.FILE# = d.FILE# AND di.CREATION_CHANGE# = d.CREATION_CHANGE# AND di.Con_DBID = p_Con_DBID)
+    ;
+  END Snap_Tempfile;
+
+  PROCEDURE Snap_TempStatXS(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_TempStatXS (SNAP_ID, DBID, INSTANCE_NUMBER, FILE#, Creation_Change#,
+                                     PHYRDS, PHYWRTS, SINGLEBLKRDS, READTIM, WRITETIM, SINGLEBLKRDTIM, PHYBLKRD, PHYBLKWRT, WAIT_COUNT, TIME,
+                                     CON_DBID, CON_ID
+    ) SELECT p_Snap_ID, p_DBID, p_Instance, f.File#, d.Creation_Change#, f.PHYRDS, f.PHYWRTS, f.SINGLEBLKRDS, f.READTIM, f.WRITETIM, f.SINGLEBLKRDTIM, f.PHYBLKRD, f.PHYBLKWRT, NULL /* WAIT_COUNT */, NULL /* TIME */,
+             p_Con_DBID,
+             #{PanoramaConnection.db_version >= '12.1' ? "f.Con_ID" : "0"}
+      FROM   v$TempStat f
+      JOIN   v$Tempfile d ON d.File# = f.File#
+    ;
+  END Snap_TempStatXS;
+
   PROCEDURE Snap_TopLevelCallName(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     #{ PanoramaConnection.db_version >= '11.2' ?
@@ -528,8 +578,10 @@ END Panorama_Sampler_Snapshot;
                         p_SQL_Min_No_of_Execs IN NUMBER, p_SQL_Min_Runtime_MilliSecs IN NUMBER) IS
   BEGIN
     Move_ASH_To_Snapshot_Table(p_Snap_ID,   p_DBID,     p_Con_DBID);
+    Snap_Datafile             (p_DBID,      p_Con_DBID);
     Snap_DB_cache_Advice      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Enqueue_Stat         (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_FileStatXS           (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_IOStat_Filetype      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Latch                (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
@@ -547,6 +599,8 @@ END Panorama_Sampler_Snapshot;
     Snap_Sysmetric_Summary    (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_System_Event         (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_SysStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_Tempfile             (p_DBID,      p_Con_DBID);
+    Snap_TempStatXS           (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_TopLevelCallName     (p_DBID,      p_Con_DBID);
     Snap_WR_Control           (p_DBID,      p_Snapshot_Cycle, p_Snapshot_Retention);
   END Do_Snapshot;

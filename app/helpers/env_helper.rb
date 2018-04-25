@@ -137,11 +137,13 @@ module EnvHelper
         tnsadmin = "#{ENV['ORACLE_HOME']}/network/admin"
       else
         logger.warn 'read_tnsnames: TNS_ADMIN or ORACLE_HOME not set in environment, no TNS names provided'
-        return tnsnames # Leerer Hash
+        return {} # Leerer Hash
       end
     end
 
-    read_tnsnames_internal( "#{tnsadmin}/tnsnames.ora" )
+    tnsnames_filename = "#{tnsadmin}/tnsnames.ora"
+    Rails.logger.info "Using tnsnames-file at #{tnsnames_filename}"
+    read_tnsnames_internal(tnsnames_filename)
 
   rescue Exception => e
     Rails.logger.error "Error processing tnsnames.ora: #{e.message}"

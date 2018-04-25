@@ -1,0 +1,55 @@
+Create test-DBs from docker images
+##################################
+
+For images from store/oracle/database-enterprise:12.1.0.2 run:
+
+create env file ora.conf:
+DB_SID=ORCLCDB
+DB_PDB=ORCLPDB1
+DB_MEMORY=2G
+DB_DOMAIN=localdomain
+DB_PASSWD=oracle
+## db bundle
+## default : basic
+## valid : basic / high / extreme
+## (high and extreme are only available for enterprise edition)
+DB_BUNDLE=basic
+## end
+
+Create docker container:
+> docker run -d -it --env-file ora.conf -P -p 1521:1521 -p 5500:5500 -it --name oracle_12.1.0.2-ee store/oracle/database-enterprise:12.1.0.2
+
+
+####################################################
+For images build by github.com/oracle/docker-images:
+
+> docker run -d --name oracle_12.2.0.1-ee \
+  -p 1521:1521 -p 5500:5500 \
+  -e ORACLE_SID=ORCLCDB \
+  -e ORACLE_PDB=ORCLPDB1 \
+  -e ORACLE_PWD=oracle \
+  -e ORACLE_CHARACTERSET=AL32UTF8 \
+  oracle/database:12.2.0.1-ee
+
+
+Create user
+################################################
+Execute as SYS on PDB:
+create user panorama_test identified by panorama_test default tablespace sysaux temporary tablespace temp;
+grant connect, resource to panorama_test;
+GRANT CREATE VIEW TO panorama_test;
+grant select any dictionary, OEM_Monitor to panorama_test;
+-- muss als sys ausgeführt werden
+GRANT EXECUTE ON DBMS_LOCK TO panorama_test;
+alter profile DEFAULT limit password_life_time UNLIMITED;
+ALTER USER panorama_test quota unlimited on sysaux;
+
+Execute as SYS on CDB:
+create user c##panorama identified by c##panorama default tablespace sysaux temporary tablespace temp;
+grant connect, resource to c##panorama;
+GRANT CREATE VIEW TO c##panorama;
+grant select any dictionary, OEM_Monitor to c##panorama;
+GRANT EXECUTE ON DBMS_LOCK TO c##panorama; -- muss als sys ausgeführt werden
+alter profile DEFAULT limit password_life_time UNLIMITED;
+ALTER USER c##panorama quota unlimited on sysaux;
+
