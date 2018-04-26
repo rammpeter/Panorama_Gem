@@ -489,18 +489,23 @@ public
   end
 
   def list_machine_ip_info
-    machine_name = params[:machine_name]
+    @machine_name = params[:machine_name]
 
     resolver = Resolv::DNS.new
-    result = "DNS-info for machine name \"#{machine_name}\":\\n"
 
-    resolver.each_address(machine_name) do |address|
-      result << "IP-address = #{address}\\n"
+    @dns_info = []
+    resolver.each_address(@machine_name) do |address|
       resolver.each_name(address.to_s) do |name|
-        result << "Name for IP-address \"#{address}\" = #{name}\\n"
+        @dns_info << { ip_address: address, name: name }
       end
     end
-    show_popup_message result
+    @sessions = sql_select_all ["SELECT OSUser, Program, COUNT(*) Sessions
+                                 FROM   gv$Session
+                                 WHERE  Machine = ?
+                                 GROUP BY OSUser, Program
+                                ", @machine_name]
+
+    render_partial
   end
 
   # Get arry with all engine's controller actions for routing

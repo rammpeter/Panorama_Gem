@@ -42,7 +42,7 @@
 column_options =
 [
   {:caption=>"Month",            :data=>proc{|rec| rec.Month},                                :title=>"Interval of grouping"},
-  {:caption=>"Requests",         :data=>proc{|rec| link_column_single_record(rec, formattedNumber(rec.Requests))},   :title=>"Number of requests in period", :align=>"right"},
+  {:caption=>"Requests",         :data=>proc{|rec| link_column_single_record(rec, fn(rec.Requests))},   :title=>"Number of requests in period", :align=>"right"},
   {:caption=>"Databases",        :data=>proc{|rec| link_column_database(rec)},                :title=>"Number of databases requests are executed on in time period", :align=>"right"},
   {:caption=>"Clients",          :data=>proc{|rec| link_column_client(rec)},                  :title=>"Number of clients requests are executed from in period", :align=>"right"},
   {:caption=>"Controllers",      :data=>proc{|rec| link_column_controller(rec)},              :title=>"Number of controllers executing requests in period", :align=>"right"},
@@ -51,5 +51,5 @@ column_options =
 %>
 <%= gen_slickgrid(@usage, column_options, {:caption=>"Overview per month", :max_height=>450, :width=>:auto}) %>
 
-<div id="usage_info_detail_area" style="float:left; width:100%; ">
+<div id="usage_info_detail_area">
 </div>
