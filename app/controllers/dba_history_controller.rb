@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-require 'net/ping'                                                              # for method ping
+require 'rubygems/test_case'                                                    # for method win_platform?
 
 class DbaHistoryController < ApplicationController
   include DbaHelper
@@ -2262,7 +2262,15 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
 
     # Check availability of internet access
     oracle_host = 'download.oracle.com'
-    if Net::Ping::HTTP.new(oracle_host).ping
+
+    if Gem.win_platform?
+      pingable = system "ping -n 1 #{oracle_host}"
+    else
+      pingable = system "ping -c 1 #{oracle_host}"
+    end
+
+    #pingable =  Net::Ping::HTTP.new(oracle_host).ping
+    if  pingable
       type = 'ACTIVE'                                                               # Active content with download from oracle
     else
       Rails.logger.error "SQL Monitor report type switched from ACTIVE to HTTP because host '#{oracle_host}' is unreachable"

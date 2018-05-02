@@ -28,8 +28,7 @@ Aims to issues that are inadequately analyzed and presented by other existing to
 
   # Use SCSS for stylesheets
   s.add_dependency  'sass-rails', '~> 5.0'
-  s.add_dependency  'net-ping'
-  s.add_dependency  'win32-security'                                            # Needed on Windows-Platform for net-ping
+  #  s.add_dependency  'net-ping'                                               # raises problem with win32-security on Windows-Systems: not usable
 
   #s.add_dependency  'turbolinks'                                                # needed for redirect_to
 
