@@ -1,7 +1,5 @@
 # encoding: utf-8
 
-require 'rubygems/test_case'                                                    # for method win_platform?
-
 class DbaHistoryController < ApplicationController
   include DbaHelper
   include ActionView::Helpers::SanitizeHelper
@@ -2263,7 +2261,7 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     # Check availability of internet access
     oracle_host = 'download.oracle.com'
 
-    if Gem.win_platform?
+    if RbConfig::CONFIG['host_os'] =~ /mswin/
       pingable = system "ping -n 1 #{oracle_host}"
     else
       pingable = system "ping -c 1 #{oracle_host}"

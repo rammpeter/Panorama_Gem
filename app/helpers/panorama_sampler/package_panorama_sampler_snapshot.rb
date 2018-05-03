@@ -160,6 +160,15 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_Log;
 
+  PROCEDURE Snap_Parameter(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_Parameter (SNAP_ID, DBID, INSTANCE_NUMBER, PARAMETER_HASH, PARAMETER_NAME, VALUE, ISDEFAULT, ISMODIFIED, CON_DBID, CON_ID
+    ) SELECT p_Snap_ID, p_DBID, p_Instance, Hash, Name, Value, ISDEFAULT, ISMODIFIED, p_Con_DBID,
+             #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+      FROM   v$Parameter
+    ;
+  END Snap_Parameter;
+
   PROCEDURE Snap_PGAStat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO Panorama_PGAStat (SNAP_ID, DBID, INSTANCE_NUMBER, NAME, VALUE, CON_DBID, CON_ID
@@ -530,6 +539,18 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_SysStat;
 
+  PROCEDURE Snap_Tablespace(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_Tablespace (DBID, TS#, TSNAME, CONTENTS, SEGMENT_SPACE_MANAGEMENT, EXTENT_MANAGEMENT, BLOCK_SIZE, CON_DBID, CON_ID
+    ) SELECT p_DBID, d.TS#, d.NAME, t.CONTENTS, t.SEGMENT_SPACE_MANAGEMENT, t.EXTENT_MANAGEMENT, t.BLOCK_SIZE,
+             p_Con_DBID,
+             #{PanoramaConnection.db_version >= '12.1' ? "d.Con_ID" : "0"}
+      FROM   v$Tablespace d
+      JOIN   DBA_Tablespaces t ON t.Tablespace_Name = d.Name
+      AND    NOT EXISTS (SELECT 1 FROM Panorama_Tablespace di WHERE di.DBID = p_DBID AND di.TS# = d.TS# AND di.Con_DBID = p_Con_DBID)
+    ;
+  END Snap_Tablespace;
+
   PROCEDURE Snap_Tempfile(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO Panorama_Tempfile (DBID, FILE#, CREATION_CHANGE#, FILENAME, TS#, TSNAME, BLOCK_SIZE, CON_DBID, CON_ID
@@ -568,6 +589,20 @@ END Panorama_Sampler_Snapshot;
     }
   END Snap_TopLevelCallName;
 
+  PROCEDURE Snap_UndoStat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_UndoStat(BEGIN_TIME, END_TIME, DBID, INSTANCE_NUMBER, SNAP_ID, UNDOTSN, UNDOBLKS, TXNCOUNT, MAXQUERYLEN, MAXQUERYSQLID, MAXCONCURRENCY, UNXPSTEALCNT,
+                                  UNXPBLKRELCNT, UNXPBLKREUCNT, EXPSTEALCNT, EXPBLKRELCNT, EXPBLKREUCNT, SSOLDERRCNT, NOSPACEERRCNT, ACTIVEBLKS, UNEXPIREDBLKS, EXPIREDBLKS,
+                                  TUNED_UNDORETENTION, CON_DBID, CON_ID)
+    SELECT BEGIN_TIME, END_TIME, p_DBID, p_INSTANCE, p_SNAP_ID, UNDOTSN, UNDOBLKS, TXNCOUNT, MAXQUERYLEN, MAXQUERYID, MAXCONCURRENCY, UNXPSTEALCNT, UNXPBLKRELCNT,
+           UNXPBLKREUCNT, EXPSTEALCNT, EXPBLKRELCNT, EXPBLKREUCNT, SSOLDERRCNT, NOSPACEERRCNT, ACTIVEBLKS, UNEXPIREDBLKS, EXPIREDBLKS, TUNED_UNDORETENTION,
+           p_Con_DBID,  #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+    FROM   V$UndoStat u
+    WHERE NOT EXISTS (SELECT 1 FROM Panorama_UndoStat i WHERE i.BEGIN_TIME = u.Begin_Time AND i.END_TIME = u.End_time AND i.DBID = p_DBID AND i.INSTANCE_NUMBER = p_Instance AND i.CON_DBID = p_Con_DBID)
+    AND   u.Begin_Time < (SELECT MAX(Begin_Time) FROM V$UndoStat) /* Newest record is dynamically cumulated until age of 10 minutes */
+    ;
+  END Snap_UndoStat;
+
   PROCEDURE Snap_WR_Control(p_DBID IN NUMBER, p_Snapshot_Cycle IN NUMBER, p_Snapshot_Retention IN NUMBER) IS
   BEGIN
     -- Create record if not exists
@@ -598,6 +633,7 @@ END Panorama_Sampler_Snapshot;
     Snap_IOStat_Filetype      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Latch                (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_Parameter            (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_PGAStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Resource_Limit       (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Service_Name         (p_DBID,      p_Con_DBID);
@@ -612,9 +648,11 @@ END Panorama_Sampler_Snapshot;
     Snap_Sysmetric_Summary    (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_System_Event         (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_SysStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_Tablespace           (p_DBID,      p_Con_DBID);
     Snap_Tempfile             (p_DBID,      p_Con_DBID);
     Snap_TempStatXS           (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_TopLevelCallName     (p_DBID,      p_Con_DBID);
+    Snap_UndoStat             (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_WR_Control           (p_DBID,      p_Snapshot_Cycle, p_Snapshot_Retention);
   END Do_Snapshot;
     "

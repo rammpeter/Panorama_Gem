@@ -494,14 +494,18 @@ class StorageController < ApplicationController
 
     @undo_history = sql_select_iterator ["\
       SELECT /* Panorama-Tool Ramm */
-             Begin_Time, End_Time, Instance_Number, UndoBlks, TxnCount, MaxQueryLen, MaxQuerySQLID,
-             MaxConcurrency, UnxpStealCnt, UnxpBlkRelCnt, UnxpBlkReuCnt, ExpStealCnt, ExpBlkRelCnt, ExpBlkReuCnt,
-             SSOldErrCnt, NoSpaceErrCnt, ActiveBlks, UnexpiredBlks, ExpiredBlks, Tuned_UndoRetention
-      FROM   DBA_Hist_UndoStat
-      WHERE  Begin_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-      #{'AND Instance_Number = ?' if @instance}
+             u.Begin_Time, u.End_Time, u.Instance_Number, u.UndoBlks, u.TxnCount, u.MaxQueryLen, u.MaxQuerySQLID,
+             u.MaxConcurrency, u.UnxpStealCnt, u.UnxpBlkRelCnt, u.UnxpBlkReuCnt, u.ExpStealCnt, u.ExpBlkRelCnt, u.ExpBlkReuCnt,
+             u.SSOldErrCnt, u.NoSpaceErrCnt, u.ActiveBlks, u.UnexpiredBlks, u.ExpiredBlks, u.Tuned_UndoRetention,
+             t.Block_Size
+      FROM   DBA_Hist_UndoStat u
+      LEFT OUTER JOIN DBA_Hist_Parameter p ON p.DBID = u.DBID AND p.Snap_ID = u.Snap_ID AND p.Instance_Number = u.Instance_Number AND p.Parameter_Hash = 2692150816 /* undo_tablespace */ #{"AND p.Con_DBID = u.Con_DBID" if get_db_version >= '12.1'}
+      LEFT OUTER JOIN DBA_Tablespaces t ON t.Tablespace_Name = p.Value
+      WHERE  u.Begin_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+      AND    u.DBID = ?
+      #{'AND u.Instance_Number = ?' if @instance}
       ORDER BY Begin_Time
-      ", @time_selection_start, @time_selection_end].concat(@instance ? [@instance] : [])
+      ", @time_selection_start, @time_selection_end, get_dbid].concat(@instance ? [@instance] : [])
 
     render_partial
   end
