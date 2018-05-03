@@ -10,7 +10,7 @@
       <%= text_field_tag(:instance, read_from_client_info_store(:instance), :size=>1) %>
     </div>
     <div class="flex-row-element">
-      <%= submit_tag('Generate ASH report', :title =>'Generate ASH-report by executing DBMS_WORKLOAD_REPOSITORY.ASH_GLOBAL_REPORT_HTML') %>
+      <%= submit_tag('Generate ASH report', :title =>"Generate ASH-report by executing DBMS_WORKLOAD_REPOSITORY.ASH_GLOBAL_REPORT_HTML\nRequires the role DBA or OEM_MONITOR for the connected user") %>
     </div>
   </div>
 <% end %>
