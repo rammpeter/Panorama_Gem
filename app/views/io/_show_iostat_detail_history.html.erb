@@ -1,4 +1,4 @@
-<div class="page_caption">I/O History from DBA_Hist_IOStat_Detail</div>
+<%= render_page_caption("I/O History from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_IOStat_Detail')}") %>
 
 <%= ajax_form(:controller=> :io, :action => :list_iostat_detail_history, :update_area => :list_iostat_detail_history_area) do %>
   <div class="flex-row-container">

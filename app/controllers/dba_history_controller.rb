@@ -1840,7 +1840,7 @@ FROM (
   def show_resource_limits_historic
     @names = sql_select_all 'SELECT /* Panorama-Tool Ramm */ DISTINCT Resource_Name FROM DBA_Hist_Resource_Limit'
     if @names.length == 0
-      show_popup_message("No content available in DBA_Hist_Resource_Limit for your connection!
+      show_popup_message("No content available in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Resource_Limit')} for your connection!
 For PDB please connect to database with CDB-user instead of PDB-user.")
     else
       render_partial

@@ -1,4 +1,4 @@
-<div class="page_caption">PGA-history from DBA_Hist_PGAStat</div>
+<%= render_page_caption("PGA-history from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_PGAStat')}") %>
 
 
 <%= ajax_form(:controller=>:dba_pga, :action=>"list_pga_stat_historic", :update_area=>"list_pga_stat_historic_area") do %>

@@ -1,6 +1,6 @@
 <% @update_area = get_unique_area_id %>
 
-<div class="page_caption">Session-Statistics from DBA_Hist_Active_Sess_History</div>
+<%= render_page_caption("Session-Statistics from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Active_Sess_History')}") %>
 
 <%=
     ajax_form(:controller  => :active_session_history,

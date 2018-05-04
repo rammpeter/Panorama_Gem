@@ -14,7 +14,7 @@ def link_column_detail(rec, value)
             :time_selection_end   => localeDateTime(rec.end_interval_time, :minutes),  # 1 Tag weiter
             :update_area=> @update_area
           },
-   :title=>t(:dba_history_list_sql_history_snapshots_link_sql_detail_hint, :default=>'Show details for SQL from DBA_Hist_SQLStat within interval (below)')
+   :title=>t(:dba_history_list_sql_history_snapshots_link_sql_detail_hint, :default=>'Show details of SQL for this period from %{table_name}', table_name: PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat'))
   )
 end
 
@@ -54,7 +54,7 @@ column_options =
 
 %>
 <%=
-caption = t(:dba_history_list_sql_history_snapshots_caption, :default=>"Historic snapshots from DBA_Hist_SQL_Stat for SQL-ID = '%{sql_id}' Instance = %{instance}", :sql_id=>@sql_id, :instance=>@instance)
+caption = t(:dba_history_list_sql_history_snapshots_caption, :default=>"Historic snapshots from %{table_name} for SQL-ID = '%{sql_id}' Instance = %{instance}", :sql_id=>@sql_id, :instance=>@instance, table_name: PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat'))
 caption << '<br><div style="font-weight: normal;">'
 
 @time_selection_start_id = "time_selection_start_#{get_unique_area_id}"

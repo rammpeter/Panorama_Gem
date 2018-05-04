@@ -1269,7 +1269,7 @@ ORDER BY Column_ID
     return org_table_name if PanoramaConnection.get_config[:management_pack_license] != :panorama_sampler   # Sampler not active
     replacement = replacement_table(org_table_name)
     return org_table_name if replacement.nil?
-    "#{PanoramaConnection.get_config[:panorama_sampler_schema]}.#{replacement}" # Table replaced by sampler
+    "#{PanoramaConnection.get_config[:panorama_sampler_schema].downcase}.#{replacement}" # Table replaced by sampler
   end
 
   # Check existence of DBA_Hist-alternative in Panorama
