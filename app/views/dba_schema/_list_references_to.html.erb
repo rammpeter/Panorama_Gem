@@ -14,6 +14,7 @@
                     {:caption=> 'Validated',                   :data=>proc{|rec| rec.validated},                   :title=> 'Validate status'},
                     {:caption=> 'Num. rows',                   :data=>proc{|rec| fn(rec.num_rows)},                :title=> 'Number of rows of referencing table', :align=>:right},
                     {:caption=> 'Last change',                 :data=>proc{|rec| localeDateTime(rec.last_change)}, :title=> 'Date of last change'},
+                    {:caption=> 'Index name',                  :data=>proc{|rec| rec.index_name},                  :title => "Name of index for protection of foreign key constraint.\nChecked for first column of constraint only (if constraint has multiple columns).", data_title: proc {|rec| "%t\nIf no index exists for constraints column(s) than each DELETE on #{@table_name} fires a full table scan on #{rec.table_name}.\nThis and some lock issues are only a problem if #{@table_name} is a larger table with frequent DML-operations.\nWorking without an index here may be useful if #{@table_name} has only few records and there is less or no DML on #{@table_name}.#{"\n\nThere are #{rec.index_number} indexes on #{rec.table_name} starting with the same column!" if !rec.index_number.nil? && rec.index_number > 1}"}},
             ]
 
     gen_slickgrid(@referencing, column_options, {

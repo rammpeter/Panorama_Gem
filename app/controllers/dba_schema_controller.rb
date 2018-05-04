@@ -684,7 +684,7 @@ class DbaSchemaController < ApplicationController
     @table_name = params[:table_name]
 
     @references = sql_select_all ["\
-      SELECT c.*, r.Table_Name R_Table_Name, rt.Num_Rows r_Num_Rows,
+      SELECT c.*, r.Table_Name R_Table_Name, rt.Num_Rows r_Num_Rows, ci.Index_Name, ci.Index_Number,
              #{get_db_version >= "11.2" ?
                                       "(SELECT LISTAGG(column_name, ', ') WITHIN GROUP (ORDER BY Position) FROM DBA_Cons_Columns cc WHERE cc.Owner = c.Owner AND cc.Constraint_Name = c.Constraint_Name) Columns,
                                        (SELECT LISTAGG(column_name, ', ') WITHIN GROUP (ORDER BY Position) FROM DBA_Cons_Columns cc WHERE cc.Owner = r.Owner AND cc.Constraint_Name = r.Constraint_Name) R_Columns
@@ -696,10 +696,18 @@ class DbaSchemaController < ApplicationController
       FROM   DBA_Constraints c
       JOIN   DBA_Constraints r ON r.Owner = c.R_Owner AND r.Constraint_Name = c.R_Constraint_Name
       JOIN   DBA_Tables rt ON rt.Owner = r.Owner AND rt.Table_Name = r.Table_Name
+      JOIN   DBA_Cons_Columns cc1 ON cc1.Owner = c.Owner AND cc1.Constraint_Name = c.Constraint_Name AND cc1.Position = 1
+      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ic.Column_Name, MIN(ic.Index_Name) Index_Name, COUNT(*) Index_Number
+                       FROM   DBA_Ind_Columns ic
+                       WHERE  ic.Table_Owner = ?
+                       AND    ic.table_Name  = ?
+                       AND    ic.Column_Position = 1
+                       GROUP BY ic.Column_Name
+                      ) ci ON ci.Column_Name = cc1.Column_Name
       WHERE  c.Constraint_Type = 'R'
       AND    c.Owner      = ?
       AND    c.Table_Name = ?
-      ", @owner, @table_name]
+      ", @owner, @table_name, @owner, @table_name]
 
     render_partial
   end
@@ -709,7 +717,7 @@ class DbaSchemaController < ApplicationController
     @table_name = params[:table_name]
 
     @referencing = sql_select_all ["\
-      SELECT c.*, ct.Num_Rows,
+      SELECT c.*, ct.Num_Rows,  ci.Index_Name, ci.Index_Number,
              #{get_db_version >= "11.2" ?
                                       "(SELECT  LISTAGG(column_name, ', ') WITHIN GROUP (ORDER BY Position) FROM DBA_Cons_Columns cc WHERE cc.Owner = r.Owner AND cc.Constraint_Name = r.Constraint_Name) R_Columns,
                                        (SELECT  LISTAGG(column_name, ', ') WITHIN GROUP (ORDER BY Position) FROM DBA_Cons_Columns cc WHERE cc.Owner = c.Owner AND cc.Constraint_Name = c.Constraint_Name) Columns
@@ -721,6 +729,12 @@ class DbaSchemaController < ApplicationController
       FROM   DBA_Constraints r
       JOIN   DBA_Constraints c ON c.R_Owner = r.Owner AND c.R_Constraint_Name = r.Constraint_Name
       JOIN   DBA_Tables ct ON ct.Owner = c.Owner AND ct.Table_Name = c.Table_Name
+      JOIN   DBA_Cons_Columns cc1 ON cc1.Owner = c.Owner AND cc1.Constraint_Name = c.Constraint_Name AND cc1.Position = 1
+      LEFT OUTER JOIN (SELECT ic.Table_Owner, ic.Table_Name, ic.Column_Name, MIN(ic.Index_Name) Index_Name, COUNT(*) Index_Number
+                       FROM   DBA_Ind_Columns ic
+                       WHERE  ic.Column_Position = 1
+                       GROUP BY ic.Table_Owner, ic.Table_Name, ic.Column_Name
+                      ) ci ON ci.Table_Owner = ct.Owner AND ci.Table_Name = ct.Table_Name AND ci.Column_Name = cc1.Column_Name
       WHERE  c.Constraint_Type = 'R'
       AND    r.Owner      = ?
       AND    r.Table_Name = ?

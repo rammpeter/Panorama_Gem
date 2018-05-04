@@ -241,7 +241,7 @@ column_options =
         :action      => :list_references_from,
         :owner       => @owner,
         :table_name  => @table_name
-    }, :title => "Show foreign key references from table #{@owner}.#{@table_name}")
+    }, :title => "Show foreign key references from table #{@owner}.#{@table_name} to other tables")
     %>
   </div>
   <div class="flex-row-element">
@@ -250,7 +250,7 @@ column_options =
         :action      => :list_references_to,
         :owner       => @owner,
         :table_name  => @table_name
-    }, :title => "Show foreign key references to table #{@owner}.#{@table_name}")
+    }, :title => "Show foreign key references from other tables to table #{@owner}.#{@table_name}")
     %>
   </div>
   <div class="flex-row-element">
