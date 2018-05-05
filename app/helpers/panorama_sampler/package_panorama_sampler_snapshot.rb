@@ -178,6 +178,20 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_PGAStat;
 
+  PROCEDURE Snap_Process_Mem_Summary(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO Panorama_Process_Mem_Summary (SNAP_ID, DBID, INSTANCE_NUMBER, CATEGORY, IS_INSTANCE_WIDE,
+                                              NUM_PROCESSES, NON_ZERO_ALLOCS, USED_TOTAL, ALLOCATED_TOTAL, ALLOCATED_AVG,
+                                              ALLOCATED_STDDEV, ALLOCATED_MAX, MAX_ALLOCATED_MAX, CON_DBID, CON_ID
+    ) SELECT p_Snap_ID, p_DBID, p_Instance, Category, DECODE(#{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}, 0, 1, 0),
+             COUNT(*), SUM(DECODE(Allocated, 0, 0, 1)), SUM(Used), SUM(Allocated), AVG(Allocated),
+             STDDEV(Allocated), MAX(Max_Allocated), SUM(Max_Allocated), p_Con_DBID,
+             #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+      FROM   v$Process_Memory
+      GROUP BY Category, DECODE(#{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}, 0, 1, 0), #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+    ;
+  END Snap_Process_Mem_Summary;
+
   PROCEDURE Snap_Resource_Limit(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO Panorama_Resource_Limit (Snap_ID, DBID, Instance_Number, Resource_Name, Current_Utilization, Max_Utilization, Initial_Allocation, Limit_Value, Con_DBID, Con_ID)
@@ -635,6 +649,7 @@ END Panorama_Sampler_Snapshot;
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Parameter            (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_PGAStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_Process_Mem_Summary  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Resource_Limit       (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Service_Name         (p_DBID,      p_Con_DBID);
     Snap_Seg_Stat             (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);

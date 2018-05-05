@@ -646,6 +646,28 @@ class PanoramaSamplerStructureCheck
           primary_key: ['DBID', 'Snap_ID', 'Instance_Number', 'Name', 'Con_DBID'],
       },
       {
+          table_name: 'Panorama_Process_Mem_Summary',
+          domain: :AWR,
+          columns: [
+              { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CATEGORY',                       column_type:   'VARCHAR2',  not_null: true, precision: 15 },
+              { column_name:  'IS_INSTANCE_WIDE',               column_type:   'NUMBER',    not_null: true },
+              { column_name:  'NUM_PROCESSES',                  column_type:   'NUMBER' },
+              { column_name:  'NON_ZERO_ALLOCS',                column_type:   'NUMBER' },
+              { column_name:  'USED_TOTAL',                     column_type:   'NUMBER' },
+              { column_name:  'ALLOCATED_TOTAL',                column_type:   'NUMBER' },
+              { column_name:  'ALLOCATED_AVG',                  column_type:   'NUMBER' },
+              { column_name:  'ALLOCATED_STDDEV',               column_type:   'NUMBER' },
+              { column_name:  'ALLOCATED_MAX',                  column_type:   'NUMBER' },
+              { column_name:  'MAX_ALLOCATED_MAX',              column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER' },
+          ],
+          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'CATEGORY', 'CON_DBID', 'IS_INSTANCE_WIDE'],
+      },
+      {
           table_name: 'Panorama_Resource_Limit',
           domain: :AWR,
           columns: [

@@ -52,8 +52,8 @@ class DbaGeneralTest < ApplicationSystemTestCase
   test "DB-Locks / Blocking locks historic" do
     login_and_menu_call('DBA general', 'DB-Locks', 'menu_active_session_history_show_blocking_locks_historic')
     assert_ajax_success
-    assert_text 'Blocking Locks from DBA_Hist_Active_Sess_History'
 
+    assert_text 'Blocking Locks from '                                          # tablename may vary depending from panorama_sampler or not
 
     fill_in('time_selection_start_default', with: get_time_string(1440))
     fill_in('time_selection_end_default',   with: get_time_string)
