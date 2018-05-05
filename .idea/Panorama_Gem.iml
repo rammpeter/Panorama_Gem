@@ -420,7 +420,7 @@
     <orderEntry type="library" scope="PROVIDED" name="minitest-rails (v3.0.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="minitest-rails-capybara (v3.0.1, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="minitest-reporters (v1.2.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="nio4r (v2.3.0, RVM: jruby-9.1.16.0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="nio4r (v2.3.1, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="nokogiri (v1.8.2, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="public_suffix (v3.0.2, RVM: jruby-9.1.16.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="puma (v3.11.3, RVM: jruby-9.1.16.0) [gem]" level="application" />
