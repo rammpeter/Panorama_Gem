@@ -277,7 +277,7 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
 
   test "select_plan_hash_value_for_baseline with xhr: true" do
     post '/dba_history/select_plan_hash_value_for_baseline', :params => {:format=>:html, :sql_id=>@hist_sql_id, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :update_area=>:hugo }
-    assert_response [:diagnostics_pack, :diagnostics_and_tuning_pack].include?(management_pack_license) ? :success : :error
+    assert_response [:diagnostics_pack, :diagnostics_and_tuning_pack, :panorama_sampler].include?(management_pack_license) ? :success : :error
 
   end
 
