@@ -9,8 +9,6 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb" beforeDir="false" afterPath="$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb" afterDir="false" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -220,11 +218,32 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="application_system_test_case.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="application_system_test_case.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="300">
-              <caret line="141" column="14" selection-start-line="141" selection-start-column="14" selection-end-line="141" selection-end-column="14" />
+            <state relative-caret-position="233">
+              <caret line="124" column="6" selection-start-line="124" selection-start-column="6" selection-end-line="124" selection-end-column="6" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="_show_personal_selection_form.html.erb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/views/dragnet/_show_personal_selection_form.html.erb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="435">
+              <caret line="38" selection-start-line="38" selection-end-line="38" />
+              <folding>
+                <element signature="n#style#0;n#div#1;n#div#0;n#!!top" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="_personal_selection_help.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/views/dragnet/_personal_selection_help.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-17">
+              <caret line="85" column="43" selection-start-line="85" selection-start-column="41" selection-end-line="85" selection-end-column="43" />
             </state>
           </provider>
         </entry>
@@ -256,8 +275,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>.net</find>
-      <find>Last us</find>
       <find>NULL</find>
       <find>genera</find>
       <find>@@config_access_mutex</find>
@@ -286,6 +303,8 @@
       <find>sleep</find>
       <find>assert_true</find>
       <find>assert</find>
+      <find>\&quot;</find>
+      <find>\\&quot;</find>
     </findStrings>
     <replaceStrings>
       <replace>dLast_Load_Time</replace>
@@ -302,6 +321,7 @@
       <replace>flex-row-element</replace>
       <replace>@config_hash</replace>
       <replace>config_hash</replace>
+      <replace>&quot;</replace>
     </replaceStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/app/views/io</dir>
@@ -314,8 +334,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_detail_sql_id.html.erb" />
-        <option value="$PROJECT_DIR$/docker_test_db/README" />
         <option value="$PROJECT_DIR$/app/helpers/env_helper.rb" />
         <option value="$PROJECT_DIR$/app/models/worker_thread.rb" />
         <option value="$PROJECT_DIR$/app/views/usage/info.html.erb" />
@@ -365,6 +383,8 @@
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb" />
+        <option value="$PROJECT_DIR$/app/views/dragnet/_personal_selection_help.html.erb" />
+        <option value="$PROJECT_DIR$/app/views/dragnet/_show_personal_selection_form.html.erb" />
       </list>
     </option>
   </component>
@@ -498,6 +518,13 @@
               <item name="app" type="462c0819:PsiDirectoryNode" />
               <item name="views" type="462c0819:PsiDirectoryNode" />
               <item name="active_session_history" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
+              <item name="app" type="462c0819:PsiDirectoryNode" />
+              <item name="views" type="462c0819:PsiDirectoryNode" />
+              <item name="dragnet" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
@@ -1308,21 +1335,7 @@
       <workItem from="1524656408594" duration="13449000" />
       <workItem from="1525181573889" duration="559000" />
       <workItem from="1525254729741" duration="6636000" />
-      <workItem from="1525336779983" duration="34023000" />
-    </task>
-    <task id="LOCAL-01324" summary="Debug output for housekeeping">
-      <created>1522274011112</created>
-      <option name="number" value="01324" />
-      <option name="presentableId" value="LOCAL-01324" />
-      <option name="project" value="LOCAL" />
-      <updated>1522274011112</updated>
-    </task>
-    <task id="LOCAL-01325" summary="Comment in error">
-      <created>1522314164444</created>
-      <option name="number" value="01325" />
-      <option name="presentableId" value="LOCAL-01325" />
-      <option name="project" value="LOCAL" />
-      <updated>1522314164444</updated>
+      <workItem from="1525336779983" duration="35879000" />
     </task>
     <task id="LOCAL-01326" summary="Fix tests">
       <created>1522315549890</created>
@@ -1653,7 +1666,21 @@
       <option name="project" value="LOCAL" />
       <updated>1525553336271</updated>
     </task>
-    <option name="localTasksCounter" value="1373" />
+    <task id="LOCAL-01373" summary="assert_true -&gt; assert">
+      <created>1525607049470</created>
+      <option name="number" value="01373" />
+      <option name="presentableId" value="LOCAL-01373" />
+      <option name="project" value="LOCAL" />
+      <updated>1525607049470</updated>
+    </task>
+    <task id="LOCAL-01374" summary="Show personal dragnet help from own file">
+      <created>1525609181073</created>
+      <option name="number" value="01374" />
+      <option name="presentableId" value="LOCAL-01374" />
+      <option name="project" value="LOCAL" />
+      <updated>1525609181073</updated>
+    </task>
+    <option name="localTasksCounter" value="1375" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1689,7 +1716,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3196065000" />
+    <option name="totallyTimeSpent" value="3197921000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1704,17 +1731,18 @@
     <frame x="61" y="23" width="1619" height="1027" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.8472222" visible="true" weight="0.26188967" />
       <window_info anchor="bottom" id="TODO" order="7" sideWeight="0.48269352" weight="0.30472103" />
-      <window_info anchor="bottom" id="Docker" order="9" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.10209258" side_tool="true" visible="true" weight="0.14838709" />
-      <window_info anchor="right" id="Database" order="3" weight="0.26633167" />
+      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.46353838" side_tool="true" visible="true" weight="0.27096775" />
       <window_info anchor="bottom" id="Database Changes" order="0" show_stripe_button="false" />
       <window_info anchor="bottom" id="Run" order="3" sideWeight="0.890298" weight="0.47634408" />
       <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.48806533" weight="0.2532189" />
-      <window_info id="Structure" order="1" sideWeight="0.15277778" side_tool="true" visible="true" weight="0.26188967" />
       <window_info anchor="bottom" id="Terminal" order="15" sideWeight="0.49495414" weight="0.18764846" />
-      <window_info anchor="bottom" id="Debug" order="4" sideWeight="0.89790744" visible="true" weight="0.14838709" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.8466077" visible="true" weight="0.26188967" />
+      <window_info anchor="bottom" id="Docker" order="9" show_stripe_button="false" />
+      <window_info anchor="right" id="Database" order="3" weight="0.26633167" />
+      <window_info anchor="bottom" id="Find" order="5" sideWeight="0.53646165" weight="0.25376344" />
+      <window_info id="Structure" order="1" sideWeight="0.15339233" side_tool="true" visible="true" weight="0.26188967" />
+      <window_info anchor="bottom" id="Debug" order="4" sideWeight="0.89790744" weight="0.27096775" />
       <window_info id="Favorites" order="2" sideWeight="0.3464837" side_tool="true" weight="0.27805802" />
       <window_info anchor="bottom" id="Changes" order="10" weight="0.32967034" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -1727,7 +1755,6 @@
       <window_info anchor="bottom" id="Message" order="2" />
       <window_info anchor="bottom" id="Cvs" order="6" weight="0.25" />
       <window_info anchor="bottom" id="Database Console" order="16" sideWeight="0.49341694" weight="0.32939914" />
-      <window_info anchor="bottom" id="Find" order="5" sideWeight="0.5368969" weight="0.2545744" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1772,8 +1799,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Switch to Rails 5.2.0" />
-    <MESSAGE value="Remove gem : minitest-rails-capybara" />
     <MESSAGE value="Analyze Panorama-Sampler-Tables" />
     <MESSAGE value="Fix issue: NameError: uninitialized constant Minitest::Rails::TestUnit by changing .rvm/gems/jruby-9.1.16.0/gems/railties-5.2.0/lib/minitest/rails_plugin.rb" />
     <MESSAGE value="Dragnet view + analyze sampler" />
@@ -1797,7 +1822,9 @@
     <MESSAGE value="Check maximum path length" />
     <MESSAGE value="Check maximum path length at startup" />
     <MESSAGE value="README" />
-    <option name="LAST_COMMIT_MESSAGE" value="README" />
+    <MESSAGE value="assert_true -&gt; assert" />
+    <MESSAGE value="Show personal dragnet help from own file" />
+    <option name="LAST_COMMIT_MESSAGE" value="Show personal dragnet help from own file" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2000,16 +2027,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/.rvm/gems/jruby-9.1.16.0/gems/minitest-5.11.3/lib/minitest/test.rb">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$USER_HOME$/.rvm/rubies/jruby-9.1.16.0/lib/ruby/stdlib/rubygems/test_case.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="235">
-          <caret line="1119" column="21" lean-forward="true" selection-start-line="1119" selection-start-column="4" selection-end-line="1119" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/.rvm/rubies/jruby-9.1.16.0/lib/ruby/stdlib/rubygems/defaults/jruby.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="286">
@@ -2364,8 +2381,25 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="141" column="14" selection-start-line="141" selection-start-column="14" selection-end-line="141" selection-end-column="14" />
+        <state relative-caret-position="233">
+          <caret line="124" column="6" selection-start-line="124" selection-start-column="6" selection-end-line="124" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/dragnet/_personal_selection_help.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-17">
+          <caret line="85" column="43" selection-start-line="85" selection-start-column="41" selection-end-line="85" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/dragnet/_show_personal_selection_form.html.erb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="435">
+          <caret line="38" selection-start-line="38" selection-end-line="38" />
+          <folding>
+            <element signature="n#style#0;n#div#1;n#div#0;n#!!top" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
