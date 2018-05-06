@@ -1,3 +1,5 @@
+<h2>Methods for adding additional personal selections to Panorama's dragnet selection hierarchy</h2>
+
 <h3>Add one selection for personal use (in current browser)</h3>
 Fill in your selection in JSON-notation.<br/>
 If your SQL uses bind variables ( '?' ) then you describe these binds in 'parameter'-list.<br/>
@@ -58,9 +60,19 @@ Example:
                sql:  "SELECT * FROM ALL_Users",
              },
              {
-               name: "Name of selection 2",
-               desc: "Explanation of selection 2 in right dialog",
-               sql:  "SELECT * FROM ALL_Tables",
+                name:    "My Sub-Submenu",
+                entries: [
+                          {
+                            name: "Name of selection 2",
+                            desc: "Explanation of selection 2 in right dialog",
+                            sql:  "SELECT * FROM ALL_Tables",
+                          },
+                          {
+                            name: "Name of selection 3",
+                            desc: "Explanation of selection 3 in right dialog",
+                            sql:  "SELECT * FROM ALL_Views",
+                          }
+                         ]
              }
            ]
 }
