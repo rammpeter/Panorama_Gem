@@ -8,10 +8,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/initializers/check_system_preconditions.rb" beforeDir="false" afterPath="$PROJECT_DIR$/config/initializers/check_system_preconditions.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" beforeDir="false" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb" beforeDir="false" afterPath="$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb" afterDir="false" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -182,11 +181,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="120">
-              <caret line="8" column="45" lean-forward="true" selection-start-line="8" selection-start-column="45" selection-end-line="8" selection-end-column="45" />
+              <caret line="8" column="45" selection-start-line="8" selection-start-column="45" selection-end-line="8" selection-end-column="45" />
             </state>
           </provider>
         </entry>
@@ -212,6 +211,24 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="global_menu_test.rb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/system/global_menu_test.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1230">
+              <caret line="83" column="14" selection-start-line="83" selection-start-column="8" selection-end-line="83" selection-end-column="14" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="application_system_test_case.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="300">
+              <caret line="141" column="14" selection-start-line="141" selection-start-column="14" selection-end-line="141" selection-end-column="14" />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="initialize_jobs.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/config/initializers/initialize_jobs.rb">
           <provider selected="true" editor-type-id="text-editor" />
@@ -221,16 +238,7 @@
         <entry file="file://$PROJECT_DIR$/config/initializers/check_system_preconditions.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="165">
-              <caret line="11" column="100" lean-forward="true" selection-start-line="11" selection-start-column="100" selection-end-line="11" selection-end-column="100" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="dba_general_test.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/system/dba_general_test.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="304">
-              <caret line="55" column="139" selection-start-line="55" selection-start-column="139" selection-end-line="55" selection-end-column="139" />
+              <caret line="11" column="100" selection-start-line="11" selection-start-column="100" selection-end-line="11" selection-end-column="100" />
             </state>
           </provider>
         </entry>
@@ -244,30 +252,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="package_panorama_sampler_snapshot.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="224">
-              <caret line="651" column="82" selection-start-line="651" selection-start-column="82" selection-end-line="651" selection-end-column="82" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="dba_history_controller_test.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="348">
-              <caret line="279" column="19" selection-start-line="279" selection-start-column="19" selection-end-line="279" selection-end-column="123" />
-            </state>
-          </provider>
-        </entry>
-      </file>
     </leaf>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>oracle_dow</find>
-      <find>downc</find>
       <find>.net</find>
       <find>Last us</find>
       <find>NULL</find>
@@ -296,6 +284,8 @@
       <find>dba_history_list_sql_history_snapshots_link_sql_detail_hint</find>
       <find>select_plan_hash_value_for_baseline</find>
       <find>sleep</find>
+      <find>assert_true</find>
+      <find>assert</find>
     </findStrings>
     <replaceStrings>
       <replace>dLast_Load_Time</replace>
@@ -324,8 +314,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/helpers/dragnet/view_issues_helper.rb" />
-        <option value="$PROJECT_DIR$/app/helpers/application_helper.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_sql_detail_sql_id.html.erb" />
         <option value="$PROJECT_DIR$/docker_test_db/README" />
         <option value="$PROJECT_DIR$/app/helpers/env_helper.rb" />
@@ -375,6 +363,8 @@
         <option value="$PROJECT_DIR$/test/dummy/log/development.log" />
         <option value="$PROJECT_DIR$/config/initializers/check_system_preconditions.rb" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+        <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb" />
       </list>
     </option>
   </component>
@@ -1318,21 +1308,7 @@
       <workItem from="1524656408594" duration="13449000" />
       <workItem from="1525181573889" duration="559000" />
       <workItem from="1525254729741" duration="6636000" />
-      <workItem from="1525336779983" duration="29603000" />
-    </task>
-    <task id="LOCAL-01322" summary="asserts with text">
-      <created>1522270820310</created>
-      <option name="number" value="01322" />
-      <option name="presentableId" value="LOCAL-01322" />
-      <option name="project" value="LOCAL" />
-      <updated>1522270820310</updated>
-    </task>
-    <task id="LOCAL-01323" summary="asserts with text and error dialog content">
-      <created>1522271564941</created>
-      <option name="number" value="01323" />
-      <option name="presentableId" value="LOCAL-01323" />
-      <option name="project" value="LOCAL" />
-      <updated>1522271564942</updated>
+      <workItem from="1525336779983" duration="34023000" />
     </task>
     <task id="LOCAL-01324" summary="Debug output for housekeeping">
       <created>1522274011112</created>
@@ -1663,7 +1639,21 @@
       <option name="project" value="LOCAL" />
       <updated>1525546611040</updated>
     </task>
-    <option name="localTasksCounter" value="1371" />
+    <task id="LOCAL-01371" summary="Check maximum path length at startup">
+      <created>1525551361313</created>
+      <option name="number" value="01371" />
+      <option name="presentableId" value="LOCAL-01371" />
+      <option name="project" value="LOCAL" />
+      <updated>1525551361313</updated>
+    </task>
+    <task id="LOCAL-01372" summary="README">
+      <created>1525553336271</created>
+      <option name="number" value="01372" />
+      <option name="presentableId" value="LOCAL-01372" />
+      <option name="project" value="LOCAL" />
+      <updated>1525553336271</updated>
+    </task>
+    <option name="localTasksCounter" value="1373" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1699,7 +1689,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3191645000" />
+    <option name="totallyTimeSpent" value="3196065000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1714,17 +1704,17 @@
     <frame x="61" y="23" width="1619" height="1027" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.8468468" visible="true" weight="0.21940394" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.8472222" visible="true" weight="0.26188967" />
       <window_info anchor="bottom" id="TODO" order="7" sideWeight="0.48269352" weight="0.30472103" />
       <window_info anchor="bottom" id="Docker" order="9" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.10209258" side_tool="true" visible="true" weight="0.4032258" />
+      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.10209258" side_tool="true" visible="true" weight="0.14838709" />
       <window_info anchor="right" id="Database" order="3" weight="0.26633167" />
       <window_info anchor="bottom" id="Database Changes" order="0" show_stripe_button="false" />
       <window_info anchor="bottom" id="Run" order="3" sideWeight="0.890298" weight="0.47634408" />
       <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.48806533" weight="0.2532189" />
-      <window_info id="Structure" order="1" sideWeight="0.15315315" side_tool="true" visible="true" weight="0.21940394" />
+      <window_info id="Structure" order="1" sideWeight="0.15277778" side_tool="true" visible="true" weight="0.26188967" />
       <window_info anchor="bottom" id="Terminal" order="15" sideWeight="0.49495414" weight="0.18764846" />
-      <window_info active="true" anchor="bottom" id="Debug" order="4" sideWeight="0.89790744" visible="true" weight="0.4032258" />
+      <window_info anchor="bottom" id="Debug" order="4" sideWeight="0.89790744" visible="true" weight="0.14838709" />
       <window_info id="Favorites" order="2" sideWeight="0.3464837" side_tool="true" weight="0.27805802" />
       <window_info anchor="bottom" id="Changes" order="10" weight="0.32967034" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -1782,8 +1772,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Key explanation" />
-    <MESSAGE value="Test fixed" />
     <MESSAGE value="Switch to Rails 5.2.0" />
     <MESSAGE value="Remove gem : minitest-rails-capybara" />
     <MESSAGE value="Analyze Panorama-Sampler-Tables" />
@@ -1807,7 +1795,9 @@
     <MESSAGE value="Fix test for SE" />
     <MESSAGE value="DBA_hist_Process_Mem_Summary added to panorama_sampler" />
     <MESSAGE value="Check maximum path length" />
-    <option name="LAST_COMMIT_MESSAGE" value="Check maximum path length" />
+    <MESSAGE value="Check maximum path length at startup" />
+    <MESSAGE value="README" />
+    <option name="LAST_COMMIT_MESSAGE" value="README" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2010,25 +2000,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/helpers/application_helper.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="319">
-          <caret line="115" column="6" selection-start-line="115" selection-start-column="6" selection-end-line="115" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/storage_controller.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="404">
-          <caret line="500" column="25" selection-start-line="500" selection-start-column="25" selection-end-line="500" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.rvm/gems/jruby-9.1.16.0/gems/minitest-5.11.3/lib/minitest.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-14147" />
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/.rvm/gems/jruby-9.1.16.0/gems/minitest-5.11.3/lib/minitest/test.rb">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -2285,13 +2256,6 @@
     <entry file="file://$PROJECT_DIR$/test/dummy/tmp/screenshots/failures_test_DB-Locks_/_Blocking_locks_historic.png">
       <provider selected="true" editor-type-id="images" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/system/global_menu_test.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="168">
-          <caret line="43" lean-forward="true" selection-start-line="40" selection-start-column="1" selection-end-line="43" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="181">
@@ -2299,24 +2263,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="131">
-          <caret line="25" column="6" selection-start-line="25" selection-start-column="6" selection-end-line="25" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/controllers/dba_history_controller_test.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="348">
           <caret line="279" column="19" selection-start-line="279" selection-start-column="19" selection-end-line="279" selection-end-column="123" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/system/dba_general_test.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="304">
-          <caret line="55" column="139" selection-start-line="55" selection-start-column="139" selection-end-line="55" selection-end-column="139" />
         </state>
       </provider>
     </entry>
@@ -2347,6 +2297,43 @@
     <entry file="file://$PROJECT_DIR$/config/initializers/initialize_jobs.rb">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/test/dummy/log/development.log">
+      <provider selected="true" editor-type-id="text-editor" />
+      <provider editor-type-id="LargeFileEditor">
+        <state relative-caret-position="-160214" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/system/dba_general_test.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="304">
+          <caret line="55" column="139" selection-start-line="55" selection-start-column="139" selection-end-line="55" selection-end-column="139" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/initializers/check_system_preconditions.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="11" column="100" selection-start-line="11" selection-start-column="100" selection-end-line="11" selection-end-column="100" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="45" selection-start-line="8" selection-start-column="45" selection-end-line="8" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="180">
+            <caret line="12" selection-start-line="12" selection-end-line="12" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/dba_history_controller.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="222">
@@ -2354,23 +2341,31 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/dummy/log/development.log">
-      <provider selected="true" editor-type-id="text-editor" />
-      <provider editor-type-id="LargeFileEditor">
-        <state relative-caret-position="-160214" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/config/initializers/check_system_preconditions.rb">
+    <entry file="file://$USER_HOME$/.rvm/rubies/jruby-9.1.16.0/lib/ruby/stdlib/test/unit/assertions.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="11" column="100" lean-forward="true" selection-start-line="11" selection-start-column="100" selection-end-line="11" selection-end-column="100" />
+        <state relative-caret-position="250">
+          <caret line="1215" column="10" selection-start-line="1215" selection-start-column="10" selection-end-line="1215" selection-end-column="10" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+    <entry file="file://$USER_HOME$/.rvm/gems/jruby-9.1.16.0/gems/activesupport-5.2.0/lib/active_support/testing/assertions.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="8" column="45" lean-forward="true" selection-start-line="8" selection-start-column="45" selection-end-line="8" selection-end-column="45" />
+        <state relative-caret-position="45">
+          <caret line="3" column="13" lean-forward="true" selection-start-line="3" selection-start-column="13" selection-end-line="3" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/system/global_menu_test.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1230">
+          <caret line="83" column="14" selection-start-line="83" selection-start-column="8" selection-end-line="83" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="141" column="14" selection-start-line="141" selection-start-column="14" selection-end-line="141" selection-end-column="14" />
         </state>
       </provider>
     </entry>

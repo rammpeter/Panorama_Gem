@@ -139,7 +139,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     if  !error_dialog.nil? && error_dialog.visible?
       if management_pack_license == :none
         message = "ApplicationSystemTestCase.assert_ajax_success_or_access_denied: Error dialog raised but not because missing management pack license. Error dialog:\n#{error_dialog.text}"
-        assert_true(((error_dialog.text['Access denied on table'] && error_dialog.text['because of missing license for ']) ||
+        assert(((error_dialog.text['Access denied on table'] && error_dialog.text['because of missing license for ']) ||
                         error_dialog.text['Sorry, accessing DBA_HIST_Reports requires licensing of Diagnostics and Tuning Pack']
                     ),
                     message)

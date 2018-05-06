@@ -9,6 +9,7 @@ Here you can find more information about Panorama (including download link for J
 http://rammpeter.github.io/panorama.html
 
 This GitHub-project is intended to provide function as Rails engine which can be embedded in other Rails application.
+
 The executable Rails application "Panorama" with Panorama-gem embedded as engine you find at 
 https://github.com/rammpeter/Panorama
 
