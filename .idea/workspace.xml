@@ -9,6 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/initializers/check_system_preconditions.rb" beforeDir="false" afterPath="$PROJECT_DIR$/config/initializers/check_system_preconditions.rb" afterDir="false" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -227,7 +228,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_show_personal_selection_form.html.erb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="_show_personal_selection_form.html.erb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/views/dragnet/_show_personal_selection_form.html.erb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="435">
@@ -242,8 +243,8 @@
       <file leaf-file-name="_personal_selection_help.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/views/dragnet/_personal_selection_help.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-17">
-              <caret line="85" column="43" selection-start-line="85" selection-start-column="41" selection-end-line="85" selection-end-column="43" />
+            <state>
+              <caret column="34" selection-start-column="34" selection-end-column="34" />
             </state>
           </provider>
         </entry>
@@ -253,11 +254,11 @@
           <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
-      <file leaf-file-name="check_system_preconditions.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="check_system_preconditions.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/config/initializers/check_system_preconditions.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="165">
-              <caret line="11" column="100" selection-start-line="11" selection-start-column="100" selection-end-line="11" selection-end-column="100" />
+            <state relative-caret-position="390">
+              <caret line="26" lean-forward="true" selection-start-line="26" selection-end-line="26" />
             </state>
           </provider>
         </entry>
@@ -334,7 +335,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/helpers/env_helper.rb" />
         <option value="$PROJECT_DIR$/app/models/worker_thread.rb" />
         <option value="$PROJECT_DIR$/app/views/usage/info.html.erb" />
         <option value="$PROJECT_DIR$/app/controllers/env_controller.rb" />
@@ -379,12 +379,13 @@
         <option value="$PROJECT_DIR$/app/helpers/panorama_sampler/package_panorama_sampler_snapshot.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
         <option value="$PROJECT_DIR$/test/dummy/log/development.log" />
-        <option value="$PROJECT_DIR$/config/initializers/check_system_preconditions.rb" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/lib/test_helpers/application_system_test_case.rb" />
         <option value="$PROJECT_DIR$/app/views/dragnet/_personal_selection_help.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dragnet/_show_personal_selection_form.html.erb" />
+        <option value="$PROJECT_DIR$/app/views/dragnet/_personal_selection_help.html" />
+        <option value="$PROJECT_DIR$/config/initializers/check_system_preconditions.rb" />
       </list>
     </option>
   </component>
@@ -411,10 +412,11 @@
   <component name="NodePackageJsonFileManager">
     <packageJsonPaths />
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds">
+    <option name="x" value="61" />
     <option name="y" value="23" />
-    <option name="width" value="1526" />
-    <option name="height" value="976" />
+    <option name="width" value="2499" />
+    <option name="height" value="1417" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -1335,21 +1337,7 @@
       <workItem from="1524656408594" duration="13449000" />
       <workItem from="1525181573889" duration="559000" />
       <workItem from="1525254729741" duration="6636000" />
-      <workItem from="1525336779983" duration="35879000" />
-    </task>
-    <task id="LOCAL-01326" summary="Fix tests">
-      <created>1522315549890</created>
-      <option name="number" value="01326" />
-      <option name="presentableId" value="LOCAL-01326" />
-      <option name="project" value="LOCAL" />
-      <updated>1522315549890</updated>
-    </task>
-    <task id="LOCAL-01327" summary="Instrumenting test">
-      <created>1522330875772</created>
-      <option name="number" value="01327" />
-      <option name="presentableId" value="LOCAL-01327" />
-      <option name="project" value="LOCAL" />
-      <updated>1522330875772</updated>
+      <workItem from="1525336779983" duration="37729000" />
     </task>
     <task id="LOCAL-01328" summary="Fix tests">
       <created>1522338445245</created>
@@ -1680,7 +1668,21 @@
       <option name="project" value="LOCAL" />
       <updated>1525609181073</updated>
     </task>
-    <option name="localTasksCounter" value="1375" />
+    <task id="LOCAL-01375" summary="Show personal dragnet help from own file">
+      <created>1525609501681</created>
+      <option name="number" value="01375" />
+      <option name="presentableId" value="LOCAL-01375" />
+      <option name="project" value="LOCAL" />
+      <updated>1525609501681</updated>
+    </task>
+    <task id="LOCAL-01376" summary="Show personal dragnet help from own file">
+      <created>1525610548963</created>
+      <option name="number" value="01376" />
+      <option name="presentableId" value="LOCAL-01376" />
+      <option name="project" value="LOCAL" />
+      <updated>1525610548963</updated>
+    </task>
+    <option name="localTasksCounter" value="1377" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1716,7 +1718,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3197921000" />
+    <option name="totallyTimeSpent" value="3199771000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1728,20 +1730,20 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="61" y="23" width="1619" height="1027" extended-state="6" />
+    <frame x="61" y="23" width="2499" height="1417" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="7" sideWeight="0.48269352" weight="0.30472103" />
-      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.46353838" side_tool="true" visible="true" weight="0.27096775" />
+      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.46353838" side_tool="true" visible="true" weight="0.19090909" />
       <window_info anchor="bottom" id="Database Changes" order="0" show_stripe_button="false" />
       <window_info anchor="bottom" id="Run" order="3" sideWeight="0.890298" weight="0.47634408" />
       <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.48806533" weight="0.2532189" />
       <window_info anchor="bottom" id="Terminal" order="15" sideWeight="0.49495414" weight="0.18764846" />
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.8466077" visible="true" weight="0.26188967" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.84737825" visible="true" weight="0.16809116" />
       <window_info anchor="bottom" id="Docker" order="9" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="3" weight="0.26633167" />
       <window_info anchor="bottom" id="Find" order="5" sideWeight="0.53646165" weight="0.25376344" />
-      <window_info id="Structure" order="1" sideWeight="0.15339233" side_tool="true" visible="true" weight="0.26188967" />
+      <window_info id="Structure" order="1" sideWeight="0.15262172" side_tool="true" visible="true" weight="0.16809116" />
       <window_info anchor="bottom" id="Debug" order="4" sideWeight="0.89790744" weight="0.27096775" />
       <window_info id="Favorites" order="2" sideWeight="0.3464837" side_tool="true" weight="0.27805802" />
       <window_info anchor="bottom" id="Changes" order="10" weight="0.32967034" />
@@ -2327,13 +2329,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/config/initializers/check_system_preconditions.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="11" column="100" selection-start-line="11" selection-start-column="100" selection-end-line="11" selection-end-column="100" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
@@ -2386,13 +2381,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/dragnet/_personal_selection_help.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-17">
-          <caret line="85" column="43" selection-start-line="85" selection-start-column="41" selection-end-line="85" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/dragnet/_show_personal_selection_form.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="435">
@@ -2400,6 +2388,20 @@
           <folding>
             <element signature="n#style#0;n#div#1;n#div#0;n#!!top" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/dragnet/_personal_selection_help.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="34" selection-start-column="34" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/initializers/check_system_preconditions.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="390">
+          <caret line="26" lean-forward="true" selection-start-line="26" selection-end-line="26" />
         </state>
       </provider>
     </entry>

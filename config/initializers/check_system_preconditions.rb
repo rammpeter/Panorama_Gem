@@ -9,8 +9,7 @@ require 'java'
 # 124 chars is length of dir prefix in temp: example: jetty-0.0.0.0-8080-Panorama.war-_-any-513147796374658368.dir/webapp/WEB-INF/gems/bundler/gems/Panorama_Gem-815e84c2f86f/app
 max_file_path_length = 124 + 91 + java.lang.System.get_property('java.io.tmpdir').length
 
-max_possible_filepath_length = 1024                                             # if no other limits
-max_possible_filepath_length = 255 if RbConfig::CONFIG['host_os'] =~ /linux/
+max_possible_filepath_length = 4096                                             # Linux-limit if no other limits
 max_possible_filepath_length = 260 if RbConfig::CONFIG['host_os'] =~ /mswin/
 
 if max_file_path_length > max_possible_filepath_length
