@@ -156,7 +156,7 @@ class StorageController < ApplicationController
         LEFT OUTER JOIN DBA_Indexes i ON i.Owner = s.Owner AND i.Index_Name=s.Segment_Name
         )
       GROUP BY Owner, Type
-      HAVING SUM(Bytes) > 1048576 -- nur > 1 MB selektieren
+      HAVING SUM(Bytes) > 0   -- Show only schemas with objects
       ORDER BY 3 DESC")
 
     # Menge der verwendeten Typen ermitteln
@@ -198,6 +198,18 @@ class StorageController < ApplicationController
                                 GROUP BY Segment_Type
                                 ORDER BY 2 DESC"
 
+    @tablespace_per_schema = sql_select_all "
+      SELECT /* Panorama-Tool Ramm */ s.Owner, s.Tablespace_Name, s.MBytes, q.Bytes Bytes_Charged, q.Max_Bytes Bytes_Quota
+      FROM (
+        SELECT Owner,
+               Tablespace_Name,
+               SUM(Bytes)/1048576 MBytes
+        FROM   DBA_Segments s
+        GROUP BY Owner, Tablespace_Name
+        ) s
+      LEFT OUTER JOIN DBA_TS_Quotas q ON q.Tablespace_Name = s.Tablespace_Name AND q.Username = s.Owner
+      WHERE s.MBytes > 0   -- Show only schemas with objects
+      ORDER BY s.MBytes DESC"
 
     render_partial
   end

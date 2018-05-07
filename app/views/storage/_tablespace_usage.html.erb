@@ -84,8 +84,46 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
 </div>
 
   <%
+    link_mb_used = proc do |rec|
+      ajax_link(fn(rec.mbytes),
+                         {:controller   => :dba_schema,
+                          :action       => :list_objects,
+                          :tablespace   => {:name => rec.tablespace_name},
+                          :schema       => {:name => rec.owner},
+                          :update_area  => @update_area,
+                         },
+                 :title=>'Show object details of this schema in tablespace'
+     )
+    end
 
-    def link_mb_used(rec)
+    show_quota = proc do |rec|
+      if rec.bytes_quota == -1
+        'UNLIMITED'
+      else
+        fn(rec.bytes_quota / (1024*1024)) if !rec.bytes_quota.nil?
+      end
+    end
+
+    show_charged = proc do |rec|
+      fn(rec.bytes_charged / (1024*1024)) if !rec.bytes_charged.nil?
+    end
+
+    column_options =
+        [
+            {:caption => "Schema",        :data => proc {|rec| rec.owner},                  :title => 'Name of schema'},
+            {:caption => "Tablespace",    :data => proc {|rec| rec.tablespace_name},        :title => t(:storage_tablespace_usage_tablespace_name_hint, :default => 'Name of tablespace')},
+            {:caption => "Used (MB)",     :data => link_mb_used,                            :title => "Used space in tablespace by this schema in MB from DBA_SEGMENTS", :align => :right},
+            {:caption => "Quota (MB)",    :data => show_quota,                              :title => "Maximum quota in tablespace for this schema in MB", :align => :right},
+            {:caption => "Charged (MB)",  :data => show_charged,                            :title => "MB charged for quota in tablespace for this schema from DBA_TS_QUOTAS", :align => :right},
+        ]
+  %>
+  <div class="flex-row-element">
+    <%= gen_slickgrid(@tablespace_per_schema, column_options, {:caption => "Tablespace-usage per schema", :width => :auto, :max_height => 450, :no_wrap => true}) %>
+  </div>
+
+  <%
+
+    link_mb_used = proc do |rec|
       if rec.contents == 'PERMANENT'
         ajax_link(fn(rec.mbused),
                            {:controller   => :dba_schema,
@@ -100,7 +138,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
       end
     end
 
-    def link_mb_free(rec)
+    link_mb_free = proc do |rec|
       if rec.contents == 'PERMANENT'
         ajax_link(fn(rec.mbfree),
                            {:controller   => :storage,
@@ -115,7 +153,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
       end
     end
 
-    def link_ts_details(rec)
+    link_ts_details = proc do |rec|
       case rec.tablespace_name
         when 'SYSAUX' then
           ajax_link('v$SYSAUX_Occupants',
@@ -133,10 +171,10 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
             {:caption=>"Tablespace",          :data=>proc{|rec| rec.tablespace_name},             :title=>t(:storage_tablespace_usage_tablespace_name_hint, :default=>'Name of tablespace')},
             {:caption=>"Contents",            :data=>proc{|rec| rec.contents},                    :title=>t(:storage_tablespace_usage_tablespace_content_hint, :default=>'Type/content of tablespace') },
             {:caption=>"Block size",          :data=>proc{|rec| formattedNumber(rec.blocksize)},  :title=>t(:storage_tablespace_usage_tablespace_blocksize_hint, :default=>'Blocksize of tablespace in Bytes'),        :align=>:right},
-            {:caption=>"MB Total",            :data=>proc{|rec| formattedNumber(rec.mbtotal)},    :title=>"Größe des Tablespace gesamt in MB",        :align=>:right},
-            {:caption=>"MB Used",             :data=>proc{|rec| link_mb_used(rec) },              :title=>"Genutzter Platz des Tablespaces in MB",    :align=>:right},
-            {:caption=>"MB Free",             :data=>proc{|rec| link_mb_free(rec)},               :title=>"Freier Platz des Tablespaces in MB",       :align=>:right},
-            {:caption=>"% used",              :data=>proc{|rec| formattedNumber(rec.pctused,1)},  :title=>"Prozentuale Auslastung",                   :align=>:right},
+            {:caption=>"MB Total",            :data=>proc{|rec| formattedNumber(rec.mbtotal)},    :title=>"Total size of tablespace in MB",           :align=>:right},
+            {:caption=>"MB Used",             :data=>link_mb_used,                                :title=>"Used space in tablespace in MB",           :align=>:right},
+            {:caption=>"MB Free",             :data=>link_mb_free,                                :title=>"Free space in tablespace in MB",           :align=>:right},
+            {:caption=>"% used",              :data=>proc{|rec| formattedNumber(rec.pctused,1)},  :title=>"Usage in percent",                         :align=>:right},
             {:caption=>"Status",              :data=>proc{|rec| rec.status}},
             {:caption=>"Content",             :data=>proc{|rec| rec.contents}},
             {:caption=>"Logging",             :data=>proc{|rec| rec.logging}},
@@ -151,14 +189,14 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
     column_options << {:caption=>"Auto ext.",           :data=>proc{|rec| rec.autoextensible},              :title=>"Auto-Extensible ?"}
     column_options << {:caption=>'Encrypt.',            :data=>proc{|rec| rec.encrypted},                   :title=>"Indicates whether the tablespace is encrypted"} if get_db_version >= '11.2'
     column_options << {:caption=>'Def. in memory',      :data=>proc{|rec| rec.def_inmemory},                :title=>"Indicates whether the In-Memory Column Store (IM column store) is by default enabled (ENABLED) or disabled (DISABLED) for tables in this tablespace"} if get_db_version >= '12.1' && PanoramaConnection.edition == :enterprise
-    column_options << {:caption=>'Details',             :data=>proc{|rec| link_ts_details(rec)},            :title=>"Tablespace-specific details"}
+    column_options << {:caption=>'Details',             :data=>link_ts_details,                             :title=>"Tablespace-specific details"}
 
 
 
   %>
 
   <div class="flex-row-element">
-    <%= gen_slickgrid(@tablespaces, column_options, {:caption => "Tablespace-Usage", :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
+    <%= gen_slickgrid(@tablespaces, column_options, {:caption => "Tablespace-usage total", :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
   </div>
 
 </div>

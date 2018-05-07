@@ -201,16 +201,39 @@ class DbaSchemaController < ApplicationController
         @objects = sql_select_all ["SELECT DISTINCT Owner, Object_Name, Object_Type FROM DBA_Objects WHERE SubObject_Name IS NULL AND Object_Name LIKE ? AND Owner LIKE ? AND Object_Type = ?", @object_name, @owner, @object_type]
     end
 
-
-
     if @objects.count > 1
       render_partial :list_table_description_owner_choice
       return
     end
 
-    #raise "Object #{@owner}.#{@object_name} does not exist in database"
+    if @objects.count == 0 && @object_name =~ /^BIN\$/i                         # Try to find in recycle bin
+      case
+      when @owner.nil? && @object_type.nil? then
+        @objects = sql_select_all ["SELECT DISTINCT Owner, Object_Name, Type FROM DBA_RecycleBin WHERE UPPER(Object_Name) LIKE ?", @object_name]
+      when @owner.nil?
+        @objects = sql_select_all ["SELECT DISTINCT Owner, Object_Name, Type FROM DBA_RecycleBin WHERE UPPER(Object_Name) LIKE ? AND Type = ?", @object_name, @object_type]
+      when @object_type.nil?
+        @objects = sql_select_all ["SELECT DISTINCT Owner, Object_Name, Type FROM DBA_RecycleBin WHERE UPPER(Object_Name) LIKE ? AND Owner LIKE ?", @object_name, @owner]
+      else
+        @objects = sql_select_all ["SELECT DISTINCT Owner, Object_Name, Type FROM DBA_RecycleBin WHERE UPPER(Object_Name) LIKE ? AND Owner LIKE ? AND Type = ?", @object_name, @owner, @object_type]
+      end
+
+      if @objects.count > 1
+        render_partial :list_recyclebin_owner_choice
+        return
+      end
+
+      if @objects.count == 1
+        list_recyclebin_description(@objects[0].owner, @objects[0].object_name, @objects[0].type)
+        return
+      end
+
+      show_popup_message "Object #{"#{@owner}." if @owner}#{@object_name}#{" with type #{@object_type}" if @object_type} does not exist in database as per DBA_OBJECTS and DBA_RECYCLEBIN"
+      return
+    end
+
     if @objects.count == 0
-      show_popup_message "Object #{@owner}.#{@object_name} does not exist in database"
+      show_popup_message "Object #{"#{@owner}." if @owner}#{@object_name}#{" with type #{@object_type}" if @object_type} does not exist in database as per DBA_OBJECTS"
       return
     end
     object = @objects[0]
@@ -881,6 +904,21 @@ class DbaSchemaController < ApplicationController
     render_partial :list_cluster
   end
 
+  def list_recyclebin_description(owner, object_name, type)
+    @owner        = owner
+    @object_name  = object_name
+    @type         = type
+
+    @recyclebins = sql_select_all ["SELECT b.*,
+                                           TO_DATE(CreateTime, 'YYYY-MM-DD HH24:MI:SS') Create_TS,
+                                           TO_DATE(DropTime,   'YYYY-MM-DD HH24:MI:SS') Drop_TS
+                                    FROM   DBA_RecycleBin b
+                                    WHERE  Owner = ? AND Object_Name = ? AND Type = ?
+                                   ", owner, object_name, type]
+    render_partial :list_recyclebin_description
+  end
+
+
   def list_cluster_tables
     @owner        = params[:owner]
     @cluster_name = params[:cluster_name]
@@ -1333,6 +1371,4 @@ WHERE RowNum < 100
     end
 
   end
-
-
 end
