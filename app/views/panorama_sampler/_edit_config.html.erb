@@ -1,3 +1,4 @@
+<div id="edit_config_global_area">
 <div class="page_caption"><%= @modus==:new ? 'Add new' : 'Edit' %> Panorama-Sampler configuration</div>
 
 <%= ajax_form(
@@ -198,6 +199,7 @@
     <br/>
     <%= submit_tag('Test connection', :title =>"Test connection to configured database and save configuration if successful" ) %>
     <%= submit_tag('Save', :title =>"Save configuration data" ) %>
+    <input type="button" value="Cancel" onclick="jQuery('#edit_config_global_area').html('');">
   </div>
 
 
@@ -210,3 +212,4 @@
         jQuery('#config_sid_usage_SERVICE_NAME').click();
     jQuery.ajax({type: 'GET', url:'env/get_tnsnames_records?target_object=config&selected=<%= @config[:tns] %>', async: false});
 </script>
+</div>
