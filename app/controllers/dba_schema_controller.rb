@@ -585,7 +585,8 @@ class DbaSchemaController < ApplicationController
                         s.Size_MB, s.Extents,
                         DECODE(bitand(io.flags, 65536), 0, 'NO', 'YES') Monitoring,
                         DECODE(bitand(ou.flags, 1), 0, 'NO', NULL, 'Unknown', 'YES') Used,
-                        ou.start_monitoring, ou.end_monitoring,
+                        TO_DATE(ou.start_monitoring, 'MM/DD/YYYY HH24:MI:SS') Start_Monitoring,
+                        TO_DATE(ou.end_monitoring,   'MM/DD/YYYY HH24:MI:SS') End_Monitoring,
                         do.Created, do.Last_DDL_Time
                  FROM   DBA_Indexes i
                  JOIN   DBA_Users   u  ON u.UserName  = i.owner
