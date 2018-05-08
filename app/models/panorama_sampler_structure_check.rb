@@ -118,7 +118,7 @@ class PanoramaSamplerStructureCheck
               scale:
             }
         ],
-        primary_key: ['col1', 'col2']
+        primary_key: { columns: ['col1', 'col2'], compress: 3 }
       }
   ]
 =end
@@ -236,7 +236,7 @@ class PanoramaSamplerStructureCheck
               #{ column_name:  'DBOP_NAME',                      column_type:  'VARCHAR2', precision: 30 },
               #{ column_name:  'DBOP_EXEC_ID',                   column_type:  'NUMBER' },
           ],
-          primary_key: ['INSTANCE_NUMBER', 'SESSION_ID', 'SAMPLE_ID'],    # ensure that copying data into Panorama_Active_Sess_History does never rails PK-violation
+          primary_key: { columns: ['INSTANCE_NUMBER', 'SESSION_ID', 'SAMPLE_ID'] },    # ensure that copying data into Panorama_Active_Sess_History does never raise PK-violation
       },
       {
           table_name: 'Internal_Active_Sess_History',
@@ -347,7 +347,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Con_DBID',                       column_type:  'NUMBER',     not_null: true },
               { column_name:  'Con_ID',                         column_type:  'NUMBER',     not_null: true },
           ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'SAMPLE_ID', 'SESSION_ID', 'Con_DBID'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'SAMPLE_ID', 'SESSION_ID', 'Con_DBID'], compress: 2 },
       },
       {
           table_name: 'Panorama_Blocking_Locks',
@@ -400,7 +400,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Waiting_For_PK_Column_Name',     column_type:   'VARCHAR2',  precision: 300,                 comment: 'Column name(s) of primary key of table waiting for unblocking' },
               { column_name:  'Waiting_For_PK_Value',           column_type:   'VARCHAR2',  precision: 48,                  comment: 'Primary key content of table-record waiting for unblocking' },
           ],
-          indexes: [ {index_name: 'Panorama_Blocking_Locks_TS', columns: ['Snapshot_Timestamp'] } ]
+          indexes: [ {index_name: 'Panorama_Blocking_Locks_TS', columns: ['Snapshot_Timestamp'], compress: 1 } ]
       },
       {
           table_name: 'Panorama_Cache_Objects',
@@ -414,7 +414,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Blocks_Total',                   column_type:   'NUMBER',    not_null: true },
               { column_name:  'Blocks_Dirty',                   column_type:   'NUMBER',    not_null: true },
           ],
-          indexes: [ {index_name: 'Panorama_Cache_Objects_TS', columns: ['Snapshot_Timestamp', 'Instance_Number'] } ]
+          indexes: [ {index_name: 'Panorama_Cache_Objects_TS', columns: ['Snapshot_Timestamp', 'Instance_Number'], compress: 1 } ]
       },
       {
           table_name: 'Panorama_Datafile',
@@ -430,7 +430,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'FILE#', 'CREATION_CHANGE#', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'FILE#', 'CREATION_CHANGE#', 'CON_DBID'] },
       },
       {
           table_name: 'Panorama_DB_Cache_Advice',
@@ -453,7 +453,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER', not_null: true  },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'BPID', 'BUFFERS_FOR_ESTIMATE', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'BPID', 'BUFFERS_FOR_ESTIMATE', 'CON_DBID'], compress: 2 },
       },
       {
           table_name: 'Panorama_Enqueue_Stat',
@@ -472,7 +472,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'EVENT#',                         column_type:   'NUMBER' },
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'EQ_TYPE', 'REQ_REASON', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'EQ_TYPE', 'REQ_REASON', 'CON_DBID'], compress: 2 },
       },
       {
           table_name: 'Internal_FileStatXS',
@@ -496,7 +496,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'OPTIMIZED_PHYBLKRD',             column_type:   'NUMBER' },
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'FILE#', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'FILE#', 'CON_DBID'], compress: 2 },
       },
       {
           table_name: 'Panorama_IOStat_Detail',
@@ -522,7 +522,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'FUNCTION_ID', 'FILETYPE_ID', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'FUNCTION_ID', 'FILETYPE_ID', 'CON_DBID'], compress: 2 },
       },
       {
           table_name: 'Panorama_IOStat_Filetype',
@@ -551,7 +551,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'FILETYPE_ID', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'FILETYPE_ID', 'CON_DBID'], compress: 2 },
       },
       {
           table_name: 'Panorama_Latch',
@@ -577,7 +577,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',     not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'LATCH_HASH', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'LATCH_HASH', 'CON_DBID'], compress: 2 },
       },
       {
           table_name: 'Panorama_Log',
@@ -598,7 +598,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Con_DBID',                       column_type:  'NUMBER',     not_null: true  },
               { column_name:  'Con_ID',                         column_type:  'NUMBER' },
           ],
-          primary_key: ['DBID', 'Snap_ID', 'Instance_Number', 'Group#', 'Thread#', 'Sequence#', 'Con_DBID']
+          primary_key: { columns: ['DBID', 'Snap_ID', 'Instance_Number', 'Group#', 'Thread#', 'Sequence#', 'Con_DBID'], compress: 2 }
       },
       {
           table_name: 'Panorama_Object_Sizes',
@@ -612,8 +612,8 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Bytes',                          column_type:  'NUMBER',   not_null: true },
               { column_name:  'Num_Rows',                       column_type:  'NUMBER'   },
           ],
-          primary_key: ['Owner', 'Segment_Name', 'Segment_Type', 'Tablespace_Name', 'Gather_Date'],
-          indexes: [ {index_name: 'Panorama_Object_Sizes_Gather', columns: ['Gather_Date'] } ]
+          primary_key: { columns: ['Owner', 'Segment_Name', 'Segment_Type', 'Tablespace_Name', 'Gather_Date'], compress: 4 },
+          indexes: [ {index_name: 'Panorama_Object_Sizes_Gather', columns: ['Gather_Date'], compress: 1 } ]
       },
       {
           table_name: 'Panorama_Parameter',
@@ -630,7 +630,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                     column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                       column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'PARAMETER_HASH', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'PARAMETER_HASH', 'CON_DBID'], compress: 2 },
       },
       {
           table_name: 'Panorama_PGAStat',
@@ -643,7 +643,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'VALUE',                          column_type:   'NUMBER' },
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
-          primary_key: ['DBID', 'Snap_ID', 'Instance_Number', 'Name', 'Con_DBID'],
+          primary_key: { columns: ['DBID', 'Snap_ID', 'Instance_Number', 'Name', 'Con_DBID'], compress: 2 },
       },
       {
           table_name: 'Panorama_Process_Mem_Summary',
@@ -665,7 +665,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'CATEGORY', 'CON_DBID', 'IS_INSTANCE_WIDE'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'CATEGORY', 'CON_DBID', 'IS_INSTANCE_WIDE'], compress: 2 },
       },
       {
           table_name: 'Panorama_Resource_Limit',
@@ -682,7 +682,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Con_DBID',                       column_type:  'NUMBER',     not_null: true  },
               { column_name:  'Con_ID',                         column_type:  'NUMBER' },
           ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'RESOURCE_NAME', 'CON_DBID']
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'RESOURCE_NAME', 'CON_DBID'], compress: 2 }
       },
       {
           table_name: 'Panorama_Seg_Stat',
@@ -739,7 +739,8 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'TS#', 'OBJ#', 'DATAOBJ#', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'TS#', 'OBJ#', 'DATAOBJ#', 'CON_DBID'], compress: 4 },
+          indexes: [ {index_name: 'Panorama_Seg_Stat_Max_Snap_ID', columns: ['DBID', 'INSTANCE_NUMBER', 'TS#', 'OBJ#', 'DATAOBJ#', 'CON_DBID', 'SNAP_ID'], compress: 3 } ]
       },
       {
           table_name: 'Panorama_Service_Name',
@@ -751,7 +752,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER',    not_null: true },
           ],
-          primary_key: ['DBID', 'Service_Name', 'Con_DBID'],
+          primary_key: { columns: ['DBID', 'Service_Name', 'Con_DBID'] },
       },
       {
           table_name: 'Panorama_Snapshot',
@@ -765,8 +766,8 @@ class PanoramaSamplerStructureCheck
               { column_name:  'End_Interval_Time',              column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
               { column_name:  'Con_ID',                         column_type:  'NUMBER' },
           ],
-          primary_key: ['DBID', 'Snap_ID', 'Instance_Number'],
-          indexes: [ {index_name: 'Panorama_Snapshot_MaxID_IX', columns: ['DBID', 'Instance_Number'] } ]
+          primary_key: { columns: ['DBID', 'Snap_ID', 'Instance_Number'], compress: 2 },
+          indexes: [ {index_name: 'Panorama_Snapshot_MaxID_IX', columns: ['DBID', 'Instance_Number'], compress: 1 } ]
       },
       {
           table_name: 'Panorama_SQLBind',
@@ -792,7 +793,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'Snap_ID', 'Instance_Number', 'SQL_ID', 'POSITION', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'Snap_ID', 'Instance_Number', 'SQL_ID', 'POSITION', 'CON_DBID'], compress: 4 },
       },
       {
           table_name: 'Panorama_SQL_Plan',
@@ -838,7 +839,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'SQL_ID', 'PLAN_HASH_VALUE', 'ID', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'SQL_ID', 'PLAN_HASH_VALUE', 'ID', 'CON_DBID'], compress: 3 },
       },
       {
           table_name: 'Panorama_SQLStat',
@@ -925,8 +926,8 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'SQL_ID', 'PLAN_HASH_VALUE', 'CON_DBID'],
-          indexes: [ {index_name: 'Panorama_SQLStat_SQLID_IX', columns: ['SQL_ID', 'DBID', 'CON_DBID'] } ]
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'SQL_ID', 'PLAN_HASH_VALUE', 'CON_DBID'], compress: 3 },
+          indexes: [ {index_name: 'Panorama_SQLStat_SQLID_IX', columns: ['SQL_ID', 'DBID', 'CON_DBID'], compress: 3 } ]
       },
       {
           table_name: 'Panorama_SQLText',
@@ -939,7 +940,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:  'NUMBER',     not_null: true },
               { column_name:  'Con_ID',                         column_type:  'NUMBER' },
           ],
-          primary_key: ['DBID', 'SQL_ID', 'Con_DBID'],
+          primary_key: { columns: ['DBID', 'SQL_ID', 'Con_DBID'], compress: 1 },
       },
       {
           table_name: 'Internal_StatName',
@@ -951,7 +952,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER' },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['STAT_ID'],
+          primary_key: { columns: ['STAT_ID'] },
       },
       {
           table_name: 'Panorama_Sysmetric_History',
@@ -971,7 +972,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'GROUP_ID', 'METRIC_ID', 'BEGIN_TIME', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'GROUP_ID', 'METRIC_ID', 'BEGIN_TIME', 'CON_DBID'], compress: 5 },
       },
       {
           table_name: 'Panorama_Sysmetric_Summary',
@@ -996,7 +997,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'GROUP_ID', 'METRIC_ID', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'GROUP_ID', 'METRIC_ID', 'CON_DBID'], compress: 2 },
       },
       {
           table_name: 'Panorama_System_Event',
@@ -1017,7 +1018,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'TIME_WAITED_MICRO_FG',           column_type:   'NUMBER' },
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'EVENT_ID', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'EVENT_ID', 'CON_DBID'], compress: 2 },
       },
       {
           table_name: 'Internal_SysStat',
@@ -1031,7 +1032,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'STAT_ID', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'STAT_ID', 'CON_DBID'], compress: 2 },
       },
       {
           table_name: 'Panorama_Tablespace',
@@ -1047,7 +1048,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'TS#', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'TS#', 'CON_DBID'] },
       },
       {
           table_name: 'Panorama_Tempfile',
@@ -1063,7 +1064,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: ['DBID', 'FILE#', 'CREATION_CHANGE#', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'FILE#', 'CREATION_CHANGE#', 'CON_DBID'] },
       },
       {
           table_name: 'Internal_TempStatXS',
@@ -1086,7 +1087,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'TIME',                           column_type:   'NUMBER' },
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
-          primary_key: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'FILE#', 'CON_DBID'],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'FILE#', 'CON_DBID'], compress: 2 },
       },
       {
           table_name: 'Panorama_TopLevelCall_Name',
@@ -1098,7 +1099,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER',    not_null: true },
           ],
-          primary_key: ['DBID', 'Top_Level_Call#', 'Con_DBID'],
+          primary_key: { columns: ['DBID', 'Top_Level_Call#', 'Con_DBID'] },
       },
       {
           table_name: 'Panorama_UndoStat',
@@ -1130,7 +1131,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                     column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                       column_type:   'NUMBER' },
           ],
-          primary_key: ['BEGIN_TIME', 'END_TIME', 'DBID', 'INSTANCE_NUMBER', 'CON_DBID'],
+          primary_key: { columns: ['BEGIN_TIME', 'END_TIME', 'DBID', 'INSTANCE_NUMBER', 'CON_DBID'] },
       },
       {
           table_name: 'Panorama_WR_Control',
@@ -1140,7 +1141,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'SNAP_INTERVAL',                  column_type:   'INTERVAL DAY(5) TO SECOND(1)',  not_null: true},
               { column_name:  'RETENTION',                      column_type:   'INTERVAL DAY(5) TO SECOND(1)',  not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
-          primary_key: ['DBID'],
+          primary_key: { columns: ['DBID'] },
       },
 
 
@@ -1342,8 +1343,20 @@ ORDER BY Column_ID
                                                             JOIN All_Constraints c ON c.Owner = cc.Owner AND c.Table_Name = cc.Table_Name AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'P'
                                                             WHERE cc.Owner = ?
                                                           ", @sampler_config.get_owner.upcase]
-    @ora_indexes      = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name FROM All_Indexes WHERE Owner = ?", @sampler_config.get_owner.upcase]
-    @ora_ind_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Column_Name, Column_Position FROM All_Ind_Columns WHERE Table_Owner = ?", @sampler_config.get_owner.upcase]
+
+    # Existing index-structure
+    @ora_indexes = {}
+    indexes      = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Compression, Prefix_Length FROM All_Indexes WHERE Owner = ?", @sampler_config.get_owner.upcase]
+    indexes.each do |i|
+      @ora_indexes[i.index_name] = i
+      @ora_indexes[i.index_name][:columns] = []
+    end
+    ind_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Column_Name, Column_Position FROM All_Ind_Columns WHERE Table_Owner = ?", @sampler_config.get_owner.upcase]
+    ind_columns.each do |c|
+      @ora_indexes[c.index_name][:columns] << c
+    end
+
+
     TABLES.each do |table|
       check_table_pkey(table) if table[:domain] == domain
     end
@@ -1541,9 +1554,9 @@ ORDER BY Column_ID
         existing_pk_columns_count = 0
         @ora_tab_pk_cols.each {|pk| existing_pk_columns_count += 1 if pk.table_name == table[:table_name].upcase }
 
-        table[:primary_key].each_index do |index|
-          column = table[:primary_key][index]
-          if !@ora_tab_pk_cols.include?({'table_name' => table[:table_name].upcase, 'column_name' => column.upcase, 'position' => index+1}) || existing_pk_columns_count != table[:primary_key].count
+        table[:primary_key][:columns].each_index do |index|
+          column = table[:primary_key][:columns][index]
+          if !@ora_tab_pk_cols.include?({'table_name' => table[:table_name].upcase, 'column_name' => column.upcase, 'position' => index+1}) || existing_pk_columns_count != table[:primary_key][:columns].count
             sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} DROP CONSTRAINT #{pk_name}"
             log(sql)
             PanoramaConnection.sql_execute(sql)
@@ -1558,12 +1571,12 @@ ORDER BY Column_ID
 
 
       ########### Check PK-Index existence
-      check_index(table[:table_name], pk_name, table[:primary_key])
+      check_index(table[:table_name], pk_name, table[:primary_key][:columns], table[:primary_key][:compress])
 
       ######## Check existence of PK-Constraint
       if !@ora_tab_pkeys.include?({'table_name' => table[:table_name].upcase})   # PKey does not exist
         sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ADD CONSTRAINT #{pk_name} PRIMARY KEY ("
-        table[:primary_key].each do |pk|
+        table[:primary_key][:columns].each do |pk|
           sql << "#{pk},"
         end
         sql[(sql.length) - 1] = ' '                                               # remove last ,
@@ -1578,23 +1591,22 @@ ORDER BY Column_ID
   ############ Check Indexes
     if table[:indexes]
       table[:indexes].each do |index|
-        check_index(table[:table_name], index[:index_name], index[:columns])
+        check_index(table[:table_name], index[:index_name], index[:columns], index[:compress])
       end
     end
 
   end
 
-  def check_index(table_name, index_name, columns)
-    if @ora_indexes.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase})  # Index exists
+  # compress - Number of columns to compress
+  def check_index(table_name, index_name, columns, compress)
+    if @ora_indexes[index_name.upcase] && @ora_indexes[index_name.upcase].table_name == table_name.upcase # Index exists
+    # if @ora_indexes.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase})  # Index exists
       ########### Check columns of index
-      existing_index_columns_count = 0
-      @ora_ind_columns.each do |col|
-        existing_index_columns_count += 1 if col.table_name == table_name.upcase && col.index_name == index_name.upcase
-      end
-
       columns.each_index do |i|
         column = columns[i]
-        if !@ora_ind_columns.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase, 'column_name' => column.upcase, 'column_position' => i+1}) || existing_index_columns_count != columns.count
+
+        if !@ora_indexes[index_name.upcase][:columns].detect {|e| e.column_name == column.upcase && e.column_position = i+1} || @ora_indexes[index_name.upcase][:columns].count != columns.count
+          #if !@ora_ind_columns.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase, 'column_name' => column.upcase, 'column_position' => i+1}) || @ora_indexes[index_name.upcase][:columns].count != columns.count
           sql = "DROP INDEX #{@sampler_config.get_owner}.#{index_name}"
           log(sql)
           PanoramaConnection.sql_execute(sql)
@@ -1604,13 +1616,30 @@ ORDER BY Column_ID
     end
 
     ########### Check existence of index
-    if !@ora_indexes.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase}) # Index does not exists
+    if @ora_indexes[index_name.upcase].nil? || @ora_indexes[index_name.upcase].table_name != table_name.upcase
+    #if !@ora_indexes.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase}) # Index does not exists
       sql = "CREATE INDEX #{@sampler_config.get_owner}.#{index_name} ON #{@sampler_config.get_owner}.#{table_name}("
       columns.each do |column|
         sql << "#{column},"
       end
       sql[(sql.length) - 1] = ' '                                               # remove last ,
       sql << ") PCTFREE 10"
+      unless compress.nil?
+        sql << " COMPRESS #{compress}"
+      end
+      log(sql)
+      PanoramaConnection.sql_execute(sql)
+    end
+
+    # Check compress state for already existing indexes
+    if @ora_indexes[index_name.upcase] && compress != @ora_indexes[index_name.upcase].prefix_length
+      sql = "ALTER INDEX #{@sampler_config.get_owner}.#{index_name} REBUILD "
+      if compress.nil?
+        sql << "NOCOMPRESS"
+      else
+        sql << "COMPRESS #{compress}"
+      end
+
       log(sql)
       PanoramaConnection.sql_execute(sql)
     end
