@@ -58,7 +58,8 @@
   active_session_history_list_blocking_locks_historic_sample_wait_caption: |-
     Zeit in Sekunden die mittelbar und unmittelbar geblockte Sessions warteten innerhalb des betrachteten Zeitraumes
     Gewichteter Wert berechnet aus der Anzahl Samples in der Active Session History.
-    Für kleine wait times kann dieser Wert erheblich größer als die Relaität sein da jeder Sample-Record für eine oder zehn Sekunden steht
+    Für kleine wait times kann dieser Wert erheblich größer als die Relaität sein da jeder Sample-Record für eine oder zehn Sekunden steht.
+    Zählt die Wait-Time nur für den betrachtetene Zeitraum. Die Wartezeit kann deutlich größer sein, wenn die Blockade vor dem Beginn des betrachteten Zeitraums startete.
 
   active_session_history_list_blocking_locks_historic_total_wait_caption: |-
     Summe Anzahl Sekunden die mittelbar und unmittelbar geblockte Sessions bereits im Wartezustand warten.
@@ -97,6 +98,8 @@
   active_session_history_list_blocking_locks_historic_detail_session_wait_sample_hint: |-
     Summe Anzahl Sekunden die diese Session bereits im Wartezustand auf die blockende Session wartet innerhalb des betrachteten Zeitraumes.
     Gewichteter Wert berechnet aus der Anzahl Samples in der Active Session History.
+    Zählt die Wait-Time nur für den betrachtetene Zeitraum. Die Wartezeit kann deutlich größer sein, wenn die Blockade vor dem Beginn des betrachteten Zeitraums startete.
+
   active_session_history_list_blocking_locks_historic_detail_sessions_direct_hint:  Anzeige der durch diese blocking Session geblockten Sessions
   active_session_history_list_blocking_locks_historic_detail_sid_hint:              SID der geblockten Session
   active_session_history_list_blocking_locks_historic_detail_sql_id_hint:           Aktuelles SQL der geblockten Session (oder anzahl wenn mehrere im Zeitraum aktiv waren)

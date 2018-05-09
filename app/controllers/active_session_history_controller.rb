@@ -596,7 +596,7 @@ class ActiveSessionHistoryController < ApplicationController
        LEFT OUTER JOIN DBA_Users u ON u.User_ID = x.Root_Blocking_User_ID
        JOIN   root_sel_compr c ON  NVL(c.Root_Blocking_Session, 0) = NVL(x.Root_Blocking_Session,0) AND NVL(c.Root_Blocking_Session_Serial#, 0) = NVL(x.Root_Blocking_Session_Serial#, 0)
                                AND c.Root_Blocking_Session_Status = x.Root_Blocking_Session_Status #{' AND NVL(c.Root_Blocking_Inst_ID, 0) = NVL(x.Root_Blocking_Inst_ID, 0)' if get_db_version >= '11.2'}
-       ORDER BY x.Max_Seconds_in_Wait_Total DESC
+       ORDER BY x.Max_Seconds_in_Wait_Total + Seconds_in_Wait_Sample DESC /* May be that Max_Seconds_in_Wait_Total is 0 evene if waits occurred */
        ", @dbid, @min_snap_id, @max_snap_id, @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end, @dbid]
 
     render_partial
