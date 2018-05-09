@@ -9,11 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/active_session_history_controller.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/active_session_history_controller.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/dragnet/sqls_cursor_redundancies_helper.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/helpers/dragnet/sqls_cursor_redundancies_helper.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/active_session_history/_list_blocking_locks_historic.html.erb" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/active_session_history/_list_blocking_locks_historic.html.erb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/active_session_history/_list_blocking_locks_historic_detail.html.erb" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/active_session_history/_list_blocking_locks_historic_detail.html.erb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/locales/de.yml" beforeDir="false" afterPath="$PROJECT_DIR$/config/locales/de.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" beforeDir="false" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterDir="false" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -184,11 +180,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="165">
-              <caret line="11" selection-start-line="11" selection-end-line="11" />
+            <state relative-caret-position="195">
+              <caret line="13" lean-forward="true" selection-start-line="13" selection-end-line="13" />
             </state>
           </provider>
         </entry>
@@ -233,7 +229,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="de.yml" pinned="false" current-in-tab="true">
+      <file leaf-file-name="de.yml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/config/locales/de.yml">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="308">
@@ -345,7 +341,6 @@
         <option value="$PROJECT_DIR$/app/views/dba_schema/_list_recyclebin_owner_choice.html.erb" />
         <option value="$PROJECT_DIR$/app/views/help/version_history.html" />
         <option value="$PROJECT_DIR$/app/jobs/panorama_sampler_job.rb" />
-        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_history_controller.rb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_schema_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_schema/_list_indexes.html.erb" />
@@ -356,6 +351,7 @@
         <option value="$PROJECT_DIR$/app/views/active_session_history/_list_blocking_locks_historic.html.erb" />
         <option value="$PROJECT_DIR$/app/views/active_session_history/_list_blocking_locks_historic_detail.html.erb" />
         <option value="$PROJECT_DIR$/config/locales/de.yml" />
+        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
       </list>
     </option>
   </component>
@@ -1329,14 +1325,7 @@
       <workItem from="1525181573889" duration="559000" />
       <workItem from="1525254729741" duration="6636000" />
       <workItem from="1525336779983" duration="55350000" />
-      <workItem from="1525791276724" duration="6237000" />
-    </task>
-    <task id="LOCAL-01334" summary="test logging">
-      <created>1522394454979</created>
-      <option name="number" value="01334" />
-      <option name="presentableId" value="LOCAL-01334" />
-      <option name="project" value="LOCAL" />
-      <updated>1522394454979</updated>
+      <workItem from="1525791276724" duration="6477000" />
     </task>
     <task id="LOCAL-01335" summary="Use same startup time for panorama_snapshot tests">
       <created>1522580732041</created>
@@ -1674,7 +1663,14 @@
       <option name="project" value="LOCAL" />
       <updated>1525794123131</updated>
     </task>
-    <option name="localTasksCounter" value="1383" />
+    <task id="LOCAL-01383" summary="Fix sort of blocking locks">
+      <created>1525868858412</created>
+      <option name="number" value="01383" />
+      <option name="presentableId" value="LOCAL-01383" />
+      <option name="project" value="LOCAL" />
+      <updated>1525868858412</updated>
+    </task>
+    <option name="localTasksCounter" value="1384" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1710,7 +1706,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3223629000" />
+    <option name="totallyTimeSpent" value="3223869000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1793,7 +1789,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Fix bug nullable" />
     <MESSAGE value="not_executable: true," />
     <MESSAGE value="Prevent request_counter from concurrent access" />
     <MESSAGE value="Sampling Panorama_FileStatXS and Panorama_TempStatXS" />
@@ -1818,7 +1813,8 @@
     <MESSAGE value="Compress Indexes for Panorama-Sampler" />
     <MESSAGE value="Show start monitoring of index in local date format" />
     <MESSAGE value="Cancel button for edit dialog" />
-    <option name="LAST_COMMIT_MESSAGE" value="Cancel button for edit dialog" />
+    <MESSAGE value="Fix sort of blocking locks" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix sort of blocking locks" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2359,13 +2355,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="11" selection-start-line="11" selection-end-line="11" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/helpers/dragnet/sqls_cursor_redundancies_helper.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="80">
@@ -2402,6 +2391,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="308">
           <caret line="102" column="144" lean-forward="true" selection-start-line="102" selection-start-column="144" selection-end-line="102" selection-end-column="144" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="13" lean-forward="true" selection-start-line="13" selection-end-line="13" />
         </state>
       </provider>
     </entry>
