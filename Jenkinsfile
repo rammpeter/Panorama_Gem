@@ -117,4 +117,12 @@ pipeline {
        }
     }
   }
+
+  post {
+    failure {
+        mail to: 'Peter.Ramm@ottogroup.com',
+                 subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+                 body: "Something is wrong with ${env.BUILD_URL}"
+    }
+  }
 }
