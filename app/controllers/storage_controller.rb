@@ -16,7 +16,7 @@ class StorageController < ApplicationController
              t.Status, t.Contents, t.Logging, t.Force_Logging, t.Extent_Management,
              t.Allocation_Type, t.Plugged_In,
              t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
-             f.AutoExtensible
+             f.AutoExtensible, f.Max_Size_MB
              #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
              #{ ", t.Def_InMemory" if get_db_version >= '12.1' && PanoramaConnection.edition == :enterprise}
       FROM  DBA_Tablespaces t
@@ -31,7 +31,8 @@ class StorageController < ApplicationController
       LEFT OUTER JOIN
             (
             SELECT d.TableSpace_Name, SUM(d.Bytes)/1048576 FileSize,
-                   CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible
+                   CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
+                   SUM(d.MaxBytes)/1048576 Max_Size_MB
             FROM   DBA_Data_Files d
             GROUP BY d.Tablespace_Name
             ) f ON f.Tablespace_Name = t.TableSpace_Name
@@ -47,12 +48,13 @@ class StorageController < ApplicationController
              t.Status, t.Contents, t.Logging, t.Force_Logging, t.Extent_Management,
              t.Allocation_Type, t.Plugged_In,
              t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
-             f.AutoExtensible
+             f.AutoExtensible, f.Max_Size_MB
              #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
              #{ ", t.Def_InMemory" if get_db_version >= '12.1' && PanoramaConnection.edition == :enterprise}
       FROM  DBA_Tablespaces t
       LEFT OUTER JOIN (SELECT Tablespace_Name, SUM(Bytes)/1048576 MBTotal, SUM(Bytes)/SUM(Blocks) BlockSize,
-                              CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible
+                              CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
+                              SUM(MaxBytes)/1048576 Max_Size_MB
                        FROM DBA_Temp_Files
                        GROUP BY Tablespace_Name
                       ) f ON f.Tablespace_Name = t.TableSpace_Name
@@ -84,7 +86,8 @@ class StorageController < ApplicationController
              NULL                       Segment_Space_Management,
              NULL                       Def_Tab_Compression,
              NULL                       Bigfile,
-             NULL                       AutoExtensible
+             NULL                       AutoExtensible,
+             NULL                       Max_Size_MB
              #{ ", NULL Encrypted, NULL Compress_For" if get_db_version >= '11.2'}
              #{ ", NULL Def_InMemory" if get_db_version >= '12.1'  && PanoramaConnection.edition == :enterprise}
       FROM   gv$Log

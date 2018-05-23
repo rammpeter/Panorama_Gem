@@ -166,15 +166,48 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
       end
     end
 
+    show_pct_used = proc do |rec|
+      if !rec.pctused.nil? && rec.contents == 'PERMANENT' && rec.pctused > 90 && rec.autoextensible == 'NO'
+        "<div style=\"background-color: orange;\">#{fn(rec.pctused, 1)}</div>".html_safe
+      else
+        fn(rec.pctused, 1)
+      end
+    end
+
+    show_max_size = proc do |rec|
+      if rec.autoextensible == 'NO'
+        nil
+      else
+        fn(rec.max_size_mb)
+      end
+    end
+
+    show_pct_used_max = proc do |rec|
+      if rec.max_size_mb.nil? || rec.max_size_mb == 0
+        nil
+      else
+        max_pct_used = rec.mbused * 100.0 / rec.max_size_mb
+
+        if !max_pct_used.nil? && rec.contents == 'PERMANENT' && max_pct_used > 90
+          "<div style=\"background-color: orange;\">#{fn(max_pct_used, 1)}</div>".html_safe
+        else
+          fn(max_pct_used, 1)
+        end
+      end
+    end
+
     column_options =
         [
             {:caption=>"Tablespace",          :data=>proc{|rec| rec.tablespace_name},             :title=>t(:storage_tablespace_usage_tablespace_name_hint, :default=>'Name of tablespace')},
             {:caption=>"Contents",            :data=>proc{|rec| rec.contents},                    :title=>t(:storage_tablespace_usage_tablespace_content_hint, :default=>'Type/content of tablespace') },
             {:caption=>"Block size",          :data=>proc{|rec| formattedNumber(rec.blocksize)},  :title=>t(:storage_tablespace_usage_tablespace_blocksize_hint, :default=>'Blocksize of tablespace in Bytes'),        :align=>:right},
-            {:caption=>"MB Total",            :data=>proc{|rec| formattedNumber(rec.mbtotal)},    :title=>"Total size of tablespace in MB",           :align=>:right},
+            {:caption=>"MB Total",            :data=>proc{|rec| formattedNumber(rec.mbtotal)},    :title=>"Total current size of tablespace in MB\n(without possible autoextend-expansion)",           :align=>:right},
             {:caption=>"MB Used",             :data=>link_mb_used,                                :title=>"Used space in tablespace in MB",           :align=>:right},
-            {:caption=>"MB Free",             :data=>link_mb_free,                                :title=>"Free space in tablespace in MB",           :align=>:right},
-            {:caption=>"% used",              :data=>proc{|rec| formattedNumber(rec.pctused,1)},  :title=>"Usage in percent",                         :align=>:right},
+            {:caption=>"MB Free",             :data=>link_mb_free,                                :title=>"Free space in tablespace in MB\n(without possible autoextend-expansion)",           :align=>:right},
+            {:caption=>"% used",              :data=>show_pct_used,                               :title=>"Usage in percent\n(without possible autoextend-expansion)",                         :align=>:right},
+            {:caption=>"Auto ext.",           :data=>proc{|rec| rec.autoextensible},              :title=>"Auto-Extensible ?"},
+            {:caption=>"MB max.",             :data=>show_max_size,                               :title=>"Maximum size of tablespace in MB including autoextend", align: :right},
+            {:caption=>"% used max.",         :data=>show_pct_used_max,                           :title=>"Usage in percent of maximum size of tablespace including autoextend", align: :right},
             {:caption=>"Status",              :data=>proc{|rec| rec.status}},
             {:caption=>"Content",             :data=>proc{|rec| rec.contents}},
             {:caption=>"Logging",             :data=>proc{|rec| rec.logging}},
@@ -186,7 +219,6 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
         ]
     column_options << {:caption=>"Def. table compression", :data=>proc{|rec| rec.def_tab_compression},      :title=>'Indicates whether default table compression is enabled (ENABLED) or not (DISABLED)', :data_title=>proc{|rec| get_db_version >= '11.2' ? "%t\nCompress For = #{rec.compress_for}" : "%t"}}
     column_options << {:caption=>'Big file',            :data=>proc{|rec| rec.bigfile},                     :title=>'Indicates whether the tablespace is a bigfile tablespace (YES) or a smallfile tablespace (NO)'}
-    column_options << {:caption=>"Auto ext.",           :data=>proc{|rec| rec.autoextensible},              :title=>"Auto-Extensible ?"}
     column_options << {:caption=>'Encrypt.',            :data=>proc{|rec| rec.encrypted},                   :title=>"Indicates whether the tablespace is encrypted"} if get_db_version >= '11.2'
     column_options << {:caption=>'Def. in memory',      :data=>proc{|rec| rec.def_inmemory},                :title=>"Indicates whether the In-Memory Column Store (IM column store) is by default enabled (ENABLED) or disabled (DISABLED) for tables in this tablespace"} if get_db_version >= '12.1' && PanoramaConnection.edition == :enterprise
     column_options << {:caption=>'Details',             :data=>link_ts_details,                             :title=>"Tablespace-specific details"}
