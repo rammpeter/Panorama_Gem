@@ -27,7 +27,8 @@ pipeline {
         MANAGEMENT_PACK_LICENSE = 'diagnostics_and_tuning_pack'
       }
       steps {
-         sh 'rake TESTOPTS="-v" test'
+         // sh 'rake TESTOPTS="-v" test'
+         sh 'rake test'
       }
     }
     stage('Test 12.1 without tuning pack') {
@@ -36,7 +37,8 @@ pipeline {
         MANAGEMENT_PACK_LICENSE = 'diagnostics_pack'
       }
       steps {
-         sh 'rake TESTOPTS="-v" test'
+         // sh 'rake TESTOPTS="-v" test'
+         sh 'rake test'
       }
     }
     stage('Test 12.1 without diagnostics and tuning pack') {
@@ -45,7 +47,8 @@ pipeline {
         MANAGEMENT_PACK_LICENSE = 'none'
       }
       steps {
-         sh 'rake TESTOPTS="-v" test'
+         // sh 'rake TESTOPTS="-v" test'
+         sh 'rake test'
       }
     }
     stage('Docker stop 12.1') {
@@ -67,7 +70,8 @@ pipeline {
         MANAGEMENT_PACK_LICENSE = 'diagnostics_and_tuning_pack'
       }
       steps {
-         sh 'rake TESTOPTS="-v" test'
+         // sh 'rake TESTOPTS="-v" test'
+         sh 'rake test'
       }
     }
     stage('Test 11.2 without tuning pack') {
@@ -76,7 +80,8 @@ pipeline {
         MANAGEMENT_PACK_LICENSE = 'diagnostics_pack'
       }
       steps {
-         sh 'rake TESTOPTS="-v" test'
+         // sh 'rake TESTOPTS="-v" test'
+         sh 'rake test'
       }
     }
     stage('Test 11.2 without diagnostics and tuning pack') {
@@ -85,7 +90,8 @@ pipeline {
         MANAGEMENT_PACK_LICENSE = 'none'
       }
       steps {
-         sh 'rake TESTOPTS="-v" test'
+         // sh 'rake TESTOPTS="-v" test'
+         sh 'rake test'
       }
     }
     stage('Docker stop 11.2') {
@@ -107,7 +113,8 @@ pipeline {
         MANAGEMENT_PACK_LICENSE = 'none'
       }
       steps {
-         sh 'rake TESTOPTS="-v" test'
+         // sh 'rake TESTOPTS="-v" test'
+         sh 'rake test'
       }
     }
     stage('Docker stop 12.1 SE') {

@@ -7,12 +7,11 @@
     <bookmark url="file://$PROJECT_DIR$/app/views/panorama_sampler/_list_config.html.erb" line="66" mnemonic="7" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="Show file number in tablespace list">
+    <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.rakeTasks" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.rakeTasks" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/storage_controller.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/storage_controller.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/storage/_datafile_usage.html.erb" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/storage/_datafile_usage.html.erb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/storage/_tablespace_usage.html.erb" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/storage/_tablespace_usage.html.erb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" beforeDir="false" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Jenkinsfile" beforeDir="false" afterPath="$PROJECT_DIR$/Jenkinsfile" afterDir="false" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -122,7 +121,7 @@
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__PanoramaSamplerControllerTest___Panorama_Gem.coverage" NAME="Run test 'PanoramaSamplerControllerTest': Panorama_Gem Coverage Results" MODIFIED="1522270325852" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_check_connection__Panorama_Gem.coverage" NAME="test_check_connection: Panorama_Gem Coverage Results" MODIFIED="1501684302891" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@Test_11_2.coverage" NAME="Test 11.2 Coverage Results" MODIFIED="1513465472751" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
-    <SUITE FILE_PATH="coverage/Panorama_Gem@Development__Panorama_Gem.rcov" NAME="Development: Panorama_Gem Coverage Results" MODIFIED="1527060986247" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
+    <SUITE FILE_PATH="coverage/Panorama_Gem@Development__Panorama_Gem.rcov" NAME="Development: Panorama_Gem Coverage Results" MODIFIED="1527068305396" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_compare_execution_plans__Panorama_Gem.coverage" NAME="test_compare_execution_plans: Panorama_Gem Coverage Results" MODIFIED="1473862324244" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_list_sql_area_sql_id_childno_with_xhr__true__Panorama_Gem.coverage" NAME="test_list_sql_area_sql_id_childno_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1512490857252" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_list_iostat_detail_history_timeline__Panorama_Gem.coverage" NAME="test_list_iostat_detail_history_timeline: Panorama_Gem Coverage Results" MODIFIED="1484477365310" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
@@ -183,7 +182,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="75">
@@ -201,11 +200,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Jenkinsfile" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Jenkinsfile" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Jenkinsfile">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="429">
-              <caret line="128" selection-start-line="128" selection-end-line="128" />
+            <state relative-caret-position="813">
+              <caret line="133" column="3" lean-forward="true" selection-start-line="133" selection-start-column="3" selection-end-line="133" selection-end-column="3" />
             </state>
           </provider>
         </entry>
@@ -223,7 +222,7 @@
         <entry file="file://$PROJECT_DIR$/app/controllers/storage_controller.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="762">
-              <caret line="96" column="45" lean-forward="true" selection-start-line="96" selection-start-column="45" selection-end-line="96" selection-end-column="45" />
+              <caret line="96" column="45" selection-start-line="96" selection-start-column="45" selection-end-line="96" selection-end-column="45" />
             </state>
           </provider>
         </entry>
@@ -237,7 +236,7 @@
         <entry file="file://$PROJECT_DIR$/app/controllers/dba_controller.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="459">
-              <caret line="394" lean-forward="true" selection-start-line="394" selection-end-line="394" />
+              <caret line="394" selection-start-line="394" selection-end-line="394" />
             </state>
           </provider>
         </entry>
@@ -369,11 +368,11 @@
         <option value="$PROJECT_DIR$/app/views/active_session_history/_list_blocking_locks_historic.html.erb" />
         <option value="$PROJECT_DIR$/app/views/active_session_history/_list_blocking_locks_historic_detail.html.erb" />
         <option value="$PROJECT_DIR$/config/locales/de.yml" />
-        <option value="$PROJECT_DIR$/Jenkinsfile" />
         <option value="$PROJECT_DIR$/app/views/storage/_datafile_usage.html.erb" />
         <option value="$PROJECT_DIR$/app/controllers/storage_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/storage/_tablespace_usage.html.erb" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
+        <option value="$PROJECT_DIR$/Jenkinsfile" />
       </list>
     </option>
   </component>
@@ -1350,14 +1349,7 @@
       <workItem from="1525791276724" duration="7021000" />
       <workItem from="1526566353517" duration="687000" />
       <workItem from="1526981917912" duration="1566000" />
-      <workItem from="1527012024595" duration="7877000" />
-    </task>
-    <task id="LOCAL-01337" summary="DBA_Hist_Enqueue_Stat">
-      <created>1522584701140</created>
-      <option name="number" value="01337" />
-      <option name="presentableId" value="LOCAL-01337" />
-      <option name="project" value="LOCAL" />
-      <updated>1522584701140</updated>
+      <workItem from="1527012024595" duration="9160000" />
     </task>
     <task id="LOCAL-01338" summary="DBA_Hist_PGASTat">
       <created>1522585897660</created>
@@ -1695,7 +1687,14 @@
       <option name="project" value="LOCAL" />
       <updated>1527065785472</updated>
     </task>
-    <option name="localTasksCounter" value="1386" />
+    <task id="LOCAL-01386" summary="Show file number in tablespace list">
+      <created>1527067646890</created>
+      <option name="number" value="01386" />
+      <option name="presentableId" value="LOCAL-01386" />
+      <option name="project" value="LOCAL" />
+      <updated>1527067646891</updated>
+    </task>
+    <option name="localTasksCounter" value="1387" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1731,7 +1730,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3234543000" />
+    <option name="totallyTimeSpent" value="3235826000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1749,14 +1748,14 @@
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.7069922" visible="true" weight="0.2368065" />
       <window_info anchor="bottom" id="TODO" order="7" sideWeight="0.48269352" weight="0.30472103" />
       <window_info anchor="bottom" id="Docker" order="9" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.10419486" side_tool="true" visible="true" weight="0.2837838" />
+      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.104645915" side_tool="true" visible="true" weight="0.2837838" />
       <window_info anchor="right" id="Database" order="3" weight="0.26633167" />
       <window_info anchor="bottom" id="Database Changes" order="0" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.8897029" weight="0.47575757" />
+      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.8890392" weight="0.4753577" />
       <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.48806533" weight="0.2532189" />
-      <window_info active="true" id="Structure" order="1" sideWeight="0.29300776" side_tool="true" visible="true" weight="0.2368065" />
+      <window_info id="Structure" order="1" sideWeight="0.29300776" side_tool="true" visible="true" weight="0.2368065" />
       <window_info anchor="bottom" id="Terminal" order="15" sideWeight="0.49495414" weight="0.18764846" />
-      <window_info anchor="bottom" id="Debug" order="4" sideWeight="0.8958051" visible="true" weight="0.2837838" />
+      <window_info active="true" anchor="bottom" id="Debug" order="4" sideWeight="0.8953541" visible="true" weight="0.2837838" />
       <window_info id="Favorites" order="2" sideWeight="0.3464837" side_tool="true" weight="0.27805802" />
       <window_info anchor="bottom" id="Changes" order="10" weight="0.32967034" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -1814,7 +1813,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Prevent request_counter from concurrent access" />
     <MESSAGE value="Sampling Panorama_FileStatXS and Panorama_TempStatXS" />
     <MESSAGE value="Sampling Panorama_IOStat_Detail" />
     <MESSAGE value="Version++" />
@@ -1839,7 +1837,8 @@
     <MESSAGE value="Cancel button for edit dialog" />
     <MESSAGE value="Fix sort of blocking locks" />
     <MESSAGE value="Show autoextend in tablespace list" />
-    <option name="LAST_COMMIT_MESSAGE" value="Show autoextend in tablespace list" />
+    <MESSAGE value="Show file number in tablespace list" />
+    <option name="LAST_COMMIT_MESSAGE" value="Show file number in tablespace list" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2346,13 +2345,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Jenkinsfile">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="429">
-          <caret line="128" selection-start-line="128" selection-end-line="128" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/helpers/application_helper.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="169">
@@ -2373,14 +2365,14 @@
     <entry file="file://$PROJECT_DIR$/app/controllers/dba_controller.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="459">
-          <caret line="394" lean-forward="true" selection-start-line="394" selection-end-line="394" />
+          <caret line="394" selection-start-line="394" selection-end-line="394" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/storage_controller.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="762">
-          <caret line="96" column="45" lean-forward="true" selection-start-line="96" selection-start-column="45" selection-end-line="96" selection-end-column="45" />
+          <caret line="96" column="45" selection-start-line="96" selection-start-column="45" selection-end-line="96" selection-end-column="45" />
         </state>
       </provider>
     </entry>
@@ -2395,6 +2387,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
           <caret line="5" column="39" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Jenkinsfile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="813">
+          <caret line="133" column="3" lean-forward="true" selection-start-line="133" selection-start-column="3" selection-end-line="133" selection-end-column="3" />
         </state>
       </provider>
     </entry>
