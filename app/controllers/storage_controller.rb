@@ -6,7 +6,7 @@ class StorageController < ApplicationController
   def tablespace_usage
     @tablespaces = sql_select_all("\
       SELECT /* Panorama-Tool Ramm */
-             t.TableSpace_Name,
+             t.TableSpace_Name, NULL Inst_ID,
              t.contents,
              t.Block_Size                   BlockSize,
              f.FileSize                     MBTotal,
@@ -16,7 +16,7 @@ class StorageController < ApplicationController
              t.Status, t.Contents, t.Logging, t.Force_Logging, t.Extent_Management,
              t.Allocation_Type, t.Plugged_In,
              t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
-             f.AutoExtensible, f.Max_Size_MB
+             f.AutoExtensible, f.Max_Size_MB, f.File_Count
              #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
              #{ ", t.Def_InMemory" if get_db_version >= '12.1' && PanoramaConnection.edition == :enterprise}
       FROM  DBA_Tablespaces t
@@ -32,13 +32,14 @@ class StorageController < ApplicationController
             (
             SELECT d.TableSpace_Name, SUM(d.Bytes)/1048576 FileSize,
                    CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
-                   SUM(d.MaxBytes)/1048576 Max_Size_MB
+                   SUM(d.MaxBytes)/1048576 Max_Size_MB,
+                   COUNT(*) File_Count
             FROM   DBA_Data_Files d
             GROUP BY d.Tablespace_Name
             ) f ON f.Tablespace_Name = t.TableSpace_Name
       WHERE Contents != 'TEMPORARY'
       UNION ALL
-      SELECT f.Tablespace_Name,
+      SELECT f.Tablespace_Name, NULL Inst_ID,
              t.Contents,
              t.Block_Size                   BlockSize,
              NVL(f.MBTotal,0)               MBTotal,
@@ -48,13 +49,14 @@ class StorageController < ApplicationController
              t.Status, t.Contents, t.Logging, t.Force_Logging, t.Extent_Management,
              t.Allocation_Type, t.Plugged_In,
              t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
-             f.AutoExtensible, f.Max_Size_MB
+             f.AutoExtensible, f.Max_Size_MB, f.File_Count
              #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
              #{ ", t.Def_InMemory" if get_db_version >= '12.1' && PanoramaConnection.edition == :enterprise}
       FROM  DBA_Tablespaces t
       LEFT OUTER JOIN (SELECT Tablespace_Name, SUM(Bytes)/1048576 MBTotal, SUM(Bytes)/SUM(Blocks) BlockSize,
                               CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
-                              SUM(MaxBytes)/1048576 Max_Size_MB
+                              SUM(MaxBytes)/1048576 Max_Size_MB,
+                              COUNT(*) File_Count
                        FROM DBA_Temp_Files
                        GROUP BY Tablespace_Name
                       ) f ON f.Tablespace_Name = t.TableSpace_Name
@@ -64,7 +66,7 @@ class StorageController < ApplicationController
                       ) s ON s.Tablespace_Name = t.TableSpace_Name
       WHERE t.Contents = 'TEMPORARY'
       UNION ALL
-      SELECT 'Redo Inst='||Inst_ID           Tablespace_Name,
+      SELECT 'Redo Inst='||Inst_ID           Tablespace_Name, Inst_ID,
              'Redo-Logfile'             Contents,
              #{ if get_db_version >= "11.2"
                   "MIN(BlockSize)"
@@ -87,10 +89,12 @@ class StorageController < ApplicationController
              NULL                       Def_Tab_Compression,
              NULL                       Bigfile,
              NULL                       AutoExtensible,
-             NULL                       Max_Size_MB
+             NULL                       Max_Size_MB,
+             COUNT(*)                   File_Count
              #{ ", NULL Encrypted, NULL Compress_For" if get_db_version >= '11.2'}
              #{ ", NULL Def_InMemory" if get_db_version >= '12.1'  && PanoramaConnection.edition == :enterprise}
       FROM   gv$Log
+      WHERE  Inst_ID = Thread#  -- im gv$-View werden jeweils die Logs der anderen Instanzen noch einmal in jeder Instance mit Thread# getzeigt, dies verhindert die Dopplung
       GROUP BY Inst_ID
       ORDER BY 4 DESC NULLS LAST
       ")
@@ -427,7 +431,19 @@ class StorageController < ApplicationController
 
   # Nutzung von Datafiles
   def datafile_usage
-    @datafiles = sql_select_iterator("\
+    @tablespace_name = params[:tablespace_name]
+
+    where_string_1 = ''
+    where_string_2 = ''
+    where_values = []
+
+    if @tablespace_name && @tablespace_name != ''
+      where_string_1 = " WHERE d.Tablespace_Name = ?"
+      where_string_2 = " WHERE NVL(d.Tablespace_Name, t.Tablespace_Name) = ?"
+      where_values << @tablespace_name
+    end
+
+    @datafiles = sql_select_iterator ["\
       SELECT /* Panorama-Tool Ramm */
              d.*,
              NVL(f.BYTES,0)/1048576            MBFree,
@@ -452,18 +468,20 @@ class StorageController < ApplicationController
                  FROM   DBA_FREE_SPACE
                  GROUP BY File_ID, Tablespace_Name
                 ) f ON f.FILE_ID = d.FILE_ID AND f.Tablespace_Name = d.Tablespace_Name -- DATA und Temp verwenden File_ID redundant
-      ORDER BY 1 ASC")
+      #{where_string_1}
+      ORDER BY 1 ASC"].concat(where_values)
 
     if get_db_version >= "11.2"
-      @file_usage = sql_select_iterator "\
+      @file_usage = sql_select_iterator ["\
         SELECT f.*,
                NVL(d.File_Name, t.File_Name) File_Name,
                NVL(d.Tablespace_Name, t.Tablespace_Name) Tablespace_Name
         FROM   gv$IOStat_File f
         LEFT JOIN DBA_Data_Files d ON d.File_ID = f.File_No AND f.FileType_Name='Data File'   -- DATA und Temp verwenden File_ID redundant
         LEFT JOIN DBA_Temp_Files t ON t.File_ID = f.File_No AND f.FileType_Name='Temp File'
+        #{where_string_2}
         ORDER BY f.Inst_ID, f.File_No
-      "
+      "].concat(where_values)
     end
 
     render_partial
