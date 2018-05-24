@@ -18,7 +18,7 @@ class StorageController < ApplicationController
              t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
              f.AutoExtensible, f.Max_Size_MB, f.File_Count
              #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
-             #{ ", t.Def_InMemory" if get_db_version >= '12.1' && PanoramaConnection.edition == :enterprise}
+             #{ ", t.Def_InMemory" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
       FROM  DBA_Tablespaces t
       LEFT OUTER JOIN
             (
@@ -51,7 +51,7 @@ class StorageController < ApplicationController
              t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
              f.AutoExtensible, f.Max_Size_MB, f.File_Count
              #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
-             #{ ", t.Def_InMemory" if get_db_version >= '12.1' && PanoramaConnection.edition == :enterprise}
+             #{ ", t.Def_InMemory" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
       FROM  DBA_Tablespaces t
       LEFT OUTER JOIN (SELECT Tablespace_Name, SUM(Bytes)/1048576 MBTotal, SUM(Bytes)/SUM(Blocks) BlockSize,
                               CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
@@ -92,7 +92,7 @@ class StorageController < ApplicationController
              NULL                       Max_Size_MB,
              COUNT(*)                   File_Count
              #{ ", NULL Encrypted, NULL Compress_For" if get_db_version >= '11.2'}
-             #{ ", NULL Def_InMemory" if get_db_version >= '12.1'  && PanoramaConnection.edition == :enterprise}
+             #{ ", NULL Def_InMemory" if get_db_version >= '12.1.0.2'  && PanoramaConnection.edition == :enterprise}
       FROM   gv$Log
       WHERE  Inst_ID = Thread#  -- im gv$-View werden jeweils die Logs der anderen Instanzen noch einmal in jeder Instance mit Thread# getzeigt, dies verhindert die Dopplung
       GROUP BY Inst_ID

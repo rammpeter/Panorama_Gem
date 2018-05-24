@@ -241,7 +241,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
     column_options << {:caption=>"Def. table compression", :data=>proc{|rec| rec.def_tab_compression},      :title=>'Indicates whether default table compression is enabled (ENABLED) or not (DISABLED)', :data_title=>proc{|rec| get_db_version >= '11.2' ? "%t\nCompress For = #{rec.compress_for}" : "%t"}}
     column_options << {:caption=>'Big file',            :data=>proc{|rec| rec.bigfile},                     :title=>'Indicates whether the tablespace is a bigfile tablespace (YES) or a smallfile tablespace (NO)'}
     column_options << {:caption=>'Encrypt.',            :data=>proc{|rec| rec.encrypted},                   :title=>"Indicates whether the tablespace is encrypted"} if get_db_version >= '11.2'
-    column_options << {:caption=>'Def. in memory',      :data=>proc{|rec| rec.def_inmemory},                :title=>"Indicates whether the In-Memory Column Store (IM column store) is by default enabled (ENABLED) or disabled (DISABLED) for tables in this tablespace"} if get_db_version >= '12.1' && PanoramaConnection.edition == :enterprise
+    column_options << {:caption=>'Def. in memory',      :data=>proc{|rec| rec.def_inmemory},                :title=>"Indicates whether the In-Memory Column Store (IM column store) is by default enabled (ENABLED) or disabled (DISABLED) for tables in this tablespace"} if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise
     column_options << {:caption=>'Details',             :data=>link_ts_details,                             :title=>"Tablespace-specific details"}
 
 
