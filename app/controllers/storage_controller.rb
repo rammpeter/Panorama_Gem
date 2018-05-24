@@ -193,7 +193,7 @@ class StorageController < ApplicationController
       new_rec.extend SelectHashHelper
       @schemas << new_rec
     end
-
+    @schemas.sort_by! {|obj| -obj.total_mbytes}
 
     @segments = sql_select_all "SELECT /* Panorama-Tool Ramm */ Segment_Type,
                                        SUM(Bytes)/1048576   MBytes
