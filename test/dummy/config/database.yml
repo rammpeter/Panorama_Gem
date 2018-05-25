@@ -95,6 +95,19 @@ test_12.2_SE2_CDB:
   test_username: c##panorama_test
   test_password: panorama_test
 
+test_12.2_SE2_CDB:
+  adapter: nulldb
+
+  test_url:      jdbc:oracle:thin:@localhost:1522/orclcdb
+  test_username: c##panorama_test
+  test_password: panorama_test
+
+test_12.2_PDB_LOCAL:
+  adapter: nulldb
+
+  test_url:      jdbc:oracle:thin:@localhost:1521/orclpdb1
+  test_username: panorama_test
+  test_password: panorama_test
 
 production:
   <<: *default

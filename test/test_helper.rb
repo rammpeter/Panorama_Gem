@@ -146,7 +146,9 @@ end
 
 class PanoramaTestConfig
   def self.test_config
-    Dummy::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]
+    config = Dummy::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]
+    raise "test_helper.rb: No test config available in database.yml for DB_VERSION=#{ENV['DB_VERSION']}" if config.nil?
+    config
   end
 end
 
