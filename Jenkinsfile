@@ -117,6 +117,15 @@ pipeline {
          sh 'rake test'
       }
     }
+    stage('Test 12.1 SE with Panorama-Sampler') {
+      environment {
+        DB_VERSION = '12.1_SE'
+        MANAGEMENT_PACK_LICENSE = 'panorama_sampler'
+      }
+      steps {
+         sh 'rake test'
+      }
+    }
     stage('Docker stop 12.1 SE') {
       steps {
          sh 'docker stop oracle121SE'
@@ -163,6 +172,38 @@ pipeline {
          sleep 20
        }
     }
+
+    stage('Docker start 12.2 SE PDB') {
+      steps {
+         sh 'docker start oracle_12.2.0.1-se2'
+         sleep 20
+       }
+    }
+    stage('Test 12.2 SE PDB without diagnostics and tuning pack') {
+      environment {
+        DB_VERSION = '12.2_SE_PDB'
+        MANAGEMENT_PACK_LICENSE = 'none'
+      }
+      steps {
+         sh 'rake test'
+      }
+    }
+    stage('Test 12.2 SE PDB with Panorama-Sampler') {
+      environment {
+        DB_VERSION = '12.2_SE_PDB'
+        MANAGEMENT_PACK_LICENSE = 'panorama_sampler'
+      }
+      steps {
+         sh 'rake test'
+      }
+    }
+    stage('Docker stop 12.2 SE PDB') {
+      steps {
+         sh 'docker stop oracle_12.2.0.1-se2'
+         sleep 20
+       }
+    }
+
 
   }
 
