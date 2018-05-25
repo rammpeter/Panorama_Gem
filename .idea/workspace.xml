@@ -9,7 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Jenkinsfile" beforeDir="false" afterPath="$PROJECT_DIR$/Jenkinsfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/dummy/config/database.yml" beforeDir="false" afterPath="$PROJECT_DIR$/test/dummy/config/database.yml" afterDir="false" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -97,6 +97,7 @@
     <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__EnvControllerTest___Panorama_Gem.coverage" NAME="Run test 'EnvControllerTest': Panorama_Gem Coverage Results" MODIFIED="1501682942371" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_should_connect_to_test_db__Panorama_Gem.coverage" NAME="test_should_connect_to_test-db: Panorama_Gem Coverage Results" MODIFIED="1481180710108" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_exec_dragnet_sql__Panorama_Gem.coverage" NAME="test_exec_dragnet_sql: Panorama_Gem Coverage Results" MODIFIED="1480109599001" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
+    <SUITE FILE_PATH="coverage/Panorama_Gem@Run_test__AdditionControllerTest___Panorama_Gem.rcov" NAME="Run test 'AdditionControllerTest': Panorama_Gem Coverage Results" MODIFIED="1527253285459" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_list_sql_monitor_reports_with_xhr__true__Panorama_Gem.coverage" NAME="test_list_sql_monitor_reports_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1521473832452" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@test_show_new_config_form_with_xhr__true__Panorama_Gem.coverage" NAME="test_show_new_config_form_with_xhr:_true: Panorama_Gem Coverage Results" MODIFIED="1521807828881" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="Panorama_Gem" />
     <SUITE FILE_PATH="coverage/Panorama_Gem@panorama_sampler_controller.coverage" NAME="panorama_sampler_controller Coverage Results" MODIFIED="1508871836166" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/app/controllers" MODULE_NAME="Panorama_Gem" />
@@ -189,20 +190,38 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Jenkinsfile" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Jenkinsfile" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Jenkinsfile">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="309">
+            <state relative-caret-position="405">
               <caret line="156" selection-start-line="156" selection-end-line="156" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="database.yml" pinned="false" current-in-tab="false">
+      <file leaf-file-name="database.yml" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test/dummy/config/database.yml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="131">
-              <caret line="66" column="30" lean-forward="true" selection-start-line="66" selection-start-column="30" selection-end-line="66" selection-end-column="30" />
+            <state relative-caret-position="450">
+              <caret line="81" column="24" lean-forward="true" selection-start-line="81" selection-start-column="24" selection-end-line="81" selection-end-column="24" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="addition_controller_test.rb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/controllers/addition_controller_test.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state>
+              <caret line="5" column="6" selection-start-line="5" selection-start-column="6" selection-end-line="5" selection-end-column="6" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test_helper.rb" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test/test_helper.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="170">
+              <caret line="77" selection-start-line="77" selection-end-line="77" />
             </state>
           </provider>
         </entry>
@@ -270,7 +289,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/views/io/_show_iostat_filetype_history.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_pga/_show_pga_stat_historic.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_history/_list_resource_limits_historic.html.erb" />
         <option value="$PROJECT_DIR$/app/views/dba_history/_show_resource_limits_historic.html.erb" />
@@ -319,8 +337,9 @@
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_sampling.rb" />
         <option value="$PROJECT_DIR$/app/jobs/panorama_sampler_job.rb" />
         <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
-        <option value="$PROJECT_DIR$/test/dummy/config/database.yml" />
         <option value="$PROJECT_DIR$/Jenkinsfile" />
+        <option value="$PROJECT_DIR$/test/test_helper.rb" />
+        <option value="$PROJECT_DIR$/test/dummy/config/database.yml" />
       </list>
     </option>
   </component>
@@ -543,6 +562,12 @@
               <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
               <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
               <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="controllers" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
               <item name="dummy" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -646,7 +671,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Rails.Development: Panorama_Gem">
+  <component name="RunManager" selected="Test::Unit/Shoulda/Minitest.Run test 'AdditionControllerTest': Panorama_Gem">
     <configuration name="IRB console: Panorama_Gem" type="IrbRunConfigurationType" factoryName="IRB console" temporary="true">
       <module name="Panorama_Gem" />
       <IRB_RUN_CONFIG NAME="RUBY_ARGS" VALUE="-e $stdout.sync=true;$stderr.sync=true;load($0=ARGV.shift)" />
@@ -715,6 +740,36 @@
       <RAKE_RUN_CONFIG_SETTINGS_ID NAME="RAKE_TASK_OPTION_DRYRUN" VALUE="false" />
       <RAKE_RUN_CONFIG_SETTINGS_ID NAME="RAKE_TASK_OPTION_PREREQS" VALUE="false" />
     </configuration>
+    <configuration name="Run test 'AdditionControllerTest': Panorama_Gem" type="TestUnitRunConfigurationType" factoryName="Test::Unit/Shoulda/Minitest" temporary="true">
+      <predefined_log_file id="RUBY_TESTUNIT" enabled="true" />
+      <module name="Panorama_Gem" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="RUBY_ARGS" VALUE="-e $stdout.sync=true;$stderr.sync=true;load($0=ARGV.shift) -Itest" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="WORK DIR" VALUE="$MODULE_DIR$" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="SHOULD_USE_SDK" VALUE="false" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="ALTERN_SDK_NAME" VALUE="" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="myPassParentEnvs" VALUE="true" />
+      <envs>
+        <env name="RAILS_ENV" value="test" />
+        <env name="JRUBY_OPTS" value="-X+O" />
+        <env name="DB_VERSION" value="hugo" />
+      </envs>
+      <EXTENSION ID="BundlerRunConfigurationExtension" bundleExecEnabled="true" />
+      <EXTENSION ID="JRubyRunConfigurationExtension" NailgunExecEnabled="false" />
+      <EXTENSION ID="RubyCoverageRunConfigurationExtension" track_test_folders="true" runner="rcov">
+        <COVERAGE_PATTERN ENABLED="true">
+          <PATTERN REGEXPS="/.rvm/" INCLUDED="false" />
+        </COVERAGE_PATTERN>
+      </EXTENSION>
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TESTS_FOLDER_PATH" VALUE="" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_SCRIPT_PATH" VALUE="$MODULE_DIR$/test/controllers/addition_controller_test.rb" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_FILE_MASK" VALUE="" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_METHOD_NAME" VALUE="" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_TEST_TYPE" VALUE="TEST_SCRIPT" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="DRB" VALUE="false" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="ZEUS" VALUE="false" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="SPRING" VALUE="false" />
+      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="RUNNER_OPTIONS" VALUE="" />
+    </configuration>
     <configuration name="Run test 'DbaGeneralTest': Panorama_Gem" type="TestUnitRunConfigurationType" factoryName="Test::Unit/Shoulda/Minitest" temporary="true">
       <predefined_log_file id="RUBY_TESTUNIT" enabled="true" />
       <module name="Panorama_Gem" />
@@ -768,35 +823,6 @@
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_FILE_MASK" VALUE="" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_METHOD_NAME" VALUE="" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_TEST_TYPE" VALUE="TEST_SCRIPT" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="DRB" VALUE="false" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="ZEUS" VALUE="false" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="SPRING" VALUE="false" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="RUNNER_OPTIONS" VALUE="" />
-    </configuration>
-    <configuration name="test_genuine_oracle_reports_with_xhr:_true: Panorama_Gem" type="TestUnitRunConfigurationType" factoryName="Test::Unit/Shoulda/Minitest" temporary="true">
-      <predefined_log_file id="RUBY_TESTUNIT" enabled="true" />
-      <module name="Panorama_Gem" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="RUBY_ARGS" VALUE="-e $stdout.sync=true;$stderr.sync=true;load($0=ARGV.shift) -Itest" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="WORK DIR" VALUE="$MODULE_DIR$" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="SHOULD_USE_SDK" VALUE="false" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="ALTERN_SDK_NAME" VALUE="" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="myPassParentEnvs" VALUE="true" />
-      <envs>
-        <env name="RAILS_ENV" value="test" />
-        <env name="JRUBY_OPTS" value="-X+O" />
-      </envs>
-      <EXTENSION ID="BundlerRunConfigurationExtension" bundleExecEnabled="true" />
-      <EXTENSION ID="JRubyRunConfigurationExtension" NailgunExecEnabled="false" />
-      <EXTENSION ID="RubyCoverageRunConfigurationExtension" track_test_folders="true" runner="rcov">
-        <COVERAGE_PATTERN ENABLED="true">
-          <PATTERN REGEXPS="/.rvm/" INCLUDED="false" />
-        </COVERAGE_PATTERN>
-      </EXTENSION>
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TESTS_FOLDER_PATH" VALUE="" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_SCRIPT_PATH" VALUE="$MODULE_DIR$/test/controllers/dba_history_controller_test.rb" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_FILE_MASK" VALUE="" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_METHOD_NAME" VALUE="test_genuine_oracle_reports_with_xhr:_true" />
-      <RTEST_RUN_CONFIG_SETTINGS_ID NAME="TEST_TEST_TYPE" VALUE="TEST_METHOD" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="DRB" VALUE="false" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="ZEUS" VALUE="false" />
       <RTEST_RUN_CONFIG_SETTINGS_ID NAME="SPRING" VALUE="false" />
@@ -1057,19 +1083,19 @@
       <item itemvalue="Test::Unit/Shoulda/Minitest.test_DB-Locks_/_current: Panorama_Gem" />
       <item itemvalue="Test::Unit/Shoulda/Minitest.test_exadata_with_xhr:_true: Panorama_Gem" />
       <item itemvalue="Test::Unit/Shoulda/Minitest.Run test 'SpecAdditionsTest': Panorama_Gem" />
-      <item itemvalue="Test::Unit/Shoulda/Minitest.test_genuine_oracle_reports_with_xhr:_true: Panorama_Gem" />
+      <item itemvalue="IRB console.IRB console: Panorama_Gem" />
       <item itemvalue="Test::Unit/Shoulda/Minitest.Run test 'DbaHistoryControllerTest': Panorama_Gem" />
       <item itemvalue="Test::Unit/Shoulda/Minitest.test_select_plan_hash_value_for_baseline_with_xhr:_true: Panorama_Gem" />
       <item itemvalue="Test::Unit/Shoulda/Minitest.Run test 'DbaGeneralTest': Panorama_Gem" />
-      <item itemvalue="IRB console.IRB console: Panorama_Gem" />
+      <item itemvalue="Test::Unit/Shoulda/Minitest.Run test 'AdditionControllerTest': Panorama_Gem" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Test::Unit/Shoulda/Minitest.Run test 'AdditionControllerTest': Panorama_Gem" />
         <item itemvalue="IRB console.IRB console: Panorama_Gem" />
         <item itemvalue="IRB console.IRB console: Panorama_Gem" />
         <item itemvalue="Test::Unit/Shoulda/Minitest.Run test 'DbaGeneralTest': Panorama_Gem" />
         <item itemvalue="Test::Unit/Shoulda/Minitest.test_select_plan_hash_value_for_baseline_with_xhr:_true: Panorama_Gem" />
-        <item itemvalue="Test::Unit/Shoulda/Minitest.Run test 'DbaHistoryControllerTest': Panorama_Gem" />
       </list>
     </recent_temporary>
   </component>
@@ -1277,21 +1303,7 @@
       <workItem from="1525791276724" duration="7021000" />
       <workItem from="1526566353517" duration="687000" />
       <workItem from="1526981917912" duration="1566000" />
-      <workItem from="1527012024595" duration="21393000" />
-    </task>
-    <task id="LOCAL-01344" summary="Fix Test for SE">
-      <created>1523542392791</created>
-      <option name="number" value="01344" />
-      <option name="presentableId" value="LOCAL-01344" />
-      <option name="project" value="LOCAL" />
-      <updated>1523542392791</updated>
-    </task>
-    <task id="LOCAL-01345" summary="Key explanation">
-      <created>1523542867996</created>
-      <option name="number" value="01345" />
-      <option name="presentableId" value="LOCAL-01345" />
-      <option name="project" value="LOCAL" />
-      <updated>1523542867997</updated>
+      <workItem from="1527012024595" duration="23290000" />
     </task>
     <task id="LOCAL-01346" summary="Test fixed">
       <created>1523543269498</created>
@@ -1622,19 +1634,24 @@
       <option name="project" value="LOCAL" />
       <updated>1527250998871</updated>
     </task>
-    <option name="localTasksCounter" value="1393" />
+    <task id="LOCAL-01393" summary="New test setup">
+      <created>1527251841151</created>
+      <option name="number" value="01393" />
+      <option name="presentableId" value="LOCAL-01393" />
+      <option name="project" value="LOCAL" />
+      <updated>1527251841152</updated>
+    </task>
+    <task id="LOCAL-01394" summary="New test setup, raise">
+      <created>1527253385059</created>
+      <option name="number" value="01394" />
+      <option name="presentableId" value="LOCAL-01394" />
+      <option name="project" value="LOCAL" />
+      <updated>1527253385059</updated>
+    </task>
+    <option name="localTasksCounter" value="1395" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Run_test_'DbaGeneralTest'__Panorama_Gem - 2018.04.12 at 21h 27m 04s.xml">
-      <configuration name="Run test 'DbaGeneralTest': Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="test_segment_stat_historic_with_xhr__true__Panorama_Gem - 2018.03.29 at 11h 20m 27s.xml">
-      <configuration name="test_segment_stat_historic_with_xhr:_true: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="test_segment_stat_historic_with_xhr__true__Panorama_Gem - 2018.03.29 at 11h 22m 12s.xml">
-      <configuration name="test_segment_stat_historic_with_xhr:_true: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
-    </history-entry>
     <history-entry file="test_segment_stat_historic_with_xhr__true__Panorama_Gem - 2018.03.29 at 11h 25m 32s.xml">
       <configuration name="test_segment_stat_historic_with_xhr:_true: Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
     </history-entry>
@@ -1656,9 +1673,18 @@
     <history-entry file="Test_12_2_PDB - 2018.05.04 at 14h 56m 38s.xml">
       <configuration name="Test 12.2_PDB" configurationId="RakeRunConfigurationType" />
     </history-entry>
+    <history-entry file="Run_test_'AdditionControllerTest'__Panorama_Gem - 2018.05.25 at 14h 56m 48s.xml">
+      <configuration name="Run test 'AdditionControllerTest': Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
+    </history-entry>
+    <history-entry file="Run_test_'AdditionControllerTest'__Panorama_Gem - 2018.05.25 at 14h 57m 46s.xml">
+      <configuration name="Run test 'AdditionControllerTest': Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
+    </history-entry>
+    <history-entry file="Run_test_'AdditionControllerTest'__Panorama_Gem - 2018.05.25 at 15h 01m 25s.xml">
+      <configuration name="Run test 'AdditionControllerTest': Panorama_Gem" configurationId="TestUnitRunConfigurationType" />
+    </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3248059000" />
+    <option name="totallyTimeSpent" value="3249956000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1673,17 +1699,17 @@
     <frame x="110" y="29" width="2077" height="1027" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.62903225" visible="true" weight="0.25798526" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.62857145" visible="true" weight="0.25798526" />
       <window_info anchor="bottom" id="TODO" order="7" sideWeight="0.48269352" weight="0.30472103" />
       <window_info anchor="bottom" id="Docker" order="9" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.104668304" side_tool="true" visible="true" weight="0.4" />
+      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.104668304" side_tool="true" visible="true" weight="0.39784947" />
       <window_info anchor="right" id="Database" order="3" weight="0.26633167" />
       <window_info anchor="bottom" id="Database Changes" order="0" show_stripe_button="false" />
       <window_info anchor="bottom" id="Run" order="3" sideWeight="0.8890392" weight="0.4753577" />
       <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.48806533" weight="0.2532189" />
-      <window_info id="Structure" order="1" sideWeight="0.37096775" side_tool="true" visible="true" weight="0.25798526" />
+      <window_info id="Structure" order="1" sideWeight="0.37142858" side_tool="true" visible="true" weight="0.25798526" />
       <window_info anchor="bottom" id="Terminal" order="15" sideWeight="0.49495414" weight="0.18764846" />
-      <window_info active="true" anchor="bottom" id="Debug" order="4" sideWeight="0.8953317" visible="true" weight="0.4" />
+      <window_info active="true" anchor="bottom" id="Debug" order="4" sideWeight="0.8953317" visible="true" weight="0.39784947" />
       <window_info id="Favorites" order="2" sideWeight="0.3464837" side_tool="true" weight="0.27805802" />
       <window_info anchor="bottom" id="Changes" order="10" weight="0.32967034" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -1741,7 +1767,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Name required role for action" />
     <MESSAGE value="Without test_case.rb" />
     <MESSAGE value="Tablename exchange for Panorama_Sampler" />
     <MESSAGE value="Show indexes for foreign key constraints" />
@@ -1766,7 +1791,8 @@
     <MESSAGE value="Show pct values for storage" />
     <MESSAGE value="Ensure hanging sampler threads are not repeated" />
     <MESSAGE value="New test setup" />
-    <option name="LAST_COMMIT_MESSAGE" value="New test setup" />
+    <MESSAGE value="New test setup, raise" />
+    <option name="LAST_COMMIT_MESSAGE" value="New test setup, raise" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1822,21 +1848,6 @@
           <option name="timeStamp" value="1153" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="ruby-line">
-          <url>file://$PROJECT_DIR$/test/controllers/addition_controller_test.rb</url>
-          <line>23</line>
-          <option name="timeStamp" value="1232" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="ruby-line">
-          <url>file://$PROJECT_DIR$/test/controllers/addition_controller_test.rb</url>
-          <line>59</line>
-          <option name="timeStamp" value="1233" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="ruby-line">
-          <url>file://$PROJECT_DIR$/test/controllers/addition_controller_test.rb</url>
-          <line>13</line>
-          <option name="timeStamp" value="1234" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="ruby-line">
           <url>file://$PROJECT_DIR$/app/views/dba/_list_patch_history.html.erb</url>
           <line>17</line>
           <option name="timeStamp" value="1359" />
@@ -1880,7 +1891,7 @@
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="1565" />
+      <option name="time" value="1567" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="RakeRunConfigurationType">
@@ -1969,20 +1980,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/views/active_session_history/_show_prepared_active_session_history.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="131" selection-start-line="2" selection-start-column="49" selection-end-line="2" selection-end-column="131" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/dba_schema/_list_object_description.html.erb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="455">
-          <caret line="252" column="64" selection-start-line="252" selection-start-column="64" selection-end-line="252" selection-end-column="64" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/dba_schema/_list_references_to.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="240">
@@ -2317,17 +2314,31 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/dummy/config/database.yml">
+    <entry file="file://$PROJECT_DIR$/Jenkinsfile">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="131">
-          <caret line="66" column="30" lean-forward="true" selection-start-line="66" selection-start-column="30" selection-end-line="66" selection-end-column="30" />
+        <state relative-caret-position="405">
+          <caret line="156" selection-start-line="156" selection-end-line="156" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Jenkinsfile">
+    <entry file="file://$PROJECT_DIR$/test/controllers/addition_controller_test.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="309">
-          <caret line="156" selection-start-line="156" selection-end-line="156" />
+        <state>
+          <caret line="5" column="6" selection-start-line="5" selection-start-column="6" selection-end-line="5" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/test_helper.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="77" selection-start-line="77" selection-end-line="77" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/dummy/config/database.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="450">
+          <caret line="81" column="24" lean-forward="true" selection-start-line="81" selection-start-column="24" selection-end-line="81" selection-end-column="24" />
         </state>
       </provider>
     </entry>

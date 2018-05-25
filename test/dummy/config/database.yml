@@ -32,7 +32,6 @@ development:
 # Konkrete Oracle-Test-DB wird erst in test_helper.rb  set_session_test_db_context geswitcht, Parameter werden schon hier gesetzt
 test:
   adapter: nulldb
-
   test_url:      jdbc:oracle:thin:@ramm-1.osp-dd.de:1521:RAMM
   test_username: noatest
   test_password: noa
@@ -40,71 +39,54 @@ test:
 
 test_10.2:
   adapter: nulldb
-
   test_url:      jdbc:oracle:thin:@ddhpit01.osp-dd.de:1521:GAPR
   test_username: panorama_test
   test_password: panorama_test
 
 test_11.1:
   adapter: nulldb
-
   test_url:      jdbc:oracle:thin:@ramm-1.osp-dd.de:1521:RAMM
   test_username: noatest
   test_password: noa
 
 test_11.2:
   adapter: nulldb
-
   test_url:      jdbc:oracle:thin:@panorama-test.osp-dd.de:1522:oracle112
   test_username: panorama_test
   test_password: panorama_test
 
 test_12.1:
   adapter: nulldb
-
   test_url:      jdbc:oracle:thin:@panorama-test.osp-dd.de:1521:oracle121
   test_username: panorama_test
   test_password: panorama_test
 
 test_12.1_SE:
   adapter: nulldb
-
   test_url:      jdbc:oracle:thin:@panorama-test.osp-dd.de:1523:oracle121se
   test_username: panorama_test
   test_password: panorama_test
 
 test_12.2_PDB:
   adapter: nulldb
-
   test_url:      jdbc:oracle:thin:@panorama-test.osp-dd.de:1524/ORCLPDB1
   test_username: panorama_test
   test_password: panorama_test
 
-
-test_12.2_CDB:
+test_12.2_SE_PDB:
   adapter: nulldb
-
-  test_url:      jdbc:oracle:thin:@140.86.9.99:1521/pdb1.a195079.oraclecloud.internal
-  test_username: c##panorama_test
-  test_password: Ddcwovsfanax12#
-
-test_12.2_SE2_CDB:
-  adapter: nulldb
-
-  test_url:      jdbc:oracle:thin:@localhost:1522/orclcdb
-  test_username: c##panorama_test
+  test_url:      jdbc:oracle:thin:@panorama-test.osp-dd.de:1525/ORCLPDB1
+  test_username: panorama_test
   test_password: panorama_test
 
-test_12.2_SE2_CDB:
+test_12.2_SE2_CDB_LOCAL:
   adapter: nulldb
-
   test_url:      jdbc:oracle:thin:@localhost:1522/orclcdb
   test_username: c##panorama_test
   test_password: panorama_test
 
 test_12.2_PDB_LOCAL:
   adapter: nulldb
-
   test_url:      jdbc:oracle:thin:@localhost:1521/orclpdb1
   test_username: panorama_test
   test_password: panorama_test
