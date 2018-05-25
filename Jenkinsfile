@@ -119,10 +119,51 @@ pipeline {
     }
     stage('Docker stop 12.1 SE') {
       steps {
-         sh '#docker stop oracle121SE'
+         sh 'docker stop oracle121SE'
          sleep 20
        }
     }
+
+    stage('Docker start 12.2 EE') {
+      steps {
+         sh 'docker start oracle_12.2.0.1-ee'
+         sleep 20
+       }
+    }
+    stage('Test 12.2 PDB diagnostics_and_tuning_pack') {
+      environment {
+        DB_VERSION = '12.2_PDB'
+        MANAGEMENT_PACK_LICENSE = 'diagnostics_and_tuning_pack'
+      }
+      steps {
+         sh 'rake test'
+      }
+    }
+    stage('Test 12.2 PDB without tuning pack') {
+      environment {
+        DB_VERSION = '12.2_PDB'
+        MANAGEMENT_PACK_LICENSE = 'diagnostics_pack'
+      }
+      steps {
+         sh 'rake test'
+      }
+    }
+    stage('Test 12.2 PDB without diagnostics and tuning pack') {
+      environment {
+        DB_VERSION = '12.2_PDB'
+        MANAGEMENT_PACK_LICENSE = 'none'
+      }
+      steps {
+         sh 'rake test'
+      }
+    }
+    stage('Docker stop 12.2 EE') {
+      steps {
+         sh '#docker stop oracle_12.2.0.1-ee'
+         sleep 20
+       }
+    }
+
   }
 
   post {
