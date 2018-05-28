@@ -66,15 +66,21 @@ class EnvController < ApplicationController
     target_object = params[:target_object]
     selected      = params[:selected]
 
-    result = "jQuery('##{params[:target_object]}_tns').replaceWith(\"<select id='#{target_object}_tns' name='#{target_object}[tns]' style='width: 95%;'>"
+    result = "jQuery('##{target_object}_tns').replaceWith(\"<select id='#{target_object}_tns' name='#{target_object}[tns]' style='width: 85%;'>"
 
     tnsnames.keys.sort.each do |key|
 #      result << "<option value=\"#{key}\">'+rpad('#{key}', 180, 'database_tns')+'&nbsp;&nbsp;#{tnsnames[key][:hostName]} : #{tnsnames[key][:port]} : #{tnsnames[key][:sidName]}</value>');\n"
       result << "<option #{"selected='selected' " if key==selected}value='#{key}'>#{key}&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;#{tnsnames[key][:hostName]} : #{tnsnames[key][:port]} : #{tnsnames[key][:sidName]}</option>"
     end
-    result << "</select>\");"
+    result << "</select>"
 
-    respond_to do |format|
+    result << "<input id='#{target_object}_filter' size='6' title='#{t(:combobox_filter_title, default: 'Filter for selection list')}' style='margin-left:4px;'>"
+
+    result << "<script type='application/javascript'>$(function(){ initialize_combobox_filter('#{target_object}_tns', '#{target_object}_filter'); })</script>"
+
+    result << "\");"
+
+        respond_to do |format|
       format.js {render :js => result }
     end
   end

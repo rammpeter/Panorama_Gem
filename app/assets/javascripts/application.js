@@ -420,6 +420,20 @@ function show_status_bar_message(message, delay_ms){
     status_bar_timeout = setTimeout(function(){ hide_status_bar(); }, delay_ms);
 }
 
+function initialize_combobox_filter(select_id, filter_id){
+    var opts = $('#'+select_id+' option').map(function () {
+        return [[this.value, $(this).text()]];
+    });
+    $('#'+filter_id).keyup(function () {
+        var rxp = new RegExp($('#'+filter_id).val(), 'i');
+        var optlist = $('#'+select_id).empty();
+        opts.each(function () {
+            if (rxp.test(this[1])) {
+                optlist.append($('<option/>').attr('value', this[0]).text(this[1]));
+            }
+        });
+    });
+}
 
 
 

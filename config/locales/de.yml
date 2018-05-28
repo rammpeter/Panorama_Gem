@@ -4,6 +4,7 @@
   all:                                                      Alle
   and:                                                      und
   close:                                                    Schliessen
+  combobox_filter_title:                                    Filter für Auswahl-Liste
   created:                                                  angelegt
   content:                                                  Inhalt
   day:                                                      Tag
