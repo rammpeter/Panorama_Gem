@@ -1346,12 +1346,12 @@ ORDER BY Column_ID
 
     # Existing index-structure
     @ora_indexes = {}
-    indexes      = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Compression, Prefix_Length FROM All_Indexes WHERE Owner = ?", @sampler_config.get_owner.upcase]
+    indexes      = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Compression, Prefix_Length FROM All_Indexes WHERE Owner = ? AND Table_Name NOT LIKE 'BIN$%'", @sampler_config.get_owner.upcase]
     indexes.each do |i|
       @ora_indexes[i.index_name] = i
       @ora_indexes[i.index_name][:columns] = []
     end
-    ind_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Column_Name, Column_Position FROM All_Ind_Columns WHERE Table_Owner = ?", @sampler_config.get_owner.upcase]
+    ind_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Column_Name, Column_Position FROM All_Ind_Columns WHERE Table_Owner = ? AND Table_Name NOT LIKE 'BIN$%'", @sampler_config.get_owner.upcase]
     ind_columns.each do |c|
       @ora_indexes[c.index_name][:columns] << c if @ora_indexes[c.index_name]  # All_Ind_Columns also contains columns of dropped tables (BIN$) but All_Indexes does not
     end
