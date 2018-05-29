@@ -123,10 +123,12 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
                                                       :parsing_schema_name  => parsing_schema_name,
                                                       :update_area          => :hugo }
 
-          if sql_id == @sga_sql_id_without_history
-            assert_response management_pack_license == :none ? :error : :redirect
+          if management_pack_license == :none
+            assert_response :error
           else
-            assert_response management_pack_license == :none ? :error : :success
+            if @response.response_code != 302                                   # Redirect is o.k., because fired if not foung SQL exists in SGA
+              assert_response :success
+            end
           end
         end
 
