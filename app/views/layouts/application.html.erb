@@ -80,43 +80,35 @@
 
 <!-- Login-Dialog zur Anmeldung bei Datenbank -->
 <div id="login_dialog" class="slick-shadow" >
-  <table width="100%">
-    <tr>
-      <th style="border-style: solid; border-width: 1px;border-color: gray; padding: 5px;">
-        <%= t(:login_caption, :default=>"Please choose saved connection or<br>insert your connection info").html_safe %>
-      </th>
-    </tr>
-    <tr>
-      <td>
-        <%  last_logins = read_last_logins %>
-
-        <%= form_tag url_for(:controller=>:env, :action=>:set_database_by_id), {:remote=>true, 'data-type'.to_sym=>:html, :id=>:formSavedLogin} do %>
-          <div class="flex-row-container">
-            <div class="flex-row-element_left" title="<%= t(:login_saved_logins_title, :default=>"Saved DB connections from former use") %>">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
-              <select id="saved_logins_id" name="saved_logins_id"  autocomplete="off" >
-                <% last_logins.each_index do |index| %>
-                  <% database = last_logins[index] %>
-                  <option <%= "selected=1" if index ==  0 %> value="<%= index %>"><%= "#{database[:user]} @ #{database[:tns]}" %></option>
-                <% end %>
-              </select>
-              <input id="saved_logins_id_filter" size="6" title="<%= t(:combobox_filter_title, default: 'Filter for selection list') %>">
-              <script type="application/javascript">
-                  $(function(){ initialize_combobox_filter('saved_logins_id', 'saved_logins_id_filter'); })
-              </script>
-            </div>
-            <%= hidden_field_tag('browser_tab_id', @browser_tab_id) %>
-            <%= submit_tag t(:login_submit_caption, :default=>"Login"), :name => "login", :title => t(:login_saved_login_title, :default=>"Login with selected saved credentials"), :disabled=>(last_logins.length==0) %>
-            <%= submit_tag t(:login_saved_delete_caption, :default=>"Delete"), :name => "delete", :title => t(:login_saved_delete_title, :default=>"Delete selected saved login information"), data: { confirm: t(:login_saved_delete_confirmation, :default=>"Do you really want to delete this saved login credential?") }, :disabled=>(last_logins.length==0) %>
-          </div>
-        <% end %>
-      </td>
-    </tr>
-  </table>
+  <div class="login_dialog_head">
+    <%= t(:login_caption, :default=>"Please choose saved connection or<br>insert your connection info").html_safe %>
+  </div>
+  <div class="login_dialog_block">
+    <% last_logins = read_last_logins %>
+    <%= form_tag url_for(:controller=>:env, :action=>:set_database_by_id), {:remote=>true, 'data-type'.to_sym=>:html, :id=>:formSavedLogin} do %>
+      <div title="<%= t(:login_saved_logins_title, :default=>"Saved DB connections from former use") %>">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
+        <select id="saved_logins_id" name="saved_logins_id"  autocomplete="off" style="width: 60%" >
+          <% last_logins.each_index do |index| %>
+            <% database = last_logins[index] %>
+            <option <%= "selected=1" if index ==  0 %> value="<%= index %>"><%= "#{database[:user]} @ #{database[:tns]}" %></option>
+          <% end %>
+        </select>
+        <input id="saved_logins_id_filter" style="width: 10%;" title="<%= t(:combobox_filter_title, default: 'Filter for selection list') %>">
+        <script type="application/javascript">
+            $(function(){ initialize_combobox_filter('saved_logins_id', 'saved_logins_id_filter'); })
+        </script>
+        <%= hidden_field_tag('browser_tab_id', @browser_tab_id) %>
+        <%= submit_tag t(:login_submit_caption, :default=>"Login"), :name => "login", style: "width: 12%", :title => t(:login_saved_login_title, :default=>"Login with selected saved credentials"), :disabled=>(last_logins.length==0) %>
+        <%= submit_tag t(:login_saved_delete_caption, :default=>"Delete"), :name => "delete", style: "width: 12%", :title => t(:login_saved_delete_title, :default=>"Delete selected saved login information"), data: { confirm: t(:login_saved_delete_confirmation, :default=>"Do you really want to delete this saved login credential?") }, :disabled=>(last_logins.length==0) %>
+      </div>
+    <% end %>
+  </div>
   <br/>
+
   <%= form_tag url_for(:controller=>:env, :action=>:set_database_by_params), :remote => true, 'data-type'=>:html, :id=>:formLoginDialog do %>
       <table width="100%">
         <tr>
-          <th><%= t :login_lang_caption, :default=>"Language" %></th>
+          <td class="login_dialog_lhead"><%= t :login_lang_caption, :default=>"Language" %></td>
           <td align="center">
             <!-- Wechsel der Sprache und neu laden der gesamten Seite -->
             <img src="assets/british-flag-small.gif" style="border-width:3px; border-color: <%= get_locale == 'en' ? 'gray' : '#eee' %>; border-style: <%= get_locale == 'en' ? 'outset' : 'solid' %>; cursor:pointer; height: 16pt" title="Set language to english"   onclick="jQuery.ajax({type: 'POST', url: 'env/set_locale', data: {locale: 'en'}});">
@@ -124,7 +116,7 @@
           </td>
         </tr>
         <tr>
-          <th><%= t(:login_mode_caption, :default=>"DB identification mode") %></th>
+          <td class="login_dialog_lhead"><%= t(:login_mode_caption, :default=>"DB identification mode") %></td>
           <td align="center">
             <div title="<%= t(:login_mode_title, :default=>"Select mode for identification of database") %>">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
               <%= radio_button_tag('database_modus', :tns,  true,  {:name=>'database[modus]', :onclick => "jQuery('.login_tns').css('display', '');     jQuery('.login_host').css('display', 'none');" }) %>TNS-Names
@@ -134,24 +126,25 @@
           </td>
         </tr>
         <tr class="login_tns">
-          <th title="<%= t :login_tns_hint, :default=>"Choose Oracle TNS-Alias (from tnsnames.ora at server side)" %>">TNS-Alias</th>
+          <td class="login_dialog_lhead" title="<%= t :login_tns_hint, :default=>"Choose Oracle TNS-Alias (from tnsnames.ora at server side)" %>">TNS-Alias</td>
           <% @tnsnames = read_tnsnames %>
           <td align="center">
             <div title="<%= t(:login_tns_hint, :default=>"Choose Oracle TNS-Alias (from tnsnames.ora at server side)") %>">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
-            <div id="database_tns"></div> <!-- Befuellung <select> geschieht durch Ajax-Call auf env/get_tnsnames_records -->
+              <div id="database_tns"></div> <!-- Befuellung <select> geschieht durch Ajax-Call auf env/get_tnsnames_records -->
             </div>
           </td>
         </tr>
+
         <tr class="login_host" style="display: none">
-          <th title="Host-name. Übersteuert TNS-Alias wenn belegt">Host</th>
-          <td align="center"><%= text_field( 'database', 'host', :size=>20, :title=>t(:login_database_host_hint, :default=>"hostname or IP adress") ) %></td>
+          <td class="login_dialog_lhead" title="<%= t(:login_database_host_hint, :default=>"Hostname or IP-adress") %>">Host</td>
+          <td align="center"><%= text_field( 'database', 'host', style: 'width: 60%;', :title=>t(:login_database_host_hint, :default=>"Hostname or IP-adress") ) %></td>
         </tr>
         <tr class="login_host" style="display: none">
-          <th>Port</th>
-          <td align="center"><%= text_field( 'database', 'port', :size=>20, :title=>"Port-Nummer" ) %></td>
+          <td class="login_dialog_lhead">Port</td>
+          <td align="center"><%= text_field( 'database', 'port', style: 'width: 60%;', :title=>"Port-Nummer" ) %></td>
         </tr>
         <tr class="login_host" style="display: none">
-          <th>SID/Service</th>
+          <td class="login_dialog_lhead">SID/Service</td>
           <td align="center">
             <div title="<%= t(:login_sid_service_title, :default=>"Interpret value as SID or Service-Name?") %>">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
               <%= radio_button_tag('database_sid_usage', :SID,          true,  {:name=>'database[sid_usage]'}) %>SID
@@ -159,24 +152,24 @@
               <%= radio_button_tag('database_sid_usage', :SERVICE_NAME, false, {:name=>'database[sid_usage]'}) %>Service-Name
             </div>
             <div style="padding-top: 5px;">
-              <%= text_field( 'database', 'sid', :size=>20, :title=>t(:login_database_sid_hint, :default=>"SID or service name of database")) %>
+              <%= text_field( 'database', 'sid', style: 'width: 60%;', :title=>t(:login_database_sid_hint, :default=>"SID or service name of database")) %>
             </div>
           </td>
         </tr>
         <tr>
-          <th>User</th>
-          <td align="center"><%= text_field( 'database', 'user', :size=>20, :title=>"Oracle-User" )  %></td>
+          <td class="login_dialog_lhead">User</td>
+          <td align="center"><%= text_field( 'database', 'user', style: 'width: 60%;', :title=>"Oracle-User" )  %></td>
         </tr>
         <tr>
-          <th>Password</th>
-          <td align="center"><%= password_field( 'database', 'password', :size=>20, :title=>"Oracle-Password" ) %> </td>
+          <td class="login_dialog_lhead">Password</td>
+          <td align="center"><%= password_field( 'database', 'password', style: 'width: 60%;', :title=>"Oracle-Password" ) %> </td>
         </tr>
         <tr id="login_dialog_authorization" style="display:none; ">
-          <th>Autorisierung</th>
+          <td class="login_dialog_lhead">Autorisierung</td>
           <td align="center"><%= password_field( 'database', 'authorization', :title=>t(:login_authorization_hint, :default=>"Additional authoriztion for special applications (like NOA)") ) %> </td>
         </tr>
         <tr>
-          <th><%= t :login_role_caption, :default=>"Role" %></th>
+          <td class="login_dialog_lhead"><%= t :login_role_caption, :default=>"Role" %></td>
           <td align="center">
             <div title="Select database role">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
               <select name="database[privilege]">
@@ -188,7 +181,7 @@
           </td>
         </tr>
         <tr>
-          <th>Query Timeout</th>
+          <td class="login_dialog_lhead">Query Timeout</td>
           <td align="center">
             <div title="<%= t(:login_query_timeout_hint, :default=>"Query-Timeout in seconds for long running SELECT-queries against database. \nAfter timeout current query in database will be automatically cancelled.\nYou receive the error message: \"Java::JavaSql::SQLTimeoutException: ORA-01013\"") %>">
               <%= text_field_tag( 'database[query_timeout]', 300, :size=>6, :style => "text-align: Right" ) %>
@@ -196,7 +189,7 @@
           </td>
         </tr>
         <tr>
-          <th><%= t :login_save_login_caption, :default=>"Save login?" %></th>
+          <td class="login_dialog_lhead"><%= t :login_save_login_caption, :default=>"Save login?" %></td>
           <td align="center"><%= check_box_tag('database[save_login]', 1, true, :title=>t(:login_save_login_hint, :default=>"save login-info for further usage?")) %></td>
         </tr>
         <tr>

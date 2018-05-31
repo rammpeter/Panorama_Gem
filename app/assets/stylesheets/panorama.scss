@@ -283,3 +283,28 @@ table a:active{
   padding: 4px;
   margin-bottom: 5px;
 }
+
+.login_dialog_head {
+  border-style: solid;
+  border-width: 1px;
+  border-color: gray;
+  padding: 5px;
+  text-align: center;
+  background: url(greychrome.gif) repeat-x scroll left top #FFFFFF;
+}
+
+.login_dialog_block {
+  border-style: solid;
+  border-width: 1px;
+  border-color: gray;
+  padding: 5px;
+  text-align: center;
+  background: none repeat scroll 0 0 #EEEEEE;
+}
+
+.login_dialog_lhead {
+  text-align: center;
+  background-image: -webkit-linear-gradient(left, #CCCCCC 0%, #EEEEEE 100%);
+  background-image: -moz-linear-gradient(left, gray 0%, lightgray 100%);
+  background-image: linear-gradient(left, gray 0%, #EEEEEE 100%);
+}
