@@ -847,6 +847,25 @@ class DbaSchemaController < ApplicationController
     render_partial
   end
 
+  def list_dependency_grants
+    @owner       = params[:owner]
+    @object_name = params[:object_name]
+
+    @grants = sql_select_iterator ["\
+      SELECT d.d_Level, d.CONNECT_BY_ISCYCLE, d.Owner, d.Name, d.Type, d.Referenced_Owner, d.Referenced_Name, d.Referenced_Link_Name, d.Referenced_Type, d.Dependency_Type,
+             p.Grantee, p.Grantor, p.Privilege, p.Grantable, p.Hierarchy #{", p.Common" if get_db_version >= '12.1'}
+      FROM   (SELECT /*+ NO_MERGE */ Level d_Level, DECODE(CONNECT_BY_ISCYCLE, 1, 'YES') CONNECT_BY_ISCYCLE, d.*
+              FROM   DBA_Dependencies d
+              CONNECT BY NOCYCLE PRIOR Owner  = Referenced_Owner
+                             AND PRIOR Name   = Referenced_Name
+                             AND PRIOR Type   = Referenced_Type
+              START WITH Referenced_Owner = ?
+                     AND Referenced_Name  = ?
+             ) d
+      JOIN   DBA_Tab_Privs p ON p.Owner = d.Owner AND p.Table_Name = d.Name AND p.Type = d.Type
+    ",  @owner, @object_name]
+    render_partial
+  end
 
   def list_plsql_description
     @owner                = params[:owner]
