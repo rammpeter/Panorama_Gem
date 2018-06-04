@@ -103,6 +103,7 @@ module ApplicationHelper
 
   def get_current_database
     browser_tab_ids = read_from_client_info_store(:browser_tab_ids)
+    raise "No session state available at Panorama-Server: Please restart app in browser" if browser_tab_ids.nil?
     @buffered_current_database = browser_tab_ids[@browser_tab_id][:current_database] if !defined?(@buffered_current_database) || @buffered_current_database.nil?
     @buffered_current_database
   end

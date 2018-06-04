@@ -50,6 +50,7 @@
         <RAILS_SERVER_CONFIG_SETTINGS_ID NAME="myPassParentEnvs" VALUE="true" />
         <envs>
           <env name="PANORAMA_SAMPLER_MASTER_PASSWORD" value="hugo" />
+          <env name="PANORAMA_VAR_HOME" value="." />
         </envs>
         <EXTENSION ID="BundlerRunConfigurationExtension" bundleExecEnabled="false" />
         <EXTENSION ID="JRubyRunConfigurationExtension" NailgunExecEnabled="false" />

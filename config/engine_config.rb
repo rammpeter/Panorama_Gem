@@ -4,8 +4,13 @@ class EngineConfig < Rails::Application
   # -- all .rb files in that directory are automatically loaded.
 
   # Verzeichnis für permanent zu schreibende Dateien
-  config.panorama_var_home = "."
-  config.panorama_var_home = ENV['PANORAMA_VAR_HOME'] if ENV['PANORAMA_VAR_HOME']
+  if ENV['PANORAMA_VAR_HOME']
+    config.panorama_var_home = ENV['PANORAMA_VAR_HOME']
+  else
+    config.panorama_var_home = "#{Dir.tmpdir}/Panorama"
+  end
+  Dir.mkdir config.panorama_var_home if !File.exist?(config.panorama_var_home)  # Ensure that directory exists
+  Rails.logger.info "Panorama writes server side info to #{config.panorama_var_home}"
 
   # Password for access on Panorama-Sampler config: Panorama-Sampler and his menu are activated if password is not empty
   config.panorama_sampler_master_password = ENV['PANORAMA_SAMPLER_MASTER_PASSWORD']  ? ENV['PANORAMA_SAMPLER_MASTER_PASSWORD'] : nil
