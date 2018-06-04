@@ -38,12 +38,7 @@ class ApplicationController < ActionController::Base
     end
 
     Rails.logger.error @exception.message
-
-    curr_line_no=0
-    @exception.backtrace.each do |bt|
-      Rails.logger.error bt if curr_line_no < 40                                # report First x lines of stacktrace in log
-      curr_line_no += 1
-    end
+    log_exception_backtrace(@exception, 40)
 
     if performed?                                                               # Render already called in action?, Suppress DoubleRenderError
       Rails.logger.error "Exception #{@exception.message} raised!\nAction has already rendered, so error cannot be shown as HTML-result with status 500"
@@ -92,6 +87,7 @@ class ApplicationController < ActionController::Base
       set_connection_info_for_request(current_database)
     rescue StandardError => e                                                   # Problem bei Zugriff auf verschlüsselte Cookies
       Rails.logger.error "Error '#{e.message}' occured in ApplicationController.begin_request"
+      log_exception_backtrace(e)
       raise "Error '#{e.message}' occured. Please close browser session and start again!"
     end
 
@@ -132,12 +128,9 @@ class ApplicationController < ActionController::Base
   def alert_exception(exception, header='', format=:js)
     if exception
       logger.error exception.message
-      exception.backtrace.each do |bt|
-        logger.error bt
-      end
+      log_exception_backtrace(exception)
       message = exception.message
       message << "\n\n"
-      #message << caller.to_s
       exception.backtrace.each do |bt|
         message << bt << "\n"
       end
