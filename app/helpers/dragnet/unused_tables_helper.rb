@@ -162,10 +162,13 @@ May be it their value is redundant to other columns of that table. In this case 
         {
             :name  => 'Dropped tables in recycle bin',
             :desc  => "Use 'PURGE RECYCLEBIN' to free space of dropped tables from recycle bin",
-            :sql=> "SELECT /* Panorama-Tool Ramm */ *
-                      FROM   DBA_Tables
-                      WHERE  Dropped = 'YES'
-                      ORDER BY Num_Rows DESC NULLS LAST",
+            :sql=> "SELECT s.Size_MB, r.*
+                    FROM   DBA_RecycleBin r
+                    LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(Bytes)/(1024*1024) Size_MB
+                                     FROM   DBA_Segments
+                                     GROUP BY Owner, Segment_Name
+                                    ) s ON s.Owner = r.Owner AND s.Segment_Name = r.Object_Name
+                    ORDER BY Size_MB DESC NULLS LAST",
         },
         {
             :name  => t(:dragnet_helper_137_name, default: 'CHAR-columns filled with unnecessary blanks'),

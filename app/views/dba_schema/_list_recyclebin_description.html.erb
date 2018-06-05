@@ -3,6 +3,7 @@
   column_options =
       [
           {:caption=> 'Original name',              :data=>proc{|rec| rec.original_name},                 :title=> 'Original name before drop'},
+          {:caption=> 'Size (MB)',                  :data=>proc{|rec| fn rec.size_mb, 2},                    :title=> 'Size of object in MB from DBA_Segments'},
           {:caption=> 'Operation',                  :data=>proc{|rec| rec.operation},                     :title=> 'Operation carried out on the object'},
           {:caption=> 'Tablespace',                 :data=>proc{|rec| rec.ts_name},                       :title=> 'Tablespace name'},
           {:caption=> 'Creation time',              :data=>proc{|rec| localeDateTime(rec.create_ts)},     :title=> 'Timestamp for the creation of the object'},

@@ -931,13 +931,15 @@ class DbaSchemaController < ApplicationController
 
     @recyclebins = sql_select_all ["SELECT b.*,
                                            TO_DATE(CreateTime, 'YYYY-MM-DD HH24:MI:SS') Create_TS,
-                                           TO_DATE(DropTime,   'YYYY-MM-DD HH24:MI:SS') Drop_TS
+                                           TO_DATE(DropTime,   'YYYY-MM-DD HH24:MI:SS') Drop_TS,
+                                           (SELECT SUM(Bytes)/(1024*1024)
+                                            FROM   DBA_Segments s
+                                            WHERE  s.Owner = b.Owner AND s.Segment_Name = b.Object_Name) Size_MB
                                     FROM   DBA_RecycleBin b
-                                    WHERE  Owner = ? AND Object_Name = ? AND Type = ?
+                                    WHERE  b.Owner = ? AND b.Object_Name = ? AND b.Type = ?
                                    ", owner, object_name, type]
     render_partial :list_recyclebin_description
   end
-
 
   def list_cluster_tables
     @owner        = params[:owner]
