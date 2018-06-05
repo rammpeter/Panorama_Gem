@@ -144,11 +144,14 @@ May be it their value is redundant to other columns of that table. In this case 
                              ROUND((c.Avg_Col_Len*(Num_Rows-Num_Nulls)+Num_Nulls)/(1024*1024),2) Megabyte
                       FROM   DBA_Tab_Columns c
                       JOIN   DBA_Tables t ON t.Owner = c.Owner AND t.Table_Name = c.Table_Name
-                      WHERE  NVL(c.Num_Distinct,0) != 0
+                      WHERE  NVL(c.Num_Distinct,0) > 0
+                      AND    NVL(c.Num_Distinct,0) <= ?
                       AND    NVL(t.Num_Rows,0) > ?
                       AND    c.Owner NOT IN ('SYS', 'SYSTEM', 'WMSYS')
                       ORDER BY c.Num_Distinct, t.Num_Rows DESC NULLS LAST",
-            :parameter=>[{:name=>t(:dragnet_helper_param_minimal_rows_name, :default=>'Minimum number of rows in table'), :size=>8, :default=>100000, :title=>t(:dragnet_helper_param_minimal_rows_hint, :default=>'Minimum number of rows in table for consideration in selection')}]
+            :parameter=>[{:name=>t(:dragnet_helper_67_param_1_name, :default=>'Maximum number of distinct values of column'), :size=>8, :default=>10, :title=>t(:dragnet_helper_67_param_1_name, :default=>'Maximum number of distinct values of column for consideration in selection')},
+                         {:name=>t(:dragnet_helper_param_minimal_rows_name, :default=>'Minimum number of rows in table'), :size=>8, :default=>100000, :title=>t(:dragnet_helper_param_minimal_rows_hint, :default=>'Minimum number of rows in table for consideration in selection')}
+            ]
         },
         {
             :name  => t(:dragnet_helper_68_name, :default=>'Unused marked but not physical deleted columns'),

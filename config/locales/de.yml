@@ -871,6 +871,8 @@
     Für Spalten großer Tabellen mit wenigen DISTINCT-Werten kann Sinn hinterfragt werden, evtl. redundante Aussage zu weiteren Spalten der Tabelle,
     die in Stammdaten hinter n:1-Relationen verlagert werden kann (Normalisierung)
   dragnet_helper_67_name:                                   Ermittlung wenig aussagefähiger Spalten
+  dragnet_helper_67_param_1_hint:                           Maximale Anzahl vorkommender Werte in der Spalte für Aufnahme in die Selektion
+  dragnet_helper_67_param_1_name:                           Maximale Anzahl vorkommender Werte in der Spalte
 
   dragnet_helper_68_desc: |-
     Für Unused gesetzte Spalten lohnt möglicherweise Reorganisation per ALTER TABLE DROP UNSED COLUMNS oder Neuaufbau der Tabelle.
