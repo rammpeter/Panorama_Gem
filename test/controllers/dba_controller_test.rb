@@ -27,6 +27,9 @@ class DbaControllerTest < ActionController::TestCase
     post  :show_redologs, :params => {:format=>:html, :update_area=>:hugo, instance: 1 }
     assert_response :success
 
+    post  :list_redolog_members, :params => {:format=>:html, :update_area=>:hugo, instance: 1, group: 1 }
+    assert_response :success
+
     post :list_redologs_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
     assert_response management_pack_license == :none ? :error : :success
     post :list_redologs_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :update_area=>:hugo }

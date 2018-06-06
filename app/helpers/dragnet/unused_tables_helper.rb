@@ -140,16 +140,18 @@ Starting from 11g you can use virtual columns instead if this table structure is
 May be it their value is redundant to other columns of that table. In this case you can extract this column as separate master-data table with n:1-relation (normalization).
 '),
             :sql=> "SELECT /* DB-Tools Ramm Spalten mit wenig Distinct-Values */
-                             c.Owner, c.Table_Name, c.Column_Name, t.Num_Rows, c.Num_Nulls, c.Num_Distinct,
-                             ROUND((c.Avg_Col_Len*(Num_Rows-Num_Nulls)+Num_Nulls)/(1024*1024),2) Megabyte
+                             c.Owner, c.Table_Name, c.Column_Name, t.Num_Rows, c.Num_Nulls, c.Num_Distinct, c.Avg_Col_Len,
+                             ROUND((c.Avg_Col_Len*(Num_Rows-Num_Nulls)+Num_Nulls)/(1024*1024),2) Megabyte_Column
                       FROM   DBA_Tab_Columns c
                       JOIN   DBA_Tables t ON t.Owner = c.Owner AND t.Table_Name = c.Table_Name
                       WHERE  NVL(c.Num_Distinct,0) > 0
                       AND    NVL(c.Num_Distinct,0) <= ?
+                      AND    (c.Num_Nulls > 0 OR UPPER(?) = 'YES')
                       AND    NVL(t.Num_Rows,0) > ?
                       AND    c.Owner NOT IN ('SYS', 'SYSTEM', 'WMSYS')
                       ORDER BY c.Num_Distinct, t.Num_Rows DESC NULLS LAST",
             :parameter=>[{:name=>t(:dragnet_helper_67_param_1_name, :default=>'Maximum number of distinct values of column'), :size=>8, :default=>10, :title=>t(:dragnet_helper_67_param_1_name, :default=>'Maximum number of distinct values of column for consideration in selection')},
+                         {:name=>t(:dragnet_helper_67_param_2_name, :default=>'Include columns with NULL-values? (YES/NO)'), :size=>8, :default=>'YES', :title=>t(:dragnet_helper_67_param_2_name, :default=>'Also consider columns with NULL-values for this selection? (YES/NO)')},
                          {:name=>t(:dragnet_helper_param_minimal_rows_name, :default=>'Minimum number of rows in table'), :size=>8, :default=>100000, :title=>t(:dragnet_helper_param_minimal_rows_hint, :default=>'Minimum number of rows in table for consideration in selection')}
             ]
         },

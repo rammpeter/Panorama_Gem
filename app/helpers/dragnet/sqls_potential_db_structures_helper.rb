@@ -74,14 +74,14 @@ module Dragnet::SqlsPotentialDbStructuresHelper
 Chained rows can be avoided by adjusting PCTFREE and reorganization of affected table.
 This selection shows the relevance of access on chained rows compared to total amount of table access.'),
             :sql=>   "WITH Inst_Filter AS (SELECT ? Instance FROM DUAL)
-                      SELECT x.*, CASE WHEN \"table fetch by rowid\"+\"table scan rows gotten\" > 0 THEN
-                                  ROUND(\"table fetch continued row\" / (\"table fetch by rowid\"+\"table scan rows gotten\") * 100,2)
+                      SELECT x.*, CASE WHEN table_fetch_by_rowid + table_scan_rows_gotten > 0 THEN
+                                  ROUND(table_fetch_continued_row / (table_fetch_by_rowid+table_scan_rows_gotten) * 100,2)
                                   ELSE 0 END \"Pct. chained row access\"
                       FROM   (
                               SELECT /*+ NO_MERGE*/ ROUND(Begin_Interval_Time, 'MI') Start_Time,
-                                     SUM(CASE WHEN Stat_Name = 'table fetch continued row' THEN Value ELSE 0 END) \"table fetch continued row\",
-                                     SUM(CASE WHEN Stat_Name = 'table fetch by rowid'      THEN Value ELSE 0 END) \"table fetch by rowid\",
-                                     SUM(CASE WHEN Stat_Name = 'table scan rows gotten'    THEN Value ELSE 0 END) \"table scan rows gotten\"
+                                     SUM(CASE WHEN Stat_Name = 'table fetch continued row' THEN Value ELSE 0 END) table_fetch_continued_row,
+                                     SUM(CASE WHEN Stat_Name = 'table fetch by rowid'      THEN Value ELSE 0 END) table_fetch_by_rowid,
+                                     SUM(CASE WHEN Stat_Name = 'table scan rows gotten'    THEN Value ELSE 0 END) table_scan_rows_gotten
                               FROM   (
                                       SELECT /*+ NO_MERGE*/ ss.Begin_Interval_Time, st.Stat_Id, st.Stat_Name, ss.Min_Snap_ID, st.Snap_ID,
                                              Value - LAG(Value, 1, Value) OVER (PARTITION BY st.Instance_Number, st.Stat_ID ORDER BY st.Snap_ID) Value

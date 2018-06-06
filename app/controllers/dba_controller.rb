@@ -387,7 +387,7 @@ class DbaController < ApplicationController
       SELECT /* Panorama-Tool Ramm */
         Inst_ID,
         TO_CHAR(Group#) GroupNo,                                
-        (Bytes/1024) KByte,                                     
+        Bytes/(1024*1024) MByte,
         Status,                                                 
         First_Time,
         #{"(Next_Time - First_Time) * 86400 Log_Switch_Interval_Secs," if get_db_version >= '11.1'}
@@ -399,6 +399,20 @@ class DbaController < ApplicationController
 
     render_partial
   end # show_redologs
+
+  def list_redolog_members
+    @instance = params[:instance]
+    @group    = params[:group]
+
+    @members = sql_select_iterator ["
+      SELECT *
+      FROM   gv$LogFile
+      WHERE  Inst_ID = ?
+      AND    Group#  = ?
+    ", @instance, @group]
+
+    render_partial
+  end
 
   def list_redologs_historic
     @instance = prepare_param_instance

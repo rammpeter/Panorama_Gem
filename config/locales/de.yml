@@ -873,6 +873,8 @@
   dragnet_helper_67_name:                                   Ermittlung wenig aussagefähiger Spalten
   dragnet_helper_67_param_1_hint:                           Maximale Anzahl vorkommender Werte in der Spalte für Aufnahme in die Selektion
   dragnet_helper_67_param_1_name:                           Maximale Anzahl vorkommender Werte in der Spalte
+  dragnet_helper_67_param_2_hint:                           Spalten mit NULL-Values in die Selektion einbeziehen? (YES/NO)
+  dragnet_helper_67_param_2_name:                           Spalten mit NULL-Values einbeziehen? (YES/NO)
 
   dragnet_helper_68_desc: |-
     Für Unused gesetzte Spalten lohnt möglicherweise Reorganisation per ALTER TABLE DROP UNSED COLUMNS oder Neuaufbau der Tabelle.
