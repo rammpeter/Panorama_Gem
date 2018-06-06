@@ -9,9 +9,9 @@
           {:caption=> 'Privilege',    :data=>proc{|rec| rec.privilege},           :title=> 'Privilege on the object'},
           {:caption=> 'Grantable',    :data=>proc{|rec| rec.grantable},           :title=> 'Indicates whether the privilege was granted with the GRANT OPTION (YES) or not (NO)'},
           {:caption=> 'Hierarchy',    :data=>proc{|rec| rec.hierarchy},           :title=> 'Indicates whether the privilege was granted with the HIERARCHY OPTION (YES) or not (NO)'},
-          {:caption=> 'Type',         :data=>proc{|rec| rec.type},                :title=> 'Type of object the grant is given for'},
       ]
-  column_options << {:caption => 'Common', :data => proc {|rec| rec.common}, :title => "Indicates how the grant was made. Possible values:\nYES if the privilege was granted commonly (CONTAINER=ALL was used)\nNO if the privilege was granted locally (CONTAINER=ALL was not used)"} if get_db_version >= '12.1'
+  column_options << {:caption => 'Common', :data => proc{|rec| rec.common}, :title => "Indicates how the grant was made. Possible values:\nYES if the privilege was granted commonly (CONTAINER=ALL was used)\nNO if the privilege was granted locally (CONTAINER=ALL was not used)"} if get_db_version >= '12.1'
+  column_options << {:caption=> 'Type',    :data => proc{|rec| rec.type},   :title=> 'Type of object the grant is given for'} if get_db_version >= '12.1'
 %>
 
 <%=
