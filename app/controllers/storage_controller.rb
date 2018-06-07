@@ -8,12 +8,15 @@ class StorageController < ApplicationController
       SELECT /* Panorama-Tool Ramm */
              t.TableSpace_Name, NULL Inst_ID,
              t.contents,
+             DECODE(t.Contents, 'PERMANENT',  'Tablespaces for tables, indexes, materialized views etc.',
+                                'UNDO',       'UNDO-Tablespaces'
+                   )                        content_Hint,
              t.Block_Size                   BlockSize,
              f.FileSize                     MBTotal,
              NVL(free.MBFree,0)             MBFree,
              f.FileSize-NVL(free.MBFree,0)  MBUsed,
              (f.FileSize-NVL(free.MBFree,0))/f.FileSize*100 PctUsed,
-             t.Status, t.Contents, t.Logging, t.Force_Logging, t.Extent_Management,
+             t.Status, t.Logging, t.Force_Logging, t.Extent_Management,
              t.Allocation_Type, t.Plugged_In,
              t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
              f.AutoExtensible, f.Max_Size_MB, f.File_Count
@@ -41,12 +44,13 @@ class StorageController < ApplicationController
       UNION ALL
       SELECT f.Tablespace_Name, NULL Inst_ID,
              t.Contents,
+             'Temporary tablespace'         Content_Hint,
              t.Block_Size                   BlockSize,
              NVL(f.MBTotal,0)               MBTotal,
              NVL(f.MBTotal,0)-NVL(s.Used_Blocks,0)*t.Block_Size/1048576 MBFree,
              NVL(s.Used_Blocks,0)*t.Block_Size/1048576 MBUsed,
              (NVL(s.Used_Blocks,0)*t.Block_Size/1048576)/NVL(f.MBTotal,0)*100 PctUsed,
-             t.Status, t.Contents, t.Logging, t.Force_Logging, t.Extent_Management,
+             t.Status, t.Logging, t.Force_Logging, t.Extent_Management,
              t.Allocation_Type, t.Plugged_In,
              t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
              f.AutoExtensible, f.Max_Size_MB, f.File_Count
@@ -66,20 +70,24 @@ class StorageController < ApplicationController
                       ) s ON s.Tablespace_Name = t.TableSpace_Name
       WHERE t.Contents = 'TEMPORARY'
       UNION ALL
-      SELECT 'Redo Inst='||Inst_ID           Tablespace_Name, Inst_ID,
-             'Redo-Logfile'             Contents,
+      SELECT 'Redo Inst='||l.Inst_ID    Tablespace_Name, l.Inst_ID,
+             DECODE(lf.Is_Recovery_Dest_File, 'YES', 'Redo-Logs in FRA',
+                                              'NO',  'Redo-Logs ouside FRA'
+                   )                    Contents,
+             DECODE(lf.Is_Recovery_Dest_File, 'YES', 'Size of all Redo-Logfiles that are stored in FRA',
+                                              'NO',  'Size of all Redo-Logfiles that are stored ouside FRA'
+                   )                    Content_Hint,
              #{ if get_db_version >= "11.2"
-                  "MIN(BlockSize)"
+                  "MIN(l.BlockSize)"
                 else
                   0
                 end
              }                          BlockSize,
-             SUM(Bytes*Members)/1048576 MBTotal,
+             SUM(l.Bytes)/1048576       MBTotal,
              0                          MBFree,
-             SUM(Bytes*Members)/1048576 MBUsed,
+             SUM(l.Bytes)/1048576       MBUsed,
              100                        PctUsed,
              NULL                       Status,
-             'REDO-LOG'                 Contents,
              NULL                       Logging,
              NULL                       Force_Logging,
              NULL                       Extent_Management,
@@ -93,10 +101,11 @@ class StorageController < ApplicationController
              COUNT(*)                   File_Count
              #{ ", NULL Encrypted, NULL Compress_For" if get_db_version >= '11.2'}
              #{ ", NULL Def_InMemory" if get_db_version >= '12.1.0.2'  && PanoramaConnection.edition == :enterprise}
-      FROM   gv$Log
-      WHERE  Inst_ID = Thread#  -- im gv$-View werden jeweils die Logs der anderen Instanzen noch einmal in jeder Instance mit Thread# getzeigt, dies verhindert die Dopplung
-      GROUP BY Inst_ID
-      ORDER BY 4 DESC NULLS LAST
+      FROM   gv$Log l
+      JOIN   gv$LogFile lf ON lf.Inst_ID = l.Inst_ID AND lf.Group# = l.Group#
+      WHERE  l.Inst_ID = l.Thread#  -- im gv$-View werden jeweils die Logs der anderen Instanzen noch einmal in jeder Instance mit Thread# getzeigt, dies verhindert die Dopplung
+      GROUP BY l.Inst_ID, lf.Is_Recovery_Dest_File
+      ORDER BY 5 DESC NULLS LAST
       ")
 
 
@@ -105,22 +114,26 @@ class StorageController < ApplicationController
     @fra_usage = sql_select_all "SELECT * FROM v$Flash_Recovery_Area_Usage WHERE Percent_Space_Used > 0 ORDER BY Percent_Space_Used DESC"
 
     totals = {}
-    total_sum = {"contents"=>"TOTAL", "mbtotal"=>0, "mbfree"=>0, "mbused"=>0}
+    total_sum = {"contents"=>"TOTAL", 'content_hint'=>'Sum over all storage components', "mbtotal"=>0, "mbfree"=>0, "mbused"=>0}
     total_sum.extend SelectHashHelper
     @tablespaces.each do |t|
-      unless totals[t.contents]
-        totals[t.contents] = {"mbtotal"=>0, "mbfree"=>0, "mbused"=>0}
+      if t.contents != 'Redo-Logs in FRA'
+        unless totals[t.contents]
+          totals[t.contents] = {'content_hint'=>t.content_hint, "mbtotal"=>0, "mbfree"=>0, "mbused"=>0}
+        end
+
+        totals[t.contents]["mbtotal"] += t.mbtotal
+        totals[t.contents]["mbfree"]  += t.mbfree
+        totals[t.contents]["mbused"] += t.mbused
+        total_sum["mbtotal"] += t.mbtotal
+        total_sum["mbfree"]  += t.mbfree
+        total_sum["mbused"]  += t.mbused
       end
-      totals[t.contents]["mbtotal"] += t.mbtotal
-      totals[t.contents]["mbfree"]  += t.mbfree
-      totals[t.contents]["mbused"] += t.mbused
-      total_sum["mbtotal"] += t.mbtotal
-      total_sum["mbfree"]  += t.mbfree
-      total_sum["mbused"]  += t.mbused
+
     end
 
     if @fra_size_bytes > 0
-      totals['Fast Recovery Area'] = {}
+      totals['Fast Recovery Area'] = {'content_hint' => 'Fast Recovery Area'}
       totals['Fast Recovery Area']['mbtotal'] = @fra_size_bytes / (1024*1024).to_i
       totals['Fast Recovery Area']['mbused'] = 0
       @fra_usage.each do |f|

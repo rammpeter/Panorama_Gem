@@ -10,11 +10,11 @@ end
 
 column_options =
 [
-  {:caption=>"Typ",         :data=>proc{|rec| rec.contents},                    :title=>t(:storage_tablespace_usage_total_type_hint, :default=>'Type of allocation'),   :data_style=>proc{|rec| total_data_style(rec)} },
+  {:caption=>"Typ",         :data=>proc{|rec| rec.contents},                    :title=>t(:storage_tablespace_usage_total_type_hint, :default=>'Type of allocation'), data_title: proc{|rec| "%t: #{rec.content_hint}"},  :data_style=>proc{|rec| total_data_style(rec)} },
   {:caption=>"MB Total",    :data=>proc{|rec| formattedNumber(rec.mbtotal)},    :title=>t(:storage_tablespace_usage_total_size_total_hint, :default=>'Total size in MBytes'),        :align=>:right,   :data_style=>proc{|rec| total_data_style(rec)} },
   {:caption=>"MB Used",     :data=>proc{|rec| formattedNumber(rec.mbused)},     :title=>t(:storage_tablespace_usage_total_size_used_hint, :default=>'Used size in MBytes'),    :align=>:right,   :data_style=>proc{|rec| total_data_style(rec)} },
   {:caption=>"MB Free",     :data=>proc{|rec| formattedNumber(rec.mbfree)},     :title=>t(:storage_tablespace_usage_total_size_free_hint, :default=>'Free size in MBytes'),       :align=>:right,   :data_style=>proc{|rec| total_data_style(rec)} },
-  {:caption=>"% used",      :data=>proc{|rec| formattedNumber(rec.mbused.to_f/rec.mbtotal*100,1)},  :title=>t(:storage_tablespace_usage_total_pct_hint, :default=>'Percent used'),                   :align=>:right,   :data_style=>proc{|rec| total_data_style(rec)} },
+  {:caption=>"% used",      :data=>proc{|rec| formattedNumber((rec.mbused.to_f * 100/rec.mbtotal rescue nil),1)},  :title=>t(:storage_tablespace_usage_total_pct_hint, :default=>'Percent used'),                   :align=>:right,   :data_style=>proc{|rec| total_data_style(rec)} },
 ]
 
 %>
@@ -197,7 +197,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
     end
 
     link_file_count = proc do |rec|
-      if rec.contents == 'REDO-LOG'
+      if rec.contents['Redo-Logs']
         ajax_link(fn(rec.file_count),
                            {:controller   => :dba,
                             :action       => :show_redologs,
@@ -219,7 +219,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
     column_options =
         [
             {:caption=>"Tablespace",          :data=>proc{|rec| rec.tablespace_name},             :title=>t(:storage_tablespace_usage_tablespace_name_hint, :default=>'Name of tablespace')},
-            {:caption=>"Contents",            :data=>proc{|rec| rec.contents},                    :title=>t(:storage_tablespace_usage_tablespace_content_hint, :default=>'Type/content of tablespace') },
+            {:caption=>"Contents",            :data=>proc{|rec| rec.contents},                    :title=>t(:storage_tablespace_usage_tablespace_content_hint, :default=>'Type/content of tablespace'), data_title: proc{|rec| "%t: #{rec.content_hint}"} },
             {:caption=>"Block size",          :data=>proc{|rec| formattedNumber(rec.blocksize)},  :title=>t(:storage_tablespace_usage_tablespace_blocksize_hint, :default=>'Blocksize of tablespace in Bytes'),        :align=>:right},
             {:caption=>"MB Total",            :data=>proc{|rec| formattedNumber(rec.mbtotal)},    :title=>"Total current size of tablespace in MB\n(without possible autoextend-expansion)",           :align=>:right, show_pct_hint: true},
             {:caption=>"MB Used",             :data=>link_mb_used,                                :title=>"Used space in tablespace in MB",           :align=>:right, show_pct_hint: true},

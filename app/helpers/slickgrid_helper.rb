@@ -240,12 +240,15 @@ module SlickgridHelper
       output << '{'
       metadata = ''
       column_options.each do |col|
-        if col[:data].class == Proc
-          celldata = (col[:data].call(rec)).to_s                                # Inhalt eines Feldes incl. html-Code für Link, Style etc., Ressourcen-Intensiv
-        else
-          celldata = eval_with_rec("#{col[:data]}.to_s", rec)                   # Inhalt eines Feldes incl. html-Code für Link, Style etc.
+        begin
+          if col[:data].class == Proc
+            celldata = (col[:data].call(rec)).to_s                                # Inhalt eines Feldes incl. html-Code für Link, Style etc., Ressourcen-Intensiv
+          else
+            celldata = eval_with_rec("#{col[:data]}.to_s", rec)                   # Inhalt eines Feldes incl. html-Code für Link, Style etc.
+          end
+        rescue Exception => e
+          raise "Error '#{e.message}' evaluating :data-expression for column '#{col[:caption]}'"
         end
-
         stripped_celldata = strip_inner_html(celldata)                          # Inhalt des Feldes befreit von html-tags, Ressourcen-Intensiv
 
         # SortType ermitteln
