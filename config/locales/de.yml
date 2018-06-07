@@ -849,11 +849,9 @@
   dragnet_helper_64_desc: |-
     Für niemals für Selektionen genutzte Tabellen kann kritisch die Daseinsberechtigung hinterfragt werden.
     Dies beinhaltet auch Tabellen, die zwar geschrieben aber nie gelesen werden.
-  dragnet_helper_64_name:                                   Ermittlung nicht genutzter Tabellen
-  dragnet_helper_64_param_1_hint:                           Anzahl Tage rückwärts von jetzt für Auswertung der AWR-Historie bzgl. Match im SQL-Text
+  dragnet_helper_64_name:                                   Ermittlung von Tabellen auf die nie per SELECT-Statement zugegriffen wird
+  dragnet_helper_64_param_1_hint:                           Anzahl Tage rückwärts von jetzt für Auswertung der AWR-Historie bzgl. Verwendung der Tabelle in Ausführungsplänen von SELECT-Statements
   dragnet_helper_64_param_1_name:                           Betrachtung der AWR-Historie für SQL rückwärts in Tagen
-  dragnet_helper_64_param_2_hint:                           Anzahl Tage rückwärts von jetzt für Auswertung der AWR-Historie bzgl. Vorkommen im Explain-Plan'
-  dragnet_helper_64_param_2_name:                           Betrachtung der AWR-Historie für Plan rückwärts in Tagen
 
   dragnet_helper_65_desc: |-
     In vielen Konstellationen ist wichtig, nicht mehr produktive Altdaten auch wieder aus dem System zu entfernen.
