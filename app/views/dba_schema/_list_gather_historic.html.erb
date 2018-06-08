@@ -37,4 +37,23 @@
 })
 %>
 
+<% if get_db_version >= '11.1' %>
+  <%
+    column_options =
+        [
+            {:caption=> 'Extension name',       :data=>proc{|rec| rec.extension_name},              :title=> 'Name of the statistics extension'},
+            {:caption=> 'Extension',            :data=>proc{|rec| rec.extension },                  :title=> 'Extension (the expression or column group)'},
+            {:caption=> 'Creator',              :data=>proc{|rec| rec.creator},                     :title=> 'Creator of the extension'},
+            {:caption=> 'Droppable',            :data=>proc{|rec| rec.droppable},                   :title=> 'Indicates whether the extension is droppable using DBMS_STATS.DROP_EXTENDED_STATS (YES) or not (NO)'},
+        ]
+  %>
+
+  <%= gen_slickgrid(@extensions, column_options, {
+      :caption => "Extended statisticts for #{@owner}.#{@table_name} from DBA_Stat_Extensions",
+      :max_height => 250
+  })
+  %>
+<% end %>
+
+
 <div id="<%= @update_area %>"></div>

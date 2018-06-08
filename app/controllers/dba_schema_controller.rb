@@ -1365,6 +1365,10 @@ WHERE RowNum < 100
                                     ORDER BY t.AnalyzeTime DESC
                                    ", @owner, @table_name]
 
+    if get_db_version >= '11.1'
+      @extensions = sql_select_all ["SELECT * FROM DBA_Stat_Extensions WHERE Owner = ? AND Table_Name = ?", @owner, @table_name]
+    end
+
     render_partial
   end
 
