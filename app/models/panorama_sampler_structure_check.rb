@@ -792,8 +792,8 @@ class PanoramaSamplerStructureCheck
               { column_name:  'VALUE_ANYDATA',                  column_type:   'ANYDATA' },
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
-          ],
-          primary_key: { columns: ['DBID', 'Snap_ID', 'Instance_Number', 'SQL_ID', 'POSITION', 'CON_DBID'], compress: 4 },
+          ], # No primary key because some times there are doublettes
+          indexes:  [ {index_name: 'Panorama_SQLBind_IX', columns: ['DBID', 'Snap_ID', 'Instance_Number', 'SQL_ID', 'POSITION', 'CON_DBID'], compress: 4 } ]
       },
       {
           table_name: 'Panorama_SQL_Plan',
@@ -1337,7 +1337,12 @@ ORDER BY Column_ID
       check_table_columns(table) if table[:domain] == domain
     end
 
-    @ora_tab_pkeys    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Constraints WHERE Owner = ? AND Constraint_Type='P'", @sampler_config.get_owner.upcase]
+    @ora_tab_pkeys    = {}
+    ora_tab_pkeys = PanoramaConnection.sql_select_all ["SELECT Table_Name, Constraint_Name, Index_Name FROM All_Constraints WHERE Owner = ? AND Constraint_Type='P'", @sampler_config.get_owner.upcase]
+    ora_tab_pkeys.each do |p|
+      @ora_tab_pkeys[p.table_name] = p
+    end
+
     @ora_tab_pk_cols  = PanoramaConnection.sql_select_all ["SELECT cc.Table_Name, cc.Column_Name, cc.Position
                                                             FROM All_Cons_Columns cc
                                                             JOIN All_Constraints c ON c.Owner = cc.Owner AND c.Table_Name = cc.Table_Name AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'P'
@@ -1549,7 +1554,7 @@ ORDER BY Column_ID
     ############ Check Primary Key
     if table[:primary_key]
       pk_name = "#{table[:table_name][0,27]}_PK"
-      if @ora_tab_pkeys.include?({'table_name' => table[:table_name].upcase})   # PKey exists
+      if @ora_tab_pkeys[table[:table_name].upcase]                              # PKey exists for table
         ########### Check columns of primary key
         existing_pk_columns_count = 0
         @ora_tab_pk_cols.each {|pk| existing_pk_columns_count += 1 if pk.table_name == table[:table_name].upcase }
@@ -1574,7 +1579,7 @@ ORDER BY Column_ID
       check_index(table[:table_name], pk_name, table[:primary_key][:columns], table[:primary_key][:compress])
 
       ######## Check existence of PK-Constraint
-      if !@ora_tab_pkeys.include?({'table_name' => table[:table_name].upcase})   # PKey does not exist
+      if !@ora_tab_pkeys[table[:table_name].upcase]   # PKey does not exist
         sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ADD CONSTRAINT #{pk_name} PRIMARY KEY ("
         table[:primary_key][:columns].each do |pk|
           sql << "#{pk},"
@@ -1584,6 +1589,16 @@ ORDER BY Column_ID
         log(sql)
         PanoramaConnection.sql_execute(sql)
       end
+    end
+
+    if table[:primary_key].nil? &&  @ora_tab_pkeys[table[:table_name].upcase]   # PKey exists but should not
+      sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} DROP CONSTRAINT #{@ora_tab_pkeys[table[:table_name].upcase].constraint_name}"
+      log(sql)
+      PanoramaConnection.sql_execute(sql)
+
+      sql = "DROP INDEX #{@sampler_config.get_owner}.#{@ora_tab_pkeys[table[:table_name].upcase].index_name}"
+      log(sql)
+      PanoramaConnection.sql_execute(sql)
     end
   end
 
