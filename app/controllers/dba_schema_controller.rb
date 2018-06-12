@@ -163,7 +163,7 @@ class DbaSchemaController < ApplicationController
         )                                                       
       GROUP BY #{groupBy}
       ) x
-      ORDER BY x.Segment_Name, x.Tablespace_Name, x.Owner"
+      ORDER BY x.MBytes DESC"
       ].concat(where_values)
 
     render_partial :list_objects
