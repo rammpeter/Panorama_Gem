@@ -177,7 +177,7 @@ Additional information about index usage can be requested from DBA_Hist_Seg_Stat
                       LEFT OUTER JOIN DBA_Constraints c     ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'R'
                       LEFT OUTER JOIN DBA_Constraints rc    ON rc.Owner = c.R_Owner AND rc.Constraint_Name = c.R_Constraint_Name
                       LEFT OUTER JOIN DBA_Tables rt         ON rt.Owner = rc.Owner AND rt.Table_Name = rc.Table_Name
-                      LEFT OUTER JOIN (SELECT Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name
+                      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name
                                       ) seg ON seg.Owner = u.Owner AND seg.Segment_Name = u.Index_Name
                       WHERE u.Used='NO' AND u.Monitoring='YES'
                       AND i.Num_Rows > ?

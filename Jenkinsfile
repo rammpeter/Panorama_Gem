@@ -128,7 +128,7 @@ pipeline {
     }
     stage('Docker stop 12.1 SE') {
       steps {
-         sh 'docker stop oracle121SE'
+         sh 'docker stop oracle121se'
          sleep 20
        }
     }
