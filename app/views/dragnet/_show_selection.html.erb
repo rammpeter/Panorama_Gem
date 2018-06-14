@@ -36,9 +36,9 @@
                         }
                     }
                 });
-        $( "#dragnet_selection_wrapper" ).resizable();
-        $( "#dragnet_selection_wrapper" ).find(".ui-resizable-e").remove();                    // Entfernen des rechten resizes-Cursors
-        $( "#dragnet_selection_wrapper" ).find(".ui-resizable-se").remove();                   // Entfernen des rechten unteren resize-Cursors
+        $( "#dragnet_selection_height_slider" ).resizable();
+        $( "#dragnet_selection_height_slider" ).find(".ui-resizable-e").remove();                    // Entfernen des rechten resizes-Cursors
+        $( "#dragnet_selection_height_slider" ).find(".ui-resizable-se").remove();                   // Entfernen des rechten unteren resize-Cursors
 
 
     }
@@ -66,7 +66,9 @@
             </div>
             </form>
         </div>
-        <div id="dragnet_selection_wrapper" style="clear: both; height: 300px; overflow-y: scroll; padding: 5px; background-color: #ffffff;">
+        <div id="dragnet_selection_height_slider" style="height: 300px; margin: 5px;">
+          <div id="dragnet_selection_wrapper" style="clear: both;  height: 100%; overflow-y: scroll;  background-color: #ffffff;">
+          </div>
         </div>
       </td>
 
