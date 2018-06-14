@@ -156,35 +156,89 @@ Especially this is true for generated dynamic SQL statements (e.g. from OR-mappe
         {
             :name  => t(:dragnet_helper_104_name, :default=>'Objekt statistics: Check on up-to-date analyze info (Tables)'),
             :desc  => t(:dragnet_helper_104_desc, :default=>'For cost based optimizer object statistics should be sufficient up-to-date'),
-            :sql=>  "SELECT /* DB-Tools Ramm Tabellen ohne bzw. mit veralteter Statistik */ t.Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed,
-                             ROUND(s.MBytes,2) MBytes
-                      FROM   DBA_Tables t
-                      JOIN   (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(Bytes)/(1024*1024) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name) s ON s.Owner = t.Owner AND s.Segment_Name = t.Table_Name
-                      WHERE  (Last_Analyzed IS NULL OR Last_Analyzed < SYSDATE-?)
-                      AND    t.Owner NOT IN ('SYS', 'SYSTEM', 'OUTLN', 'PERFSTAT', 'PATCH', 'NOALYZE', 'EXFSYS', 'SERVER', 'FLAGENT',
-                                           'DB_MONITORING', 'DBSNMP', 'WMSYS', 'DBMSXSTATS', 'SYSMAN', 'TOOL', 'AFARIA', 'MONITOR',
-                                           'XDB', 'MDSYS', 'ORDSYS', 'DMSYS', 'CTXSYS', 'TSMSYS')
-                      AND    t.Owner NOT LIKE 'DBA%'
-                      AND    t.Owner NOT LIKE 'PATROL%'
-                      AND    Temporary = 'N'
-                      ORDER BY s.MBytes DESC",
+            :sql=> "SELECT x.*
+                    FROM   (
+                            SELECT t.Owner, t.Table_Name, NULL Partition_Name, NULL SubPartition_Name, t.Num_Rows, t.Last_Analyzed,
+                                   ROUND(s.MBytes,2) MBytes, m.Inserts \"Inserts since last analyze\", m.Updates \"Updates since last analyze\", m.Deletes \"Deletes since last analyze\"
+                            FROM   DBA_Tables t
+                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(Bytes)/(1024*1024) MBytes
+                                             FROM   DBA_Segments
+                                             GROUP BY Owner, Segment_Name
+                                            ) s ON s.Owner = t.Owner AND s.Segment_Name = t.Table_Name
+                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Table_Owner, Table_Name, SUM(Inserts) Inserts, SUM(Updates) Updates, SUM(Deletes) Deletes
+                                             FROM DBA_Tab_Modifications
+                                             GROUP BY Table_Owner, Table_Name
+                                            ) m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name
+                            WHERE  t.Temporary = 'N'
+                            UNION ALL
+                            SELECT t.Table_Owner Owner, t.Table_Name, t.Partition_Name, NULL SubPartition_Name, t.Num_Rows, t.Last_Analyzed,
+                                   ROUND(s.MBytes,2) MBytes, m.Inserts, m.Updates, m.Deletes
+                            FROM   DBA_Tab_Partitions t
+                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, Partition_Name, SUM(Bytes)/(1024*1024) MBytes
+                                             FROM   DBA_Segments
+                                             GROUP BY Owner, Segment_Name, Partition_Name
+                                            ) s ON s.Owner = t.Table_Owner AND s.Segment_Name = t.Table_Name AND s.Partition_Name = t.Partition_Name
+                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Table_Owner, Table_Name, Partition_Name, SUM(Inserts) Inserts, SUM(Updates) Updates, SUM(Deletes) Deletes
+                                             FROM DBA_Tab_Modifications
+                                             GROUP BY Table_Owner, Table_Name, Partition_Name
+                                            ) m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name
+                            UNION ALL
+                            SELECT t.Table_Owner Owner, t.Table_Name, t.Partition_Name, t.SubPartition_Name, t.Num_Rows, t.Last_Analyzed,
+                                   ROUND(s.MBytes,2) MBytes, m.Inserts, m.Updates, m.Deletes
+                            FROM   DBA_Tab_SubPartitions t
+                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, Partition_Name, SUM(Bytes)/(1024*1024) MBytes
+                                             FROM   DBA_Segments
+                                             GROUP BY Owner, Segment_Name, Partition_Name
+                                            ) s ON s.Owner = t.Table_Owner AND s.Segment_Name = t.Table_Name AND s.Partition_Name = t.SubPartition_Name
+                            LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name AND m.SubPartition_Name = t.SubPartition_Name
+                           ) x
+                    WHERE  x.Owner NOT IN ('SYS', 'SYSTEM', 'OUTLN', 'PERFSTAT', 'PATCH', 'EXFSYS', 'FLAGENT',
+                                         'DBSNMP', 'WMSYS', 'DBMSXSTATS', 'SYSMAN', 'AFARIA',
+                                         'XDB', 'MDSYS', 'ORDSYS', 'DMSYS', 'CTXSYS', 'TSMSYS')
+                    AND   (Last_Analyzed IS NULL OR Last_Analyzed < SYSDATE-?)
+                    ORDER BY x.MBytes DESC NULLS LAST
+                    ",
             :parameter=>[{:name=>t(:dragnet_helper_104_param_1_name, :default=>'Minimum age of existing analyze info in days'), :size=>8, :default=>100, :title=>t(:dragnet_helper_104_param_1_hint, :default=>'If analyze info exists: minimun age for consideration in selection')}]
         },
         {
             :name  => t(:dragnet_helper_108_name, :default=>'Objekt statistics: Check on up-to-date analyze info (Indexes)'),
             :desc  => t(:dragnet_helper_108_desc, :default=>'For cost based optimizer object statistics should be sufficient up-to-date'),
-            :sql=>  "SELECT /* DB-TOoLs Ramm Indizes without e.g. with old statistics */ i.Owner, i.Table_Name, i.Index_Name, i.Num_Rows, i.Last_Analyzed
-                      FROM   DBA_Indexes i
-                      JOIN   DBA_Tables t ON t.Owner = i.Table_Owner AND t.Table_Name = i.Table_Name
-                      JOIN   (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(Bytes)/(1024*1024) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name) s ON s.Owner = i.Owner AND s.Segment_Name = i.Index_Name
-                      WHERE  (i.Last_Analyzed IS NULL OR i.Last_Analyzed < SYSDATE-?)
-                      AND    i.Owner NOT IN ('SYS', 'SYSTEM', 'OUTLN', 'PERFSTAT', 'PATCH', 'NOALYZE', 'EXFSYS', 'SERVER', 'FLAGENT',
-                                           'DB_MONITORING', 'DBSNMP', 'WMSYS', 'DBMSXSTATS', 'SYSMAN', 'TOOL', 'AFARIA', 'MONITOR', 'XDB', 'MDSYS', 'ORDSYS',
-                                           'CTXSYS', 'TSMSYS')
-                      AND    i.Owner NOT LIKE 'DBA%'
-                      AND    i.Owner NOT LIKE 'PATROL%'
-                      AND    t.Temporary = 'N'
-                      ORDER BY s.MBytes DESC",
+            :sql=> "SELECT x.*
+                    FROM   (
+                            SELECT i.Owner, i.Table_Name, i.Index_Name, NULL Partition_Name, NULL SubPartition_Name, i.Num_Rows, i.Last_Analyzed,
+                                   ROUND(s.MBytes,2) MBytes
+                            FROM   DBA_Indexes i
+                            JOIN   DBA_Tables t ON t.Owner = i.Table_Owner AND t.Table_Name = i.Table_Name
+                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(Bytes)/(1024*1024) MBytes
+                                             FROM   DBA_Segments
+                                             GROUP BY Owner, Segment_Name
+                                            ) s ON s.Owner = i.Owner AND s.Segment_Name = i.Index_Name
+                            WHERE  t.Temporary = 'N'
+                            UNION ALL
+                            SELECT ip.Index_Owner Owner, i.Table_Name, ip.Index_Name, ip.Partition_Name, NULL SubPartition_Name, ip.Num_Rows, ip.Last_Analyzed,
+                                   ROUND(s.MBytes,2) MBytes
+                            FROM   DBA_Ind_Partitions ip
+                            JOIN   DBA_Indexes i ON i.Owner = ip.Index_Owner AND i.Index_Name = ip.Index_Name
+                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, Partition_Name, SUM(Bytes)/(1024*1024) MBytes
+                                             FROM   DBA_Segments
+                                             GROUP BY Owner, Segment_Name, Partition_Name
+                                            ) s ON s.Owner = ip.Index_Owner AND s.Segment_Name = ip.Index_Name AND s.Partition_Name = ip.Partition_Name
+                            UNION ALL
+                            SELECT ip.Index_Owner Owner, i.Table_Name, ip.Index_Name, ip.Partition_Name, ip.SubPartition_Name, ip.Num_Rows, ip.Last_Analyzed,
+                                   ROUND(s.MBytes,2) MBytes
+                            FROM   DBA_Ind_SubPartitions ip
+                            JOIN   DBA_Indexes i ON i.Owner = ip.Index_Owner AND i.Index_Name = ip.Index_Name
+                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, Partition_Name, SUM(Bytes)/(1024*1024) MBytes
+                                             FROM   DBA_Segments
+                                             GROUP BY Owner, Segment_Name, Partition_Name
+                                            ) s ON s.Owner = ip.Index_Owner AND s.Segment_Name = ip.Index_Name AND s.Partition_Name = ip.SubPartition_Name
+                           ) x
+                    WHERE  x.Owner NOT IN ('SYS', 'SYSTEM', 'OUTLN', 'PERFSTAT', 'PATCH', 'EXFSYS', 'FLAGENT',
+                                         'DBSNMP', 'WMSYS', 'DBMSXSTATS', 'SYSMAN', 'AFARIA',
+                                         'XDB', 'MDSYS', 'ORDSYS', 'DMSYS', 'CTXSYS', 'TSMSYS')
+                    AND   (Last_Analyzed IS NULL OR Last_Analyzed < SYSDATE-?)
+                    ORDER BY x.MBytes DESC NULLS LAST
+                    ",
             :parameter=>[{:name=>t(:dragnet_helper_108_param_1_name, :default=>'Minimum age of existing analyze info in days'), :size=>8, :default=>100, :title=>t(:dragnet_helper_108_param_1_hint, :default=>'If analyze info exists: minimun age for consideration in selection')}]
         },
         {
