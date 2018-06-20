@@ -8,22 +8,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/app/views/addition/_explain_worksheet_sql.html.erb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/views/addition/_show_sql_worksheet.html.erb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Panorama_Gem.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/assets/stylesheets/easytabs.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/assets/stylesheets/easytabs.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/assets/stylesheets/panorama.scss" beforeDir="false" afterPath="$PROJECT_DIR$/app/assets/stylesheets/panorama.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/addition_controller.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/addition_controller.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/dba_controller.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/dba_controller.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/ajax_helper.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/helpers/ajax_helper.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/menu_helper.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/helpers/menu_helper.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_explain_plan.html.erb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba/_list_explain_plan.html.erb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/help/version_history.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/help/version_history.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/BUG_REPORT.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/BUG_REPORT.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/controllers/addition_controller_test.rb" beforeDir="false" afterPath="$PROJECT_DIR$/test/controllers/addition_controller_test.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/controllers/dba_controller_test.rb" beforeDir="false" afterPath="$PROJECT_DIR$/test/controllers/dba_controller_test.rb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" beforeDir="false" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterDir="false" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -198,37 +184,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="addition_controller.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/controllers/addition_controller.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="227">
-              <caret line="873" column="27" selection-start-line="873" selection-start-column="6" selection-end-line="873" selection-end-column="27" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="_explain_worksheet_sql.html.erb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/views/addition/_explain_worksheet_sql.html.erb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="315">
-              <caret line="21" column="69" selection-start-line="21" selection-start-column="69" selection-end-line="21" selection-end-column="69" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="_show_sql_worksheet.html.erb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/views/addition/_show_sql_worksheet.html.erb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1180">
-              <caret line="113" column="23" selection-start-line="113" selection-start-column="23" selection-end-line="113" selection-end-column="23" />
-              <folding>
-                <element signature="n#style#0;n#textarea#0;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="version_history.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/views/help/version_history.html">
           <provider selected="true" editor-type-id="text-editor">
@@ -238,20 +193,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="addition_controller_test.rb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/controllers/addition_controller_test.rb">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="452">
-              <caret line="159" column="27" selection-start-line="159" selection-start-column="27" selection-end-line="159" selection-end-column="27" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="dba_controller_test.rb" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/test/controllers/dba_controller_test.rb">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="96" column="2" selection-start-line="96" selection-start-column="2" selection-end-line="96" selection-end-column="2" />
+            <state relative-caret-position="75">
+              <caret line="5" column="39" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
             </state>
           </provider>
         </entry>
@@ -351,7 +297,6 @@
         <option value="$PROJECT_DIR$/Jenkinsfile" />
         <option value="$PROJECT_DIR$/app/controllers/dba_schema_controller.rb" />
         <option value="$PROJECT_DIR$/app/models/panorama_sampler_structure_check.rb" />
-        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/app/helpers/dragnet/unnecessary_indexes_helper.rb" />
         <option value="$PROJECT_DIR$/app/helpers/dragnet/dragnet_sqls_tuning_sga_pga_helper.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_schema/_list_object_description.html.erb" />
@@ -370,6 +315,7 @@
         <option value="$PROJECT_DIR$/app/helpers/menu_helper.rb" />
         <option value="$PROJECT_DIR$/app/controllers/dba_controller.rb" />
         <option value="$PROJECT_DIR$/test/controllers/dba_controller_test.rb" />
+        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
       </list>
     </option>
   </component>
@@ -1138,14 +1084,7 @@
       <workItem from="1528298349303" duration="13937000" />
       <workItem from="1528451076138" duration="17584000" />
       <workItem from="1529328227511" duration="3886000" />
-      <workItem from="1529496785807" duration="18960000" />
-    </task>
-    <task id="LOCAL-01370" summary="Check maximum path length">
-      <created>1525546611039</created>
-      <option name="number" value="01370" />
-      <option name="presentableId" value="LOCAL-01370" />
-      <option name="project" value="LOCAL" />
-      <updated>1525546611040</updated>
+      <workItem from="1529496785807" duration="19018000" />
     </task>
     <task id="LOCAL-01371" summary="Check maximum path length at startup">
       <created>1525551361313</created>
@@ -1483,7 +1422,14 @@
       <option name="project" value="LOCAL" />
       <updated>1528990441348</updated>
     </task>
-    <option name="localTasksCounter" value="1419" />
+    <task id="LOCAL-01419" summary="SQL worksheet established">
+      <created>1529523594302</created>
+      <option name="number" value="01419" />
+      <option name="presentableId" value="LOCAL-01419" />
+      <option name="project" value="LOCAL" />
+      <updated>1529523594303</updated>
+    </task>
+    <option name="localTasksCounter" value="1420" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1519,7 +1465,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3354517000" />
+    <option name="totallyTimeSpent" value="3354575000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1602,7 +1548,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Ensure hanging sampler threads are not repeated" />
     <MESSAGE value="New test setup" />
     <MESSAGE value="New test setup, raise" />
     <MESSAGE value="New test setup, config" />
@@ -1627,7 +1572,8 @@
     <MESSAGE value="Speedup dragnet SQL" />
     <MESSAGE value="Fine tuning for column headers" />
     <MESSAGE value="Dragnet slider also visible if scrolled" />
-    <option name="LAST_COMMIT_MESSAGE" value="Dragnet slider also visible if scrolled" />
+    <MESSAGE value="SQL worksheet established" />
+    <option name="LAST_COMMIT_MESSAGE" value="SQL worksheet established" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1942,13 +1888,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret line="5" column="39" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/helpers/dragnet/unnecessary_indexes_helper.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1485">
@@ -2131,13 +2070,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/views/help/version_history.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="56" selection-start-line="4" selection-start-column="56" selection-end-line="4" selection-end-column="56" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/views/dba/_explain_plan.html.erb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="45">
@@ -2154,8 +2086,22 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/controllers/dba_controller_test.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="96" column="2" selection-start-line="96" selection-start-column="2" selection-end-line="96" selection-end-column="2" />
+        <state relative-caret-position="603">
+          <caret line="96" selection-start-line="96" selection-end-line="96" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/views/help/version_history.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="56" selection-start-line="4" selection-start-column="56" selection-end-line="4" selection-end-column="56" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="39" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
         </state>
       </provider>
     </entry>
