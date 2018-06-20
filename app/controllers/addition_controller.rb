@@ -860,4 +860,33 @@ class AdditionController < ApplicationController
 
   end
 
+  def show_sql_worksheet
+    render_partial
+  end
+
+  def exec_worksheet_sql
+    @sql_statement = params[:sql_statement]
+    @res = sql_select_all @sql_statement
+
+    render_partial :list_dragnet_sql_result, controller: :dragnet
+  end
+
+  def explain_worksheet_sql
+    @sql_statement = params[:sql_statement].rstrip.gsub(/;$/, "")       # remove trailing semicolon
+
+    statement_id = get_unique_area_id
+
+    PanoramaConnection.sql_execute "EXPLAIN PLAN SET Statement_ID='#{statement_id}' FOR #{@sql_statement}"
+    @plans = sql_select_iterator ["\
+        SELECT p.*
+        FROM   Plan_Table p
+        WHERE  Statement_ID = ?
+        ", statement_id]
+
+    render_partial
+    PanoramaConnection.sql_execute ["DELETE FROM Plan_Table WHERE STatement_ID = ?", statement_id]
+
+  end
+
+
 end

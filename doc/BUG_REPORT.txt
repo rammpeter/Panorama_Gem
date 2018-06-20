@@ -1,3 +1,12 @@
+20.06.2018
+NameError: uninitialized constant Minitest::Rails::TestUnit
+
+go to gems/railties-5.2.0/lib/minitest/rails_plugin.rb and replaced
+Rails::TestUnit::Runner.attach_before_load_options(opts)
+with
+::Rails::TestUnit::Runner.attach_before_load_options(opts),
+it's working on a new 5.2 project.
+
 27.04.2017
 http-Requests kommen nicht zurück unter Oracle-Linux 6.5 (panorama.osp-dd.de), wenn jruby-jars 9.1.8.0 verwendet werden. Zurück auf 9.1.7.0 löste das Problem
 https://stackoverflow.com/questions/45193359/upgrading-from-jruby-9-0-5-0-hangs-tomcat

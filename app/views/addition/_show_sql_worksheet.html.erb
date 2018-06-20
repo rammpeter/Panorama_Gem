@@ -1,0 +1,135 @@
+<%=
+  render_page_caption('SQL worksheet',
+    [
+      {
+          name:                 :execute,
+          caption:              'Execute',
+          hint:                 'Execute SQL statement at cursor position (Ctrl+Enter)',
+          icon_class:           'ui-icon ui-icon-circle-triangle-e',
+          action:               'exec_worksheet_sql();',
+          show_icon_in_caption: true
+      },
+      {
+          name:                 :explain,
+          caption:              'Explain plan',
+          hint:                 'Explain SQL statement at cursor position (Alt+Enter)',
+          icon_class:           'ui-icon ui-icon-circle-zoomin',
+          action:               'explain_worksheet_sql();',
+          show_icon_in_caption: true
+      },
+    ],
+    nil,
+    "<span id='sql_text_line' title='Line number in editor'></span>:<span id='sql_text_column' style='padding-right: 5px;' title='Column number in editor'></span>"
+  )
+%>
+
+<textarea id="sql_text" style="width: 100%; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;
+    height: 300px; font-family: monospace; font-size: larger; padding: 5px;">
+
+</textarea>
+
+
+<div id="sql_worksheet_tab_container" style="width: 100%; display: inline-block;" class="tab-container">
+  <ul class="etabs">
+    <li class="tab"><a id="result_area_sql_worksheet_id"  href="#result_area_sql_worksheet">Result data</a></li>
+    <li class="tab"><a id="explain_area_sql_worksheet_id" href="#explain_area_sql_worksheet">Execution plan</a></li>
+  </ul>
+  <div class="panel-container">
+    <div id="result_area_sql_worksheet"></div>
+    <div id="explain_area_sql_worksheet"></div>
+  </div>
+</div>
+
+<script type="application/javascript">
+
+    $( function() {
+        $( "#sql_worksheet_tab_container" ).easytabs();
+    } );
+
+
+    function get_sql_at_cursor_position(){
+      var sql_text_elem    = $("#sql_text");
+      var sql_statement    = '';
+
+      if (sql_text_elem.prop('selectionStart') != sql_text_elem.prop('selectionEnd')){  // text selected in textarea
+          sql_statement = sql_text_elem.val().substring(sql_text_elem.prop('selectionStart'), sql_text_elem.prop('selectionEnd'));
+      } else {                                                                  // no text select in textarea
+        var sql_text_lines_before_cursor = sql_text_elem.val().substr(0, sql_text_elem.prop('selectionStart')).split("\n");
+        var sql_text_lines_after_cursor  = sql_text_elem.val().substr(sql_text_elem.prop('selectionStart')).split("\n");
+
+          sql_text_lines_before_cursor.reverse().some(function(line, index){
+              var trimmed_line = line.trim();
+
+              if ((trimmed_line[trimmed_line.length-1] == ';' && index > 0) || trimmed_line.length == 0) // break downcount if previous line ends with ; or is empty
+                  return true;
+
+              if (index > 0)
+                sql_statement = line + "\n" + sql_statement;
+              else
+                  sql_statement = line + sql_statement;
+          });
+
+          sql_text_lines_after_cursor.some(function(line, index){
+              var trimmed_line = line.trim();
+
+              if (trimmed_line.length == 0)
+                  return true;
+
+              if (index > 0)
+                  sql_statement = sql_statement + "\n";
+              sql_statement = sql_statement + line;
+              return trimmed_line[trimmed_line.length-1] == ';';                // end if line is finished with ;
+          });
+
+      }
+
+      if (sql_statement[sql_statement.length-1] == ';')
+          sql_statement = sql_statement.substr(0, sql_statement.length-1);      // remove trailing ; if exists
+
+      return sql_statement;
+  }
+
+  function exec_worksheet_sql(){
+      $('#result_area_sql_worksheet_id').click();                               // bring tab in front
+      sql_statement = get_sql_at_cursor_position();
+      setTimeout(function(){
+          ajax_html('result_area_sql_worksheet', 'addition', 'exec_worksheet_sql', {update_area: 'result_area_sql_worksheet', sql_statement: sql_statement});
+      }, 500);                                                                  // Wait until click is processed to hit the visible div
+  }
+
+  function explain_worksheet_sql(){
+      $('#explain_area_sql_worksheet_id').click();                              // bring tab in front
+      sql_statement = get_sql_at_cursor_position();
+
+      setTimeout(function(){
+          ajax_html('explain_area_sql_worksheet', 'addition', 'explain_worksheet_sql', {update_area: 'explain_area_sql_worksheet', sql_statement: sql_statement});
+      }, 500);                                                                  // Wait until click is processed to hit the visible div
+  }
+
+  $("#sql_text").bind("keydown", function(event) {
+      console.log(event);
+
+      if (event.ctrlKey == true && event.key == 'Enter'){
+          exec_worksheet_sql();
+          return false;
+      }
+      if (event.altKey == true && event.key == 'Enter'){
+          explain_worksheet_sql();
+          return false;                                                         // suppress default alt#Enter-Handling
+      }
+
+  });
+
+
+  // update line and column number in header
+  $("#sql_text").bind("keyup click focus", function() {
+      var sql_text    = $("#sql_text");
+      var text_before_selection = sql_text.val().substr(0, sql_text.prop('selectionStart')).split("\n");
+      var line_number = text_before_selection.length;
+      var col_number  = text_before_selection[text_before_selection.length-1].length;
+
+      $('#sql_text_line').html(line_number);
+      $('#sql_text_column').html(col_number);
+  });
+
+</script>

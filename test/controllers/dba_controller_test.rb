@@ -21,8 +21,6 @@ class DbaControllerTest < ActionController::TestCase
 
 
   test "redologs with xhr: true"       do
-    get  :show_redologs, :params => {:format=>:html, :update_area=>:hugo }
-    assert_response :success
 
     post  :show_redologs, :params => {:format=>:html, :update_area=>:hugo, instance: 1 }
     assert_response :success
@@ -94,11 +92,6 @@ class DbaControllerTest < ActionController::TestCase
 
     test "list_waits_per_event with xhr: true" do
     get :list_waits_per_event, :params => {:format=>:html, :event=>"db file sequential read", :instance=>"1", :update_area=>"hugo" }
-    assert_response :success
-  end
-
-  test "show_explain_plan with xhr: true"       do
-    post  :show_explain_plan, :params => {:format=>:html, :statement => "SELECT SYSDATE FROM DUAL", :update_area=>:hugo }
     assert_response :success
   end
 

@@ -1037,25 +1037,7 @@ Solution: Execute as user 'SYS':
       format.html {render :html => @object }
     end
   end
-    
-  def show_explain_plan
-    statement = params[:statement].rstrip.gsub(/;$/, "")       # führendes Semikolon entfernen
-    PanoramaConnection.sql_execute "EXPLAIN PLAN SET Statement_ID='Panorama' FOR " + statement
-    @plans = sql_select_iterator ["\
-        SELECT /* Panorama-Tool Ramm */
-          Operation, Options, Object_Owner, Object_Name, Optimizer,
-          Access_Predicates, Filter_Predicates,
-          Other_Tag, Distribution
-        FROM  Plan_Table p
-        WHERE Statement_ID=?",
-        "Panorama"
-        ]
 
-    render_partial :list_explain_plan
-    PanoramaConnection.sql_execute "DELETE FROM Plan_Table WHERE STatement_ID='Panorama'"
-  end
-  
-  
   def segment_stat   # Anzeige Auswahl-Dialog für Statistiken
     @stats = sql_select_all "\
         SELECT /* Panorama-Tool Ramm */

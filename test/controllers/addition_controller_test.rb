@@ -151,4 +151,15 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "exec_worksheet_sql with xhr: true" do
+    post '/addition/exec_worksheet_sql', params: {format: :html, sql_statement: 'SELECT SYSDATE FROM DUAL', update_area: :hugo }
+    assert_response :success
+  end
+
+  test "explain_worksheet_sql with xhr: true" do
+    post '/addition/explain_worksheet_sql', params: {format: :html, sql_statement: 'SELECT SYSDATE FROM DUAL', update_area: :hugo }
+    assert_response :success
+  end
+
+
 end
