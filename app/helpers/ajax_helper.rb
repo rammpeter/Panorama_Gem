@@ -7,8 +7,6 @@ module AjaxHelper
 
   # render menu button with submenu
   def render_command_array_menu(command_array)
-    command_array = [command_array] if command_array.class == Hash              # Construct Array if only single entry
-
     output = ''
     div_id = get_unique_area_id                                                 # Basis for DOM-IDs
     output << "<span style=\"margin-left:5px;   \" class=\"slick-shadow\" >"
@@ -57,23 +55,15 @@ module AjaxHelper
   #             left_addition:    insert html-content at left side after menu and icons
   #             right_addition:   insert html-content at right side before icons
   def render_page_caption(caption, command_array=nil, left_addition=nil, right_addition=nil)
+
+    command_array = [command_array] if command_array.class == Hash              # Construct Array if only single entry
+
     output = ''
     output << "<div class=\"page_caption\">"
     output << "<span>"
 
-=begin
-
-  if (cmd['show_icon_in_caption'] && cmd['show_icon_in_caption'] !== 'right' ){   // show icon in caption line of grid ?
-                    caption_left_box.append('<div style="margin-left:5px; margin-top:4px; cursor: pointer; display: inline-block;"'+
-                        'title="'+cmd['hint'] + '" onclick="'+ cmd['action'] +'">' +
-                        '<span class="'+cmd['icon_class']+'"></span>' +
-                        '</div>');
-                }
-=end
-
     unless command_array.nil?                                                   # render command button and list
       output << render_command_array_menu(command_array)
-
       command_array.each do |cmd|
         if cmd[:show_icon_in_caption] && cmd[:show_icon_in_caption] != :right
           output << "<div style='margin-left:5px; margin-top:4px; cursor: pointer; display: inline-block;'
