@@ -3,6 +3,7 @@ class DbaSgaController < ApplicationController
 
   #require "dba_helper"   # Erweiterung der Controller um Helper-Methoden
   include DbaHelper
+  include ExplainPlanHelper
 
   # Auflösung/Detaillierung der im Feld MODUL geührten Innformation
   def show_application_info
@@ -433,43 +434,16 @@ class DbaSgaController < ApplicationController
         end
       end
 
-      # Vergabe der exec-Order im Explain
-      # iteratives neu durchsuchen der Liste nach folgenden erfuellten Kriterien
-      # - ID tritt nicht als Parent auf
-      # - alle Children als Parent sind bereits mit ExecOrder versehen
-      # gefundene Records werden mit aufteigender Folge versehen und im folgenden nicht mehr betrachtet
 
-      # Array mit den Positionen der Objekte in plans anlegen
-      pos_array = []
-      0.upto(mp[:plans].length-1) {|i|  pos_array << i }
+      calculate_execution_order_in_plan(mp[:plans])                             # Calc. execution order by parent relationship
+
+      # Segmentation of XML document
 
       other_xml = nil
       mp[:plans].each do |p|
-        p[:is_parent] = false                                                     # Vorbelegung
         other_xml = p.other_xml if get_db_version >= "11.2" && !p.other_xml.nil?  # Only one record per plan has values
       end
 
-      curr_execorder = 1                                             # Startwert
-      while pos_array.length > 0                                     # Bis alle Records im PosArray mit Folge versehen sind
-        pos_array.each {|i|                                          # Iteration ueber Verbliebene Records
-          is_parent = false                                          # Default-Annahme, wenn kein Child gefunden
-          pos_array.each {|x|                                        # Suchen, ob noch ein Child zum Parent existiert in verbliebener Menge
-            if mp[:plans][i].id == mp[:plans][x].parent_id           # Doch noch ein Child zum Parent gefunden
-              is_parent = true
-              mp[:plans][i][:is_parent] = true                       # Merken Status als Knoten
-              break                                                  # Braucht nicht weiter gesucht werden
-            end
-          }
-          unless is_parent
-            mp[:plans][i].execorder = curr_execorder                      # Vergabe Folge
-            curr_execorder = curr_execorder + 1
-            pos_array.delete(i)                                      # entwerten der verarbeiten Zeile fuer Folgebetrachtung
-            break                                                    # Neue Suche vom Beginn an
-          end
-        }
-      end
-
-      # Segmentation of XML document
       mp[:plan_additions] = []
       begin
         xml_doc = Nokogiri::XML(other_xml)

@@ -2,6 +2,7 @@
 
 class DbaHistoryController < ApplicationController
   include DbaHelper
+  include ExplainPlanHelper
   include ActionView::Helpers::SanitizeHelper
 
   def list_segment_stat_historic_sum
@@ -756,42 +757,9 @@ class DbaHistoryController < ApplicationController
         end
 
       end
-
-
-      # Vergabe der exec-Order im Explain
-      # iteratives neu durchsuchen der Liste nach folgenden erfuellten Kriterien
-      # - ID tritt nicht als Parent auf
-      # - alle Children als Parent sind bereits mit ExecOrder versehen
-      # gefundene Records werden mit aufteigender Folge versehen und im folgenden nicht mehr betrachtet
-
-      # Array mit den Positionen der Objekte in plans anlegen
-      pos_array = []
-      0.upto(mp[:plans].length-1) {|i|  pos_array << i }
-      curr_execorder = 1                                             # Startwert
-      last_parent_id = 0                                             # Reihenfolge-ID des Parents des zuletzt gelöschten Child (Parent-ID is immer kleiner als Child-ID)
-      while pos_array.length > 0                                     # Bis alle Records im PosArray mit Folge versehen sind
-        pos_array.each {|i|                                          # Iteration ueber Verbliebene Records
-          if mp[:plans][i].id >= last_parent_id                           # Knoten vor der letzten Parent-ID kommen noch nicht in Frage für Ohne Child
-            is_parent = false                                        # Default-Annahme, wenn kein Child gefunden
-            pos_array.each {|x|                                      # Suchen, ob noch ein Child zum Parent existiert in verbliebener Menge
-              if mp[:plans][i].id == mp[:plans][x].parent_id                   # Doch noch ein Child zum Parent gefunden
-                is_parent = true
-                mp[:plans][i][:is_parent] = true                     # Merken Status als Knoten
-                break                                                # Braucht nicht weiter gesucht werden
-              end
-            }
-            unless is_parent
-              mp[:plans][i].execorder = curr_execorder                    # Vergabe Folge
-              curr_execorder = curr_execorder + 1
-              last_parent_id = mp[:plans][i].parent_id                    # Parent-ID als Startwert der nächsten Suche (Treffer liegen darunter)
-              pos_array.delete(i)                                    # entwerten der verarbeiten Zeile fuer Folgebetrachtung
-              pos_array = pos_array.compact                          # Entfernen der gelöschten Einträge
-              break                                                  # Neue Suche vom Beginn an
-            end
-          end
-        }
-      end
+      calculate_execution_order_in_plan(mp[:plans])                             # Calc. execution order by parent relationship
     end
+
 
     # Identität der einzelnen Zeilen prüfen und setzen
     max_plan_length = 0

@@ -247,7 +247,7 @@ module SlickgridHelper
             celldata = eval_with_rec("#{col[:data]}.to_s", rec)                   # Inhalt eines Feldes incl. html-Code für Link, Style etc.
           end
         rescue Exception => e
-          raise "Error '#{e.message}' evaluating :data-expression for column '#{col[:caption]}'"
+          raise "Error #{e.class}: '#{e.message}' evaluating :data-expression for column '#{col[:caption]}'"
         end
         stripped_celldata = strip_inner_html(celldata)                          # Inhalt des Feldes befreit von html-tags, Ressourcen-Intensiv
 

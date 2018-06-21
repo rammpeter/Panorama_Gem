@@ -2,6 +2,7 @@
 # Zusatzfunktionen, die auf speziellen Tabellen und Prozessen aufsetzen, die nicht prinzipiell in DB vorhanden sind
 class AdditionController < ApplicationController
   include AdditionHelper
+  include ExplainPlanHelper
 
   def list_db_cache_historic
     max_result_count = params[:maxResultCount]
@@ -877,11 +878,14 @@ class AdditionController < ApplicationController
     statement_id = get_unique_area_id
 
     PanoramaConnection.sql_execute "EXPLAIN PLAN SET Statement_ID='#{statement_id}' FOR #{@sql_statement}"
-    @plans = sql_select_iterator ["\
+    @plans = sql_select_all ["\
         SELECT p.*
         FROM   Plan_Table p
         WHERE  Statement_ID = ?
+        ORDER BY ID
         ", statement_id]
+
+    calculate_execution_order_in_plan(@plans)                                   # Calc. execution order by parent relationship
 
     render_partial
     PanoramaConnection.sql_execute ["DELETE FROM Plan_Table WHERE STatement_ID = ?", statement_id]

@@ -97,51 +97,6 @@
      retval == 0 ? nil : retval
    end
 
-   list_operation = proc do |rec|
-     tab = ""
-     toggle_id = "#{@toggle_id_prefix}_#{rec.id}"
-
-     if rec.depth > @indent_vector.count                                        # Einrückung gegenüber Vorgänger
-       last_exists_id = 0                                                       # ID des letzten Records, für den die selbe parent_id existiert
-       @plans.each do |p|
-         if p.id > rec.id &&  p.parent_id == rec.parent_id                      # nur Nachfolger des aktuellen testen, letzte Existenz des parent_id suchen
-           last_exists_id = p.id
-         end
-       end
-       @indent_vector << {:parent_id => rec.parent_id, :last_exists_id => last_exists_id}
-     end
-
-     while rec.depth < @indent_vector.count                                     # Einrückung gegenüber Vorgänger
-       @indent_vector.delete_at(@indent_vector.count-1);
-     end
-
-     #rec.depth.downto(1) {
-     #  tab << "<span class=\"toggle\"></span>&nbsp;"
-     #}
-
-     @indent_vector.each_index do |i|
-       if i < @indent_vector.count-1                                            # den letzten Eintrag unterdrücken, wird relevant beim nächsten, wenn der einen weiter rechts eingerückt ist
-         v = @indent_vector[i]
-         tab << "<span class=\"toggle #{'vertical-line' if rec.id < v[:last_exists_id]}\" title=\"parent_id=#{v[:parent_id]} last_exists_id=#{v[:last_exists_id]}\">#{'' if rec.id < v[:last_exists_id]}</span>&nbsp;"
-       end
-     end
-
-
-     if rec[:is_parent]                                                         # Über hash ansprechen, da in bestimmten Konstellationen der Wert nicht im hash enthalten ist => false
-       if rec.id > 0                                                            # 1. und 2. Zeile haben gleiche Einrückung durch weglassen des letzten Eintrages von @indent_vector, hiermit bleibt 1. Zeile trotzde, weiter links
-         tab << "<a class=\"toggle collapse\" id=\"#{toggle_id}\" onclick=\"toggle_expand('#{toggle_id}', #{rec.id}, #{rec.depth}, '#{@grid_id}');\"></a>"
-       end
-     else
-       if @plans.count > rec.id+1 && @plans[rec.id+1].parent_id == rec.parent_id # Es gibt noch einen unmittelbaren Nachfolger mit selber Parent-ID
-         tab << "<span class=\"toggle vertical-corner-line\"></span>"           # durchgehende Linie mit abzweig
-       else
-         tab << "<span class=\"toggle corner-line\"></span>"                    # Nur Linie mit Abzweig
-       end
-     end
-     tab << "&nbsp;"
-     "<span style=\"color: lightgray;\">#{tab}</span>#{rec.operation} #{rec.options}".html_safe
-   end
-
    def get_formatted_other_xml(rec)
      return nil if rec.other_xml.nil?
       my_html_escape(rec.other_xml).gsub(/&lt;info/, "<br/>&lt;info").gsub(/&lt;hint/, "<br/>&lt;hint")
@@ -187,7 +142,7 @@
 
    column_options =
     [
-      {:caption=>'Operation',   :data=>list_operation,         :no_wrap=>true, :title=>t(:dba_history_list_sql_detail_execution_plan_operation_hint, :default=>'Kind of access'), :data_title=>proc{|rec| "%t:\nOperation = #{rec.operation}\nOptions = #{rec.options}\n\n#{explain_data_access("#{rec.operation} #{rec.options}")}#{"\n\nOther = #{rec.other}" if rec.other }"}},
+      {:caption=>'Operation',   :data=>proc{|rec| list_tree_column_operation(rec, @indent_vector, @plans) },         :no_wrap=>true, :title=>t(:dba_history_list_sql_detail_execution_plan_operation_hint, :default=>'Kind of access'), :data_title=>proc{|rec| "%t:\nOperation = #{rec.operation}\nOptions = #{rec.options}\n\n#{explain_data_access("#{rec.operation} #{rec.options}")}#{"\n\nOther = #{rec.other}" if rec.other }"}},
       {:caption=>'ID',          :data=>proc{|rec| rec.id },  :align=>:right,                    :title=>t(:dba_history_list_sql_detail_execution_plan_id_hint, :default=>'ID of operation'),             :data_title=>proc{|rec| "%t:\nParent_ID=#{rec.parent_id}"} },
       {:caption=>'R.',          :data=>proc{|rec| rec.execorder },  :align=>:right,             :title=>t(:dba_history_list_sql_detail_execution_plan_order_hint, :default=>'Execution order of operation'),    :data_title=>proc{|rec| "%t:\nID=#{rec.id}, Parent_ID=#{rec.parent_id}"} },
       {:caption=>'Object-name', :data=>proc{|rec| link_object_description(@update_area, rec.object_owner, rec.object_name) }, :title=>t(:dba_history_list_sql_detail_execution_plan_objectname_hint, :default=>'Name of object'), :data_title=>proc{|rec| "%t,\nType = #{rec.object_type},\nAlias = #{rec.object_alias},\nQuery block name = #{rec.qblock_name}#{"\nOther = #{rec.other}" if rec.other }"} },
