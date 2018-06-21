@@ -4,6 +4,7 @@
 include Dragnet::OptimalIndexStorageHelper
 include Dragnet::UnnecessaryIndexesHelper
 include Dragnet::IndexPartitioningHelper
+include Dragnet::InstanceSetupTuning
 include Dragnet::UnusedTablesHelper
 include Dragnet::SqlsPotentialDbStructuresHelper
 include Dragnet::OptimizableFullScansHelper
@@ -112,6 +113,10 @@ module DragnetHelper
           {
               :name     => t(:dragnet_helper_group_pl_sql_usage,   :default=> 'PL/SQL-usage hints'),
               :entries  => pl_sql_usage
+          },
+          {
+              :name     => t(:dragnet_helper_group_instance_setup_tuning, default: 'Instance-setup and instance-tuning'),
+              :entries  => instance_setup_tuning
           },
       ]
 

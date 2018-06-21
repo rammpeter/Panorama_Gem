@@ -581,6 +581,7 @@
   dragnet_helper_group_conclusion_application:              Rückschlüsse auf Applikationsverhalten
   dragnet_helper_group_cursor_redundancies:                 Redundante Cursoren / Nutzung Bindevariablen
   dragnet_helper_group_index_partitioning:                  Empfehlungen für Index-Partitionierung
+  dragnet_helper_group_instance_setup_tuning:               Instance-Setup und Instance-Tuning
   dragnet_helper_group_logwriter_redo:                      LogWriter-Belastung / Redolog-Aufkommen
   dragnet_helper_group_optimizable_full_scans:              Optimierbare Full-Scan Operationen
   dragnet_helper_group_optimal_index_storage:               Sicherstellen optimaler Storage-Parameter für Indizes
