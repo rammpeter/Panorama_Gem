@@ -12,7 +12,7 @@
       {
           name:                 :explain,
           caption:              'Explain plan',
-          hint:                 'Explain SQL statement at cursor position (Alt+Enter)',
+          hint:                 'Explain SQL statement at cursor position by EXPLAIN PLAN FOR ... (Alt+Enter)',
           icon_class:           'ui-icon ui-icon-circle-zoomin',
           action:               'explain_worksheet_sql();',
           show_icon_in_caption: true
@@ -23,10 +23,12 @@
   )
 %>
 
-<textarea id="sql_text" style="width: 100%; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;
-    height: 300px; font-family: monospace; font-size: larger; padding: 5px;">
+<div id="sql_text_div">
+  <textarea id="sql_text" style="width: 100%; resize: none; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;
+      height: 300px; font-family: monospace; font-size: larger; padding: 5px;">
 
-</textarea>
+  </textarea>
+</div>
 
 
 <div id="sql_worksheet_tab_container" style="width: 100%; display: inline-block;" class="tab-container">
@@ -42,8 +44,19 @@
 
 <script type="application/javascript">
 
+    $( "#sql_text_div" )
+        .resizable()
+        .find(".ui-resizable-e").remove()                    // Entfernen des rechten resizes-Cursors
+        .find(".ui-resizable-se").remove()                   // Entfernen des rechten unteren resize-Cursors
+    ;
+
+    $( "#sql_text_div" ).resize(function(){
+        $('#sql_text').css('height', ($("#sql_text_div").height()-3)+'px');
+    });
+
+
     $( function() {
-        $( "#sql_worksheet_tab_container" ).easytabs();
+        $( "#sql_worksheet_tab_container" ).easytabs({animate: false});
     } );
 
 
@@ -94,7 +107,7 @@
       sql_statement = get_sql_at_cursor_position();
       setTimeout(function(){
           ajax_html('result_area_sql_worksheet', 'addition', 'exec_worksheet_sql', {update_area: 'result_area_sql_worksheet', sql_statement: sql_statement});
-      }, 500);                                                                  // Wait until click is processed to hit the visible div
+      }, 100);                                                                  // Wait until click is processed to hit the visible div
   }
 
   function explain_worksheet_sql(){
@@ -103,12 +116,10 @@
 
       setTimeout(function(){
           ajax_html('explain_area_sql_worksheet', 'addition', 'explain_worksheet_sql', {update_area: 'explain_area_sql_worksheet', sql_statement: sql_statement});
-      }, 500);                                                                  // Wait until click is processed to hit the visible div
+      }, 100);                                                                  // Wait until click is processed to hit the visible div
   }
 
   $("#sql_text").bind("keydown", function(event) {
-      console.log(event);
-
       if (event.ctrlKey == true && event.key == 'Enter'){
           exec_worksheet_sql();
           return false;
