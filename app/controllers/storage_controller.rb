@@ -35,7 +35,7 @@ class StorageController < ApplicationController
             (
             SELECT d.TableSpace_Name, SUM(d.Bytes)/1048576 FileSize,
                    CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
-                   SUM(d.MaxBytes)/1048576 Max_Size_MB,
+                   SUM(DECODE(d.AutoExtensible, 'YES', d.MaxBytes, d.Bytes))/1048576 Max_Size_MB,
                    COUNT(*) File_Count
             FROM   DBA_Data_Files d
             GROUP BY d.Tablespace_Name
@@ -59,7 +59,7 @@ class StorageController < ApplicationController
       FROM  DBA_Tablespaces t
       LEFT OUTER JOIN (SELECT Tablespace_Name, SUM(Bytes)/1048576 MBTotal, SUM(Bytes)/SUM(Blocks) BlockSize,
                               CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
-                              SUM(MaxBytes)/1048576 Max_Size_MB,
+                              SUM(DECODE(AutoExtensible, 'YES', MaxBytes, Bytes))/1048576 Max_Size_MB,
                               COUNT(*) File_Count
                        FROM DBA_Temp_Files
                        GROUP BY Tablespace_Name

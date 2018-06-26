@@ -118,7 +118,7 @@
                 Min. executions
                 <%= text_field_tag(:sql_min_no_of_execs,  @config[:sql_min_no_of_execs],  :name=>'config[sql_min_no_of_execs]', size: 4,  :style => "text-align: right;", :title=>"Minimum number of SQL executions in snapshot cycle to be recorded by Panorama-Sampler\n#{one_of_both_text}") %>
                 &nbsp;Min. runtime
-                <%= text_field_tag(:sql_min_runtime_millisecs, @config[:sql_min_runtime_millisecs], :name=>'config[sql_min_runtime_millisecs]', size: 6, :style => "text-align: right;", :title=>"Minimum number of SQL runtime (milliseconds) in snapshot cycle to be recorded by Panorama-Sampler\n#{one_of_both_text}") %>
+                <%= text_field_tag(:sql_min_runtime_millisecs, @config[:sql_min_runtime_millisecs], :name=>'config[sql_min_runtime_millisecs]', size: 6, :style => "text-align: right;", :title=>"Minimum amount of total SQL runtime (milliseconds) within one snapshot cycle to be recorded by Panorama-Sampler\n#{one_of_both_text}") %>
               </td>
             </tr>
           </table>
