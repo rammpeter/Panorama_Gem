@@ -20,6 +20,9 @@
           {:caption=> 'Dependency type',        :data=>proc{|rec| rec.dependency_type},                                                                 :title=> 'Whether the dependency is a REF dependency (REF) or not (HARD)'},
           {:caption=> 'Depends from object',    :data=>proc{|rec| link_object_description(@update_area, rec.referenced_owner, rec.referenced_name, nil, rec.referenced_type)},  :title=> 'Object that it depends from'},
           {:caption=> 'Depends from type',      :data=>proc{|rec| rec.referenced_type},                                                                 :title=> 'Type of object that it depends from'},
+          { caption: 'Created',                 data: proc{|rec| localeDateTime(rec.created)},                                            title: "Creation timestamp of object", data_title: proc{|rec| "%t #{rec.referenced_owner}.#{rec.referenced_name}"}},
+          { caption: 'Last DDL',                data: proc{|rec| localeDateTime(rec.last_ddl_time)},                                      title: "Timestamp for the last modification of the object resulting from a DDL statement (including grants and revokes)", data_title: proc{|rec| "%t\nfor #{rec.referenced_owner}.#{rec.referenced_name}"}},
+          { caption: 'Spec. TS',                data: proc{|rec| localeDateTime(rec.spec_ts)},                                            title: "Timestamp for the last specification change of the object", data_title: proc{|rec| "%t #{rec.referenced_owner}.#{rec.referenced_name}"}},
       ]
 
 %>

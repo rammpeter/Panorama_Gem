@@ -16,6 +16,7 @@
         {:caption=> 'Avg. row len',           :data=>proc{|rec| fn rec.avg_row_len},               :title=> 'Average length of a row in the partition (in bytes)', :align=>:right},
         {:caption=> 'Created',                :data=>proc{|rec| localeDateTime(rec.created)},      :title=> 'Timestamp of subpartition creation'},
         {:caption=> 'Last DDL',               :data=>proc{|rec| localeDateTime(rec.last_ddl_time)},:title=> 'Timestamp of last DDL operation on table subpartition'},
+        { caption: 'Spec. TS',                 data: proc{|rec| localeDateTime(rec.spec_ts)},      title: "Timestamp for the last specification change of the table subpartition" },
         {:caption=> 'Last analyzed',          :data=>proc{|rec| localeDateTime rec.last_analyzed},  :title=> 'Date on which this partition was most recently analyzed'},
         {:caption=> 'Log.',                   :data=>proc{|rec| rec.logging},                      :title=> "Indicates whether or not changes to the table are logged in Redo-Log" },
                           ]

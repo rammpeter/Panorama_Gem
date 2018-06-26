@@ -5,6 +5,7 @@ column_options =
   [
     {:caption=> 'Created',          :data=>proc{|rec| localeDateTime(rec.created)},          :title=> 'Timestamp of object creation'},
     {:caption=> 'Last DDL',         :data=>proc{|rec| localeDateTime(rec.last_ddl_time)},    :title=> 'Timestamp of last DDL operation on object'},
+    { caption: 'Spec. TS',          data: proc{|rec| localeDateTime(rec.spec_ts)},           title: "Timestamp for the last specification change of the object" },
     {:caption=> 'Status',           :data=>proc{|rec| rec.status},                           :title=> 'Status of object in DBA_Objects'},
 ]
 

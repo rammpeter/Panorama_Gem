@@ -155,6 +155,7 @@ column_options =
   {:caption=> 'Sub-Part.',        :data=>proc{|rec| link_tab_subpartitions},               :title=> "Number of table's subpartitions", :align=>:right},
   {:caption=> 'Created',          :data=>proc{|rec| localeDateTime(rec.created)},          :title=> 'Timestamp of table creation'},
   {:caption=> 'Last DDL',         :data=>proc{|rec| localeDateTime(rec.last_ddl_time)},    :title=> 'Timestamp of last DDL operation on table'},
+  { caption: 'Spec. TS',          data: proc{|rec| localeDateTime(rec.spec_ts)},           title: "Timestamp for the last specification change of the table" },
   {:caption=> 'Last analyzed',    :data=>proc{|rec| link_last_analyzed(rec)},              :title=> "The date of the most recent time this table was analyzed, Prefs: #{@stat_prefs}" },
   {:caption=> 'Log.',             :data=>proc{|rec| rec.logging},                          :title=> "Indicates whether or not changes to the table are logged in Redo-Log.\nNULL for partitioned tables" },
   {:caption=> 'Mon.',             :data=>proc{|rec| rec.monitoring},                       :title=> "Indicates whether the table has the MONITORING attribute set (YES) or not (NO)" },

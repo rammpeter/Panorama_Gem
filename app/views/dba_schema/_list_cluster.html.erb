@@ -22,6 +22,7 @@
           {:caption=> 'Single table',       :data=>proc{|rec| rec.single_table},                     :title=> 'Indicates whether this is a single-table cluster (Y) or not (N)'},
           {:caption=> 'Created',            :data=>proc{|rec| localeDateTime(rec.created)},          :title=> 'Timestamp of table creation'},
           {:caption=> 'Last DDL',           :data=>proc{|rec| localeDateTime(rec.last_ddl_time)},    :title=> 'Timestamp of last DDL operation on table'},
+          { caption: 'Spec. TS',            data: proc{|rec| localeDateTime(rec.spec_ts)},           title: "Timestamp for the last specification change of the object" },
       ]
   column_options << {:caption=> 'Flash cache',             :data=>proc{|rec| rec.flash_cache},                 :title=> 'Database Smart Flash Cache hint to be used for partition blocks'}  if get_db_version >= '11.2'
   column_options << {:caption=> 'Cell flash cache',        :data=>proc{|rec| rec.flash_cache},                 :title=> 'Cell flash cache hint to be used for partition blocks'}  if get_db_version >= '11.2'

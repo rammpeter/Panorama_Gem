@@ -36,6 +36,7 @@
       {:caption=> 'Sub-part.',              :data=>proc{|rec| link_tab_subpartitions(rec)},      :title=> 'Number of subpartitions for this partition', :align=>:right},
       {:caption=> 'Created',                :data=>proc{|rec| localeDateTime(rec.created)},      :title=> 'Timestamp of partition creation'},
       {:caption=> 'Last DDL',               :data=>proc{|rec| localeDateTime(rec.last_ddl_time)},:title=> 'Timestamp of last DDL operation on table partition'},
+      { caption: 'Spec. TS',                 data: proc{|rec| localeDateTime(rec.spec_ts)},      title: "Timestamp for the last specification change of the table partition" },
       {:caption=> 'Last analyzed',          :data=>proc{|rec| localeDateTime rec.last_analyzed}, :title=> 'Date on which this partition was most recently analyzed'},
       {:caption=> 'Log.',                   :data=>proc{|rec| rec.logging},                      :title=> "Indicates whether or not changes to the table are logged in Redo-Log" },
     ]

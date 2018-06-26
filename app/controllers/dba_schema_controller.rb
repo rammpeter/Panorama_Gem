@@ -308,7 +308,7 @@ class DbaSchemaController < ApplicationController
 
     # assuming it is a table now
 
-    @attribs = sql_select_all ["SELECT t.*, o.Created, o.Last_DDL_Time, o.Object_ID Table_Object_ID,
+    @attribs = sql_select_all ["SELECT t.*, o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, o.Object_ID Table_Object_ID,
                                        m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments,
                                        s.Size_MB_Table, s.Blocks Segment_Blocks, s.Extents
                                 FROM DBA_Tables t
@@ -511,7 +511,7 @@ class DbaSchemaController < ApplicationController
                       )
       SELECT  st.MB Size_MB, p.*,
               m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments,
-              o.Created, o.Last_DDL_Time
+              o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
       FROM DBA_Tab_Partitions p
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Table_Owner AND o.Object_Name = p.Table_Name AND o.SubObject_Name = p.Partition_Name AND o.Object_Type = 'TABLE PARTITION'
       LEFT OUTER JOIN Storage st ON st.Partition_Name = p.Partition_Name
@@ -535,7 +535,7 @@ class DbaSchemaController < ApplicationController
                    WHERE  s.Owner = p.Table_Owner AND s.Segment_Name = p.Table_Name AND s.Partition_Name = p.SubPartition_Name
                   ) Size_MB,
              m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments,
-             o.Created, o.Last_DDL_Time
+             o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
       FROM DBA_Tab_SubPartitions p
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Table_Owner AND o.Object_Name = p.Table_Name AND o.SubObject_Name = p.SubPartition_Name AND o.Object_Type = 'TABLE SUBPARTITION'
       LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = p.Table_Owner AND m.Table_Name = p.Table_Name AND m.Partition_Name = p.Partition_Name AND m.SubPartition_Name = p.SubPartition_Name
@@ -587,7 +587,7 @@ class DbaSchemaController < ApplicationController
                         DECODE(bitand(ou.flags, 1), 0, 'NO', NULL, 'Unknown', 'YES') Used,
                         TO_DATE(ou.start_monitoring, 'MM/DD/YYYY HH24:MI:SS') Start_Monitoring,
                         TO_DATE(ou.end_monitoring,   'MM/DD/YYYY HH24:MI:SS') End_Monitoring,
-                        do.Created, do.Last_DDL_Time
+                        do.Created, do.Last_DDL_Time, TO_DATE(do.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
                  FROM   DBA_Indexes i
                  JOIN   DBA_Users   u  ON u.UserName  = i.owner
                  JOIN   sys.Obj$    o  ON o.Owner# = u.User_ID AND o.Name = i.Index_Name
@@ -786,20 +786,22 @@ class DbaSchemaController < ApplicationController
     @object_name = params[:object_name]
     @object_type = params[:object_type]
 
-    @dependencies_from_me = sql_select_all ["SELECT d.*,
+    @dependencies_from_me = sql_select_all ["SELECT d.*, o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
                                                     (SELECT COUNT(*) FROM DBA_Dependencies di WHERE di.Referenced_Owner =d.Owner AND di.Referenced_Name = d.Name AND di.Referenced_Type = d.Type) Depending
                                              FROM   DBA_Dependencies d
-                                             WHERE  Referenced_Owner = ?
-                                             AND    Referenced_Name = ?
-                                             AND    Referenced_Type = ?
+                                             LEFT OUTER JOIN DBA_Objects o ON o.Owner = d.Owner AND o.Object_Name = d.Name AND o.Object_Type = d.Type AND o.SubObject_Name IS NULL
+                                             WHERE  d.Referenced_Owner = ?
+                                             AND    d.Referenced_Name = ?
+                                             AND    d.Referenced_Type = ?
                                             ", @owner, @object_name, @object_type]
 
-    @dependencies_im_from = sql_select_all ["SELECT d.*,
+    @dependencies_im_from = sql_select_all ["SELECT d.*, o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
                                                     (SELECT COUNT(*) FROM DBA_Dependencies di WHERE di.Owner =d.Referenced_Owner AND di.Name = d.Referenced_Name AND di.Type = d.Referenced_Type) Depending
                                              FROM   DBA_Dependencies d
-                                             WHERE  Owner = ?
-                                             AND    Name = ?
-                                             AND    Type = ?
+                                             LEFT OUTER JOIN DBA_Objects o ON o.Owner = d.Referenced_Owner AND o.Object_Name = d.Referenced_Name AND o.Object_Type = d.Referenced_Type AND o.SubObject_Name IS NULL
+                                             WHERE  d.Owner = ?
+                                             AND    d.Name = ?
+                                             AND    d.Type = ?
                                             ", @owner, @object_name, @object_type]
 
     render_partial
@@ -811,12 +813,16 @@ class DbaSchemaController < ApplicationController
     @object_type = params[:object_type]
 
     @dependencies_from_me = sql_select_iterator ["\
-      SELECT Level, DECODE(CONNECT_BY_ISCYCLE, 1, 'YES') CONNECT_BY_ISCYCLE, d.*
-      FROM   DBA_Dependencies d
-      CONNECT BY NOCYCLE PRIOR Owner = Referenced_Owner AND PRIOR Name = Referenced_Name AND PRIOR Type = Referenced_Type
-      START WITH Referenced_Owner = ?
-      AND        Referenced_Name  = ?
-      AND        Referenced_Type  = ?
+      SELECT x.*, o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
+      FROM   (
+              SELECT Level, DECODE(CONNECT_BY_ISCYCLE, 1, 'YES') CONNECT_BY_ISCYCLE, d.*
+              FROM   DBA_Dependencies d
+              CONNECT BY NOCYCLE PRIOR Owner = Referenced_Owner AND PRIOR Name = Referenced_Name AND PRIOR Type = Referenced_Type
+              START WITH Referenced_Owner = ?
+              AND        Referenced_Name  = ?
+              AND        Referenced_Type  = ?
+             ) x
+      LEFT OUTER JOIN DBA_Objects o ON o.Owner = x.Owner AND o.Object_Name = x.Name AND o.Object_Type = x.Type AND o.SubObject_Name IS NULL
       ", @owner, @object_name, @object_type]
 
     render_partial
@@ -828,12 +834,16 @@ class DbaSchemaController < ApplicationController
     @object_type = params[:object_type]
 
     @dependencies_im_from = sql_select_iterator ["\
-      SELECT Level, DECODE(CONNECT_BY_ISCYCLE, 1, 'YES') CONNECT_BY_ISCYCLE, d.*
-      FROM   DBA_Dependencies d
-      CONNECT BY NOCYCLE PRIOR Referenced_Owner = Owner AND PRIOR Referenced_Name = Name AND PRIOR Referenced_Type = Type
-      START WITH Owner = ?
-      AND        Name  = ?
-      AND        Type  = ?
+      SELECT x.*, o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
+      FROM   (
+              SELECT Level, DECODE(CONNECT_BY_ISCYCLE, 1, 'YES') CONNECT_BY_ISCYCLE, d.*
+              FROM   DBA_Dependencies d
+              CONNECT BY NOCYCLE PRIOR Referenced_Owner = Owner AND PRIOR Referenced_Name = Name AND PRIOR Referenced_Type = Type
+              START WITH Owner = ?
+              AND        Name  = ?
+              AND        Type  = ?
+             ) x
+      LEFT OUTER JOIN DBA_Objects o ON o.Owner = x.Referenced_Owner AND o.Object_Name = x.Referenced_Name AND o.Object_Type = x.Referenced_Type AND o.SubObject_Name IS NULL
       ", @owner, @object_name, @object_type]
 
     render_partial
@@ -879,7 +889,7 @@ class DbaSchemaController < ApplicationController
     @dependencies = get_dependencies_count(@owner, @object_name, @object_type)
     @grants       = get_grant_count(@owner, @object_name)
 
-    @attribs = sql_select_all ["SELECT o.Created, o.Last_DDL_Time, o.Status FROM DBA_Objects o WHERE o.Owner = ? AND o.Object_Name = ? AND o.Object_Type = ?", @owner, @object_name, @object_type]
+    @attribs = sql_select_all ["SELECT o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, o.Status FROM DBA_Objects o WHERE o.Owner = ? AND o.Object_Name = ? AND o.Object_Type = ?", @owner, @object_name, @object_type]
 
     line_no = 1
     @source = "#{line_no.to_s.rjust(5)+'  ' if @show_line_numbers}CREATE OR REPLACE "
@@ -902,7 +912,7 @@ class DbaSchemaController < ApplicationController
 
     @dependencies = get_dependencies_count(@owner, @object_name, @object_type)
 
-    @attribs = sql_select_all ["SELECT o.Created, o.Last_DDL_Time, o.Status FROM DBA_Objects o WHERE o.Owner = ? AND o.Object_Name = ? AND o.Object_Type = ?", @owner, @object_name, @object_type]
+    @attribs = sql_select_all ["SELECT o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, o.Status FROM DBA_Objects o WHERE o.Owner = ? AND o.Object_Name = ? AND o.Object_Type = ?", @owner, @object_name, @object_type]
 
     render_partial :list_synonym
   end
@@ -911,7 +921,7 @@ class DbaSchemaController < ApplicationController
     @owner        = owner
     @cluster_name = cluster_name
 
-    @attribs = sql_select_all ["SELECT c.*, o.Created, o.Last_DDL_Time, o.Object_ID
+    @attribs = sql_select_all ["SELECT c.*, o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, o.Object_ID
                                 FROM DBA_Clusters c
                                 LEFT OUTER JOIN DBA_Objects o ON o.Owner = c.Owner AND o.Object_Name = c.Cluster_Name AND o.Object_Type = 'CLUSTER'
                                 WHERE c.Owner = ? AND c.Cluster_Name = ?
@@ -958,7 +968,7 @@ class DbaSchemaController < ApplicationController
     @dependencies = get_dependencies_count(@owner, @object_name, @object_type)
     @grants       = get_grant_count(@owner, @object_name)
 
-    @attribs = sql_select_all ["SELECT o.Created, o.Last_DDL_Time, o.Status FROM DBA_Objects o WHERE o.Owner = ? AND o.Object_Name = ? AND o.Object_Type = ?", @owner, @object_name, @object_type]
+    @attribs = sql_select_all ["SELECT o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, o.Status FROM DBA_Objects o WHERE o.Owner = ? AND o.Object_Name = ? AND o.Object_Type = ?", @owner, @object_name, @object_type]
 
     @view = sql_select_first_row ["SELECT * FROM DBA_Views WHERE Owner = ? AND View_Name = ?", @owner, @object_name]
 
@@ -989,7 +999,7 @@ class DbaSchemaController < ApplicationController
                    FROM   DBA_Segments s
                    WHERE  s.Owner = p.Index_Owner AND s.Segment_Name = p.Index_Name AND s.Partition_Name = p.Partition_Name
                   ) Size_MB,
-             o.Created, o.Last_DDL_Time
+             o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
       FROM DBA_Ind_Partitions p
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Index_Owner AND o.Object_Name = p.Index_Name AND o.SubObject_Name = p.Partition_Name AND o.Object_Type = 'INDEX PARTITION'
       WHERE p.Index_Owner = ? AND p.Index_Name = ?
@@ -1011,7 +1021,7 @@ class DbaSchemaController < ApplicationController
                    FROM   DBA_Segments s
                    WHERE  s.Owner = p.Index_Owner AND s.Segment_Name = p.Index_Name AND s.Partition_Name = p.SubPartition_Name
                   ) Size_MB,
-             o.Created, o.Last_DDL_Time
+             o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
       FROM DBA_Ind_SubPartitions p
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Index_Owner AND o.Object_Name = p.Index_Name AND o.SubObject_Name = p.SubPartition_Name AND o.Object_Type = 'INDEX SUBPARTITION'
       WHERE p.Index_Owner = ? AND p.Index_Name = ?
