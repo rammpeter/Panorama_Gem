@@ -96,10 +96,10 @@ class ApplicationController < ActionController::Base
     current_database.symbolize_keys! if current_database.class.name == 'Hash'   # Sicherstellen, dass Keys wirklich symbole sind. Bei Nutzung Engine in App erscheinen Keys als Strings
 
     # Letzten Menü-aufruf festhalten z.B. für Hilfe
-    write_to_client_info_store(:last_used_menu_controller, params[:last_used_menu_controller]) if params[:last_used_menu_controller]
-    write_to_client_info_store(:last_used_menu_action    , params[:last_used_menu_action])     if params[:last_used_menu_action]
-    write_to_client_info_store(:last_used_menu_caption   , params[:last_used_menu_caption])    if params[:last_used_menu_caption]
-    write_to_client_info_store(:last_used_menu_hint      , params[:last_used_menu_hint])       if params[:last_used_menu_hint]
+    write_to_browser_tab_client_info_store(:last_used_menu_controller, params[:last_used_menu_controller]) if params[:last_used_menu_controller]
+    write_to_browser_tab_client_info_store(:last_used_menu_action    , params[:last_used_menu_action])     if params[:last_used_menu_action]
+    write_to_browser_tab_client_info_store(:last_used_menu_caption   , params[:last_used_menu_caption])    if params[:last_used_menu_caption]
+    write_to_browser_tab_client_info_store(:last_used_menu_hint      , params[:last_used_menu_hint])       if params[:last_used_menu_hint]
 
     # Protokollieren der Aufrufe in lokalem File
     real_controller_name = params[:last_used_menu_controller] ? params[:last_used_menu_controller] : controller_name

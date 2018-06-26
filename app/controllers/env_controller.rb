@@ -48,10 +48,10 @@ class EnvController < ApplicationController
 
     #set_I18n_locale(get_locale)                                                 # ruft u.a. I18n.locale = get_locale auf
 
-    write_to_client_info_store(:last_used_menu_controller,  'env')
-    write_to_client_info_store(:last_used_menu_action,      'index')
-    write_to_client_info_store(:last_used_menu_caption,     'Start')
-    write_to_client_info_store(:last_used_menu_hint,        t(:menu_env_index_hint, :default=>"Start of application without connect to database"))
+    write_to_browser_tab_client_info_store(:last_used_menu_controller,  'env')
+    write_to_browser_tab_client_info_store(:last_used_menu_action,      'index')
+    write_to_browser_tab_client_info_store(:last_used_menu_caption,     'Start')
+    write_to_browser_tab_client_info_store(:last_used_menu_hint,        t(:menu_env_index_hint, :default=>"Start of application without connect to database"))
 
 
   rescue Exception=>e
@@ -253,10 +253,10 @@ class EnvController < ApplicationController
   # Wurde direkt aus Browser aufgerufen oder per set_database_by_params_called?
   def set_database(called_from_set_database_by_params = false)
 
-    write_to_client_info_store(:last_used_menu_controller, "env")
-    write_to_client_info_store(:last_used_menu_action,     "set_database")
-    write_to_client_info_store(:last_used_menu_caption,    "Login")
-    write_to_client_info_store(:last_used_menu_hint,       t(:menu_env_set_database_hint, :default=>"Start of application after connect to database"))
+    write_to_browser_tab_client_info_store(:last_used_menu_controller, "env")
+    write_to_browser_tab_client_info_store(:last_used_menu_action,     "set_database")
+    write_to_browser_tab_client_info_store(:last_used_menu_caption,    "Login")
+    write_to_browser_tab_client_info_store(:last_used_menu_hint,       t(:menu_env_set_database_hint, :default=>"Start of application after connect to database"))
 
 
 
@@ -485,8 +485,8 @@ public
 
   # repeat last called menu action
   def repeat_last_menu_action
-    controller_name = read_from_client_info_store(:last_used_menu_controller)
-    action_name     = read_from_client_info_store(:last_used_menu_action)
+    controller_name = read_from_browser_tab_client_info_store(:last_used_menu_controller)
+    action_name     = read_from_browser_tab_client_info_store(:last_used_menu_action)
 
     # Suchen des div im Menü-ul und simulieren eines clicks auf den Menü-Eintrag
     respond_to do |format|

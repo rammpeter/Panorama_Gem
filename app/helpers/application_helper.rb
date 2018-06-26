@@ -63,6 +63,19 @@ module ApplicationHelper
     full_hash[key]
   end
 
+  def read_from_browser_tab_client_info_store(key)
+    browser_tab_ids = read_from_client_info_store(:browser_tab_ids)             # read full tree with all browser-tab-specific connections
+    raise "No session state available at Panorama-Server: Please restart app in browser" if browser_tab_ids.nil?
+    browser_tab_ids[@browser_tab_id][key]                                       # get current value for current browser tab
+  end
+
+  def write_to_browser_tab_client_info_store(key, value)
+    browser_tab_ids = read_from_client_info_store(:browser_tab_ids)             # read full tree with all browser-tab-specific connections
+    raise "No session state available at Panorama-Server: Please restart app in browser" if browser_tab_ids.nil?
+    browser_tab_ids[@browser_tab_id][key] = value                               # set current value for current browser tab
+    write_to_client_info_store(:browser_tab_ids, browser_tab_ids)               # write full tree back to store
+  end
+
   # Setzen locale in Client_Info-Cache und aktueller Session
   def set_I18n_locale(locale)
     if !locale.nil? && ['de', 'en'].include?(locale)
@@ -94,17 +107,12 @@ module ApplicationHelper
     @buffered_current_database = nil                                            # lokalen Cache verwerfen
     current_database[:query_timeout] = current_database[:query_timeout].to_i if !current_database.nil?
 
-    browser_tab_ids = read_from_client_info_store(:browser_tab_ids)             # read full tree with all browser-tab-specific connections
-    browser_tab_ids[@browser_tab_id][:current_database] = current_database      # set current connection for current browser tab
-    write_to_client_info_store(:browser_tab_ids, browser_tab_ids)               # write full tree back to store
-
+    write_to_browser_tab_client_info_store(:current_database, current_database)
     set_connection_info_for_request(current_database)                           # Pin connection info for following request
   end
 
   def get_current_database
-    browser_tab_ids = read_from_client_info_store(:browser_tab_ids)
-    raise "No session state available at Panorama-Server: Please restart app in browser" if browser_tab_ids.nil?
-    @buffered_current_database = browser_tab_ids[@browser_tab_id][:current_database] if !defined?(@buffered_current_database) || @buffered_current_database.nil?
+    @buffered_current_database = read_from_browser_tab_client_info_store(:current_database) if !defined?(@buffered_current_database) || @buffered_current_database.nil?
     @buffered_current_database
   end
 
