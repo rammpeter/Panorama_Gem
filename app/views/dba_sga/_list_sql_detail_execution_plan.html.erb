@@ -1,54 +1,3 @@
-<script type="text/javascript">
-
-    function toggle_expand(a_id, rec_id, depth, grid_id){
-        var anchor = $('#'+a_id);
-        //alert(grid_id);
-        var grid        = $('#'+grid_id).data('slickgrid');
-        var data_view   = grid.getData();
-        var grid_data    = data_view.getItems();
-        var row = grid_data[rec_id];
-
-        // Ermitteln der Anzahl führender Blanks als Maß für die Hierarchietiefe
-        function blank_count(value){
-            var i=0;
-            while ((value[i] === ' ' || value.charCodeAt(i)===160 /* &nbsp; */ || value[i] === '|') && i<value.length){
-                i++;
-            }
-            return i;
-        }
-
-        function toggle_rows(start_rec_id, hide){
-            var start_depth = blank_count(row['col0']);
-            start_rec_id++;
-            while (start_rec_id < grid_data.length && blank_count(grid_data[start_rec_id]['col0']) > start_depth){
-                grid_data[start_rec_id]['hidden'] = hide;
-                start_rec_id++;
-            }
-
-        }
-
-
-        if (row['collapsed']){
-            row['collapsed'] = false;
-            anchor.removeClass('expand').addClass('collapse');
-            toggle_rows(rec_id, false);
-        } else {
-            row['collapsed'] = true;
-            anchor.removeClass('collapse').addClass('expand');
-            toggle_rows(rec_id, true);
-        }
-        data_view.refresh();                                                    // Ausloesen der erneuten Verarbeitung der Filter-Funktion
-
-    }
-
-    function filter_collapsed_item_rows(item) {
-        if (item['hidden'])
-            return false;
-        return true;
-    }
-
-</script>
-
 <% @update_area = get_unique_area_id %>
 
 <% @multiplans.each do |mp| %>
@@ -115,7 +64,7 @@
      end
 
      parallel_text = proc do |rec|
-       output = "#{rec.parallel_short}"
+       output = "#{parallel_short(rec)}"
        output << "&nbsp;#{rec.max_pq_sessions}" if rec.max_pq_sessions && rec.max_pq_sessions > 0 if @include_ash_in_sql
        output
      end
@@ -153,8 +102,8 @@
     {:caption=>"Object-name", :data=>proc{|rec| link_object_description(@update_area, rec.object_owner, rec.object_name)}, :title=>'Name of accessed object', :data_title=>proc{|rec| "%t: Type = #{rec.object_type},\nAlias = #{rec.object_alias},\nQuery block name = #{rec.qblock_name}#{"\nOther = #{rec.other}" if rec.other }"} },
     {:caption=>"Rows",        :data=>link_real_num_rows,                                      :title=>"Number of rows of object (from analyze info)",     :align=>:right, :data_title=>proc{|rec| "%t, Last_Analyzed=#{localeDateTime(rec.last_analyzed)}"}  },
     {:caption=>"MB",          :data=>proc{|rec| fn(rec.mbytes) },                             :title=>"Size of object in MBytes",     :align=>:right },
-    {:caption=>"Cost",        :data=>proc{|rec| fn(rec.cost) },                               :title=>"Costs calculated by optimizer + additional optimizer calculations", :align=>:right, :data_title=>proc{|rec| "%t\nCPU cost = #{fn rec.cpu_cost}\nIO cost = #{fn rec.io_cost}\nestimated bytes = #{fn rec.bytes},\nestimated time (secs.) = #{fn rec.time}\npartition start = #{rec.partition_start}\npartition stop = #{rec.partition_stop}\npartition ID = #{rec.partition_id}"} },
-    {:caption=>'Card.',       :data=>proc{|rec| fn(rec.cardinality) },                        :title=>'Estimated number of rows produced by the operation', :align=>:right, :data_title=>proc{|rec| "%t\nCPU cost = #{fn rec.cpu_cost}\nIO cost = #{fn rec.io_cost}\nestimated bytes = #{fn rec.bytes}\nestimated time (secs.) = #{fn rec.time}\nPartition_Start = #{rec.partition_start}\nPartition_Stop = #{rec.partition_stop}\nPartition_ID = #{rec.partition_id}"} },
+    {:caption=>"Cost",        :data=>proc{|rec| fn(rec.cost) },                               :title=>"Costs calculated by optimizer + additional optimizer calculations", :align=>:right, :data_title=>proc{|rec| cost_card_data_title(rec)} },
+    {:caption=>'Card.',       :data=>proc{|rec| fn(rec.cardinality) },                        :title=>'Estimated number of rows produced by the operation', :align=>:right, :data_title=>proc{|rec| cost_card_data_title(rec)} },
     {:caption=>"Parallel",    :data=>parallel_text,                                           :title=>"Parallelization (from Other_Tag)", :data_title=>parallel_title },
     {:caption=>"Access",      :data=>proc{|rec| html_escape expand_compare_spaces(rec.access_predicates) },   :title=>'Access criteria for data object', :max_wrap_width=>300, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape rec.access_predicates}\nNumber of index columns with matching predicates = #{rec.search_columns}"} },
     {:caption=>"Filter",      :data=>proc{|rec| html_escape expand_compare_spaces(rec.filter_predicates) },   :title=>'Filter criteria for data object (after access)',  :max_wrap_width=>300, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape rec.filter_predicates}"} },
@@ -213,7 +162,7 @@
                       {
                           :caption            => @caption,
                           :line_height_single => true,
-                          :data_filter        => 'filter_collapsed_item_rows',
+                          :data_filter        => 'explain_plan_filter_collapsed_item_rows',
                           :grid_id            => @grid_id,
                           :max_height         => "jQuery(window).height()*0.9",  # Max. 90 % of browsers client height
                           show_pin_icon:      2

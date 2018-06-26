@@ -124,11 +124,10 @@
           exec_worksheet_sql();
           return false;
       }
-      if (event.altKey == true && event.key == 'Enter'){
+      if ((event.altKey == true && event.key == 'Enter') || (event.ctrlKey == true && event.key == 'e')){
           explain_worksheet_sql();
           return false;                                                         // suppress default alt#Enter-Handling
       }
-
   });
 
 

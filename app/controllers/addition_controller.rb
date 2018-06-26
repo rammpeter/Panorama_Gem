@@ -873,14 +873,23 @@ class AdditionController < ApplicationController
   end
 
   def explain_worksheet_sql
+    if params[:sql_statement].nil? || params[:sql_statement] == ''
+      show_popup_message('Nothing to explain: No statement typed')
+      return
+    end
     @sql_statement = params[:sql_statement].rstrip.gsub(/;$/, "")       # remove trailing semicolon
 
     statement_id = get_unique_area_id
 
     PanoramaConnection.sql_execute "EXPLAIN PLAN SET Statement_ID='#{statement_id}' FOR #{@sql_statement}"
     @plans = sql_select_all ["\
-        SELECT p.*
+        SELECT p.*,
+               NVL(t.Num_Rows, i.Num_Rows) Num_Rows,
+               NVL(t.Last_Analyzed, i.Last_Analyzed) Last_Analyzed,
+               (SELECT SUM(Bytes)/(1024*1024) FROM DBA_Segments s WHERE s.Owner=p.Object_Owner AND s.Segment_Name=p.Object_Name) MBytes
         FROM   Plan_Table p
+        LEFT OUTER JOIN DBA_Tables  t ON t.Owner=p.Object_Owner AND t.Table_Name=p.Object_Name
+        LEFT OUTER JOIN DBA_Indexes i ON i.Owner=p.Object_Owner AND i.Index_Name=p.Object_Name
         WHERE  Statement_ID = ?
         ORDER BY ID
         ", statement_id]

@@ -1,79 +1,64 @@
-<script type="text/javascript">
 
-    function toggle_expand(a_id, rec_id, depth, grid_id){
-        var anchor = $('#'+a_id);
-        //alert(grid_id);
-        var grid        = $('#'+grid_id).data('slickgrid');
-        var data_view   = grid.getData();
-        var grid_data    = data_view.getItems();
-        var row = grid_data[rec_id];
-
-        // Ermitteln der Anzahl führender Blanks als Maß für die Hierarchietiefe
-        function blank_count(value){
-            var i=0;
-            while ((value[i] === ' ' || value.charCodeAt(i)===160 /* &nbsp; */ || value[i] === '|') && i<value.length){
-                i++;
-            }
-            return i;
-        }
-
-        function toggle_rows(start_rec_id, hide){
-            var start_depth = blank_count(row['col0']);
-            start_rec_id++;
-            while (start_rec_id < grid_data.length && blank_count(grid_data[start_rec_id]['col0']) > start_depth){
-                grid_data[start_rec_id]['hidden'] = hide;
-                start_rec_id++;
-            }
-
-        }
-
-
-        if (row['collapsed']){
-            row['collapsed'] = false;
-            anchor.removeClass('expand').addClass('collapse');
-            toggle_rows(rec_id, false);
-        } else {
-            row['collapsed'] = true;
-            anchor.removeClass('collapse').addClass('expand');
-            toggle_rows(rec_id, true);
-        }
-        data_view.refresh();                                                    // Ausloesen der erneuten Verarbeitung der Filter-Funktion
-
-    }
-
-    function filter_collapsed_item_rows(item) {
-        if (item['hidden'])
-            return false;
-        return true;
-    }
-
-</script>
 
 
 
 <%
-  @update_area = get_unique_area_id
+  @update_area      = get_unique_area_id
+  @grid_id          = get_unique_area_id                                     # DOM-ID des DIVs mit SlickGrid
   @indent_vector    = []
+
+  link_real_num_rows = proc do |rec|
+    object_type = rec.object_type
+    object_type = 'INDEX' if !rec.object_type.nil? && rec.object_type['INDEX']
+
+    if object_type == 'TABLE' || object_type == 'INDEX'
+      update_area = "#{@update_area}_#{rec.id}"
+      ajax_link(rec.num_rows ? fn(rec.num_rows) : "[No analyze]", {
+                              :controller      => :storage,
+                              :action          => :list_real_num_rows,
+                              :owner           => rec.object_owner,
+                              :name            => rec.object_name,
+                              :object_type     => object_type,
+                              :update_area     => update_area
+                             },
+                      :title=>"Count current number of rows in Table. CAUTION: May be long running!")+" <span id=\"#{update_area}\"></span>".html_safe
+    else
+      fn(rec.num_rows)
+    end
+  end
+
+  show_projektion = proc do |rec|
+    result = html_escape expand_compare_spaces(rec.projection)
+    unless result.nil?
+      "#{result[0,10]}#{'...' if result.length > 10}"
+    end
+  end
 
   column_options =
       [
           { caption: "Operation",     data: proc{|rec| list_tree_column_operation(rec, @indent_vector, @plans) }, :no_wrap=>true,                         title: 'Kind of data access', data_title: proc{|rec| "%t:\nOperation = #{rec.operation}\nOptions = #{rec.options}\n\n#{explain_data_access("#{rec.operation} #{rec.options}")}#{"\n\nOther = #{rec.other}" if rec.other }"}},
-          {:caption=>"ID",          :data=>proc{|rec| rec.id },  :align=>:right,                    :title=>'ID of operation',             :data_title=>proc{|rec| "%t: Parent_ID=#{rec.parent_id}"} },
-          {:caption=>"R.",          :data=>proc{|rec| rec.execorder },  :align=>:right,             :title=>'Execution order of operation',    :data_title=>proc{|rec| "%t: ID=#{rec.id}\nParent_ID=#{rec.parent_id}"} },
-
-          {:caption=>"Operation",             :data=>proc{|rec| rec.operation},                           :title=>'Kind of access'},
-          {:caption=>"Options",               :data=>proc{|rec| rec.options},                             :title=>'Access details'},
-          {:caption=>"Object_name", :data=>proc{|rec| link_object_description(@update_area, rec.object_owner, rec.object_name) }, :title=>'Object name'},
-          {:caption=>"Optimizer",             :data=>proc{|rec| rec.optimizer},                           :title=>'Optimizer mode'},
-          {:caption=>"Access",                :data=>proc{|rec| html_escape(rec.access_predicates)},      :title=>'Access criteria'},
-          {:caption=>"Filter",                :data=>proc{|rec| html_escape(rec.filter_predicates)},      :title=>'Filter criteria'},
-          {:caption=>"Other_Tag",             :data=>proc{|rec| rec.other_tag},                           :title=>"Other_Tag"},
-          {:caption=>"Distribution",          :data=>proc{|rec| rec.distribution},                        :title=>"Distribution"},
+          { caption: "ID",            data: proc{|rec| rec.id },  :align=>:right,                    :title=>'ID of operation',             :data_title=>proc{|rec| "%t: Parent_ID=#{rec.parent_id}"} },
+          { caption: "R.",            data: proc{|rec| rec.execorder },  :align=>:right,             :title=>'Execution order of operation',    :data_title=>proc{|rec| "%t: ID=#{rec.id}\nParent_ID=#{rec.parent_id}"} },
+          { caption: "Object-name",   data: proc{|rec| link_object_description(@update_area, rec.object_owner, rec.object_name)}, :title=>'Name of accessed object', :data_title=>proc{|rec| "%t: Type = #{rec.object_type},\nAlias = #{rec.object_alias},\nQuery block name = #{rec.qblock_name}#{"\nOther = #{rec.other}" if rec.other }"} },
+          { caption: "Rows",          data: link_real_num_rows,                                       title: "Number of rows of object (from analyze info)",     align: :right, data_title: proc{|rec| "%t, Last_Analyzed=#{localeDateTime(rec.last_analyzed)}"}  },
+          { caption: "MB",            data: proc{|rec| fn(rec.mbytes) },                              title: "Size of object in MBytes",     align: :right },
+          { caption: "Cost",          data: proc{|rec| fn(rec.cost) },                                title: "Costs calculated by optimizer + additional optimizer calculations", :align=>:right, :data_title=>proc{|rec| cost_card_data_title(rec)} },
+          { caption: 'Card.',         data: proc{|rec| fn(rec.cardinality) },                         title: 'Estimated number of rows produced by the operation', :align=>:right, :data_title=>proc{|rec| cost_card_data_title(rec)} },
+          { caption: "Parallel",      data: proc{|rec| parallel_short(rec) },                         title: "Parallelization (from Other_Tag)", data_title: proc{|rec| "%t\n#{rec.other_tag}"} },
+          { caption: "Access",        data: proc{|rec| html_escape expand_compare_spaces(rec.access_predicates) },   title: 'Access criteria for data object', :max_wrap_width=>500, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape rec.access_predicates}\nNumber of index columns with matching predicates = #{rec.search_columns}"} },
+          { caption: "Filter",        data: proc{|rec| html_escape expand_compare_spaces(rec.filter_predicates) },   title: 'Filter criteria for data object (after access)',  :max_wrap_width=>500, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape rec.filter_predicates}"} },
+          { caption: 'Temp est.',     data: proc{|rec| fn(rec.temp_space.to_f/(1024*1024)) },                      title: "Temp-space in MB (estimated forecast by optimizer)", :align=>:right},
+          { caption: "Distribution",  data: proc{|rec| rec.distribution},                             title: "Strategy of PQ-distribution"},
+          { caption: "Proj.",         data: show_projektion,                                          title: "Projection: table- and index-columns gotten by this operation", :max_wrap_width=>80, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape expand_compare_spaces(rec.projection)}"} },
       ]
 %>
 
 <%= gen_slickgrid(@plans, column_options, {
-    :max_height => 450,
+    max_height:         450,
+    line_height_single: true,
+    data_filter:        'explain_plan_filter_collapsed_item_rows',
+    grid_id:            @grid_id,
+    show_pin_icon:      1
 })
 %>
 

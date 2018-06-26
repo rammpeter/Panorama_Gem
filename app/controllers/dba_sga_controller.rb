@@ -337,16 +337,6 @@ class DbaSgaController < ApplicationController
     all_plans = sql_select_all ["\
         SELECT /* Panorama-Tool Ramm */
           Operation, Options, Object_Owner, Object_Name, Object_Type, Object_Alias, QBlock_Name, p.Timestamp, p.Optimizer, Plan_Hash_Value,
-          DECODE(Other_Tag,
-                 'PARALLEL_COMBINED_WITH_PARENT', 'PCWP',
-                 'PARALLEL_COMBINED_WITH_CHILD' , 'PCWC',
-                 'PARALLEL_FROM_SERIAL',          'S > P',
-                 'PARALLEL_TO_PARALLEL',          'P > P',
-                 'PARALLEL_TO_SERIAL',            'P > S',
-                 'SINGLE_COMBINED_WITH_CHILD',    'SCWC',
-                 'SINGLE_COMBINED_WITH_PARENT',   'SCWP',
-                 Other_Tag
-                ) Parallel_Short,
           Other_Tag, Other_XML, Other, Version_Orange_Count, Version_Red_Count, Child_Number,
           Depth, Access_Predicates, Filter_Predicates, Projection, p.temp_Space/(1024*1024) Temp_Space_MB, Distribution,
           ID, Parent_ID, Executions, p.Search_Columns,

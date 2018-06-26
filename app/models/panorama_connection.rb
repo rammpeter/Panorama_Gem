@@ -345,6 +345,16 @@ class PanoramaConnection
     # Without query_timeout because long lasting ASH sampling is executed with this method
     Thread.current[:panorama_connection_connection_object].register_sql_execution(stmt)
     get_connection.exec_update(stmt, query_name, binds)
+  rescue Exception => e
+    bind_text = ''
+    binds.each do |b|
+      bind_text << "#{b.name} = #{b.value}\n"
+    end
+
+    # Ensure stacktrace of first exception is show
+    new_ex = Exception.new("Error while executing SQL:\n#{e.message}\nSQL-Statement:\n#{sql}\n#{bind_text.length > 0 ? "Bind-Values:\n#{bind_text}" : ''}")
+    new_ex.set_backtrace(e.backtrace)
+    raise new_ex
   ensure
     Thread.current[:panorama_connection_connection_object].unregister_sql_execution
   end

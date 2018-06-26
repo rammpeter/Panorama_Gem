@@ -74,7 +74,7 @@ module ExplainPlanHelper
 
     if rec[:is_parent]                                                       # Über hash ansprechen, da in bestimmten Konstellationen der Wert nicht im hash enthalten ist => false
       if rec.id > 0                                                          # 1. und 2. Zeile haben gleiche Einrückung durch weglassen des letzten Eintrages von indent_vector, hiermit bleibt 1. Zeile trotzde, weiter links
-        tab << "<a class=\"toggle collapse\" id=\"#{toggle_id}\" onclick=\"toggle_expand('#{toggle_id}', #{rec.id}, #{rec.depth}, '#{@grid_id}');\"></a>"
+        tab << "<a class=\"toggle collapse\" id=\"#{toggle_id}\" onclick=\"explain_plan_toggle_expand('#{toggle_id}', #{rec.id}, #{rec.depth}, '#{@grid_id}');\"></a>"
       end
     else
       if plan_array.count > rec.id+1 && plan_array[rec.id+1].parent_id == rec.parent_id # Es gibt noch einen unmittelbaren Nachfolger mit selber Parent-ID
@@ -86,6 +86,34 @@ module ExplainPlanHelper
     tab << "&nbsp;"
     "<span style=\"color: lightgray;\">#{tab}</span>#{rec.operation} #{rec.options}".html_safe
 
+  end
+
+  # build data title for columns cost and cardinality
+  def cost_card_data_title(rec)
+    "%t\n#{"
+Optimizer mode = #{rec.optimizer}"          if rec.optimizer}#{"
+CPU cost = #{fn rec.cpu_cost}"              if rec.cpu_cost}#{"
+IO cost = #{fn rec.io_cost}"                if rec.io_cost}#{"
+estimated bytes = #{fn rec.bytes}"          if rec.bytes}#{"
+estimated time (secs.) = #{fn rec.time}"    if rec.time}#{"
+partition start = #{rec.partition_start}"   if rec.partition_start}#{"
+partition stop = #{rec.partition_stop}"     if rec.partition_stop}#{"
+partition ID = #{rec.partition_id}"         if rec.partition_id}
+    "
+  end
+
+  def parallel_short(rec)
+    case rec.other_tag
+    when 'PARALLEL_COMBINED_WITH_PARENT' then 'PCWP'
+    when 'PARALLEL_COMBINED_WITH_CHILD'  then 'PCWC'
+    when 'PARALLEL_FROM_SERIAL'          then 'S > P'
+    when 'PARALLEL_TO_PARALLEL'          then 'P > P'
+    when 'PARALLEL_TO_SERIAL'            then 'P > S'
+    when 'SINGLE_COMBINED_WITH_CHILD'    then 'SCWC'
+    when 'SINGLE_COMBINED_WITH_PARENT'   then 'SCWP'
+    else
+      rec.other_tag
+    end
   end
 
 end
