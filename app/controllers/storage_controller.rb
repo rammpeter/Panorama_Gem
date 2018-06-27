@@ -412,7 +412,7 @@ class StorageController < ApplicationController
       when 'TABLE' then
         num_rows = sql_select_one ["\
           SELECT /*+ PARALLEL_INDEX(l,2) */ COUNT(*)
-          FROM   #{object_owner}.#{object_name} l"]
+          FROM   #{object_owner}.\"#{object_name}\" l"]
       when 'INDEX' then
         expr = ''
         table_owner = ''
