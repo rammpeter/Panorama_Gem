@@ -1,4 +1,4 @@
-<div class="page_caption">Show tables dependent from this table by foreign key constraints</div>
+<%= render_page_caption("Show tables dependent from this table by foreign key constraints") %>
 
 <div id="schema_selection" style="float:left; ">
 <%= ajax_form(:controller=>:table_dependencies, :action=>:select_schema, :update_area => :table_selection) do %>

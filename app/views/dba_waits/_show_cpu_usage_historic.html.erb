@@ -1,6 +1,6 @@
 <% @update_area = get_unique_area_id %>
 
-<div class="page_caption">CPU-Usage and DB-Time from Active Session History (table <%= PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Active_Sess_History') %>)</div>
+<%= render_page_caption("CPU-Usage and DB-Time from Active Session History (table #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Active_Sess_History')})") %>
 
 <%= ajax_form(:controller=>:dba_waits, :action=>:list_cpu_usage_historic, :update_area=>@update_area) do %>
   <div class="flex-row-container">

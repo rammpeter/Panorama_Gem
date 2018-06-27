@@ -1,4 +1,4 @@
-<div class="page_caption"><%= t(:dba_history_compare_sql_area_historic_caption, :default=>'Compare runtime of SQL for two days (by %{table_name})', table_name: PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat')) %></div>
+<%= render_page_caption(t(:dba_history_compare_sql_area_historic_caption, :default=>'Compare runtime of SQL for two days (by %{table_name})', table_name: PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat'))) %>
 
 <%= ajax_form(:controller => :dba_history, :action => :list_compare_sql_area_historic, :update_area => :compare_sql_area_historic_area) do %>
   <div class="float_left" title="<%= t(:dba_history_compare_sql_area_historic_diff_hint, :default=>'Difference of runtime per execution is at least x %')%>">

@@ -1,6 +1,6 @@
 <% @update_area = get_unique_area_id %>
 
-<div class="page_caption">Show content of server logs (selects data only for your login instance = <%= @instance %>) </div>
+<%= render_page_caption("Show content of server logs (selects data only for your login instance = #{@instance})") %>
 
 
 <%= ajax_form(:controller => :dba, :action => :list_server_logs, :update_area => @update_area) do %>

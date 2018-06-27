@@ -1,4 +1,4 @@
-<div class="page_caption"><%= t(:dba_sga_show_object_usage_caption, :default=>'Search for SQL-statements referencing/using this object (from GV$SQL_Plan)') %></div>
+<%= render_page_caption(t(:dba_sga_show_object_usage_caption, :default=>'Search for SQL-statements referencing/using this object (from GV$SQL_Plan)')) %>
 
 <% @update_area = get_unique_area_id %>
 <%= ajax_form(:controller => :dba_sga, :action => :show_using_sqls, :update_area => @update_area) do %>

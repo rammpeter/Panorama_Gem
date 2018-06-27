@@ -1,10 +1,13 @@
 <% @update_area=get_unique_area_id %>
 
-<div class="page_caption">Global cache request latency from GV$SysStat:
-  <% @totals.each do |t| %>
-      <%= "Instance #{t.inst_id}: #{formattedNumber(t.avg_receive_time_ms,2)} ms  " %>
-  <% end %>
-</div>
+<%=
+  result = 'Global cache request latency from GV$SysStat: '
+  @totals.each do |t|
+    result << "Instance #{t.inst_id}: #{formattedNumber(t.avg_receive_time_ms,2)} ms  "
+  end
+
+  render_page_caption(result)
+%>
 
 <%= ajax_form(:controller => :dba_waits, :action=>:list_gc_request_latency_history, :update_area=>@update_area) do %>
   <div class="flex-row-container">

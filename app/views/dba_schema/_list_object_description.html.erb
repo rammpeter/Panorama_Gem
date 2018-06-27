@@ -1,4 +1,4 @@
-<div class="page_caption">Description of <%= @table_type %> <%= @owner %>.<%= @table_name %></div>
+<%= render_page_caption("Description of #{@table_type} #{@owner}.#{@table_name}") %>
 
 <% @update_area = get_unique_area_id %>
 

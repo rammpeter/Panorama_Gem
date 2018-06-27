@@ -1,6 +1,7 @@
 <% @update_area = get_unique_area_id %>
 
-<div class="page_caption"><%= t(:storage_tablespace_usage_header_caption, :default=>'Storage-objects for database')%>  <%= get_current_database[:sid] %> <%= localeDateTime(Time.now, :minutes) %></div>
+<%= render_page_caption("#{t(:storage_tablespace_usage_header_caption, :default=>'Storage-objects for database')} #{get_current_database[:sid]} #{localeDateTime(Time.now, :minutes)}")%>
+
 <div class="flex-row-container">
 
 <%

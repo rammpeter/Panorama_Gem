@@ -1,6 +1,6 @@
 <% @update_area = get_unique_area_id %>
 
-<div class="page_caption">Information about materialized views</div>
+<%= render_page_caption("Information about materialized views") %>
 
 <%= ajax_form(:controller=>:storage, :action=>:list_materialized_view_action, :update_area=>@update_area) do %>
   <div class="flex-row-container">

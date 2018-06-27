@@ -1,4 +1,4 @@
-<div class="page_caption" style="margin-bottom: 10px;">Describe database object</div>
+<%= render_page_caption("Describe database object") %>
 
 <% @update_area = get_unique_area_id %>
 <%= ajax_form(:controller => :dba_schema, :action => :list_object_description, :update_area => @update_area) do %>

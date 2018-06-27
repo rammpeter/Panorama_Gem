@@ -1,6 +1,7 @@
 <% @update_area = get_unique_area_id %>
 
-<div class="page_caption"><%= t(:dba_show_locks_caption, :default=>'List current locks of different types')%></div>
+<%= render_page_caption(t(:dba_show_locks_caption, :default=>'List current locks of different types')) %>
+
 <div class="flex-row-container">
   <%= ajax_form(:controller => :dba, :action=>"list_dml_locks", :update_area => @update_area) do %>
     <div class="flex-row-container">

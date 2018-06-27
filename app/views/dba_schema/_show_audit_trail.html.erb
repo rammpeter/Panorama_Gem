@@ -1,6 +1,6 @@
 <% @update_area=get_unique_area_id %>
 
-<div class="page_caption">Audit Trail records from DBA_AUDIT_TRAIL</div>
+<%= render_page_caption("Audit Trail records from DBA_AUDIT_TRAIL") %>
 
 <%= ajax_form(:controller => :dba_schema, :action=>:list_audit_trail, :update_area=>@update_area)  do %>
   <div class="flex-row-container">

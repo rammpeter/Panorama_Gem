@@ -1,5 +1,4 @@
-<div class="page_caption">Latch-Statistics from DBA_Hist_Latch</div>
-
+<%= render_page_caption("Latch-Statistics from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Latch')}") %>
 
 <%= ajax_form(:controller => :dba_history, :action => :list_latch_statistics_historic, :update_area => :list_latch_statistics_historic_area)  do %>
   <div class="flex-row-container">

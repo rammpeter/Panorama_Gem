@@ -1,5 +1,4 @@
-<div class="page_caption">Generate genuine Oracle ASH global report for RAC</div>
-
+<%= render_page_caption("Generate genuine Oracle ASH global report for RAC") %>
 
 <%= form_tag(url_for(:controller=>:dba_history, :action=>:list_ash_global_report_html, browser_tab_id: @browser_tab_id), {:method => 'post', :target=>'_blank'}) do %>
   <div class="flex-row-container">

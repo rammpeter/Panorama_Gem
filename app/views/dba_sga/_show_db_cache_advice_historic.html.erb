@@ -1,6 +1,6 @@
 <% @update_area = get_unique_area_id %>
 
-<div class="page_caption">Historic DB-cache advice from DBA_Hist_DB_Cache_Advice</div>
+<%= render_page_caption("Historic DB-cache advice from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_DB_Cache_Advice')}") %>
 
 <%= ajax_form(:controller=>:dba_sga, :action=>:list_db_cache_advice_historic, :update_area=>@update_area)  do %>
   <div class="flex-row-container">

@@ -1,6 +1,7 @@
 <% @update_area = get_unique_area_id %>
 
-<div class="page_caption"><%= "Historic PGA usage #{t(:from, :default=>'from')} #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Active_Sess_History')} #{t(:and, :default=>'and')} #{PanoramaSamplerStructureCheck.adjust_table_name('gv$Active_Session_History')} (Show PGA-usage by active sessions only)" %></div>
+<%= render_page_caption("Historic PGA usage #{t(:from, :default=>'from')} #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Active_Sess_History')} #{t(:and, :default=>'and')} #{PanoramaSamplerStructureCheck.adjust_table_name('gv$Active_Session_History')} (Show PGA-usage by active sessions only)") %>
+
 
 <%= ajax_form(:controller=>:active_session_history, :action=>:first_list_pga_usage_historic, :update_area=>@update_area) do %>
   <div class="flex-row-container">

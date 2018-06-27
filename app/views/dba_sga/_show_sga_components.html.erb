@@ -1,5 +1,4 @@
-<div class="page_caption"><%= t(:dba_sga_show_sga_components_caption, :default=>'Show memory consumption in SGA') %></div>
-
+<%= render_page_caption(t(:dba_sga_show_sga_components_caption, :default=>'Show memory consumption in SGA')) %>
 
 <%= ajax_form(:controller=>:dba_sga, :action=>"list_sga_components", :update_area=>"show_sga_components_area") do %>
   <div class="flex-row-container">

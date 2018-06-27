@@ -1,5 +1,6 @@
 <% @update_area = get_unique_area_id %>
-<div class="page_caption">Übersicht über Tablespace-Objekte</div>
+
+<%= render_page_caption("Overview over objects in tablespaces") %>
 
 <%= ajax_form(:controller => :dba_schema, :action => :list_objects, :update_area=>@update_area) do %>
   <div class="flex-row-container">
