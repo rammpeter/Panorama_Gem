@@ -145,18 +145,21 @@ Caution:
 Additional information about index usage can be requested from DBA_Hist_Seg_Stat and DBA_Hist_Active_Sess_History."),
             :sql=> "
                     WITH Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Constraint_Type, Table_Name, R_Owner, R_Constraint_Name FROM DBA_Constraints)
-                    SELECT /*+ USE_HASH(i ic cc c rc rt) */ u.*, i.Num_Rows, i.Distinct_Keys,
+                    SELECT /*+ USE_HASH(i ic cc c rc rt) */ u.*, ROUND(NVL(u.\"End monitoring\", SYSDATE)-u.\"Start monitoring\", 1) \"Days without usage\",
+                           i.Num_Rows, i.Distinct_Keys,
                            seg.MBytes,
-                           i.Tablespace_Name, i.Uniqueness, i.Index_Type,
-                           (SELECT IOT_Type FROM DBA_Tables t WHERE t.Owner = u.Owner AND t.Table_Name = u.Table_Name) IOT_Type,
-                           c.Constraint_Name foreign_key_protection,
-                           rc.Owner||'.'||rc.Table_Name  Referenced_Table,
-                           rt.Num_Rows     Num_Rows_Referenced_Table
+                           i.Tablespace_Name \"Tablespace\", i.Uniqueness, i.Index_Type,
+                           (SELECT IOT_Type FROM DBA_Tables t WHERE t.Owner = u.Owner AND t.Table_Name = u.Table_Name) \"IOT Type\",
+                           c.Constraint_Name                                                          \"Foreign key protection\",
+                           CASE WHEN rc.Table_Name IS NOT NULL THEN rc.Owner||'.'||rc.Table_Name END  \"Referenced table\",
+                           rt.Num_Rows                                                                \"Num rows of referenced table\",
+                           ic.Column_Name                                                             \"Column name\"
                     FROM   (
                             SELECT /*+ NO_MERGE */ u.UserName Owner, io.name Index_Name, t.name Table_Name,
                                    decode(bitand(i.flags, 65536), 0, 'NO', 'YES') Monitoring,
                                    decode(bitand(ou.flags, 1), 0, 'NO', 'YES') Used,
-                                   ou.start_monitoring, ou.end_monitoring
+                                   TO_DATE(ou.Start_Monitoring, 'MM/DD/YYYY HH24:MI:SS') \"Start monitoring\",
+                                   TO_DATE(ou.End_Monitoring, 'MM/DD/YYYY HH24:MI:SS')   \"End monitoring\"
                             FROM   sys.object_usage ou
                             JOIN   sys.ind$ i  ON i.obj# = ou.obj#
                             JOIN   sys.obj$ io ON io.obj# = ou.obj#
