@@ -133,7 +133,7 @@ Additional info about usage of index can be gained by querying DBA_Hist_Seg_Stat
             :parameter=>[{:name=> t(:dragnet_helper_8_param_1_name, :default=>'Minmum number of rows for index'), :size=>8, :default=>100000, :title=> t(:dragnet_helper_8_param_1_hint, :default=>'Minimum number of rows of index for consideration in result')}]
         },
         {
-            :name  => t(:dragnet_helper_9_name, :default=> 'Detection of unused indexes by system monitoring'),
+            :name  => t(:dragnet_helper_9_name, :default=> 'Detection of unused indexes by MONITORING USAGE'),
             :desc  => t(:dragnet_helper_9_desc, :default=>"DB monitors usage (access) on indexes if declared so before by 'ALTER INDEX ... MONITORING USAGE'.
 Results of usage monitoring can be queried from v$Object_Usage but only for current schema.
 Over all schemas usage can be monitored with following SQL.
@@ -143,42 +143,81 @@ Caution:
 - GATHER_TABLE_STATS and GATHER_INDEX_STATS may also counts as usage even if no other select touches this index (no longer detected in DB-version >= 12).
 
 Additional information about index usage can be requested from DBA_Hist_Seg_Stat and DBA_Hist_Active_Sess_History."),
-            :sql=> "SELECT /* DB-Tools Ramm: unused indexes */ u.*, i.Num_Rows, i.Distinct_Keys,
-                             seg.MBytes,
-                             i.Tablespace_Name, i.Uniqueness, i.Index_Type,
-                             (SELECT IOT_Type FROM DBA_Tables t WHERE t.Owner = u.Owner AND t.Table_Name = u.Table_Name) IOT_Type,
-                             c.Constraint_Name foreign_key_protection,
-                             rc.Owner||'.'||rc.Table_Name  Referenced_Table,
-                             rt.Num_Rows     Num_Rows_Referenced_Table
-                      FROM   (
-                              SELECT /*+ NO_MERGE */ u.UserName Owner, io.name Index_Name, t.name Table_Name,
-                                     decode(bitand(i.flags, 65536), 0, 'NO', 'YES') Monitoring,
-                                     decode(bitand(ou.flags, 1), 0, 'NO', 'YES') Used,
-                                     ou.start_monitoring, ou.end_monitoring
-                              FROM   sys.object_usage ou
-                              JOIN   sys.ind$ i  ON i.obj# = ou.obj#
-                              JOIN   sys.obj$ io ON io.obj# = ou.obj#
-                              JOIN   sys.obj$ t  ON t.obj# = i.bo#
-                              JOIN   DBA_Users u ON u.User_ID = io.owner#  --
-                              CROSS JOIN (SELECT UPPER(?) Name FROM DUAL) schema
-                              WHERE  TO_DATE(ou.Start_Monitoring, 'MM/DD/YYYY HH24:MI:SS') < SYSDATE-?
-                              AND    (schema.name IS NULL OR schema.Name = u.UserName)
-                             )u
-                      JOIN DBA_Indexes i                    ON i.Owner = u.Owner AND i.Index_Name = u.Index_Name AND i.Table_Name=u.Table_Name
-                      LEFT OUTER JOIN DBA_Ind_Columns ic    ON ic.Index_Owner = u.Owner AND ic.Index_Name = u.Index_Name AND ic.Column_Position = 1
-                      LEFT OUTER JOIN DBA_Cons_Columns cc   ON cc.Owner = ic.Table_Owner AND cc.Table_Name = ic.Table_Name AND cc.Column_Name = ic.Column_Name AND cc.Position = 1
-                      LEFT OUTER JOIN DBA_Constraints c     ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'R'
-                      LEFT OUTER JOIN DBA_Constraints rc    ON rc.Owner = c.R_Owner AND rc.Constraint_Name = c.R_Constraint_Name
-                      LEFT OUTER JOIN DBA_Tables rt         ON rt.Owner = rc.Owner AND rt.Table_Name = rc.Table_Name
-                      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name
-                                      ) seg ON seg.Owner = u.Owner AND seg.Segment_Name = u.Index_Name
-                      WHERE u.Used='NO' AND u.Monitoring='YES'
-                      AND i.Num_Rows > ?
-                      ORDER BY i.Num_Rows DESC NULLS LAST
-                     ",
-            :parameter=>[{:name=>'Schema-Name (optional)',    :size=>20, :default=>'',   :title=>t(:dragnet_helper_9_param_3_hint, :default=>'List only indexes for this schema (optional)')},
+            :sql=> "
+                    WITH Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Constraint_Type, Table_Name, R_Owner, R_Constraint_Name FROM DBA_Constraints)
+                    SELECT /*+ USE_HASH(i ic cc c rc rt) */ u.*, i.Num_Rows, i.Distinct_Keys,
+                           seg.MBytes,
+                           i.Tablespace_Name, i.Uniqueness, i.Index_Type,
+                           (SELECT IOT_Type FROM DBA_Tables t WHERE t.Owner = u.Owner AND t.Table_Name = u.Table_Name) IOT_Type,
+                           c.Constraint_Name foreign_key_protection,
+                           rc.Owner||'.'||rc.Table_Name  Referenced_Table,
+                           rt.Num_Rows     Num_Rows_Referenced_Table
+                    FROM   (
+                            SELECT /*+ NO_MERGE */ u.UserName Owner, io.name Index_Name, t.name Table_Name,
+                                   decode(bitand(i.flags, 65536), 0, 'NO', 'YES') Monitoring,
+                                   decode(bitand(ou.flags, 1), 0, 'NO', 'YES') Used,
+                                   ou.start_monitoring, ou.end_monitoring
+                            FROM   sys.object_usage ou
+                            JOIN   sys.ind$ i  ON i.obj# = ou.obj#
+                            JOIN   sys.obj$ io ON io.obj# = ou.obj#
+                            JOIN   sys.obj$ t  ON t.obj# = i.bo#
+                            JOIN   DBA_Users u ON u.User_ID = io.owner#  --
+                            CROSS JOIN (SELECT UPPER(?) Name FROM DUAL) schema
+                            WHERE  TO_DATE(ou.Start_Monitoring, 'MM/DD/YYYY HH24:MI:SS') < SYSDATE-?
+                            AND    (schema.name IS NULL OR schema.Name = u.UserName)
+                           )u
+                    JOIN DBA_Indexes i                    ON i.Owner = u.Owner AND i.Index_Name = u.Index_Name AND i.Table_Name=u.Table_Name
+                    LEFT OUTER JOIN DBA_Ind_Columns ic    ON ic.Index_Owner = u.Owner AND ic.Index_Name = u.Index_Name AND ic.Column_Position = 1
+                    LEFT OUTER JOIN DBA_Cons_Columns cc   ON cc.Owner = ic.Table_Owner AND cc.Table_Name = ic.Table_Name AND cc.Column_Name = ic.Column_Name AND cc.Position = 1
+                    LEFT OUTER JOIN Constraints c     ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'R'
+                    LEFT OUTER JOIN Constraints rc    ON rc.Owner = c.R_Owner AND rc.Constraint_Name = c.R_Constraint_Name
+                    LEFT OUTER JOIN DBA_Tables rt         ON rt.Owner = rc.Owner AND rt.Table_Name = rc.Table_Name
+                    JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes
+                          FROM   DBA_Segments
+                          GROUP BY Owner, Segment_Name
+                          HAVING SUM(bytes)/(1024*1024) > ?
+                         ) seg ON seg.Owner = u.Owner AND seg.Segment_Name = u.Index_Name
+                    WHERE u.Used='NO' AND u.Monitoring='YES'
+                    ORDER BY seg.MBytes DESC NULLS LAST
+                   ",
+          :parameter=>[{:name=>'Schema-Name (optional)',    :size=>20, :default=>'',   :title=>t(:dragnet_helper_9_param_3_hint, :default=>'List only indexes for this schema (optional)')},
                          {:name=>t(:dragnet_helper_9_param_1_name, :default=>'Number of days backwards without usage'),    :size=>8, :default=>7,   :title=>t(:dragnet_helper_9_param_1_hint, :default=>'Minumin age in days of Start-Monitoring timestamp of unused index')},
-                         {:name=>t(:dragnet_helper_9_param_2_name, :default=>'Minimum number of rows of index'), :size=>8, :default=>100000, :title=>t(:dragnet_helper_9_param_2_hint, :default=>'Minimum number of rows of index for consideration in selection')}
+                         {:name=>t(:dragnet_helper_139_param_1_name, :default=>'Minimum size of index in MB'),    :size=>8, :default=>1,   :title=>t(:dragnet_helper_139_param_1_hint, :default=>'Minumin size of index in MB to be considered in selection')},
+            ]
+        },
+        {
+            :name  => t(:dragnet_helper_139_name, :default=> 'Detection of indexes without MONITORING USAGE'),
+            :desc  => t(:dragnet_helper_139_desc, :default=>"It is recommended to let the DB track usage of indexes by ALTER INDEX ... MONITORING USAGE
+so you may identify indexes that are never used for direct index access from SQL.
+This usage info should be refreshed from time to time to recognize also indexes that aren't used anymore.
+How to and scripts for activating MONITORING USAGE may be found here:
+
+  %{url}
+
+Index usage can be evaluated than via v$Object_Usage or with previous selection.
+", url: "https://rammpeter.blogspot.com/2017/10/oracle-db-identify-unused-indexes.html"),
+            :sql=> "
+                    SELECT i.Owner, i.Table_Name, i.Index_Name, i.Num_Rows, i.Distinct_Keys, seg.MBytes, o.Created, o.Last_DDL_Time
+                    FROM   DBA_Indexes i
+                    LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name
+                                    ) seg ON seg.Owner = i.Owner AND seg.Segment_Name = i.Index_Name
+                    LEFT OUTER JOIN (
+                                      SELECT /*+ NO_MERGE */ u.UserName Owner, io.name Index_Name
+                                      FROM   sys.object_usage ou
+                                      JOIN   sys.ind$ i  ON i.obj# = ou.obj#
+                                      JOIN   sys.obj$ io ON io.obj# = ou.obj#
+                                      JOIN   DBA_Users u ON u.User_ID = io.owner#
+                                    ) u ON u.Owner = i.Owner AND u.Index_Name = i.Index_Name
+                    LEFT OUTER JOIN DBA_Objects o ON o.Owner = i.Owner AND o.Object_Name = i.Index_Name AND o.Object_Type = 'INDEX'
+                    CROSS JOIN (SELECT ? Schema FROM DUAL) s
+                    WHERE u.Owner IS NULL AND u.Index_Name IS NULL
+                    AND   i.Owner NOT IN ('SYS', 'SYSTEM', 'XDB', 'ORDDATA', 'MDSYS', 'OLAPSYS')
+                    AND   seg.MBytes > ?
+                    AND   (s.Schema IS NULL OR i.Owner = UPPER(s.Schema))
+                    ORDER BY seg.MBytes DESC NULLS LAST
+            ",
+            :parameter=>[{:name=>'Schema-Name (optional)',    :size=>20, :default=>'',   :title=>t(:dragnet_helper_9_param_3_hint, :default=>'List only indexes for this schema (optional)')},
+                         {:name=>t(:dragnet_helper_139_param_1_name, :default=>'Minimum size of index in MB'),    :size=>8, :default=>1,   :title=>t(:dragnet_helper_139_param_1_hint, :default=>'Minumin size of index in MB to be considered in selection')},
             ]
         },
         {

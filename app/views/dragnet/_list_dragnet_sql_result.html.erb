@@ -26,7 +26,7 @@ if @res.count > 0
         @res.each do |r|                         # Iteration über Zeilen des Results
           fieldval = r[col[:caption]]              # Aktueller Feldinhalt
 
-          if isNumber && fieldval.class.name!="Fixnum" && fieldval.class.name!="BigDecimal" && fieldval.class.name!="NilClass"    # Prüfen auf alle Werte der Spalte numerisch
+          if isNumber && fieldval.class!=Integer && fieldval.class!=Fixnum && fieldval.class!=BigDecimal && fieldval.class!=NilClass    # Prüfen auf alle Werte der Spalte numerisch
             isNumber = false;
           else
             if fieldval.class.name =="BigDecimal" && scale_count(fieldval) > scale
@@ -42,7 +42,7 @@ if @res.count > 0
         case
           when isNumber then
             col[:data] = proc{|rec| formattedNumber(rec[col[:caption]], scale)}
-            col[:align] = "right"
+            col[:align] = :right
           when isDate then
             col[:data] = proc{|rec| localeDateTime(rec[col[:caption]])}
             unless chart_x_axis_found

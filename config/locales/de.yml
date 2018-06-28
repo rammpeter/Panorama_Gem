@@ -688,7 +688,7 @@
   dragnet_helper_8_param_1_hint:                            Minimale Anzahl Rows des Index für Berücksichtigung in Auswertung
   dragnet_helper_8_param_1_name:                            Minmale Anzahl Rows des Index
 
-  dragnet_helper_9_name:                                    Erkennung nicht genutzter Indizes durch System-Monitoring
+  dragnet_helper_9_name:                                    Erkennung nicht genutzter Indizes durch MONITORING USAGE
   dragnet_helper_9_desc: |-
     Die DB protokolliert die Nutzung (Zugriff) von Indizes die vorab durch 'ALTER INDEX ... MONITORING USAGE' deklariert wurden.
     Das Ergebnis der Nutzungsprotokollierung ist je Schema in Tabelle v$Object_Usage einsehbar.
@@ -1411,6 +1411,19 @@
   dragnet_helper_138_name: |-
     Views mit ORDER BY im View-SQL
 
+  dragnet_helper_139_desc: |-
+    Es ist zu empfehlen, durch die DB die Nutzung von Indizes zu protokollieren per ALTER INDEX ... MONITORING USAGE,
+    auf diese Weise können Indizes identifiziert werden, auf die niemals direkt per SQL zugegriffen wird.
+    Dies Nutzungsinformation sollte von Zeit zu Zeit refresht werden, um auch Indizes zu erkennen, die nicht mehr genutzt werden.
+    How to und Scripte zur Aktivierung von MONITORING USAGE können hier gefunden werden:
+
+      %{url}
+
+    Die Nutzung von Indizes kann selektiert werden aus v$Object_Usage bzw. mit der Vorgänger-Abfrage.
+  dragnet_helper_139_name: |-
+    Erkennung von Indizes ohne MONITORING USAGE
+  dragnet_helper_139_param_1_hint:                          Minimale Größe des Index in MB um in Selektion berücksichtigt zu werden
+  dragnet_helper_139_param_1_name:                          Minimale Größe des Index in MB
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 

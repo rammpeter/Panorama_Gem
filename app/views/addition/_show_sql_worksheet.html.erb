@@ -59,52 +59,9 @@
         $( "#sql_worksheet_tab_container" ).easytabs({animate: false});
     } );
 
-
-    function get_sql_at_cursor_position(){
-      var sql_text_elem    = $("#sql_text");
-      var sql_statement    = '';
-
-      if (sql_text_elem.prop('selectionStart') != sql_text_elem.prop('selectionEnd')){  // text selected in textarea
-          sql_statement = sql_text_elem.val().substring(sql_text_elem.prop('selectionStart'), sql_text_elem.prop('selectionEnd'));
-      } else {                                                                  // no text select in textarea
-        var sql_text_lines_before_cursor = sql_text_elem.val().substr(0, sql_text_elem.prop('selectionStart')).split("\n");
-        var sql_text_lines_after_cursor  = sql_text_elem.val().substr(sql_text_elem.prop('selectionStart')).split("\n");
-
-          sql_text_lines_before_cursor.reverse().some(function(line, index){
-              var trimmed_line = line.trim();
-
-              if ((trimmed_line[trimmed_line.length-1] == ';' && index > 0) || trimmed_line.length == 0) // break downcount if previous line ends with ; or is empty
-                  return true;
-
-              if (index > 0)
-                sql_statement = line + "\n" + sql_statement;
-              else
-                  sql_statement = line + sql_statement;
-          });
-
-          sql_text_lines_after_cursor.some(function(line, index){
-              var trimmed_line = line.trim();
-
-              if (trimmed_line.length == 0)
-                  return true;
-
-              if (index > 0)
-                  sql_statement = sql_statement + "\n";
-              sql_statement = sql_statement + line;
-              return trimmed_line[trimmed_line.length-1] == ';';                // end if line is finished with ;
-          });
-
-      }
-
-      if (sql_statement[sql_statement.length-1] == ';')
-          sql_statement = sql_statement.substr(0, sql_statement.length-1);      // remove trailing ; if exists
-
-      return sql_statement;
-  }
-
   function exec_worksheet_sql(){
       $('#result_area_sql_worksheet_id').click();                               // bring tab in front
-      sql_statement = get_sql_at_cursor_position();
+      sql_statement = SQL_Worksheet.get_sql_at_cursor_position('sql_text');
       setTimeout(function(){
           ajax_html('result_area_sql_worksheet', 'addition', 'exec_worksheet_sql', {update_area: 'result_area_sql_worksheet', sql_statement: sql_statement});
       }, 100);                                                                  // Wait until click is processed to hit the visible div
@@ -112,7 +69,7 @@
 
   function explain_worksheet_sql(){
       $('#explain_area_sql_worksheet_id').click();                              // bring tab in front
-      sql_statement = get_sql_at_cursor_position();
+      sql_statement = SQL_Worksheet.get_sql_at_cursor_position('sql_text');
 
       setTimeout(function(){
           ajax_html('explain_area_sql_worksheet', 'addition', 'explain_worksheet_sql', {update_area: 'explain_area_sql_worksheet', sql_statement: sql_statement});
