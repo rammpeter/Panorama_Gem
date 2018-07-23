@@ -17,8 +17,8 @@ module ActiveSessionHistoryHelper
 
       @session_statistics_key_rules_hash["Event"]           = {:sql => "NVL(s.Event, s.Session_State)", :sql_alias => "event",    :Name => 'Wait-Event',    :Title => 'Event (Session-State, if Event = NULL)', :info_sql  => "MIN(s.Wait_Class)", :info_caption => "Wait-Class", :Data_Title => '#{explain_wait_event(rec.event)}' }
       @session_statistics_key_rules_hash["Wait-Class"]      = {:sql => "NVL(s.Wait_Class, 'CPU')", :sql_alias => "wait_class",    :Name => 'Wait-Class',    :Title => 'Wait-Class' }
-      @session_statistics_key_rules_hash["Instance"]    = {:sql => "s.Instance_Number",   :sql_alias => "instance_number",    :Name => 'Inst.',         :Title => 'RAC-Instance' }
-      @session_statistics_key_rules_hash["Con-ID"]      = {:sql => "s.Con_ID",            :sql_alias => "con_id",             :Name => 'Con.-ID',       :Title => 'Container-ID for pluggable database', :info_sql=>"(SELECT MIN(Name) FROM gv$Containers i WHERE i.Con_ID=s.Con_ID)", :info_caption=>'Container name' } if get_current_database[:cdb]
+      @session_statistics_key_rules_hash["Instance"]        = {:sql => "s.Instance_Number",   :sql_alias => "instance_number",    :Name => 'Inst.',         :Title => 'RAC-Instance' }
+      @session_statistics_key_rules_hash["Con-ID"]          = {:sql => "s.Con_ID",            :sql_alias => "con_id",             :Name => 'Con.-ID',       :Title => 'Container-ID for pluggable database', :info_sql=>"(SELECT MIN(Name) FROM gv$Containers i WHERE i.Con_ID=s.Con_ID)", :info_caption=>'Container name' } if get_current_database[:cdb]
       if get_db_version >= "11.2"
         @session_statistics_key_rules_hash["Session/Sn."] = {:sql => "DECODE(s.QC_instance_ID, NULL, s.Session_ID||', '||s.Session_Serial_No, s.QC_Session_ID||', '||s.QC_Session_Serial#)",        :sql_alias => "session_sn",        :Name => 'Session / Sn.',    :Title => 'Session-ID, SerialNo. (if executed in parallel query this is SID/sn of PQ-coordinator session)',  :info_sql  => "MIN(s.Session_Type)", :info_caption => "Session-Type" }
       else
@@ -51,6 +51,11 @@ module ActiveSessionHistoryHelper
       @session_statistics_key_rules_hash["PQ"]              = {:sql => "DECODE(s.QC_Instance_ID, NULL, 'NO', s.Instance_Number||':'||s.Session_ID||', '||s.Session_Serial_No)",  :sql_alias => "pq",  :Name => 'Parallel query',  :Title => 'PQ instance and session if executed in parallel query (NO if not executed in parallel or session is PQ-coordinator)' }
       @session_statistics_key_rules_hash["Plan-Hash-Value"] = {:sql => "s.SQL_Plan_Hash_Value", :sql_alias => "plan_hash_value",  :Name => 'Plan-Hash-Value', :Title => "Plan hash value, uniquely identifies execution plan of SQL" }
       @session_statistics_key_rules_hash['Remote-Instance'] = {:sql => "s.Remote_Instance_No",   :sql_alias => 'remote_instance',   :Name => 'R. I.',       :Title      => "Remote instance identifier that will serve the block that this session is waiting for.\nThis information is only available if the session was waiting for cluster events." } if get_db_version >= "11.2"
+      if get_db_version >= "11.2"
+        @session_statistics_key_rules_hash['Blocking Session']= {:sql => "s.Blocking_Inst_ID||DECODE(s.Blocking_Session, NULL, NULL, ':')||s.Blocking_Session||DECODE(s.Blocking_Session, NULL, NULL, ',')||s.Blocking_Session_Serial_No", :sql_alias => 'blocking_session',   :Name => 'Blocking Session',       :Title      => "Blocking Session (Instance:SID, SN) that is blocking this session.", info_sql: "MIN(s.Blocking_Session_Status)", info_caption: "Blocking Session Status" }
+      elsif get_db_version >= "10.2"                                            # without Blocking_Inst_ID in 10.2 and 11.1
+        @session_statistics_key_rules_hash['Blocking Session']= {:sql => "s.Blocking_Session||DECODE(s.Blocking_Session, NULL, NULL, ',')||s.Blocking_Session_Serial_No", :sql_alias => 'blocking_session',   :Name => 'Blocking Session',       :Title      => "Blocking Session (SID, SN) that is blocking this session.", info_sql: "MIN(s.Blocking_Session_Status)", info_caption: "Blocking Session Status" }
+      end
     end
     @session_statistics_key_rules_hash
   end
