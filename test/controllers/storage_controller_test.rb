@@ -98,7 +98,7 @@ class StorageControllerTest < ActionController::TestCase
     post :list_free_extents, :params => { :format=>:html, :tablespace => @tablespace_name}
     assert_response :success
 
-    post :list_object_extents, :params => { :format=>:html, :owner => 'sys', :segment_name => 'obj$'}
+    post :list_object_extents, :params => { :format=>:html, :owner => 'SYS', :segment_name => 'OBJ$'}  # Test-name must be upper case
     assert_response :success
   end
 
