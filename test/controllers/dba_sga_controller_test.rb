@@ -221,4 +221,16 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
     end
   end
+
+  test "list_resize_operations_historic with xhr: true" do
+    if get_db_version >= "11.1"
+      [nil,1].each do |instance|
+        historic_resize_grouping_options.each do |time_groupby|
+          post :list_resize_operations_historic, params: {format: :html, time_groupby: time_groupby,  time_selection_start: @time_selection_start, time_selection_end: @time_selection_end, instance: instance, update_area: :hugo }
+          assert_response_success_or_management_pack_violation("list_resize_operations_historic time_groupby=#{time_groupby}")
+        end
+      end
+    end
+  end
+
 end

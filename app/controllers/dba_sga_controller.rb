@@ -1755,6 +1755,8 @@ END;
     @instance     = prepare_param_instance
     @dbid         = prepare_param_dbid
     @time_groupby = params[:time_groupby].to_sym if params[:time_groupby]
+    @update_area = get_unique_area_id
+
 
     where_string = ''
     where_values = []
@@ -1778,47 +1780,52 @@ END;
     end
 
     result= sql_select_iterator ["
-      SELECT #{group_by_value} Group_Value, o.Component, o.Oper_Type, o.Oper_Mode, o.Parameter,
-             MIN(o.Start_Time)                        Min_Start_Time,
-             MAX(o.End_Time)                          Max_End_Time,
-             SUM((o.End_Time - o.Start_Time)*86400)   Duration_Secs,
-             SUM(o.Target_Size - o.Initial_Size)      Change_Bytes_Target,
-             SUM(o.Final_Size - o.Initial_Size)       Change_Bytes_Real,
-             COUNT(*)                                 Operations_Count,
-             SUM(DECODE(o.Status, 'INACTIVE', 1, 0))  Status_Inactive_Count,
-             SUM(DECODE(o.Status, 'PENDING', 1, 0))   Status_Pending_Count,
-             SUM(DECODE(o.Status, 'COMPLETE', 1, 0))  Status_Complete_Count,
-             SUM(DECODE(o.Status, 'CANCELLED', 1, 0)) Status_Cancelled_Count,
-             SUM(DECODE(o.Status, 'ERROR', 1, 0))     Status_Error_Count
+      SELECT #{group_by_value} Group_Value, o.Component, o.Oper_Type, o.Parameter,
+             MIN(o.Start_Time)                                Min_Start_Time,
+             MAX(o.End_Time)                                  Max_End_Time,
+             SUM((o.End_Time - o.Start_Time)*86400)           Duration_Secs,
+             SUM(o.Target_Size - o.Initial_Size)/(1024*1024)  Change_MBytes_Target,
+             SUM(o.Final_Size - o.Initial_Size)/(1024*1024)   Change_MBytes_Real,
+             (MAX(o.Final_Size) KEEP (DENSE_RANK LAST ORDER BY Start_Time))/(1024*1024) Final_Size_MB,
+             COUNT(*)                                         Operations_Count,
+             SUM(DECODE(o.Status, 'INACTIVE', 1, 0))          Status_Inactive_Count,
+             SUM(DECODE(o.Status, 'PENDING', 1, 0))           Status_Pending_Count,
+             SUM(DECODE(o.Status, 'COMPLETE', 1, 0))          Status_Complete_Count,
+             SUM(DECODE(o.Status, 'CANCELLED', 1, 0))         Status_Cancelled_Count,
+             SUM(DECODE(o.Status, 'ERROR', 1, 0))             Status_Error_Count
       FROM   DBA_Hist_Memory_Resize_Ops o
       WHERE  o.DBID = ?
       AND    o.Snap_ID BETWEEN ? AND ?
+      AND    o.Start_Time >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
+      AND    o.End_Time   <= TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
       #{where_string}
-      GROUP BY #{group_by_value}, o.Component, o.Oper_Type, o.Oper_Mode, o.Parameter
-      ORDER BY #{group_by_value}, o.Component, o.Oper_Type, o.Oper_Mode, o.Parameter
-    ", @dbid, @min_snap_id, @max_snap_id].concat(where_values)
+      GROUP BY #{group_by_value}, o.Component, o.Oper_Type, o.Parameter
+      ORDER BY #{group_by_value}, o.Component, o.Oper_Type, o.Parameter
+    ", @dbid, @min_snap_id, @max_snap_id, @time_selection_start, @time_selection_end].concat(where_values)
 
     result_hash = {}
     pivot_column_tags = {}
+    resulting_sizes = {}
     @pivot_columns = []
     result.each do |r|
-      column_key = "#{r.component}_#{r.parameter}_#{r.oper_mode}_#{r.oper_type}"
+      column_key = "#{r.component}_#{r.parameter}_#{r.oper_type}"
 
       unless pivot_column_tags.has_key?(column_key)
         pivot_column_tags[column_key] = 1
         column_key_target = "#{column_key}_target"
-        @pivot_columns << {caption:     "#{r.component} #{r.oper_type} resized bytes",
-                           data:        proc{|rec| fn(rec["#{column_key}_real"] ? rec["#{column_key}_real"] : 0)},
-                           title:       "Sum bytes of real size changes for resize operations in considered period on:\nComponent = '#{r.component}'\nParameter = '#{r.parameter}'\nOperation type = '#{r.oper_type}'\nOperation mode = '#{r.oper_mode}'",
-                           data_title:  proc{|rec| "%t\nNumber of bytes targeted for operation = #{fn(rec["#{column_key}_target"])}"},
+        @pivot_columns << {caption:     "#{r.component} #{r.oper_type} resized MB",
+                           sort_key:    "#{r.component} #{r.oper_type}",
+                           data:        proc{|rec| historic_resize_link_ops(@update_area, rec, fn((rec["#{column_key}_real"] ? rec["#{column_key}_real"] : 0), 2), rec["#{column_key}_real"], r.component, r.oper_type)},
+                           title:       "Sum MBytes of real size changes for resize operations in considered period on:\nComponent = #{r.component}\nParameter = #{r.parameter}\nOperation type = #{r.oper_type}",
+                           data_title:  proc{|rec| "%t\nNumber of MBytes targeted for operation = #{fn(rec["#{column_key}_target"], 2)}"},
                            align:       "right"
         }
 
       end
 
+      resulting_sizes[r.component] = r.final_size_mb
 
-
-      unless result_hash.has_key?(r.group_value)
+      unless result_hash.has_key?(r.group_value)                                # initiate new record
         result_hash[r.group_value] = {
             min_start_time:           r.min_start_time,
             max_end_time:             r.max_end_time,
@@ -1827,7 +1834,7 @@ END;
         }
       end
 
-      record = result_hash[r.group_value]
+      record = result_hash[r.group_value]                                       # get shortcut for existing record
 
       record[:min_start_time]   = r.min_start_time        if r.min_start_time < record[:min_start_time]
       record[:max_end_time]     = r.max_end_time          if r.max_end_time   > record[:max_end_time]
@@ -1835,13 +1842,27 @@ END;
       record[:operations_count] += r.operations_count
 
       record["#{column_key}_target"] = 0 unless record.has_key?("#{column_key}_target")
-      record["#{column_key}_target"] += r.change_bytes_target
+      record["#{column_key}_target"] += r.change_mbytes_target
 
       record["#{column_key}_real"] = 0 unless record.has_key?("#{column_key}_real")
-      record["#{column_key}_real"] += r.change_bytes_target
+      record["#{column_key}_real"] += r.change_mbytes_target
+
+      resulting_sizes.each do |key, value|                                      # Ensure that resulting sizes occur on every record starting with first occurrence
+        record["#{key}_resulting_size"] =  value
+      end
+
     end
 
-    @pivot_columns.sort! {|a, b| a[:caption] <=> b[:caption]}
+
+    resulting_sizes.each do |key, value|                                      # add column definition for all resulting sizes
+      @pivot_columns << {caption:     "#{key} final size MB",
+                         sort_key:    "#{key} x",
+                         data:        proc{|rec| historic_resize_link_ops(@update_area, rec, fn(rec["#{key}_resulting_size"], 2), rec["#{key}_resulting_size"], key, nil)       },
+                         title:       "Final size of component at the end of considered period on:\nComponent = #{key}",
+                         align:       "right"
+      }
+    end
+    @pivot_columns.sort! {|a, b| a[:sort_key] <=> b[:sort_key]}
 
     @result = []
     result_hash.each do |key, value|
@@ -1849,12 +1870,57 @@ END;
       @result << value
     end
 
+    # Fill missing values from begin until first ocurrence of value, resulting_sizes has values of last record
+    @result.reverse.each do |r|
 
-
-
+    end
 
     render_partial
   end
 
+  def list_resize_operations_historic_single_record
+    @time_selection_start = params[:time_selection_start]
+    @time_selection_end   = params[:time_selection_end]
+    @instance     = prepare_param_instance
+    @dbid         = prepare_param_dbid
+    @component    = params[:component]
+    @component    = nil if @component == ''
+
+    @oper_type    = params[:oper_type]
+    @oper_type    = nil if @oper_type == ''
+
+    where_string = ''
+    where_values = []
+
+    unless @instance.nil?
+      where_string << " AND Instance_Number = ?"
+      where_values << @instance
+    end
+
+    unless @component.nil?
+      where_string << " AND Component = ?"
+      where_values << @component
+    end
+
+    unless @oper_type.nil?
+      where_string << " AND oper_type = ?"
+      where_values << @oper_type
+    end
+
+    get_min_max_snap_ids(@time_selection_start, @time_selection_end, @dbid)
+
+    @result = sql_select_iterator ["
+      SELECT *
+      FROM   DBA_Hist_Memory_Resize_Ops
+      WHERE  DBID = ?
+      AND    Snap_ID BETWEEN ? AND ?
+      AND    Start_Time >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
+      AND    End_Time   <= TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+      #{where_string}
+      ORDER BY Start_Time
+    ", @dbid, @min_snap_id, @max_snap_id, @time_selection_start, @time_selection_end].concat(where_values)
+
+    render_partial
+  end
 
 end

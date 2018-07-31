@@ -358,7 +358,7 @@ module ApplicationHelper
 
       ts      # Return-wert
     rescue Exception => e
-      raise "#{t(:ajax_helper_link_sql_id_title_prefix, :default=>'Invalid format of timestamp')} '#{ts}'. #{t(:ajax_helper_link_wait_params_hint, :default=>'Expected is')} '#{human_datetime_minute_mask}'! Problem: #{e.message}"
+      raise "#{t(:application_helper_ts_invalid_format, :default=>'Invalid format of timestamp')} '#{ts}'. #{t(:application_helper_ts_expected, :default=>'Expected is')} '#{human_datetime_minute_mask}'! Problem: #{e.message}"
     end
 
     raise "Parameter 'time_selection_start' missing in hash 'params'" unless params[:time_selection_start]
