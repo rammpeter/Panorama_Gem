@@ -2,6 +2,7 @@
 class DbaSgaController < ApplicationController
 
   #require "dba_helper"   # Erweiterung der Controller um Helper-Methoden
+  include DbaSgaHelper
   include DbaHelper
   include ExplainPlanHelper
 
@@ -1748,4 +1749,112 @@ END;
       format.html {render :html => "<pre class='yellow-panel' style=' white-space: pre-wrap; padding: 10px;'>#{my_html_escape(result)}</pre>".html_safe }
     end
   end
+
+  def list_resize_operations_historic
+    save_session_time_selection
+    @instance     = prepare_param_instance
+    @dbid         = prepare_param_dbid
+    @time_groupby = params[:time_groupby].to_sym if params[:time_groupby]
+
+    where_string = ''
+    where_values = []
+
+    unless @instance.nil?
+      where_string << " AND Instance_Number = ?"
+      where_values << @instance
+    end
+
+    get_min_max_snap_ids(@time_selection_start, @time_selection_end, @dbid)
+
+
+    case @time_groupby.to_sym
+    when :second then group_by_value = "o.Start_Time"
+    when :minute then group_by_value = "TRUNC(o.Start_Time, 'MI')"
+    when :hour   then group_by_value = "TRUNC(o.Start_Time, 'HH24')"
+    when :day    then group_by_value = "TRUNC(o.Start_Time)"
+    when :week   then group_by_value = "TRUNC(o.Start_Time, 'WW')"
+    else
+      raise "Unsupported value for parameter :groupby (#{@time_groupby})"
+    end
+
+    result= sql_select_iterator ["
+      SELECT #{group_by_value} Group_Value, o.Component, o.Oper_Type, o.Oper_Mode, o.Parameter,
+             MIN(o.Start_Time)                        Min_Start_Time,
+             MAX(o.End_Time)                          Max_End_Time,
+             SUM((o.End_Time - o.Start_Time)*86400)   Duration_Secs,
+             SUM(o.Target_Size - o.Initial_Size)      Change_Bytes_Target,
+             SUM(o.Final_Size - o.Initial_Size)       Change_Bytes_Real,
+             COUNT(*)                                 Operations_Count,
+             SUM(DECODE(o.Status, 'INACTIVE', 1, 0))  Status_Inactive_Count,
+             SUM(DECODE(o.Status, 'PENDING', 1, 0))   Status_Pending_Count,
+             SUM(DECODE(o.Status, 'COMPLETE', 1, 0))  Status_Complete_Count,
+             SUM(DECODE(o.Status, 'CANCELLED', 1, 0)) Status_Cancelled_Count,
+             SUM(DECODE(o.Status, 'ERROR', 1, 0))     Status_Error_Count
+      FROM   DBA_Hist_Memory_Resize_Ops o
+      WHERE  o.DBID = ?
+      AND    o.Snap_ID BETWEEN ? AND ?
+      #{where_string}
+      GROUP BY #{group_by_value}, o.Component, o.Oper_Type, o.Oper_Mode, o.Parameter
+      ORDER BY #{group_by_value}, o.Component, o.Oper_Type, o.Oper_Mode, o.Parameter
+    ", @dbid, @min_snap_id, @max_snap_id].concat(where_values)
+
+    result_hash = {}
+    pivot_column_tags = {}
+    @pivot_columns = []
+    result.each do |r|
+      column_key = "#{r.component}_#{r.parameter}_#{r.oper_mode}_#{r.oper_type}"
+
+      unless pivot_column_tags.has_key?(column_key)
+        pivot_column_tags[column_key] = 1
+        column_key_target = "#{column_key}_target"
+        @pivot_columns << {caption:     "#{r.component} #{r.oper_type} resized bytes",
+                           data:        proc{|rec| fn(rec["#{column_key}_real"] ? rec["#{column_key}_real"] : 0)},
+                           title:       "Sum bytes of real size changes for resize operations in considered period on:\nComponent = '#{r.component}'\nParameter = '#{r.parameter}'\nOperation type = '#{r.oper_type}'\nOperation mode = '#{r.oper_mode}'",
+                           data_title:  proc{|rec| "%t\nNumber of bytes targeted for operation = #{fn(rec["#{column_key}_target"])}"},
+                           align:       "right"
+        }
+
+      end
+
+
+
+      unless result_hash.has_key?(r.group_value)
+        result_hash[r.group_value] = {
+            min_start_time:           r.min_start_time,
+            max_end_time:             r.max_end_time,
+            duration_secs:            0,
+            operations_count:         0
+        }
+      end
+
+      record = result_hash[r.group_value]
+
+      record[:min_start_time]   = r.min_start_time        if r.min_start_time < record[:min_start_time]
+      record[:max_end_time]     = r.max_end_time          if r.max_end_time   > record[:max_end_time]
+      record[:duration_secs]    += r.duration_secs
+      record[:operations_count] += r.operations_count
+
+      record["#{column_key}_target"] = 0 unless record.has_key?("#{column_key}_target")
+      record["#{column_key}_target"] += r.change_bytes_target
+
+      record["#{column_key}_real"] = 0 unless record.has_key?("#{column_key}_real")
+      record["#{column_key}_real"] += r.change_bytes_target
+    end
+
+    @pivot_columns.sort! {|a, b| a[:caption] <=> b[:caption]}
+
+    @result = []
+    result_hash.each do |key, value|
+      value.extend SelectHashHelper
+      @result << value
+    end
+
+
+
+
+
+    render_partial
+  end
+
+
 end

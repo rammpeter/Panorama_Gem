@@ -810,7 +810,7 @@ class ActiveSessionHistoryController < ApplicationController
       when :minute then group_by_value = "TRUNC(s.Sample_Time, 'MI')"
       when :hour   then group_by_value = "TRUNC(s.Sample_Time, 'HH24')"
       when :day    then group_by_value = "TRUNC(s.Sample_Time)"
-      when :week   then group_by_value = "TRUNC(s.Sample_Time) + INTERVAL '7' DAY"
+      when :week   then group_by_value = "TRUNC(s.Sample_Time, 'WW')"
       else
         raise "Unsupported value for parameter :groupby (#{@time_groupby})"
     end

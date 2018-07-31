@@ -249,6 +249,11 @@ module SlickgridHelper
         rescue Exception => e
           raise "Error #{e.class}: '#{e.message}' evaluating :data-expression for column '#{col[:caption]}'"
         end
+        begin
+          celldata.encode!(Encoding::UTF_8) if celldata.encoding != Encoding::UTF_8 # Ensure that other content is translated to UTF-8
+        rescue Exception => e
+          raise "Error #{e.class}: '#{e.message}' converting result for column '#{col[:caption]}' from #{celldata.encoding} to #{Encoding::UTF_8}"
+        end
         stripped_celldata = strip_inner_html(celldata)                          # Inhalt des Feldes befreit von html-tags, Ressourcen-Intensiv
 
         # SortType ermitteln
@@ -294,7 +299,7 @@ module SlickgridHelper
           metadata << "#{col[:name]}: {"
           metadata << "title:    '#{ecape_js_chars_without_br title}',"    if title && title != ''    # \n erhalten bei esacpe, da das vom tooltip so dargestellt werden kann
           metadata << "style:    '#{escape_js_chars style}',"    if style && style != ''
-            metadata << "fulldata: '#{escape_js_chars celldata}'," if celldata != stripped_celldata  # fulldata nur speichern, wenn html-Tags die Zell-Daten erweitern
+          metadata << "fulldata: '#{escape_js_chars celldata}'," if celldata != stripped_celldata  # fulldata nur speichern, wenn html-Tags die Zell-Daten erweitern
           metadata << '},'
         end
       end

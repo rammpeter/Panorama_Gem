@@ -454,6 +454,11 @@
   dba_sga_list_sql_sga_stat_child_count_hint:               Anzahl Child-Cursoren
   dba_sga_list_sql_sga_stat_cpu_hint:                       CPU-Zeit gesamt in Sekunden, Summe über alle PQ-Prozesse wenn parallel ausgeführt
   dba_sga_list_sql_sga_stat_elapsed_hint:                   Laufzeit gesamt in Sekunden, Summe über alle PQ-Prozesse wenn parallel ausgeführt
+  dba_sga_list_sql_sga_stat_first_load_sql_hint: |-
+    Zeitpunkt der erstmaligen Ladung des SQL Child-Cursor in SGA (erster Hard Parse)
+    %{metrics_start_hint}
+    Anzahl Ladevorgänge des Objektes nach Invalidisierung des Cursors = %{loads}.
+    Unter bestimmten Unständen startet die Aggregierung der Metriken mit diesem Zeitpunkt und nicht mit Last_Load_Time.
   dba_sga_list_sql_sga_stat_hit_ration_hint:                Verhältnis Cache-Hits zu Buffer Gets
   dba_sga_list_sql_sga_stat_metrics_hint_prefix:            Metriken sind
   dba_sga_list_sql_sga_stat_metrics_sql_hint:               kumuliert seit %{last_load_time}
@@ -461,9 +466,8 @@
   dba_sga_list_sql_sga_stat_object_state_hint:              Object-Status des SQL
   dba_sga_list_sql_sga_stat_last_active_hint:               Ende der letzten Ausführung des SQL
   dba_sga_list_sql_sga_stat_last_load_sql_hint: |-
-    Load time des SQL Child-Cursor in SGA
+    Zeitpunkt des letzten Ladens des Ausführungsplanes in den Library Cache der SGA (letzter Hard Parse)
     %{metrics_start_hint}
-    Erstes Auftreten des SQL in SGA = %{first_load_time}
     Anzahl Ladevorgänge des Objektes nach Invalidisierung des Cursors = %{loads}
 
   dba_sga_list_sql_sga_stat_last_load_sqlarea_hint: |-
@@ -1589,6 +1593,8 @@
   menu_sga_pga_pga_statistics_ash_historic_caption:         Historisch aus ASH
   menu_sga_pga_pga_statistics_ash_historic_hint:            Historische PGA-Nutzung durch aktive Sessions aus Active Session History (bis auf Sampling jede Sekunde)
   menu_sga_pga_pga_statistics_dba_hist_historic_caption:    Historisch aus DBA_Hist_PGAStat
+  menu_sga_pga_resize_operations_historic_caption:          SGA Resize-Operationen historisch
+  menu_sga_pga_resize_operations_historic_hint:             Anzeige der historischen Entwicklung der SGA Resize-Operationen
   menu_sga_pga_result_cache_current_hint:                   Anzeige aktuelle Auslastung des Result-Cache
   menu_sga_pga_sqlarea_current_sqlid_caption:               Aktuelle SQLs (SQL-ID)
   menu_sga_pga_sqlarea_current_sqlid_hint:                  Auswertung aktuelle SQLs aus SGA auf Ebene SQL-ID (Kumuliert über Child-Cursoren)

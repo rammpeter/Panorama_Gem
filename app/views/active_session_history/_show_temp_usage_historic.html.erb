@@ -28,7 +28,7 @@
       <%= t(:grouping, :default=>'Grouping')%>
       <select name="time_groupby">
         <% temp_historic_grouping_options.each do |key, value| %>
-          <%=  "<option value='#{key}' #{"selected='selected'" if key==:hour}>#{key}</option>".html_safe %>
+          <%=  "<option value='#{key}' #{"selected='selected'" if key==:hour}>#{value}</option>".html_safe %>
         <% end %>
       </select>
     </div>
