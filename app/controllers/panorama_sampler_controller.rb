@@ -32,13 +32,9 @@ class PanoramaSamplerController < ApplicationController
 
   def show_edit_config_form
     @modus = :edit
-puts "Before calling get_config_entry" if ENV['RAILS_ENV'] != 'test'
     @config = PanoramaSamplerConfig.get_config_entry_by_id(params[:id].to_i).get_cloned_config_hash
-puts "After calling get_config_entry" if ENV['RAILS_ENV'] != 'test'
     @config[:password] = nil                                                    # Password set ony if changed
-puts "Before calling render" if ENV['RAILS_ENV'] != 'test'
     render_partial :edit_config
-puts "After calling render" if ENV['RAILS_ENV'] != 'test'
   end
 
   def save_config
