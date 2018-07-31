@@ -1290,6 +1290,7 @@ function SlickGridExtended(container_id, options){
         var x_axis_time = false;                                                    // Defaut, wenn keine plot_master_time gesetzt werden
         var data_array = [];
         var plotting_index = 0;
+        var smallest_y_value = 0;
         // Iteration ueber plotting-Spalten
         for (var column_index in columns) {
             var column = columns[column_index];                                     // konkretes Spalten-Objekt aus DOM
@@ -1305,6 +1306,8 @@ function SlickGridExtended(container_id, options){
                     y_val = get_numeric_content(data[data_index][column['id']]);
                     if (y_val > max_column_value)              // groessten wert der Spalte ermitteln
                         max_column_value = y_val;
+                    if (y_val < smallest_y_value)                               // look for smallest value
+                        smallest_y_value = y_val;
                     // Plot-Master-Spalte
                     if (plot_master_time_column_index){
                         x_val = get_date_content(data[data_index][plot_master_column_id]).getTime();       // Zeit in ms seit 1970
@@ -1324,6 +1327,9 @@ function SlickGridExtended(container_id, options){
             }
         }
 
+        var yaxis_options = { show: show_y_axes };
+        if (smallest_y_value == 0)
+            yaxis_options.min = 0;                                              // allow drawing of negative values if they exist
 
         plot_diagram(
             table_id,
@@ -1331,7 +1337,8 @@ function SlickGridExtended(container_id, options){
             caption,
             data_array,
             {   plot_diagram: { locale: options['locale'], multiple_y_axes: multiple_y_axes},
-                yaxis:        { min: 0, show: show_y_axes },
+//                yaxis:        { min: 0, show: show_y_axes },
+                yaxis:        yaxis_options,
                 xaxes: (x_axis_time ? [{ mode: 'time'}] : [{}])
             }
         );
