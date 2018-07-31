@@ -8,21 +8,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cb36cecf-c362-4d5d-965e-5a5896d825cb" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/app/helpers/dba_sga_helper.rb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_resize_operations_historic.html.erb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/views/dba_sga/_show_resize_operations_historic.html.erb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/active_session_history_controller.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/active_session_history_controller.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/dba_sga_controller.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/dba_sga_controller.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/active_session_history_helper.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/helpers/active_session_history_helper.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/application_helper.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/helpers/application_helper.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/menu_helper.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/helpers/menu_helper.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/slickgrid_helper.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/helpers/slickgrid_helper.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/active_session_history/_show_temp_usage_historic.html.erb" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/active_session_history/_show_temp_usage_historic.html.erb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/addition/_explain_worksheet_sql.html.erb" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/addition/_explain_worksheet_sql.html.erb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_list_resize_ops_per_component.html.erb" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_resize_ops_per_component.html.erb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat.html.erb" beforeDir="false" afterPath="$PROJECT_DIR$/app/views/dba_sga/_list_sql_sga_stat.html.erb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/locales/de.yml" beforeDir="false" afterPath="$PROJECT_DIR$/config/locales/de.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/panorama_gem/version.rb" beforeDir="false" afterPath="$PROJECT_DIR$/lib/panorama_gem/version.rb" afterDir="false" />
     </list>
     <ignored path="Panorama_Gem.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -249,7 +236,16 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="_list_resize_operations_historic.html.erb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="version.rb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="60">
+              <caret line="4" column="19" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="_list_resize_operations_historic.html.erb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/views/dba_sga/_list_resize_operations_historic.html.erb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="105">
@@ -378,7 +374,6 @@
         <option value="$PROJECT_DIR$/app/assets/javascripts/sql_worksheet.js" />
         <option value="$PROJECT_DIR$/app/views/dragnet/_list_dragnet_sql_result.html.erb" />
         <option value="$PROJECT_DIR$/app/helpers/dragnet/unnecessary_indexes_helper.rb" />
-        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
         <option value="$PROJECT_DIR$/test/controllers/storage_controller_test.rb" />
         <option value="$PROJECT_DIR$/lib/test_helpers/oracle_connection_test_helper.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_resize_ops_per_component.html.erb" />
@@ -396,6 +391,7 @@
         <option value="$PROJECT_DIR$/app/assets/javascripts/slickgrid_extended.js" />
         <option value="$PROJECT_DIR$/app/controllers/dba_sga_controller.rb" />
         <option value="$PROJECT_DIR$/app/views/dba_sga/_list_resize_operations_historic.html.erb" />
+        <option value="$PROJECT_DIR$/lib/panorama_gem/version.rb" />
       </list>
     </option>
   </component>
@@ -526,13 +522,6 @@
               <item name="app" type="462c0819:PsiDirectoryNode" />
               <item name="views" type="462c0819:PsiDirectoryNode" />
               <item name="addition" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Panorama_Gem" type="462c0819:PsiDirectoryNode" />
-              <item name="app" type="462c0819:PsiDirectoryNode" />
-              <item name="views" type="462c0819:PsiDirectoryNode" />
-              <item name="dba_sga" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Panorama_Gem" type="b2602c69:ProjectViewProjectNode" />
@@ -1215,14 +1204,7 @@
       <workItem from="1529496785807" duration="38623000" />
       <workItem from="1529994247604" duration="32286000" />
       <workItem from="1531652821140" duration="2159000" />
-      <workItem from="1532349689165" duration="27045000" />
-    </task>
-    <task id="LOCAL-01388" summary="Filter on object type">
-      <created>1527076315289</created>
-      <option name="number" value="01388" />
-      <option name="presentableId" value="LOCAL-01388" />
-      <option name="project" value="LOCAL" />
-      <updated>1527076315289</updated>
+      <workItem from="1532349689165" duration="27094000" />
     </task>
     <task id="LOCAL-01389" summary="def_inMemory starting wth 12.1.0.2 in DBA_Tablespaces">
       <created>1527141278603</created>
@@ -1560,7 +1542,14 @@
       <option name="project" value="LOCAL" />
       <updated>1533028979307</updated>
     </task>
-    <option name="localTasksCounter" value="1437" />
+    <task id="LOCAL-01437" summary="Evaluate dba_hist_memory_resize_ops">
+      <created>1533030856867</created>
+      <option name="number" value="01437" />
+      <option name="presentableId" value="LOCAL-01437" />
+      <option name="project" value="LOCAL" />
+      <updated>1533030856867</updated>
+    </task>
+    <option name="localTasksCounter" value="1438" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1596,7 +1585,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3435670000" />
+    <option name="totallyTimeSpent" value="3435719000" />
   </component>
   <component name="TodoView" selected-index="4">
     <todo-panel id="selected-file">
@@ -1679,7 +1668,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Redo-logs in FRA don't count in addition to FRA-size for total sum" />
     <MESSAGE value="Tables without read" />
     <MESSAGE value="List existing extended statistics for table by clicking last analyzed date" />
     <MESSAGE value="Fix Jenkinsfile" />
@@ -1704,7 +1692,8 @@
     <MESSAGE value="List blocking sessions as ASH grouping criteria" />
     <MESSAGE value="Fix test" />
     <MESSAGE value="Allow negative values in diagram" />
-    <option name="LAST_COMMIT_MESSAGE" value="Allow negative values in diagram" />
+    <MESSAGE value="Evaluate dba_hist_memory_resize_ops" />
+    <option name="LAST_COMMIT_MESSAGE" value="Evaluate dba_hist_memory_resize_ops" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2052,13 +2041,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="39" selection-start-line="5" selection-start-column="39" selection-end-line="5" selection-end-column="39" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/controllers/storage_controller_test.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="768">
@@ -2264,6 +2246,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
           <caret line="7" column="94" selection-start-line="7" selection-start-column="94" selection-end-line="7" selection-end-column="94" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/panorama_gem/version.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="19" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
         </state>
       </provider>
     </entry>
