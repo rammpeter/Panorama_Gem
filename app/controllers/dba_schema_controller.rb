@@ -1407,4 +1407,15 @@ WHERE RowNum < 100
     end
 
   end
+
+  def invalid_objects
+    @objects = sql_select_iterator("SELECT o.*,
+                                           TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Last_Spec_Time
+                                    FROM   DBA_Objects o
+                                    WHERE Status != 'VALID'
+                                    ORDER BY Last_DDL_Time DESC
+    ")
+    render_partial
+  end
+
 end
