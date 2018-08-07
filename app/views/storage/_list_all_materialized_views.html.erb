@@ -34,12 +34,14 @@ end
   end
 end
 
-column_options =
-  [
-    {:caption=>"Owner",                 :data=>proc{|rec| rec.owner.downcase},      :title=>"Owner and name of materialized view"},
-    {:caption=>"Name", :data=>proc{|rec| link_object_description(@update_area, rec.owner, rec.mview_name, rec.mview_name) }, :title=>"Owner and name of materialized view", :data_title=>proc{|rec| "%t: Physical table name = #{rec.table_name}"}},
-    {:caption=>"Num rows",              :data=>proc{|rec| @link_real_num_rows.call(rec)}, :title=>"Number of rows of this MView-log recorded at last analyze (for local MViews only)", :align=>:right},
-    {:caption=>"Size (MB)",             :data=>proc{|rec| fn(rec.mbytes, 1)},       :title=>"Real current physical size of materialized view in MBytes", :align=>:right},
+column_options = []
+
+column_options << {:caption=>"Owner",                 :data=>proc{|rec| rec.owner.downcase},      :title=>"Owner and name of materialized view"} unless @called_from_object_description
+column_options << {:caption=>"Name", :data=>proc{|rec| link_object_description(@update_area, rec.owner, rec.mview_name, rec.mview_name) }, :title=>"Owner and name of materialized view", :data_title=>proc{|rec| "%t: Physical table name = #{rec.table_name}"}} unless @called_from_object_description
+column_options << {:caption=>"Num rows",              :data=>proc{|rec| @link_real_num_rows.call(rec)}, :title=>"Number of rows of this MView-log recorded at last analyze (for local MViews only)", :align=>:right} unless @called_from_object_description
+column_options << {:caption=>"Size (MB)",             :data=>proc{|rec| fn(rec.mbytes, 1)},       :title=>"Real current physical size of materialized view in MBytes", :align=>:right} unless @called_from_object_description
+
+column_options.concat [
     {:caption=>"Master owner",          :data=>proc{|rec| rec.master_owner},        :title=>"Owner of the master table of MView"},
     {:caption=>"Master table",          :data=>proc{|rec| rec.master},              :title=>"Name of the master table of MView", :data_title=>proc{|rec| "%t: View used for refresh=#{rec.master_view}"}},
     {:caption=>"Master link",           :data=>proc{|rec| rec.master_link},         :title=>"Database link for the master site or the master materialized view site"},
@@ -58,29 +60,33 @@ column_options =
     {:caption=>"Complete refresh oper.",:data=>proc{|rec| rec.cr_operations},       :title=>"If REGENERATE, then the complete refresh operations have not been generated"},
     {:caption=>"Staleness",             :data=>proc{|rec| rec.staleness},           :title=>"Relationship between the contents of the materialized view and the contents of the materialized view's masters:\nFRESH - Materialized view is a read-consistent view of the current state of its masters.\nSTALE - Materialized view is out of date because one or more of its masters has changed. If the materialized view was FRESH before it became STALE, then it is a read-consistent view of a former state of its masters.\nUNUSABLE - Materialized view is not a read-consistent view of its masters from any point in time.\nUNKNOWN - Oracle Database does not know whether the materialized view is in a read-consistent view of its masters from any point in time (this is the case for materialized views created on prebuilt tables).\nUNDEFINED - Materialized view has remote masters. The concept of staleness is not defined for such materialized views."},
     {:caption=>"Staleness after fast refresh", :data=>proc{|rec| rec.after_fast_refresh},          :title=>"Specifies the staleness value that will occur if a fast refresh is applied to this materialized view.\nIts values are the same as for the STALENESS column, plus the value NA, which is used when fast refresh is not applicable to this materialized view."},
-    {:caption=>"U.",                    :data=>proc{|rec| rec.updatable},           :title=>"Indicates whether the materialized view is updatable (Y) or not (N)", :data_title=>proc{|rec| "%t: Update log=#{rec.update_log}"}},
-    {:caption=>"P.",                    :data=>proc{|rec| rec.unknown_prebuilt},    :title=>"Indicates whether the materialized view is prebuilt (Y) or not (N)"},
-    {:caption=>"PL",                    :data=>proc{|rec| rec.unknown_plsql_func},  :title=>"Indicates whether the materialized view contains PL/SQL functions (Y) or not (N)"},
-    {:caption=>"Ex.",                   :data=>proc{|rec| rec.unknown_external_table},  :title=>"Indicates whether the materialized view contains external tables (Y) or not (N)"},
-    {:caption=>"F.",                    :data=>proc{|rec| rec.unknown_consider_fresh},  :title=>"Indicates whether the materialized view is considered fresh (Y) or not (N)"},
-    {:caption=>"I.",                    :data=>proc{|rec| rec.unknown_import},      :title=>"Indicates whether the materialized view is imported (Y) or not (N)"},
-    {:caption=>"T.",                    :data=>proc{|rec| rec.unknown_trusted_fd},  :title=>"Indicates whether the materialized view uses trusted constraints for refresh (Y) or not (N)"},
-    {:caption=>"Rw.",                   :data=>proc{|rec| rec.rewrite_enabled},     :title=>"Indicates whether rewrite is enabled (Y) or not (N)", :data_title=>proc{|rec| "%t, rewrite rule=#{rec.rewrite_capability}"}},
     {:caption=>"E.",                    :data=>proc{|rec| rec.error},               :title=>"The number of failed automatic refreshes since last successful refresh"},
     {:caption=>"Comp. status",          :data=>proc{|rec| rec.compile_state},       :title=>"Validity of the materialized view with respect to the objects upon which it depends:\nVALID - Materialized view has been validated without error, and no object upon which it depends has changed since the last validation.\nNEEDS_COMPILE - Some object upon which the materialized view depends has changed. An ALTER MATERIALIZED VIEW...COMPILE statement is required to validate this materialized view.\nERROR - Materialized view has been validated with one or more errors"},
-    {:caption=>"Cont. status",          :data=>proc{|rec| rec.content_status},      :title=>"The status of the contents of the snapshot"},
+    {:caption=>"Cont. status",          :data=>proc{|rec| rec.content_status},      :title=>"The status of the contents of the snapshot", data_style: proc{|rec| "background-color: coral;" if rec.content_status != 'VALID'}},
+    {:caption=>"Object status",         :data=>proc{|rec| rec.object_status},       :title=>"The status of the object from DBA_Objects", data_style: proc{|rec| "background-color: coral;" if rec.object_status != 'VALID'}},
     {:caption=>"No ind.",               :data=>proc{|rec| rec.use_no_index},        :title=>"Indicates whether the materialized view was created using the USING NO INDEX clause (Y) or the materialized view was created with the default index (N).\nThe USING NO INDEX clause suppresses the creation of the default index."},
     {:caption=>"Stale since",           :data=>proc{|rec| localeDateTime rec.stale_since}, :title=>"Time from when the materialized view became stale"},
-    {:caption=>"Last analyze",          :data=>proc{|rec| localeDateTime rec.last_analyzed},                  :title=>"Last analyze date for underlying table of this MView"},
-
 
   ]
+
+column_options << {:caption=>"Last analyze",          :data=>proc{|rec| localeDateTime rec.last_analyzed},                  :title=>"Last analyze date for underlying table of this MView"} unless @called_from_object_description
+
+column_options.concat [
+  {:caption=>"U.",                    :data=>proc{|rec| rec.updatable},           :title=>"Indicates whether the materialized view is updatable (Y) or not (N)", :data_title=>proc{|rec| "%t: Update log=#{rec.update_log}"}},
+  {:caption=>"P.",                    :data=>proc{|rec| rec.unknown_prebuilt},    :title=>"Indicates whether the materialized view is prebuilt (Y) or not (N)"},
+  {:caption=>"PL",                    :data=>proc{|rec| rec.unknown_plsql_func},  :title=>"Indicates whether the materialized view contains PL/SQL functions (Y) or not (N)"},
+  {:caption=>"Ex.",                   :data=>proc{|rec| rec.unknown_external_table},  :title=>"Indicates whether the materialized view contains external tables (Y) or not (N)"},
+  {:caption=>"F.",                    :data=>proc{|rec| rec.unknown_consider_fresh},  :title=>"Indicates whether the materialized view is considered fresh (Y) or not (N)"},
+  {:caption=>"I.",                    :data=>proc{|rec| rec.unknown_import},      :title=>"Indicates whether the materialized view is imported (Y) or not (N)"},
+  {:caption=>"T.",                    :data=>proc{|rec| rec.unknown_trusted_fd},  :title=>"Indicates whether the materialized view uses trusted constraints for refresh (Y) or not (N)"},
+  {:caption=>"Rw.",                   :data=>proc{|rec| rec.rewrite_enabled},     :title=>"Indicates whether rewrite is enabled (Y) or not (N)", :data_title=>proc{|rec| "%t, rewrite rule=#{rec.rewrite_capability}"}},
+]
 
 %>
 
 <%= gen_slickgrid(@mvs, column_options, {
         :max_height => 450,
-        :caption => "Data from DBA_MViews (without remote MViews via DB-link)",
+        :caption => "Data from DBA_MViews#{" (without remote MViews via DB-link)" unless @called_from_object_description}",
         show_pin_icon: 1
 }) %>
 

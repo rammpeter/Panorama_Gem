@@ -295,6 +295,8 @@ class StorageController < ApplicationController
       where_values << params[:name]
     end
 
+    @called_from_object_description = params[:called_from_object_description]
+
     global_name = sql_select_one 'SELECT Name FROM v$Database'
 
     @mvs = sql_select_iterator ["\
@@ -304,7 +306,7 @@ class StorageController < ApplicationController
              t.Num_Rows, t.Last_Analyzed,
              s.Table_Name, s.Master_view, s.Master_Owner, s.Master, s.Can_Use_Log,
              s.Refresh_Method Fast_Refresh_Method, s.Error, s.fr_operations, s.cr_operations, s.Refresh_Group,
-             s.Status content_status
+             s.Status content_status, o.Status Object_Status
       FROM   dba_MViews m
       LEFT OUTER JOIN DBA_Snapshots s ON s.Owner = m.Owner AND s.Name = m.MView_Name
       /* Lokal Registrierte MViews auf gleicher DB */
@@ -312,6 +314,7 @@ class StorageController < ApplicationController
       LEFT OUTER JOIN (SELECT Snapshot_ID, COUNT(*) Snapshot_Logs, MIN(Current_Snapshots) Oldest_Refresh_Date
                        FROM DBA_Snapshot_Logs GROUP BY Snapshot_ID) l  ON l.Snapshot_ID = r.MView_ID
       LEFT OUTER JOIN DBA_Tables t ON t.Owner = m.Owner AND t.Table_Name = m.MView_Name
+      LEFT OUTER JOIN DBA_Objects o ON o.Owner = m.Owner AND o.Object_Name = m.MView_Name AND o.SubObject_Name IS NULL AND o.Object_Type = 'MATERIALIZED VIEW'
       WHERE  1=1 #{where_string}
       ORDER BY m.MView_Name
     "].concat where_values

@@ -176,15 +176,29 @@ column_options =
 %>
 
 <%= gen_slickgrid(@attribs, column_options, {
-      :caption => "Attributes of #{@table_type} #{@owner}.#{@table_name}",
+      :caption => "Attributes of #{"the underlying table of " if @table_type == 'MATERIALIZED VIEW'}#{@table_type} #{@owner}.#{@table_name}",
       :height => :auto, show_pin_icon: 1
 })
 %>
 
 
-<% if @viewtext %>
-<h4>Viewtext of <%= @table_type %> <%= @owner %>.<%= @table_name %></h4>
-    <%= render_yellow_pre(@viewtext, 450) %>
+<% if @mv_attribs %>
+
+  <% @update_area_mv_data = get_unique_area_id %>
+  <script type="text/javascript">
+      ajax_html('<%= @update_area_mv_data %>', 'storage', 'list_materialized_view_action', {
+          update_area: "<%= @update_area_mv_data %>",
+          all_mviews:  "All local materialized views",
+          owner:       "<%= @owner %>",
+          name:        "<%= @table_name %>",
+          called_from_object_description: true
+      }, {retain_status_message: true});
+  </script>
+  <div id="<%= @update_area_mv_data %>"></div>
+
+
+  <h4>Viewtext of <%= @table_type %> <%= @owner %>.<%= @table_name %></h4>
+  <%= render_yellow_pre(@mv_attribs.query, 450) %>
 <% end %>
 
 <% if @unique_constraints.count > 0 %>
