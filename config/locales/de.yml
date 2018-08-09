@@ -1429,6 +1429,18 @@
   dragnet_helper_139_param_1_hint:                          Minimale Größe des Index in MB um in Selektion berücksichtigt zu werden
   dragnet_helper_139_param_1_name:                          Minimale Größe des Index in MB
 
+  dragnet_helper_140_desc: |-
+    Der freien Platz in DB-Blöcken definiert durch PCT_FREE kann genutzt werden für:
+    - Reduktion des Risikos von Chained Rows in Folge der Expansion der Row-Größe durch Upate-Statements
+    - Reduktion des Risikos von ITL-Waits durch Möglichkeit der Erweiterung der ITL-Liste über INI_TRANS Einträge hinaus
+    Diese Selektion zeigt Kandidaten ohne Update-Statements seit der letzten Analyse.
+    Wenn die Notwendigkeit für mehr konkurrierende Transaktionen in ITL-Liste als INI_TRANS ausgeschlossen werden kann, wird PCTFREE=0 empfohlen.
+  dragnet_helper_140_name: |-
+    Tabellen mit PCT_FREE > 0 aber ohne Update-DML
+  dragnet_helper_139_param_1_hint:                          Minimale Anzahl Tage seit dem letzten Analyse-Zeitpunkt des Objektes
+  dragnet_helper_139_param_1_name:                          Min. Anzahl Tage seite letzte Analyse
+
+
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 
   dragnet_show_personal_selection_form_caption:             Erweitern der Rasterfahndungs-SQLs um persönliche Abfragen

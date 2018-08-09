@@ -391,15 +391,17 @@ class ActiveSessionHistoryController < ApplicationController
 
     @groupfilter = {:DBID       => prepare_param_dbid }
 
-    @groupfilter[:Instance]             =  params[:instance]  if params[:instance]
-    @groupfilter['SQL-ID'.to_sym]       =  params[:sql_id]    if params[:sql_id]
-    @groupfilter['Session/Sn.'.to_sym]  =  "#{params[:sid]}, #{params[:serialno]}"       if params[:sid] &&  params[:serialno]
-    @groupfilter[:Action]               =  params[:module_action]    if params[:module_action]
+    @groupfilter[:Instance]             =  params[:instance]                            if params[:instance]
+    @groupfilter['SQL-ID'.to_sym]       =  params[:sql_id]                              if params[:sql_id]
+    @groupfilter['Session/Sn.'.to_sym]  =  "#{params[:sid]}, #{params[:serialno]}"      if params[:sid] &&  params[:serialno]
+    @groupfilter[:Action]               =  params[:module_action]                       if params[:module_action]
+    @groupfilter['DB-Object']           =  params[:db_object]                           if params[:db_object]
 
     @groupby = 'Hugo' # Default
-    @groupby = 'SQL-ID' if params[:sql_id]
-    @groupby = 'Session/Sn.' if params[:sid] &&  params[:serialno]
-    @groupby = 'Action' if params[:module_action]
+    @groupby = 'SQL-ID'       if params[:sql_id]
+    @groupby = 'Session/Sn.'  if params[:sid] &&  params[:serialno]
+    @groupby = 'Action'       if params[:module_action]
+    @groupby = 'DB-Object'    if params[:db_object]
 
     render_partial
   end

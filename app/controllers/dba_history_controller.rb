@@ -156,17 +156,47 @@ class DbaHistoryController < ApplicationController
   def list_segment_stat_hist_detail
     @instance       = prepare_param_instance
     @time_selection_start = params[:time_selection_start]
+    @time_selection_start = nil if @time_selection_start == ''
     @time_selection_end   = params[:time_selection_end]
+    @time_selection_end   = nil if @time_selection_end == ''
     @owner          = params[:owner]
     @object_name    = params[:object_name]
     @subobject_name = params[:subobject_name]
     @subobject_name = nil if @subobject_name == ''
     min_snap_id     = params[:min_snap_id]
+    min_snap_id     = nil if min_snap_id == ''
     max_snap_id     = params[:max_snap_id]
+    max_snap_id     = nil if max_snap_id == ''
 
-    stmt = "SELECT /* Panorama-Tool Ramm */ * FROM (
+    where_string = ''
+    where_values = []
+
+    group_criteria = "CAST(Begin_Interval_Time + INTERVAL '0.5' SECOND AS DATE)" # Ensure that multiple RAC instances are rounded into one grouped row
+
+    if @instance
+      where_string << " AND s.Instance_Number = ?"
+      where_values << @instance
+      group_criteria = "sn.Begin_Interval_Time"
+    end
+
+    if min_snap_id && max_snap_id
+      where_string << " AND s.Snap_ID BETWEEN ? AND ?"
+      where_values << min_snap_id
+      where_values << max_snap_id
+    end
+
+    object_where_string = ''
+    object_where_values = []
+
+    if @subobject_name
+      object_where_string << " AND SubObject_Name=?"
+      object_where_values << @subobject_name
+    end
+
+    @segment_details = sql_select_iterator ["\
+     SELECT /* Panorama-Tool Ramm */ * FROM (
             Select /*+ NO_MERGE */
-                   sn.Begin_Interval_Time,
+                   #{group_criteria} Begin_Interval_Time,
                    SUM(Logical_reads_Delta)       Logical_reads_Delta,
                    SUM(Buffer_Busy_waits_Delta)   Buffer_Busy_waits_Delta,
                    SUM(DB_Block_Changes_Delta)    DB_Block_Changes_Delta,
@@ -184,20 +214,17 @@ class DbaHistoryController < ApplicationController
                    SUM(Table_Scans_Delta)         Table_Scans_Delta
             FROM   DBA_HIST_SEG_STAT s
             JOIN   DBA_hist_snapshot sn ON sn.DBID = s.DBID AND sn.Instance_Number = s.Instance_Number AND sn.Snap_ID = s.Snap_ID
-            where  s.Instance_Number = ?
-            AND    s.Snap_ID BETWEEN ? AND ?
-            AND    s.Obj# IN (
+            WHERE  s.Obj# IN (
                               SELECT Object_ID FROM DBA_Objects
                               WHERE  Owner=?
                               AND    Object_Name=?
-                              #{@subobject_name ? "AND SubObject_Name=?" : "" }
+                              #{object_where_string}
                              )
-            GROUP BY sn.Begin_Interval_Time
+            #{where_string}
+            GROUP BY #{group_criteria}
             )
-            ORDER BY 1"
-    binds = [stmt, @instance.to_i, min_snap_id, max_snap_id, @owner, @object_name]
-    binds << @subobject_name if @subobject_name       # Nur binden wenn gefüllt
-    @segment_details = sql_select_iterator binds
+     ORDER BY 1
+    ", @owner, @object_name].concat(object_where_values).concat(where_values)
 
     render_partial :list_segment_stat_historic_detail
   end #list_segment_stat_hist_detail

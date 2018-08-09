@@ -69,6 +69,45 @@ module Dragnet::SqlsPotentialDbStructuresHelper
             :parameter=>[{:name=>t(:dragnet_helper_5_param_1_name, :default=> 'Min. no. of rows of referenced table'), :size=>8, :default=>1000, :title=>t(:dragnet_helper_5_param_1_hint, :default=> 'Minimum number of rows of referenced table') },]
         },
         {
+            :name  => t(:dragnet_helper_140_name, :default=> 'Tables with PCT_FREE > 0 but without update-DML'),
+            :desc  => t(:dragnet_helper_140_desc, :default=> "For tables without updates you may consider setting PCTFREE=0 and free this space by reorganizing this table.
+Free space in DB-blocks declared by PCT_FREE may be used for:
+- Reducing the risk of chained rows due to expansion of row-size by by update-statements
+- Reducing the risk of ITL-waits by allowing the expansion of the ITL-list above INI_TRANS entries
+This selection shows candidates without any update statements since last analyze.
+If you can exclude the need for allowing concurrent transactions in ITL-list above INI_TRANS than the recommendation is to set PCT_FREE=0.
+"),
+            :sql=> "SELECT *
+                    FROM   (
+                            SELECT t.Owner, t.Table_Name, NULL Partition_Name, NULL SubPartition_Name, t.PCT_Free, t.Num_Rows, t.Avg_Row_Len, t.Last_Analyzed,
+                                   ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024), 2) Size_MB_Netto,
+                                   ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024)*t.PCT_Free/100, 2) Size_MB_For_PctFree, t.INI_Trans, t.Max_Trans,
+                                   m.Inserts, m.Updates, m.Deletes, m.Truncated, m.Drop_Segments, m.Timestamp Last_DML_Timestamp
+                            FROM   DBA_Tables t
+                            JOIN   DBA_Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL AND m.SubPartition_Name IS NULL
+                            UNION ALL
+                            SELECT t.Table_Owner, t.Table_Name, t.Partition_Name, NULL SubPartition_Name,  t.PCT_Free, t.Num_Rows, t.Avg_Row_Len, t.Last_Analyzed,
+                                   ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024), 2) Size_MB_Netto,
+                                   ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024)*t.PCT_Free/100, 2) Size_MB_For_PctFree, t.INI_Trans, t.Max_Trans,
+                                   m.Inserts, m.Updates, m.Deletes, m.Truncated, m.Drop_Segments, m.Timestamp Last_DML_Timestamp
+                            FROM   DBA_Tab_Partitions t
+                            JOIN   DBA_Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name AND m.SubPartition_Name IS NULL
+                            UNION ALL
+                            SELECT t.Table_Owner, t.Table_Name, t.Partition_Name, t.SubPartition_Name,  t.PCT_Free, t.Num_Rows, t.Avg_Row_Len, t.Last_Analyzed,
+                                   ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024), 2) Size_MB_Netto,
+                                   ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024)*t.PCT_Free/100, 2) Size_MB_For_PctFree, t.INI_Trans, t.Max_Trans,
+                                   m.Inserts, m.Updates, m.Deletes, m.Truncated, m.Drop_Segments, m.Timestamp Last_DML_Timestamp
+                            FROM   DBA_Tab_SubPartitions t
+                            JOIN   DBA_Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name AND m.SubPartition_Name = t.SubPartition_Name
+                           )
+                    WHERE  PCT_Free > 0
+                    AND    Updates = 0
+                    AND    Last_Analyzed < SYSDATE - ?
+                    AND    Owner NOT IN ('SYS', 'XDB')
+                    ORDER BY Num_Rows*Avg_Row_Len*PCT_Free DESC ",
+            :parameter=>[{:name=>t(:dragnet_helper_140_param_1_name, :default=> 'Min. no. days since last analyze'), :size=>8, :default=>8, :title=>t(:dragnet_helper_140_param_1_hint, :default=> 'Minimum number of days since last analyze timestamp for object') },]
+        },
+        {
             :name  => t(:dragnet_helper_107_name, :default=> 'Relevance of access on migrated / chained rows compared to total amount of table access'),
             :desc  => t(:dragnet_helper_107_desc, :default=> 'chained rows causes additional read of migrated rows in separate DB-blocks while accessing a record which is not completely contained in current block.
 Chained rows can be avoided by adjusting PCTFREE and reorganization of affected table.
@@ -86,7 +125,7 @@ This selection shows the relevance of access on chained rows compared to total a
                                       SELECT /*+ NO_MERGE*/ ss.Begin_Interval_Time, st.Stat_Id, st.Stat_Name, ss.Min_Snap_ID, st.Snap_ID,
                                              Value - LAG(Value, 1, Value) OVER (PARTITION BY st.Instance_Number, st.Stat_ID ORDER BY st.Snap_ID) Value
                                       FROM   (SELECT /*+ NO_MERGE*/ DBID, Instance_Number, Begin_Interval_Time, Snap_ID,
-                                                     MIN(Snap_ID) OVER (PARTITION BY Instance_Number) Min_Snap_ID
+                                                     MIN(Snap_ID) KEEP (DENSE_RANK FIRST ORDER BY ss.Begin_Interval_Time) OVER (PARTITION BY Instance_Number) Min_Snap_ID /* Snap_ID may start again with 1 in cloned instances */
                                               FROM   DBA_Hist_Snapshot ss
                                               WHERE  Begin_Interval_Time >= SYSDATE - ?
                                               AND    ( (SELECT Instance FROM Inst_Filter) IS NULL OR ss.Instance_Number = (SELECT Instance FROM Inst_Filter)    )

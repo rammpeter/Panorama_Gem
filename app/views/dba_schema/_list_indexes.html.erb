@@ -32,17 +32,36 @@
    end
 
 
-   def link_using_sqls(rec)
-       ajax_link('Show',
-                               {:controller   => :dba_sga,
-                                :action       => :show_using_sqls,
-                                :ObjectOwner => rec.owner,
-                                :ObjectName  => rec.index_name,
-                                :update_area  => @update_area,
-                               },
-                       :title=>"Show SQLs in SGA (gv$SQL_Plan) using this index"
-       )
-   end
+  link_using_sqls = proc do |rec|
+     ajax_link('Show',  {:controller   => :dba_sga,
+                           :action       => :show_using_sqls,
+                           :ObjectOwner => rec.owner,
+                           :ObjectName  => rec.index_name,
+                           :update_area  => @update_area,
+                          },
+                  :title=>"Show SQLs in SGA (gv$SQL_Plan) using this index")
+  end
+
+  link_ash = proc do |rec|
+    ajax_link('Show',  {controller:   :active_session_history,
+                        action:       :show_prepared_active_session_history,
+                        db_object:    "#{@owner.downcase}.#{rec.index_name}",
+                        update_area:  @update_area,
+                       },
+                       title: "Show sessions from active session history accessing this index"
+             )
+  end
+
+   link_segment_statistics = proc do |rec|
+    ajax_link('Show', {
+        update_area:            @update_area,
+        controller:             :dba_history,
+        action:                 :list_segment_stat_hist_detail,
+        owner:                  @owner,
+        object_name:            rec.index_name,
+    }, :title => "Show segement statistics from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Seg_Stat')} for all recorded AWR snapshots for #{@owner}.#{rec.index_name}")
+  end
+
 
   def link_current_index_stats(rec, value)
      ajax_link(value,
@@ -101,7 +120,9 @@
                    {:caption=> 'Last analyzed',    :data=>proc{|rec| localeDateTime(rec.last_analyzed)},                  :title=> 'The date of the most recent time this table was analyzed'},
                    {:caption=> 'F. Stat.',         :data=>proc{|rec| rec.funcidx_status},                                 :title=> 'Is the Function-based Index DISABLED or ENABLED?'},
                    {:caption=> 'Use',              :data=>proc{|rec| rec.used},                                           :title=> 'Usage of index detected? From sys.Object_Usage', :data_title=>proc{|rec| "%t: monitoring index = #{rec.monitoring}, start monitoring = #{localeDateTime(rec.start_monitoring)}, end monitoring = #{localeDateTime(rec.end_monitoring)}"}, :data_style=>proc{|rec| 'background-color:coral;' if rec.used=='NO'} },
-                   {:caption=> 'SQLs',             :data=>proc{|rec| link_using_sqls(rec)},                               :title=> 'Click link to show SQLs in SGA using this index'},
+                   {:caption=> 'SQLs',             :data=>link_using_sqls,                                                :title=> 'Click link to show SQLs in SGA using this index'},
+                   {:caption=> 'ASH',              :data=>link_ash,                                                       :title=> 'Click link to show recorded sessions from Active Session History accessing this index'},
+                   {:caption=> 'Segm. stats',      :data=>link_segment_statistics,                                        :title=> "Click link to show segement statistics from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Seg_Stat')} for all recorded AWR snapshots"},
            ]
 
 %>
