@@ -323,17 +323,32 @@ class StorageController < ApplicationController
   end
 
   def list_materialized_view_logs
+    @log_owner = params[:log_owner]
+    @log_owner = nil if @log_owner == ''
+
+    @log_name = params[:log_name]
+    @log_name = nil if @log_name == ''
+
+    @master = params[:master]
+    @master = nil if @master == ''
+
+
     where_string = ""
     where_values = []
 
-    if params[:log_owner]
+    if @log_owner
       where_string << " AND l.Log_Owner = ?"
-      where_values << params[:log_owner]
+      where_values << @log_owner
     end
 
-    if params[:log_name]
+    if @log_name
       where_string << " AND l.Log_Table = ?"
-      where_values << params[:log_name]
+      where_values << @log_name
+    end
+
+    if @master
+      where_string << " AND l.master = ?"
+      where_values << @master
     end
 
     @logs = sql_select_iterator ["\

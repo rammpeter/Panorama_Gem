@@ -424,6 +424,8 @@ class DbaSchemaController < ApplicationController
                                            ", @owner, @table_name]
     end
 
+    @mv_log_count = sql_select_one ["SELECT COUNT(*) FROM  DBA_MView_Logs WHERE Log_Owner = ? AND Master = ?", @owner, @table_name]
+
     @unique_constraints = sql_select_all ["\
       SELECT c.*
       FROM   DBA_Constraints c

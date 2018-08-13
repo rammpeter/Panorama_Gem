@@ -26,8 +26,14 @@ class StorageControllerTest < ActionController::TestCase
     post :list_materialized_view_action, :params => { :format=>:html, :all_mviews => "Hugo", :update_area=>:hugo  }
     assert_response :success
 
-    post :list_materialized_view_action, :params => { :format=>:html, :mview_logs => "Hugo", :update_area=>:hugo  }
-    assert_response :success
+    [nil, 'SYS'].each do |log_owner|
+      [nil, 'LOG'].each do |log_name|
+        [nil, 'MASTER'].each do |master|
+          post :list_materialized_view_action, :params => { :format=>:html, :mview_logs => "Hugo", log_owner: log_owner, log_name: log_name, master: master, :update_area=>:hugo  }
+          assert_response :success
+        end
+      end
+    end
 
     get :list_registered_materialized_views, :params => { :format=>:html, :update_area=>:hugo  }
     assert_response :success

@@ -201,6 +201,23 @@ column_options =
   <%= render_yellow_pre(@mv_attribs.query, 450) %>
 <% end %>
 
+<% if @mv_log_count > 0 %>
+  <% @update_area_mv_log = get_unique_area_id %>
+  <script type="text/javascript">
+      ajax_html('<%= @update_area_mv_log %>', 'storage', 'list_materialized_view_action', {
+          update_area: "<%= @update_area_mv_log %>",
+          mview_logs:  'Materialized view logs',
+          log_owner:   "<%= @owner %>",
+          master:      "<%= @table_name %>"
+      }, {retain_status_message: true});
+  </script>
+  <div id="<%= @update_area_mv_log %>"></div>
+<% end %>
+
+
+
+
+
 <% if @unique_constraints.count > 0 %>
     <%=
         column_options =
