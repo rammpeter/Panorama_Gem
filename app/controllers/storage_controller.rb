@@ -241,8 +241,9 @@ class StorageController < ApplicationController
       when params[:registered_mviews]      then list_registered_materialized_views
       when params[:all_mviews]             then list_all_materialized_views
       when params[:mview_logs]             then list_materialized_view_logs
-      else
-        raise "params missing for :mview or :mview_logs"
+      when params[:refresh_groups]         then list_refresh_groups
+    else
+      raise "params missing for :mview or :mview_logs"
     end
   end
 
@@ -282,6 +283,9 @@ class StorageController < ApplicationController
   end
 
   def list_all_materialized_views
+    @refresh_group = params[:refresh_group]
+    @refresh_group = nil if @refresh_group == ''
+
     where_string = ""
     where_values = []
 
@@ -295,6 +299,11 @@ class StorageController < ApplicationController
       where_values << params[:name]
     end
 
+    if @refresh_group
+      where_string << " AND s.Refresh_Group = ?"
+      where_values << @refresh_group
+    end
+
     @called_from_object_description = params[:called_from_object_description]
 
     global_name = sql_select_one 'SELECT Name FROM v$Database'
@@ -306,7 +315,7 @@ class StorageController < ApplicationController
              t.Num_Rows, t.Last_Analyzed,
              s.Table_Name, s.Master_view, s.Master_Owner, s.Master, s.Can_Use_Log,
              s.Refresh_Method Fast_Refresh_Method, s.Error, s.fr_operations, s.cr_operations, s.Refresh_Group,
-             s.Status content_status, o.Status Object_Status
+             s.Status content_status, o.Status Object_Status, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Last_Spec_Time
       FROM   dba_MViews m
       LEFT OUTER JOIN DBA_Snapshots s ON s.Owner = m.Owner AND s.Name = m.MView_Name
       /* Lokal Registrierte MViews auf gleicher DB */
@@ -417,6 +426,31 @@ class StorageController < ApplicationController
     respond_to do |format|
       format.html {render :html => render_yellow_pre(text)}
     end
+  end
+
+  def list_refresh_groups
+    @refgroup = params[:refgroup]
+    @refgroup = nil if @refgroup == ''
+
+    where_string = ''
+    where_values = []
+
+    if @refgroup
+      where_string << " AND RefGroup = ?"
+      where_values << @refgroup.to_i
+    end
+
+    @groups = sql_select_iterator ["
+      SELECT r.*, s.Snapshots
+      FROM   DBA_Refresh r
+      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Refresh_Group, COUNT(*) Snapshots
+                       FROM   DBA_Snapshots
+                       GROUP BY Refresh_Group
+                      ) s ON s.Refresh_Group = r.RefGroup
+      WHERE  1=1#{where_string}
+    "].concat(where_values)
+
+    render_partial :list_refresh_groups
   end
 
   # Ermittlung und Anzeige der realen Größe

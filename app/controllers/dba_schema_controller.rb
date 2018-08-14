@@ -788,7 +788,7 @@ class DbaSchemaController < ApplicationController
     @object_name = params[:object_name]
     @object_type = params[:object_type]
 
-    @dependencies_from_me = sql_select_all ["SELECT d.*, o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
+    @dependencies_from_me = sql_select_all ["SELECT d.*, o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, o.Status,
                                                     (SELECT COUNT(*) FROM DBA_Dependencies di WHERE di.Referenced_Owner =d.Owner AND di.Referenced_Name = d.Name AND di.Referenced_Type = d.Type) Depending
                                              FROM   DBA_Dependencies d
                                              LEFT OUTER JOIN DBA_Objects o ON o.Owner = d.Owner AND o.Object_Name = d.Name AND o.Object_Type = d.Type AND o.SubObject_Name IS NULL
@@ -797,7 +797,7 @@ class DbaSchemaController < ApplicationController
                                              AND    d.Referenced_Type = ?
                                             ", @owner, @object_name, @object_type]
 
-    @dependencies_im_from = sql_select_all ["SELECT d.*, o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
+    @dependencies_im_from = sql_select_all ["SELECT d.*, o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, o.Status,
                                                     (SELECT COUNT(*) FROM DBA_Dependencies di WHERE di.Owner =d.Referenced_Owner AND di.Name = d.Referenced_Name AND di.Type = d.Referenced_Type) Depending
                                              FROM   DBA_Dependencies d
                                              LEFT OUTER JOIN DBA_Objects o ON o.Owner = d.Referenced_Owner AND o.Object_Name = d.Referenced_Name AND o.Object_Type = d.Referenced_Type AND o.SubObject_Name IS NULL
