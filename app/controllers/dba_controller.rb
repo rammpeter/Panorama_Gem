@@ -458,6 +458,26 @@ class DbaController < ApplicationController
   end
 
   def oracle_parameter
+    @name_array = params[:name_array]
+    @name_array = nil if @name_array == ''
+
+    @caption = params[:caption]
+    @caption = nil if @caption == ''
+
+    where_string = ''
+    where_values = []
+
+    if @name_array
+      raise "Array type expected instead of #{@name_array.class} for parameter @name_array" if @name_array.class != Array
+      where_string << " AND Name IN ("
+      @name_array.each_index do |i|
+        where_string << "?"
+        where_string << "," if i < @name_array.count-1
+        where_values << @name_array[i]
+      end
+      where_string << ")"
+    end
+
     @hint = nil
 
     record_modifier = proc{|rec|
@@ -466,61 +486,68 @@ class DbaController < ApplicationController
     }
 
     begin
-      @parameters = sql_select_iterator("\
-        SELECT /* Panorama-Tool Ramm */
-               NVL(v.Instance,      i.Instance)      Instance,
-               NVL(v.ID,            i.ID)            ID,
-               NVL(v.ParamType,     i.ParamType)     ParamType,
-               NVL(v.Name,          i.Name)          Name,
-               NVL(v.Description,   i.Description)   Description,
-               NVL(v.Value,         i.Value)         Value,
-               NVL(v.Display_Value, i.Display_Value) Display_Value,
-               NVL(v.IsDefault,     i.IsDefault)     IsDefault
-        FROM   (SELECT /*+ NO_MERGE */
-                       i.Instance_Number                 Instance,  -- Daten koennen nur on aktueller Instance gezogen werden
-                       X$KSPPI.INDX                      ID,
-                       X$KSPPI.KSPPITY                   ParamType,
-                       X$KSPPI.KSPPINM                   Name,
-                       X$KSPPI.KSPPDESC                  Description,
-                       X$KSPPSV.KSPPSTVL                 Value,
-                       NULL /* X$KSPPSV.ksppstdvl */     Display_Value, -- existiert ab 11g nicht mehr in dem View
-                       X$KSPPSV.KSPPSTDF                 IsDefault
-                FROM  X$KSPPI
-                JOIN  X$KSPPSV ON X$KSPPSV.INDX = X$KSPPI.INDX
-                CROSS JOIN  V$Instance i
-               ) i
-        FULL OUTER JOIN (
-                         SELECT /*+ NO_MERGE */
-                                Inst_ID                Instance,
-                                Num                    ID,
-                                Type                   ParamType,
-                                Name,
-                                Description,
-                                Value,
-                                Display_Value,
-                                IsDefault
-                         FROM  gv$Parameter
-                        ) v ON v.Instance = i.Instance AND v.ID = i.ID+1
-        ORDER BY Name, Instance",
+      @parameters = sql_select_iterator(["\
+        SELECT /* Panorama-Tool Ramm */ *
+        FROM   (SELECT NVL(v.Instance,      i.Instance)      Instance,
+                       NVL(v.ID,            i.ID)            ID,
+                       NVL(v.ParamType,     i.ParamType)     ParamType,
+                       NVL(v.Name,          i.Name)          Name,
+                       NVL(v.Description,   i.Description)   Description,
+                       NVL(v.Value,         i.Value)         Value,
+                       NVL(v.Display_Value, i.Display_Value) Display_Value,
+                       NVL(v.IsDefault,     i.IsDefault)     IsDefault,
+                       v.ISSES_MODIFIABLE, v.IsSys_Modifiable, v.IsInstance_Modifiable, v.IsModified, v.IsAdjusted, v.IsDeprecated, v.Update_Comment#{", v.IsBasic" if get_db_version >= '11.1'}#{", v.Con_ID" if get_db_version >= '12.1'}
+                FROM   (SELECT /*+ NO_MERGE */
+                               i.Instance_Number                 Instance,  -- Daten koennen nur on aktueller Instance gezogen werden
+                               X$KSPPI.INDX                      ID,
+                               X$KSPPI.KSPPITY                   ParamType,
+                               X$KSPPI.KSPPINM                   Name,
+                               X$KSPPI.KSPPDESC                  Description,
+                               X$KSPPSV.KSPPSTVL                 Value,
+                               NULL /* X$KSPPSV.ksppstdvl */     Display_Value, -- existiert ab 11g nicht mehr in dem View
+                               X$KSPPSV.KSPPSTDF                 IsDefault
+                        FROM  X$KSPPI
+                        JOIN  X$KSPPSV ON X$KSPPSV.INDX = X$KSPPI.INDX
+                        CROSS JOIN  V$Instance i
+                       ) i
+                FULL OUTER JOIN (
+                                 SELECT /*+ NO_MERGE */
+                                        Inst_ID                Instance,
+                                        Num                    ID,
+                                        Type                   ParamType,
+                                        Name,
+                                        Description,
+                                        Value,
+                                        Display_Value,
+                                        IsDefault,
+                                        ISSES_MODIFIABLE, IsSys_Modifiable, IsInstance_Modifiable, IsModified, IsAdjusted, IsDeprecated, Update_Comment#{", IsBasic" if get_db_version >= '11.1'}#{", Con_ID" if get_db_version >= '12.1'}
+                                 FROM  gv$Parameter
+                                ) v ON v.Instance = i.Instance AND v.ID = i.ID+1
+               )
+        WHERE 1=1 #{where_string}
+        ORDER BY Name, Instance"].concat(where_values),
         record_modifier
       )
 
       render_partial
 
     rescue Exception
-      @hint = "Möglicherweise fehlende Zugriffsrechte auf Tabellen X$KSPPI und X$KSPPSV !</br>
+      if @name_array.nil?
+        @hint = "Möglicherweise fehlende Zugriffsrechte auf Tabellen X$KSPPI und X$KSPPSV !</br>
   Es werden deshalb nur die documented Parameter aus GV$Parameter angezeigt.</br></br>
 
   Lösung: Exec als User 'SYS':</br>
-    create view X_$KSPPI as select * from X$KSPPI;</br>
-    grant select on X_$KSPPI to public;</br>
-    create public synonym X$KSPPI for sys.X_$KSPPI;</br></br>
+  &nbsp;&nbsp;  create view X_$KSPPI as select * from X$KSPPI;</br>
+  &nbsp;&nbsp;  grant select on X_$KSPPI to public;</br>
+  &nbsp;&nbsp;  create public synonym X$KSPPI for sys.X_$KSPPI;</br></br>
 
-    create view X_$KSPPSV as select * from X$KSPPSV;</br>
-    grant select on X_$KSPPSV to public;</br>
-    create public synonym X$KSPPSV for sys.X_$KSPPSV;
+  &nbsp;&nbsp;  create view X_$KSPPSV as select * from X$KSPPSV;</br>
+  &nbsp;&nbsp;  grant select on X_$KSPPSV to public;</br>
+  &nbsp;&nbsp;  create public synonym X$KSPPSV for sys.X_$KSPPSV;
   ".html_safe
-      @parameters = sql_select_iterator("\
+
+      end
+      @parameters = sql_select_iterator(["\
         SELECT /* Panorama-Tool Ramm */
           Inst_ID                Instance,
           Num                    ID,
@@ -529,9 +556,11 @@ class DbaController < ApplicationController
           Description,
           Value,
           Display_Value,
-          IsDefault
+          IsDefault,
+          ISSES_MODIFIABLE, IsSys_Modifiable, IsInstance_Modifiable, IsModified, IsAdjusted, IsDeprecated, Update_Comment#{", IsBasic" if get_db_version >= '11.1'}#{", Con_ID" if get_db_version >= '12.1'}
         FROM  gv$Parameter
-        ORDER BY Name, Inst_ID",
+        WHERE 1=1 #{where_string}
+        ORDER BY Name, Inst_ID"].concat(where_values),
         record_modifier
       )
 
