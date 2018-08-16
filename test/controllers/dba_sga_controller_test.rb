@@ -25,7 +25,6 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
     @sga_child_number = sql_row.child_number
     @hist_parsing_schema_name = sql_row.parsing_schema_name
 
-    @object_id = sql_select_one "SELECT Object_ID FROM DBA_Objects WHERE Object_Name = 'OBJ$'"
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
@@ -178,8 +177,8 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
     assert_response management_pack_license == :none ? :error : :success
   end
 
-  test "list_db_cache_by_object_id with xhr: true" do
-    post '/dba_sga/list_db_cache_by_object_id', :params => {:format=>:html, :object_id=>@object_id, :update_area=>:hugo }
+  test "list_db_cache_by_object with xhr: true" do
+    post '/dba_sga/list_db_cache_by_object', :params => {:format=>:html, owner: 'SYS', object_name: 'OBJ$', :update_area=>:hugo }
     assert_response :success
   end
 

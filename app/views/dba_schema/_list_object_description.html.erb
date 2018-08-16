@@ -335,9 +335,10 @@ column_options =
   <div class="flex-row-element">
     <%= ajax_submit('DB-Cache', {
         :update_area => @update_area,
-        :action      => :list_db_cache_by_object_id,
+        :action      => :list_db_cache_by_object,
         :controller  => :dba_sga,
-        :object_id    => @attribs[0].table_object_id
+        owner:       @owner,
+        object_name: @table_name
     }, :title => "Usage of DB-cache for object #{@owner}.#{@table_name}")
     %>
   </div>

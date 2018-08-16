@@ -1216,12 +1216,12 @@ class DbaSgaController < ApplicationController
   end
 
   # List cache-Entries of object
-  def list_db_cache_by_object_id
-    @object_row = sql_select_first_row ['SELECT * FROM DBA_Objects WHERE Object_ID=?', params[:object_id]]
-    raise PopupMessageException.new("No object found in DBA_Objects for Object_ID=#{params[:object_id]}") unless @object_row
+  def list_db_cache_by_object
+    @owner       = params[:owner]
+    @object_name = params[:object_name]
 
     @caches = sql_select_all ["
-      SELECT x.Inst_ID,
+      SELECT x.Inst_ID, Owner, Object_Name, SubObject_Name, Object_Type,
              SUM(x.Blocks * ts.BlockSize)/(1024*1024) MB_Total,
              SUM(x.Blocks * ts.BlockSize)/(SELECT Value FROM gv$SGA s WHERE s.Inst_ID = x.Inst_ID AND s.Name = 'Database Buffers')*100 Pct,
              SUM(Blocks) Blocks,
@@ -1231,20 +1231,30 @@ class DbaSgaController < ApplicationController
              SUM(cr)     cr,
              SUM(read)   read
       FROM   (
-              SELECT c.Inst_ID, TS#, COUNT(*) Blocks,
+              SELECT o.Owner, o.Object_Name, o.SubObject_Name, o.Object_Type, c.Inst_ID, TS#, COUNT(*) Blocks,
                      SUM(DECODE(c.Dirty, 'Y', 1, 0)) Dirty,
                      SUM(DECODE(c.Status, 'xcur', 1, 0)) xcur,
                      SUM(DECODE(c.Status, 'scur', 1, 0)) scur,
                      SUM(DECODE(c.Status, 'cr', 1, 0)) cr,
                      SUM(DECODE(c.Status, 'read', 1, 0)) read
-              FROM   DBA_Objects o
+              FROM   (SELECT /*+ NO_MERGE */ *
+                      FROM   (
+                              SELECT Owner, Object_Name, SubObject_Name, Object_Type, Data_Object_ID
+                              FROM   DBA_Objects
+                              WHERE  Owner = ? AND Object_Name = ?
+                              UNION ALL   /* Include all indexes of a table if object is a table */
+                              SELECT Owner, Object_Name, SubObject_Name, Object_Type, Data_Object_ID
+                              FROM   DBA_Objects
+                              WHERE (Owner, Object_Name) IN (SELECT Owner, Index_Name FROM DBA_Indexes WHERE Table_Owner = ? AND Table_Name = ?)
+                             )
+                     ) o
               JOIN   gv$BH c ON c.Objd = o.Data_Object_ID
-              WHERE  o.Object_ID = ?
-              GROUP BY c.Inst_ID, TS#
+              GROUP BY c.Inst_ID, TS#, o.Owner, o.Object_Name, o.SubObject_Name, o.Object_Type
              ) x
       JOIN   sys.TS$ ts ON ts.TS# = x.TS#
-      GROUP BY Inst_ID
-    ", params[:object_id]]
+      GROUP BY Inst_ID, Owner, Object_Name, SubObject_Name, Object_Type
+      ORDER BY MB_Total DESC
+    ", @owner, @object_name, @owner, @object_name]
 
     render_partial :list_db_cache_by_object_id
   end

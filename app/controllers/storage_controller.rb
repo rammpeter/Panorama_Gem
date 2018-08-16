@@ -567,18 +567,17 @@ class StorageController < ApplicationController
       ORDER BY SUM(Bytes) DESC")
 
     @undo_segments = sql_select_iterator("\
-      SELECT /* Panorama-Tool Ramm */ i.*, t.Transactions, r.Segment_ID,
-             (SELECT Inst_ID FROM gv$Parameter p WHERE Name='undo_tablespace' AND p.Value = i.Tablespace_Name) Inst_ID
-      FROM   (SELECT
-                     Owner, Segment_Name, Tablespace_Name,
-                     SUM(Bytes)/(1024*1024) Size_MB,
-                     SUM(DECODE(Status, 'UNEXPIRED', Bytes, 0))/(1024*1024) Size_MB_UnExpired,
-                     SUM(DECODE(Status, 'EXPIRED',   Bytes, 0))/(1024*1024) Size_MB_Expired,
-                     SUM(DECODE(Status, 'ACTIVE',    Bytes, 0))/(1024*1024) Size_MB_Active
-              FROM   DBA_UNDO_Extents e
-              GROUP BY Owner, Segment_Name, Tablespace_Name
-            ) i
-      LEFT OUTER JOIN DBA_Rollback_Segs r ON r.Segment_Name = i.Segment_Name
+      SELECT /* Panorama-Tool Ramm */ r.*, i.Owner Extent_Owner, i.Size_MB, i.Size_MB_UnExpired, i.Size_MB_Expired, i.Size_MB_Active, t.Transactions
+             --,(SELECT Inst_ID FROM gv$Parameter p WHERE Name='undo_tablespace' AND p.Value = i.Tablespace_Name) Inst_ID
+      FROM   DBA_Rollback_Segs r
+      LEFT OUTER JOIN (SELECT Owner, Segment_Name, Tablespace_Name,
+                              SUM(Bytes)/(1024*1024) Size_MB,
+                              SUM(DECODE(Status, 'UNEXPIRED', Bytes, 0))/(1024*1024) Size_MB_UnExpired,
+                              SUM(DECODE(Status, 'EXPIRED',   Bytes, 0))/(1024*1024) Size_MB_Expired,
+                              SUM(DECODE(Status, 'ACTIVE',    Bytes, 0))/(1024*1024) Size_MB_Active
+                       FROM   DBA_UNDO_Extents e
+                       GROUP BY Owner, Segment_Name, Tablespace_Name
+                     ) i ON i.Segment_Name = r.Segment_Name AND i.Tablespace_Name = r.Tablespace_Name
       LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ XidUsn, COUNT(*) Transactions FROM gv$Transaction GROUP BY XidUsn) t ON t.XidUsn = r.Segment_ID
       ORDER BY Size_MB DESC")
 

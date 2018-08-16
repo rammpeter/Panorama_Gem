@@ -1396,13 +1396,19 @@ WHERE RowNum < 100
                        @object_type
                    end
 
-    ddl = sql_select_one ["SELECT DBMS_METADATA.GET_DDL(object_type => ?, schema => ?, name => ?) FROM DUAL", @object_type, @owner, @table_name]
+    begin
+      ddl = sql_select_one ["SELECT DBMS_METADATA.GET_DDL(object_type => ?, schema => ?, name => ?) FROM DUAL", @object_type, @owner, @table_name]
 
-    indexes = sql_select_all ["SELECT Owner, Index_Name FROM DBA_Indexes WHERE Table_Owner = ? AND Table_Name = ?", @owner, @table_name]
+      indexes = sql_select_all ["SELECT Owner, Index_Name FROM DBA_Indexes WHERE Table_Owner = ? AND Table_Name = ?", @owner, @table_name]
 
-    indexes.each do |i|
-      index_ddl = sql_select_one ["SELECT DBMS_METADATA.GET_DDL(object_type => 'INDEX', schema => ?, name => ?) FROM DUAL", i.owner, i.index_name]
-      ddl << "\n#{index_ddl}"
+      indexes.each do |i|
+        index_ddl = sql_select_one ["SELECT DBMS_METADATA.GET_DDL(object_type => 'INDEX', schema => ?, name => ?) FROM DUAL", i.owner, i.index_name]
+        ddl << "\n#{index_ddl}"
+      end
+    rescue Exception => e
+      message = e.message
+      message << "\n\nPossible reason: You need to have SELECT_CATALOG_ROLE to get results from DBMS_METADATA.GET_DDL"
+      raise message
     end
 
     respond_to do |format|
