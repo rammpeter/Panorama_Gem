@@ -72,6 +72,7 @@ column_options << {:caption=>'Client driver',       :data=>proc{|rec| rec.client
   column_options = []
   column_options << {:caption=>"",                :data=>proc{|rec| rec[:caption]} }
   column_options << {:caption=>"SQL-ID",          :data=>proc{|rec| link_sql_id(@update_area, @instance, rec[:sql_id], rec[:sql_child_number])}, :title=>"Currently or previously executed SQL-ID"  }
+  column_options << {:caption=>"C.",              :data=>proc{|rec| rec[:sql_child_number]}, :title=>"Child number of SQL", align: :right  }
   column_options << {:caption=>'SQL exec start',  :data=>proc{|rec| localeDateTime(rec[:sql_exec_start])},  :title=>"Start of current SQL execution"  }                         if get_db_version >= '11.1'
   column_options << {:caption=>'SQL exec ID',     :data=>proc{|rec| fn(rec[:sql_exec_id])},                 :title=>"ID / sequence of current SQL execution", :align=>:right  } if get_db_version >= '11.1'
   column_options << {:caption=>"SQL-Text", :data=>proc{|rec| "<pre class=\"monospace\">#{convert_word_wrap_comma(rec[:sql_text])}</pre>" }    }

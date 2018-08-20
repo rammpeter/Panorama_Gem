@@ -1464,7 +1464,7 @@ FROM (
                       GROUP BY Instance_Number
                      ) snap ON snap.Instance_Number = l.Instance_Number
               WHERE  l.DBID = ?
-              AND    l.Snap_ID+1 >= snap.Min_Snap_ID
+              AND    l.Snap_ID   >= snap.Min_Snap_ID - 1
               AND    l.Snap_ID   <= snap.Max_Snap_ID #{where_string}
               GROUP BY l.Latch_Name, l.Latch_Hash, l.Level#, l.Instance_Number
              ) x

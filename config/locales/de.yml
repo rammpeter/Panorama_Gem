@@ -1437,9 +1437,6 @@
     Wenn die Notwendigkeit für mehr konkurrierende Transaktionen in ITL-Liste als INI_TRANS ausgeschlossen werden kann, wird PCTFREE=0 empfohlen.
   dragnet_helper_140_name: |-
     Tabellen mit PCT_FREE > 0 aber ohne Update-DML
-  dragnet_helper_139_param_1_hint:                          Minimale Anzahl Tage seit dem letzten Analyse-Zeitpunkt des Objektes
-  dragnet_helper_139_param_1_name:                          Min. Anzahl Tage seite letzte Analyse
-
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 
