@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>text</title>
+  <g>
+    <path class="a" d="M16,16V496H496V16ZM464,464H48V48H464Z"/>
+    <polygon class="a" points="144 144 224 144 224 368 192 368 192 400 320 400 320 368 288 368 288 144 368 144 368 176 400 176 400 112 112 112 112 176 144 176 144 144"/>
+  </g>
+</svg>

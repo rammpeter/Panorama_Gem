@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>compress</title>
+  <g>
+    <polygon class="a" points="128 128 16 128 16 192 192 192 192 16 128 16 128 128"/>
+    <polygon class="a" points="384 128 384 16 320 16 320 192 496 192 496 128 384 128"/>
+    <polygon class="a" points="320 496 384 496 384 384 496 384 496 320 320 320 320 496"/>
+    <polygon class="a" points="16 384 128 384 128 496 192 496 192 320 16 320 16 384"/>
+  </g>
+</svg>

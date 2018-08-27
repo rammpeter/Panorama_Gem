@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>medical-cross</title>
+  <path class="a" d="M344,495.9976H168v-152H16v-176H168v-152H344v152H496v176H344Zm-144-32H312v-152H464v-112H312v-152H200v152H48v112H200Z"/>
+</svg>

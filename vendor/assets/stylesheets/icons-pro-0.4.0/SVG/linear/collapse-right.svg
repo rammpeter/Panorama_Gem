@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>collapse-right</title>
+  <g>
+    <rect class="a" x="464" y="16" width="32" height="480"/>
+    <path class="a" d="M16,496H144V16H16ZM48,48h64V464H48Z"/>
+    <path class="a" d="M192,96V416h37.86L399.2236,256.0767,231.9214,96Zm32,281.522V132.709L352.7764,255.9233Z"/>
+  </g>
+</svg>

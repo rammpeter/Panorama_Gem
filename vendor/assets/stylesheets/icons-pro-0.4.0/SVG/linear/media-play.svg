@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>media-play</title>
+  <g>
+    <path class="a" d="M388.9326,252.064,202.2217,111.9976H165.8184v280h34.6367ZM197.8184,148.6978,335.4307,251.9312,197.8184,354.1Z"/>
+    <path class="a" d="M16,15.9976v480H496v-480Zm448,448H48v-416H464Z"/>
+  </g>
+</svg>

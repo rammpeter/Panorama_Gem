@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>stop-circle</title>
+  <path class="a" d="M425.7061,86.2939A240.0007,240.0007,0,0,0,86.2939,425.7061,240.0007,240.0007,0,0,0,425.7061,86.2939ZM336,336H176V176H336Z"/>
+</svg>

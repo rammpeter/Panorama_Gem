@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>chevron-circle-down</title>
+  <path class="a" d="M425.7061,86.2944A240,240,0,0,0,86.2939,425.7056,240,240,0,0,0,425.7061,86.2944ZM255.9731,376,104,224.0269,160.0269,168l95.9462,95.946,94.5455-94.5454,56.0268,56.027Z"/>
+</svg>

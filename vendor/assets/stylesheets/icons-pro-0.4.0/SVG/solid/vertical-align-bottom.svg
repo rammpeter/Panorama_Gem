@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>vertical-align-bottom</title>
+  <g>
+    <rect class="a" x="16" y="16" width="128" height="400"/>
+    <rect class="a" x="192" y="166.2998" width="128" height="249.7002"/>
+    <rect class="a" x="368" y="16" width="128" height="400"/>
+    <rect class="a" x="16" y="451" width="480" height="42"/>
+  </g>
+</svg>

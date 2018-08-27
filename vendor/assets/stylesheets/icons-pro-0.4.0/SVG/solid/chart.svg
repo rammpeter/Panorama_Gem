@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>chart</title>
+  <g>
+    <rect class="a" x="16" y="136" width="128" height="360" rx="20" ry="20"/>
+    <rect class="a" x="192" y="240" width="128" height="256" rx="20" ry="20"/>
+    <rect class="a" x="368" y="16" width="128" height="480" rx="20" ry="20"/>
+  </g>
+</svg>

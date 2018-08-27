@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>bold</title>
+  <g>
+    <path class="a" d="M296,277H213v86h83a43,43,0,0,0,0-86Z"/>
+    <path class="a" d="M299,192a43.0491,43.0491,0,0,0-43-43H213v86h43A43.0491,43.0491,0,0,0,299,192Z"/>
+    <path class="a" d="M16,16V496H496V16ZM320,405H112V363h35V149H112V107H280a84.9366,84.9366,0,0,1,69.81,133.4089A84.9941,84.9941,0,0,1,320,405Z"/>
+  </g>
+</svg>

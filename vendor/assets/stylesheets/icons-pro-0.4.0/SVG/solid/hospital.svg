@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>hospital</title>
+  <path class="a" d="M424,454V104H352V16H160v88H88V454H16v42H496V454ZM316,296h40v40H316Zm-40-80v40H236V216Zm-40,80h40v40H236Zm120-80v40H316V216ZM200,86h38V48h36V86h38v36H274v38H238V122H200V86ZM156,216h40v40H156Zm0,80h40v40H156Zm82,88h36v70H238Z"/>
+</svg>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>grid-two-up</title>
+  <g>
+    <rect class="a" x="16" y="288" width="208" height="208"/>
+    <rect class="a" x="16" y="16" width="208" height="208"/>
+    <rect class="a" x="288" y="288" width="208" height="208"/>
+    <rect class="a" x="288" y="16" width="208" height="208"/>
+  </g>
+</svg>

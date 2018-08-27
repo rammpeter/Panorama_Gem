@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>excerpt</title>
+  <g>
+    <rect class="a" x="16" y="344" width="480" height="32"/>
+    <rect class="a" x="16" y="152.3335" width="480" height="32"/>
+    <rect class="a" x="16" y="248" width="328" height="32"/>
+    <rect class="a" x="16" y="56" width="384" height="32"/>
+    <rect class="a" x="16" y="440" width="32" height="32"/>
+    <rect class="a" x="240" y="440" width="32" height="32"/>
+    <rect class="a" x="128" y="440" width="32" height="32"/>
+  </g>
+</svg>

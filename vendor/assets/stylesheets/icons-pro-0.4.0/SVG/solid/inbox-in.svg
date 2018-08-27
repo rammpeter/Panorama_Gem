@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>inbox-in</title>
+  <g>
+    <path class="a" d="M272,344l96-112H304V80a32,32,0,0,0-32-32h0a32,32,0,0,0-32,32V232H176Z"/>
+    <polygon class="a" points="336 59 336 192 451 192 451 304 350.111 304 318.111 368 209.889 368 177.889 304 77 304 77 192 208 192 208 59 35 59 35 501 493 501 493 59 336 59"/>
+  </g>
+</svg>

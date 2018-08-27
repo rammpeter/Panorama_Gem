@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>sun</title>
+  <g>
+    <path class="a" d="M256,104c-83.813,0-152,68.187-152,152s68.187,152,152,152,152-68.1865,152-152S339.813,104,256,104Zm0,272A120,120,0,1,1,376,256,120.1359,120.1359,0,0,1,256,376Z"/>
+    <rect class="a" x="240" y="16" width="32" height="48"/>
+    <rect class="a" x="240" y="448" width="32" height="48"/>
+    <rect class="a" x="448" y="240" width="48" height="32"/>
+    <rect class="a" x="16" y="240" width="48" height="32"/>
+    <rect class="a" x="400" y="393.3726" width="32" height="45.2548" transform="translate(-172.3128 416) rotate(-45)"/>
+    <rect class="a" x="79.9996" y="73.3726" width="32.0007" height="45.2548" transform="translate(-39.7645 96) rotate(-45)"/>
+    <rect class="a" x="73.3726" y="400" width="45.2548" height="32" transform="translate(-266.0436 189.7336) rotate(-45.0012)"/>
+    <rect class="a" x="393.3726" y="79.9996" width="45.2548" height="32.0007" transform="translate(53.9613 322.2742) rotate(-45)"/>
+  </g>
+</svg>

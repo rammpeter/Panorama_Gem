@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>bar-chart</title>
+  <g>
+    <rect class="a" x="152" y="112" width="136" height="272" rx="24" ry="24"/>
+    <rect class="a" x="360" y="16" width="136" height="368" rx="24" ry="24"/>
+    <polygon class="a" points="80 16 16 16 16 496 496 496 496 432 80 432 80 16"/>
+  </g>
+</svg>

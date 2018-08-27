@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>barcode</title>
+  <g>
+    <path class="a" d="M16,56V464H496V56ZM464,432H48V88H464Z"/>
+    <rect class="a" x="112" y="264" width="32" height="120"/>
+    <rect class="a" x="176" y="136" width="32" height="184"/>
+    <rect class="a" x="240" y="136" width="32" height="248"/>
+    <rect class="a" x="304" y="136" width="32" height="184"/>
+    <rect class="a" x="368" y="304" width="32" height="80"/>
+    <rect class="a" x="368" y="136" width="32" height="72"/>
+    <rect class="a" x="112" y="136" width="32" height="32"/>
+    <rect class="a" x="176" y="352" width="32" height="32"/>
+    <rect class="a" x="304" y="352" width="32" height="32"/>
+    <rect class="a" x="368" y="240" width="32" height="32"/>
+    <rect class="a" x="112" y="200" width="32" height="32"/>
+  </g>
+</svg>

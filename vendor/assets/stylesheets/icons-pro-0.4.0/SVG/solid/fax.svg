@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>fax</title>
+  <g>
+    <path class="a" d="M471.9448,240.84,444,216v36H168V496H480V258.7773A24,24,0,0,0,471.9448,240.84ZM256,448H216V408h40Zm0-80H216V328h40Zm80,80H296V408h40Zm0-80H296V328h40Zm80,80H376V408h40Zm0-80H376V328h40Z"/>
+    <polygon class="a" points="408 80 344 16 330 16 330 94 408 94 408 80"/>
+    <polygon class="a" points="408 130 294 130 294 16 168 16 168 216 408 216 408 130"/>
+    <path class="a" d="M40,192V480a16,16,0,0,0,16,16h76V176H56A16,16,0,0,0,40,192Z"/>
+  </g>
+</svg>

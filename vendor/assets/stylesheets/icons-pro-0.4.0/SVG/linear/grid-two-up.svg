@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>grid-two-up</title>
+  <g>
+    <path class="a" d="M16,496H224V288H16ZM48,320H192V464H48Z"/>
+    <path class="a" d="M16,224H224V16H16ZM48,48H192V192H48Z"/>
+    <path class="a" d="M288,496H496V288H288Zm32-176H464V464H320Z"/>
+    <path class="a" d="M288,16V224H496V16ZM464,192H320V48H464Z"/>
+  </g>
+</svg>

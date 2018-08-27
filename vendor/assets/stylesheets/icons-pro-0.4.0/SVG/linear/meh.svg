@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>meh</title>
+  <g>
+    <path class="a" d="M256,16C123.4517,16,16,123.4517,16,256S123.4517,496,256,496,496,388.5483,496,256,388.5483,16,256,16ZM403.0781,403.0781a207.2482,207.2482,0,1,1,44.5894-66.125A207.3468,207.3468,0,0,1,403.0781,403.0781Z"/>
+    <rect class="a" x="152" y="200" width="40" height="40"/>
+    <rect class="a" x="320" y="200" width="40" height="40"/>
+    <rect class="a" x="168" y="320" width="176" height="32"/>
+  </g>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>arrow-thick-from-bottom</title>
+  <g>
+    <path class="a" d="M256.1968,17.375,56,217.3682V256H176V400H336V256H456V217.377ZM304,224V368H208V224H94.6392L256.1743,62.6289,417.3838,224Z"/>
+    <rect class="a" x="56" y="464" width="400" height="32"/>
+  </g>
+</svg>

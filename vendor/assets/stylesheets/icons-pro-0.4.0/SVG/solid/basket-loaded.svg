@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>basket-loaded</title>
+  <g>
+    <path class="a" d="M393.4541,56.2207a113.6013,113.6013,0,0,0-170.1958-3.6728L175.7639,104H433.8824Z"/>
+    <circle class="a" cx="176" cy="432" r="64"/>
+    <circle class="a" cx="400" cy="432" r="64"/>
+    <polygon class="a" points="136 136 112 16 16 16 16 64 72 64 120 336 456 336 496 232 496 136 136 136"/>
+  </g>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>coffee</title>
+  <g>
+    <path class="a" d="M204.3,413h77.8A116.6363,116.6363,0,0,0,398.5044,301H417.6a77,77,0,0,0,0-154H87.8V296.5A116.632,116.632,0,0,0,204.3,413ZM398.6,189h19a35,35,0,0,1,0,70h-19Z"/>
+    <rect class="a" x="16" y="448" width="480" height="48"/>
+  </g>
+</svg>

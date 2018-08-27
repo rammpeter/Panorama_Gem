@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>energy</title>
+  <path class="a" d="M320,208V16H287.9053L64.376,320H200V496h31.8037l225-288ZM127.624,288,288,69.8887V240H391.1963L232,443.7705V288Z"/>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>volume-low</title>
+  <g>
+    <path class="a" d="M145.373,120H16V392H145.373l104,104H288V16H249.373ZM48,152h80V360H48ZM256,457.373l-96-96V150.627l96-96Z"/>
+    <path class="a" d="M320,168v32a56,56,0,0,1,0,112v32a88,88,0,0,0,0-176Z"/>
+  </g>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>keyboard</title>
+  <g>
+    <path class="a" d="M472,128H40a24.0275,24.0275,0,0,0-24,24V392a24.0275,24.0275,0,0,0,24,24H472a24.0275,24.0275,0,0,0,24-24V152A24.0275,24.0275,0,0,0,472,128Zm-8,256H48V160H464Z"/>
+    <rect class="a" x="144" y="320" width="160" height="32"/>
+    <rect class="a" x="80" y="320" width="32" height="32"/>
+    <rect class="a" x="400" y="320" width="32" height="32"/>
+    <rect class="a" x="336" y="320" width="32" height="32"/>
+    <rect class="a" x="368" y="256" width="32" height="32"/>
+    <rect class="a" x="304" y="256" width="32" height="32"/>
+    <rect class="a" x="240" y="256" width="32" height="32"/>
+    <rect class="a" x="176" y="256" width="32" height="32"/>
+    <rect class="a" x="112" y="256" width="32" height="32"/>
+    <rect class="a" x="336" y="192" width="32" height="32"/>
+    <rect class="a" x="400" y="192" width="32" height="32"/>
+    <rect class="a" x="272" y="192" width="32" height="32"/>
+    <rect class="a" x="208" y="192" width="32" height="32"/>
+    <rect class="a" x="144" y="192" width="32" height="32"/>
+    <rect class="a" x="80" y="192" width="32" height="32"/>
+  </g>
+</svg>

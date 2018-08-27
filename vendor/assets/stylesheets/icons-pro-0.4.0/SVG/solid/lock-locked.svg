@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>lock-locked</title>
+  <path class="a" d="M376,199.9976v-60a124,124,0,0,0-248,0v60H88v132c0,90.43,73.57,164,164,164s164-73.57,164-164v-132Zm-200-60a76,76,0,0,1,152,0v60H176Z"/>
+</svg>

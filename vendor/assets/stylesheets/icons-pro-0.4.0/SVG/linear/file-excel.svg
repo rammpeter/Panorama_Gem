@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>file-excel</title>
+  <g>
+    <path class="a" d="M358.627,16H72V496H496V153.3726ZM464,166.6274V168H344V48h1.373ZM104,464V48H312V200H464V464Z"/>
+    <polygon class="a" points="265.771 264 228 319.546 190.229 264 151.531 264 208.652 348 151.531 432 190.229 432 228 376.454 265.771 432 304.469 432 247.348 348 304.469 264 265.771 264"/>
+  </g>
+</svg>

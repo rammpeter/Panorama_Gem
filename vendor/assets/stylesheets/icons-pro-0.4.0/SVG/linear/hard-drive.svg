@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>hard-drive</title>
+  <g>
+    <path class="a" d="M56,32V480a16,16,0,0,0,16,16H456a16,16,0,0,0,16-16V32a16,16,0,0,0-16-16H72A16,16,0,0,0,56,32ZM440,48V320H88V48ZM88,464V352H440V464Z"/>
+    <rect class="a" x="364.5381" y="389.6145" width="34.9238" height="34.9236"/>
+    <rect class="a" x="288" y="389.6145" width="34.9238" height="34.9236"/>
+    <path class="a" d="M268,112V80A100.113,100.113,0,0,0,168,180h32A68.0773,68.0773,0,0,1,268,112Z"/>
+    <path class="a" d="M268,280A100.113,100.113,0,0,0,368,180H336a68.0773,68.0773,0,0,1-68,68Z"/>
+  </g>
+</svg>

@@ -16,11 +16,12 @@ module AjaxHelper
     context_menu_id = "#{div_id}_context_menu"
     output << "<div class=\"contextMenu\" id=\"#{context_menu_id}\" style=\"display:none;\"><ul>"
     command_array.each do |ca|
-      output << "<li id=\"#{context_menu_id}_#{ca[:name]}\" title=\"#{ca[:hint]}\"><span class=\"#{ca[:icon_class]}\" style=\"float:left\"></span><span>#{ca[:caption]}</span></li>"
+      output << "<li id=\"#{context_menu_id}_#{ca[:name]}\" title=\"#{ca[:hint]}\"><div class=\"#{ca[:icon_class]}\" style=\"display: inline-block;\"></div><div style=\"display: inline-block;\">&nbsp;#{ca[:caption]}</div></li>"
     end
     output << "</ul></div>"
     output << "</span>"
     output << "</span>"
+    output << "&nbsp;"   # Space before following icons
 
     output << "<script type=\"text/javascript\">"
     output << "var bindings = {};"
@@ -50,6 +51,7 @@ module AjaxHelper
   #                 :caption,
   #                 :hint,
   #                 :icon_class,
+  #                 :icon_style,
   #                 :action (JS-function)
   #                 :show_icon_in_caption => true|false|:only\:right  :only == only left
   #             left_addition:    insert html-content at left side after menu and icons
@@ -66,7 +68,7 @@ module AjaxHelper
       output << render_command_array_menu(command_array)
       command_array.each do |cmd|
         if cmd[:show_icon_in_caption] && cmd[:show_icon_in_caption] != :right
-          output << "<div style='margin-left:5px; margin-top:4px; cursor: pointer; display: inline-block;'
+          output << "<div style='margin-left:5px; margin-top:4px; cursor: pointer; display: inline-block;#{cmd[:icon_style]}'
                           title='#{cmd[:hint]}' onclick='#{cmd[:action]}'>
                        <span class='#{cmd[:icon_class]}'></span>
                      </div>"

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>resize-height</title>
+  <polygon class="a" points="384.471 168 384.471 152.471 264.236 32.236 144.471 152 144.471 168 216.471 168 216.471 344 144.471 344 144.471 359.529 264.707 479.764 384.471 360 384.471 344 312.471 344 312.471 168 384.471 168"/>
+</svg>

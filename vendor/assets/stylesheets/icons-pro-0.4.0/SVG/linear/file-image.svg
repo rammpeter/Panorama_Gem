@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>file-image</title>
+  <g>
+    <path class="a" d="M358.627,16H72V496H496V153.3726ZM464,464H104V48H312V200H464Zm0-296H344V48h1.373L464,166.6274Z"/>
+    <rect class="a" x="144" y="216" width="32" height="32"/>
+    <path class="a" d="M224,241.3726l-88,88V432H392V328.6411l-71.6484-61.4126L281.1875,298.56ZM360,343.3589V400H168V342.6274l56-56L278.8125,341.44l40.8359-32.6684Z"/>
+  </g>
+</svg>

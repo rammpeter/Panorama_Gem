@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>video</title>
+  <path class="a" d="M460.998,132,360,171.2773V72H16V440H360V332.7227L460.998,372H496V132ZM464,338.833l-136-52.89V408H48V104H328V218.0566l136-52.89Z"/>
+</svg>

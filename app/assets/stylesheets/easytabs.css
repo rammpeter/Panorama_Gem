@@ -34,10 +34,16 @@
     font-weight: bold;
 }
 .tab-container .panel-container {
+
     background:#eee;
 /*    background: #fff; */
     border: solid #666 1px;
-    padding: 5px;
+    padding: 2px;
     -moz-border-radius: 0 4px 4px 4px;
     -webkit-border-radius: 0 4px 4px 4px;
+}
+
+.tab-inner-frame {
+    background:#ced8f6;
+    padding: 2px;
 }

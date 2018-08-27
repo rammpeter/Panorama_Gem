@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>bolt</title>
+  <polygon class="a" points="331.464 192 408.464 16 147.879 16 66.879 304 187.899 304 148.37 496 207.221 496 475.456 192 331.464 192"/>
+</svg>

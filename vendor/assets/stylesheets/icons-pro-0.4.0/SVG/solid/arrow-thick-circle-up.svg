@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>arrow-thick-circle-up</title>
+  <path class="a" d="M425.7056,86.2939A240,240,0,0,0,86.2944,425.7061,240,240,0,0,0,425.7056,86.2939ZM384,272l-80,.0042V352H208V272.0093l-80,.0041.0085-16.0227L256.1514,128,384,256.1963Z"/>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>industry</title>
+  <g>
+    <path class="a" d="M459.26,96,328,225.6973V96H293.4746L168,223.2666V16H16V496H496V96ZM464,464H48V48h88V264h36.7773L296,139.0176V264h38.7642L464,136.3027Z"/>
+    <rect class="a" x="136" y="304" width="32" height="32"/>
+    <rect class="a" x="136" y="376" width="32" height="32"/>
+    <rect class="a" x="216" y="304" width="32" height="32"/>
+    <rect class="a" x="216" y="376" width="32" height="32"/>
+    <rect class="a" x="296" y="304" width="32" height="32"/>
+    <rect class="a" x="296" y="376" width="32" height="32"/>
+    <rect class="a" x="376" y="304" width="32" height="32"/>
+    <rect class="a" x="376" y="376" width="32" height="32"/>
+  </g>
+</svg>

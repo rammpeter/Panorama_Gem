@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>phone-mobile-plus_1</title>
+  <g>
+    <rect class="a" x="160" y="400" width="32" height="32"/>
+    <path class="a" d="M48,336V112H328V48a32.0367,32.0367,0,0,0-32-32H48A32.0367,32.0367,0,0,0,16,48V464a32.0367,32.0367,0,0,0,32,32H296a32.0367,32.0367,0,0,0,32-32V336ZM296,48l.0015,32H48V48Zm0,416H48V368H296.0156l.0049,95.999Z"/>
+    <polygon class="a" points="328 208 328 152 296 152 296 208 240 208 240 240 296 240 296 296 328 296 328 240 384 240 384 208 328 208"/>
+  </g>
+</svg>

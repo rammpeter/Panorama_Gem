@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>file-video</title>
+  <g>
+    <path class="a" d="M310,32H88V480H480V202H310ZM177.4722,416H168V240h10.6945L296,328Z"/>
+    <polygon class="a" points="352 32 346 32 346 166 480 166 480 160 352 32"/>
+  </g>
+</svg>

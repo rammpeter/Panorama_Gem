@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>arrow-thick-to-right</title>
+  <g>
+    <polygon class="a" points="184.005 80 184.005 200 24.003 200 24.003 328 184.005 328 184.005 448 200.005 448 384.003 264.186 200.005 80 184.005 80"/>
+    <rect class="a" x="448" y="64" width="48" height="400"/>
+  </g>
+</svg>

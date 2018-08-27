@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>grid-four-up</title>
+  <g>
+    <rect class="a" x="16" y="16" width="64" height="64"/>
+    <rect class="a" x="16" y="152" width="64" height="64"/>
+    <rect class="a" x="16" y="296" width="64" height="64"/>
+    <rect class="a" x="16" y="432" width="64" height="64"/>
+    <rect class="a" x="432" y="16" width="64" height="64"/>
+    <rect class="a" x="432" y="152" width="64" height="64"/>
+    <rect class="a" x="432" y="296" width="64" height="64"/>
+    <rect class="a" x="432" y="432" width="64" height="64"/>
+    <rect class="a" x="152" y="432" width="64" height="64"/>
+    <rect class="a" x="296" y="432" width="64" height="64"/>
+    <rect class="a" x="152" y="296" width="64" height="64"/>
+    <rect class="a" x="296" y="296" width="64" height="64"/>
+    <rect class="a" x="152" y="152" width="64" height="64"/>
+    <rect class="a" x="296" y="152" width="64" height="64"/>
+    <rect class="a" x="152" y="16" width="64" height="64"/>
+    <rect class="a" x="296" y="16" width="64" height="64"/>
+  </g>
+</svg>

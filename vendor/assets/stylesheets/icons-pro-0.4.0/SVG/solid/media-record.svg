@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>media-record</title>
+  <path class="a" d="M32,31.9976v448H480v-448Zm220,328a100,100,0,1,1,100-100A100,100,0,0,1,252,359.9976Z"/>
+</svg>

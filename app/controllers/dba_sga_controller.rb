@@ -30,6 +30,17 @@ class DbaSgaController < ApplicationController
     list_sql_area(@modus)
   end
 
+  def list_last_sql_from_sql_worksheet
+    params[:maxResultCount] = 100
+    params[:topSort] = 'LastActive'
+    params[:filter]  = params[:sql_statement]
+
+    params[:username] = sql_select_one "SELECT USER FROM DUAL"
+
+    list_sql_area_sql_id                                                        # route to action
+  end
+
+
   private
   def list_sql_area(modus)
     instance = prepare_param_instance
@@ -1721,11 +1732,15 @@ END;
 -- Existing SQL-patches for SQLs are shown by Panorama in SQL-details view.
 -- All existing SQL-patches are listed in Panorama via menu 'SGA/PGA-details' / 'SQL plan management' / 'SQL patches'
 
--- Attributes that must be adjusted by you in this script:
---   - 'hint_text'   place your optimizer hints here
+-- Attributes that must be adjusted by you in this script for parameters:
+--   - 'hint_text'   Place your optimizer hints here.
+--                   Be aware that query block names and table-aliases must be used in optimizer hints
+--                   with same values as they appear in columns QBLOCK_NAME and OBJECT_ALIAS of v$SQL_PLAN!
+--                   Panorama shows query block name and alias in execution plan view by mouse over hint on column \"Object name\".
+--                   Example: \"FULL(@SEL$E029B2FF tab@SEL$2)\" where \"tab\" ist the table alias used in SQL-statement
 --   - 'decription'  describe purpose of SQL-patch
 
--- ############# To establish SQL patch execut this as SYSDBA #############
+-- ############# To establish SQL patch execute this as SYSDBA #############
 -- on Pluggable database execute it connected to PDB, not CDB
 
 #{ "-- Drop already existing SQL-Patch for this SQL before applying new patch

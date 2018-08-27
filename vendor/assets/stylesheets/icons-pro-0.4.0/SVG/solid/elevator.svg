@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>elevator</title>
+  <g>
+    <path class="a" d="M112,296v16.238L264,472,416,314.3333V296Z"/>
+    <path class="a" d="M416,199.7618,264,40,112,197.6666V216H416Z"/>
+  </g>
+</svg>

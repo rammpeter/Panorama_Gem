@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>double-quote-sans-right</title>
+  <g>
+    <polygon class="a" points="464 32 296 192 296 400 480 400 480 32 464 32"/>
+    <polygon class="a" points="32 192 32 400 216 400 216 32 200 32 32 192"/>
+  </g>
+</svg>

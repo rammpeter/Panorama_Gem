@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>media-stop</title>
+  <g>
+    <path class="a" d="M16,15.9976v480H496v-480Zm448,448H48v-416H464Z"/>
+    <path class="a" d="M364,147.9976H148v216H364Zm-32,184H180v-152H332Z"/>
+  </g>
+</svg>

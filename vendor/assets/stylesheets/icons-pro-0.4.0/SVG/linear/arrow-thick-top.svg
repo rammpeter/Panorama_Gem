@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>arrow-thick-top</title>
+  <path class="a" d="M352,496H160V295.9932l-144.0151.0078.0366-38.6885L256.2559,17.3643,495.9375,257.6982v38.2774L352,295.9824ZM192,464H320V263.9844l137.0068-.0069L256.2119,62.6357,54.6094,263.999,192,263.9912Z"/>
+</svg>

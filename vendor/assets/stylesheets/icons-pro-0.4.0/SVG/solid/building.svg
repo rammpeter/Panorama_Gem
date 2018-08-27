@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>building</title>
+  <path class="a" d="M424,451V32H88V451H16v42H496V451ZM328,96h40v40H328Zm0,96h40v40H328Zm0,96h40v40H328ZM236,96h40v40H236Zm0,96h40v40H236Zm0,96h40v40H236ZM144,96h40v40H144Zm0,96h40v40H144Zm0,96h40v40H144Zm94,96h36v67H238Z"/>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>monitor</title>
+  <g>
+    <path class="a" d="M472,15.9976H40a24.0275,24.0275,0,0,0-24,24v336a24.0275,24.0275,0,0,0,24,24H240v64H160v32H352v-32H272v-64H472a24.0275,24.0275,0,0,0,24-24v-336A24.0275,24.0275,0,0,0,472,15.9976Zm-8,32v192H48v-192Zm-416,320v-96H464v96Z"/>
+    <rect class="a" x="400" y="303.9976" width="32" height="32"/>
+  </g>
+</svg>

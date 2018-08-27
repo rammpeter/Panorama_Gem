@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>caret-right</title>
+  <path class="a" d="M180.45,496H144V16.333h34.5474l269.81,239.9531ZM176,56.8916v400.15L400.2866,256.3584Z"/>
+</svg>

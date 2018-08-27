@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>cursor</title>
+  <path class="a" d="M446.7539,47.9014a20.0744,20.0744,0,0,0-21.3071-2.7451L32,229.8354v36.9971l165.3491,66.14L303.3169,496h37.0054L453.2813,68.3687A20.072,20.072,0,0,0,446.7539,47.9014Z"/>
+</svg>

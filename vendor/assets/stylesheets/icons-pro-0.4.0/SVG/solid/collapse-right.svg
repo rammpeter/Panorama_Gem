@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>collapse-right</title>
+  <g>
+    <rect class="a" x="440" y="16" width="64" height="480"/>
+    <rect class="a" x="16" y="16" width="128" height="480"/>
+    <polygon class="a" points="192 96 192 416 229.86 416 399.224 256.077 231.921 96 192 96"/>
+  </g>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>dashboard</title>
+  <g>
+    <path class="a" d="M234,493H432a64,64,0,0,0,64-64V327.3332H234Z"/>
+    <path class="a" d="M198,13H80A64,64,0,0,0,16,77V429a64,64,0,0,0,64,64H198Z"/>
+    <path class="a" d="M432,13H234V291.3332H496V77A64,64,0,0,0,432,13Z"/>
+  </g>
+</svg>

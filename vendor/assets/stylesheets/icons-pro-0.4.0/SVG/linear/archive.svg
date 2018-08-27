@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>archive</title>
+  <path class="a" d="M32,16V496H480V16ZM448,48V96H64V48ZM326.1113,128l-16,32H201.8887l-16-32ZM448,464H64V312h86.1113l32,64H329.8887l32-64H448ZM185.8887,312H326.1113l-16,32H201.8887ZM64,280V128h86.1113l32,64H329.8887l32-64H448V280Z"/>
+</svg>

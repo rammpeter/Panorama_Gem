@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>file-powerpoint</title>
+  <g>
+    <path class="a" d="M358.627,16H72V496H496V153.3726ZM464,166.6274V168H344V48h1.373ZM104,464V48H312V200H464V464Z"/>
+    <path class="a" d="M212.5713,264H152V432h32V382.8569h28.5713a59.4285,59.4285,0,1,0,0-118.8569Zm0,86.8569H184V296h28.5713a27.4285,27.4285,0,1,1,0,54.8569Z"/>
+  </g>
+</svg>

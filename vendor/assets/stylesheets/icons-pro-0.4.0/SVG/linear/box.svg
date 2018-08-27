@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>box</title>
+  <g>
+    <path class="a" d="M320,244H192V176H16V472a24.0275,24.0275,0,0,0,24,24H472a24.0275,24.0275,0,0,0,24-24V176H320Zm32-36H464V464H48V208H160v68H352Z"/>
+    <path class="a" d="M472,16H40A24.0275,24.0275,0,0,0,16,40V145H496V40A24.0275,24.0275,0,0,0,472,16Zm-8,97H48V48H464Z"/>
+  </g>
+</svg>

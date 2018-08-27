@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>double-quote-sans-left</title>
+  <g>
+    <path class="a" d="M16,416H54.4L232,246.8569V16H16ZM48,48H200V233.1431L48,377.9048Z"/>
+    <path class="a" d="M280,16V416h38.4L496,246.8569V16ZM464,233.1431,312,377.9048V48H464Z"/>
+  </g>
+</svg>

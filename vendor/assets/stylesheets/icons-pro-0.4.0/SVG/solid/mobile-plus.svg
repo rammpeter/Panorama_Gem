@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>phone-mobile-plus</title>
+  <g>
+    <path class="a" d="M66,336V112H336V48a32,32,0,0,0-32-32H56A32,32,0,0,0,24,48V464a32,32,0,0,0,32,32H304a32,32,0,0,0,32-32V336ZM200,436H160V396h40Z"/>
+    <polygon class="a" points="333 203 333 152 291 152 291 203 240 203 240 245 291 245 291 296 333 296 333 245 384 245 384 203 333 203"/>
+  </g>
+</svg>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>vertical-align-bottom</title>
+  <g>
+    <path class="a" d="M144,16H16V440H144ZM112,408H48V48h64Z"/>
+    <path class="a" d="M320,169.5674H192V440H320ZM288,408H224V201.5674h64Z"/>
+    <path class="a" d="M368,16V440H496V16Zm96,392H400V48h64Z"/>
+    <rect class="a" x="16" y="464" width="480" height="32"/>
+  </g>
+</svg>

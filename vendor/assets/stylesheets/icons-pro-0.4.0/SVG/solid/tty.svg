@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>tty</title>
+  <g>
+    <rect class="a" x="136" y="419" width="240" height="42"/>
+    <rect class="a" x="40" y="416" width="48" height="48"/>
+    <rect class="a" x="424" y="416" width="48" height="48"/>
+    <rect class="a" x="40" y="256" width="48" height="48"/>
+    <rect class="a" x="136" y="256" width="48" height="48"/>
+    <rect class="a" x="232" y="256" width="48" height="48"/>
+    <rect class="a" x="328" y="256" width="48" height="48"/>
+    <rect class="a" x="424" y="256" width="48" height="48"/>
+    <rect class="a" x="376" y="336" width="48" height="48"/>
+    <rect class="a" x="88" y="336" width="48" height="48"/>
+    <rect class="a" x="184" y="336" width="48" height="48"/>
+    <rect class="a" x="280" y="336" width="48" height="48"/>
+    <path class="a" d="M477.4712,132.2142,462.69,117.4323C348.7568,3.5,164.0352,3.5,50.1025,117.4323L35.3208,132.2142a8.6324,8.6324,0,0,0-2.3076,8.0457l24.8232,73.035,120.8623-17.2661,8.6333-60.4311h0a97.6711,97.6711,0,0,1,138.128,0h0l8.6333,60.4311,120.8623,17.2661,24.8232-73.035A8.6324,8.6324,0,0,0,477.4712,132.2142Z"/>
+  </g>
+</svg>

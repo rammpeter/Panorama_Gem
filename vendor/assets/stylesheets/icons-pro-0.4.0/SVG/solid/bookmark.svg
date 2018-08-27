@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>bookmark</title>
+  <polygon class="a" points="88 16 88 496 123.467 496 256.008 381.19 388.749 496 424 496 424 16 88 16"/>
+</svg>

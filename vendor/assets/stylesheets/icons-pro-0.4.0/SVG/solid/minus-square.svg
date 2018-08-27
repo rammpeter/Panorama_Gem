@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>minus-square</title>
+  <path class="a" d="M456,32H56A24,24,0,0,0,32,56V456a24,24,0,0,0,24,24H456a24,24,0,0,0,24-24V56A24,24,0,0,0,456,32ZM384,280H128V232H384Z"/>
+</svg>

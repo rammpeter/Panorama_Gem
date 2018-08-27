@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>medical-cross</title>
+  <polygon class="a" points="328 183.998 328 31.998 184 31.998 184 183.998 32 183.998 32 327.998 184 327.998 184 479.998 328 479.998 328 327.998 480 327.998 480 183.998 328 183.998"/>
+</svg>

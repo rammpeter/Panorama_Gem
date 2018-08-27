@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>signpost</title>
+  <path class="a" d="M430.6738,152H272V16H240V72H81.3262L16,137.97v28.6572L81.373,232H240V496h32V312H430.627L496,246.6274V217.97ZM94.6279,200,48,153.3726v-2.2393L94.6738,104H240v96ZM464,233.3726,417.3721,280H272V184H417.3262L464,231.1333Z"/>
+</svg>

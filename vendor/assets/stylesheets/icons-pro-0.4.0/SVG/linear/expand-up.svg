@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>expand-up</title>
+  <g>
+    <rect class="a" x="16" y="467.0003" width="480" height="32"/>
+    <path class="a" d="M16,19V147H496V19Zm448,96H48V51H464Z"/>
+    <path class="a" d="M256.0767,211.7767,96,379.0789V419H416V381.14ZM132.709,387,255.9233,258.2239,377.522,387Z"/>
+  </g>
+</svg>

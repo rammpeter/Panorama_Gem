@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>grid-three-up</title>
+  <g>
+    <path class="a" d="M16,128H128V16H16ZM48,48H96V96H48Z"/>
+    <path class="a" d="M384,16V128H496V16Zm80,80H416V48h48Z"/>
+    <path class="a" d="M16,312H128V200H16Zm32-80H96v48H48Z"/>
+    <path class="a" d="M200,312H312V200H200Zm32-80h48v48H232Z"/>
+    <path class="a" d="M200,496H312V384H200Zm32-80h48v48H232Z"/>
+    <path class="a" d="M200,128H312V16H200Zm32-80h48V96H232Z"/>
+    <path class="a" d="M384,312H496V200H384Zm32-80h48v48H416Z"/>
+    <path class="a" d="M16,496H128V384H16Zm32-80H96v48H48Z"/>
+    <path class="a" d="M384,496H496V384H384Zm32-80h48v48H416Z"/>
+  </g>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>triangle</title>
+  <path class="a" d="M468.4648,448H43.5352a24,24,0,0,1-20.7852-36L235.2158,44v.0005a23.9988,23.9988,0,0,1,41.5684,0L489.25,412a24,24,0,0,1-20.7852,36ZM57.3906,416H454.6094L256,72.001Z"/>
+</svg>

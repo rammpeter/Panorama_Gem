@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>signpost</title>
+  <polygon class="a" points="430.674 152 277 152 277 16 235 16 235 72 81.326 72 16 137.97 16 166.627 81.373 232 235 232 235 496 277 496 277 312 430.627 312 496 246.627 496 217.97 430.674 152"/>
+</svg>

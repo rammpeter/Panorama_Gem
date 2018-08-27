@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>bullhorn</title>
+  <g>
+    <polygon class="a" points="16 136 16 347.733 68.191 496 182.846 496 136.286 368 172.133 368 366 463.844 366 45.822 175.435 136 16 136"/>
+    <polygon class="a" points="429.009 16.005 402 28.786 402 481.642 431.189 496.072 495.925 496.072 496.008 16.005 429.009 16.005"/>
+  </g>
+</svg>

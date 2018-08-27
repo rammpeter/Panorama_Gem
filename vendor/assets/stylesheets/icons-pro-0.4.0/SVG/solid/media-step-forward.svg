@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>media-step-forward</title>
+  <path class="a" d="M32,31.9976v448H480v-448Zm240,232.64-117.6665,87.36H144v-192h11.667L272,247.2682Zm104,103.36H328v-224h48Z"/>
+</svg>

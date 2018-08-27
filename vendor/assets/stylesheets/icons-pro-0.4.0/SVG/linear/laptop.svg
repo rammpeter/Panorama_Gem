@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>laptop</title>
+  <g>
+    <path class="a" d="M72,431.9976H440a24.0275,24.0275,0,0,0,24-24v-240a24.0275,24.0275,0,0,0-24-24H72a24.0275,24.0275,0,0,0-24,24v240A24.0275,24.0275,0,0,0,72,431.9976Zm8-256H432v224H80Z"/>
+    <rect class="a" x="16" y="463.9976" width="480" height="32"/>
+  </g>
+</svg>

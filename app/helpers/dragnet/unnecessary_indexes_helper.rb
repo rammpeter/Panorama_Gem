@@ -200,7 +200,7 @@ How to and scripts for activating MONITORING USAGE may be found here:
 Index usage can be evaluated than via v$Object_Usage or with previous selection.
 ", url: "https://rammpeter.blogspot.com/2017/10/oracle-db-identify-unused-indexes.html"),
             :sql=> "
-                    SELECT i.Owner, i.Table_Name, i.Index_Name, i.Num_Rows, i.Distinct_Keys, seg.MBytes, o.Created, o.Last_DDL_Time
+                    SELECT i.Owner, i.Table_Name, i.Index_Name, i.Index_Type, i.Num_Rows, i.Distinct_Keys, seg.MBytes, o.Created, o.Last_DDL_Time
                     FROM   DBA_Indexes i
                     LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name
                                     ) seg ON seg.Owner = i.Owner AND seg.Segment_Name = i.Index_Name

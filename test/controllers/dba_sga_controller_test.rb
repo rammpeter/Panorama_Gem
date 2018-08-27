@@ -2,6 +2,7 @@
 require 'test_helper'
 
 class DbaSgaControllerTest < ActionDispatch::IntegrationTest
+  include DbaSgaHelper
 
   setup do
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active

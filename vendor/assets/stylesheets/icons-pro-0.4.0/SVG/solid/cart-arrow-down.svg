@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>cart_arrow_down</title>
+  <g>
+    <ellipse class="a" cx="176.9844" cy="432.3438" rx="64.0466" ry="63.9463" transform="translate(-253.8757 251.7774) rotate(-45)"/>
+    <circle class="a" cx="400.9844" cy="432.3438" r="64"/>
+    <path class="a" d="M125.2134,88l-11-77H16V53H77.7866L117,328H448l48-120V88ZM376.5723,199.343,295.9154,280,216,200.0847v-5.76h56V144h48v50.3251h56.5723Z"/>
+  </g>
+</svg>

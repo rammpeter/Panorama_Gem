@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>arrow-bottom</title>
+  <polygon class="a" points="363.977 337.377 267.979 433.374 267.979 16.13 235.979 16.13 235.979 433.372 139.983 337.377 117.356 360.004 251.979 494.627 386.604 360.004 363.977 337.377"/>
+</svg>

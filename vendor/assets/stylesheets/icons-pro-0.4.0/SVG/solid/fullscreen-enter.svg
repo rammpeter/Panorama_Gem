@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>fullscreen-enter</title>
+  <g>
+    <polygon class="a" points="228 80 228 16 20 16 20 224 84 224 84 125.255 199.373 240.627 244.627 195.373 129.255 80 228 80"/>
+    <polygon class="a" points="432 288 432 386.745 310.627 265.373 265.373 310.627 386.745 432 288 432 288 496 496 496 496 288 432 288"/>
+  </g>
+</svg>

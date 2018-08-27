@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>flash</title>
+  <polygon class="a" points="424 176 258 152 370.105 32 228.8 32 120 160 120 216 272 240 160.96 344.508 104.667 288 88 288 88 480 280 480.667 280 464 224.997 408.788 424 224 424 176"/>
+</svg>

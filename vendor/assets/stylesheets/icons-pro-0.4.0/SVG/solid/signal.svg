@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>signal</title>
+  <rect class="a" x="408" y="16" width="48" height="480"/>
+  <rect class="a" x="320" y="104" width="48" height="392"/>
+  <rect class="a" x="232" y="192" width="48" height="304"/>
+  <rect class="a" x="144" y="288" width="48" height="208"/>
+  <rect class="a" x="56" y="376" width="48" height="120"/>
+</svg>

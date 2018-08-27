@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>media-skip-forward</title>
+  <g>
+    <path class="a" d="M16,15.9976v480H496v-480Zm448,448H48v-416H464Z"/>
+    <path class="a" d="M236.3633,293.2047v74.7929h31.624L418.751,256.064,269.3643,143.9976h-33.001v74.5389L137,143.9976H104v224h31.623Zm32-109.9551,96.8857,72.6816-96.8857,71.9317ZM136,183.2506l96.8857,72.6806L136,327.8629Z"/>
+  </g>
+</svg>

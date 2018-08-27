@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>file-audio</title>
+  <g>
+    <polygon class="a" points="352 32 346 32 346 166 480 166 480 160 352 32"/>
+    <path class="a" d="M310,32H88V480H480V202H310ZM240,400h-6.8572l-52.8572-34.2857H137.1428V290.2857h43.1428L233.1428,256H240Zm76-72a44.05,44.05,0,0,1-44,44V348a20,20,0,0,0,0-40V284A44.05,44.05,0,0,1,316,328Z"/>
+  </g>
+</svg>

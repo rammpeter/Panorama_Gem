@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>document</title>
+  <g>
+    <path class="a" d="M337.4229,122.7955c-27.6143-27.13-56.0679-54.9245-82.09-80.235V238H452.6274Z"/>
+    <path class="a" d="M219.333,274V16H48V496H464V274ZM138,152h40v40H138Zm0,82h40v40H138ZM384,434H136V398H384Zm0-80H136V318H384Z"/>
+  </g>
+</svg>

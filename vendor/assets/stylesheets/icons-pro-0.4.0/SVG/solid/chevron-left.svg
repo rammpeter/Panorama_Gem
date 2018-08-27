@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>chevron-left</title>
+  <polygon class="a" points="96 255.944 172.76 179.185 172.815 179.24 320.056 32 396.815 108.76 249.575 256 396.815 403.24 320.056 480 172.815 332.76 172.76 332.815 96 256.056 96.056 256 96 255.944"/>
+</svg>

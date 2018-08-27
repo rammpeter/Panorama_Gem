@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>play-circle</title>
+  <path class="a" d="M256,15.9976c-132.5483,0-240,107.4517-240,240s107.4517,240,240,240,240-107.4516,240-240S388.5483,15.9976,256,15.9976Zm-42.356,352H200.7273v-240h14.5832l159.9622,120Z"/>
+</svg>

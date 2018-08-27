@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>underline</title>
+  <g>
+    <path class="a" d="M16,16V496H496V16ZM464,464H48V48H464Z"/>
+    <path class="a" d="M168,240a96,96,0,0,0,192,0V152h32V120H296v32h32v88a63.9661,63.9661,0,0,1-88,59.3132V152h24V120H136v32h32Z"/>
+    <rect class="a" x="136" y="368" width="256" height="32"/>
+  </g>
+</svg>

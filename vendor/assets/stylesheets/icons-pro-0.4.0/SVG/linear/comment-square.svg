@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .a {
+        fill: currentColor;
+      }
+    </style>
+  </defs>
+  <title>comment-square</title>
+  <path class="a" d="M496,499H448.7715L379.249,371H40a24.0275,24.0275,0,0,1-24-24V43A24.0275,24.0275,0,0,1,40,19H472a24.0275,24.0275,0,0,1,24,24ZM48,339H398.2842L464,459.992V51H48Z"/>
+</svg>
