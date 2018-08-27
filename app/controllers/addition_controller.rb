@@ -862,6 +862,8 @@ class AdditionController < ApplicationController
   end
 
   def show_sql_worksheet
+    puts "######################## Rails.application.config.assets.paths #################################"
+    puts Rails.application.config.assets.paths.inspect
     render_partial
   end
 
