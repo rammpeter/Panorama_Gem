@@ -275,7 +275,7 @@ end
             :action               => :generate_sql_translation,
             :update_area          => @update_area,
             :sql_id               => @sql_id,
-            :user_name            => @parsing_schema_name
+            :user_name            => @sql.min_parsing_schema_name
         }, :title=> t(:dba_history_list_sql_detail_historic_create_translation_hint, :default=>"Generate script to create profile for SQL-translation-framework for this SQL."))
       %>
     </div>

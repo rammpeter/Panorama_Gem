@@ -1585,7 +1585,7 @@ class DbaSgaController < ApplicationController
 
   def generate_sql_translation
     @sql_id              = params[:sql_id]
-    user_name           = params[:user_name]
+    user_name            = params[:user_name]
 
     if params[:fixed_user].nil? || params[:fixed_user] == ''
       @user_data = sql_select_all ["SELECT u.UserName
