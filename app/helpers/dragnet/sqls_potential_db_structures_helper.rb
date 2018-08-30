@@ -286,22 +286,26 @@ This selection considers current SGA'),
               SELECT Table_Owner, Table_Name, Index_Name,
                      Elapsed_Secs               \"Elapsed time SQL total (sec.)\",
                      Ash_Seconds_Tab            \"Table access time ASH (sec.)\",
-                     SQL_ID_Max_Elapsed_Secs    \"SQL-ID with max. total elapsed\",
-                     SQL_ID_Max_Ash_Seconds_Tab \"SQL-ID with max. ASH per table\",
+                     SQL_ID,
+                     Index_Cardinality          \"Cardinality index access\",
+                     Table_Cardinality          \"Cardinality table access\",
                      Index_Access               \"Access criteria on index\",
                      Table_Filter               \"Filter criteria on table\"
               FROM   (
                       SELECT Table_Owner, Table_Name, Index_Name,
                              SUM(Elapsed_Secs) Elapsed_Secs, SUM(Ash_Seconds_Tab) Ash_Seconds_Tab,
-                             MAX(SQL_ID) KEEP (DENSE_RANK LAST ORDER BY Elapsed_Secs) SQL_ID_Max_Elapsed_Secs,
-                             MAX(SQL_ID) KEEP (DENSE_RANK LAST ORDER BY Ash_Seconds_Tab) SQL_ID_Max_Ash_Seconds_Tab,
-                             Index_Access, Table_Filter
+                             SQL_ID,
+                             Index_Access, Table_Filter,
+                             ROUND(AVG(Index_Cardinality), 1) Index_Cardinality,
+                             ROUND(AVG(Table_Cardinality), 1) Table_Cardinality
                       FROM   (
                               SELECT ind.Inst_ID, ind.SQL_ID, ind.Plan_Hash_Value, ind.Child_Number, ind.ID Ind_ID, tab.ID tab_ID, tab.Table_Owner, tab.Table_Name, ind.Index_Name,
                                      ROUND(s.Elapsed_Time/1000000) Elapsed_Secs, ash.ash_Seconds_Tab,
-                                     ind.Access_Predicates Index_Access, tab.Filter_Predicates Table_Filter
+                                     ind.Access_Predicates Index_Access, tab.Filter_Predicates Table_Filter,
+                                     ind.Cardinality Index_Cardinality,
+                                     tab.Cardinality Table_Cardinality
                               FROM   (
-                                      SELECT /*+ NO_MERGE */  Inst_ID, SQL_ID, Plan_Hash_Value, Child_Number, ID, Object_Owner Index_Owner, Object_Name Index_Name, Access_Predicates
+                                      SELECT /*+ NO_MERGE */  Inst_ID, SQL_ID, Plan_Hash_Value, Child_Number, ID, Object_Owner Index_Owner, Object_Name Index_Name, Access_Predicates, Cardinality
                                       FROM   gv$SQL_Plan
                                       WHERE  Access_Predicates IS NOT NULL
                                       AND    Operation LIKE 'INDEX%'
@@ -309,7 +313,7 @@ This selection considers current SGA'),
                                      ) ind
                               JOIN   DBA_Indexes i ON i.Owner = ind.Index_Owner AND i.Index_Name = ind.Index_Name
                               JOIN   (
-                                      SELECT /*+ NO_MERGE */ Inst_ID, SQL_ID, Plan_Hash_Value, Child_Number, ID, Object_Owner Table_Owner, Object_Name Table_Name, Filter_Predicates
+                                      SELECT /*+ NO_MERGE */ Inst_ID, SQL_ID, Plan_Hash_Value, Child_Number, ID, Object_Owner Table_Owner, Object_Name Table_Name, Filter_Predicates, Cardinality
                                       FROM   gv$SQL_Plan
                                       WHERE  Filter_Predicates IS NOT NULL
                                       AND    Operation LIKE 'TABLE ACCESS%'
@@ -328,11 +332,11 @@ This selection considers current SGA'),
                                       GROUP BY inst_ID, SQL_ID, SQL_Plan_Hash_Value, SQL_Child_Number, SQL_Plan_Line_ID
                                      ) ash ON ash.INST_ID = ind.Inst_ID AND ash.SQL_ID = ind.SQL_ID AND ash.SQL_Plan_Hash_Value = ind.Plan_Hash_Value AND ash.SQL_Child_Number = ind.Child_Number AND ash.SQL_Plan_Line_ID = tab.ID
                              )
-                      GROUP BY Table_Owner, Table_Name, Index_Name, Index_Access, Table_Filter
+                      GROUP BY Table_Owner, Table_Name, Index_Name, SQL_ID, Index_Access, Table_Filter
                      )
               WHERE  Elapsed_Secs >= ?
-              AND    NVL(Ash_Seconds_Tab, ?) >= 0
-              ORDER BY Elapsed_Secs + NVL(Ash_Seconds_Tab, 0) DESC
+              AND    NVL(Ash_Seconds_Tab, 0) >= ?
+              ORDER BY Elapsed_Secs + NVL(Ash_Seconds_Tab, 0)*100 * (Index_Cardinality-Table_Cardinality) DESC
             ",
             :parameter=>[{:name=>t(:dragnet_helper_127_param_1_name, :default=>'Minimum elapsed seconds of SQL in SGA to be considered in selection'), :size=>8, :default=>10, :title=>t(:dragnet_helper_127_param_1_hint, :default=>'Minimum amount of elapsed seconds an SQL must have in GV$SQL to be considered in this selection') },
                          {:name=>t(:dragnet_helper_127_param_2_name, :default=>'Minimum elapsed seconds as sum over all SQLs in SGA per accessed table'), :size=>8, :default=>100, :title=>t(:dragnet_helper_127_param_2_hint, :default=>'Minimum amount of elapsed seconds of all SQLs in SGA that are accessing the considered table to be shown in this selection') },
