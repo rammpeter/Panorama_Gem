@@ -54,13 +54,16 @@ module ApplicationHelper
   end
 
   # Lesen eines client-bezogenen Wertes aus serverseitigem Cache
+  # Parameter:
+  #     key: Key to find
+  #     default_proc: proc to kalkulate value if does not yet exists
   def read_from_client_info_store(key)
     full_hash = EngineConfig.get_client_info_store.read(get_decrypted_client_key)               # Auslesen des kompletten Hashes aus Cache
     if full_hash.nil? || full_hash.class != Hash                                # Abbruch wenn Struktur nicht passt
       Rails.logger.error "Key '#{key}' not found in ApplicationHelper.read_from_client_info_store"
       return nil
     end
-    full_hash[key]
+    full_hash[key]                                                              # return value regardless it's nil or not
   end
 
   def read_from_browser_tab_client_info_store(key)
@@ -151,6 +154,14 @@ module ApplicationHelper
     @buffered_time_selection_end
   end
 
+  def get_cached_panorama_object_sizes_exists
+    current_database = get_current_database
+    if current_database[:cached_panorama_object_sizes_exists].nil?
+      current_database[:cached_panorama_object_sizes_exists] = PanoramaSamplerStructureCheck.panorama_table_exists?('Panorama_Object_Sizes')
+      set_current_database(current_database)                                    # write back to store
+    end
+    current_database[:cached_panorama_object_sizes_exists]
+  end
 
 
   # Genutzt zur Anzeige im zentralen Screen

@@ -797,6 +797,12 @@ class AdditionController < ApplicationController
     end
   end
 
+  def time_for_object_increase
+    @owner = params[:owner]
+    @name  = params[:name]
+    render_partial
+  end
+
   def list_object_increase_object_timeline
     save_session_time_selection
     owner = params[:owner]

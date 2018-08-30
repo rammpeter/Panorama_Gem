@@ -9,7 +9,7 @@
         :action      => :show_edit_config_form,
         :id          => rec[:id]
     }, :title => 'Add new database config'
-    )}</div><div>#{
+    )}</div><div style=\"float:left\">#{
     ajax_submit('Delete', {
         :update_area => :content_for_layout,
         :action      => :delete_config,
@@ -20,7 +20,7 @@
 
     if rec[:last_error_message] || rec[:last_error_time]
       retval << "
-    <div>#{
+    <div style=\"float:left\">#{
     ajax_submit('Clear error', {
         :update_area => :content_for_layout,
         :action      => :clear_config_error,

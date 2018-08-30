@@ -30,7 +30,7 @@ module Dragnet::ProblemsWithParallelQueryHelper
             :parameter=>[{:name=> t(:dragnet_helper_param_minimal_ela_per_exec_name, :default=>'Minimum elapsed time/execution (sec.)'), :size=>8, :default=>20, :title=> t(:dragnet_helper_param_minimal_ela_per_exec_hint, :default=>'Minimum elapsed time per execution in seconds for consideration in selection')}]
         },
         {
-            :name  => t(:dragnet_helper_77_name, :default=>'Long running queries without usage of parallel query (Evaluation of AWR history)'),
+            :name  => t(:dragnet_helper_141_name, :default=>'Long running queries without usage of parallel query (Evaluation of AWR history)'),
             :desc  => t(:dragnet_helper_77_desc, :default=>'For long running queries usage of parallel query feature may dramatically reduce runtime.'),
             :sql=>  "SELECT /*+ ORDERED USE_HASH(s) \"DB-Tools Ramm ohne Parallel Query aus Historie\"*/
                              s.*,

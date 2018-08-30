@@ -105,7 +105,7 @@ module MenuHelper
             ]
             },
             {:class=> 'item', :caption=> 'Tablespace-Objects',  :controller=>:dba_schema,       :action=>:show_object_size,  :hint=>t(:menu_dba_schema_ts_objects_hint, :default=> 'DB-objects by size, utilization and wastage') },
-            ].concat(PanoramaSamplerStructureCheck.panorama_table_exists?('Panorama_Object_Sizes') ? [{:class=> 'item', :caption=>t(:menu_addition_size_evolution_caption, :default=>'Object size evolution'),           :controller=> 'addition',                 :action=> 'show_object_increase',     :hint=>t(:menu_addition_size_evolution_hint, :default=>'Evolution of object sizes in considered time period')}] : [])
+            ].concat(get_cached_panorama_object_sizes_exists ? [{:class=> 'item', :caption=>t(:menu_addition_size_evolution_caption, :default=>'Object size evolution'),           :controller=> 'addition',                 :action=> 'show_object_increase',     :hint=>t(:menu_addition_size_evolution_hint, :default=>'Evolution of object sizes in considered time period')}] : [])
             .concat(
                 [
                     {:class=> 'item', :caption=> 'Describe object',     :controller=>:dba_schema,       :action=>:describe_object,  :hint=>'Describe database object (table, index, materialized view ...)' },

@@ -382,5 +382,18 @@ column_options =
     %>
   </div>
 
+  <% if get_cached_panorama_object_sizes_exists %>
+    <div class="flex-row-element">
+      <%= ajax_submit('Size evolution', {
+          update_area:            @update_area,
+          controller:             :addition,
+          action:                 :time_for_object_increase,
+          owner:                  @owner,
+          name:                   @table_name,
+      }, :title => "Show object size evolution for #{@owner}.#{@table_name}")
+      %>
+    </div>
+  <% end %>
+
 </div>
 <div id="<%= @update_area %>"></div>
