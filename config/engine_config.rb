@@ -55,6 +55,9 @@ class EngineConfig < Rails::Application
   # Enable the asset pipeline
   config.assets.enabled = true
 
+  # Addition 2018-09-01 Find fonts in asset pipeline. Location in vendor/assets does not function
+  config.assets.paths << Rails.root.join("app", "assets", "fonts")
+
   # Don't disable subit button after click
   config.action_view.automatically_disable_submit_tag = false
 end

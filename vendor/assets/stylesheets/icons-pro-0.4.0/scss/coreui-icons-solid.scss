@@ -1,14 +1,13 @@
 $coreui-icons-prefix: "cuis-" !default;
-$coreui-icons-font-path: "../fonts" !default;
 
 @font-face {
   font-family: 'CoreUI-Icons-Solid';
-  src:  url('#{$coreui-icons-font-path}/CoreUI-Icons-Solid.eot?ei2vov');
-  src:  url('#{$coreui-icons-font-path}/CoreUI-Icons-Solid.eot?ei2vov#iefix') format('embedded-opentype'),
-    url('#{$coreui-icons-font-path}/CoreUI-Icons-Solid.woff2?ei2vov') format('woff2'),
-    url('#{$coreui-icons-font-path}/CoreUI-Icons-Solid.ttf?ei2vov') format('truetype'),
-    url('#{$coreui-icons-font-path}/CoreUI-Icons-Solid.woff?ei2vov') format('woff'),
-    url('#{$coreui-icons-font-path}/CoreUI-Icons-Solid.svg?ei2vov#CoreUI-Icons-Solid') format('svg');
+  src:  font-url('CoreUI-Icons-Solid.eot?ei2vov');
+  src:  font-url('CoreUI-Icons-Solid.eot?ei2vov#iefix') format('embedded-opentype'),
+    font-url('CoreUI-Icons-Solid.woff2?ei2vov') format('woff2'),
+    font-url('CoreUI-Icons-Solid.ttf?ei2vov') format('truetype'),
+    font-url('CoreUI-Icons-Solid.woff?ei2vov') format('woff'),
+    font-url('CoreUI-Icons-Solid.svg?ei2vov#CoreUI-Icons-Solid') format('svg');
   font-weight: normal;
   font-style: normal;
 }

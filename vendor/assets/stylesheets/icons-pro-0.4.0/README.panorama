@@ -1,0 +1,4 @@
+embed coreui-fonts:
+
+- move fonts from sundir to app/assets/fonts
+- replace all occurrences of "url('#{$coreui-icons-font-path}/abc.ttf')" with "font-url('abs.ttf')" in both scss-files
