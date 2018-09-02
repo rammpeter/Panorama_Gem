@@ -1,7 +1,7 @@
 @font-face {
   font-family: 'CoreUI-Icons-Solid';
-  src: url("../fonts/CoreUI-Icons-Solid.eot?ei2vov");
-  src: url("../fonts/CoreUI-Icons-Solid.eot?ei2vov#iefix") format("embedded-opentype"), url("../fonts/CoreUI-Icons-Solid.woff2?ei2vov") format("woff2"), url("../fonts/CoreUI-Icons-Solid.ttf?ei2vov") format("truetype"), url("../fonts/CoreUI-Icons-Solid.woff?ei2vov") format("woff"), url("../fonts/CoreUI-Icons-Solid.svg?ei2vov#CoreUI-Icons-Solid") format("svg");
+  src: url("CoreUI-Icons-Solid.eot?ei2vov");
+  src: url("CoreUI-Icons-Solid.eot?ei2vov#iefix") format("embedded-opentype"), url("CoreUI-Icons-Solid.woff2?ei2vov") format("woff2"), url("CoreUI-Icons-Solid.ttf?ei2vov") format("truetype"), url("CoreUI-Icons-Solid.woff?ei2vov") format("woff"), url("CoreUI-Icons-Solid.svg?ei2vov#CoreUI-Icons-Solid") format("svg");
   font-weight: normal;
   font-style: normal;
 }
