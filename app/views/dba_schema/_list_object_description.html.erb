@@ -178,8 +178,28 @@ column_options =
 <%= gen_slickgrid(@attribs, column_options, {
       :caption => "Attributes of #{"the underlying table of " if @table_type == 'MATERIALIZED VIEW'}#{@table_type} #{@owner}.#{@table_name}",
       :height => :auto, show_pin_icon: 1
-})
+}) if @attribs.count > 0
 %>
+
+<%
+  column_options =
+      [
+          {:caption=> 'XML schema owner',  :data=>proc{|rec| rec.schema_owner},                     :title=> 'Owner of the XML Schema that is used for the table definition'},
+          {:caption=> 'XML schema name',   :data=>proc{|rec| rec.xmlschema},                        :title=> 'Name of the XML Schema that is used for the table definition'},
+          {:caption=> 'Storage type',      :data=>proc{|rec| rec.storage_type},                     :title=> 'Storage option for the XMLType data'},
+          {:caption=> 'Any schema',        :data=>proc{|rec| rec.anyschema},                        :title=> 'If storage is BINARY, indicates whether the column allows ANYSCHEMA (YES) or not (NO), else NULL'},
+          {:caption=> 'Non schema',        :data=>proc{|rec| rec.nonschema},                        :title=> 'If storage is BINARY, indicates whether the column allows NONSCHEMA (YES) or not (NO), else NULL'},
+      ]
+
+%>
+
+
+<%= gen_slickgrid(@xml_attribs, column_options, {
+    :caption => "Attributes of XML-table #{@owner}.#{@table_name}",
+    :height => :auto, show_pin_icon: 1
+}) if @xml_attribs.count > 0
+%>
+
 
 
 <% if @mv_attribs %>

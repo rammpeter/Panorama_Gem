@@ -307,11 +307,11 @@ class DbaSchemaController < ApplicationController
     end
 
     # assuming it is a table now
-
+    # DBA_Tables is empty for XML-Tables, but DBA_All_Tables contains both object and relational tables
     @attribs = sql_select_all ["SELECT t.*, o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, o.Object_ID Table_Object_ID,
                                        m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments,
                                        s.Size_MB_Table, s.Blocks Segment_Blocks, s.Extents
-                                FROM DBA_Tables t
+                                FROM DBA_All_Tables t
                                 LEFT OUTER JOIN DBA_Objects o ON o.Owner = t.Owner AND o.Object_Name = t.Table_Name AND o.Object_Type = 'TABLE'
                                 LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
                                 LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(Bytes)/(1024*1024) Size_MB_Table,
@@ -322,6 +322,13 @@ class DbaSchemaController < ApplicationController
                                                 ) s ON s.Owner = t.Owner AND s.Segment_name = t.Table_Name
                                 WHERE t.Owner = ? AND t.Table_Name = ?
                                ", @owner, @table_name, @owner, @table_name]
+
+
+    @xml_attribs = sql_select_all ["\
+      SELECT t.*
+      FROM DBA_XML_Tables t
+      WHERE t.Owner = ? AND t.Table_Name = ?
+      ", @owner, @table_name]
 
     @comment = sql_select_one ["SELECT Comments FROM DBA_Tab_Comments WHERE Owner = ? AND Table_Name = ?", @owner, @table_name]
 
@@ -346,7 +353,7 @@ class DbaSchemaController < ApplicationController
                 ORDER BY c.Column_ID
                ", @owner, @table_name]
 
-    if @attribs[0].partitioned == 'YES'
+    if @attribs.count > 0 && @attribs[0].partitioned == 'YES'
       partitions = sql_select_first_row ["SELECT COUNT(*) Anzahl,
                                                  COUNT(DISTINCT Compression)      Compression_Count, MIN(Compression)     Compression,
                                                  COUNT(DISTINCT Tablespace_Name)  Tablespace_Count,  MIN(Tablespace_Name) Tablespace_Name,
