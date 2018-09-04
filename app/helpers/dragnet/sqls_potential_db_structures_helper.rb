@@ -283,60 +283,62 @@ Usable with Oracle 11g and above only.'),
 This would ensure that you do the more expensive TABLE ACCESS BY ROWID only if that table row matches all your access conditions checked by the index.
 This selection considers current SGA'),
             :sql=> "
+              WITH ash_all AS (SELECT /*+ NO_MERGE */ inst_ID, SQL_ID, SQL_Plan_Hash_Value, SQL_Child_Number, SQL_Plan_Line_ID, COUNT(*) Ash_Seconds
+                               FROM   gv$Active_Session_History
+                               WHERE  SQL_Plan_Hash_Value != 0 -- kein SQL
+                               GROUP BY inst_ID, SQL_ID, SQL_Plan_Hash_Value, SQL_Child_Number, SQL_Plan_Line_ID
+                              )
               SELECT Table_Owner, Table_Name, Index_Name,
+(Ash_seconds_Tab - NVL(Ash_Seconds_Ind, 0)) * (Index_Cardinality-Table_Cardinality) Sort,
                      Elapsed_Secs               \"Elapsed time SQL total (sec.)\",
+                     Ash_Seconds_Ind            \"Index access time ASH (sec.)\",
                      Ash_Seconds_Tab            \"Table access time ASH (sec.)\",
                      SQL_ID,
+                     Index_Plan_Line_ID         \"Plan line ID of index access\",
+                     Table_Plan_Line_ID         \"Plan line ID of table access\",
                      Index_Cardinality          \"Cardinality index access\",
                      Table_Cardinality          \"Cardinality table access\",
                      Index_Access               \"Access criteria on index\",
                      Table_Filter               \"Filter criteria on table\"
               FROM   (
-                      SELECT Table_Owner, Table_Name, Index_Name,
-                             SUM(Elapsed_Secs) Elapsed_Secs, SUM(Ash_Seconds_Tab) Ash_Seconds_Tab,
-                             SQL_ID,
-                             Index_Access, Table_Filter,
-                             ROUND(AVG(Index_Cardinality), 1) Index_Cardinality,
-                             ROUND(AVG(Table_Cardinality), 1) Table_Cardinality
+                      SELECT ind.Inst_ID, ind.SQL_ID, ind.Plan_Hash_Value, ind.Child_Number, ind.ID Ind_ID, tab.ID tab_ID, tab.Table_Owner, tab.Table_Name, ind.Index_Name,
+                             ROUND(s.Elapsed_Time/1000000) Elapsed_Secs,
+                             ash_ind.ash_Seconds ash_Seconds_ind,
+                             ash_tab.ash_Seconds ash_Seconds_Tab,
+                             ind.Access_Predicates Index_Access, tab.Filter_Predicates Table_Filter,
+                             ind.Cardinality Index_Cardinality,
+                             tab.Cardinality Table_Cardinality,
+                             tab.ID Table_Plan_Line_ID,
+                             ind.ID Index_Plan_Line_ID
                       FROM   (
-                              SELECT ind.Inst_ID, ind.SQL_ID, ind.Plan_Hash_Value, ind.Child_Number, ind.ID Ind_ID, tab.ID tab_ID, tab.Table_Owner, tab.Table_Name, ind.Index_Name,
-                                     ROUND(s.Elapsed_Time/1000000) Elapsed_Secs, ash.ash_Seconds_Tab,
-                                     ind.Access_Predicates Index_Access, tab.Filter_Predicates Table_Filter,
-                                     ind.Cardinality Index_Cardinality,
-                                     tab.Cardinality Table_Cardinality
-                              FROM   (
-                                      SELECT /*+ NO_MERGE */  Inst_ID, SQL_ID, Plan_Hash_Value, Child_Number, ID, Object_Owner Index_Owner, Object_Name Index_Name, Access_Predicates, Cardinality
-                                      FROM   gv$SQL_Plan
-                                      WHERE  Access_Predicates IS NOT NULL
-                                      AND    Operation LIKE 'INDEX%'
-                                      AND    Object_Owner NOT IN ('SYS')
-                                     ) ind
-                              JOIN   DBA_Indexes i ON i.Owner = ind.Index_Owner AND i.Index_Name = ind.Index_Name
-                              JOIN   (
-                                      SELECT /*+ NO_MERGE */ Inst_ID, SQL_ID, Plan_Hash_Value, Child_Number, ID, Object_Owner Table_Owner, Object_Name Table_Name, Filter_Predicates, Cardinality
-                                      FROM   gv$SQL_Plan
-                                      WHERE  Filter_Predicates IS NOT NULL
-                                      AND    Operation LIKE 'TABLE ACCESS%'
-                                      AND    Options LIKE 'BY INDEX ROWID%'
-                                      AND    Object_Owner NOT IN ('SYS')
-                                     ) tab ON tab.Inst_ID = ind.Inst_ID AND tab.SQL_ID = ind.SQL_ID AND tab.Plan_Hash_Value = ind.Plan_Hash_Value AND tab.Child_Number = ind.Child_Number AND
-                                              tab.Table_Owner = i.Table_Owner AND tab.Table_Name = i.Table_Name AND tab.ID < ind.ID -- Index kommt unter table beim index-Zugriff
-                              JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, SQL_ID, Plan_Hash_Value, Child_Number, Elapsed_Time
-                                      FROM   gv$SQL
-                                      WHERE  Elapsed_Time > ? * 1000000
-                                     )s ON S.INST_ID = ind.Inst_ID AND s.SQL_ID = ind.SQL_ID AND s.Plan_Hash_Value = ind.Plan_Hash_Value AND s.Child_Number = ind.Child_Number
-                              LEFT OUTER JOIN ( -- Ash may be removed after short time but SQL remains in SGA
-                                      SELECT /*+ NO_MERGE */ inst_ID, SQL_ID, SQL_Plan_Hash_Value, SQL_Child_Number, SQL_Plan_Line_ID, COUNT(*) Ash_Seconds_Tab
-                                      FROM   gv$Active_Session_History
-                                      WHERE  SQL_Plan_Hash_Value != 0 -- kein SQL
-                                      GROUP BY inst_ID, SQL_ID, SQL_Plan_Hash_Value, SQL_Child_Number, SQL_Plan_Line_ID
-                                     ) ash ON ash.INST_ID = ind.Inst_ID AND ash.SQL_ID = ind.SQL_ID AND ash.SQL_Plan_Hash_Value = ind.Plan_Hash_Value AND ash.SQL_Child_Number = ind.Child_Number AND ash.SQL_Plan_Line_ID = tab.ID
-                             )
-                      GROUP BY Table_Owner, Table_Name, Index_Name, SQL_ID, Index_Access, Table_Filter
+                              SELECT /*+ NO_MERGE */  Inst_ID, SQL_ID, Plan_Hash_Value, Child_Number, ID, Object_Owner Index_Owner, Object_Name Index_Name, Access_Predicates, Cardinality
+                              FROM   gv$SQL_Plan
+                              WHERE  Access_Predicates IS NOT NULL
+                              AND    Operation LIKE 'INDEX%'
+                              AND    Object_Owner NOT IN ('SYS')
+                             ) ind
+                      JOIN   DBA_Indexes i ON i.Owner = ind.Index_Owner AND i.Index_Name = ind.Index_Name
+                      JOIN   (
+                              SELECT /*+ NO_MERGE */ Inst_ID, SQL_ID, Plan_Hash_Value, Child_Number, ID, Object_Owner Table_Owner, Object_Name Table_Name, Filter_Predicates, Cardinality
+                              FROM   gv$SQL_Plan
+                              WHERE  Filter_Predicates IS NOT NULL
+                              AND    Operation LIKE 'TABLE ACCESS%'
+                              AND    Options LIKE 'BY INDEX ROWID%'
+                              AND    Object_Owner NOT IN ('SYS')
+                             ) tab ON tab.Inst_ID = ind.Inst_ID AND tab.SQL_ID = ind.SQL_ID AND tab.Plan_Hash_Value = ind.Plan_Hash_Value AND tab.Child_Number = ind.Child_Number AND
+                                      tab.Table_Owner = i.Table_Owner AND tab.Table_Name = i.Table_Name AND tab.ID < ind.ID -- Index kommt unter table beim index-Zugriff
+                      JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, SQL_ID, Plan_Hash_Value, Child_Number, Elapsed_Time
+                              FROM   gv$SQL
+                              WHERE  Elapsed_Time > ? * 1000000
+                             )s ON S.INST_ID = ind.Inst_ID AND s.SQL_ID = ind.SQL_ID AND s.Plan_Hash_Value = ind.Plan_Hash_Value AND s.Child_Number = ind.Child_Number
+                      JOIN   ash_all ash_tab  ON ash_tab.INST_ID = ind.Inst_ID AND ash_tab.SQL_ID = ind.SQL_ID AND ash_tab.SQL_Plan_Hash_Value = ind.Plan_Hash_Value AND ash_tab.SQL_Child_Number = ind.Child_Number AND ash_tab.SQL_Plan_Line_ID = tab.ID
+                      -- Ash may be removed after short time but SQL remains in SGA, Index access must not have ash records
+                      LEFT OUTER JOIN ash_all ash_ind  ON ash_ind.INST_ID = ind.Inst_ID AND ash_ind.SQL_ID = ind.SQL_ID AND ash_ind.SQL_Plan_Hash_Value = ind.Plan_Hash_Value AND ash_ind.SQL_Child_Number = ind.Child_Number AND ash_ind.SQL_Plan_Line_ID = ind.ID
                      )
               WHERE  Elapsed_Secs >= ?
-              AND    NVL(Ash_Seconds_Tab, 0) >= ?
-              ORDER BY Elapsed_Secs + NVL(Ash_Seconds_Tab, 0)*100 * (Index_Cardinality-Table_Cardinality) DESC
+              AND    Ash_Seconds_Tab >= ?
+              AND    Ash_Seconds_Tab > NVL(Ash_Seconds_Ind, 0)
+              ORDER BY Ash_seconds_Tab - NVL(Ash_Seconds_Ind, 0) DESC
             ",
             :parameter=>[{:name=>t(:dragnet_helper_127_param_1_name, :default=>'Minimum elapsed seconds of SQL in SGA to be considered in selection'), :size=>8, :default=>10, :title=>t(:dragnet_helper_127_param_1_hint, :default=>'Minimum amount of elapsed seconds an SQL must have in GV$SQL to be considered in this selection') },
                          {:name=>t(:dragnet_helper_127_param_2_name, :default=>'Minimum elapsed seconds as sum over all SQLs in SGA per accessed table'), :size=>8, :default=>100, :title=>t(:dragnet_helper_127_param_2_hint, :default=>'Minimum amount of elapsed seconds of all SQLs in SGA that are accessing the considered table to be shown in this selection') },
