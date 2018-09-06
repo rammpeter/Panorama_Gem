@@ -223,11 +223,12 @@ module AjaxHelper
   end
 
 
-  def link_session_details(update_area, instance, sid, serialno)
+  def link_session_details(update_area, instance, sid, serialno, print_val=nil)
     if instance.nil? || sid.nil? || serialno.nil?
       ''
     else
-      ajax_link("#{sid}, #{serialno}",
+      print_val = "#{sid}, #{serialno}" if print_val.nil?
+      ajax_link(print_val,
                 {       :controller   => :dba,
                         :action       => :show_session_detail,
                         :instance     => instance,

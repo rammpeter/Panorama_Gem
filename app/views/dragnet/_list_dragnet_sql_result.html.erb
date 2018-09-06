@@ -1,4 +1,8 @@
 <%  # Die folgende Logik liegt hier, da sonst nicht auf ActionView-Helper zurückgegriffen werden kann
+  instance_captions = ['instance', 'inst_id']
+  sid_captions = ['sid']
+  serial_number_captions = ['serial number', 'serial#']
+
 if @res.count > 0
     @column_options = []
 
@@ -15,6 +19,11 @@ if @res.count > 0
         index = number.index "."
         return 0 unless index
         return number.length-index-1
+      end
+
+      # does column with caption exists in result
+      def column_exists?(list)
+        @column_options.select{|e| list.include?(e[:caption])}.length > 0
       end
 
       #Iterieren über Spalten des Results
@@ -40,15 +49,6 @@ if @res.count > 0
         end
 
         case
-          when isNumber then
-            col[:data] = proc{|rec| formattedNumber(rec[col[:caption]], scale)}
-            col[:align] = :right
-          when isDate then
-            col[:data] = proc{|rec| localeDateTime(rec[col[:caption]])}
-            unless chart_x_axis_found
-              col[:plot_master_time] = true
-              chart_x_axis_found = true
-            end
           when col[:caption].downcase == 'sql_id' || col[:caption].downcase == "sql-id" || col[:caption].downcase["sql_id"] || col[:caption].downcase["sql-id"] then
 
             col[:data] = proc{|rec|
@@ -94,6 +94,31 @@ if @res.count > 0
                                   my_html_escape(rec[col[:caption]])            # Ohne Link
                                 end
                              }
+          when sid_captions.include?(col[:caption].downcase) && column_exists?(serial_number_captions) && column_exists?(instance_captions)
+          then
+            col[:data] = proc do |rec|
+              instance = nil
+              instance_captions.each do |snc|
+                instance = rec[snc] if rec[snc]
+              end
+
+              serial_no = nil
+              serial_number_captions.each do |snc|
+                serial_no = rec[snc] if rec[snc]
+              end
+              link_session_details(:exec_dragnet_sql_detail_area, instance, rec[col[:caption]], serial_no, fn(rec[col[:caption]]))
+#"#{instance}, #{serial_no}"
+            end
+            col[:align] = :right
+          when isNumber then
+            col[:data] = proc{|rec| formattedNumber(rec[col[:caption]], scale)}
+            col[:align] = :right
+          when isDate then
+            col[:data] = proc{|rec| localeDateTime(rec[col[:caption]])}
+            unless chart_x_axis_found
+              col[:plot_master_time] = true
+              chart_x_axis_found = true
+            end
         else
           col[:data] = proc{|rec| my_html_escape(rec[col[:caption]]) }
         end

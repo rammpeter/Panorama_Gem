@@ -680,6 +680,7 @@ class AdditionController < ApplicationController
              NVL(End_Mbytes, 0) - NVL(Start_MBytes, 0) Aenderung_Abs,
              CASE WHEN Start_MBytes != 0 THEN (End_MBytes/Start_MBytes-1)*100 END Aenderung_Pct
       FROM   (SELECT Owner, Segment_Name, Segment_Type,
+                     CASE WHEN Segment_Type LIKE 'LOB%' THEN (SELECT Table_Name||'.'||Column_Name FROM DBA_Lobs l WHERE l.Owner = s.Owner AND l.Segment_Name = s.Segment_Name) END Name_Addition,
                      MAX(Tablespace_Name) KEEP (DENSE_RANK LAST ORDER BY Gather_Date) Last_TS,
                      COUNT(DISTINCT Tablespace_Name) Tablespaces,
                      SUM(CASE WHEN s.Gather_Date = dates.Min_Gather_Date THEN Bytes END)/(1024*1024) Start_Mbytes,

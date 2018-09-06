@@ -25,6 +25,13 @@
      :title=>"Show single snapshots of object in period")
   end
 
+  show_name = proc do |rec|
+    result = link_object_description(@update_area, rec.owner, rec.segment_name, rec.segment_name)
+    if rec.name_addition
+      result << " ( #{rec.name_addition} )"
+    end
+    result
+  end
 
   def show_ts(rec)
     if rec.tablespaces == 1
@@ -37,7 +44,7 @@
 column_options =
   [
     {:caption=>"Owner",           :data=>proc{|rec| rec.owner},                       :title=>"Object-owner"},
-    {:caption=>"Name", :data=>proc{|rec| link_object_description(@update_area, rec.owner, rec.segment_name, rec.segment_name)}, :title=>"Segment-name"},
+    {:caption=>"Name",            :data=>show_name,                                   :title=>"Segment-name"},
     {:caption=>"Type",            :data=>proc{|rec| rec.segment_type},                :title=>"Segment-type"},
     {:caption=>"Tablespace",      :data=>proc{|rec| show_ts(rec)},                    :title=>"Tablespace of object at the end of considered period"},
     {:caption=>"MB start",        :data=>proc{|rec| fn(rec.start_mbytes, 2)},         :title=>"Size of object in MB at start of considered period",              :align=>:right},

@@ -48,14 +48,15 @@ This selection looks for statements with identical execution plans by plan-hash-
             ]
         },
         {
-            :name  => t(:dragnet_helper_135_name, :default=>'Missing usage of bind variables: Detection by identical plan-hash-value from SGA'),
+            :name  => t(:dragnet_helper_135_name, :default=>'Missing usage of bind variables: Detection by identical force matching signature from SGA'),
             :desc  => t(:dragnet_helper_135_desc, :default=>"Usage of literals instead of bind variables with high number of different literals leads to high parse counts and flooding of SQL-Area in SGA.
 You may reduce the problem by setting cursor_sharing != EXACT, but you still need large amount of SGA-memory to match your SQL with the corresponding SQL with replaced bind variables.
 So strong suggestion is: Use bind variables!
 This selection looks for statements with identical execution plans by plan-hash-value from SGA."),
             :sql=>  "SELECT a.Inst_ID                                                         \"Instance\",
-                            a.Plan_Hash_Value                                                 \"Plan hash value\",
+                            a.Force_Matching_Signature                                        \"Force matching signature\",
                             a.Parsing_Schema_Name                                             \"Parsing schema\",
+                            COUNT(DISTINCT a.Plan_Hash_Value)                                 \"No. of different exec. plans\",
                             COUNT(*)                                                          \"No. of entries in gv$SQLArea\",
                             COUNT(DISTINCT a.SQL_ID)                                          \"No. of different SQL-IDs\",
                             MIN(a.Last_Active_Time)                                           \"Oldest active time\",
@@ -68,10 +69,10 @@ This selection looks for statements with identical execution plans by plan-hash-
                             ROUND(SUM(a.Runtime_Mem)   /(1024*1024), 2)                       \"Runtime memory (MB)\",
                             SUBSTR(MAX(a.SQL_Text) KEEP (DENSE_RANK LAST ORDER BY Last_Active_Time), 1, 400)  \"SQL text\"
                      FROM   gv$SQLArea a
-                     WHERE  a.Plan_Hash_Value != 0
-                     GROUP BY a.Inst_ID, a.Plan_Hash_Value, a.Parsing_Schema_Name
+                     WHERE  a.Force_Matching_Signature != 0
+                     GROUP BY a.Inst_ID, a.Force_Matching_Signature, a.Parsing_Schema_Name
                      HAVING COUNT(*) > ?
-                     ORDER BY 4 DESC
+                     ORDER BY 5 DESC
             ",
             :parameter=>[
                 {:name=> t(:dragnet_helper_135_param_1_name, :default=>'Minimum number of different SQL-IDs'), :size=>8, :default=>10, :title=>t(:dragnet_helper_135_param_1_hint, :default=>'Minimum number of different SQL-IDs per plan-hash-value for consideration in selection') }

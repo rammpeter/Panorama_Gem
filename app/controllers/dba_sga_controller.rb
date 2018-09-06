@@ -1006,7 +1006,51 @@ class DbaSgaController < ApplicationController
       return
     end
 
+    if params[:commit] == 'Show invalidations'
+      list_result_cache_invalidations
+    else
+      list_result_cache_content
+    end
+  end
 
+  def list_result_cache_invalidations
+    @dependencies = sql_select_iterator "\
+      SELECT d.Inst_ID, d.Status, d.Name, d.Creation_Timestamp, u.UserName, d.Depend_Count, d.SCN Invalidation_SCN, d.Invalidations,
+             (SELECT UserName FROM DBA_Users WHERE User_ID = r.Min_User_ID) Min_Creator,
+             (SELECT UserName FROM DBA_Users WHERE User_ID = r.Max_User_ID) Max_Creator,
+             CASE WHEN r.Creator_Count > 1 THEN '< '||r.Creator_Count||' >' ELSE (SELECT UserName FROM DBA_Users WHERE User_ID = r.Max_User_ID) END Creator,
+             r.*
+      FROM   gv$Result_Cache_Objects d
+      LEFT OUTER JOIN (SELECT dd.Inst_ID, dd.depend_ID, r.Status Result_Status, r.Name Result_Name, r.Namespace Result_Namespace,
+                               COUNT(*)                     Result_Count,
+                               SUM(Space_Overhead)/1024     Space_Overhead_KB,
+                               SUM(Space_Unused)/1024       Space_Unused_KB,
+                               MIN(Creation_Timestamp)      Min_CreationTS,
+                               MAX(Creation_Timestamp)      Max_CreationTS,
+                               MIN(Creator_UID) KEEP (DENSE_RANK FIRST ORDER BY Creation_Timestamp) Min_User_ID,
+                               MAX(Creator_UID) KEEP (DENSE_RANK LAST  ORDER BY Creation_Timestamp) Max_User_ID,
+                               COUNT(DISTINCT Creator_UID)  Creator_Count,
+                               MAX(Depend_Count)            Depend_Count,
+                               SUM(Block_Count)             Block_Count,
+                               SUM(Pin_Count)               Pin_Count,
+                               SUM(Scan_Count)              Scan_Count,
+                               MIN(Row_Size_Min)            Row_Size_Min,
+                               MAX(Row_Size_Max)            Row_Size_Max,
+                               SUM(Row_Size_Avg*Row_Count)/DECODE(SUM(Row_Count), 0, 1, SUM(Row_Count))   Row_Size_Avg,
+                               SUM(Build_Time)              Build_Time
+                       FROM   gV$RESULT_CACHE_DEPENDENCY dd
+                       LEFT OUTER JOIN gv$Result_Cache_Objects r ON r.Inst_ID = dd.Inst_ID AND r.ID = dd.Result_ID
+                       GROUP BY dd.Inst_ID, dd.depend_ID, r.Status, r.Name, r.Namespace
+                      ) r ON r.Inst_ID = d.Inst_ID AND r.Depend_ID = d.ID
+      LEFT OUTER JOIN DBA_Users u ON u.User_ID = d.Creator_UID
+      WHERE  d.Type = 'Dependency'
+      AND    d.Invalidations > 0
+      ORDER BY d.Invalidations DESC"
+
+    render_partial :list_result_cache_invalidations
+  end
+
+  def list_result_cache_content
     @instance        = prepare_param_instance
 
     @sums = sql_select_all ["\
@@ -1053,7 +1097,7 @@ class DbaSgaController < ApplicationController
             ) o
       ORDER BY Space_Overhead_KB+Space_Unused_KB DESC", @instance]
 
-    render_partial
+    render_partial :list_result_cache
   end
 
   def list_result_cache_single_results

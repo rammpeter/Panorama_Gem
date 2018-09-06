@@ -7,7 +7,7 @@
 
    column_options = []
    column_options << {:caption=>'Owner',        :data=>proc{|rec| rec.owner},                             :title=>'Owner'}
-   column_options << {:caption=>'Name',         :data=>proc{|rec| show_name(rec)},                        :title=>'Name'}
+   column_options << {:caption=>'Name',         :data=>proc{|rec| show_name(rec)},                        :title=>'Name', :max_wrap_width=>300}
    column_options << {:caption=>"Sharable memory (KB)", :data=>proc{|rec| fn(rec.sharable_mem/1024)},     :title=>"Sharable memory allocated by this object", :align=>:right}
    column_options << {:caption=>'Count',        :data=>proc{|rec| fn(rec.record_count)},                  :title=>'Number of records in gv$DB_Object_Cache for this selection', :align=>"right"}
    column_options << {:caption=>'Child latches',:data=>proc{|rec| fn(rec.child_latches)},                 :title=>'Number of distinct values in gv$DB_Object_Cache.Child_Latch for this selection', :align=>"right"}

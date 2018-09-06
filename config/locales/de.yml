@@ -1390,7 +1390,7 @@
     Die eindeutige Empfehlung ist: Bindevariablen benutzen!
     Die Abfrage sucht über identische Ausführungspläne per Plan-Hash-Value aus SGA.
   dragnet_helper_135_name: |-
-    Fehlende Nutzung von Bindevariablen: Ermittlung über identische Plan-Hash-Values aus SGA
+    Fehlende Nutzung von Bindevariablen: Ermittlung über identische force matching signature aus SGA
   dragnet_helper_135_param_1_hint:                          Minimale Anzahl unterschiedlicher SQL-IDs je Plan-Hash-Value für Aufnahme in Selektion
   dragnet_helper_135_param_1_name:                          Minimale Anzahl unterschiedlicher SQL-IDs
 
