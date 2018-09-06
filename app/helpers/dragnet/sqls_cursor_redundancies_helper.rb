@@ -10,7 +10,8 @@ module Dragnet::SqlsCursorRedundanciesHelper
             :desc  => t(:dragnet_helper_133_desc, :default=>"Usage of literals instead of bind variables with high number of different literals leads to high parse counts and flooding of SQL-Area in SGA.
 You may reduce the problem by setting cursor_sharing != EXACT, but you still need large amount of SGA-memory to match your SQL with the corresponding SQL with replaced bind variables.
 So strong suggestion is: Use bind variables!
-This selection looks for statements with identical execution plans by plan-hash-value from Active Session History."),
+This selection looks for statements with identical execution plans by plan-hash-value from Active Session History.
+Using force-matching-signature instead of plan-hash-value for detection is risky because ASH often samples inaccurate values for force-matching-signature."),
             :sql=>  "WITH Ret AS (SELECT ? Days FROM DUAL)
                       SELECT x.SQL_Plan_Hash_Value, x.Different_SQL_IDs, x.Last_Used_SQL_ID, u.UserName, x.First_Occurrence, x.Last_Occurrence, x.Elapsed_Secs
                       FROM   (
@@ -52,7 +53,7 @@ This selection looks for statements with identical execution plans by plan-hash-
             :desc  => t(:dragnet_helper_135_desc, :default=>"Usage of literals instead of bind variables with high number of different literals leads to high parse counts and flooding of SQL-Area in SGA.
 You may reduce the problem by setting cursor_sharing != EXACT, but you still need large amount of SGA-memory to match your SQL with the corresponding SQL with replaced bind variables.
 So strong suggestion is: Use bind variables!
-This selection looks for statements with identical execution plans by plan-hash-value from SGA."),
+This selection looks for statements with identical execution plans by force-matching-signature (or plan-hash-value if force-matching-signature = 0)  from SGA."),
             :sql=>  "SELECT a.Inst_ID                                                         \"Instance\",
                             MIN(a.Force_Matching_Signature)                                   \"Force matching signature\",
                             a.Parsing_Schema_Name                                             \"Parsing schema\",
@@ -76,6 +77,47 @@ This selection looks for statements with identical execution plans by plan-hash-
             ",
             :parameter=>[
                 {:name=> t(:dragnet_helper_135_param_1_name, :default=>'Minimum number of different SQL-IDs'), :size=>8, :default=>10, :title=>t(:dragnet_helper_135_param_1_hint, :default=>'Minimum number of different SQL-IDs per plan-hash-value for consideration in selection') }
+            ]
+        },
+        {
+            :name  => t(:dragnet_helper_142_name, :default=>'Missing usage of bind variables: Detection by identical force matching signature from AWR history'),
+            :desc  => t(:dragnet_helper_142_desc, :default=>"Usage of literals instead of bind variables with high number of different literals leads to high parse counts and flooding of SQL-Area in SGA.
+You may reduce the problem by setting cursor_sharing != EXACT, but you still need large amount of SGA-memory to match your SQL with the corresponding SQL with replaced bind variables.
+So strong suggestion is: Use bind variables!
+This selection looks for statements with identical execution plans by force-matching-signature (or plan-hash-value if force-matching-signature = 0) from AWR history."),
+            :sql=>  "\
+              SELECT Force_Matching_Signature,
+                     Plan_Hash_Value        \"Plan hash value or no\",
+                     u.UserName             Parsing_User,
+                     different_sql_IDs      \"No. of different SQL-IDs\",
+                     Last_Used_SQL_ID,
+                     Min_Time               \"First occurrence in AWR\",
+                     Max_Time               \"Last occurrence in AWR\",
+                     Executions,
+                     Elapsed_Secs           \"Elapsed time (seconds)\",
+                     (SELECT TO_CHAR(SUBSTR(t.SQL_Text, 1, 400)) FROM DBA_Hist_SQLText t WHERE t.DBID = x.DBID AND t.SQL_ID = x.Last_Used_SQL_ID) SQL_Text
+              FROM   (SELECT ss.DBID, MIN(s.Force_Matching_Signature)                             Force_Matching_Signature,
+                             CASE WHEN COUNT(DISTINCT s.Plan_Hash_Value) = 1 THEN TO_CHAR(MIN(s.Plan_Hash_Value)) ELSE '< '||COUNT(DISTINCT s.Plan_Hash_Value)||' >' END Plan_Hash_Value,
+                             s.Parsing_User_ID,
+                             COUNT(DISTINCT s.SQL_ID)                                             Different_SQL_IDs,
+                             MAX(s.SQL_ID) KEEP (DENSE_RANK LAST ORDER BY ss.Begin_Interval_Time) Last_Used_SQL_ID,
+                             MIN(ss.Begin_Interval_Time)                                          Min_Time,
+                             MAX(ss.End_Interval_Time)                                            Max_Time,
+                             ROUND(SUM(s.Elapsed_Time_Delta)/1000000)                             Elapsed_Secs,
+                             SUM(s.Executions_Delta)                                              Executions
+                      FROM   DBA_Hist_Snapshot ss
+                      JOIN   DBA_Hist_SQLStat s ON s.DBID = ss.DBID AND s.Instance_Number = ss.Instance_Number AND s.Snap_ID = ss.Snap_ID
+                      WHERE  ss.Begin_Interval_Time > SYSDATE - ?
+                      AND    DECODE(s.Force_Matching_Signature, 0, s.Plan_Hash_Value, s.Force_Matching_Signature) > 0
+                      GROUP BY ss.DBID, DECODE(s.Force_Matching_Signature, 0, s.Plan_Hash_Value, s.Force_Matching_Signature), s.Parsing_User_ID
+                      HAVING COUNT(DISTINCT s.SQL_ID) > ?
+                     ) x
+                     LEFT OUTER JOIN All_Users u ON u.User_ID = x.Parsing_User_ID
+              ORDER BY Different_SQL_IDs DESC
+            ",
+            :parameter=>[
+                {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
+                {:name=> t(:dragnet_helper_142_param_1_name, :default=>'Minimum number of different SQL-IDs'), :size=>8, :default=>10, :title=>t(:dragnet_helper_142_param_1_hint, :default=>'Minimum number of different SQL-IDs per plan-hash-value for consideration in selection') }
             ]
         },
         {

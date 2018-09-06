@@ -637,14 +637,14 @@ module ApplicationHelper
   # Ermitteln Kurztext per DB aus SQL-ID
   def get_sql_shorttext_by_sql_id(sql_id)
     # erster Versuch direkt aus SGA zu lesen
-    sqls = sql_select_all ["\
+    sql_text = sql_select_first_row ["\
                  SELECT /*+ Panorama-Tool Ramm */ SUBSTR(SQL_FullText, 1, 150) SQL_Text
-                 FROM   v$SQLArea
+                 FROM   gv$SQLArea
                  WHERE  SQL_ID = ?",
                            sql_id]
 
-    if sqls.size == 0 && PanoramaConnection.get_config[:management_pack_license] != :none  # Wenn nicht gefunden, dann in AWR-History suchen, but only if access is allowed
-      sqls = sql_select_all ["\
+    if sql_text.nil? && PanoramaConnection.get_config[:management_pack_license] != :none  # Wenn nicht gefunden, dann in AWR-History suchen, but only if access is allowed
+      sql_text = sql_select_first_row ["\
                    SELECT /*+ Panorama-Tool Ramm */ SUBSTR(SQL_Text, 1, 150) SQL_Text
                    FROM   DBA_Hist_SQLText
                    WHERE  DBID   = ?
@@ -652,10 +652,10 @@ module ApplicationHelper
                              get_dbid, sql_id]
     end
 
-    if sqls.size == 0
+    if sql_text.nil?
       "< No SQL-text found for SQL-ID='#{sql_id}' >"
     else
-      sqls[0].sql_text
+      sql_text.sql_text
     end
   end # get_sql_shorttext_by_sql_id
 
