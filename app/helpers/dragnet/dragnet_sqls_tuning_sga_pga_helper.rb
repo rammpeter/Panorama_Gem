@@ -277,14 +277,16 @@ Especially this is true for generated dynamic SQL statements (e.g. from OR-mappe
                      FROM   (SELECT
                                     s.Sequence_Owner, s.Sequence_Name, s.Cache_size, s.Min_Value, s.Max_Value, s.Increment_By,
                                     s.Cycle_flag, s.Last_Number,
-                                    ROUND(s.Last_Number*100/s.Max_Value, 1) \"% of max. value reached\",
+                                    ROUND(s.Last_Number*100/s.Max_Value, 1) \"Pct. of max. value reached\",
                                     ROUND((s.Last_Number-s.Min_Value)/(SYSDATE-o.Created)) \"Values per day\",
                                     o.Created, o.Last_DDL_Time
                              FROM   DBA_Sequences s
                              LEFT OUTER JOIN   DBA_Objects o ON o.Owner = s.Sequence_Owner AND o.Object_Name = s.Sequence_Name AND o.Object_Type = 'SEQUENCE'
                              WHERE  Sequence_Owner NOT IN ('SYS', 'SYSTEM')
                             ) x
+                      WHERE \"Values per day\"/DECODE(Cache_Size,0,1,Cache_Size) > ?
                       ORDER  By \"Values per day\"/DECODE(Cache_Size,0,1,Cache_Size) DESC NULLS LAST",
+            :parameter=>[{:name=>t(:dragnet_helper_110_param_1_name, :default=>'Minimum cache reloads per day'), :size=>8, :default=>100, :title=>t(:dragnet_helper_110_param_1_hint, :default=>'Minimum reloads per day (single sequence values or cache reloads) for consideration in selection')}]
         },
         {
             :name  => t(:dragnet_helper_111_name, :default=>'Concurrency on memory, latches: Overview over usage of sequences by SQLs'),

@@ -6,11 +6,14 @@
 if @res.count > 0
     @column_options = []
 
+      i = 0
       @res[0].each do |key, value|   # Iteration über Spalten der ersten Zeile
+        i += 1
         @column_options << {:caption=>key,
                            :title=>key,
                            #:data_title=>proc{|rec| "#{key}: Classname=#{rec[key].class.name}"}
         }
+        raise "Problem with column #{i} of SQL result! Column header is empty.\nSQL columns identifier may not be processable by ActiveRecord." if key.nil?
       end
 
       # Ermitteln der anzahl Nachkommastellen einer Zahl

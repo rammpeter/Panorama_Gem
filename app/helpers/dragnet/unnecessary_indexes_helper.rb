@@ -145,15 +145,18 @@ Caution:
 Additional information about index usage can be requested from DBA_Hist_Seg_Stat and DBA_Hist_Active_Sess_History."),
             :sql=> "
                     WITH Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Constraint_Type, Table_Name, R_Owner, R_Constraint_Name FROM DBA_Constraints)
-                    SELECT /*+ USE_HASH(i ic cc c rc rt) */ u.*, ROUND(NVL(u.\"End monitoring\", SYSDATE)-u.\"Start monitoring\", 1) \"Days without usage\",
-                           i.Num_Rows, i.Distinct_Keys,
+                    SELECT /*+ USE_HASH(i ic cc c rc rt) */ u.Owner, u.Table_Name, u.Index_Name,
+                           ic.Column_Name                                                             \"First Column name\",
+                           u.Monitoring, u.\"Start monitoring\", u.\"End monitoring\",
+                           ROUND(NVL(u.\"End monitoring\", SYSDATE)-u.\"Start monitoring\", 1) \"Days without usage\",
+                           i.Num_Rows, i.Distinct_Keys, CASE WHEN i.Distinct_Keys IS NULL OR  i.Distinct_Keys = 0 THEN NULL ELSE ROUND(i.Num_Rows/i.Distinct_Keys) END \"Avg. rows per key\",
+                           i.Compression||CASE WHEN i.Compression = 'ENABLED' THEN ' ('||i.Prefix_Length||')' END Compression,
                            seg.MBytes,
                            i.Tablespace_Name \"Tablespace\", i.Uniqueness, i.Index_Type,
                            (SELECT IOT_Type FROM DBA_Tables t WHERE t.Owner = u.Owner AND t.Table_Name = u.Table_Name) \"IOT Type\",
                            c.Constraint_Name                                                          \"Foreign key protection\",
                            CASE WHEN rc.Table_Name IS NOT NULL THEN rc.Owner||'.'||rc.Table_Name END  \"Referenced table\",
-                           rt.Num_Rows                                                                \"Num rows of referenced table\",
-                           ic.Column_Name                                                             \"Column name\"
+                           rt.Num_Rows                                                                \"Num rows of referenced table\"
                     FROM   (
                             SELECT /*+ NO_MERGE */ u.UserName Owner, io.name Index_Name, t.name Table_Name,
                                    decode(bitand(i.flags, 65536), 0, 'NO', 'YES') Monitoring,
