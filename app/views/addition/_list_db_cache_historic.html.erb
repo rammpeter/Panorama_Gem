@@ -58,12 +58,14 @@
                              :max_height => 450, show_pin_icon: 1,
                              :caption=> "DB-cache usage between #{@time_selection_start} and #{@time_selection_end} #{"Instance=#{@instance}" if @instance }",
                              :context_menu_entries=>{:label=>"Show Top 10 on time line",
-                                                     :action=>"$('#list_db_cache_historic_hidden_link_timeline').click();" },
+                                                     :action=>"$('#list_db_cache_historic_hidden_link_timeline').click();",
+                                                     ui_icon: 'cui-chart-line'
+                             },
                              command_menu_entries: {
                                  name:      'top_10_on_time_line',
                                  caption:   'Show top 10 on time line',
                                  hint:      'Show diagram with top 10 on time line',
-                                 icon_class:           'ui-icon ui-icon-image',
+                                 icon_class:           'cui-chart-line',
                                  show_icon_in_caption: 'only',
                                  action:               "$('#list_db_cache_historic_hidden_link_timeline').click();"
                              }

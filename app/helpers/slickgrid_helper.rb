@@ -165,7 +165,7 @@ module SlickgridHelper
   #   global_options: Hash mit globalen Optionen
   #     :caption              => Titel vor Anzeige der Tabelle, darf keine "'" enthalten
   #     :caption_style        => Style-Attribute für caption der Tabelle
-  #     :command_menu_entries => Array with hashes or single hash for actions available in caption bar: :name, :caption, :hint, :icon_class=>"ui-icon xxx", :show_icon_in_caption=>true|false|:only\:right ,  :action=>javascript
+  #     :command_menu_entries => Array with hashes or single hash for actions available in caption bar: :name, :caption, :hint, :icon_class=>"cui-xxx", :show_icon_in_caption=>true|false|:only\:right ,  :action=>javascript
   #     :context_menu_entries => Array mit Hashes bzw. einzelner Hash mit weiterem Eintrag für Context-Menu: :label, :icon, :action
   #     :div_style            => Einpacken der Tabelle in Div mit diesem Style
   #     :data_filter          => Name der JavaScript-Methode für filtern der angezeigten Zeilen: Methode muss einen Parameter "item" besitzen mit aktuell zu prüfender Zeile
@@ -320,7 +320,7 @@ module SlickgridHelper
       context_menu_entries.each_index do |i|
         output << "  { label:   \"#{context_menu_entries[i][:label]}\",
                        hint:    \"#{context_menu_entries[i][:hint]}\",
-                       ui_icon: \"#{context_menu_entries[i][:ui_icon] ? context_menu_entries[i][:ui_icon] : 'ui-icon-image'}\",
+                       ui_icon: \"#{context_menu_entries[i][:ui_icon] ? context_menu_entries[i][:ui_icon] : 'cui-image'}\",
                        action:  function(t){ #{context_menu_entries[i][:action]}}
                      },"
       end

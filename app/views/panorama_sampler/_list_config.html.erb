@@ -147,7 +147,7 @@ Limit for long lasting DB-locks = #{fn(rec[:blocking_locks_long_locks_limit])} s
                                      :name                  => :refresh_list,
                                      :caption               => 'Refresh list',
                                      :hint                  => "Refresh content of list from config stored at server",
-                                     :icon_class            => 'ui-icon ui-icon-arrowrefresh-1-e',
+                                     :icon_class            => 'cui-reload',
                                      :show_icon_in_caption  => :only,
                                      :action                => "ajax_html('#{params[:update_area]}', 'panorama_sampler', 'list_config', { update_area: '#{params[:update_area]}'});"
                                  },

@@ -217,16 +217,15 @@
     context_menu_entries = []
     command_menu_entries = [get_recall_params_info_for_render_page_caption]
 
-    def create_context_menu_entry(seconds, context_menu_entries, command_menu_entries)
+    def create_context_menu_entry(seconds, context_menu_entries, command_menu_entries, icon_class)
       label   = t(:active_session_history_show_top_ten, :sec=>seconds, :default=>"Show Top 10 in time line, condensed by %{sec} seconds")
       hint    = t(:active_session_history_show_top_ten_hint, :sec=>seconds, :default=>"Show Top 10 ordered by total time waited in time line, each point in graph for sum over %{sec} seconds")
-      icon    = "ui-icon-image"
       action  = "$('##{@hidden_link_timeline_id}_#{seconds}').click();"
 
       context_menu_entries << {
                                 :label   => label,
                                 :hint    => hint,
-                                :ui_icon => icon,
+                                :ui_icon => icon_class,
                                 :action  => action
                               }
 
@@ -234,15 +233,15 @@
                                 name:                 "command_menu_timeline_#{seconds}",
                                 caption:              label,
                                 hint:                 hint,
-                                icon_class:           "ui-icon #{icon}",
+                                icon_class:           icon_class,
                                 show_icon_in_caption: true,
                                 action:               action
                               }
     end
 
-    create_context_menu_entry(60, context_menu_entries, command_menu_entries)
-    create_context_menu_entry(10, context_menu_entries, command_menu_entries)
-    create_context_menu_entry(1, context_menu_entries, command_menu_entries)
+    create_context_menu_entry(60, context_menu_entries, command_menu_entries, 'cuis-chart-area')
+    create_context_menu_entry(10, context_menu_entries, command_menu_entries, 'cui-chart-area')
+    create_context_menu_entry(1, context_menu_entries, command_menu_entries,  'cui-chart-line')
 
 
     gen_slickgrid(@sessions,

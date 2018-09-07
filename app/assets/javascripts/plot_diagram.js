@@ -106,13 +106,13 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
         var bindings = {};
 
         function context_menu_entry(name, icon_class, label, hint, click_action ){
-            jQuery("<li id='"+context_menu_id+"_"+name+"' title='"+hint+"'><span class='"+icon_class+"' style='float:left'></span><span id='"+context_menu_id+"_"+name+"_label'>"+label+"</span></li>").appendTo(ul);
+            jQuery("<li id='"+context_menu_id+"_"+name+"' title='"+hint+"'><span class='"+icon_class+"' style='float:left'>&nbsp;</span><span id='"+context_menu_id+"_"+name+"_label'>"+label+"</span></li>").appendTo(ul);
             bindings[context_menu_id+"_"+name] = click_action;
         }
 
         context_menu_entry(
             'y_axis',
-            "ui-icon ui-icon-comment",
+            "cui-expand-left",
             options.yaxis.show===true ? locale_translate('diagram_y_axis_hide_name') : locale_translate('diagram_y_axis_show_name'),
             options.yaxis.show===true ? locale_translate('diagram_y_axis_hide_hint') : locale_translate('diagram_y_axis_show_hint'),
             function(t){
@@ -124,7 +124,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
 
         context_menu_entry(
             'all_in_one',
-            "ui-icon ui-icon-arrow-4-diag",
+            'cui-sort-numeric-up',
             options.plot_diagram.multiple_y_axes===true ? locale_translate('diagram_all_on_name') : locale_translate('diagram_all_off_name'),
             options.plot_diagram.multiple_y_axes===true ? locale_translate('diagram_all_on_hint') : locale_translate('diagram_all_off_hint'),
             function(t){
@@ -136,7 +136,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
 
         context_menu_entry(
             'stack',
-            "ui-icon  ui-icon-arrowthickstop-1-s",
+            'cuis-chart-area',
             options.series.stack===true ? locale_translate('diagram_unstack_name') : locale_translate('diagram_stack_name'),
             options.series.stack===true ? locale_translate('diagram_unstack_hint') : locale_translate('diagram_stack_hint'),
             function(t){
@@ -151,7 +151,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
 
         context_menu_entry(
             'point',
-            "ui-icon  ui-icon-radio-off",
+            'cui-options',
             options.series.points.show===true ? locale_translate('diagram_hide_points_name') : locale_translate('diagram_show_points_name'),
             options.series.points.show===true ? locale_translate('diagram_hide_points_hint') : locale_translate('diagram_show_points_hint'),
             function(t){
@@ -163,7 +163,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
 
 //        context_menu_entry(
 //            'save',
-//            "ui-icon  ui-icon-disk",
+//            "cui-disk",
 //            locale_translate('diagram_save_to_image_name'),
 //            locale_translate('diagram_save_to_image_hint'),
 //            function(t){
