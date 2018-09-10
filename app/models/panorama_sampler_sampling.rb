@@ -160,6 +160,18 @@ Rails.logger.info("PanoramaSampler_Sampling.do_awr_housekeeping with awr_ash_sna
                                                       SELECT Owner, Table_Name Object_Name, Num_Rows, 'TABLE' Type
                                                       FROM DBA_Tables
                                                       WHERE Num_Rows IS NOT NULL
+                                                      UNION ALL /* Num_Rows from table for LOBs */
+                                                      SELECT l.Owner, l.Segment_Name Object_Name, t.Num_Rows, 'LOBSEGMENT' Type
+                                                      FROM DBA_Lobs l
+                                                      JOIN DBA_Tables  t ON t.Owner = l.Owner AND t.Table_Name = l.Table_Name
+                                                      UNION ALL /* Num_Rows from table for LOBs */
+                                                      SELECT l.Owner, l.Segment_Name Object_Name, t.Num_Rows, 'LOB PARTITION' Type
+                                                      FROM DBA_Lobs l
+                                                      JOIN DBA_Tables  t ON t.Owner = l.Owner AND t.Table_Name = l.Table_Name
+                                                      UNION ALL /* Num_Rows from table for LOB indexes because LOB-indexes themself does not contain valid num_rows after analysis */
+                                                      SELECT l.Owner, l.Index_Name Object_Name, t.Num_Rows, 'LOBINDEX' Type
+                                                      FROM DBA_Lobs l
+                                                      JOIN DBA_Tables  t ON t.Owner = l.Owner AND t.Table_Name = l.Table_Name
                                                      ) n ON n.Owner = s.Owner AND n.Object_Name = s.Segment_Name AND INSTR(s.Segment_Type, n.Type) > 0
                                     ",
                                     snapshot_time.strftime('%Y-%m-%d %H:%M:%S')
