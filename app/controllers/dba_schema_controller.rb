@@ -81,6 +81,10 @@ class DbaSchemaController < ApplicationController
         SUM(EXTENTS)                    Used_Ext,               
         SUM(bytes)/(1024*1024)          MBytes,
         SUM(INITIAL_EXTENT)/1024        Init_Ext,               
+        SUM(Next_Extent)/1024           Next_Ext,
+        SUM(Min_Extents)/1024           Min_Exts,
+        SUM(Max_Extents)/1024           Max_Exts,
+        #{"CASE WHEN COUNT(DISTINCT InMemory) = 1 THEN MIN(InMemory) ELSE '<'||COUNT(DISTINCT InMemory)||'>' END InMemory," if get_db_version >= '12.1'}
         SUM(Num_Rows)                   Num_Rows,
         CASE WHEN COUNT(DISTINCT Compression) <= 1 THEN MIN(Compression) ELSE '<several>' END Compression,
         AVG(Avg_Row_Len)                Avg_RowLen,
@@ -97,7 +101,8 @@ class DbaSchemaController < ApplicationController
                s.Owner,                                         
                s.Extents,                                       
                s.Bytes,                                         
-               s.Initial_Extent,                                
+               s.Initial_Extent, s.Next_Extent, s.Min_Extents, s.Max_Extents,
+               #{"s.InMemory," if get_db_version >= '12.1'}
                DECODE(s.Segment_Type,                           
                  'TABLE',              t.Num_Rows,
                  'TABLE PARTITION',    tp.Num_Rows,

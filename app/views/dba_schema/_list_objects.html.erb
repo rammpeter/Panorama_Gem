@@ -27,7 +27,11 @@
     {:caption=> 'Partition',         :data=>proc{|rec| link_partition(rec)},                      :title=> t(:dba_schema_list_objects_partition_hint, :default=>'Partition name or number of partitions')},
     {:caption=> 'Type',              :data=>proc{|rec| rec.segment_type},                        :title=> 'Object-Type'},
     {:caption=> 'Compression',       :data=>proc{|rec| h rec.compression},                       :title=> t(:dba_schema_list_objects_compression_hint, :default => 'Type of compression if compression is used')},
-    {:caption=> 'Used Ext',          :data=>proc{|rec| fn(rec.used_ext)},        :align=>:right, :title=> t(:dba_schema_list_objects_used_extents_hint, :default=>'Number of used extents')},
+    {:caption=> 'Init. extent (KB)', :data=>proc{|rec| fn(rec.init_ext)},        :align=>:right, :title=> "Size of initial extent in kByte", data_title: proc{|rec| "%t\nInitial extend = #{fn(rec.init_ext.to_f/1024, 1) rescue nil} MB\nInitial extend = #{fn(rec.init_ext.to_f/(1024*1024), 1) rescue nil} GB" }},
+    {:caption=> 'Next extent (KB)',  :data=>proc{|rec| fn(rec.next_ext)},        :align=>:right, :title=> "Size of next extent in kByte", data_title: proc{|rec| "%t\nNext extend = #{fn(rec.next_ext.to_f/1024, 1) rescue nil} MB\nNext extend = #{fn(rec.next_ext.to_f/(1024*1024), 1) rescue nil} GB"}},
+    {:caption=> 'Min. extents',      :data=>proc{|rec| fn(rec.min_exts)},        :align=>:right, :title=> "Minimum number of extents allocated at object creation"},
+    {:caption=> 'Max. extents',      :data=>proc{|rec| fn(rec.max_exts)},        :align=>:right, :title=> "Maximum number of extents for this object"},
+    {:caption=> 'Used Extents',      :data=>proc{|rec| fn(rec.used_ext)},        :align=>:right, :title=> t(:dba_schema_list_objects_used_extents_hint, :default=>'Number of used extents')},
     {:caption=> 'MBytes',            :data=>proc{|rec| fn(rec.mbytes)},          :align=>:right, :title=> t(:dba_schema_list_objects_mbytes_hint, :default=>"Size of the object in tablespace in MBytes\nSum over size of all allocated extents."),  :show_pct_hint=>true},
     {:caption=> 'NumRows',           :data=>proc{|rec| fn(rec.num_rows)},        :align=>:right, :title=> t(:dba_schema_list_objects_num_rows_hint, :default=>'Number of rows acording to last analysis')},
     {:caption=> 'Rowlen',            :data=>proc{|rec| fn(rec.avg_rowlen)},      :align=>:right, :title=> t(:dba_schema_list_objects_row_len_hint, :default=>'Average size of record according to last analysis (Avg_Row_Len for Tables, Sum of Avg_Col_Len + RowID for indexes)')  },
@@ -37,6 +41,8 @@
     {:caption=> 'Avg. Space',        :data=>proc{|rec| fn(rec.avg_space)},       :align=>:right, :title=> t(:dba_schema_list_objects_avg_space_hint, :default=>'Average unused bytes per block according to avg_space') },
     {:caption=> 'Analyzed',          :data=>proc{|rec| localeDateTime(rec.last_analyzed)},       :title=> t(:dba_schema_list_objects_last_anaylze_hint, :default=>'Timestamp of last anylysis') },
   ]
+
+  column_options << {:caption=> 'InMemory', :data=>proc{|rec| rec.inmemory}, :title=> "Indicates whether the In-Memory Column Store (IM column store) is enabled (ENABLED) or disabled (DISABLED) for this segment" }
 %>
 
 <%= gen_slickgrid(@objects, column_options, {
