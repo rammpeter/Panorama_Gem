@@ -1166,6 +1166,7 @@ WHERE RowNum < 100
 
   public
   def list_audit_trail
+    @instance  = prepare_param_instance
     where_string = ""
     where_values = []
 
@@ -1174,6 +1175,11 @@ WHERE RowNum < 100
       where_string << " AND Timestamp >= TO_DATE(?, '#{sql_datetime_minute_mask}') AND Timestamp <  TO_DATE(?, '#{sql_datetime_minute_mask}')"
       where_values << @time_selection_start
       where_values << @time_selection_end
+    end
+
+    if @instance
+      where_string << " AND Instance_Number=?"
+      where_values << @instance
     end
 
     if params[:sessionid] && params[:sessionid]!=""

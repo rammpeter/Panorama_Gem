@@ -66,6 +66,7 @@
 <%=
     caption = "Audit-Records from #{@audit_source}"
     caption << ", from #{@time_selection_start} until #{@time_selection_end}" if @time_selection_start && @time_selection_end
+    caption << ", Instance=#{@instance}"         if @instance
     caption << ", Session-ID=#{@sessionid}"      if defined?(@sessionid)    && !@sessionid.nil?
     caption << ", OS-User LIKE '#{@os_user}'"    if defined?(@os_user)      && !@os_user.nil?
     caption << ", DB-User LIKE '#{@os_user}'"    if defined?(@db_user)      && !@db_user.nil?

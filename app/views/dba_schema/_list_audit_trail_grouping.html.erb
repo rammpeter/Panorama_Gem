@@ -63,6 +63,7 @@
 <%=
     caption = "Audit-Records per '#{@grouping}' from #{@audit_source}"
     caption << ", from #{@time_selection_start} until #{@time_selection_end}" if @time_selection_start && @time_selection_end
+    caption << ", Instance=#{@instance}"         if @instance
     caption << ", Session-ID=#{@sessionid}"      if @sessionid
     caption << ", OS-User LIKE '#{@os_user}'"    if @os_user
     caption << ", DB-User LIKE '#{@db_user}'"    if @db_user
