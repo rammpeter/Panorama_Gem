@@ -773,7 +773,7 @@
   dragnet_helper_51_name:                                   Verwendung von mehrspaltigen Primary Keys als Referenz-Ziel (fachliche statt technischer Schlüssel)
 
   dragnet_helper_52_desc: |-
-    Sie sollten ein minimales Auditing (Aufzeichen) von DDL-Operationen vornehmen für die Nachvollziehbarkeit problematischer DDL-Aktionen.
+    Sie sollten ein minimales Auditing (Aufzeichen) von Login- und DDL-Operationen vornehmen für die Nachvollziehbarkeit problematischer DDL-Aktionen.
     Die Audit-Daten werden im Regelfall aufgezeichnet in Tabelle sys.Aud$.
   dragnet_helper_52_name:                                   Fehlende vorgeschlagene Audit-Optionen
 

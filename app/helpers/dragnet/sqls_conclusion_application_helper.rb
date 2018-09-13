@@ -70,7 +70,7 @@ Often problematic usage of business keys can be detetcted by existence of refere
         },
         {
             :name  => t(:dragnet_helper_52_name, :default=> 'Missing suggested AUDIT-options'),
-            :desc  => t(:dragnet_helper_52_desc, :default=> 'You should have some minimal audit of DDL operations for traceability of problematic DDL.
+            :desc  => t(:dragnet_helper_52_desc, :default=> 'You should have some minimal audit of logon and DDL operations for traceability of problematic DDL.
 Audit trail will usually be recorded in table sys.Aud$.'),
             :sql=>  "
               SELECT /* Panorama-Tool Ramm: Auditing */
@@ -106,7 +106,7 @@ Audit trail will usually be recorded in table sys.Aud$.'),
               SELECT 'UPDATE TABLE'           Name, 'NOT SET'   Success, 'BY ACCESS' Failure, 'UPDATE TABLE BY ACCESS WHENEVER NOT SUCCESSFUL' Message FROM DUAL UNION ALL
               SELECT 'DELETE TABLE'           Name, 'NOT SET'   Success, 'BY ACCESS' Failure, 'DELETE TABLE BY ACCESS WHENEVER NOT SUCCESSFUL' Message FROM DUAL
               )a
-              LEFT OUTER JOIN DBA_Stmt_Audit_Opts d ON  d.Audit_Option = a.Name
+              LEFT OUTER JOIN DBA_Stmt_Audit_Opts d ON  d.Audit_Option = a.Name AND d.User_Name IS NULL AND d.Proxy_Name IS NULL
                                                     AND (d.Success = a.Success OR a.Success = 'NOT SET')
                                                     AND d.Failure = a.Failure  OR a.Failure = 'NOT SET'
               WHERE d.Audit_Option IS NULL
