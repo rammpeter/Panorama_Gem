@@ -109,13 +109,30 @@ If you can exclude the need for allowing concurrent transactions in ITL-list abo
         },
         {
             :name  => t(:dragnet_helper_107_name, :default=> 'Relevance of access on migrated / chained rows compared to total amount of table access'),
-            :desc  => t(:dragnet_helper_107_desc, :default=> 'chained rows causes additional read of migrated rows in separate DB-blocks while accessing a record which is not completely contained in current block.
+            :desc  => t(:dragnet_helper_107_desc, :default=> "\
+Chained rows causes additional reads of rows in separate DB-blocks while accessing a record which is not completely contained in current block.
+There are two types:
+
+1. true chained rows:
+A record doesn't compeletely fit into one DB-block, the columns of the record are stored in several DB blocks.
+Both the Full Scan and Index RowID scans read further linked DB blocks when accessing paged out columns in the linked blocks (incrementing of 'table fetch continued rows').
+
+2. migrated rows:
+A record no longer fits into the current block, is completely migrated to another block, but its RowID still references the original block.
+At full scan, the linked blocks are not read separately, but with multiblock-read as part of the full scan (no increment of 'table fetch continued rows').
+At RowID access e.g. during index scan, the linked blocks are read by another access (with increment of 'table fetch continued rows').
+
+Chained rows are predominantly migrated rows (variant 2). Variant 1 only occurs if the size of a record is greater than the blocksize.
+
 Chained rows can be avoided by adjusting PCTFREE and reorganization of affected table.
-This selection shows the relevance of access on chained rows compared to total amount of table access.'),
+This selection shows the relevance of access on chained rows compared to total amount of table access by RowID."),
             :sql=>   "WITH Inst_Filter AS (SELECT ? Instance FROM DUAL)
-                      SELECT x.*, CASE WHEN table_fetch_by_rowid + table_scan_rows_gotten > 0 THEN
-                                  ROUND(table_fetch_continued_row / (table_fetch_by_rowid+table_scan_rows_gotten) * 100,2)
-                                  ELSE 0 END \"Pct. chained row access\"
+                      SELECT x.*, CASE WHEN table_fetch_by_rowid > 0 THEN
+                                  ROUND(table_fetch_continued_row / table_fetch_by_rowid * 100,2)
+                                  ELSE 0 END \"Pct. chained rowid access\",
+                                  CASE WHEN table_fetch_by_rowid + table_scan_rows_gotten > 0 THEN
+                                  ROUND(table_fetch_continued_row / (table_fetch_by_rowid + table_scan_rows_gotten) * 100,2)
+                                  ELSE 0 END \"Pct. chained rowid and full\"
                       FROM   (
                               SELECT /*+ NO_MERGE*/ ROUND(Begin_Interval_Time, 'MI') Start_Time,
                                      SUM(CASE WHEN Stat_Name = 'table fetch continued row' THEN Value ELSE 0 END) table_fetch_continued_row,

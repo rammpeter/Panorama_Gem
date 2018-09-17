@@ -1149,8 +1149,21 @@
 
   dragnet_helper_107_desc: |-
     Chained rows verursachen das Nachlesen von Migrationsblöcken bei Zugriff auf einen Record, der nicht vollständig im aktuellen Block enthalten ist.
+    Es werden zwei Arten unterschieden:
+
+    1. true chained rows:
+    Ein Record passt nicht komplett in einen DB-Block, die Spalten des Records erstrecken sich über mehrere DB-Blöcke.
+    Sowohl beim Full Scan als auch beim RowID Scan über Index werden weitere verknüpfte DB-Blöcke dann gelesen, wenn auf ausgelagert Spalten in den verknüpften Blöcken gelesen wird (mit Inkrementierung von 'table fetch continued rows').
+
+    2. migrated rows:
+    Ein Record passt nicht mehr in den aktuellen Block, wird komplett in einen weiteren Block ausgelagert, seine RowID verweist aber weiterhin auf den ursprünglichen Block.
+    Beim Full Scan werden die verknüpften Blöcke nicht separate gelesen, sondern mit multiblock-read als Bestandteil des Full Scans (keine Inkrementierung von 'table fetch continued rows').
+    Beim RowID-Zugriff z.B. während Index Scan werden die verknüpften Blöcke mit einem weiteren ZUgriff gelesen (mit Inkrementierung von 'table fetch continued rows').
+
+    Bei chained rows handelt es sich überwiegend um migrated rows (Variante 2). Variante 1 trit nur auf wenn die Größe eines Records größer der Blocksize ist.
+
     Durch Anpassen PCTFREE sowie Reorganisation der betroffenen Tabelle lassen sich chained rows vermeiden.
-    Diese Selektion zeigt die Relevanz von Zugriffen auf chained rows im Vergleich zur Gesamtmenge der Zugriffe auf Tabellendaten.
+    Diese Selektion zeigt die Relevanz von Zugriffen auf chained rows im Vergleich zur Gesamtmenge der Zugriffe auf Tabelle per RowID.
   dragnet_helper_107_name:                                  Relevanz von chained rows im Vergleich zu Gesamtmenge der Zugriffe
   dragnet_helper_107_param_1_hint:                          optionale Einschränkung der Selektion auf konkrete RAC-Instance
 
