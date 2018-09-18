@@ -39,7 +39,8 @@
     {:caption=> 'MBytes unused ARL', :data=>proc{|rec| fn(rec.mbytes_free_avg_row_len)}, :align=>:right, :title=> t(:dba_schema_list_objects_mbytes_free_hint, :default=>"Unused storage within extents in MBytes.\nCalculated by size of all allocated extents - (Avg_Row_Len*Num_Rows)" ) },
     {:caption=> 'Blocks empty',      :data=>proc{|rec| fn(rec.empty_blocks)},    :align=>:right, :title=> t(:dba_schema_list_objects_empty_blocks_hint, :default=>'Unused blocks according to empty_blocks')},
     {:caption=> 'Avg. Space',        :data=>proc{|rec| fn(rec.avg_space)},       :align=>:right, :title=> t(:dba_schema_list_objects_avg_space_hint, :default=>'Average unused bytes per block according to avg_space') },
-    {:caption=> 'Analyzed',          :data=>proc{|rec| localeDateTime(rec.last_analyzed)},       :title=> t(:dba_schema_list_objects_last_anaylze_hint, :default=>'Timestamp of last anylysis') },
+    {:caption=> 'Analyzed',          :data=>proc{|rec| localeDateTime(rec.last_analyzed)},       :title=> "Timestamp of last analysis for object\nIf grouped over partitions this is oldest last analysis timestamp per partition" },
+    {:caption=> 'Last DML',          :data=>proc{|rec| localeDateTime(rec.last_dml_timestamp)},  :title=> "Timestamp of last DML on object.\nIf object is an index than last DML on table is shown.\nIf last DML is empty then no DML has happened since timestamp of last analysis" },
   ]
 
   column_options << {:caption=> 'InMemory', :data=>proc{|rec| rec.inmemory}, :title=> "Indicates whether the In-Memory Column Store (IM column store) is enabled (ENABLED) or disabled (DISABLED) for this segment" }
