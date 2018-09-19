@@ -6,41 +6,48 @@ module Dragnet::SqlsPotentialDbStructuresHelper
   def sqls_potential_db_structures
     [
         {
-            :name  => t(:dragnet_helper_50_name, :default=> 'Possibly useful compression of tables'),
+            :name  => t(:dragnet_helper_50_name, :default=> 'Recommendations for possibly useful OLTP-compression of tables'),
             :desc  => t(:dragnet_helper_50_desc, :default=> 'Table compression (COMPRESS FOR xxx) reduces I/O-effort by improvement of cache hit ratio.
-                Decrease in size by 1/3 to 1/2 is possible.
-                Min. 20% decrease of size and relevant I/O should exist to compensate CPU overhead of compression/decompression.'),
-            :sql=> "SELECT /* Panorama-Tool Ramm */
-                           Owner, Object_Name, Object_Type, SUM(Samples) \"Anzahl ASH-Samples\", Compression, Compress_For
-                    FROM   (SELECT o.Owner, o.Object_Name, o.Object_Type, h.Samples,
-                                   CASE WHEN o.Object_Type='TABLE' THEN (SELECT Compression FROM DBA_Tables t WHERE t.Owner=o.Owner AND t.Table_Name=o.Object_Name)
-                                        WHEN o.Object_Type='TABLE PARTITION' THEN (SELECT Compression FROM DBA_Tab_Partitions t WHERE t.Table_Owner=o.Owner AND t.Table_Name=o.Object_Name AND t.Partition_Name = o.SubObject_Name)
-                                        WHEN o.Object_Type='TABLE SUBPARTITION' THEN (SELECT Compression FROM DBA_Tab_SubPartitions t WHERE t.Table_Owner=o.Owner AND t.Table_Name=o.Object_Name AND t.SubPartition_Name = o.SubObject_Name)
-                                        WHEN o.Object_Type='INDEX' THEN (SELECT Compression FROM DBA_Indexes i WHERE i.Owner=o.Owner AND i.Index_Name=o.Object_Name)
-                                        WHEN o.Object_Type='INDEX PARTITION' THEN (SELECT Compression FROM DBA_Ind_Partitions i WHERE i.Index_Owner=o.Owner AND i.Index_Name=o.Object_Name AND i.Partition_Name = o.SubObject_Name)
-                                        WHEN o.Object_Type='INDEX SUBPARTITION' THEN (SELECT Compression FROM DBA_Ind_SubPartitions i WHERE i.Index_Owner=o.Owner AND i.Index_Name=o.Object_Name AND i.SubPartition_Name = o.SubObject_Name)
-                                   ELSE 'UNKNOWN'
-                                   END Compression,
-                                   CASE WHEN o.Object_Type='TABLE' THEN (SELECT Compress_For FROM DBA_Tables t WHERE t.Owner=o.Owner AND t.Table_Name=o.Object_Name)
-                                        WHEN o.Object_Type='TABLE PARTITION' THEN (SELECT Compress_For FROM DBA_Tab_Partitions t WHERE t.Table_Owner=o.Owner AND t.Table_Name=o.Object_Name AND t.Partition_Name = o.SubObject_Name)
-                                        WHEN o.Object_Type='TABLE SUBPARTITION' THEN (SELECT Compress_For FROM DBA_Tab_SubPartitions t WHERE t.Table_Owner=o.Owner AND t.Table_Name=o.Object_Name AND t.SubPartition_Name = o.SubObject_Name)
-                                   ELSE 'UNKNOWN'
-                                   END Compress_For
-                            FROM   (SELECT /*+ PARALLEL(h,2) */ Current_Obj#, COUNT(*) Samples
-                                    FROM   DBA_Hist_Active_Sess_History h
-                                    WHERE  Sample_Time > SYSDATE-?
-                                    AND    Event = 'db file sequential read'
-                                    GROUP BY Current_Obj#
-                                    HAVING COUNT(*) > ?
-                                   ) h
-                            LEFT OUTER JOIN DBA_Objects o ON o.Object_ID = h.Current_Obj#
-                           ) x
-                    GROUP BY Owner, Object_Name, Object_Type, Compression, Compress_For
-                    ORDER BY SUM(Samples) DESC
+Decrease in size by 1/3 to 1/2 is possible.
+Min. 20% decrease of size and relevant I/O should exist to compensate CPU overhead of compression/decompression.
+
+OLTP-compression is well suitable for tables with insert and delete operations.
+During update oeprations DB-blocks are decompressed with possibly creation of chained rows. Therefore for OLTP-compression there should by only less or no update operations on table.
+
+OLTP-compression requires licensing of Advanced Compression Option.
+            '),
+
+            :sql=> "SELECT *
+                    FROM   (
+                            SELECT t.Owner, t.Table_Name, ROUND(s.Size_MB, 2) Size_MB, t.Num_Rows,
+                                   DECODE(pc.Compression, NULL, DECODE(spc.Compression, NULL, t.Compression, spc.Compression), pc.Compression) Compression,
+                                   pc.Partitions, spc.SubPartitions, t.Last_Analyzed,
+                                   m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML
+                            FROM   DBA_Tables t
+                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(Bytes)/(1024*124) Size_MB
+                                             FROM   DBA_Segments
+                                             WHERE  Segment_Type LIKE 'TABLE%'
+                                             GROUP BY Owner, Segment_Name
+                                            ) s ON s.Owner = t.Owner AND s.Segment_Name = t.Table_Name
+                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Table_Owner, Table_Name, COUNT(*) Partitions,
+                                                    CASE WHEN COUNT(DISTINCT Compression) = 1 THEN MIN(Compression) ELSE COUNT(DISTINCT Compression)||' different' END Compression
+                                             FROM   DBA_Tab_Partitions
+                                             GROUP BY Table_Owner, Table_Name
+                                            ) pc ON pc.Table_Owner = t.Owner AND pc.Table_Name = t.Table_Name
+                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Table_Owner, Table_Name, COUNT(*) SubPartitions,
+                                                    CASE WHEN COUNT(DISTINCT Compression) = 1 THEN MIN(Compression) ELSE COUNT(DISTINCT Compression)||' different' END Compression
+                                             FROM   DBA_Tab_SubPartitions
+                                             GROUP BY Table_Owner, Table_Name
+                                            ) spc ON pc.Table_Owner = t.Owner AND spc.Table_Name = t.Table_Name
+                            LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
+                            WHERE  s.Owner NOT IN ('SYS', 'SYSTEM')
+                            AND    s.Size_MB > ?
+                           )
+                    WHERE  Compression != 'ENABLED'
+                    ORDER BY Size_MB DESC
             ",
             :parameter=>[
-                {:name=> 'Number of days in history to consider', :size=>8, :default=>2, :title=> 'Number of days in history to consider in active session history'},
-                {:name=> 'Min. number of samples in ASH', :size=>8, :default=>100, :title=> 'Minimum number of samples in active session history'},
+                {:name=>t(:dragnet_helper_50_param_1_name, :default=> 'Minimum size of table in MB'), :size=>8, :default=>100, :title=>t(:dragnet_helper_50_param_1_hint, :default=> 'Minimum size of table in MB for consideration in result of selection') },
             ]
         },
         {

@@ -119,6 +119,9 @@ class DbaSchemaController < ApplicationController
                  'INDEX',              i.Compression,
                  'INDEX PARTITION',    ip.Compression,
                  'INDEX SUBPARTITION', isp.Compression,
+                 'LOBSEGMENT',         l.Compression,
+                 'LOB PARTITION',      lp.Compression,
+                 'LOB SUBPARTITION',   lsp.Compression,
                NULL) Compression,
                CASE WHEN s.Segment_Type = 'TABLE'              THEN t.Avg_Row_Len
                     WHEN s.Segment_Type = 'TABLE PARTITION'    THEN tp.Avg_Row_Len
@@ -165,15 +168,18 @@ class DbaSchemaController < ApplicationController
                  'INDEX SUBPARTITION', im.Timestamp,
                NULL) Last_DML_Timestamp
         FROM DBA_SEGMENTS s
-        LEFT OUTER JOIN DBA_Tables t              ON t.Owner         = s.Owner       AND t.Table_Name   = s.segment_name
-        LEFT OUTER JOIN DBA_Tab_Partitions tp     ON tp.Table_Owner  = s.Owner       AND tp.Table_Name  = s.segment_name AND tp.Partition_Name     = s.Partition_Name
-        LEFT OUTER JOIN DBA_Tab_SubPartitions tsp ON tsp.Table_Owner = s.Owner       AND tsp.Table_Name = s.segment_name AND tsp.SubPartition_Name = s.Partition_Name
-        LEFT OUTER JOIN DBA_Tab_Modifications m   ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
-        LEFT OUTER JOIN DBA_indexes i             ON i.Owner         = s.Owner       AND i.Index_Name   = s.segment_name
-        LEFT OUTER JOIN DBA_Ind_Partitions ip     ON ip.Index_Owner  = s.Owner       AND ip.Index_Name  = s.segment_name AND ip.Partition_Name     = s.Partition_Name
-        LEFT OUTER JOIN DBA_Ind_SubPartitions isp ON isp.Index_Owner = s.Owner       AND isp.Index_Name = s.segment_name AND isp.SubPartition_Name = s.Partition_Name
-        LEFT OUTER JOIN DBA_Tables it             ON it.Owner        = i.Table_Owner AND it.Table_Name  = i.Table_Name
-        LEFT OUTER JOIN DBA_Tab_Modifications im  ON im.Table_Owner = it.Owner AND im.Table_Name = it.Table_Name AND im.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
+        LEFT OUTER JOIN DBA_Tables t              ON t.Owner         = s.Owner       AND t.Table_Name           = s.segment_name
+        LEFT OUTER JOIN DBA_Tab_Partitions tp     ON tp.Table_Owner  = s.Owner       AND tp.Table_Name          = s.segment_name   AND tp.Partition_Name        = s.Partition_Name
+        LEFT OUTER JOIN DBA_Tab_SubPartitions tsp ON tsp.Table_Owner = s.Owner       AND tsp.Table_Name         = s.segment_name   AND tsp.SubPartition_Name    = s.Partition_Name
+        LEFT OUTER JOIN DBA_Tab_Modifications m   ON m.Table_Owner = t.Owner         AND m.Table_Name           = t.Table_Name     AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
+        LEFT OUTER JOIN DBA_indexes i             ON i.Owner         = s.Owner       AND i.Index_Name           = s.segment_name
+        LEFT OUTER JOIN DBA_Ind_Partitions ip     ON ip.Index_Owner  = s.Owner       AND ip.Index_Name          = s.segment_name   AND ip.Partition_Name        = s.Partition_Name
+        LEFT OUTER JOIN DBA_Ind_SubPartitions isp ON isp.Index_Owner = s.Owner       AND isp.Index_Name         = s.segment_name   AND isp.SubPartition_Name    = s.Partition_Name
+        LEFT OUTER JOIN DBA_Tables it             ON it.Owner        = i.Table_Owner AND it.Table_Name          = i.Table_Name
+        LEFT OUTER JOIN DBA_Tab_Modifications im  ON im.Table_Owner  = it.Owner      AND im.Table_Name          = it.Table_Name    AND im.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
+        LEFT OUTER JOIN DBA_Lobs l                ON l.Owner         = s.Owner       AND l.Segment_Name         = s.Segment_Name
+        LEFT OUTER JOIN DBA_Lob_Partitions lp     ON lp.Table_Owner  = s.Owner       AND lp.Lob_Name            = s.Segment_Name   AND lp.Lob_Partition_Name     = s.Partition_Name
+        LEFT OUTER JOIN DBA_Lob_SubPartitions lsp ON lsp.Table_Owner = s.Owner       AND lsp.Lob_Name           = s.Segment_Name   AND lsp.Lob_SubPartition_Name = s.Partition_Name
         WHERE s.SEGMENT_TYPE<>'CACHE'
         #{where_string}
         )                                                       

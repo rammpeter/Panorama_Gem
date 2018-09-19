@@ -763,8 +763,14 @@
     Tabellen-Komprimierung (COMPRESS FOR xxx) reduziert I/O-Aufwände durch Verbesserung der Cache-Hit-Rate.
     Reduzierung der Größe der Tabellen durch Komprimierung um 1/3 bis 1/2 möglich.
     Min. 20% Reduktion der Größe sowie Relevanz von I/O sollte vorhanden sein, um CPU-Overhead für Komprimierung/Dekomprimierung zu kompensieren.
-  dragnet_helper_50_name:                                    Evtl. sinnvolle Komprimierung von Tabellen
-  dragnet_helper_50_param_1_hint:                            Mindestanzahl Leaf-Blocks / Key
+
+    Die OLTP-Komprimierung ist gut nutzbar für Tabellen mit Insert-und Update-Operationen.
+    Während Update-Operationen findet Dekomprimierung der DB-Blöcke statt mit evtl. Chained Rows, daher sollten für OLTP-Komprimierung nur wenige oder gar keine Update-Operationen auf der Table stattfinden.
+
+    OLTP-Komprimierung erfordert die Lizensierung der Advanced Compression Option.
+  dragnet_helper_50_name:                                    Empfehlungen für evtl. sinnvolle OLTP-Komprimierung von Tabellen
+  dragnet_helper_50_param_1_hint:                            Mindestgröße der Tabelle in MB für Aufnahme in Resultat der Selektion
+  dragnet_helper_50_param_1_name:                            Mindestgröße der Tabelle in MB
 
   dragnet_helper_51_desc: |-
     Für die Sicherstellung der referentiellen Integrität sollten dringlich technische Schlüssel statt fachlicher Ausdrücke verwendet werden.
