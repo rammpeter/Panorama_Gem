@@ -206,7 +206,7 @@ class WorkerThread
   DAYS_BETWEEN_ANALYZE_CHECK = 7
   def check_analyze_internal
     # Check analyze info once a week
-    if  @sampler_config.get_last_analyze_check_timestamp.nil? || get_last_analyze_check_timestamp < Time.now - 86400*DAYS_BETWEEN_ANALYZE_CHECK
+    if  @sampler_config.get_last_analyze_check_timestamp.nil? || @sampler_config.get_last_analyze_check_timestamp < Time.now - 86400*DAYS_BETWEEN_ANALYZE_CHECK
       @sampler_config.set_last_analyze_check_timestamp
       tables = PanoramaConnection.sql_select_all ["SELECT User, Table_Name FROM User_Tables WHERE Last_Analyzed IS NULL OR Last_Analyzed < SYSDATE-?", DAYS_BETWEEN_ANALYZE_CHECK]
       tables.each do |t|
@@ -216,6 +216,10 @@ class WorkerThread
       end
       @sampler_config.set_last_analyze_check_timestamp
     end
+  rescue Exception => e
+    Rails.logger.error("Exception #{e.class} during WorkerThread.check_analyze_internal for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})");
+    log_exception_backtrace(e, 40)
+    raise e
   end
 
 end

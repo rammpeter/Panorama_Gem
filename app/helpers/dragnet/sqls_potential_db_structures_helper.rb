@@ -42,12 +42,15 @@ OLTP-compression requires licensing of Advanced Compression Option.
                             LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
                             WHERE  s.Owner NOT IN ('SYS', 'SYSTEM')
                             AND    s.Size_MB > ?
+                            AND    (   m.Updates IS NULL                              -- no DML since last analyze
+                                    OR m.Updates < (m.Inserts + m.Deletes)/(100/?))   -- updates less than limit
                            )
                     WHERE  Compression != 'ENABLED'
                     ORDER BY Size_MB DESC
             ",
             :parameter=>[
                 {:name=>t(:dragnet_helper_50_param_1_name, :default=> 'Minimum size of table in MB'), :size=>8, :default=>100, :title=>t(:dragnet_helper_50_param_1_hint, :default=> 'Minimum size of table in MB for consideration in result of selection') },
+                {:name=>t(:dragnet_helper_50_param_2_name, :default=> 'Maximum % of udates compared to inserts + deletes'), :size=>8, :default=>5, :title=>t(:dragnet_helper_50_param_2_hint, :default=> 'Maximum percentage of udate operations sind last analyze compared to the number of inserts + deletes') },
             ]
         },
         {
@@ -180,10 +183,11 @@ This selection cannot be directly executed. Please copy PL/SQL-Code and execute 
 SET SERVEROUT ON;
 
 DECLARE
-  statval  NUMBER;
-  statdiff NUMBER;
-  Anzahl   NUMBER;
-  StatNum  NUMBER;
+  statval   NUMBER;
+  statdiff  NUMBER;
+  Anzahl    NUMBER;
+  StatNum   NUMBER;
+  Row_Count NUMBER; -- real number of rows found in table. Possibly below sample_size
   Sample_Size NUMBER := 1000;
 
   TYPE RowID_TableType IS TABLE OF URowID;
@@ -223,10 +227,11 @@ BEGIN
              ) LOOP
     BEGIN
       EXECUTE IMMEDIATE 'SELECT RowID FROM '||Rec.Owner||'.'||Rec.Table_Name||' WHERE RowNum <= '||Sample_Size BULK COLLECT INTO RowID_Table;
+      Row_Count := SQL%ROWCOUNT;
       runTest(Rec.Owner, Rec.Table_Name);  -- der erste zum Warmlaufen und übersetzen der Cursor
       runTest(Rec.Owner, Rec.Table_Name);  -- dieser zum Zaehlen
-      IF statdiff > Sample_Size THEN
-        DBMS_OUTPUT.PUT_LINE('Table='||Rec.Owner||'.'||Rec.Table_Name||',   num rows='||Rec.Num_Rows||',   consistent gets='||statdiff||',   pct. chained rows='||((statdiff*100/sample_size)-100)||' %');
+      IF statdiff > Row_Count THEN
+        DBMS_OUTPUT.PUT_LINE('Table='||Rec.Owner||'.'||Rec.Table_Name||',   num rows='||Rec.Num_Rows||',   consistent gets='||statdiff||',   pct. chained rows='||((statdiff*100/Row_Count)-100)||' %');
       END IF;
     EXCEPTION
       WHEN OTHERS THEN

@@ -347,8 +347,10 @@ class PanoramaConnection
     get_connection.exec_update(stmt, query_name, binds)
   rescue Exception => e
     bind_text = ''
-    binds.each do |b|
-      bind_text << "#{b.name} = #{b.value}\n"
+    unless binds.nil?
+      binds.each do |b|
+        bind_text << "#{b.name} = #{b.value}\n"
+      end
     end
 
     # Ensure stacktrace of first exception is show

@@ -171,6 +171,33 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_Memory_Resize_Ops;
 
+  PROCEDURE Snap_Metric_Name(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    /* Check for new group_names in AWR by select distinct group_id, group_name from AWR-pendant of Panorama_METRIC_NAME order by Group_ID; */
+    INSERT INTO Panorama_Metric_Name (DBID, GROUP_ID, GROUP_NAME, METRIC_ID, METRIC_NAME, METRIC_UNIT, CON_DBID, CON_ID
+    ) SELECT p_DBID, Group_ID,
+             CASE
+              WHEN Group_ID = 0	THEN 'Event Metrics'
+              WHEN Group_ID = 1	THEN 'Event Class Metrics'
+              WHEN Group_ID = 2	THEN 'System Metrics Long Duration'
+              WHEN Group_ID = 3	THEN 'System Metrics Short Duration'
+              WHEN Group_ID = 4	THEN 'Session Metrics Long Duration'
+              WHEN Group_ID = 5	THEN 'Session Metrics Short Duration'
+              WHEN Group_ID = 6	THEN 'Service Metrics'
+              WHEN Group_ID = 7	THEN 'File Metrics Long Duration'
+              WHEN Group_ID = 9	THEN 'Tablespace Metrics Long Duration'
+              WHEN Group_ID = 10	THEN 'Service Metrics (Short)'
+              WHEN Group_ID = 11	THEN 'I/O Stats by Function Metrics'
+              WHEN Group_ID = 12	THEN 'Resource Manager Stats'
+              WHEN Group_ID = 13	THEN 'WCR metrics'
+              WHEN Group_ID = 14	THEN 'WLM PC Metrics'
+             ELSE '[Unknown group_id]' END,
+             METRIC_ID, METRIC_NAME, METRIC_UNIT, p_Con_DBID, Con_ID
+      FROM   (SELECT DISTINCT Group_ID, Metric_ID, Metric_Name, Metric_Unit, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+              FROM   v$SysMetric_History
+              WHERE  (Group_ID, Metric_ID, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}) NOT IN (SELECT Group_ID, Metric_ID, Con_ID FROM Panorama_Metric_Name WHERE DBID = p_DBID AND Con_DBID = p_Con_DBID))
+    ;
+  END Snap_Metric_Name;
 
   PROCEDURE Snap_Parameter(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
@@ -370,7 +397,7 @@ END Panorama_Sampler_Snapshot;
     SELECT /*+ ORDERED */
            p_DBID, p.SQL_ID, p.Plan_Hash_Value, p.ID, p.OPERATION, p.OPTIONS, p.OBJECT_NODE, p.OBJECT#, p.OBJECT_OWNER, p.OBJECT_NAME, p.OBJECT_ALIAS, p.OBJECT_TYPE, p.OPTIMIZER,
            p.PARENT_ID, p.DEPTH, p.POSITION, p.SEARCH_COLUMNS, p.COST, p.CARDINALITY, p.BYTES, p.OTHER_TAG, p.PARTITION_START, p.PARTITION_STOP, p.PARTITION_ID, p.OTHER,
-           p.DISTRIBUTION, p.CPU_COST, p.IO_COST, p.TEMP_SPACE, p.ACCESS_PREDICATES, p.FILTER_PREDICATES, p.PROJECTION, p.TIME, p.QBLOCK_NAME,
+           p.DISTRIBUTION, p.CPU_COST, p.IO_COST, p.TEMP_SPACE, p.ACCESS_PREDICATES, p.FILTER_PREDICATES, NULL /* p.PROJECTION also not sampled in AWR because of large size */, p.TIME, p.QBLOCK_NAME,
            p.REMARKS, p.TIMESTAMP, p.OTHER_XML, p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "p.Con_ID" : "0"}
     FROM   v$SQL_Plan p
     -- Select only the plan of last parsed child with that plan_hash_value
@@ -660,6 +687,7 @@ END Panorama_Sampler_Snapshot;
     Snap_Latch                (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Memory_Resize_Ops    (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_Metric_Name          (p_DBID,      p_Con_DBID);
     Snap_Parameter            (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_PGAStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Process_Mem_Summary  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
