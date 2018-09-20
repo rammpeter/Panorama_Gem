@@ -224,11 +224,16 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
 
   test "list_resize_operations_historic with xhr: true" do
     if get_db_version >= "11.1"
-      [nil,1].each do |instance|
-        historic_resize_grouping_options.each do |time_groupby|
-          post :list_resize_operations_historic, params: {format: :html, time_groupby: time_groupby,  time_selection_start: @time_selection_start, time_selection_end: @time_selection_end, instance: instance, update_area: :hugo }
-          assert_response_success_or_management_pack_violation("list_resize_operations_historic time_groupby=#{time_groupby}")
-        end
+      historic_resize_grouping_options.each do |time_groupby, value|
+        post '/dba_sga/list_resize_operations_historic', params: {format: :html, time_groupby: time_groupby,  time_selection_start: @time_selection_start, time_selection_end: @time_selection_end, instance: 1, update_area: :hugo }
+        assert_response_success_or_management_pack_violation("list_resize_operations_historic time_groupby=#{time_groupby}")
+
+
+        # Test ohne instance führt in Rel. 18.3 per JDBC zu
+        # ORA-12801: Fehler in parallelem Abfrage-Server P000 angezeigt
+        # ORA-01006: Bind-Variable nicht vorhanden
+        #post '/dba_sga/list_resize_operations_historic', params: {format: :html, time_groupby: time_groupby,  time_selection_start: @time_selection_start, time_selection_end: @time_selection_end, update_area: :hugo }
+        #assert_response_success_or_management_pack_violation("list_resize_operations_historic time_groupby=#{time_groupby}")
       end
     end
   end

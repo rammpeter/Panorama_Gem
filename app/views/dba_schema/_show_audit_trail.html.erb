@@ -78,7 +78,7 @@
     <% @update_area_init_params = get_unique_area_id %>
     <script type="text/javascript">
         ajax_html('<%= @update_area_init_params %>', 'dba', 'oracle_parameter', {
-            update_area: "<%= @update_area_mv_data %>",
+            update_area: "<%= @update_area_init_params %>",
             caption:     "Init-Parameter relevant for auditing",
             name_array:  ["audit_sys_operations", "unified_audit_sga_queue_size", "audit_file_dest", "audit_syslog_level", "audit_trail"]
         }, {retain_status_message: true});

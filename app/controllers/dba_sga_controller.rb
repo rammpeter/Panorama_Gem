@@ -1848,6 +1848,10 @@ END;
       raise "Unsupported value for parameter :groupby (#{@time_groupby})"
     end
 
+
+    # In 18.3 this SQL leads to error if not restricted to instance:
+    # ORA-12801: Fehler in parallelem Abfrage-Server P000 angezeigt
+    # ORA-01006: Bind-Variable nicht vorhanden
     result= sql_select_iterator ["
       SELECT #{group_by_value} Group_Value, o.Component, o.Oper_Type, o.Parameter,
              MIN(o.Start_Time)                                Min_Start_Time,
@@ -1863,14 +1867,14 @@ END;
              SUM(DECODE(o.Status, 'CANCELLED', 1, 0))         Status_Cancelled_Count,
              SUM(DECODE(o.Status, 'ERROR', 1, 0))             Status_Error_Count
       FROM   DBA_Hist_Memory_Resize_Ops o
-      WHERE  o.DBID = ?
-      AND    o.Snap_ID BETWEEN ? AND ?
-      AND    o.Start_Time >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
+      WHERE  o.Start_Time >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
       AND    o.End_Time   <= TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
       #{where_string}
+      AND    o.DBID = ?
+      AND    o.Snap_ID BETWEEN ? AND ?
       GROUP BY #{group_by_value}, o.Component, o.Oper_Type, o.Parameter
       ORDER BY #{group_by_value}, o.Component, o.Oper_Type, o.Parameter
-    ", @dbid, @min_snap_id, @max_snap_id, @time_selection_start, @time_selection_end].concat(where_values)
+    ", @time_selection_start, @time_selection_end, @dbid, @min_snap_id, @max_snap_id].concat(where_values)
 
     result_hash = {}
     pivot_column_tags = {}
