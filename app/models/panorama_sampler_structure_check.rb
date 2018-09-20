@@ -992,7 +992,7 @@ class PanoramaSamplerStructureCheck
           primary_key: { columns: ['STAT_ID'] },
       },
       {
-          table_name: 'Panorama_Sysmetric_History',
+          table_name: 'Internal_Sysmetric_History',
           domain: :AWR,
           columns: [
               { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
@@ -1003,16 +1003,14 @@ class PanoramaSamplerStructureCheck
               { column_name:  'INTSIZE',                        column_type:   'NUMBER',    not_null: true },
               { column_name:  'GROUP_ID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'METRIC_ID',                      column_type:   'NUMBER',    not_null: true },
-              { column_name:  'METRIC_NAME',                    column_type:   'VARCHAR2',  not_null: true, precision: 64 },
               { column_name:  'VALUE',                          column_type:   'NUMBER',    not_null: true },
-              { column_name:  'METRIC_UNIT',                    column_type:   'VARCHAR2',  not_null: true, precision: 64 },
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
           primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'GROUP_ID', 'METRIC_ID', 'BEGIN_TIME', 'CON_DBID'], compress: 5 },
       },
       {
-          table_name: 'Panorama_Sysmetric_Summary',
+          table_name: 'Internal_Sysmetric_Summary',
           domain: :AWR,
           columns: [
               { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
@@ -1023,8 +1021,6 @@ class PanoramaSamplerStructureCheck
               { column_name:  'INTSIZE',                        column_type:   'NUMBER',    not_null: true },
               { column_name:  'GROUP_ID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'METRIC_ID',                      column_type:   'NUMBER',    not_null: true },
-              { column_name:  'METRIC_NAME',                    column_type:   'VARCHAR2',  not_null: true, precision: 64 },
-              { column_name:  'METRIC_UNIT',                    column_type:   'VARCHAR2',  not_null: true, precision: 64 },
               { column_name:  'NUM_INTERVAL',                   column_type:   'NUMBER',    not_null: true },
               { column_name:  'MINVAL',                         column_type:   'NUMBER',    not_null: true },
               { column_name:  'MAXVAL',                         column_type:   'NUMBER',    not_null: true },
@@ -1273,6 +1269,22 @@ ORDER BY Column_ID
             domain: :AWR,
             view_select: proc{"SELECT s.DBID, s.STAT_ID, s.NAME Stat_Name, s.CON_DBID, s.CON_ID
                                FROM   Internal_StatName s
+                              "}
+        },
+        {
+            view_name: 'Panorama_Sysmetric_History',
+            domain: :AWR,
+            view_select: proc{"SELECT s.Snap_ID, s.DBID, s.Instance_Number, s.Begin_Time, s.End_Time, s.IntSize, s.Group_ID, s.Metric_ID, n.Metric_Name, s.Value, n.Metric_Unit, s.Con_DBID, s.Con_ID
+                               FROM   Internal_Sysmetric_History s
+                               JOIN   Panorama_Metric_Name n ON n.DBID = s.DBID AND n.Group_ID = s.Group_ID AND n.Metric_ID = s.Metric_ID AND n.Con_DBID = s.Con_DBID
+                              "}
+        },
+        {
+            view_name: 'Panorama_Sysmetric_Summary',
+            domain: :AWR,
+            view_select: proc{"SELECT s.Snap_ID, s.DBID, s.Instance_Number, s.Begin_Time, s.End_Time, s.IntSize, s.Group_ID, s.Metric_ID, n.Metric_Name, n.Metric_Unit, s.Num_Interval, s.MinVal, s.MaxVal, s.Average, s.Standard_Deviation, s.Sum_Squares, s.Con_DBID, s.Con_ID
+                               FROM   Internal_Sysmetric_Summary s
+                               JOIN   Panorama_Metric_Name n ON n.DBID = s.DBID AND n.Group_ID = s.Group_ID AND n.Metric_ID = s.Metric_ID AND n.Con_DBID = s.Con_DBID
                               "}
         },
         {

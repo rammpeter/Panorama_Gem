@@ -539,10 +539,10 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_Sysmetric_History(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_SysMetric_History (SNAP_ID, DBID, INSTANCE_NUMBER, BEGIN_TIME, END_TIME, INTSIZE, GROUP_ID,
-                                            METRIC_ID, METRIC_NAME, VALUE, METRIC_UNIT, CON_DBID, CON_ID)
+    INSERT INTO Internal_SysMetric_History (SNAP_ID, DBID, INSTANCE_NUMBER, BEGIN_TIME, END_TIME, INTSIZE, GROUP_ID,
+                                            METRIC_ID, VALUE, CON_DBID, CON_ID)
     SELECT p_SNAP_ID, p_DBID, p_INSTANCE, BEGIN_TIME, END_TIME, INTSIZE_CSEC, GROUP_ID,
-           METRIC_ID, METRIC_NAME, VALUE, METRIC_UNIT, p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "sm.Con_ID" : "0"}
+           METRIC_ID, VALUE, p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "sm.Con_ID" : "0"}
     FROM   v$SysMetric_History sm
     JOIN   Panorama_Snapshot ss ON ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.Instance_Number = p_Instance
     WHERE  sm.End_Time >= ss.Begin_Interval_Time
@@ -552,12 +552,12 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_Sysmetric_Summary(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_SysMetric_Summary (SNAP_ID, DBID, INSTANCE_NUMBER, BEGIN_TIME, END_TIME, INTSIZE, GROUP_ID,
-                                            METRIC_ID, METRIC_NAME, METRIC_UNIT, NUM_INTERVAL, MinVal, MaxVal, Average,
+    INSERT INTO Internal_SysMetric_Summary (SNAP_ID, DBID, INSTANCE_NUMBER, BEGIN_TIME, END_TIME, INTSIZE, GROUP_ID,
+                                            METRIC_ID, NUM_INTERVAL, MinVal, MaxVal, Average,
                                             STANDARD_DEVIATION, SUM_SQUARES,
                                             CON_DBID, CON_ID)
     SELECT p_SNAP_ID, p_DBID, p_INSTANCE, MIN(BEGIN_TIME), MAX(END_TIME), SUM(INTSIZE_CSEC), GROUP_ID,
-           METRIC_ID, MIN(METRIC_NAME), MIN(METRIC_UNIT), COUNT(*), MIN(Value), MAX(Value), AVG(Value),
+           METRIC_ID, COUNT(*), MIN(Value), MAX(Value), AVG(Value),
            STDDEV(Value), SUM(POWER(Avg_Value-Value, 2)),
            p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "MIN(Con_ID)" : "0"}
     FROM   (SELECT sm.*, AVG(Value) OVER (PARTITION BY sm.Group_ID, sm.Metric_ID) avg_value
