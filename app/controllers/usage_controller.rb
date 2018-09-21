@@ -93,10 +93,10 @@ class UsageController < ApplicationController
         if filtered
           if groups[groupvalue]
             groups[groupvalue][:Requests] = groups[groupvalue][:Requests] +1
-            groups[groupvalue][:Databases][db]           = groups[groupvalue][:Databases][db]           ? groups[groupvalue][:Databases][db] +1           : 1
-            groups[groupvalue][:Clients][ip]             = groups[groupvalue][:Clients][ip]             ? groups[groupvalue][:Clients][ip] +1             : 1
-            groups[groupvalue][:Controllers][controller] = groups[groupvalue][:Controllers][controller] ? groups[groupvalue][:Controllers][controller] +1 : 1
-            groups[groupvalue][:Actions][action]         = groups[groupvalue][:Actions][action]         ? groups[groupvalue][:Actions][action] +1         : 1
+            groups[groupvalue][:Databases][db]           = groups[groupvalue][:Databases][db]           ? (groups[groupvalue][:Databases][db] +1)           : 1
+            groups[groupvalue][:Clients][ip]             = groups[groupvalue][:Clients][ip]             ? (groups[groupvalue][:Clients][ip] +1)             : 1
+            groups[groupvalue][:Controllers][controller] = groups[groupvalue][:Controllers][controller] ? (groups[groupvalue][:Controllers][controller] +1) : 1
+            groups[groupvalue][:Actions][action]         = groups[groupvalue][:Actions][action]         ? (groups[groupvalue][:Actions][action] +1)         : 1
           else
             groups[groupvalue] = {:Requests     => 1,
                                   :Databases    => { db         => 1},
