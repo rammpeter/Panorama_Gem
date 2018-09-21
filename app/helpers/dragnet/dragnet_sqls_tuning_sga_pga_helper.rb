@@ -252,14 +252,14 @@ Especially this is true for generated dynamic SQL statements (e.g. from OR-mappe
                              ROUND(MAX(DECODE(p.Name, 'total PGA inuse'                     , p.Value, 0))/(1024*1024)) \"total PGA inuse (MB)\",
                              ROUND(MAX(DECODE(p.Name, 'total PGA allocated'                 , p.Value, 0))/(1024*1024)) \"total PGA allocated (MB)\",
                              ROUND(MAX(DECODE(p.Name, 'total freeable PGA memory'           , p.Value, 0))/(1024*1024)) \"total freeable PGA memory (MB)\",
-                             MAX(DECODE(p.Name, 'process count'                             , p.Value, 0))              \"process count\",
-                             MAX(DECODE(p.Name, 'max processes count'                       , p.Value, 0))              \"max processes count\",
+                             MAX(DECODE(p.Name, 'process count'                             , p.Value, 0))              \"No. of processes\",
+                             MAX(DECODE(p.Name, 'max processes count'                       , p.Value, 0))              \"Max. no. of processes\",
                              ROUND(MAX(DECODE(p.Name, 'PGA memory freed back to OS'         , p.Value, 0))/(1024*1024)) \"PGA mem freed back (MB kum.)\",
                              ROUND(MAX(DECODE(p.Name, 'total PGA used for auto workareas'   , p.Value, 0))/(1024*1024)) \"total PGA Used Auto (MB)\",
                              ROUND(MAX(DECODE(p.Name, 'total PGA used for manual workareas' , p.Value, 0))/(1024*1024)) \"total PGA used manual (MB)\",
                              MAX(DECODE(p.Name, 'over allocation count'                     , p.Value, 0)) -            -- Subtraktion Vorgaenger fuer Delta
-                             (SELECT Value FROM DBA_hist_PgaStat i WHERE i.DBID=p.DBID AND i.Snap_ID=p.Snap_ID-1 AND I.INSTANCE_NUMBER = p.Instance_Number AND i.Name =  'over allocation count') \"over allocation count\",
-                             MAX(DECODE(p.Name, 'cache hit percentage'   , p.Value, 0))                                 \"cache hit pct. (since startup)\"
+                             (SELECT Value FROM DBA_hist_PgaStat i WHERE i.DBID=p.DBID AND i.Snap_ID=p.Snap_ID-1 AND I.INSTANCE_NUMBER = p.Instance_Number AND i.Name =  'over allocation count') \"No. of over allocations\",
+                             MAX(DECODE(p.Name, 'cache hit percentage'   , p.Value, 0))                                 \"Cache Hit pct (since startup)\"
                       FROM   DBA_hist_PgaStat p
                       JOIN   DBA_Hist_Snapshot ss ON ss.DBID = p.DBID AND ss.Instance_Number = p.Instance_Number AND ss.Snap_ID = p.Snap_ID
                       WHERE  p.Instance_Number = 1
