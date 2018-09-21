@@ -188,7 +188,7 @@ SQLs with multiple open cursors withon one session my flood session cursor cache
                               SELECT Inst_ID, SQL_ID,
                                      COUNT(*) \"Number of open cursor\",
                                      COUNT(DISTINCT SID) \"Number of sessions\",
-                                     ROUND(Count(*) / COUNT(DISTINCT SID),2) \"open cursors per session\",
+                                     ROUND(Count(*) / COUNT(DISTINCT SID),2) \"Open cursors per session\",
                                      MIN(SQL_Text) SQL_Text
                               FROM   gv$Open_Cursor
                               GROUP BY Inst_ID, SQL_ID
