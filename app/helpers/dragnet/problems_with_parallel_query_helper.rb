@@ -37,7 +37,7 @@ module Dragnet::ProblemsWithParallelQueryHelper
                              ROUND(s.Elapsed_Time_Sec/DECODE(s.Executions, 0, 1, s.Executions),2) \"Elapsed time per exec (secs)\",
                              (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID = s.DBID AND t.SQL_ID = s.SQL_ID) Statement
                       FROM   (SELECT
-                                     s.DBID, s.Instance_Number, s.SQL_ID,
+                                     s.DBID, s.Instance_Number, s.SQL_ID, s.Parsing_Schema_Name,
                                      ROUND(SUM(s.Elapsed_Time_Delta)/10000)/100 Elapsed_Time_Sec,
                                      SUM(s.Executions_Delta) Executions,
                                      MIN(ss.Begin_Interval_time) First_Occurrence,
@@ -51,7 +51,7 @@ module Dragnet::ProblemsWithParallelQueryHelper
                               JOIN   DBA_Hist_SQLStat s ON s.DBID = p.DBID AND s.SQL_ID = p.SQL_ID AND s.Plan_Hash_Value = p.Plan_Hash_Value
                               JOIN   DBA_Hist_Snapshot ss ON ss.DBID = s.DBID AND ss.Instance_Number = s.Instance_Number AND ss.Snap_ID = s.Snap_ID
                               WHERE  ss.Begin_Interval_Time > SYSDATE - ?
-                              GROUP BY s.DBID, s.Instance_Number, s.SQL_ID
+                              GROUP BY s.DBID, s.Instance_Number, s.SQL_ID, s.Parsing_Schema_Name
                              ) s
                       WHERE  s.Elapsed_Time_Sec/DECODE(s.Executions, 0, 1, s.Executions) > ? /* > 50 Sekunden */
                       ORDER BY s.Elapsed_Time_Sec/DECODE(s.Executions, 0, 1, s.Executions) DESC NULLS LAST",

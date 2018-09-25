@@ -9,7 +9,7 @@
       <%= text_field_tag(:instance, (read_from_client_info_store(:instance) ? read_from_client_info_store(:instance) : 1), :size=>1) %>
     </div>
     <div class="flex-row-element">
-      <%= submit_tag("SQL anzeigen", :title => "Anlistung der SQL-Statements") %>
+      <%= submit_tag("Show PGA usage", :title => "Show PGA usage in period") %>
     </div>
   </div>
 <% end %>
