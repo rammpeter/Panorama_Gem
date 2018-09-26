@@ -767,7 +767,7 @@ class ActiveSessionHistoryController < ApplicationController
                 ) cs ON cs.Root_Instance_Number = o.Instance_Number AND cs.Root_Session_ID = o.Session_ID AND cs.Root_Session_Serial# = o.Session_Serial#
         JOIN    root_sel_compr c ON c.Root_Instance_Number = cs.Root_Instance_Number AND c.Root_Session_ID = cs.Root_Session_ID AND c.Root_Session_Serial# = cs.Root_Session_Serial#
         LEFT OUTER JOIN DBA_Users u   ON u.User_ID = o.User_ID
-        ORDER BY o.Max_Seconds_in_Wait+cs.Max_Sec_in_Wait_Blocked_Total DESC"].concat(wherevalues)
+        ORDER BY o.Max_Seconds_in_Wait + o.Seconds_in_Wait_Sample + cs.Max_Sec_in_Wait_Blocked_Total + c.Seconds_in_Wait_Blocked_Sample DESC"].concat(wherevalues)
 
 
     render_partial
