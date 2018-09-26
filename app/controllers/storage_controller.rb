@@ -614,10 +614,11 @@ class StorageController < ApplicationController
                       GROUP BY Instance_Number
                      ) MaxAWR ON MaxAWR.Instance_Number = s.Inst_ID AND MaxAWR.Max_Begin_Time < s.Begin_Time
               LEFT OUTER JOIN sys.TS$ t ON t.ts# = s.UndoTSn
+              WHERE  s.Begin_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
              )
       #{'WHERE Instance_Number = ?' if @instance}
       ORDER BY Begin_Time
-      ", @time_selection_start, @time_selection_end, get_dbid, get_dbid].concat(@instance ? [@instance] : [])
+      ", @time_selection_start, @time_selection_end, get_dbid, get_dbid, @time_selection_start, @time_selection_end].concat(@instance ? [@instance] : [])
 
     render_partial
   end
