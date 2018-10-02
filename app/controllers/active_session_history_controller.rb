@@ -773,6 +773,70 @@ class ActiveSessionHistoryController < ApplicationController
     render_partial
   end
 
+  def list_ash_dependecy_thread
+    @blocking_inst_id           = params[:blocking_inst_id]
+    @blocking_inst_id           = nil if @blocking_inst_id == ''
+
+    @blocking_session           = params[:blocking_session]
+    @blocking_session_serial_no = params[:blocking_session_serial_no]
+    @sample_time                = params[:sample_time]
+    @min_snap_id                = params[:min_snap_id]
+    @max_snap_id                = params[:max_snap_id]
+
+    record_modifier = proc{|rec|
+      rec['sql_operation'] = translate_opcode(rec.sql_opcode)
+    }
+
+    union_column_list = "\
+      Blocking_Session, Blocking_Session_Serial#, Blocking_Session_Status, Session_ID, Session_Serial#, Current_File#, Current_Block#, Sample_ID,
+      #{'Blocking_Inst_ID, Current_Row#, Top_Level_SQL_ID, SQL_Exec_ID, SQL_Exec_Start, SQL_Plan_Line_ID, SQL_Plan_Operation, SQL_Plan_Options, ' if get_db_version >= '11.2'}
+      p1, p1Text, p2, p2Text, p3, p3Text, Wait_Time, Time_Waited, Current_Obj#, SQL_ID, SQL_Child_Number, SQL_Plan_Hash_Value, SQL_OpCode, User_ID, Event, Event_ID, Wait_Class, Seq# Sequence, Module, Action, Program,
+      Current_Obj# Current_Obj_No, PLSQL_Entry_Object_ID, PLSQL_Entry_SubProgram_ID, PLSQL_Object_ID, PLSQL_SubProgram_ID, Service_Hash, Current_File# Current_File_No, Current_Block# Current_Block_No, XID
+    "
+
+    @thread = sql_select_all(["\
+      WITH procs AS (SELECT /*+ NO_MERGE */ Object_ID, SubProgram_ID, Object_Type, Owner, Object_Name, Procedure_name FROM DBA_Procedures),
+           TSel AS ( SELECT 10 Sample_Cycle,
+                            TRUNC(h.Sample_Time+INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(h.Sample_Time+INTERVAL '5' SECOND, 'SS'))/10)/8640  Rounded_Sample_Time,
+                            h.Instance_Number, Snap_ID,
+                            #{get_ash_default_select_list}
+                     FROM   DBA_Hist_Active_Sess_History h
+                     LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = h.Instance_Number
+                     WHERE  (v.Min_Sample_Time IS NULL OR h.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
+                     AND    h.DBID = ?
+                     AND    h.Snap_ID BETWEEN ? AND ?
+                     AND    TRUNC(h.Sample_Time+INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(h.Sample_Time+INTERVAL '5' SECOND, 'SS'))/10)/8640  = TO_DATE(?, '#{sql_datetime_second_mask}')
+                     UNION ALL
+                     SELECT 1 Sample_Cycle,
+                            CAST(Sample_Time + INTERVAL '0.5' SECOND AS DATE) Rounded_Sample_Time /* auf eine Sekunde genau gerundete Zeit */,
+                            h.Inst_ID, NULL Snap_ID,
+                            #{get_ash_default_select_list}
+                    FROM    gv$Active_Session_History h
+                    WHERE   CAST(Sample_Time + INTERVAL '0.5' SECOND AS DATE) = TO_DATE(?, '#{sql_datetime_second_mask}')      /* auf eine Sekunde genau gerundete Zeit */
+                   )
+      SELECT x.*, u.UserName, o.Owner, o.Object_Name, o.SubObject_Name, o.Data_Object_ID, f.File_Name, f.Tablespace_Name,
+             peo.Owner peo_Owner, peo.Object_Type peo_Object_Type, peo.Object_Name peo_Object_Name, peo.Procedure_Name peo_Procedure_Name,
+             po.Owner  po_Owner,  po.Object_Type  po_Object_Type,  po.Object_Name  po_Object_Name,  po.Procedure_Name  po_Procedure_Name,
+             sv.Service_Name
+      FROM   (SELECT Level, tSel.*
+              FROM   tSel
+              CONNECT BY NOCYCLE PRIOR Blocking_Session           = Session_ID
+                             AND PRIOR Blocking_Session_Serial_No = Session_Serial_No
+                          #{'AND PRIOR Blocking_Inst_ID           = Instance_number ' if get_db_version >= '11.2'}
+              START WITH Session_ID = ? AND Session_Serial_No = ? #{" AND Instance_Number = ?" if @blocking_inst_id}
+             ) x
+       LEFT JOIN All_Users u ON u.User_ID = x.User_ID
+       LEFT OUTER JOIN DBA_Objects o   ON o.Object_ID = CASE WHEN x.P2Text = 'object #' THEN /* Wait kennt Object */ x.P2 ELSE x.Current_Obj_No END
+       LEFT OUTER JOIN procs peo ON peo.Object_ID = x.PLSQL_Entry_Object_ID AND peo.SubProgram_ID = x.PLSQL_Entry_SubProgram_ID
+       LEFT OUTER JOIN procs po  ON po.Object_ID = x.PLSQL_Object_ID        AND po.SubProgram_ID = x.PLSQL_SubProgram_ID
+       LEFT OUTER JOIN DBA_Hist_Service_Name sv ON sv.DBID = ? AND sv.Service_Name_Hash = x.Service_Hash
+       LEFT OUTER JOIN DBA_Data_Files f ON f.File_ID = x.Current_File_No
+      ", get_dbid, @min_snap_id, @max_snap_id, @sample_time, @sample_time, @blocking_session, @blocking_session_serial_no].
+        concat(@blocking_inst_id ? [@blocking_inst_id] : []).concat([get_dbid]), record_modifier)
+
+    render_partial
+  end
+
   # Einstieg aus show_temp_usage_historic
   def first_list_temp_usage_historic
     save_session_time_selection

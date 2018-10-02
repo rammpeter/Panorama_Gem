@@ -168,6 +168,9 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   test "blocking_locks_historic with xhr: true" do
     post :list_blocking_locks_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end }
     assert_response_success_or_management_pack_violation('list_blocking_locks_historic')
+
+    post :list_ash_dependecy_thread, :params => {format: :html, blocking_inst_id: 1, blocking_session: 7379, blocking_session_serial_no: 55500, max_snap_id: 45113, min_snap_id: 45113, sample_time: @time_selection_start, update_area: 'hugo'}
+    assert_response_success_or_management_pack_violation('list_ash_dependecy_thread')
   end
 
 

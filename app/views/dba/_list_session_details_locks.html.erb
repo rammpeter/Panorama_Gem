@@ -1,7 +1,7 @@
 <%
    @update_area = get_unique_area_id
 
-    def link_blocking_sid(rec)
+    link_blocking_sid = proc do |rec|
         update_area = "second_session_detail_area_#{@instance}_#{@sid}_#{rec.rownum}"
         ajax_link(rec.blocking_instance_number ? "#{rec.blocking_instance_number}:#{rec.blocking_sid},#{rec.blocking_serialno}" : "", {
                  :action            => :show_session_detail,
@@ -14,7 +14,7 @@
        )
     end
 
-    def link_blocking_rowid(rec)
+    link_blocking_rowid = proc do |rec|
         update_area = "rowid_detail_area_#{@instance}_#{@sid}_#{rec.rownum}"
         ajax_link(rec.waitingforrowid, {
                                     :action => :show_rowid_details,
@@ -34,9 +34,9 @@
       {:caption=>"ID2",            :data=>proc{|rec| rec.id2 },                                                         :title=>"ID2 from gv$Lock"},
       {:caption=>"R",              :data=>proc{|rec| rec.request },     :data_title=>proc{|rec| "#{lock_modes(rec.request)}" },     :title=>"Requested lock mode"},
       {:caption=>"L",              :data=>proc{|rec| rec.lockmode },    :data_title=>proc{|rec| "#{lock_modes(rec.lockmode)}" },    :title=>"Hold lock mode"},
-      {:caption=>"Blocking SID",   :data=>proc{|rec| link_blocking_sid(rec) },                                          :title=>"Blocking SID"},
+      {:caption=>"Blocking SID",   :data=>link_blocking_sid,                                                            :title=>"Blocking SID"},
       {:caption=>"Blocking Object",:data=>proc{|rec| rec.waitingforobject },                                            :title=>"Blocking object"},
-      {:caption=>"Blocking RowID", :data=>proc{|rec| link_blocking_rowid(rec) },                                        :title=>"Blocking RowID"},
+      {:caption=>"Blocking RowID", :data=>link_blocking_rowid,                                                          :title=>"Blocking RowID"},
       {:caption=>"Lock Sec.",      :data=>proc{|rec| fn(rec.seconds_in_lock) },                                         :title=>"Seconds since lock was granted", :align=>:right},
     ]
 

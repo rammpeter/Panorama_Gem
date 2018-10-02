@@ -120,7 +120,7 @@
 
   active_session_history_list_group_filter_filter_hint:                       Aktuell aktive Filter-Bedingungen für die Abfrage
 
-  active_session_history_list_session_statistic_single_record_link_sid_hint: Anzeige Active Session History der Session
+  active_session_history_list_session_statistic_single_record_link_sid_hint: Anzeige Active Session History der blockierenden Session
   active_session_history_list_session_statistic_historic_link_hint: Anzeige der Verdichtung aus Samples der Gruppierung nach
   active_session_history_list_session_statistic_historic_grouping_header: Verdichtung nach
   active_session_history_list_session_statistic_historic_grouping_link_hint: Anzeige der unterschiedlichen

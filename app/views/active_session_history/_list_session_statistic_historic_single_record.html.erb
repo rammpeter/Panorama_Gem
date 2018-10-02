@@ -50,55 +50,60 @@
      )
    end
 
-def link_column_sql_id(rec)
-  retval = ''
-  retval << link_historic_sql_id(rec.instance_number, rec.sql_id, @groupfilter[:time_selection_start], @groupfilter[:time_selection_end], @update_area, rec.username) if rec.sql_id_cnt == 1
-  retval << " < #{rec.sql_id_cnt } >" if rec.sql_id_cnt > 1
-  if rec["top_level_sql_id"] && rec.top_level_sql_id_cnt==1 && rec.top_level_sql_id != rec.sql_id
-    retval << " "
-    retval << link_historic_sql_id(rec.instance_number, rec.top_level_sql_id, @groupfilter[:time_selection_start], @groupfilter[:time_selection_end], @update_area, rec.username)
-  else
-    retval << " < #{rec.top_level_sql_id_cnt } >" if rec['top_level_sql_id_cnt'] && rec.top_level_sql_id_cnt > 1
+  link_column_sql_id = proc do |rec|
+    retval = ''
+    retval << link_historic_sql_id(rec.instance_number, rec.sql_id, @groupfilter[:time_selection_start], @groupfilter[:time_selection_end], @update_area, rec.username) if rec.sql_id_cnt == 1
+    retval << " < #{rec.sql_id_cnt } >" if rec.sql_id_cnt > 1
+    if rec["top_level_sql_id"] && rec.top_level_sql_id_cnt==1 && rec.top_level_sql_id != rec.sql_id
+      retval << " "
+      retval << link_historic_sql_id(rec.instance_number, rec.top_level_sql_id, @groupfilter[:time_selection_start], @groupfilter[:time_selection_end], @update_area, rec.username)
+    else
+      retval << " < #{rec.top_level_sql_id_cnt } >" if rec['top_level_sql_id_cnt'] && rec.top_level_sql_id_cnt > 1
+    end
+    retval
   end
-  retval
-end
 
-def link_column_sid(rec)
-  if rec.session_id_cnt == 1
-      ajax_link("#{rec.session_id}, #{rec.session_serial_no}",
-                              {:action       => :list_session_statistic_historic_grouping,
-                               :groupfilter  => @groupfilter.merge('Session/Sn.' => "#{rec.session_id}, #{rec.session_serial_no}"),
-                               :groupby      => 'Session/Sn.',
-                               :update_area  => @update_area,
-                              },
-                      :title=>t(:active_session_history_list_session_statistic_single_record_link_sid_hint, :default=>"Show active session history for session-ID")
-                     )
-  else
-    "<&nbsp;#{rec.session_id_cnt}&nbsp;>".html_safe
+  link_column_sid = proc do |rec|
+    if rec.session_id_cnt == 1
+        ajax_link("#{rec.session_id}, #{rec.session_serial_no}",
+                                {:action       => :list_session_statistic_historic_grouping,
+                                 :groupfilter  => @groupfilter.merge('Session/Sn.' => "#{rec.session_id}, #{rec.session_serial_no}"),
+                                 :groupby      => 'Session/Sn.',
+                                 :update_area  => @update_area,
+                                },
+                        :title=>t(:active_session_history_list_session_statistic_single_record_link_sid_hint, :default=>"Show active session history for session-ID")
+                       )
+    else
+      "<&nbsp;#{rec.session_id_cnt}&nbsp;>".html_safe
+    end
   end
-end
 
-def link_column_object(rec)
-  update_area = "list_session_statistic_single_record_convert_rowid_#{rec.row_num}"
-  unless rec["current_row_no"]  # vor Oracle 11.2
-    ""
-  else
-    ajax_link("File#=#{rec.current_file_no}, Block#=#{rec.current_block_no}, Row#=#{rec.current_row_no}#{", Remote-Instance=#{rec.remote_instance_no}" if rec.remote_instance_no}", {
-                              :controller       => :dba,
-                              :action           => :convert_to_rowid,
-                              :update_area      => update_area,
-                              :waitingforobject => "#{rec.owner}.#{rec.object_name}",
-                              :data_object_id   => rec.data_object_id,
-                              :row_wait_file_no => rec.current_file_no,
-                              :row_wait_block_no => rec.current_block_no,
-                              :row_wait_row_no  => rec.current_row_no
-                      },
-                      :title=>t(:dba_list_dml_locks_link_column_blocking_object_hint, :default=>"Determine associated rowid")
-         )+"<div id=\"#{update_area}\"></div>".html_safe
+  def link_column_object(rec)
+    update_area = "list_session_statistic_single_record_convert_rowid_#{rec.row_num}"
+    result = ''
+    result << link_object_description(@update_area, rec.owner, rec.object_name, "#{rec.owner}. #{rec.object_name}#{rec.subobject_name ? " (#{rec.subobject_name})" : ""}") if rec.object_name
+
+
+    if rec["current_row_no"]  # beginning with Oracle 11.2
+      result << ' '
+      result << ajax_link("File#=#{rec.current_file_no}, Block#=#{rec.current_block_no}, Row#=#{rec.current_row_no}#{", Remote-Instance=#{rec.remote_instance_no}" if rec.remote_instance_no}", {
+                                :controller       => :dba,
+                                :action           => :convert_to_rowid,
+                                :update_area      => update_area,
+                                :waitingforobject => "#{rec.owner}.#{rec.object_name}",
+                                :data_object_id   => rec.data_object_id,
+                                :row_wait_file_no => rec.current_file_no,
+                                :row_wait_block_no => rec.current_block_no,
+                                :row_wait_row_no  => rec.current_row_no
+                        },
+                        :title=>t(:dba_list_dml_locks_link_column_blocking_object_hint, :default=>"Determine associated rowid")
+           )
+      result << "<div id=\"#{update_area}\"></div>".html_safe
+    end
+    result
   end
-end
 
-   def link_blocking_sid(rec)
+  link_blocking_sid = proc do |rec|
      value = "#{rec["blocking_inst_id"] ? "#{rec.blocking_inst_id}:" : ""}#{rec.blocking_session ? rec.blocking_session : (rec.blocking_session_status=="NO HOLDER" ? "" : rec.blocking_session_status )}"
      if rec["blocking_inst_id"] && rec.blocking_session
          ajax_link("#{rec["blocking_inst_id"] ? "#{rec.blocking_inst_id}:" : ""}#{rec.blocking_session ? rec.blocking_session : (rec.blocking_session_status=="NO HOLDER" ? "" : rec.blocking_session_status )}",
@@ -113,14 +118,25 @@ end
                                   :groupby      => 'Session/Sn.',
                                   :update_area  => @update_area,
                                  },
-                         :title=>t(:active_session_history_list_session_statistic_single_record_link_sid_hint, :default=>"Show active session history for session-ID")
+                         :title=>t(:active_session_history_list_session_statistic_single_record_link_sid_hint, :default=>"Show active session history for blocking session-ID")
+         ) + ' ' +
+         ajax_submit('Thread', {
+          action:                     :list_ash_dependecy_thread,
+          blocking_inst_id:           rec["blocking_inst_id"],
+          blocking_session:           rec.blocking_session,
+          blocking_session_serial_no: rec.blocking_session_serial_no,
+          sample_time:                localeDateTime(rec.start_sample_time),
+          min_snap_id:                @groupfilter[:Min_Snap_ID],
+          max_snap_id:                @groupfilter[:Max_Snap_ID],
+          update_area:                @update_area,
+          }, :title => "List full blocking session dependency thread (if blocking session is blocked itself by other session)"
          )
      else
        rec.blocking_session_cnt > 1 ? "<&nbsp;#{rec.blocking_session_cnt}&nbsp;>".html_safe : value
      end
    end
 
-   def local_link_wait_params(rec)
+   local_link_wait_params = proc do |rec|
      if rec.p1_cnt <= 1 && rec.p2_cnt<=1 && rec.p3_cnt<=1 && rec.p1text_cnt<=1 && rec.p2text_cnt<=1 && rec.p3text_cnt<=1
         link_wait_params(rec.instance_number, rec.event, rec.p1, rec.p1text, nil, rec.p2, rec.p2text, nil, rec.p3, rec.p3text, nil, "list_session_statistics_wait_info_#{rec.sample_id}#{rec.instance_number}_#{rec.session_id}")
      else
@@ -128,13 +144,20 @@ end
      end
    end
 
+  def link_plsql_object(rec)
+    result = ''
+    result << link_object_description(@update_area, rec.peo_owner, rec.peo_object_name, "#{rec.peo_object_type} #{rec.peo_owner}. #{rec.peo_object_name}. #{rec.peo_procedure_name}") if rec.peo_object_name
+    result << ' '
+    result << link_object_description(@update_area, rec.po_owner, rec.po_object_name, "#{rec.po_object_type} #{rec.po_owner}. #{rec.po_object_name}. #{rec.po_procedure_name}") if rec.po_object_name
+    result
+  end
 
-# Ermitteln Hint für Module, wenn Application
-def module_hint(moduletext)
-  explain_application_info(moduletext)[:short_info]
-rescue Exception=>e                                                             # falls keine gueltige Application gefunden wird
-  e.message
-end
+  # Ermitteln Hint für Module, wenn Application
+  def module_hint(moduletext)
+    explain_application_info(moduletext)[:short_info]
+  rescue Exception=>e                                                             # falls keine gueltige Application gefunden wird
+    e.message
+  end
 
    # Aufbereitung der Anzeigewerte
    def show_alt(real_value, occurrences, format_number_decimals=nil)
@@ -163,9 +186,9 @@ end
   column_options <<  {:caption=>"Samples",          :data=>proc{|rec| link_samples(rec) },                              :title=>'Number of single sample records within grouping', :align=>:right} if @time_groupby != :single
   column_options <<  {:caption=>"Total time waited (sec.)", :data=>proc{|rec| fn(rec.wait_time_seconds_sample) },       :title=>"Total time in seconds sessions are active, calculated by sample count.\nValues are reliable for larger number of samples.\nValues are not credible for very small amount of samples or only one sample record.", :align=>"right"} if @time_groupby != :single
   column_options <<  {:caption=>'Avg. load',        :data=>proc{|rec| fn(rec.wait_time_seconds_sample.to_f / [grouping_options[@time_groupby][:seconds], rec.sample_cycle].max, 2) rescue nil},      :title=>"Average number of active sessions in time slot.\nCalculated by sample count.", :align=>"right"} if @time_groupby != :single
-  column_options <<  {:caption=>"Session / Sn.",    :data=>proc{|rec| link_column_sid(rec)},                            :title=>"Session-ID/serial#",           :data_title=>proc{|rec| data_title_alt(rec.session_id_cnt, "%t\nType=#{rec.session_type}",  "%t\nType=#{rec.session_type}")  } }
+  column_options <<  {:caption=>"Session / Sn.",    :data=>link_column_sid,                                             :title=>"Session-ID/serial#",           :data_title=>proc{|rec| data_title_alt(rec.session_id_cnt, "%t\nType=#{rec.session_type}",  "%t\nType=#{rec.session_type}")  } }
   column_options <<  {:caption=>"User",             :data=>proc{|rec| show_alt(rec.username, rec.username_cnt)},        :title=>"User-Name",            :data_title=>proc{|rec| data_title_alt(rec.username_cnt, "%t:\nUser_ID=#{rec.user_id}") }}
-  column_options <<  {:caption=>"SQL-ID",           :data=>proc{|rec| link_column_sql_id(rec) },                        :title=>t(:active_session_history_list_session_statistic_historic_single_record_sql_id_title, :default=>"SQL-ID of current statement + optional SQL-ID of top level SQL"), :data_title=>proc{|rec| data_title_alt(rec.sql_id_cnt, ("%t:\nChild-No=#{rec.sql_child_number}\nPlan-Hash-Value=#{rec.sql_plan_hash_value}#{ "\nCurrent=#{rec.is_sqlid_current}" if rec["is_sqlid_current"]} ")) } }
+  column_options <<  {:caption=>"SQL-ID",           :data=>link_column_sql_id,                                          :title=>t(:active_session_history_list_session_statistic_historic_single_record_sql_id_title, :default=>"SQL-ID of current statement + optional SQL-ID of top level SQL"), :data_title=>proc{|rec| data_title_alt(rec.sql_id_cnt, ("%t:\nChild-No=#{rec.sql_child_number}\nPlan-Hash-Value=#{rec.sql_plan_hash_value}#{ "\nCurrent=#{rec.is_sqlid_current}" if rec["is_sqlid_current"]} ")) } }
   if get_db_version >= "11.2"
     column_options <<  {:caption=>"QC",             :data=>proc{|rec| show_alt(("#{rec.qc_instance_id}:#{rec.qc_session_id}, #{rec.qc_session_serialno}" if rec.qc_instance_id), rec.qc_instance_id_cnt)},  :title=>"Query-coordinator instance and session-id/serialno (if parallel query is used)", :data_title=>proc{|rec| data_title_alt(rec.qc_instance_id_cnt)} }
   else
@@ -174,19 +197,19 @@ end
   column_options <<  {:caption=>"O",                :data=>proc{|rec| show_alt(rec.sql_opcode, rec.sql_opcode_cnt)},    :title=>"SQL-Opcode", :data_title=>proc{|rec| data_title_alt(rec.sql_opcode_cnt, "SQL-Operation=#{rec.sql_operation}") } }
   column_options <<  {:caption=>"Exec.",            :data=>proc{|rec| show_alt("ID=#{rec.sql_exec_id} #{localeDateTime(rec.sql_exec_start)}", rec.sql_exec_id_cnt )},  :title=>"SQL Execution-ID, Start of Execution", :data_title=>proc{|rec| data_title_alt(rec.sql_exec_id_cnt)}  }                     if get_db_version >= "11.2"
   column_options <<  {:caption=>"Oper.",            :data=>proc{|rec| show_alt("Line=#{rec.sql_plan_line_id} #{rec.sql_plan_operation} #{rec.sql_plan_options}", rec.sql_plan_operation_cnt) }, :title=>"Operation in execution plan line", :data_title=>proc{|rec| data_title_alt(rec.sql_plan_operation_cnt)}  }   if get_db_version >= "11.2"
-  column_options <<  {:caption=>"Block",            :data=>proc{|rec| link_blocking_sid(rec) },                         :title=>"Blocking session SID, GLOBAL=blocked from other RAC-instance", :data_title=>proc{|rec| "Blocking Session SID\nBlocking Session-Status=#{rec.blocking_session_status}\nBlocking Session SerialNo=#{rec.blocking_session_serial_no}"} }
+  column_options <<  {:caption=>"Block.",           :data=>link_blocking_sid,                                           :title=>"Blocking session SID, GLOBAL=blocked from other RAC-instance", :data_title=>proc{|rec| "Blocking Session SID\nBlocking Session-Status=#{rec.blocking_session_status}\nBlocking Session SerialNo=#{rec.blocking_session_serial_no}"} }
   column_options <<  {:caption=>"Event",            :data=>proc{|rec| show_alt((rec.event ? rec.event : rec.session_state), rec.event_cnt) },      :title=>'Session wait event during sample', :data_title=>proc{|rec| data_title_alt(rec.event_cnt, "%t\nEvent-ID=#{rec.event_id}\nWait-Class=#{rec.wait_class}\nSequence=#{rec.sequence}.\n#{explain_wait_event(rec.event)}")} }
-  column_options <<  {:caption=>"Param.",           :data=>proc{|rec| local_link_wait_params(rec) },                    :title=>"Parameter of wait event",  :data_title=>proc{|rec| data_title_alt((rec.p1_cnt+rec.p2_cnt+rec.p3_cnt+rec.p1text_cnt+rec.p2text_cnt+rec.p3text_cnt)/6) } }
+  column_options <<  {:caption=>"Param.",           :data=>local_link_wait_params,                                      :title=>"Parameter of wait event",  :data_title=>proc{|rec| data_title_alt((rec.p1_cnt+rec.p2_cnt+rec.p3_cnt+rec.p1text_cnt+rec.p2text_cnt+rec.p3text_cnt)/6) } }
   column_options <<  {:caption=>"Wait-Time",        :data=>proc{|rec| fn(rec.wait_time/1000.0,2) },                     :title=>"Total wait time in milliseconds for the event for which the session last waited (0 if currently waiting)\nFrom ash.Wait_Time", :align=>"right"}
   column_options <<  {:caption=>"Time waited",      :data=>proc{|rec| fn(rec.time_waited/1000.0,2)},                    :title=>"Time in milliseconds that the current session actually spent waiting for the event. This column is set for waits that were in progress at the time the sample was taken.\nFrom ash.Time_Waited", :align=>"right"}
   column_options <<  {:caption=>'Avg. time waited', :data=>proc{|rec| fn(rec.time_waited/1000.0/rec.sample_count,2)},   :title=>"Average time in milliseconds that the current session actually spent waiting for the event. This column is set for waits that were in progress at the time the sample was taken.\nFrom ash.Time_Waited", :align=>"right"} if @time_groupby != :single
   column_options <<  {:caption=>'Max. time waited', :data=>proc{|rec| fn(rec.max_time_waited/1000.0,2)},                :title=>"Maximum time in milliseconds that the current session actually spent waiting for the event. This column is set for waits that were in progress at the time the sample was taken.\nFrom ash.Time_Waited", :align=>"right"} if @time_groupby != :single
   column_options <<  {:caption=>"Module",           :data=>proc{|rec| show_alt(rec.module, rec.module_cnt)},            :title=>"Module set by DBMS_Application_Info.Set_Module", :data_title=>proc{|rec| "%t: #{module_hint(rec.module)}"} }
   column_options <<  {:caption=>"Action",           :data=>proc{|rec| show_alt(rec.action, rec.action_cnt)},            :title=>"Action set by DBMS_Application_Info.Set_Module", :data_title=>proc{|rec| "%t: #{module_hint(rec.action)}"} }
-  column_options <<  {:caption=>"DB-Object",        :data=>proc{|rec| show_alt("#{rec.owner}. #{rec.object_name}#{rec.subobject_name ? " (#{rec.subobject_name})" : ""} #{link_column_object(rec)}", rec.object_name_cnt)},        :title=>t(:active_session_history_list_session_statistic_historic_single_record_object_hint, :default=>"Currently referenced object from gv$Session.Row_Wait_Obj#.\nIf parameter p2Text='object#', then this parameter is used instead of row_wait_obj#.\nCaution: may contain object of previous operation."), :data_title=>proc{|rec| data_title_alt(rec.object_name_cnt, "%t:\nFile=#{rec.current_file_no}, #{rec.file_name}\nTS=#{rec.tablespace_name}\nBlock=#{rec.current_block_no} #{"\nRemote-Instance=#{rec.remote_instance_no}" if rec["remote_instance_no"]}")} }
-  column_options <<  {:caption=>"PL / SQL",         :data=>proc{|rec| show_alt("#{rec.peo_object_type} #{rec.peo_owner}. #{rec.peo_object_name}. #{rec.peo_procedure_name}", rec.peo_object_name_cnt)}, :title=>t(:active_session_history_list_session_statistic_historic_single_record_plsql_hint, :default=>'PL/SQL: entry object and current object'), :data_title=>proc{|rec| "%t, current PL/SQL= #{rec.po_object_type} #{rec.po_owner}.#{rec.po_object_name}.#{rec.po_procedure_name}"} }
+  column_options <<  {:caption=>"DB-Object",        :data=>proc{|rec| show_alt(link_column_object(rec), rec.object_name_cnt)},        :title=>t(:active_session_history_list_session_statistic_historic_single_record_object_hint, :default=>"Currently referenced object from gv$Session.Row_Wait_Obj#.\nIf parameter p2Text='object#', then this parameter is used instead of row_wait_obj#.\nCaution: may contain object of previous operation."), :data_title=>proc{|rec| data_title_alt(rec.object_name_cnt, "%t:\nFile=#{rec.current_file_no}, #{rec.file_name}\nTS=#{rec.tablespace_name}\nBlock=#{rec.current_block_no} #{"\nRemote-Instance=#{rec.remote_instance_no}" if rec["remote_instance_no"]}")} }
+  column_options <<  {:caption=>"PL / SQL",         :data=>proc{|rec| show_alt(link_plsql_object(rec), rec.peo_object_name_cnt)}, :title=>t(:active_session_history_list_session_statistic_historic_single_record_plsql_hint, :default=>'PL/SQL: entry object and current object') }
   column_options <<  {:caption=>"Tx. ID",           :data=>proc{|rec| show_alt(rec.xid, rec.xid_cnt)},                  :title=>"Transaction ID that the session was working on at the time of sampling", :data_title=>proc{|rec| data_title_alt(rec.xid_cnt) }}
-  column_options <<  {:caption=>"Tx. count",        :data=>proc{|rec| fn(rec.xid_cnt)},                                 :title=>"Number of transactions in period as sampled by active session history (real number of transactions may be significantly higher if transactions are shorter than sample cycle 1 or 10 seconds)" } if @time_groupby != 'single'
+  column_options <<  {:caption=>"Tx. count",        :data=>proc{|rec| fn(rec.xid_cnt)},                                 :title=>"Number of transactions in period as sampled by active session history (real number of transactions may be significantly higher if transactions are shorter than sample cycle 1 or 10 seconds)" } if @time_groupby != :single
   column_options <<  {:caption=>"Mode",             :data=>proc{|rec| show_alt(rec.modus, rec.modus_cnt)},              :title=>"Mode in which session is executed", :data_title=>proc{|rec| data_title_alt(rec.modus_cnt) } }                                             if get_db_version >= "11.2"
   column_options <<  {:caption=>"Program",          :data=>proc{|rec| show_alt(rec.program, rec.program_cnt) },         :title=>"Programm", :data_title=>proc{|rec| data_title_alt(rec.program_cnt) } }  if get_db_version < "11.2"
   column_options <<  {:caption=>"Program / Machine / Port",:data=>proc{|rec| "#{show_alt(rec.program, rec.program_cnt)}, #{show_alt(link_machine_ip_info(@update_area, rec.machine), rec.machine_cnt)}: #{show_alt(rec.port, rec.port_cnt)}" },  :title=>"Programm and machine and port on client", :data_title=>proc{|rec| data_title_alt((rec.program_cnt+rec.machine_cnt+rec.port_cnt)/3) }}                         if get_db_version >= "11.2"
