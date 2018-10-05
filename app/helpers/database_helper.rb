@@ -148,6 +148,7 @@ public
           [ '\s+WHEN\s+'              , 4],
           [ '\s+ELSE\s+'              , 4],
           [ '\s+UNION\s+'             , 5],
+          [ '\)UNION\s+'             , 5],
       ].each do |c|
         if cmp_str.match("^#{c[0]}")
           sql.insert(pos+1, "\n")

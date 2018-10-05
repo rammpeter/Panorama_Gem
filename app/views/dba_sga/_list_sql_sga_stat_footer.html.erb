@@ -101,6 +101,19 @@
     %>
   </div>
 
+  <% if get_db_version >= '12.1' %>
+    <div class="flex-row-element">
+      <%=
+        ajax_submit('Expand', {
+            controller:   :dba_sga,
+            action:       :expand_sql_text,
+            sql_id:       @sql_id,
+            update_area:  @update_area
+        }, :title=>"Expand SQL-statement: replace accessed views with their original SQL content")
+      %>
+    </div>
+  <% end %>
+
   <% if @sql['child_number'] %>
     <div class="flex-row-element">
       <%=

@@ -2002,4 +2002,33 @@ END;
     render_partial
   end
 
+  def expand_sql_text
+    sql_id = params[:sql_id]
+
+    original_sql = sql_select_one ["SELECT SQL_FullText FROM gv$SQLArea WHERE SQL_ID = ? AND RowNum < 2", sql_id]
+
+    expanded_sql = sql_select_one ["\
+      WITH
+        FUNCTION Expand(p_Org_SQL CLOB) RETURN CLOB
+        IS
+        v_Expanded_SQL CLOB;
+        BEGIN
+          DBMS_UTILITY.expand_sql_text(input_sql_text => p_Org_SQL, output_sql_text => v_Expanded_SQL);
+          RETURN v_Expanded_SQL;
+        END;
+      SELECT Expand(?) FROM DUAL", original_sql]
+
+    formatted_sql = format_sql(expanded_sql, params[:window_width])
+
+    formatted_sql
+        .remove!('"')                                                           # remove all " from result
+        .gsub!(/A[0123456789].*/){|s| s.downcase }                              # switch table aliases (Ann) to downcase
+
+    respond_to do |format|
+      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(formatted_sql)}</pre>".html_safe }
+    end
+
+
+  end
+
 end
