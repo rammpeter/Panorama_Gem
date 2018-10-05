@@ -354,7 +354,7 @@
 
   dba_schema_list_objects_caption:                          Objekte für
 
-  dba_schema_show_object_filter_hint:                       Filter-string muss in Objekt-name enthalten sein (wenn belegt)
+  dba_schema_show_object_filter_hint:                       Optionaler Filter auf Objekt-name (Wildcards sind möglich)
   dba_schema_show_object_partition_hint:                    Einzelne Partitionen anzeigen?
   dba_schema_show_object_submit_caption:                    Objekte und Größen anzeigen
   dba_schema_show_object_submit_hint:                       Objekte mit Größen und Parametern je Tablespace und Schema anzeigen
@@ -489,6 +489,7 @@
   dba_sga_list_sql_sga_stat_footer_dbms_xplan_hint:             Anzeige des Execution-Plan als Ausgabe des Aufrufes von DBMS_XPLAN.DISPLAY
   dba_sga_list_sql_sga_stat_footer_complete_timeline_caption:   Komplette Historie
   dba_sga_list_sql_sga_stat_footer_complete_timeline_hint:      Anlistung der kompletten im AWR gespeicherten zeitlichen Historie des SQL für SQL-ID='%{sql_id}' und instance=%{instance}
+  dba_sga_list_sql_sga_stat_footer_objects_hint:                Anlistung der zugegriffenen Objekte des SQL, ermittelt über Ausführungsplan
   dba_sga_list_sql_sga_stat_footer_open_cursor_hint:            Anzeige der aktuellen offenen Cursor in Sessions des Statements
   dba_sga_list_sql_sga_stat_footer_plan_hint:                   Anlistung des Execution des SQL (bzw. mehrerer)
 

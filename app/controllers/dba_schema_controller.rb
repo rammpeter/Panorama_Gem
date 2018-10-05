@@ -13,9 +13,8 @@ class DbaSchemaController < ApplicationController
 
 
     @schemas = sql_select_all("\
-      SELECT /* Panorama-Tool Ramm */
-        UserName Name                                           
-      FROM DBA_Users
+      SELECT /* Panorama-Tool Ramm */ DISTINCT Owner Name
+      FROM DBA_Segments
       ORDER BY 1 ")
     @schemas.insert(0, {:name=>all_dropdown_selector_name}.extend(SelectHashHelper))
 
@@ -26,15 +25,15 @@ class DbaSchemaController < ApplicationController
   def list_objects
     @tablespace_name = params[:tablespace][:name]   if params[:tablespace]
     @schema_name     = params[:schema][:name]       if params[:schema]
+    @show_partitions = params[:showPartitions] == '1'
+
+    @instance       = prepare_param_instance
+    @sql_id         = prepare_param(:sql_id)
+    @child_number   = prepare_param(:child_number)
+    @child_address  = prepare_param(:child_address)
+
     filter           = params[:filter]
     segment_name     = params[:segment_name]
-    if params[:showPartitions] == "1"
-       groupBy = "Owner, Segment_Name, Tablespace_Name, Segment_Type, Partition_Name"
-       partCol = "Partition_Name"
-    else
-       groupBy = "Owner, Segment_Name, Tablespace_Name, Segment_Type"
-       partCol = "DECODE(Count(*),1,NULL,Count(*))"
-    end
 
     where_string = ""
     where_values = []
@@ -50,7 +49,7 @@ class DbaSchemaController < ApplicationController
     end
 
     if filter
-      where_string << " AND UPPER(s.Segment_Name) LIKE UPPER('%'||?||'%')"
+      where_string << " AND UPPER(s.Segment_Name) LIKE UPPER(?)"
       where_values << filter
     end
 
@@ -58,6 +57,32 @@ class DbaSchemaController < ApplicationController
       where_string << " AND UPPER(s.Segment_Name) = UPPER(?)"
       where_values << segment_name
     end
+
+    # block for SQL_ID-conditions
+    if @sql_id
+      where_string << " AND (s.Owner, s.Segment_Name) IN (SELECT /*+ NO_MERGE */ DISTINCT Object_Owner, Object_Name
+                                                          FROM   gv$SQL_Plan
+                                                          WHERE  SQL_ID = ?"
+      where_values << @sql_id
+
+      if @instance
+        where_string << " AND Inst_ID = ?"
+        where_values << @instance
+      end
+
+      if @child_number
+        where_string << " AND Child_Number = ?"
+        where_values << @child_number
+      end
+
+      if @child_address
+        where_string << " AND Child_Address = HEXTORAW(?)"
+        where_values << @child_address
+      end
+
+      where_string << ")"
+    end
+
 
     @objects = sql_select_iterator ["\
       SELECT /* Panorama-Tool Ramm */
@@ -75,15 +100,23 @@ class DbaSchemaController < ApplicationController
       SELECT
         Segment_Name,
         Tablespace_Name,
-        "+partCol+" PARTITION_NAME,                             
-        SEGMENT_TYPE,                                           
+        #{@show_partitions ? "Partition_Name" : "Count(*) Partition_Count"},
+        SEGMENT_TYPE,
         Owner,                                                  
         SUM(EXTENTS)                    Used_Ext,               
         SUM(bytes)/(1024*1024)          MBytes,
-        SUM(INITIAL_EXTENT)/1024        Init_Ext,               
-        SUM(Next_Extent)/1024           Next_Ext,
-        SUM(Min_Extents)/1024           Min_Exts,
-        SUM(Max_Extents)/1024           Max_Exts,
+        MIN(Initial_Extent)/1024        Min_Init_Ext_KB,
+        MAX(Initial_Extent)/1024        Max_Init_Ext_KB,
+        SUM(Initial_Extent)/1024        Sum_Init_Ext_KB,
+        MIN(Next_Extent)/1024           Min_Next_Ext_KB,
+        MAX(Next_Extent)/1024           Max_Next_Ext_KB,
+        SUM(Next_Extent)/1024           Sum_Next_Ext_KB,
+        MIN(Min_Extents)                Min_Min_Exts,
+        MAX(Min_Extents)                Max_Min_Exts,
+        SUM(Min_Extents)                Sum_Min_Exts,
+        MIN(Max_Extents)                Min_Max_Exts,
+        MAX(Max_Extents)                Max_Max_Exts,
+        SUM(Max_Extents)                Sum_Max_Exts,
         #{"CASE WHEN COUNT(DISTINCT InMemory) = 1 THEN MIN(InMemory) ELSE '<'||COUNT(DISTINCT InMemory)||'>' END InMemory," if get_db_version >= '12.1'}
         SUM(Num_Rows)                   Num_Rows,
         CASE WHEN COUNT(DISTINCT Compression) <= 1 THEN MIN(Compression) ELSE '<several>' END Compression,
@@ -93,8 +126,11 @@ class DbaSchemaController < ApplicationController
         SUM(Empty_Blocks)               Empty_Blocks,
         AVG(Avg_Space)                  Avg_Space,
         MIN(Last_Analyzed)              Last_Analyzed,
-        MAX(Last_DML_Timestamp)         Last_DML_Timestamp
-      FROM (                                                    
+        MAX(Last_DML_Timestamp)         Last_DML_Timestamp,
+        MIN(Created)                    Created,
+        MAX(Last_DDL_Time)              Last_DDL_Time,
+        MAX(Spec_TS)                    Spec_TS
+      FROM (
         SELECT s.Segment_Name,                                  
                s.Partition_Name,                                
                s.Segment_Type,                                  
@@ -103,6 +139,7 @@ class DbaSchemaController < ApplicationController
                s.Extents,                                       
                s.Bytes,                                         
                s.Initial_Extent, s.Next_Extent, s.Min_Extents, s.Max_Extents,
+               o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
                #{"s.InMemory," if get_db_version >= '12.1'}
                DECODE(s.Segment_Type,                           
                  'TABLE',              t.Num_Rows,
@@ -168,6 +205,7 @@ class DbaSchemaController < ApplicationController
                  'INDEX SUBPARTITION', im.Timestamp,
                NULL) Last_DML_Timestamp
         FROM DBA_SEGMENTS s
+        LEFT OUTER JOIN DBA_Objects o             ON o.Owner         = s.Owner       AND o.Object_Name          = s.Segment_name   AND (s.Partition_Name IS NULL OR o.SubObject_Name = s.Partition_Name)
         LEFT OUTER JOIN DBA_Tables t              ON t.Owner         = s.Owner       AND t.Table_Name           = s.segment_name
         LEFT OUTER JOIN DBA_Tab_Partitions tp     ON tp.Table_Owner  = s.Owner       AND tp.Table_Name          = s.segment_name   AND tp.Partition_Name        = s.Partition_Name
         LEFT OUTER JOIN DBA_Tab_SubPartitions tsp ON tsp.Table_Owner = s.Owner       AND tsp.Table_Name         = s.segment_name   AND tsp.SubPartition_Name    = s.Partition_Name
@@ -183,7 +221,7 @@ class DbaSchemaController < ApplicationController
         WHERE s.SEGMENT_TYPE<>'CACHE'
         #{where_string}
         )                                                       
-      GROUP BY #{groupBy}
+      GROUP BY Owner, Segment_Name, Tablespace_Name, Segment_Type #{", Partition_Name" if @show_partitions }
       ) x
       ORDER BY x.MBytes DESC"
       ].concat(where_values)
@@ -396,6 +434,16 @@ class DbaSchemaController < ApplicationController
                                              FROM DBA_Tab_SubPartitions WHERE  Table_Owner = ? AND Table_Name = ?", @owner, @table_name]
       @subpartition_count = subpartitions.anzahl
 
+      @partition_attribs = sql_select_first_row ["\
+        SELECT MIN(Created)       Min_Created,
+               MAX(Created)       Max_Created,
+               MAX(Last_DDL_Time) Last_DDL_Time,
+               MAX(TO_DATE(Timestamp, 'YYYY-MM-DD:HH24:MI:SS')) Last_Spec_TS
+        FROM   DBA_Objects
+        WHERE  Owner = ?
+        AND    Object_Name = ?
+        AND    SubObject_Name IS NOT NULL
+      ", @owner, @table_name]
       @attribs.each do |a|
         a.compression       = partitions.compression_count  == 1 ? partitions.compression     : "< #{partitions.compression_count} different >"           if partitions.compression_count > 0
         a.compress_for      = partitions.compress_for_count == 1 ? partitions.compress_for    : "< #{partitions.compress_for_count} different >"          if get_db_version >= '11.2' && partitions.compression_count > 0

@@ -16,7 +16,7 @@
       Part.<br/>
       <%= check_box_tag(:showPartitions, 1, false) %>
     </div>
-    <div class="flex-row-element" title="<%= t(:dba_schema_show_object_filter_hint, :default=>'Object name must contain filter string (if used)') %>">
+    <div class="flex-row-element" title="<%= t(:dba_schema_show_object_filter_hint, :default=>'Optional filter for object name (wildcards allowed)') %>">
       Filter<br>
       <%= text_field_tag(:filter, "", :size=>20) %>
     </div>

@@ -41,6 +41,21 @@
     %>
   </div>
 
+  <% if @plan_object_count %>
+    <div class="flex-row-element">
+      <%= ajax_submit("Objects (#{@plan_object_count})", {
+          :update_area    => @update_area,
+          :controller     => :dba_schema,
+          :action         => :list_objects,
+          :instance       => @sql.inst_id,
+          :sql_id         => @sql.sql_id,
+          :child_number   => @sql['child_number'],
+          :child_address  => @sql['child_address'],
+      }, :title =>t(:dba_sga_list_sql_sga_stat_footer_objects_hint, :default=>"Show accessed objects of SQL determined by execution plan"))
+      %>
+    </div>
+  <% end %>
+
   <div class="flex-row-element">
     <%= ajax_submit(t(:dba_sga_list_sql_sga_stat_footer_complete_timeline_caption, :default=>'Full history'), {
         :update_area => @update_area,

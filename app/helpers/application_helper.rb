@@ -270,6 +270,13 @@ module ApplicationHelper
     single && sum && sum != 0 ? single.to_f/sum*100 : 0
   end
 
+  # switch empty param string to nil
+  def prepare_param(param_sym)
+    retval = params[param_sym]
+    retval = nil if retval == ''
+    retval
+  end
+
   # Aufbereiten des Parameters "instance" aus Request, return nil wenn kein plausibler Wert
   def prepare_param_instance
     retval = params[:instance].to_i

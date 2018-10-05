@@ -290,8 +290,8 @@ class DbaSgaController < ApplicationController
   end
 
   def get_execution_plan_count(instance, sql_id, child_number = nil, child_address = nil)
-    sql_select_one ["\
-      SELECT COUNT(DISTINCT Plan_Hash_Value)
+    result = sql_select_first_row ["\
+      SELECT COUNT(DISTINCT Plan_Hash_Value) Plan_Hash_Values, COUNT(DISTINCT Object_Owner||'.'||Object_Name)-1 Objects
       FROM   gv$SQL_Plan
       WHERE  Inst_ID = ?
       AND    SQL_ID  = ?
@@ -300,6 +300,12 @@ class DbaSgaController < ApplicationController
       ", instance, sql_id ]
                        .concat(child_number.nil?  ? [] : [child_number])
                        .concat(child_address.nil? ? [] : [child_address])
+
+    if result
+      return result.plan_hash_values, result.objects
+    else
+      return nil, nil
+    end
   end
 
   public
@@ -501,7 +507,7 @@ class DbaSgaController < ApplicationController
     @sql_profiles         = get_sql_profiles(@sql)
     @sql_outlines         = get_sql_outlines(@sql)
     @sql_bind_count       = get_sql_bind_count(@instance, @sql_id, @child_number, @child_address)
-    @execution_plan_count = get_execution_plan_count(@instance, @sql_id, @child_number, @child_address)
+    @execution_plan_count, @plan_object_count = get_execution_plan_count(@instance, @sql_id, @child_number, @child_address)
 
     # PGA-Workarea-Nutzung
     @workareas = sql_select_all ["\
@@ -573,7 +579,7 @@ class DbaSgaController < ApplicationController
     @sql_profiles         = get_sql_profiles(@sql)
     @sql_outlines         = get_sql_outlines(@sql)
     @sql_bind_count       = get_sql_bind_count(@instance, @sql_id)
-    @execution_plan_count = get_execution_plan_count(@instance, @sql_id)
+    @execution_plan_count, @plan_object_count = get_execution_plan_count(@instance, @sql_id)
 
     @open_cursors          = get_open_cursor_count(@instance, @sql_id)
     @sql_monitor_reports_count = get_sql_monitor_count(@dbid, @instance, @sql_id, localeDateTime(@sql.first_load_time, :minutes), localeDateTime(Time.now, :minutes))

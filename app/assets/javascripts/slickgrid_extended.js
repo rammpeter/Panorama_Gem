@@ -643,7 +643,7 @@ function SlickGridExtended(container_id, options){
         }
 
         // Check for possible wrap in column to reduce width of grid
-        // TODO: gleichmaessige Reduktion der Spaltenbreiten um Hoehe der umgebrochenen Zellen minimal zu halten
+/*
         for (var col_index in columns) {
             column = columns[col_index];
             if (   current_table_width > current_grid_width                         // Verkleinerung der Breite notwendig?
@@ -660,6 +660,27 @@ function SlickGridExtended(container_id, options){
                 current_table_width -= wrap_diff;
             }
         }
+*/
+
+        var more_wrap_possible = true;                                          // Assume more wraps are possible
+
+        while (current_table_width > current_grid_width && more_wrap_possible) {    // until target width reached or no more reduction possible
+            more_wrap_possible = false;                                         // Assume no wrap is possible until column states the opposite
+            for (var col_index in columns) {
+                column = columns[col_index];
+                if (   current_table_width > current_grid_width                         // Verkleinerung der Breite notwendig?
+                    && column['width']     > column['max_wrap_width']+h_padding         // diese spalte könnte verkleinert werden
+                    && !column['fixedWidth']
+                    && !column['no_wrap']
+                ) {
+                    column['width']--;
+                    current_table_width--;
+                    if (column['width'] > column['max_wrap_width']+h_padding)   // more wrapping is possible in next loop
+                        more_wrap_possible = true;
+                }
+            }
+        }
+
 
         // Evtl. Zoomen der Spalten wenn noch mehr Platz rechts vorhanden
         if (options['width'] === '' || options['width'] === '100%'){                  // automatische volle Breite des Grid
