@@ -1,0 +1,14 @@
+stages:
+- build
+- test
+- deploy
+
+before_script:
+  - ruby -v
+  - which ruby
+
+
+prepare_env:
+  stage: build
+  script:
+    - bundle install
