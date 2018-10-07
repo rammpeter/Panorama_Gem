@@ -72,9 +72,6 @@ class ActiveSupport::TestCase
     raise "Environment-Variable DB_VERSION not set" unless ENV['DB_VERSION']
     Rails.logger.info "#{Time.now} : Starting Test with configuration test_#{ENV['DB_VERSION']}"
 
-    # Array mit Bestandteilen der Vorgabe aus database.yml
-    #test_config = Dummy::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]
-
     test_config = PanoramaTestConfig.test_config
 
     connect_oracle_db_internal(test_config)   # aus lib/test_helpers/oracle_connection_test_helper
@@ -146,8 +143,14 @@ end
 
 class PanoramaTestConfig
   def self.test_config
-    config = Dummy::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]
+    config = Dummy::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]    # use config from database.yml
     raise "test_helper.rb: No test config available in database.yml for DB_VERSION=#{ENV['DB_VERSION']}" if config.nil?
+
+    # Overwrite database.yml by environment if set
+    config[:test_url]       = ENV['TEST_URL']      if  ENV['TEST_URL']
+    config[:test_username]  = ENV['TEST_USERNAME'] if  ENV['TEST_USERNAME']
+    config[:test_password]  = ENV['TEST_PASSWORD'] if  ENV['TEST_PASSWORD']
+
     config
   end
 end
