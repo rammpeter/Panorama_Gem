@@ -4,6 +4,7 @@ stages:
 - deploy
 
 before_script:
+  - cat /etc/*-release
   - ruby -v
   - which ruby
 
