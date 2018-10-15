@@ -383,7 +383,7 @@ column_options =
     %>
   </div>
   <div class="flex-row-element">
-    <%= ajax_submit('Sessions accessing', {
+    <%= ajax_submit("#{fn @sessions_accessing_count} Sessions accessing", {
         :update_area   => @update_area,
         :controller    => :dba,
         :action        => :list_sessions,

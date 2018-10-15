@@ -250,6 +250,8 @@ class DbaSchemaController < ApplicationController
     @object_type = params[:object_type] ? params[:object_type].upcase : nil
     @object_type = nil                            if @object_type == ''
 
+    show_popup_message "Object name must be set! At least with wildcard character (%, _)." if @object_name == ''
+
     case
       when @owner.nil? && @object_type.nil? then
         @objects = sql_select_all ["SELECT DISTINCT Owner, Object_Name, Object_Type FROM DBA_Objects WHERE SubObject_Name IS NULL AND Object_Name LIKE ?", @object_name]
@@ -502,6 +504,15 @@ class DbaSchemaController < ApplicationController
     end
 
     @mv_log_count = sql_select_one ["SELECT COUNT(*) FROM  DBA_MView_Logs WHERE Log_Owner = ? AND Master = ?", @owner, @table_name]
+
+    @sessions_accessing_count = sql_select_one ["SELECT COUNT(*)
+                                                 FROM   GV$Access a
+                                                 LEFT OUTER JOIN GV$PX_Session pqc ON pqc.Inst_ID = a.Inst_ID AND pqc.SID = a.SID
+                                                 WHERE  a.Owner  = ?
+                                                 AND    a.Object = ?
+                                                 AND    a.Type   = ?
+                                                 AND    pqc.QCInst_ID IS NULL /* Session is not a PQ-slave */
+                                                ", @owner, @table_name, @table_type];
 
     @unique_constraints = sql_select_all ["\
       SELECT c.*
@@ -970,6 +981,15 @@ class DbaSchemaController < ApplicationController
     @grants       = get_grant_count(@owner, @object_name)
 
     @attribs = sql_select_all ["SELECT o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, o.Status FROM DBA_Objects o WHERE o.Owner = ? AND o.Object_Name = ? AND o.Object_Type = ?", @owner, @object_name, @object_type]
+
+    @sessions_accessing_count = sql_select_one ["SELECT COUNT(*)
+                                                 FROM   GV$Access a
+                                                 LEFT OUTER JOIN GV$PX_Session pqc ON pqc.Inst_ID = a.Inst_ID AND pqc.SID = a.SID
+                                                 WHERE  a.Owner  = ?
+                                                 AND    a.Object = ?
+                                                 AND    a.Type   = ?
+                                                 AND    pqc.QCInst_ID IS NULL /* Session is not a PQ-slave */
+                                                ", @owner, @object_name, @object_type];
 
     line_no = 1
     @source = "#{line_no.to_s.rjust(5)+'  ' if @show_line_numbers}CREATE OR REPLACE "

@@ -645,12 +645,15 @@ Solution: Execute as user 'SYS':
     if params[:showOnlyDbLink]=="1"
       where_string << " AND UPPER(s.program) like 'ORACLE@%' AND UPPER(s.Program) NOT LIKE 'ORACLE@'||(SELECT UPPER(i.Host_Name) FROM gv$Instance i WHERE i.Inst_ID=s.Inst_ID)||'%' "
     end
-    if params[:object_owner] && params[:object_name]
-      where_string << " AND (s.Inst_ID, s.SID) IN (SELECT /*+ NO_MERGE */ Inst_ID, SID FROM GV$Access WHERE Owner = ? AND Object = ?)"
+    if params[:object_owner] && params[:object_name] && params[:object_owner] != '' && params[:object_name] != ''
+      where_string << " AND (s.Inst_ID, s.SID) IN (SELECT /*+ NO_MERGE */ Inst_ID, SID FROM GV$Access WHERE Owner = ? AND Object = ?"
+      where_string << " AND Type = ?" if params[:object_type] && params[:object_type] != ''
+      where_string << ")"
       where_values << params[:object_owner]
       where_values << params[:object_name]
+      where_values << params[:object_type] if params[:object_type] && params[:object_type] != ''
     end
-    if params[:filter] && params[:filter] != ""
+    if params[:filter] && params[:filter] != ''
       where_string << " AND ("
       where_string << "    TO_CHAR(s.SID)       LIKE '%'||?||'%'";   where_values << params[:filter]
       where_string << " OR TO_CHAR(s.Process)   LIKE '%'||?||'%'";   where_values << params[:filter]

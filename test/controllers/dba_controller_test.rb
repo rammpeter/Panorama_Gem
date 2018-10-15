@@ -52,6 +52,9 @@ class DbaControllerTest < ActionController::TestCase
 
     post :list_sessions, :params => {:format=>:html, :onlyActive=>1, :showOnlyUser=>1, :instance=>1, :filter=>'hugo', :object_owner=>'SYS', :object_name=>'HUGO', :update_area=>:hugo }
     assert_response :success
+
+    post :list_sessions, :params => {:format=>:html, :onlyActive=>1, :showOnlyUser=>1, :instance=>1, :filter=>'hugo', :object_owner=>'SYS', :object_name=>'HUGO', object_type: 'TABLE', :update_area=>:hugo }
+    assert_response :success
   end
 
   test "show_session_detail with xhr: true" do
