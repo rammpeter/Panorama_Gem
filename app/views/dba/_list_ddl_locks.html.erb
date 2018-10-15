@@ -16,6 +16,7 @@
     column_options =
       [
         {:caption=>"Blocking session",  :data=>proc{|rec| link_column_session.call(rec.b_inst_id, rec.b_sid, rec.b_serialno)},  :title=>"Instance : SID, SerialNo of blocking session"},
+        {:caption=>"Blocking status",   :data=>proc{|rec| rec.b_status},                                                   :title=>"Status of blocking session"},
         {:caption=>"Blocking PID",      :data=>proc{|rec| rec.b_pid},                                                      :title=>"Process-ID on DB server of blocking session"},
         {:caption=>"Blocking user",     :data=>proc{|rec| rec.b_user},                                                     :title=>"DB-user of blocking session"},
         {:caption=>"Blocking machine",  :data=>proc{|rec| rec.b_machine},                                                  :title=>"client machine of blocking session"},

@@ -261,6 +261,7 @@ class DbaController < ApplicationController
         hs.Inst_ID                                                  B_Inst_ID,
         hs.SID                                                      B_SID,
         hs.Serial#                                                  B_SerialNo,
+        hs.Status                                                   B_Status,
         hp.spID                                                     B_PID,
         hs.UserName                                                 B_User,
         hs.Machine                                                  B_Machine,
@@ -287,7 +288,7 @@ class DbaController < ApplicationController
       JOIN  GV$session hs                     ON hs.saddr = h.kgllkuse
       JOIN  GV$Process wp                     ON wp.Addr = ws.pAddr AND wp.Inst_ID = ws.Inst_ID
       JOIN  GV$Process hp                     ON hp.Addr = hs.pAddr AND hp.Inst_ID = hs.Inst_ID
-      LEFT OUTER JOIN v$Object_dependency od  ON od.TO_ADDRESS = w.kgllkhdl
+      LEFT OUTER JOIN (SELECT DISTINCT TO_Address, TO_Owner, TO_Name FROM v$Object_dependency) od  ON od.TO_ADDRESS = w.kgllkhdl /* v$Object_dependency may have multiple redundant entries */
       WHERE   (((h.kgllkmod != 0)     and (h.kgllkmod != 1)
       and     ((h.kgllkreq = 0) or (h.kgllkreq = 1)))
       and     (((w.kgllkmod = 0) or (w.kgllkmod= 1))
