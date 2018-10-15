@@ -505,6 +505,7 @@ class DbaSchemaController < ApplicationController
 
     @mv_log_count = sql_select_one ["SELECT COUNT(*) FROM  DBA_MView_Logs WHERE Log_Owner = ? AND Master = ?", @owner, @table_name]
 
+=begin # access on GV$Access is often too slow for usage
     @sessions_accessing_count = sql_select_one ["SELECT COUNT(*)
                                                  FROM   GV$Access a
                                                  LEFT OUTER JOIN GV$PX_Session pqc ON pqc.Inst_ID = a.Inst_ID AND pqc.SID = a.SID
@@ -513,6 +514,7 @@ class DbaSchemaController < ApplicationController
                                                  AND    a.Type   = ?
                                                  AND    pqc.QCInst_ID IS NULL /* Session is not a PQ-slave */
                                                 ", @owner, @table_name, @table_type];
+=end
 
     @unique_constraints = sql_select_all ["\
       SELECT c.*
@@ -982,6 +984,7 @@ class DbaSchemaController < ApplicationController
 
     @attribs = sql_select_all ["SELECT o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, o.Status FROM DBA_Objects o WHERE o.Owner = ? AND o.Object_Name = ? AND o.Object_Type = ?", @owner, @object_name, @object_type]
 
+=begin # access on GV$Access is often too slow for usage
     @sessions_accessing_count = sql_select_one ["SELECT COUNT(*)
                                                  FROM   GV$Access a
                                                  LEFT OUTER JOIN GV$PX_Session pqc ON pqc.Inst_ID = a.Inst_ID AND pqc.SID = a.SID
@@ -990,6 +993,7 @@ class DbaSchemaController < ApplicationController
                                                  AND    a.Type   = ?
                                                  AND    pqc.QCInst_ID IS NULL /* Session is not a PQ-slave */
                                                 ", @owner, @object_name, @object_type];
+=end
 
     line_no = 1
     @source = "#{line_no.to_s.rjust(5)+'  ' if @show_line_numbers}CREATE OR REPLACE "

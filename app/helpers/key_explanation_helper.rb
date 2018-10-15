@@ -183,6 +183,16 @@ module KeyExplanationHelper
       }
       ('A'..'Z').each{|x| @@locktypes["Q#{x}"] = 'Row cache instance (A..Z = cache)'
       }
+
+      if PanoramaConnection.db_version >= '11.1'
+        sql_select_all("SELECT DISTINCT Type, Name, Description FROM v$Lock_Type").each do |lt|
+          if @@locktypes[lt.type]
+            @@locktypes[lt.type] = "#{lt.name}\n#{lt.description}\n(#{@@locktypes[lt.type]})"
+          else
+            @@locktypes[lt.type] = "#{lt.name}\n#{lt.description}"
+          end
+        end
+      end
     end
 
     if @@locktypes[search_lock_type]
