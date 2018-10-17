@@ -460,13 +460,25 @@ module KeyExplanationHelper
           'SQL*Net message to client'         => 'Transfer query result to client during fetch operation',
           'transaction'                       => 'Wait for a blocking transaction to be rolled back. Continue waiting until the transaction has been rolled back.',
        }
-     end
 
-     if @@wait_events[event]
-       @@wait_events[event]
-     else
-       "no explanation available for wait event '#{event}'"
-     end
+      sql_select_all("SELECT e.Name Event, t.Name, t.Description
+                      FROM   v$Event_Name e
+                      JOIN   v$Lock_Type t ON t.Type = SUBSTR(e.Name, 6, 2)
+                      WHERE  e.Name like 'enq:%-%contention'
+                      ").each do |ev|
+        if @@wait_events[ev.event]
+          @@wait_events[ev.event] = "#{ev.name}\n#{ev.description}\n(#{@@wait_events[ev.event]})"
+        else
+          @@wait_events[ev.event] = "#{ev.name}\n#{ev.description}"
+        end
+      end
+    end
+
+    if @@wait_events[event]
+      @@wait_events[event]
+    else
+      "no explanation available for wait event '#{event}'"
+    end
   end
 
   def explain_wait_state(state)

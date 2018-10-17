@@ -5,13 +5,14 @@ class WorkerThread
 
   ############################### class methods as public interface ###############################
   # Check if connection may function and return DBID of database
-  def self.check_connection(sampler_config, controller)
+  # raise_exeption_on_error allows to proceeed without exception
+  def self.check_connection(sampler_config, controller, raise_exeption_on_error = true)
     thread = Thread.new{WorkerThread.new(sampler_config, 'check_connection').check_connection_internal(controller)}
     result = thread.value
     result
   rescue Exception => e
     Rails.logger.error "Exception #{e.message} raised in WorkerThread.check_connection"
-    raise e
+    raise e if raise_exeption_on_error
   end
 
   # Generic create snapshot

@@ -47,10 +47,15 @@ class PanoramaSamplerController < ApplicationController
 
     config_entry = PanoramaSamplerConfig.prepare_saved_entry(config_entry)      # Password encryption called here
 
-    dbid = test_connection(config_entry)
+    if PanoramaSamplerConfig.config_entry_exists?(config_entry[:id])            # entry already saved?
+      org_entry = PanoramaSamplerConfig.get_config_entry_by_id(config_entry[:id]).get_cloned_config_hash  # Test with copy
+      config_entry.replace(org_entry.merge(config_entry))                       # Replace content, but preserve object
+    end
+
+    dbid = WorkerThread.check_connection(PanoramaSamplerConfig.new(config_entry), self, params[:commit] != 'Save')  # Tests connection and writes back some state in config_hash. Ignore exceptions if "Save" pressed
+
     config_entry[:dbid] = dbid unless dbid.nil?                                 # Save dbid if real value
     config_entry[:last_successful_connect] = Time.now unless dbid.nil?
-
 
     if params[:commit] == 'Save'
       store_config(config_entry)  # Should replace instance
@@ -93,15 +98,4 @@ class PanoramaSamplerController < ApplicationController
     list_config
   end
 
-  private
-  # Test connection and store result in entry, return DBID or nil in case of connect error
-  def test_connection(config_hash)
-    if PanoramaSamplerConfig.config_entry_exists?(config_hash[:id])            # entry already saved?
-      org_entry = PanoramaSamplerConfig.get_config_entry_by_id(config_hash[:id]).get_cloned_config_hash  # Test with copy
-      config_hash.replace(org_entry.merge(config_hash))                       # Replace content, but preserve object
-    end
-
-    dbid = WorkerThread.check_connection(PanoramaSamplerConfig.new(config_hash), self)  # Writes back some state in config_hash
-    dbid
-  end
 end
