@@ -1,4 +1,4 @@
-require 'PanoramaSamplerConfig'
+require 'panorama_sampler_config'
 
 class PanoramaSamplerJob < ApplicationJob
   include ExceptionHelper
