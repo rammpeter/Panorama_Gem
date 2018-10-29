@@ -160,7 +160,7 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_Log;
 
-  PROCEDURE Snap_Memory_Resize_Ops(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  PROCEDURE Snap_Memory_Resize_Ops(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER, p_Begin_Interval_Time IN DATE) IS
   BEGIN
     INSERT INTO Panorama_Memory_Resize_Ops (SNAP_ID, DBID, INSTANCE_NUMBER, COMPONENT, OPER_TYPE, START_TIME, END_TIME, TARGET_SIZE,
                                             OPER_MODE, PARAMETER, INITIAL_SIZE, FINAL_SIZE, STATUS, CON_DBID, CON_ID
@@ -168,6 +168,7 @@ END Panorama_Sampler_Snapshot;
              OPER_MODE, PARAMETER, INITIAL_SIZE, FINAL_SIZE, STATUS,
              p_Con_DBID, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
       FROM   v$Memory_Resize_Ops
+      WHERE  End_Time >= p_Begin_Interval_Time  /* Resize ended in considered snapshot period */
     ;
   END Snap_Memory_Resize_Ops;
 
@@ -686,7 +687,7 @@ END Panorama_Sampler_Snapshot;
     Snap_IOStat_Filetype      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Latch                (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
-    Snap_Memory_Resize_Ops    (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_Memory_Resize_Ops    (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID,     p_Begin_Interval_Time);
     Snap_Metric_Name          (p_DBID,      p_Con_DBID);
     Snap_Parameter            (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_PGAStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
