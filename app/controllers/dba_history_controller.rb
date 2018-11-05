@@ -1907,6 +1907,8 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
   def list_performance_hub_report
     save_session_time_selection   # werte in session puffern
     @instance  = prepare_param_instance
+    @realtime  = params[:realtime] == '1'
+    @top_n     = params[:top_n].to_i
 
 
     if params[:download_oracle_com_reachable] != 'true'
@@ -1915,18 +1917,22 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
 
       @report = sql_select_one ["\
         SELECT DBMS_PERF.REPORT_PERFHUB(
-                                 Is_RealTime          => NULL,
-                                 Outer_Start_Time     => TO_DATE(?, '#{sql_datetime_minute_mask}'),
-                                 Outer_End_Time       => TO_DATE(?, '#{sql_datetime_minute_mask}'),
-                                 Selected_Start_Time  => TO_DATE(?, '#{sql_datetime_minute_mask}'),
-                                 Selected_End_Time    => TO_DATE(?, '#{sql_datetime_minute_mask}'),
-                                 DBID                 => ?,
-                                 Report_Level         => 'typical',
-                                 Type                 => 'ACTIVE'
-                                 #{", Inst_ID         => ?" if @instance}
+                                 Is_RealTime            => #{@realtime ? '1' : 'NULL'},
+                                 Outer_Start_Time       => TO_DATE(?, '#{sql_datetime_minute_mask}'),
+                                 Selected_Start_Time    => TO_DATE(?, '#{sql_datetime_minute_mask}'),
+                                 DBID                   => ?,
+                                 Monitor_List_Detail    => ?,
+                                 Workload_SQL_Detail    => ?,
+                                 Report_Level           => 'typical',
+                                 Type                   => 'ACTIVE'
+                                 #{", Inst_ID           => ?" if @instance}
+                                 #{", Outer_End_Time    => TO_DATE(?, '#{sql_datetime_minute_mask}'),
+                                      Selected_End_Time => TO_DATE(?, '#{sql_datetime_minute_mask}')" if !@realtime}
                                 )
         FROM DUAL
-        ", @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end, get_dbid].concat(@instance ? [@instance] : [])
+        ", @time_selection_start, @time_selection_start, get_dbid, @top_n, @top_n]
+                                   .concat(@instance ? [@instance] : [])
+                                   .concat(@realtime ? [] : [@time_selection_end, @time_selection_end])
     end
 
     render :html => @report.html_safe

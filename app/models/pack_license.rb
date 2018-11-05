@@ -115,6 +115,7 @@ class PackLicense
         'DBMS_WORKLOAD_REPOSITORY',
         'DBMS_ADDM',
         'DBMS_ADVISOR',
+        'DBMS_PERF',
         'DBMS_WORKLOAD_REPLAY',                                                 # DIAGNOSTIC PACK if advisor_name => ADDM OR task_name LIKE ADDM% TUNING PACK - where advisor_name => SQL Tuning Advisor
         'MGMT$ALERT_',
         'MGMT$AVAILABILITY_',

@@ -5,6 +5,11 @@
   <div class="flex-row-container">
     <%= include_start_end_timepicker %>
     <%= instance_tag %>
+    <div class="flex-row-element" title="Show realtime statistics (until now)\nEnd date is ignored in this case.\nIf start date is set too low realtime report may end in ORA-31011">
+      Realtime?
+      <%= check_box_tag(:realtime, 1, false) %>
+    </div>
+
     <div class="flex-row-element" title="Number of elements in Top N list for SQLs and sessions">
       Top N
       <%= text_field_tag(:top_n, 10, size: 3, style: "text-align:right;") %>
