@@ -6,13 +6,9 @@
 <%= ajax_form(:controller => :dba, :action => :list_server_logs, :update_area => @update_area) do %>
   <div class="flex-row-container">
     <%= include_start_end_timepicker('default', "Caution: For client and database in different timezones:\nThis value is sometimes interpreted as local client time, not database time like shown in result column 'Time'") %>
-
     <!--
     Nicht sinnvoll so lange Daten nur von aktueller Instance gezogen werden
-    <div class="flex-row-element" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
-      Instance
-      <%= text_field_tag(:instance, read_from_client_info_store(:instance), :size=>1) %>
-    </div>
+    <%= instance_tag %>
     -->
 
     <div class="flex-row-element" title="Select type of log to consider">

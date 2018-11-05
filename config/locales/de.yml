@@ -18,11 +18,12 @@
   grouping_hint:                                            Gruppierung der Anzeige nach Attribut
   help:                                                     Hilfe
   hour:                                                     Stunde
-  instance_optional_filter_hint:                            Einschränkung/Filterung auf RAC-Instance (optional)
+  instance_filter_hint:                                     Einschränkung/Filterung auf RAC-Instance
   last_occurrence_caption:                                  Letztes Auftreten
   last_occurrence_hint:                                     Letztes Auftreten im betrachteten Zeitraum
   link_historic_sql_id_coming_soon:                         Hier erscheint gleich der Text des SQL, bitte Maus erneut über Objekt führen
   link_historic_sql_id_hint_prefix:                         Anzeige der Details des
+  mandatory:                                                Erforderlich
   minute:                                                   Minute
   moeglicher:                                               möglicher
   month:                                                    Monat

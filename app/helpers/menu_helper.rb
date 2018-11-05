@@ -81,17 +81,21 @@ module MenuHelper
                 ]
             },
             {:class=> 'item', :caption=>t(:menu_wait_resource_limits_historic_caption, :default=> 'Resource limits historic'),      :controller=> 'dba_history',  :action=> 'show_resource_limits_historic',    :hint=>t(:menu_wait_resource_limits_historic_hint, :default=> 'Historic resource usage and resource limits from DBA_Hist_Resource_Limit') },
-            { :class=> 'menu', :caption=>t(:menu_wait_special_caption, :default=> 'Special event analysis'), :content=>[
-                {:class=> 'item', :caption=> 'Latch: cache buffer chains',:controller=>:dba,  :action=> 'latch_cache_buffers_chains',   :hint=>t(:menu_wait_latch_cbc_hint, :default=>"Current reasons for 'cache buffer chains' latch-waits")  },
-                {:class=> 'item', :caption=> 'db file sequential read',   :controller=>:dba,  :action=> 'wait_db_file_sequential_read', :hint=>t(:menu_wait_db_file_sequential_read_hint, :default=>"Current reasons for 'db file sequential read' waits (Attention: large response time at large systems)") },
-                ]
-            },
             { :class=> 'menu', :caption=> 'Genuine Oracle AWR-reports', :content=>[
+                ].concat(get_db_version >= '12.1' ? [
+                {:class=> 'item', :caption=>'Performance Hub',            :controller=>:dba_history,    :action=> 'show_performance_hub_report',     :hint=>'Genuine Oracle performance hub report by time period and instance' },
+                ] : [])
+                .concat([
                 {:class=> 'item', :caption=>'AWR report',                 :controller=>:dba_history,    :action=> 'show_awr_report',          :hint=>'Genuine Oracle active workload repository report by time period and instance' },
                 {:class=> 'item', :caption=>'AWR global report (RAC)',    :controller=>:dba_history,    :action=> 'show_awr_global_report',   :hint=>'Genuine Oracle active workload repository global report for RAC by time period and instance (optional)' },
                 {:class=> 'item', :caption=>'ASH report',                 :controller=>:dba_history,    :action=> 'show_ash_report',          :hint=>'Genuine Oracle active session history report by time period and instance' },
                 {:class=> 'item', :caption=>'ASH global report (RAC)',    :controller=>:dba_history,    :action=> 'show_ash_global_report',   :hint=>'Genuine Oracle active session history global report for RAC by time period and instance (optional)' },
-                ]
+                ])
+            },
+            { :class=> 'menu', :caption=>t(:menu_wait_special_caption, :default=> 'Special event analysis'), :content=>[
+                {:class=> 'item', :caption=> 'Latch: cache buffer chains',:controller=>:dba,  :action=> 'latch_cache_buffers_chains',   :hint=>t(:menu_wait_latch_cbc_hint, :default=>"Current reasons for 'cache buffer chains' latch-waits")  },
+                {:class=> 'item', :caption=> 'db file sequential read',   :controller=>:dba,  :action=> 'wait_db_file_sequential_read', :hint=>t(:menu_wait_db_file_sequential_read_hint, :default=>"Current reasons for 'db file sequential read' waits (Attention: large response time at large systems)") },
+            ]
             },
             ]
         },

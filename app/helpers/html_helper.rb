@@ -27,6 +27,15 @@ module HtmlHelper
     ".html_safe
   end
 
+  def instance_tag(required = false)
+    instance = read_from_client_info_store(:instance)
+    instance = 1 if instance.nil? && required
+
+    "<div class='flex-row-element' title='#{t(:instance_filter_hint, default: 'Filter on specific RAC instance')} (#{required ? "#{t(:mandatory, default: 'mandatory')}" : 'Optional'})'>
+       Instance
+       #{text_field_tag(:instance, instance, size: 1, style: "text-align:right;")}
+    </div>".html_safe
+  end
 
 end
 

@@ -15,11 +15,7 @@
       <%= text_field_tag(:filter, "", :size=>30) %>
     </div>
 
-    <div class="flex-row-element" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
-      Instance
-      <%= text_field_tag(:instance, read_from_client_info_store(:instance), :size=>1) %>
-    </div>
-
+    <%= instance_tag %>
     <div class="flex-row-element" title="<%= t(:sqlid_optional_filter_hint, :default=>'Filter on specific SQL-ID (optional, wildcards (%,_) can be used)') %>">
       SQL-ID
       <%= text_field_tag(:sql_id, "", :size=>14) %>

@@ -6,11 +6,7 @@
 <%= ajax_form(:controller=>:active_session_history, :action=>:first_list_temp_usage_historic, :update_area=>@update_area) do %>
   <div class="flex-row-container">
     <%= include_start_end_timepicker %>
-
-    <div class="flex-row-element" title="Filter on RAC-Instance (optional)">
-      Instance
-      <%= text_field_tag(:instance, "", :size=>1) %>
-    </div>
+    <%= instance_tag %>
 
     <div class="flex-row-element" title="Number of seconds for fuzzy determination of max. values per session and timestamp.
     Maximum values per session plus/minus x seconds are considered to bypass the inaccuracy due to resource claiming by inactive sessions

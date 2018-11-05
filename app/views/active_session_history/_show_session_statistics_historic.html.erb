@@ -11,11 +11,7 @@
       <%= check_box_tag(:idle_waits, 1, false) %>
     </div>
 
-    <div class="flex-row-element" title="Filter on RAC-Instance (optional)">
-      Instance
-      <%= text_field_tag(:instance, "", :size=>1) %>
-    </div>
-
+    <%= instance_tag %>
     <div class="flex-row-element" title="<%= t(:grouping_hint, :default=>'Group listing by attribute') %>">
       <%= t(:grouping, :default=>'Grouping')%>
       <select name="groupby">

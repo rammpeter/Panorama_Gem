@@ -5,10 +5,7 @@
 <%= ajax_form(:controller=>:dba_sga, :action=>:list_db_cache_advice_historic, :update_area=>@update_area)  do %>
   <div class="flex-row-container">
     <%= include_start_end_timepicker %>
-    <div class="flex-row-element" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
-      Instance
-      <%= text_field_tag(:instance, read_from_client_info_store(:instance), :size=>1) %>
-    </div>
+    <%= instance_tag %>
     <div class="flex-row-element">
       <%= submit_tag("Show", :title => "Show historic DB-cache advices") %>
     </div>

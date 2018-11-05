@@ -1904,6 +1904,34 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
 
   public
 
+  def list_performance_hub_report
+    save_session_time_selection   # werte in session puffern
+    @instance  = prepare_param_instance
+
+
+    if params[:download_oracle_com_reachable] != 'true'
+      @report = "ERROR:<br/>URL https://download.oracle.com is not available for your browser instance!<br/>Cannot load Flash content of performance hub report from this URL!"
+    else
+
+      @report = sql_select_one ["\
+        SELECT DBMS_PERF.REPORT_PERFHUB(
+                                 Is_RealTime          => NULL,
+                                 Outer_Start_Time     => TO_DATE(?, '#{sql_datetime_minute_mask}'),
+                                 Outer_End_Time       => TO_DATE(?, '#{sql_datetime_minute_mask}'),
+                                 Selected_Start_Time  => TO_DATE(?, '#{sql_datetime_minute_mask}'),
+                                 Selected_End_Time    => TO_DATE(?, '#{sql_datetime_minute_mask}'),
+                                 DBID                 => ?,
+                                 Report_Level         => 'typical',
+                                 Type                 => 'ACTIVE'
+                                 #{", Inst_ID         => ?" if @instance}
+                                )
+        FROM DUAL
+        ", @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end, get_dbid].concat(@instance ? [@instance] : [])
+    end
+
+    render :html => @report.html_safe
+  end
+
   def list_awr_report_html
     save_session_time_selection   # werte in session puffern
     @instance  = prepare_param_instance
@@ -2244,8 +2272,10 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     sql_id      = params[:sql_id]
     sql_exec_id = params[:sql_exec_id]
     origin      = params[:origin]
+    download_oracle_com_reachable = params[:download_oracle_com_reachable] == 'true'
 
-    # Check availability of internet access
+=begin
+    # Check availability of internet access, moved to browser
     oracle_host = 'download.oracle.com'
 
     if RbConfig::CONFIG['host_os'] =~ /mswin/
@@ -2255,10 +2285,12 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     end
 
     #pingable =  Net::Ping::HTTP.new(oracle_host).ping
-    if  pingable
+
+=end
+    if  download_oracle_com_reachable
       type = 'ACTIVE'                                                               # Active content with download from oracle
     else
-      Rails.logger.error "SQL Monitor report type switched from ACTIVE to HTTP because host '#{oracle_host}' is unreachable"
+      Rails.logger.error "SQL Monitor report type switched from ACTIVE to HTTP because host 'download.oracle.com' is unreachable"
       type = 'HTML'                                                             # Static content without download from oracle
     end
 

@@ -14,10 +14,7 @@
       <%= text_field_tag(:filter, "", :size=>50) %>
     </div>
 
-    <div class="flex-row-element" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
-      Instance
-      <%= text_field_tag(:instance, "", :size=>1) %>
-    </div>
+    <%= instance_tag %>
 
     <div class="flex-row-element" title="<%= t(:dba_sga_show_sql_area_user_hint, :default=>'Filter result on username at cursor creation') %>">
       User

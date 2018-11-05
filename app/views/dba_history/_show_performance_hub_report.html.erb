@@ -1,0 +1,35 @@
+<%= render_page_caption("Generate genuine Oracle performance hub report") %>
+
+
+<%= form_tag(url_for(:controller=>:dba_history, :action=>:list_performance_hub_report, :browser_tab_id=>@browser_tab_id), {:method => 'post', :target=>'_blank'}) do %>
+  <div class="flex-row-container">
+    <%= include_start_end_timepicker %>
+    <%= instance_tag %>
+    <div class="flex-row-element" title="Number of elements in Top N list for SQLs and sessions">
+      Top N
+      <%= text_field_tag(:top_n, 10, size: 3, style: "text-align:right;") %>
+    </div>
+    <div class="flex-row-element">
+      <%= hidden_field_tag('download_oracle_com_reachable', 'false') %>
+      <%= submit_tag('Generate performance hub report', :title =>"Generate performance hub report by executing DBMS_PERF.REPORT_PERFHUB\nRequires the role DBA or EM_EXPRESS_BASIC for the connected user", onclick: "on_submit_click();") %>
+    </div>
+  </div>
+<% end %>
+
+<script text="javascript">
+    var download_oracle_com_reachable = false;                                    // Flag for visibility of download.oracle.com by browser
+
+    function on_iframe_load(){
+        download_oracle_com_reachable = true;                                     // successful loaded remote URL download.oracle.com in iframe
+    }
+
+    function on_submit_click(){
+        jQuery('#download_oracle_com_reachable').val(download_oracle_com_reachable); // store state in all hidden inputs at submit click
+    }
+
+</script>
+
+<!-- load download.oracle.com in iframe to check if it is reachable -->
+<iframe src="https://download.oracle.com" onload="on_iframe_load()" style="display: none;"></iframe>
+
+

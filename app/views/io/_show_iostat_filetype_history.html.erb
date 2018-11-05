@@ -4,11 +4,7 @@
   <div class="flex-row-container">
 
     <%= include_start_end_timepicker %>
-
-    <div class="flex-row-element" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
-      Instance
-      <%= text_field_tag(:instance, "", :size=>1) %>
-    </div>
+    <%= instance_tag %>
     <div class="flex-row-element">
       <%= t(:grouping, :default=>"Grouped by") %>
     </div>

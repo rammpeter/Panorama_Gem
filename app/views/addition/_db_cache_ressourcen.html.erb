@@ -9,10 +9,7 @@
       <%= text_field_tag(:maxResultCount, "100", :size=>5, :title => "Maximum number of rows in result list ordered by used blocks in cache") %>
     </div>
     <%= include_start_end_timepicker %>
-    <div class="flex-row-element" title="<%= t(:instance_optional_filter_hint, :default=>'Filter on specific RAC instance (optional)') %>">
-      Instance
-      <%= text_field_tag(:instance, read_from_client_info_store(:instance), :size=>1) %>
-    </div>
+    <%= instance_tag %>
     <div class="flex-row-element">
       Partitions
       <%= check_box_tag(:show_partitions, 1, false, :title=>"Show detailed partition info ?\nOr sum partition values per table/index otherwise") %>

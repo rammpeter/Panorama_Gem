@@ -8,10 +8,7 @@
       Suppress Idle-Waits
       <%= check_box_tag(:suppress_idle_waits, 1, true, :title=>"Suppress wait-class 'Idle' in result") %>
     </div>
-    <div class="flex-row-element">
-      RAC-Instance
-      <%= text_field_tag(:instance, read_from_client_info_store(:instance), :size=>3, :title => "RAC-Instance") %>
-    </div>
+    <%= instance_tag %>
     <div class="flex-row-element">
       <%= submit_tag("Show System-Events", :title => "Show System-Events") %>
     </div>
