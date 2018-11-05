@@ -251,6 +251,11 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
       [:diagnostics_pack, :diagnostics_and_tuning_pack].include? management_pack_license
     end
 
+    [nil, 1].each do |instance|
+      post '/dba_history/list_performance_hub_report', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>instance }
+      assert_response management_pack_license_ok? ? :success : :error
+    end
+
     post '/dba_history/list_awr_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
     assert_response management_pack_license_ok? ? :success : :error
 
