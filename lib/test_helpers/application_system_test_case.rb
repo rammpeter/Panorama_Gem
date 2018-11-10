@@ -7,6 +7,8 @@ Capybara.register_driver :headless_chrome do |app|
   args = ['window-size=1400,1000']                                              # window must be large enough in Y-dimension to paint full menu
   args.concat %w[headless disable-gpu] if RbConfig::CONFIG['host_os'] != 'darwin' # run headless if not Mac-OS
 
+  args.concat ["enable-logging", "verbose", "log-path=/tmp/chromedriver.log"]   # don't suppress chromedriver_helper log output
+
   capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
       chromeOptions: { args: args }
   )
