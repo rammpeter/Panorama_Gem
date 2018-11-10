@@ -14,7 +14,8 @@ Capybara.register_driver :headless_chrome do |app|
   Capybara::Selenium::Driver.new(
       app,
       browser: :chrome,
-      desired_capabilities: capabilities
+      desired_capabilities: capabilities,
+      driver_opts: { port_server: 9215}     # pin chromedriver to use port 9215
   )
 end
 
