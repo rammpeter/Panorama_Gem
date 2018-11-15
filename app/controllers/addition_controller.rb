@@ -728,6 +728,7 @@ class AdditionController < ApplicationController
   end
 
   def list_object_increase_timeline
+    @update_area = get_unique_area_id
     groupby = params[:gruppierung][:tag]
 
     @tablespace_name = nil                                                      # initialization
@@ -751,12 +752,6 @@ class AdditionController < ApplicationController
                             @time_selection_start, @time_selection_end
                            ].concat(@whereval)
 
-
-    column_options =
-        [
-            {:caption=>"Datum",           :data=>proc{|rec| localeDateTime(rec.gather_date)},   :title=>"Zeitpunkt der Aufzeichnung der Größe"},
-        ]
-
     @sizes = []
     columns = {}
     record = {:gather_date=>sizes[0].gather_date} if sizes.length > 0   # 1. Record mit Vergleichsdatum
@@ -773,24 +768,50 @@ class AdditionController < ApplicationController
     end
     @sizes << record if sizes.length > 0  # letzten Record sichern
 
+    link_mbytes = proc do |rec, key, value|
+      ajax_link(fn(value, 2), {
+          action:               :list_object_increase_objects_per_time,
+          gather_date:          localeDateTime(rec[:gather_date]),
+          groupby =>            key,                                            # filter criteria for column
+          Tablespace_Name:      @tablespace_name,                               # optional filter criteria from previous dialog
+          Owner:                @schema_name,                                   # optional filter criteria from previous dialog
+          time_selection_start: @time_selection_start,
+          time_selection_end:   @time_selection_end,
+          update_area:          @update_area
+      }, :title=>"Show objects of this column for gather date and selection criterias")
+    end
+
+    link_total_mbytes = proc do |rec|
+      ajax_link(fn(rec[:total], 2), {
+          action:               :list_object_increase_objects_per_time,
+          gather_date:          localeDateTime(rec[:gather_date]),
+          Tablespace_Name:      @tablespace_name,                               # optional filter criteria from previous dialog
+          Owner:                @schema_name,                                   # optional filter criteria from previous dialog
+          time_selection_start: @time_selection_start,
+          time_selection_end:   @time_selection_end,
+          update_area:          @update_area
+      }, :title=>"Show all objects for gather date and selection criterias")
+    end
+
+
     column_options =
         [
-            {:caption=>"Datum",           :data=>proc{|rec| localeDateTime(rec[:gather_date])},   :title=>"Zeitpunkt der Aufzeichnung der Größe", :plot_master_time=>true},
-            {:caption=>"Total MB",        :data=>proc{|rec| formattedNumber(rec[:total], 2)},        :title=>"Größe Total in MB", :align=>"right" }
+            {:caption=>"Gather date",     :data=>proc{|rec| localeDateTime(rec[:gather_date])},   :title=>"Timestamp of object size snapshot", :plot_master_time=>true},
+            {:caption=>"Total MB",        :data=>link_total_mbytes,                               :title=>"Total size for filter criterias in MBytes", :align=>"right" }
         ]
 
     columns.each do |key, value|
-      column_options << {:caption=>key, :data=>proc{|rec| fn(rec[key], 2)}, :title=>"Size for #{key} in MB", :align=>"right" }
+      column_options << {:caption=>key, :data=>proc{|rec| link_mbytes.call(rec, key, rec[key])}, :title=>"Size for #{key} in MB", :align=>"right" }
     end
 
     output = gen_slickgrid(@sizes, column_options, {
         :multiple_y_axes  => false,
         :show_y_axes      => true,
-        :plot_area_id     => :list_object_increase_timeline_diagramm,
+        :plot_area_id     => @update_area,
         :max_height       => 450,
         :caption          => "Size evolution over time grouped by #{groupby} from #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes#{", Tablespace='#{@tablespace_name}'" if @tablespace_name}#{", Schema='#{@schema_name}'" if @schema_name}"
     })
-    output << "</div><div id='list_object_increase_timeline_diagramm'></div>".html_safe
+    output << "</div><div id='#{@update_area}'></div>".html_safe
 
 
     respond_to do |format|
@@ -801,6 +822,43 @@ class AdditionController < ApplicationController
   def time_for_object_increase
     @owner = params[:owner]
     @name  = params[:name]
+    render_partial
+  end
+
+  def list_object_increase_objects_per_time
+    save_session_time_selection
+    @gather_date     = prepare_param(:gather_date)
+
+    @segment_type    = prepare_param(:Segment_Type)
+    @owner           = prepare_param(:Owner)
+    @tablespace_name = prepare_param(:Tablespace_Name)
+
+    where_string = ''
+    where_values = []
+
+    if @segment_type
+      where_string << " AND Segment_Type = ?"
+      where_values << @segment_type
+    end
+
+    if @owner
+      where_string << " AND Owner = ?"
+      where_values << @owner
+    end
+
+    if @tablespace_name
+      where_string << " AND Tablespace_Name = ?"
+      where_values << @tablespace_name
+    end
+
+    @objects = sql_select_all ["\
+      SELECT *
+      FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
+      WHERE  Gather_Date = TO_DATE(?, '#{sql_datetime_second_mask}')
+      #{where_string}
+      ORDER BY Bytes DESC
+      ", @gather_date ].concat(where_values)
+
     render_partial
   end
 

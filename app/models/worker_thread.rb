@@ -167,7 +167,7 @@ class WorkerThread
 
       @sampler_config.last_successful_connect(domain, PanoramaConnection.instance_number) # Set after first successful SQL
 
-      PanoramaSamplerStructureCheck.do_check(@sampler_config, :AWR) if domain == :AWR   # Check data structure preconditions, but nor for ASH-tables
+      PanoramaSamplerStructureCheck.do_check(@sampler_config, domain);          # Check data structure preconditions, but nor for ASH-tables
 
       PanoramaSamplerSampling.do_sampling(@sampler_config, snapshot_time, domain)  # Do Sampling
       PanoramaSamplerSampling.do_housekeeping(@sampler_config, false, domain)   # Do housekeeping without shrink space
