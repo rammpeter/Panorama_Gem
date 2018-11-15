@@ -449,8 +449,8 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
             'diagram_save_to_image_hint': {
                 'en': 'Save complete chart to image',
                 'de': 'Speichern des ganzen Diagrammes als Bild'
-            },
-        }
+            }
+        };
     }
 
 } // plot_diagram
