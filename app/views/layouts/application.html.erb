@@ -24,8 +24,15 @@
 
     /* Initialisierung von Objekten bei startup der Seite */
 
-    // jQuery(document).ready(function(){
-    document.addEventListener("DOMContentLoaded", function(event) {             // alternative to jQuery for IE to work
+    var jQuery_sleep_count = 0;
+
+    while (typeof jQuery == 'undefined' && jQuery_sleep_count < 10000000){
+        jQuery_sleep_count++;
+    }
+    if (jQuery_sleep_count >= 10000000)
+        console.log('jQuery not available within loop');
+
+    jQuery(document).ready(function(){
       bind_ajax_callbacks();                                                    // Callbacks für jeden Ajax-Aufruf binden
       jQuery("#ajax_indicator").dialog({
         dialogClass: "no-close",
