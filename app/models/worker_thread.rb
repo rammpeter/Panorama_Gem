@@ -132,12 +132,15 @@ class WorkerThread
     Rails.logger.info "#{Time.now}: ASH daemon terminated for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}'"
   rescue Exception => e
     begin
-      Rails.logger.error("Error #{e.message} during WorkerThread.create_ash_sampler_daemon for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})")
+      Rails.logger.error("Error #{e.message} during WorkerThread.create_ash_sampler_daemon (1st try) for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})")
       log_exception_backtrace(e, 20) if ENV['RAILS_ENV'] != 'test'
-      @sampler_config.set_error_message("Error #{e.message} during WorkerThread.create_ash_sampler_daemon")
-      raise e
+
+      PanoramaSamplerSampling.exec_shrink_space('Internal_V$Active_Sess_History')   # try to shrink size of object
+      PanoramaSamplerSampling.run_ash_daemon(@sampler_config, snapshot_time)    # Try again to execute sampler
+
     rescue Exception => x
-      Rails.logger.error "WorkerThread.create_ash_sampler_daemon: Exception #{x.message} in exception handler"
+      @sampler_config.set_error_message("Error #{x.message} during WorkerThread.create_ash_sampler_daemon (2nd retry)")
+      Rails.logger.error "WorkerThread.create_ash_sampler_daemon: Exception #{x.message} in exception handler (2nd try) for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})"
       log_exception_backtrace(x, 40)
       raise x
     end

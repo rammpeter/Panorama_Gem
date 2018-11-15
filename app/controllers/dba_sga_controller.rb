@@ -893,6 +893,7 @@ class DbaSgaController < ApplicationController
               s.Executions, s.Fetches, TO_DATE(s.First_Load_Time, 'YYYY-MM-DD/HH24:MI:SS') First_load_time,
               s.Parsing_Schema_Name,
               TO_DATE(s.Last_Load_Time, 'YYYY-MM-DD/HH24:MI:SS') last_load_time,
+              s.Last_Active_Time,
               s.ELAPSED_TIME/1000000 ELAPSED_TIME_SECS,
               (s.ELAPSED_TIME/1000000) / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS) ELAPSED_TIME_SECS_PER_EXECUTE,
               ROUND(s.CPU_TIME / 1000000, 3) CPU_TIME_SECS,
