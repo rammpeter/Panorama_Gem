@@ -385,12 +385,16 @@ class DbaSchemaController < ApplicationController
                                 WHERE t.Owner = ? AND t.Table_Name = ?
                                ", @owner, @table_name, @owner, @table_name]
 
+    if sql_select_one("SELECT COUNT(1) FROM All_Views WHERE View_Name = 'DBA_XML_TABLES'") > 0 # View exists and is readable (only if XMLDB is installed)
+      @xml_attribs = sql_select_all ["\
+        SELECT t.*
+        FROM DBA_XML_Tables t
+        WHERE t.Owner = ? AND t.Table_Name = ?
+        ", @owner, @table_name]
+    else
+      @xml_attribs = []
+    end
 
-    @xml_attribs = sql_select_all ["\
-      SELECT t.*
-      FROM DBA_XML_Tables t
-      WHERE t.Owner = ? AND t.Table_Name = ?
-      ", @owner, @table_name]
 
     @comment = sql_select_one ["SELECT Comments FROM DBA_Tab_Comments WHERE Owner = ? AND Table_Name = ?", @owner, @table_name]
 
