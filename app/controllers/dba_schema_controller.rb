@@ -385,6 +385,7 @@ class DbaSchemaController < ApplicationController
                                 WHERE t.Owner = ? AND t.Table_Name = ?
                                ", @owner, @table_name, @owner, @table_name]
 
+
     if sql_select_one("SELECT COUNT(1) FROM All_Views WHERE View_Name = 'DBA_XML_TABLES'") > 0 # View exists and is readable (only if XMLDB is installed)
       @xml_attribs = sql_select_all ["\
         SELECT t.*
