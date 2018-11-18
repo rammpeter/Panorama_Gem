@@ -7,18 +7,21 @@ Capybara.register_driver :headless_chrome do |app|
   args = ['window-size=1400,1000']                                              # window must be large enough in Y-dimension to paint full menu
   args.concat %w[headless disable-gpu] if RbConfig::CONFIG['host_os'] != 'darwin' # run headless if not Mac-OS
   args.concat ['--no-sandbox']                                                  # allow running chrome as root in docker
-  args.concat ["enable-logging", "verbose", "log-path=/tmp/chromedriver.log"]   # don't suppress chromedriver_helper log output
+  args.concat ["--enable-logging", "--verbose", "--log-path=chromedriver.log"]   # don't suppress chromedriver_helper log output
 
   capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
+      loggingPrefs: {browser: 'ALL', driver: 'DEBUG'},                           # Activate logging by selenium webdriver
       chromeOptions: { args: args }
   )
 
+  $DEBUG = true                                                                 # Enable debug logging in selenium-webdriver/lib/selenium/webdriver/common/logger.rb
   Capybara::Selenium::Driver.new(
       app,
       browser: :chrome,
       desired_capabilities: capabilities,
-      driver_opts: { port_server: 9215}     # pin chromedriver to use port 9215
+      driver_opts: { port_server: 9215, logLevel: :debug}     # pin chromedriver to use port 9215
   )
+
 end
 
 
