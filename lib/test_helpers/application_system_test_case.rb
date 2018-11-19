@@ -14,16 +14,15 @@ Capybara.register_driver :headless_chrome do |app|
       chromeOptions: { args: args }
   )
 
-  $DEBUG = true                                                                 # Enable debug logging in selenium-webdriver/lib/selenium/webdriver/common/logger.rb
+  # Enable debug by "$DEBUG = true" or by environment variable "export DEBUG=1"
+  # This drives debug logging in selenium-webdriver/lib/selenium/webdriver/common/logger.rb
   Capybara::Selenium::Driver.new(
       app,
       browser: :chrome,
       desired_capabilities: capabilities,
       driver_opts: { port_server: 9215, logLevel: :debug}     # pin chromedriver to use port 9215
   )
-
 end
-
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   #driven_by :selenium, using: :chrome, screen_size: [2560, 1440]
