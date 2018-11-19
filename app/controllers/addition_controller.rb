@@ -926,12 +926,6 @@ class AdditionController < ApplicationController
 
   end
 
-  def show_sql_worksheet
-    puts "######################## Rails.application.config.assets.paths #################################"
-    puts Rails.application.config.assets.paths.inspect
-    render_partial
-  end
-
   def exec_worksheet_sql
     @sql_statement = params[:sql_statement]
     @res = sql_select_all @sql_statement

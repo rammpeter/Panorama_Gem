@@ -46,9 +46,9 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
     begin
       visit root_path                                                             # /env/index
-      puts "Next step after calling visit root_path"
-    rescue
-      puts "Exception catched from calling visit root_path"
+    rescue Exception => e
+      puts "Exception '#{e.message}' catched from calling visit root_path"
+      raise e
     end
 
     begin
@@ -156,13 +156,11 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   def click_first_xpath_hit(xpath_expression, comment, tag = 'a')
     xpath_object = page.first(:xpath, xpath_expression)
     raise "xpath expression not found\n#{xpath_expression}\n#{comment}" if xpath_object.nil?
-puts "xpath_object.path = #{xpath_object.path}"
     tag_object = xpath_object.first(tag)
 
     raise "tag '#{tag}' in xpath expression not found\n#{xpath_expression}\n#{comment}" if tag_object.nil?
     raise "tag '#{tag}' in xpath expression not visible\n#{xpath_expression}\n#{comment}" if !tag_object.visible?
 
-puts "tag_object.path = #{tag_object.path}"
     tag_object.click
     assert_ajax_success
   rescue Exception => e

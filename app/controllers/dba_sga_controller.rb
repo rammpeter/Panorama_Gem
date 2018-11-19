@@ -1155,6 +1155,7 @@ class DbaSgaController < ApplicationController
 
   def list_result_cache_dependencies_by_name
     @instance   = params[:instance]
+    @id         = prepare_param(:id)
     @status     = params[:status]
     @name       = params[:name]
     @namespace  = params[:namespace]
