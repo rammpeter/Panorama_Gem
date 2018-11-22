@@ -32,8 +32,8 @@ class DbaSchemaController < ApplicationController
     @child_number   = prepare_param(:child_number)
     @child_address  = prepare_param(:child_address)
 
-    filter           = params[:filter]
-    segment_name     = params[:segment_name]
+    filter           = prepare_param(:filter)
+    segment_name     = prepare_param(:segment_name)
 
     where_string = ""
     where_values = []
