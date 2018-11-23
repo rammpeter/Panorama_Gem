@@ -6,7 +6,7 @@ class ConnectionTerminateJob < ApplicationJob
   CHECK_CYCLE_SECONDS = 600                                                     # Terminate idle sessions with last active older than 10 minutes
 
   def perform(*args)
-    ConnectionTerminateJob.set(wait_until: Time.now.round + CHECK_CYCLE_SECONDS).perform_later  # Scheedule next start
+    ConnectionTerminateJob.set(wait_until: Time.now.round + CHECK_CYCLE_SECONDS).perform_later  # Schedule next start
     PanoramaConnection.disconnect_aged_connections(CHECK_CYCLE_SECONDS)
 
   rescue Exception => e

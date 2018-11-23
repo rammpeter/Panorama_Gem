@@ -252,7 +252,8 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
     end
 
     [nil, 1].each do |instance|
-      post '/dba_history/list_performance_hub_report', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>instance }
+      # download_oracle_com_reachable: simulate test from previous dialog
+      post '/dba_history/list_performance_hub_report', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>instance, download_oracle_com_reachable: true }
       assert_response management_pack_license_ok? ? :success : :error
     end
 
