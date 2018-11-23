@@ -1576,7 +1576,9 @@ FROM (
     @instance  = prepare_param_instance
     @time_selection_start = params[:time_selection_start]
     @time_selection_end   = params[:time_selection_end]
-    #save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
+    @mutex_type           = prepare_param(:mutex_type)
+    @filter               = prepare_param(:filter)
+    @filter_value         = prepare_param(:filter_value)
 
     where_string  = ""                         # Filter-Text für nachfolgendes Statement
     where_values = [@time_selection_start, @time_selection_end]    # Filter-werte für nachfolgendes Statement
@@ -1584,13 +1586,13 @@ FROM (
       where_string << " AND Inst_ID = ?"
       where_values << @instance
     end
-    if params[:mutex_type]
+    if @mutex_type
       where_string << " AND Mutex_Type = ?"
-      where_values << params[:mutex_type]
+      where_values << @mutex_type
     end
-    if params[:filter_value]
-      where_string << " AND #{params[:filter]} = ?"
-      where_values << params[:filter_value]
+    if @filter_value
+      where_string << " AND #{@filter} = ?"
+      where_values << @filter_value
     end
 
     @res = sql_select_all ["\
@@ -1603,6 +1605,7 @@ FROM (
       #{where_string}
       ORDER BY Sleep_Timestamp"].concat(where_values)
 
+    @caption = "Samples from GV$Mutex_Sleep_History for#{" instance = '#{@instance}'" if @instance}#{", mutex-type = '#{@mutex_type}'" if @mutex_type}#{", #{@filter} = '#{@filter_value}'" if @filter_value}"
     respond_to do |format|
       format.html {render :partial=>"dragnet/list_dragnet_sql_result" }
     end

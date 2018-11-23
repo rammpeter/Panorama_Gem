@@ -927,6 +927,7 @@ class AdditionController < ApplicationController
   end
 
   def exec_worksheet_sql
+    @caption = nil
     @sql_statement = params[:sql_statement]
     @res = sql_select_all @sql_statement
 
