@@ -90,21 +90,21 @@ test_12.2_PDB_LOCAL:
 # Test Non-CDB local
 test_LOCAL:
   adapter: nulldb
-  test_url:      jdbc:oracle:thin:@dockerhub.osp-dd.de-pramm-oracle-database_prebuilt_panorama_test:1521/orcl
+  test_url:      jdbc:oracle:thin:@oracle-db:1521/orcl
   test_username: panorama_test
   test_password: panorama_test
 
 # Test root-Container of cdb local
 test_CDB_LOCAL:
   adapter: nulldb
-  test_url:      jdbc:oracle:thin:@dockerhub.osp-dd.de-pramm-oracle-database_prebuilt_panorama_test:1521/orclcdb
+  test_url:      jdbc:oracle:thin:@oracle-db:1521/orclcdb
   test_username: c##panorama_test
   test_password: panorama_test
 
 # Test pdb of cdb local
 test_PDB_LOCAL:
   adapter: nulldb
-  test_url:      jdbc:oracle:thin:@dockerhub.osp-dd.de-pramm-oracle-database_prebuilt_panorama_test:1521/orclpdb1
+  test_url:      jdbc:oracle:thin:@oracle-db:1521/orclpdb1
   test_username: panorama_test
   test_password: panorama_test
 

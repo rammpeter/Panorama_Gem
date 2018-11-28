@@ -31,6 +31,8 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "blocking_locks_history with xhr: true" do
+    PanoramaSamplerStructureCheck.do_check(prepare_panorama_sampler_thread_db_config, :BLOCKING_LOCKS)         # Ensure that structures are existing
+
     post '/addition/list_blocking_locks_history', :params => { :format=>:html,
          :time_selection_start =>"01.01.2011 00:00",
          :time_selection_end =>"01.01.2011 01:00",
@@ -58,6 +60,8 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
 
 
   test "db_cache_historic with xhr: true" do
+    PanoramaSamplerStructureCheck.do_check(prepare_panorama_sampler_thread_db_config, :CACHE_OBJECTS)         # Ensure that structures are existing
+
     [nil, 1].each do |instance|
       [nil, 1].each do |show_partitions|
         post '/addition/list_db_cache_historic', :params => { :format               => :html,
