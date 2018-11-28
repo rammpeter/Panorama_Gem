@@ -63,8 +63,8 @@ class ActiveSupport::TestCase
 
     db_config[:management_pack_license] = management_pack_license
 
-    puts 'Database config for test is:'
-    puts db_config.inspect
+    #puts 'Database config for test is:'
+    #puts db_config.inspect
 
     db_config
   end
