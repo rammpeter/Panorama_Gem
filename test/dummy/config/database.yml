@@ -85,25 +85,26 @@ test_12.2_PDB_LOCAL:
   test_username: panorama_test
   test_password: panorama_test
 
+# Local databases for Gitlab-CI
 
 # Test Non-CDB local
 test_LOCAL:
   adapter: nulldb
-  test_url:      jdbc:oracle:thin:@localhost:1521/orcl
+  test_url:      jdbc:oracle:thin:@dockerhub.osp-dd.de-pramm-oracle-database_prebuilt:1521/orcl
   test_username: panorama_test
   test_password: panorama_test
 
 # Test root-Container of cdb local
 test_CDB_LOCAL:
   adapter: nulldb
-  test_url:      jdbc:oracle:thin:@localhost:1521/orclcdb
+  test_url:      jdbc:oracle:thin:@dockerhub.osp-dd.de-pramm-oracle-database_prebuilt:1521/orclcdb
   test_username: c##panorama_test
   test_password: panorama_test
 
 # Test pdb of cdb local
 test_PDB_LOCAL:
   adapter: nulldb
-  test_url:      jdbc:oracle:thin:@localhost:1521/orclpdb1
+  test_url:      jdbc:oracle:thin:@dockerhub.osp-dd.de-pramm-oracle-database_prebuilt:1521/orclpdb1
   test_username: panorama_test
   test_password: panorama_test
 

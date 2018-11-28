@@ -17,36 +17,45 @@ During update oeprations DB-blocks are decompressed with possibly creation of ch
 OLTP-compression requires licensing of Advanced Compression Option.
             '),
 
-            :sql=> "SELECT *
-                    FROM   (
-                            SELECT t.Owner, t.Table_Name, ROUND(s.Size_MB, 2) Size_MB, t.Num_Rows,
-                                   DECODE(pc.Compression, NULL, DECODE(spc.Compression, NULL, t.Compression, spc.Compression), pc.Compression) Compression,
-                                   pc.Partitions, spc.SubPartitions, t.Last_Analyzed,
-                                   m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML
-                            FROM   DBA_Tables t
-                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(Bytes)/(1024*124) Size_MB
-                                             FROM   DBA_Segments
-                                             WHERE  Segment_Type LIKE 'TABLE%'
-                                             GROUP BY Owner, Segment_Name
-                                            ) s ON s.Owner = t.Owner AND s.Segment_Name = t.Table_Name
-                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Table_Owner, Table_Name, COUNT(*) Partitions,
-                                                    CASE WHEN COUNT(DISTINCT Compression) = 1 THEN MIN(Compression) ELSE COUNT(DISTINCT Compression)||' different' END Compression
-                                             FROM   DBA_Tab_Partitions
-                                             GROUP BY Table_Owner, Table_Name
-                                            ) pc ON pc.Table_Owner = t.Owner AND pc.Table_Name = t.Table_Name
-                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Table_Owner, Table_Name, COUNT(*) SubPartitions,
-                                                    CASE WHEN COUNT(DISTINCT Compression) = 1 THEN MIN(Compression) ELSE COUNT(DISTINCT Compression)||' different' END Compression
-                                             FROM   DBA_Tab_SubPartitions
-                                             GROUP BY Table_Owner, Table_Name
-                                            ) spc ON pc.Table_Owner = t.Owner AND spc.Table_Name = t.Table_Name
-                            LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
-                            WHERE  s.Owner NOT IN ('SYS', 'SYSTEM')
-                            AND    s.Size_MB > ?
-                            AND    (   m.Updates IS NULL                              -- no DML since last analyze
-                                    OR m.Updates < (m.Inserts + m.Deletes)/(100/?))   -- updates less than limit
-                           )
-                    WHERE  Compression != 'ENABLED'
-                    ORDER BY Size_MB DESC
+            :sql=> "\
+              SELECT Owner, Table_Name,
+                     SUM(CASE WHEN Partition_Name IS NULL THEN 0 ELSE 1 END) Partitions,
+                     SUM(Num_Rows) Num_Rows,
+                     SUM(Size_MB)  Size_MB,
+                     MAX(Last_Analyzed) Max_Last_analyzed,
+                     SUM(Inserts) Inserts,
+                     SUM(Updates) Updates,
+                     SUM(Deletes) Deletes,
+                     MAX(Last_DML) Last_DML
+              FROM   (
+                      SELECT x.*, ROUND(s.Bytes/(1024*1024),2) Size_MB
+                      FROM   (
+                              SELECT t.Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed, NULL Partition_Name, m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML
+                              FROM   DBA_Tables t
+                              LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL
+                              WHERE  t.Compression = 'DISABLED'
+                              AND    t.Partitioned = 'NO'
+                              UNION ALL
+                              SELECT t.Table_Owner Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed, t.Partition_Name, m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML
+                              FROM   DBA_Tab_Partitions t
+                              LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name
+                              WHERE  t.Compression = 'DISABLED'
+                              AND    t.Composite = 'NO'
+                              UNION ALL
+                              SELECT t.Table_Owner Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed, t.SubPartition_Name Partition_Name, m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML
+                              FROM   DBA_Tab_SubPartitions t
+                              LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name AND m.SubPartition_Name = t.SubPartition_Name
+                              WHERE  t.Compression = 'DISABLED'
+                             ) x
+                      LEFT OUTER JOIN DBA_Segments s ON s.Owner = x.Owner AND s.Segment_Name = x.Table_Name AND NVL(s.Partition_Name, '-1') = NVL(x.Partition_Name, '-1')
+                      WHERE  x.Owner NOT IN ('SYS', 'SYSTEM')
+                      AND    s.Bytes/(1024*1024) > ?
+                      AND    (   x.Updates IS NULL                              -- no DML since last analyze
+                              OR x.Updates < (x.Inserts + x.Deletes)/(100/?)    -- updates less than limit
+                             )
+                    )
+              GROUP BY Owner, Table_Name
+              ORDER BY Size_MB DESC
             ",
             :parameter=>[
                 {:name=>t(:dragnet_helper_50_param_1_name, :default=> 'Minimum size of table in MB'), :size=>8, :default=>100, :title=>t(:dragnet_helper_50_param_1_hint, :default=> 'Minimum size of table in MB for consideration in result of selection') },
