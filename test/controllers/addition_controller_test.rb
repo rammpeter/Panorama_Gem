@@ -115,11 +115,7 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "object_increase with xhr: true" do
-    get '/addition/show_object_increase',  :params => {:format=>:html}    if ENV['DB_VERSION'] >= '11.2'
-    assert_response :success
-  end
-
-  test "list_object_increase with xhr: true" do
+    PanoramaSamplerStructureCheck.do_check(prepare_panorama_sampler_thread_db_config, :OBJECT_SIZE)         # Ensure that structures are existing
 
     @sampler_config_entry                                  = get_current_database
     @sampler_config_entry[:owner]                          = @sampler_config_entry[:user] # Default
@@ -147,14 +143,12 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
         end
       end
     end
-  end
 
-  test "object_increase_timeline with xhr: true" do
-    # TODO: showObjectIncrease restaurieren
-    if false # showObjectIncrease                                                     # Nur Testen wenn Tabelle(n) auch existieren
-      get '/addition/list_object_increase_object_timeline', :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :owner=>'Hugo', :name=>'Hugo', :update_area=>:hugo  }
-      assert_response :success
-    end
+    get '/addition/show_object_increase',  :params => {:format=>:html}    if ENV['DB_VERSION'] >= '11.2'
+    assert_response :success
+
+    get '/addition/list_object_increase_object_timeline', :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :owner=>'Hugo', :name=>'Hugo', :update_area=>:hugo  }
+    assert_response :success
   end
 
   test "exec_worksheet_sql with xhr: true" do
