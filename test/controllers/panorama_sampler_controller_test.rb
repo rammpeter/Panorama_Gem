@@ -43,11 +43,8 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "show_edit_config_form with xhr: true" do
-puts "Before calling action"
     get '/panorama_sampler/show_edit_config_form',  :params => {:format=>:html, :id=>1}
-puts "After calling action"
     assert_response :success, 'show_edit_config_form'
-puts "After assert"
   end
 
   test "clear_config_error with xhr: true" do
