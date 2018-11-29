@@ -149,7 +149,23 @@ class ActiveSupport::TestCase
                             WHERE  Row_Num IN (2,3)
                             "
 
-    raise "No 4 subsequent snapshots with same startup_time found in DBA_Hist_Snapshot (only #{snaps.count} snapshots found)" if snaps.count < 2
+    if snaps.count < 2
+      message = "No 4 subsequent snapshots with same startup_time found in DBA_Hist_Snapshot (only #{snaps.count} snapshots found)"
+      puts message
+
+      last_10_snaps = sql_select_all "SELECT *
+                                      FROM   (SELECT *
+                                              FROM DBA_Hist_Snapshot
+                                              ORDER BY Begin_Interval_Time DESC
+                                             )
+                                      WHERE RowNum <= 10"
+
+      puts "Last 10 snapshots are:"
+      last_10_snaps.each do |s|
+        puts "Snap_ID = #{s.snap_id}, Instance = #{s.instance_number}, Begin_Interval_Time = #{localeDateTime(s.begin_interval_time)}"
+      end
+      raise message
+    end
 
     @min_snap_id = snaps[1].snap_id
     @max_snap_id = snaps[0].snap_id
