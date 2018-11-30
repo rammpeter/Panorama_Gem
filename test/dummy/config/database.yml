@@ -29,6 +29,7 @@ development:
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
+# Set DB by env DB_VERSION, e.g. DB_VERSION=10.2 for test_10.2
 # Konkrete Oracle-Test-DB wird erst in test_helper.rb  set_session_test_db_context geswitcht, Parameter werden schon hier gesetzt
 test:
   adapter: nulldb
@@ -105,6 +106,20 @@ test_CDB_LOCAL:
 test_PDB_LOCAL:
   adapter: nulldb
   test_url:      jdbc:oracle:thin:@oracle-db:1521/orclpdb1
+  test_username: panorama_test
+  test_password: panorama_test
+
+# Test cdb of XE local
+test_XE_CDB_LOCAL:
+  adapter: nulldb
+  test_url:      jdbc:oracle:thin:@oracle-db:1521/xe
+  test_username: c##panorama_test
+  test_password: panorama_test
+
+# Test pdb of XE local
+test_XE_PDB_LOCAL:
+  adapter: nulldb
+  test_url:      jdbc:oracle:thin:@oracle-db:1521/xepdb1
   test_username: panorama_test
   test_password: panorama_test
 
