@@ -136,7 +136,7 @@ class ActiveSupport::TestCase
                                                    LAG(Startup_Time, 1, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_1,
                                                    LAG(Startup_Time, 2, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_2,
                                                    LAG(Startup_Time, 3, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_3,
-                                                   LAG(Startup_Time, 3, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_4
+                                                   LAG(Startup_Time, 4, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_4
                                             FROM   DBA_Hist_Snapshot s
                                             ORDER BY Snap_ID DESC
                                            ) x
@@ -170,7 +170,7 @@ class ActiveSupport::TestCase
     @min_snap_id = snaps[1].snap_id
     @max_snap_id = snaps[0].snap_id
 
-    @time_selection_start = (snaps[1].begin_interval_time-100).strftime("%d.%m.%Y %H:%M")
+    @time_selection_start = (snaps[1].begin_interval_time-1).strftime("%d.%m.%Y %H:%M")
     @time_selection_end   = snaps[0].end_interval_time.strftime("%d.%m.%Y %H:%M")
   end
 end

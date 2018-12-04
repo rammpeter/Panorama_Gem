@@ -86,6 +86,20 @@ test_12.2_PDB_LOCAL:
   test_username: panorama_test
   test_password: panorama_test
 
+test_XE_CDB_LOCALHOST:
+  adapter: nulldb
+  test_url:      jdbc:oracle:thin:@localhost:1521/xe
+  test_username: c##panorama_test
+  test_password: panorama_test
+
+# Test pdb of XE local
+test_XE_PDB_LOCALHOST:
+  adapter: nulldb
+  test_url:      jdbc:oracle:thin:@localhost:1521/xepdb1
+  test_username: panorama_test
+  test_password: panorama_test
+
+
 # Local databases for Gitlab-CI
 
 # Test Non-CDB local

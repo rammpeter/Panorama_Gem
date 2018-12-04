@@ -18,6 +18,9 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
                                                     FROM   v$SQLArea
                                                     WHERE  SQL_ID NOT IN (SELECT SQL_ID FROM DBA_Hist_SQLText)
                                                     AND    RowNum < 2"
+
+      raise "No SQL-ID found in SGA" if @sga_sql_id_without_history.nil?
+
       # Find a SQL_ID that surely exists in History
       sql_row = sql_select_first_row "SELECT MAX(SQL_ID)              KEEP (DENSE_RANK LAST ORDER BY Occurs) SQL_ID,
                                              MAX(Parsing_Schema_Name) KEEP (DENSE_RANK LAST ORDER BY Occurs) Parsing_Schema_Name
@@ -28,6 +31,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
                                               GROUP BY SQL_ID, Parsing_Schema_Name
                                              )
                                      "
+
       @hist_sql_id = sql_row.sql_id
       @hist_parsing_schema_name = sql_row.parsing_schema_name
     end
@@ -87,25 +91,33 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'list_sql_historic_execution_plan with xhr: true' do
-    post '/dba_history/list_sql_historic_execution_plan', :params => {:format=>:html, :sql_id=>@hist_sql_id, :instance=>1, :parsing_schema_name=>@hist_parsing_schema_name,
-                                                        :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
-    assert_response management_pack_license == :none ? :error : :success
+    if @hist_sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
+      Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
+    else
+      post '/dba_history/list_sql_historic_execution_plan', :params => {:format=>:html, :sql_id=>@hist_sql_id, :instance=>1, :parsing_schema_name=>@hist_parsing_schema_name,
+                                                                        :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
+      assert_response management_pack_license == :none ? :error : :success
+    end
   end
 
   test 'list_sql_history_snapshots with xhr: true' do
-    [nil, 1].each do |instance|
-      [{:time_selection_start => @time_selection_start, :time_selection_end =>@time_selection_end}, {:time_selection_start => nil, :time_selection_end => nil} ].each do |ts|
-        [nil, 'snap', 'hour', 'day', 'week', 'month'].each do |groupby|
-          [nil, @hist_parsing_schema_name].each do |parsing_schema_name|
-            post '/dba_history/list_sql_history_snapshots', :params => {:format=>:html,
-                                                          :sql_id               => @hist_sql_id,
-                                                          :instance             => instance,
-                                                          :parsing_schema_name  => parsing_schema_name,
-                                                          :groupby              => groupby,
-                                                          :time_selection_start => ts[:time_selection_start],
-                                                          :time_selection_end   => ts[:time_selection_end],
-                                                          :update_area          => :hugo }
-            assert_response management_pack_license == :none ? :error : :success
+    if @hist_sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
+      Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
+    else
+      [nil, 1].each do |instance|
+        [{:time_selection_start => @time_selection_start, :time_selection_end =>@time_selection_end}, {:time_selection_start => nil, :time_selection_end => nil} ].each do |ts|
+          [nil, 'snap', 'hour', 'day', 'week', 'month'].each do |groupby|
+            [nil, @hist_parsing_schema_name].each do |parsing_schema_name|
+              post '/dba_history/list_sql_history_snapshots', :params => {:format=>:html,
+                                                                          :sql_id               => @hist_sql_id,
+                                                                          :instance             => instance,
+                                                                          :parsing_schema_name  => parsing_schema_name,
+                                                                          :groupby              => groupby,
+                                                                          :time_selection_start => ts[:time_selection_start],
+                                                                          :time_selection_end   => ts[:time_selection_end],
+                                                                          :update_area          => :hugo }
+              assert_response management_pack_license == :none ? :error : :success
+            end
           end
         end
       end
@@ -116,25 +128,27 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
     [nil, 1].each do |instance|
       [@hist_sql_id, @sga_sql_id_without_history, '1234567890123'].each do |sql_id|
         [nil, @hist_parsing_schema_name].each do |parsing_schema_name|
-
-Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@sga_sql_id_without_history} parsing_schema_name=#{parsing_schema_name}"
-          post '/dba_history/list_sql_detail_historic', :params => {:format               => :html,
-                                                      :time_selection_start => @time_selection_start,
-                                                      :time_selection_end   => @time_selection_end,
-                                                      :sql_id               => sql_id,
-                                                      :instance             => instance,
-                                                      :parsing_schema_name  => parsing_schema_name,
-                                                      :update_area          => :hugo }
-
-          if management_pack_license == :none
-            assert_response :error
+          if sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
+            Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
           else
-            if @response.response_code != 302                                   # Redirect is o.k., because fired if not foung SQL exists in SGA
-              assert_response :success
+            Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@sga_sql_id_without_history} parsing_schema_name=#{parsing_schema_name}"
+            post '/dba_history/list_sql_detail_historic', :params => {:format               => :html,
+                                                                      :time_selection_start => @time_selection_start,
+                                                                      :time_selection_end   => @time_selection_end,
+                                                                      :sql_id               => sql_id,
+                                                                      :instance             => instance,
+                                                                      :parsing_schema_name  => parsing_schema_name,
+                                                                      :update_area          => :hugo }
+
+            if management_pack_license == :none
+              assert_response :error
+            else
+              if @response.response_code != 302                                   # Redirect is o.k., because fired if not foung SQL exists in SGA
+                assert_response :success
+              end
             end
           end
         end
-
       end
     end
   end
@@ -240,10 +254,14 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
   end
 
   test "list_compare_sql_area_historic with xhr: true" do
-    tag1 = Time.new
-    post '/dba_history/list_compare_sql_area_historic', :params => {:format=>:html, :instance=>1, :filter=>"Hugo", :sql_id=>@hist_sql_id, :minProzDiff=>50,
-                                                      :tag1=> tag1.strftime("%d.%m.%Y"), :tag2=>(tag1-86400).strftime("%d.%m.%Y") }
-    assert_response management_pack_license == :none ? :error : :success
+    if @hist_sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
+      Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
+    else
+      tag1 = Time.new
+      post '/dba_history/list_compare_sql_area_historic', :params => {:format=>:html, :instance=>1, :filter=>"Hugo", :sql_id=>@hist_sql_id, :minProzDiff=>50,
+                                                                      :tag1=> tag1.strftime("%d.%m.%Y"), :tag2=>(tag1-86400).strftime("%d.%m.%Y") }
+      assert_response management_pack_license == :none ? :error : :success
+    end
   end
 
   test "genuine_oracle_reports with xhr: true" do
@@ -275,21 +293,32 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
     post '/dba_history/list_ash_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
     assert_response management_pack_license_ok? ? :success : :error
 
-    post '/dba_history/list_awr_sql_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :sql_id=>@hist_sql_id }
-    assert_response management_pack_license_ok? ? :success : :error
+    if @hist_sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
+      Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
+    else
+      post '/dba_history/list_awr_sql_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :sql_id=>@hist_sql_id }
+      assert_response management_pack_license_ok? ? :success : :error
+    end
   end
 
   test "generate_baseline_creation with xhr: true" do
     if [:diagnostics_pack, :diagnostics_and_tuning_pack].include? management_pack_license
-      post '/dba_history/generate_baseline_creation', :params => {:format=>:html, :sql_id=>@hist_sql_id, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :plan_hash_value=>1234567, :update_area=>:hugo }
-      assert_response :success
+      if @hist_sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
+        Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
+      else
+        post '/dba_history/generate_baseline_creation', :params => {:format=>:html, :sql_id=>@hist_sql_id, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :plan_hash_value=>1234567, :update_area=>:hugo }
+        assert_response :success
+      end
     end
   end
 
   test "select_plan_hash_value_for_baseline with xhr: true" do
-    post '/dba_history/select_plan_hash_value_for_baseline', :params => {:format=>:html, :sql_id=>@hist_sql_id, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :update_area=>:hugo }
-    assert_response [:diagnostics_pack, :diagnostics_and_tuning_pack, :panorama_sampler].include?(management_pack_license) ? :success : :error
-
+    if @hist_sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
+      Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
+    else
+      post '/dba_history/select_plan_hash_value_for_baseline', :params => {:format=>:html, :sql_id=>@hist_sql_id, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :update_area=>:hugo }
+      assert_response [:diagnostics_pack, :diagnostics_and_tuning_pack, :panorama_sampler].include?(management_pack_license) ? :success : :error
+    end
   end
 
   test "list_resource_limits_historic with xhr: true" do
@@ -311,7 +340,7 @@ Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@s
   end
 
   test "list_sql_monitor_reports with xhr: true" do
-    if get_db_version >= '11.1' && management_pack_license == :diagnostics_and_tuning_pack
+    if get_db_version >= '11.1' && management_pack_license == :diagnostics_and_tuning_pack && !@hist_sql_id.nil?  # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
       [nil,1].each do |instance |
         [{sql_id: @hist_sql_id}, {sid: 1, serialno: 2}].each do |p|
           post '/dba_history/list_sql_monitor_reports', params: {format: :html, instance: instance, sql_id: p[:sql_id], sid: p[:sid], serialno: p[:serialno],
