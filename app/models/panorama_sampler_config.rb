@@ -67,11 +67,16 @@ class PanoramaSamplerConfig
   def get_domain_snapshot_cycle(domain);      get_config_value("#{domain.downcase}_snapshot_cycle".to_sym);       end
   def get_Last_domain_snapshot_start(domain); get_config_value("last_#{domain.downcase}_snapshot_start".to_sym);  end
 
+  # Does the user have SELECT ANY TABLE? This ensures that user may select V$-Tables from within packages
   def get_select_any_table
     if !@config_hash.key?(:select_any_table)
       # Check if accessing v$-tables from within PL/SQL-Package is possible
       # don't persist config change because config may be pending (not saved) for new sampler configuration
       @config_hash[:select_any_table] = (0 < PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM DBA_Sys_Privs WHERE Grantee = ? AND Privilege = 'SELECT ANY TABLE'", @config_hash[:user].upcase]))
+
+      # System does not have SELECT-grant on V$-Tables from within packages! Tested for 18.3-EE and 18.4-XE
+      # Ensure using anonymous PL/SQL instead of package if user is system
+      @config_hash[:select_any_table] = false if @config_hash[:user].upcase == 'SYSTEM'
     end
     @config_hash[:select_any_table]
   end
