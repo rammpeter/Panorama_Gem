@@ -113,7 +113,8 @@ class ActiveSupport::TestCase
     sampler_config[:password] = Encryption.encrypt_value(test_config["test_password"], sampler_config[:client_salt])
     sampler_config[:panorama_sampler_schema]        = 'panorama_test'           # Schema for panorama-sampler-tables
 
-    sampler_config[:owner]                          = sampler_config[:user]                             # assume owner = connected user for test
+    sampler_config[:owner]                          = sampler_config[:user]     # assume owner = connected user for test
+    sampler_config[:management_pack_license]        = management_pack_license   # from environment
 
     set_panorama_sampler_config_defaults!(sampler_config)
 

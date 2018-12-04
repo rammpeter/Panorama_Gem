@@ -126,6 +126,21 @@ class ActiveSupport::TestCase
     # Rückstellen auf NullDB kann man sich hier sparen
   end
 
+  def ensure_panorama_sampler_tables_exist_with_content
+    sampler_config = prepare_panorama_sampler_thread_db_config
+    PanoramaSamplerStructureCheck.do_check(sampler_config, :AWR)
+    PanoramaSamplerStructureCheck.do_check(sampler_config, :ASH)
+
+    snapshots = sql_select_one "SELECT COUNT(*) FROM Panorama_Snapshot"
+    if snapshots < 4
+      WorkerThread.new(sampler_config, 'ensure_panorama_sampler_tables_exist_with_content').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
+      3.times do
+        sleep(20)
+        WorkerThread.new(sampler_config, 'ensure_panorama_sampler_tables_exist_with_content').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
+      end
+    end
+  end
+
   def initialize_min_max_snap_id_and_times
     # Get 2 subsequent snapshots in the middle of 4 snapshots with same startup time
     snaps = sql_select_all "SELECT *
