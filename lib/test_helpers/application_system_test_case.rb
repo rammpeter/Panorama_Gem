@@ -61,13 +61,13 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 #test_config = PanoramaOtto::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]
     test_config = PanoramaTestConfig.test_config
 
-    test_url          = test_config['test_url'].split(":")
+    test_url          = test_config[:test_url].split(":")
     test_host         = test_url[3].delete "@"
     test_port         = test_url[4].split('/')[0].split(':')[0]
     test_sid          = test_url[5]
     test_service_name = test_url[4].split('/')[1]
-    test_user         = test_config["test_username"]
-    test_password     = test_config["test_password"]
+    test_user         = test_config[:test_username]
+    test_password     = test_config[:test_password]
 
     page.find_by_id('database_modus_host').set(true)                            # Choose host/port/sid for entry
 #print page.html

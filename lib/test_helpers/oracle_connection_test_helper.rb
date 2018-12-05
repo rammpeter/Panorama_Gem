@@ -42,7 +42,9 @@ class ActiveSupport::TestCase
 
   def create_prepared_database_config(test_config)
     db_config = {}
-    test_url = test_config['test_url'].split(":")
+
+    raise "Missing entry test_url in Hash" if !test_config.has_key?(:test_url)
+    test_url = test_config[:test_url].split(":")
     db_config[:modus]        = 'host'
 
     db_config[:host]         = test_url[3].delete "@"
@@ -57,9 +59,10 @@ class ActiveSupport::TestCase
       db_config[:sid_usage]  = :SID
     end
 
-    db_config[:user]         = test_config["test_username"]
+    db_config[:user]         = test_config[:test_username]
     db_config[:panorama_sampler_schema] = db_config[:user]                      # Use test user for panorama-sampler
-    db_config[:tns]          = test_config['test_url'].split('@')[1]     # Alles nach jdbc:oracle:thin@
+    db_config[:tns]          = test_config[:test_url].split('@')[1]     # Alles nach jdbc:oracle:thin@
+    db_config[:privilege]    = 'normal'
 
     db_config[:management_pack_license] = management_pack_license
 
@@ -78,7 +81,7 @@ class ActiveSupport::TestCase
     initialize_client_key_cookie
 
     # Passwort verschlüsseln in session
-    current_database[:password] = Encryption.encrypt_value(test_config["test_password"], cookies['client_salt'])
+    current_database[:password] = Encryption.encrypt_value(test_config[:test_password], cookies['client_salt'])
 
     @browser_tab_id = 1
     browser_tab_ids = { @browser_tab_id => {
@@ -89,7 +92,6 @@ class ActiveSupport::TestCase
     write_to_client_info_store(:browser_tab_ids, browser_tab_ids)
 
 
-    # puts "Test for #{ENV['DB_VERSION']} with #{database.user}/#{database.password}@#{database.host}:#{database.port}:#{database.sid}"
     # TODO Sollte so nicht mehr notwendig sein
     #open_oracle_connection                                                      # Connection zur Test-DB aufbauen, um Parameter auszulesen
     set_connection_info_for_request(current_database)

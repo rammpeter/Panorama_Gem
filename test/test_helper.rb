@@ -69,10 +69,10 @@ class ActiveSupport::TestCase
 
   def connect_oracle_db
 
-    raise "Environment-Variable DB_VERSION not set" unless ENV['DB_VERSION']
-    Rails.logger.info "#{Time.now} : Starting Test with configuration test_#{ENV['DB_VERSION']}"
 
     test_config = PanoramaTestConfig.test_config
+
+    Rails.logger.info "#{Time.now} : Starting Test with configuration #{test_config}"
 
     connect_oracle_db_internal(test_config)   # aus lib/test_helpers/oracle_connection_test_helper
     @db_version = PanoramaConnection.db_version                                 # Store db_version outside PanoramaConnection
@@ -110,8 +110,8 @@ class ActiveSupport::TestCase
     sampler_config[:management_pack_license]        = :none                     # assume no management packs are licensed for PanoramaSampler-execution
     sampler_config[:privilege]                      = 'normal'
 
-    sampler_config[:password] = Encryption.encrypt_value(test_config["test_password"], sampler_config[:client_salt])
-    sampler_config[:panorama_sampler_schema]        = 'panorama_test'           # Schema for panorama-sampler-tables
+    sampler_config[:password] = Encryption.encrypt_value(test_config[:test_password], sampler_config[:client_salt])
+    sampler_config[:panorama_sampler_schema]        = sampler_config[:user]     # Schema for panorama-sampler-tables, should be the same like user
 
     sampler_config[:owner]                          = sampler_config[:user]     # assume owner = connected user for test
     sampler_config[:management_pack_license]        = management_pack_license   # from environment
@@ -144,13 +144,19 @@ end
 
 class PanoramaTestConfig
   def self.test_config
-    config = Dummy::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]    # use config from database.yml
-    raise "test_helper.rb: No test config available in database.yml for DB_VERSION=#{ENV['DB_VERSION']}" if config.nil?
+    test_host         = ENV['TEST_HOST']        || 'localhost'
+    test_port         = ENV['TEST_PORT']        || '1521'
+    test_servicename  = ENV['TEST_SERVICENAME'] || 'ORCLPDB1'
+    test_username     = ENV['TEST_USERNAME']    || 'panorama_test'
+    test_password     = ENV['TEST_PASSWORD']    || 'panorama_test'
 
-    # Overwrite database.yml by environment if set
-    config[:test_url]       = ENV['TEST_URL']      if  ENV['TEST_URL']
-    config[:test_username]  = ENV['TEST_USERNAME'] if  ENV['TEST_USERNAME']
-    config[:test_password]  = ENV['TEST_PASSWORD'] if  ENV['TEST_PASSWORD']
+
+    config = {
+        adapter:        'nulldb',
+        test_url:       "jdbc:oracle:thin:@#{test_host}:#{test_port}/#{test_servicename}",
+        test_username:  test_username,
+        test_password:  test_password
+    }
 
     config
   end

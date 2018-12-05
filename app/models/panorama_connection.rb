@@ -499,7 +499,9 @@ class PanoramaConnection
   end
 
   def self.get_decrypted_password
-    Encryption.decrypt_value(Thread.current[:panorama_connection_connect_info][:password], Thread.current[:panorama_connection_connect_info][:client_salt])
+    decrypted_password = Encryption.decrypt_value(Thread.current[:panorama_connection_connect_info][:password], Thread.current[:panorama_connection_connect_info][:client_salt])
+    raise "PanoramaConenction.get_decrypted_password: Result = nil after decryption" if decrypted_password.nil?
+    decrypted_password
   rescue Exception => e
     Rails.logger.warn "Error in PanoramaConnection.get_decrypted_password decrypting pasword: #{e.class} #{e.message}"
     raise "One part of encryption key for stored password has changed at server side! Please connect giving username and password."
@@ -514,13 +516,23 @@ class PanoramaConnection
       end
     end
 
+    url       = jdbc_thin_url
+    username  = Thread.current[:panorama_connection_connect_info][:user]
+    password  = get_decrypted_password
+    privilege = Thread.current[:panorama_connection_connect_info][:privilege]
+
+    raise "PanoramaConnection.do_login: url missing"            if  url.nil?
+    raise "PanoramaConnection.do_login: username missing"       if  username.nil?
+    raise "PanoramaConnection.do_login: password missing"       if  password.nil?
+    privilege = 'normal'                                        if  privilege.nil?
+
     jdbc_connection = ActiveRecord::ConnectionAdapters::OracleEnhanced::JDBCConnection.new(
         :adapter    => "oracle_enhanced",
         :driver     => "oracle.jdbc.driver.OracleDriver",
-        :url        => jdbc_thin_url,
-        :username   => Thread.current[:panorama_connection_connect_info][:user],
-        :password   => get_decrypted_password,
-        :privilege  => Thread.current[:panorama_connection_connect_info][:privilege],
+        :url        => url,
+        :username   => username,
+        :password   => password,
+        :privilege  => privilege,
         :cursor_sharing => :exact             # oracle_enhanced_adapter setzt cursor_sharing per Default auf force
     )
     Rails.logger.info "New database connection created: URL='#{jdbc_thin_url}' User='#{Thread.current[:panorama_connection_connect_info][:user]}' Pool size=#{@@connection_pool.count+1}"

@@ -68,7 +68,7 @@ class IoControllerTest < ActionController::TestCase
   #################### iostat_detail #######################
   test "list_iostat_detail_history with xhr: true" do
     iostat_detail_key_rules.each do |groupby, value|
-      if ENV['DB_VERSION'] >= '11.2'
+      if get_db_version >= '11.2'
         post :list_iostat_detail_history, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
         assert_response management_pack_license == :none ? :error : :success
 
@@ -80,7 +80,7 @@ class IoControllerTest < ActionController::TestCase
 
   test "list_iostat_detail_history_grouping with xhr: true" do
     iostat_detail_key_rules.each do |groupby, value|
-      if ENV['DB_VERSION'] >= '11.2'
+      if get_db_version >= '11.2'
         post :list_iostat_detail_history_grouping, :params => { :format=>:html, :groupfilter=>@groupfilter, :groupby=>groupby, :update_area=>:hugo }
         assert_response management_pack_license == :none ? :error : :success
       end
@@ -89,7 +89,7 @@ class IoControllerTest < ActionController::TestCase
 
   test "list_iostat_detail_history_samples with xhr: true" do
     iostat_detail_key_rules.each do |groupby, value|
-      if ENV['DB_VERSION'] >= '11.2'
+      if get_db_version >= '11.2'
         post :list_iostat_detail_history_samples, :params => { :format=>:html, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo  }
         assert_response management_pack_license == :none ? :error : :success
       end
@@ -106,7 +106,7 @@ class IoControllerTest < ActionController::TestCase
   #################### iostat_filetype #######################
   test "list_iostat_filetype_history with xhr: true" do
     iostat_filetype_key_rules.each do |groupby, value|
-      if ENV['DB_VERSION'] >= '11.2'
+      if get_db_version >= '11.2'
         post :list_iostat_filetype_history, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
         assert_response management_pack_license == :none ? :error : :success
 
@@ -118,7 +118,7 @@ class IoControllerTest < ActionController::TestCase
 
   test "list_iostat_filetype_history_grouping with xhr: true" do
     iostat_filetype_key_rules.each do |groupby, value|
-      if ENV['DB_VERSION'] >= '11.2'
+      if get_db_version >= '11.2'
         post :list_iostat_filetype_history_grouping, :params => { :format=>:html, :groupfilter=>@groupfilter, :groupby=>groupby, :update_area=>:hugo }
         assert_response management_pack_license == :none ? :error : :success
       end
@@ -127,7 +127,7 @@ class IoControllerTest < ActionController::TestCase
 
   test "list_iostat_filetype_history_samples with xhr: true" do
     iostat_filetype_key_rules.each do |groupby, value|
-      if ENV['DB_VERSION'] >= '11.2'
+      if get_db_version >= '11.2'
         post :list_iostat_filetype_history_samples, :params => { :format=>:html, :groupfilter=>@groupfilter.merge(groupby=>'1'),  :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo }
         assert_response management_pack_license == :none ? :error : :success
       end
