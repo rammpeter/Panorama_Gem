@@ -76,7 +76,7 @@ class PanoramaSamplerConfig
 
       # System does not have SELECT-grant on V$-Tables from within packages! Tested for 18.3-EE and 18.4-XE
       # Ensure using anonymous PL/SQL instead of package if user is system
-      @config_hash[:select_any_table] = false if @config_hash[:user].upcase == 'SYSTEM'
+      @config_hash[:select_any_table] = false if @config_hash[:user].upcase == 'SYSTEM' || @config_hash[:owner].upcase == 'SYSTEM'
     end
     @config_hash[:select_any_table]
   end
@@ -265,6 +265,9 @@ class PanoramaSamplerConfig
     entry[:blocking_locks_snapshot_cycle]     = entry[:blocking_locks_snapshot_cycle].to_i
     entry[:blocking_locks_snapshot_retention] = entry[:blocking_locks_snapshot_retention].to_i
     entry[:blocking_locks_long_locks_limit]   = entry[:blocking_locks_long_locks_limit].to_i
+
+    # Ensure that SYS always logs in as sysdba
+    entry[:privilege]                         = :sysdba if entry[:user].upcase == 'SYS'
 
     validate_entry(entry, config_entry_exists?(entry[:id]))                     # Password required only for add, not for modify
 

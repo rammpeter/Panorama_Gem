@@ -46,7 +46,7 @@ class WorkerThread
 
     connection_config[:client_salt]             = EngineConfig.config.panorama_sampler_master_password
     connection_config[:management_pack_license] = :none                         # assume no management packs are licensed
-    connection_config[:privilege]               = 'normal'
+    connection_config[:privilege]               = 'normal' if !connection_config.has_key?(:privilege)
     connection_config[:query_timeout]           = connection_config[:awr_ash_snapshot_cycle]*60+60 # 1 minute more than snapshot cycle
     connection_config[:current_controller_name] = 'WorkerThread'
     connection_config[:current_action_name]     = action_name
