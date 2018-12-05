@@ -47,7 +47,6 @@ class Capybara::Rails::TestCase
 
     page.must_have_content "Please choose saved connection"
 
-    #test_config = PanoramaOtto::Application.config.database_configuration["test_#{ENV['DB_VERSION']}"]
     test_config = PanoramaTestConfig.test_config
 
     test_url          = test_config['test_url'].split(":")

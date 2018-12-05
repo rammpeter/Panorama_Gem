@@ -30,8 +30,6 @@ Rake::TaskManager.class_eval do
   Rake.application.delete_task("db:test:load")
   Rake.application.delete_task("db:test:purge")
   Rake.application.delete_task("db:abort_if_pending_migrations")
-
-  puts "Environment entry DB_VERSION = #{ENV['DB_VERSION']}"
 end
 
 namespace :db do
