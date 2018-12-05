@@ -123,6 +123,8 @@ class ActiveSupport::TestCase
     @serialno = db_session.serialno
     @saddr    = db_session.saddr
 
+    ensure_panorama_sampler_tables_exist_with_content if management_pack_license == :panorama_sampler
+
     yield if block_given?                                                       # Ausführen optionaler Blöcke mit Anweisungen, die gegen die Oracle-Connection verarbeitet werden
 
     # Rückstellen auf NullDB kann man sich hier sparen
@@ -130,10 +132,14 @@ class ActiveSupport::TestCase
 
   def ensure_panorama_sampler_tables_exist_with_content
     sampler_config = prepare_panorama_sampler_thread_db_config
-    PanoramaSamplerStructureCheck.do_check(sampler_config, :AWR)
-    PanoramaSamplerStructureCheck.do_check(sampler_config, :ASH)
 
-    snapshots = sql_select_one "SELECT COUNT(*) FROM Panorama_Snapshot"
+    begin
+      snapshots = sql_select_one "SELECT COUNT(*) FROM Panorama_Snapshot"
+    rescue                                                                      # Table does not yet exist
+      PanoramaSamplerStructureCheck.do_check(sampler_config, :AWR)
+      PanoramaSamplerStructureCheck.do_check(sampler_config, :ASH)
+      snapshots = sql_select_one "SELECT COUNT(*) FROM Panorama_Snapshot"
+    end
     if snapshots < 4
       WorkerThread.new(sampler_config, 'ensure_panorama_sampler_tables_exist_with_content').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
       3.times do

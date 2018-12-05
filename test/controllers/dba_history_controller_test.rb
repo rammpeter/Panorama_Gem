@@ -10,8 +10,6 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
     # Only for testing snapshot creation
     # PanoramaSamplerStructureCheck.remove_tables(prepare_panorama_sampler_thread_db_config)                # ensure missing objects is tested
 
-    ensure_panorama_sampler_tables_exist_with_content if management_pack_license == :panorama_sampler
-
     initialize_min_max_snap_id_and_times
 
     if management_pack_license == :none                                         # Fake defaults if no management pack license
