@@ -173,7 +173,7 @@ class ActiveSupport::TestCase
                             "
 
     if snaps.count < 2
-      message = "No 4 subsequent snapshots with same startup_time found in DBA_Hist_Snapshot (only #{snaps.count} snapshots found)"
+      message = "No 4 subsequent snapshots with same startup_time found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')} (only #{snaps.count} snapshots found)"
       puts message
 
       last_10_snaps = sql_select_all "SELECT *
