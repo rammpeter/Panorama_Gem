@@ -135,7 +135,7 @@ class ActiveSupport::TestCase
 
     begin
       snapshots = sql_select_one "SELECT COUNT(*) FROM Panorama_Snapshot"
-    rescue                                                                      # Table does not yet exist
+    rescue Exception                                                                     # Table does not yet exist
       PanoramaSamplerStructureCheck.do_check(sampler_config, :AWR)
       PanoramaSamplerStructureCheck.do_check(sampler_config, :ASH)
       snapshots = sql_select_one "SELECT COUNT(*) FROM Panorama_Snapshot"
