@@ -16,7 +16,7 @@ Capybara.register_driver :headless_chrome do |app|
 
   # Enable debug by "$DEBUG = true" or by environment variable "export DEBUG=1"
   # This drives debug logging in selenium-webdriver/lib/selenium/webdriver/common/logger.rb
-  Capybara::Selenium::Driver.new(
+  driver = Capybara::Selenium::Driver.new(
       app,
       browser: :chrome,
       desired_capabilities: capabilities,
@@ -25,6 +25,7 @@ Capybara.register_driver :headless_chrome do |app|
   puts "Waiting for chromedriver_helper to start"
   sleep 10
   puts "Assuming chromedriver_helper has started now and may accept network requests"
+  driver
 end
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
