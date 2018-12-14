@@ -155,16 +155,16 @@ class ActiveSupport::TestCase
                                          Snap_ID - 2 Min_Snap_ID,
                                          Start_Time, End_Time
                                   FROM   (
-                                          SELECT s.Startup_Time,
+                                          SELECT Snap_ID, Startup_Time,
                                                  LAG(Startup_Time, 1, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_1,
                                                  LAG(Startup_Time, 2, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_2,
                                                  LAG(Startup_Time, 3, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_3,
                                                  LAG(End_Interval_Time, 1, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) End_Time,
                                                  LAG(Begin_Interval_Time, 2, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Start_Time
-                                          FROM   DBA_Hist_Snapshot s
+                                          FROM   DBA_Hist_Snapshot
                                           WHERE  Instance_Number = 1
-                                          ORDER BY Snap_ID DESC
-                                         ) x
+                                          -- ORDER BY Snap_ID DESC /* order by corrupts result of LAG */
+                                         )
                                   WHERE  Startup_Time = Startup_1
                                   AND    Startup_Time = Startup_2
                                   AND    Startup_Time = Startup_3
