@@ -151,28 +151,28 @@ class ActiveSupport::TestCase
 
   def initialize_min_max_snap_id_and_times
     # Get 2 subsequent snapshots in the middle of 4 snapshots with same startup time
-    snaps = sql_select_all "SELECT *
-                            FROM   (
-                                    SELECT x.*, RowNum Row_Num
-                                    FROM   (
-                                            SELECT s.*,
-                                                   LAG(Startup_Time, 1, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_1,
-                                                   LAG(Startup_Time, 2, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_2,
-                                                   LAG(Startup_Time, 3, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_3
-                                            FROM   DBA_Hist_Snapshot s
-                                            WHERE  Instance_Number = 1
-                                            ORDER BY Snap_ID DESC
-                                           ) x
-                                    WHERE  Startup_Time = Startup_1
-                                    AND    Startup_Time = Startup_2
-                                    AND    Startup_Time = Startup_3
-                                     ORDER BY Snap_ID DESC
-                                   )
-                            WHERE  Row_Num IN (2,3)
-                            "
+    snaps = sql_select_first_row "SELECT Snap_ID - 1 Max_Snap_ID,
+                                         Snap_ID - 2 Min_Snap_ID,
+                                         Start_Time, End_Time
+                                  FROM   (
+                                          SELECT s.Startup_Time,
+                                                 LAG(Startup_Time, 1, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_1,
+                                                 LAG(Startup_Time, 2, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_2,
+                                                 LAG(Startup_Time, 3, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_3,
+                                                 LAG(End_Interval_Time, 1, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) End_Time,
+                                                 LAG(Begin_Interval_Time, 2, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Start_Time
+                                          FROM   DBA_Hist_Snapshot s
+                                          WHERE  Instance_Number = 1
+                                          ORDER BY Snap_ID DESC
+                                         ) x
+                                  WHERE  Startup_Time = Startup_1
+                                  AND    Startup_Time = Startup_2
+                                  AND    Startup_Time = Startup_3
+                                  ORDER BY Snap_ID DESC
+                                  "
 
-    if snaps.count < 2
-      message = "No 4 subsequent snapshots with same startup_time found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')} (only #{snaps.count} snapshots found)"
+    if snaps.nil?
+      message = "No 4 subsequent snapshots with same startup_time found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')}"
       puts message
 
       last_10_snaps = sql_select_all "SELECT *
@@ -189,10 +189,10 @@ class ActiveSupport::TestCase
       raise message
     end
 
-    @min_snap_id = snaps[1].snap_id
-    @max_snap_id = snaps[0].snap_id
+    @min_snap_id = snaps.min_snap_id
+    @max_snap_id = snaps.max_snap_id
 
-    @time_selection_start = (snaps[1].begin_interval_time-1).strftime("%d.%m.%Y %H:%M")
-    @time_selection_end   = snaps[0].end_interval_time.strftime("%d.%m.%Y %H:%M")
+    @time_selection_start = (snaps.start_time-1).strftime("%d.%m.%Y %H:%M")
+    @time_selection_end   = snaps.end_time.strftime("%d.%m.%Y %H:%M")
   end
 end
