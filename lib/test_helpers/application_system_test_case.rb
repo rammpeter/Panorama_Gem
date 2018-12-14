@@ -22,6 +22,9 @@ Capybara.register_driver :headless_chrome do |app|
       desired_capabilities: capabilities,
       driver_opts: { port_server: 9215, logLevel: :debug}     # pin chromedriver to use port 9215
   )
+  puts "Waiting for chromedriver_helper to start"
+  sleep 10
+  puts "Assuming chromedriver_helper has started now and may accept network requests"
 end
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
