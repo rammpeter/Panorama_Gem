@@ -158,15 +158,14 @@ class ActiveSupport::TestCase
                                             SELECT s.*,
                                                    LAG(Startup_Time, 1, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_1,
                                                    LAG(Startup_Time, 2, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_2,
-                                                   LAG(Startup_Time, 3, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_3,
-                                                   LAG(Startup_Time, 4, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_4
+                                                   LAG(Startup_Time, 3, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_3
                                             FROM   DBA_Hist_Snapshot s
+                                            WHERE  Instance_Number = 1
                                             ORDER BY Snap_ID DESC
                                            ) x
-                                    WHERE  Startup_Time = NVL(Startup_1, Startup_Time)
-                                    AND    Startup_Time = NVL(Startup_2, Startup_Time)
-                                    AND    Startup_Time = NVL(Startup_3, Startup_Time)
-                                    AND    Startup_Time = NVL(Startup_4, Startup_Time)
+                                    WHERE  Startup_Time = Startup_1
+                                    AND    Startup_Time = Startup_2
+                                    AND    Startup_Time = Startup_3
                                      ORDER BY Snap_ID DESC
                                    )
                             WHERE  Row_Num IN (2,3)
