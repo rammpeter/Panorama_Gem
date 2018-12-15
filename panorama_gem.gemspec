@@ -26,7 +26,7 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   s.add_dependency 'activerecord-oracle_enhanced-adapter'     # lokal in Gemfile überschreiben mit : gem 'activerecord-oracle_enhanced-adapter', github: 'rsim/oracle-enhanced', branch: 'rails42'
 
   # Use SCSS for stylesheets
-  #s.add_dependency  'sass-rails', '~> 5.0'
+  s.add_dependency  'sass-rails', '~> 5.0'                                      # still needed
 
   #s.add_dependency  'turbolinks'                                                # needed for redirect_to
 
