@@ -61,14 +61,17 @@ class PanoramaSamplerSampling
     if @sampler_config.get_select_any_table                                       # call PL/SQL package ?
       sql = " BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_Snapshot.#{do_snapshot_call}; END;"
     else
+      # replace PANORAMA. with the real owner in PL/SQL-Source
       sql = "
         DECLARE
-        #{panorama_sampler_snapshot_code}
+        #{panorama_sampler_snapshot_code.gsub(/PANORAMA\./i, "#{@sampler_config.get_owner.upcase}.")}
         BEGIN
           #{do_snapshot_call};
         END;
         "
     end
+
+
 
     ## TODO: Con_DBID mit realen werten des Containers füllen, falls PDB-übergreifendes Sampling gewünscht wird
     PanoramaConnection.sql_execute [sql,
@@ -102,7 +105,7 @@ class PanoramaSamplerSampling
     execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.Panorama_SQL_Plan p
                            WHERE  DBID      = ?
                            AND    Con_DBID  = ?
-                           AND    (SQL_ID, Plan_Hash_Value) NOT IN (SELECT SQL_ID, Plan_Hash_Value FROM Panorama_SQLStat s
+                           AND    (SQL_ID, Plan_Hash_Value) NOT IN (SELECT SQL_ID, Plan_Hash_Value FROM #{@sampler_config.get_owner}.Panorama_SQLStat s
                                                  WHERE  s.DBID      = ?
                                                  AND    s.Con_DBID  = ?
                                                 )
@@ -112,7 +115,7 @@ class PanoramaSamplerSampling
     execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.Panorama_SQLText t
                            WHERE  DBID      = ?
                            AND    Con_DBID  = ?
-                           AND    SQL_ID NOT IN (SELECT SQL_ID FROM Panorama_SQLStat s
+                           AND    SQL_ID NOT IN (SELECT SQL_ID FROM #{@sampler_config.get_owner}.Panorama_SQLStat s
                                                  WHERE  s.DBID      = ?
                                                  AND    s.Con_DBID  = ?
                                                 )
@@ -133,7 +136,7 @@ class PanoramaSamplerSampling
     else
       sql = "
         DECLARE
-        #{panorama_sampler_ash_code}
+        #{panorama_sampler_ash_code.gsub(/PANORAMA\./i, "#{@sampler_config.get_owner.upcase}.")}
         BEGIN
           Run_Sampler_Daemon(?, ?, ?, ?);
         END;

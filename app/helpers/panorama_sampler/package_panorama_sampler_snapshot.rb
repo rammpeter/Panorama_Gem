@@ -20,8 +20,8 @@ END Panorama_Sampler_Snapshot;
   PROCEDURE Move_ASH_To_Snapshot_Table(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
     v_Max_Sample_ID NUMBER;
   BEGIN
-    SELECT MAX(Sample_ID) INTO v_Max_Sample_ID FROM Internal_V$Active_Sess_History;
-    INSERT INTO Internal_Active_Sess_History (
+    SELECT MAX(Sample_ID) INTO v_Max_Sample_ID FROM panorama.Internal_V$Active_Sess_History;
+    INSERT INTO panorama.Internal_Active_Sess_History (
       Snap_ID, DBID, Instance_Number, Sample_ID, Sample_Time, Session_ID, Session_Serial#, Session_Type, Flags, User_ID, SQL_ID, Is_SQLID_Current, SQL_Child_Number,
       SQL_OpCode, SQL_OpName, FORCE_MATCHING_SIGNATURE, TOP_LEVEL_SQL_ID, TOP_LEVEL_SQL_OPCODE, SQL_PLAN_HASH_VALUE, SQL_PLAN_LINE_ID,
       SQL_PLAN_OPERATION, SQL_PLAN_OPTIONS, SQL_EXEC_ID, SQL_EXEC_START, PLSQL_ENTRY_OBJECT_ID, PLSQL_ENTRY_SUBPROGRAM_ID, PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID,
@@ -50,29 +50,29 @@ END Panorama_Sampler_Snapshot;
              TM_Delta_Time, TM_DELTA_CPU_TIME, TM_DELTA_DB_TIME, Delta_Time, DELTA_READ_IO_REQUESTS, DELTA_WRITE_IO_REQUESTS, DELTA_READ_IO_BYTES,
              DELTA_WRITE_IO_BYTES, DELTA_INTERCONNECT_IO_BYTES, PGA_Allocated, Temp_Space_Allocated,
              p_Con_DBID, Con_ID
-      FROM   Internal_V$Active_Sess_History
+      FROM   panorama.Internal_V$Active_Sess_History
       WHERE  Sample_ID <= v_Max_Sample_ID
       AND    Preserve_10Secs = 'Y'
     ;
-    DELETE FROM Internal_V$Active_Sess_History WHERE Sample_ID <= v_Max_Sample_ID;
+    DELETE FROM panorama.Internal_V$Active_Sess_History WHERE Sample_ID <= v_Max_Sample_ID;
     COMMIT;
   END Move_ASH_To_Snapshot_Table;
 
   PROCEDURE Snap_Datafile(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_Datafile (DBID, FILE#, CREATION_CHANGE#, FILENAME, TS#, TSNAME, BLOCK_SIZE, CON_DBID, CON_ID
+    INSERT INTO panorama.Panorama_Datafile (DBID, FILE#, CREATION_CHANGE#, FILENAME, TS#, TSNAME, BLOCK_SIZE, CON_DBID, CON_ID
     ) SELECT p_DBID, d.File#, d.Creation_Change#, d.Name, d.TS#, ts.Name, d.Block_Size,
              p_Con_DBID,
              #{PanoramaConnection.db_version >= '12.1' ? "d.Con_ID" : "0"}
       FROM   v$Datafile d
       JOIN   v$Tablespace ts ON ts.ts# = d.ts#
-      AND    NOT EXISTS (SELECT 1 FROM Panorama_Datafile di WHERE di.DBID = p_DBID AND di.FILE# = d.FILE# AND di.CREATION_CHANGE# = d.CREATION_CHANGE# AND di.Con_DBID = p_Con_DBID)
+      AND    NOT EXISTS (SELECT 1 FROM panorama.Panorama_Datafile di WHERE di.DBID = p_DBID AND di.FILE# = d.FILE# AND di.CREATION_CHANGE# = d.CREATION_CHANGE# AND di.Con_DBID = p_Con_DBID)
     ;
   END Snap_Datafile;
 
   PROCEDURE Snap_DB_Cache_Advice(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_DB_Cache_Advice (SNAP_ID, DBID, INSTANCE_NUMBER, BPID, BUFFERS_FOR_ESTIMATE, NAME, BLOCK_SIZE, ADVICE_STATUS, SIZE_FOR_ESTIMATE,
+    INSERT INTO panorama.Panorama_DB_Cache_Advice (SNAP_ID, DBID, INSTANCE_NUMBER, BPID, BUFFERS_FOR_ESTIMATE, NAME, BLOCK_SIZE, ADVICE_STATUS, SIZE_FOR_ESTIMATE,
     SIZE_FACTOR, PHYSICAL_READS, BASE_PHYSICAL_READS, ACTUAL_PHYSICAL_READS, ESTD_PHYSICAL_READ_TIME, CON_DBID, CON_ID
     ) SELECT p_Snap_ID, p_DBID, p_Instance,
              ID, BUFFERS_FOR_ESTIMATE, Name, Block_Size, Advice_Status, SIZE_FOR_ESTIMATE, SIZE_FACTOR, ESTD_PHYSICAL_READS,
@@ -87,7 +87,7 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_Enqueue_Stat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_Enqueue_Stat (SNAP_ID, DBID, INSTANCE_NUMBER, EQ_TYPE, REQ_REASON, TOTAL_REQ#, TOTAL_WAIT#, SUCC_REQ#, FAILED_REQ#,
+    INSERT INTO panorama.Panorama_Enqueue_Stat (SNAP_ID, DBID, INSTANCE_NUMBER, EQ_TYPE, REQ_REASON, TOTAL_REQ#, TOTAL_WAIT#, SUCC_REQ#, FAILED_REQ#,
                                        CUM_WAIT_TIME, EVENT#, CON_DBID, CON_ID
     ) SELECT p_Snap_ID, p_DBID, p_Instance,
              EQ_TYPE, REQ_REASON, TOTAL_REQ#, TOTAL_WAIT#, SUCC_REQ#, FAILED_REQ#, CUM_WAIT_TIME, EVENT#,
@@ -99,7 +99,7 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_FileStatXS(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_FileStatXS (SNAP_ID, DBID, INSTANCE_NUMBER, FILE#, Creation_Change#,
+    INSERT INTO panorama.Panorama_FileStatXS (SNAP_ID, DBID, INSTANCE_NUMBER, FILE#, Creation_Change#,
                                      PHYRDS, PHYWRTS, SINGLEBLKRDS, READTIM, WRITETIM, SINGLEBLKRDTIM, PHYBLKRD, PHYBLKWRT, WAIT_COUNT, TIME,
                                      OPTIMIZED_PHYBLKRD, CON_DBID, CON_ID
     ) SELECT p_Snap_ID, p_DBID, p_Instance, f.File#, d.Creation_Change#, f.PHYRDS, f.PHYWRTS, f.SINGLEBLKRDS, f.READTIM, f.WRITETIM, f.SINGLEBLKRDTIM, f.PHYBLKRD, f.PHYBLKWRT, NULL /* WAIT_COUNT */, NULL /* TIME */,
@@ -112,7 +112,7 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_IOStat_Detail(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_IOStat_Detail (SNAP_ID, DBID, INSTANCE_NUMBER, FUNCTION_ID, FUNCTION_NAME, FILETYPE_ID, FILETYPE_NAME, SMALL_READ_MEGABYTES, SMALL_WRITE_MEGABYTES, LARGE_READ_MEGABYTES, LARGE_WRITE_MEGABYTES,
+    INSERT INTO panorama.Panorama_IOStat_Detail (SNAP_ID, DBID, INSTANCE_NUMBER, FUNCTION_ID, FUNCTION_NAME, FILETYPE_ID, FILETYPE_NAME, SMALL_READ_MEGABYTES, SMALL_WRITE_MEGABYTES, LARGE_READ_MEGABYTES, LARGE_WRITE_MEGABYTES,
                                    SMALL_READ_REQS, SMALL_WRITE_REQS, LARGE_READ_REQS, LARGE_WRITE_REQS, NUMBER_OF_WAITS, WAIT_TIME, CON_DBID, CON_ID
     ) SELECT p_SNAP_ID, p_DBID, p_INSTANCE, FUNCTION_ID, FUNCTION_NAME, FILETYPE_ID, FILETYPE_NAME, SMALL_READ_MEGABYTES, SMALL_WRITE_MEGABYTES, LARGE_READ_MEGABYTES, LARGE_WRITE_MEGABYTES,
              SMALL_READ_REQS, SMALL_WRITE_REQS, LARGE_READ_REQS, LARGE_WRITE_REQS, NUMBER_OF_WAITS, WAIT_TIME,
@@ -124,7 +124,7 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_IOStat_Filetype(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_IOStat_Filetype (SNAP_ID, DBID, INSTANCE_NUMBER, FILETYPE_ID, FILETYPE_NAME,
+    INSERT INTO panorama.Panorama_IOStat_Filetype (SNAP_ID, DBID, INSTANCE_NUMBER, FILETYPE_ID, FILETYPE_NAME,
                                           SMALL_READ_MEGABYTES, SMALL_WRITE_MEGABYTES, LARGE_READ_MEGABYTES, LARGE_WRITE_MEGABYTES,
                                           SMALL_READ_REQS, SMALL_WRITE_REQS, SMALL_SYNC_READ_REQS, LARGE_READ_REQS, LARGE_WRITE_REQS,
                                           SMALL_READ_SERVICETIME, SMALL_WRITE_SERVICETIME, SMALL_SYNC_READ_LATENCY, LARGE_READ_SERVICETIME, LARGE_WRITE_SERVICETIME,
@@ -141,7 +141,7 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_Latch(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_Latch (SNAP_ID, DBID, INSTANCE_NUMBER, LATCH_HASH, LATCH_NAME, LEVEL#, GETS, MISSES, SLEEPS, IMMEDIATE_GETS, IMMEDIATE_MISSES,
+    INSERT INTO panorama.Panorama_Latch (SNAP_ID, DBID, INSTANCE_NUMBER, LATCH_HASH, LATCH_NAME, LEVEL#, GETS, MISSES, SLEEPS, IMMEDIATE_GETS, IMMEDIATE_MISSES,
                                 SPIN_GETS, SLEEP1, SLEEP2, SLEEP3, SLEEP4, WAIT_TIME, CON_DBID, CON_ID
     )
     SELECT p_SNAP_ID, p_DBID, p_INSTANCE, HASH, NAME, LEVEL#, GETS, MISSES, SLEEPS, IMMEDIATE_GETS, IMMEDIATE_MISSES,
@@ -152,7 +152,7 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_Log(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_Log (Snap_ID, DBID, Instance_Number, Group#, Thread#, Sequence#, Bytes, Members, Archived, Status, First_Change#, First_Time,
+    INSERT INTO panorama.Panorama_Log (Snap_ID, DBID, Instance_Number, Group#, Thread#, Sequence#, Bytes, Members, Archived, Status, First_Change#, First_Time,
     Con_DBID, Con_ID
     ) SELECT p_Snap_ID, p_DBID, p_Instance, Group#, Thread#, Sequence#, Bytes, Members, Archived, Status, First_Change#, First_Time, p_Con_DBID,
              #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
@@ -162,7 +162,7 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_Memory_Resize_Ops(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER, p_Begin_Interval_Time IN DATE) IS
   BEGIN
-    INSERT INTO Panorama_Memory_Resize_Ops (SNAP_ID, DBID, INSTANCE_NUMBER, COMPONENT, OPER_TYPE, START_TIME, END_TIME, TARGET_SIZE,
+    INSERT INTO panorama.Panorama_Memory_Resize_Ops (SNAP_ID, DBID, INSTANCE_NUMBER, COMPONENT, OPER_TYPE, START_TIME, END_TIME, TARGET_SIZE,
                                             OPER_MODE, PARAMETER, INITIAL_SIZE, FINAL_SIZE, STATUS, CON_DBID, CON_ID
     ) SELECT p_Snap_ID, p_DBID, p_Instance, COMPONENT, OPER_TYPE, START_TIME, END_TIME, TARGET_SIZE,
              OPER_MODE, PARAMETER, INITIAL_SIZE, FINAL_SIZE, STATUS,
@@ -175,7 +175,7 @@ END Panorama_Sampler_Snapshot;
   PROCEDURE Snap_Metric_Name(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     /* Check for new group_names in AWR by select distinct group_id, group_name from AWR-pendant of Panorama_METRIC_NAME order by Group_ID; */
-    INSERT INTO Panorama_Metric_Name (DBID, GROUP_ID, GROUP_NAME, METRIC_ID, METRIC_NAME, METRIC_UNIT, CON_DBID, CON_ID
+    INSERT INTO panorama.Panorama_Metric_Name (DBID, GROUP_ID, GROUP_NAME, METRIC_ID, METRIC_NAME, METRIC_UNIT, CON_DBID, CON_ID
     ) SELECT p_DBID, Group_ID,
              CASE
               WHEN Group_ID = 0	THEN 'Event Metrics'
@@ -196,13 +196,13 @@ END Panorama_Sampler_Snapshot;
              METRIC_ID, METRIC_NAME, METRIC_UNIT, p_Con_DBID, Con_ID
       FROM   (SELECT DISTINCT Group_ID, Metric_ID, Metric_Name, Metric_Unit, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"} Con_ID
               FROM   v$SysMetric_History
-              WHERE  (Group_ID, Metric_ID, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}) NOT IN (SELECT Group_ID, Metric_ID, Con_ID FROM Panorama_Metric_Name WHERE DBID = p_DBID AND Con_DBID = p_Con_DBID))
+              WHERE  (Group_ID, Metric_ID, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}) NOT IN (SELECT Group_ID, Metric_ID, Con_ID FROM panorama.Panorama_Metric_Name WHERE DBID = p_DBID AND Con_DBID = p_Con_DBID))
     ;
   END Snap_Metric_Name;
 
   PROCEDURE Snap_Parameter(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_Parameter (SNAP_ID, DBID, INSTANCE_NUMBER, PARAMETER_HASH, PARAMETER_NAME, VALUE, ISDEFAULT, ISMODIFIED, CON_DBID, CON_ID
+    INSERT INTO panorama.Panorama_Parameter (SNAP_ID, DBID, INSTANCE_NUMBER, PARAMETER_HASH, PARAMETER_NAME, VALUE, ISDEFAULT, ISMODIFIED, CON_DBID, CON_ID
     ) SELECT p_Snap_ID, p_DBID, p_Instance, Hash, Name, Value, ISDEFAULT, ISMODIFIED, p_Con_DBID,
              #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
       FROM   v$Parameter
@@ -211,7 +211,7 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_PGAStat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_PGAStat (SNAP_ID, DBID, INSTANCE_NUMBER, NAME, VALUE, CON_DBID, CON_ID
+    INSERT INTO panorama.Panorama_PGAStat (SNAP_ID, DBID, INSTANCE_NUMBER, NAME, VALUE, CON_DBID, CON_ID
     ) SELECT p_Snap_ID, p_DBID, p_Instance, Name, Value, p_Con_DBID,
              #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
       FROM   v$PGAStat
@@ -220,7 +220,7 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_Process_Mem_Summary(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_Process_Mem_Summary (SNAP_ID, DBID, INSTANCE_NUMBER, CATEGORY, IS_INSTANCE_WIDE,
+    INSERT INTO panorama.Panorama_Process_Mem_Summary (SNAP_ID, DBID, INSTANCE_NUMBER, CATEGORY, IS_INSTANCE_WIDE,
                                               NUM_PROCESSES, NON_ZERO_ALLOCS, USED_TOTAL, ALLOCATED_TOTAL, ALLOCATED_AVG,
                                               ALLOCATED_STDDEV, ALLOCATED_MAX, MAX_ALLOCATED_MAX, CON_DBID, CON_ID
     ) SELECT p_Snap_ID, p_DBID, p_Instance, Category, DECODE(#{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}, 0, 1, 0),
@@ -234,7 +234,7 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_Resource_Limit(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_Resource_Limit (Snap_ID, DBID, Instance_Number, Resource_Name, Current_Utilization, Max_Utilization, Initial_Allocation, Limit_Value, Con_DBID, Con_ID)
+    INSERT INTO panorama.Panorama_Resource_Limit (Snap_ID, DBID, Instance_Number, Resource_Name, Current_Utilization, Max_Utilization, Initial_Allocation, Limit_Value, Con_DBID, Con_ID)
     SELECT p_Snap_ID, p_DBID, p_Instance, Resource_Name, Current_Utilization, Max_Utilization, Initial_Allocation, Limit_Value, p_Con_DBID,
            #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
     FROM   v$Resource_Limit
@@ -243,7 +243,7 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_Seg_Stat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_Seg_Stat (SNAP_ID, DBID, INSTANCE_NUMBER, TS#, OBJ#, DATAOBJ#,
+    INSERT INTO panorama.Panorama_Seg_Stat (SNAP_ID, DBID, INSTANCE_NUMBER, TS#, OBJ#, DATAOBJ#,
                                    LOGICAL_READS_TOTAL, LOGICAL_READS_DELTA,
                                    BUFFER_BUSY_WAITS_TOTAL, BUFFER_BUSY_WAITS_DELTA,
                                    DB_BLOCK_CHANGES_TOTAL, DB_BLOCK_CHANGES_DELTA,
@@ -326,11 +326,11 @@ END Panorama_Sampler_Snapshot;
                    ) vs
             -- Last Sanpshot for each object
             LEFT OUTER JOIN  (SELECT MAX(Snap_ID) Max_Snap_ID, DBID, INSTANCE_NUMBER, TS#, OBJ#, DATAOBJ#, CON_DBID
-                              FROM   Panorama_Seg_Stat
+                              FROM   panorama.Panorama_Seg_Stat
                               GROUP BY DBID, INSTANCE_NUMBER, TS#, OBJ#, DATAOBJ#, CON_DBID
                              ) ms ON ms.DBID=p_DBID AND ms.Instance_Number=p_Instance AND ms.TS#=vs.TS# AND ms.Obj#=vs.Obj# AND ms.DataObj#=vs.DataObj# AND ms.Con_DBID=p_Con_DBID
             -- Complete record of last snapshot for each object
-            LEFT OUTER JOIN Panorama_Seg_Stat s ON  s.DBID=p_DBID AND s.Snap_ID=ms.Max_Snap_ID AND s.Instance_Number=p_Instance AND s.TS#=vs.TS# AND s.DataObj#=vs.DataObj# AND s.Obj#=vs.Obj# AND s.Con_DBID=p_Con_DBID
+            LEFT OUTER JOIN panorama.Panorama_Seg_Stat s ON  s.DBID=p_DBID AND s.Snap_ID=ms.Max_Snap_ID AND s.Instance_Number=p_Instance AND s.TS#=vs.TS# AND s.DataObj#=vs.DataObj# AND s.Obj#=vs.Obj# AND s.Con_DBID=p_Con_DBID
            )
     WHERE      Prev_DBID IS NULL /* No previous record exists */
             OR LOGICAL_READS_DELTA            > 0
@@ -360,16 +360,16 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_Service_Name(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_Service_Name (DBID, Service_Name_Hash, Service_Name, Con_DBID, Con_ID
+    INSERT INTO panorama.Panorama_Service_Name (DBID, Service_Name_Hash, Service_Name, Con_DBID, Con_ID
     ) SELECT p_DBID, Name_Hash, Name, p_Con_DBID, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
       FROM   v$Services s
-      WHERE  NOT EXISTS (SELECT 1 FROM Panorama_Service_Name ps WHERE ps.DBID = p_DBID AND ps.Service_Name = s.Name AND ps.Con_DBID = p_Con_DBID)
+      WHERE  NOT EXISTS (SELECT 1 FROM panorama.Panorama_Service_Name ps WHERE ps.DBID = p_DBID AND ps.Service_Name = s.Name AND ps.Con_DBID = p_Con_DBID)
     ;
   END Snap_Service_Name;
 
   PROCEDURE Snap_SQLBind(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_SQLBind(
+    INSERT INTO panorama.Panorama_SQLBind(
       SNAP_ID, DBID, INSTANCE_NUMBER, SQL_ID, NAME, POSITION, DUP_POSITION, DATATYPE, DATATYPE_STRING, CHARACTER_SID,
       PRECISION, SCALE, MAX_LENGTH, WAS_CAPTURED, LAST_CAPTURED, VALUE_STRING, VALUE_ANYDATA,
       CON_DBID, CON_ID
@@ -383,13 +383,13 @@ END Panorama_Sampler_Snapshot;
             FROM   v$SQL_Bind_Capture
             GROUP BY SQL_ID
            ) bm ON bm.SQL_ID = b.SQL_ID AND bm.Max_Child_Number = b.Child_Number
-    WHERE  EXISTS (SELECT 1 FROM Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = b.SQL_ID AND ss.Con_DBID = p_Con_DBID) -- Only for SQLs recorded in Panorama_SQLStat in same snapshot
+    WHERE  EXISTS (SELECT 1 FROM panorama.Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = b.SQL_ID AND ss.Con_DBID = p_Con_DBID) -- Only for SQLs recorded in Panorama_SQLStat in same snapshot
     ;
   END Snap_SQLBind;
 
   PROCEDURE Snap_SQL_Plan(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_SQL_Plan (
+    INSERT INTO panorama.Panorama_SQL_Plan (
       DBID, SQL_ID, PLAN_HASH_VALUE, ID, OPERATION, OPTIONS, OBJECT_NODE, OBJECT#, OBJECT_OWNER, OBJECT_NAME, OBJECT_ALIAS, OBJECT_TYPE, OPTIMIZER,
       PARENT_ID, DEPTH, POSITION, SEARCH_COLUMNS, COST, CARDINALITY, BYTES, OTHER_TAG, PARTITION_START, PARTITION_STOP, PARTITION_ID, OTHER,
       DISTRIBUTION, CPU_COST, IO_COST, TEMP_SPACE, ACCESS_PREDICATES, FILTER_PREDICATES, PROJECTION, TIME, QBLOCK_NAME,
@@ -406,9 +406,9 @@ END Panorama_Sampler_Snapshot;
             FROM   v$SQL_Plan
             GROUP BY SQL_ID, Plan_Hash_Value
            ) pm ON pm.SQL_ID = p.SQL_ID AND pm.Plan_Hash_Value = p.Plan_Hash_Value AND pm.Max_Child_Number = p.Child_Number
-    LEFT OUTER JOIN PANORAMA_SQL_PLAN e on e.DBID = p_DBID AND e.SQL_ID = p.SQL_ID AND e.Plan_Hash_Value = p.Plan_Hash_Value AND e.ID = p.ID AND e.Con_DBID = p_Con_DBID
+    LEFT OUTER JOIN panorama.PANORAMA_SQL_PLAN e on e.DBID = p_DBID AND e.SQL_ID = p.SQL_ID AND e.Plan_Hash_Value = p.Plan_Hash_Value AND e.ID = p.ID AND e.Con_DBID = p_Con_DBID
     WHERE  e.DBID IS NULL   -- New records does not yet exists in table
-    AND    EXISTS (SELECT 1 FROM Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = p.SQL_ID AND ss.Plan_Hash_Value = p.Plan_Hash_Value AND ss.Con_DBID = p_Con_DBID) -- Only for SQLs recorded in Panorama_SQLStat in same snapshot
+    AND    EXISTS (SELECT 1 FROM panorama.Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = p.SQL_ID AND ss.Plan_Hash_Value = p.Plan_Hash_Value AND ss.Con_DBID = p_Con_DBID) -- Only for SQLs recorded in Panorama_SQLStat in same snapshot
     ;
   END Snap_SQL_Plan;
 
@@ -417,7 +417,7 @@ END Panorama_Sampler_Snapshot;
   BEGIN
     -- Child cursors created in this snapshot period should count full in delta because they are not counted in previous snapshot's total values
     -- Child cursors created in former snapshots shoud only count with the difference new total - old total, but not smaller than 0
-    INSERT INTO Panorama_SQLStat (Snap_ID, DBID, Instance_Number, SQL_ID, Plan_Hash_Value, OPTIMIZER_COST, OPTIMIZER_MODE, OPTIMIZER_ENV_HASH_VALUE, SHARABLE_MEM,
+    INSERT INTO panorama.Panorama_SQLStat (Snap_ID, DBID, Instance_Number, SQL_ID, Plan_Hash_Value, OPTIMIZER_COST, OPTIMIZER_MODE, OPTIMIZER_ENV_HASH_VALUE, SHARABLE_MEM,
         LOADED_VERSIONS, VERSION_COUNT, MODULE, ACTION, SQL_PROFILE, FORCE_MATCHING_SIGNATURE, PARSING_SCHEMA_ID, PARSING_SCHEMA_NAME, PARSING_USER_ID,
         FETCHES_TOTAL, FETCHES_DELTA, END_OF_FETCH_COUNT_TOTAL, END_OF_FETCH_COUNT_DELTA, SORTS_TOTAL, SORTS_DELTA, EXECUTIONS_TOTAL, EXECUTIONS_DELTA,
         PX_SERVERS_EXECS_TOTAL, PX_SERVERS_EXECS_DELTA, LOADS_TOTAL, LOADS_DELTA, INVALIDATIONS_TOTAL, INVALIDATIONS_DELTA, PARSE_CALLS_TOTAL, PARSE_CALLS_DELTA,
@@ -508,10 +508,10 @@ END Panorama_Sampler_Snapshot;
               HAVING MAX(Last_Active_time) > MAX(i.Begin)  -- Count all childs if one child is active in period
              ) s
       LEFT OUTER JOIN  (SELECT MAX(Snap_ID) Max_Snap_ID, DBID, Instance_Number, SQL_ID, Plan_Hash_Value, Con_DBID
-                        FROM   Panorama_SQLStat
+                        FROM   panorama.Panorama_SQLStat
                         GROUP BY DBID, Instance_Number, SQL_ID, Plan_Hash_Value, Con_DBID
                        ) ms ON ms.DBID=p_DBID AND ms.Instance_Number=p_Instance AND ms.SQL_ID=s.SQL_ID AND ms.Plan_Hash_Value=s.Plan_Hash_Value AND ms.Con_DBID=p_Con_DBID
-      LEFT OUTER JOIN Panorama_SQLStat p ON  p.DBID=p_DBID AND p.Snap_ID=ms.Max_Snap_ID AND p.Instance_Number=p_Instance AND p.SQL_ID=s.SQL_ID AND p.Plan_Hash_Value=s.Plan_Hash_Value AND p.Con_DBID=p_Con_DBID
+      LEFT OUTER JOIN panorama.Panorama_SQLStat p ON  p.DBID=p_DBID AND p.Snap_ID=ms.Max_Snap_ID AND p.Instance_Number=p_Instance AND p.SQL_ID=s.SQL_ID AND p.Plan_Hash_Value=s.Plan_Hash_Value AND p.Con_DBID=p_Con_DBID
       WHERE  (GREATEST(NVL(s.Executions_O   , 0) - NVL(p.Executions_Total,   0), 0) + NVL(s.Executions_N,   0))      >= p_SQL_Min_No_of_Execs
       OR     (GREATEST(NVL(s.Elapsed_Time_O , 0) - NVL(p.Elapsed_Time_Total, 0), 0) + NVL(s.Elapsed_Time_N, 0))/1000 >= p_SQL_Min_Runtime_MilliSecs
     ;
@@ -519,33 +519,33 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_SQLText(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_SQLText (DBID, SQL_ID, SQL_Text, Command_Type, Con_DBID, Con_ID)
+    INSERT INTO panorama.Panorama_SQLText (DBID, SQL_ID, SQL_Text, Command_Type, Con_DBID, Con_ID)
     SELECT p_DBID, s.SQL_ID, s.SQL_FullText, s.Command_Type, p_Con_DBID,
            #{PanoramaConnection.db_version >= '12.1' ? "s.Con_ID" : "0"}
     FROM   v$SQLArea s
-    LEFT OUTER JOIN Panorama_SQLText p ON p.DBID=p_DBID AND p.SQL_ID=s.SQL_ID AND p.Con_DBID=p_Con_DBID
+    LEFT OUTER JOIN panorama.Panorama_SQLText p ON p.DBID=p_DBID AND p.SQL_ID=s.SQL_ID AND p.Con_DBID=p_Con_DBID
     WHERE  p.SQL_ID IS NULL  -- SQLText does not already exist
-    AND    EXISTS (SELECT 1 FROM Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = s.SQL_ID AND ss.Con_DBID = p_Con_DBID) -- Only for SQLs recorded in Panorama_SQLStat in same snapshot
+    AND    EXISTS (SELECT 1 FROM panorama.Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = s.SQL_ID AND ss.Con_DBID = p_Con_DBID) -- Only for SQLs recorded in Panorama_SQLStat in same snapshot
     ;
   END Snap_SQLText;
 
   PROCEDURE Snap_StatName(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Internal_StatName(DBID, STAT_ID, Name, Con_DBID, Con_ID)
+    INSERT INTO panorama.Internal_StatName(DBID, STAT_ID, Name, Con_DBID, Con_ID)
     SELECT p_DBID, Stat_ID, Name, p_Con_DBID, 0
     FROM   V$StatName n
-    WHERE  n.Stat_ID NOT IN (SELECT Stat_ID FROM Internal_StatName)
+    WHERE  n.Stat_ID NOT IN (SELECT Stat_ID FROM panorama.Internal_StatName)
     ;
   END Snap_StatName;
 
   PROCEDURE Snap_Sysmetric_History(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Internal_SysMetric_History (SNAP_ID, DBID, INSTANCE_NUMBER, BEGIN_TIME, END_TIME, INTSIZE, GROUP_ID,
+    INSERT INTO panorama.Internal_SysMetric_History (SNAP_ID, DBID, INSTANCE_NUMBER, BEGIN_TIME, END_TIME, INTSIZE, GROUP_ID,
                                             METRIC_ID, VALUE, CON_DBID, CON_ID)
     SELECT p_SNAP_ID, p_DBID, p_INSTANCE, BEGIN_TIME, END_TIME, INTSIZE_CSEC, GROUP_ID,
            METRIC_ID, VALUE, p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "sm.Con_ID" : "0"}
     FROM   v$SysMetric_History sm
-    JOIN   Panorama_Snapshot ss ON ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.Instance_Number = p_Instance
+    JOIN   panorama.Panorama_Snapshot ss ON ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.Instance_Number = p_Instance
     WHERE  sm.End_Time >= ss.Begin_Interval_Time
     AND    sm.End_Time < ss.End_Interval_Time
     ;
@@ -553,7 +553,7 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_Sysmetric_Summary(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Internal_SysMetric_Summary (SNAP_ID, DBID, INSTANCE_NUMBER, BEGIN_TIME, END_TIME, INTSIZE, GROUP_ID,
+    INSERT INTO panorama.Internal_SysMetric_Summary (SNAP_ID, DBID, INSTANCE_NUMBER, BEGIN_TIME, END_TIME, INTSIZE, GROUP_ID,
                                             METRIC_ID, NUM_INTERVAL, MinVal, MaxVal, Average,
                                             STANDARD_DEVIATION, SUM_SQUARES,
                                             CON_DBID, CON_ID)
@@ -563,7 +563,7 @@ END Panorama_Sampler_Snapshot;
            p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "MIN(Con_ID)" : "0"}
     FROM   (SELECT sm.*, AVG(Value) OVER (PARTITION BY sm.Group_ID, sm.Metric_ID) avg_value
             FROM   v$SysMetric_History sm
-            JOIN   Panorama_Snapshot ss ON ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.Instance_Number = p_Instance
+            JOIN   panorama.Panorama_Snapshot ss ON ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.Instance_Number = p_Instance
             WHERE  sm.End_Time >= ss.Begin_Interval_Time
             AND    sm.End_Time < ss.End_Interval_Time
             AND    Group_ID = 2
@@ -574,7 +574,7 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_System_Event(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_System_Event(SNAP_ID, DBID, INSTANCE_NUMBER, EVENT_ID, EVENT_NAME, WAIT_CLASS_ID, WAIT_CLASS,
+    INSERT INTO panorama.Panorama_System_Event(SNAP_ID, DBID, INSTANCE_NUMBER, EVENT_ID, EVENT_NAME, WAIT_CLASS_ID, WAIT_CLASS,
                                       TOTAL_WAITS, TOTAL_TIMEOUTS, TIME_WAITED_MICRO, TOTAL_WAITS_FG, TOTAL_TIMEOUTS_FG, TIME_WAITED_MICRO_FG,
                                       CON_DBID, CON_ID
                                      )
@@ -587,7 +587,7 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_SysStat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Internal_SysStat(SNAP_ID, DBID, INSTANCE_NUMBER, STAT_ID, VALUE, CON_DBID, CON_ID)
+    INSERT INTO panorama.Internal_SysStat(SNAP_ID, DBID, INSTANCE_NUMBER, STAT_ID, VALUE, CON_DBID, CON_ID)
     SELECT p_Snap_ID, p_DBID, p_Instance, Stat_ID, Value, p_Con_DBID,  #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
     FROM   V$SysStat
     ;
@@ -595,31 +595,31 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_Tablespace(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_Tablespace (DBID, TS#, TSNAME, CONTENTS, SEGMENT_SPACE_MANAGEMENT, EXTENT_MANAGEMENT, BLOCK_SIZE, CON_DBID, CON_ID
+    INSERT INTO panorama.Panorama_Tablespace (DBID, TS#, TSNAME, CONTENTS, SEGMENT_SPACE_MANAGEMENT, EXTENT_MANAGEMENT, BLOCK_SIZE, CON_DBID, CON_ID
     ) SELECT p_DBID, d.TS#, d.NAME, t.CONTENTS, t.SEGMENT_SPACE_MANAGEMENT, t.EXTENT_MANAGEMENT, t.BLOCK_SIZE,
              p_Con_DBID,
              #{PanoramaConnection.db_version >= '12.1' ? "d.Con_ID" : "0"}
       FROM   v$Tablespace d
       JOIN   DBA_Tablespaces t ON t.Tablespace_Name = d.Name
-      AND    NOT EXISTS (SELECT 1 FROM Panorama_Tablespace di WHERE di.DBID = p_DBID AND di.TS# = d.TS# AND di.Con_DBID = p_Con_DBID)
+      AND    NOT EXISTS (SELECT 1 FROM panorama.Panorama_Tablespace di WHERE di.DBID = p_DBID AND di.TS# = d.TS# AND di.Con_DBID = p_Con_DBID)
     ;
   END Snap_Tablespace;
 
   PROCEDURE Snap_Tempfile(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_Tempfile (DBID, FILE#, CREATION_CHANGE#, FILENAME, TS#, TSNAME, BLOCK_SIZE, CON_DBID, CON_ID
+    INSERT INTO panorama.Panorama_Tempfile (DBID, FILE#, CREATION_CHANGE#, FILENAME, TS#, TSNAME, BLOCK_SIZE, CON_DBID, CON_ID
     ) SELECT p_DBID, d.File#, d.Creation_Change#, d.Name, d.TS#, ts.Name, d.Block_Size,
              p_Con_DBID,
              #{PanoramaConnection.db_version >= '12.1' ? "d.Con_ID" : "0"}
       FROM   v$Tempfile d
       JOIN   v$Tablespace ts ON ts.ts# = d.ts#
-      AND    NOT EXISTS (SELECT 1 FROM Panorama_Tempfile di WHERE di.DBID = p_DBID AND di.FILE# = d.FILE# AND di.CREATION_CHANGE# = d.CREATION_CHANGE# AND di.Con_DBID = p_Con_DBID)
+      AND    NOT EXISTS (SELECT 1 FROM panorama.Panorama_Tempfile di WHERE di.DBID = p_DBID AND di.FILE# = d.FILE# AND di.CREATION_CHANGE# = d.CREATION_CHANGE# AND di.Con_DBID = p_Con_DBID)
     ;
   END Snap_Tempfile;
 
   PROCEDURE Snap_TempStatXS(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_TempStatXS (SNAP_ID, DBID, INSTANCE_NUMBER, FILE#, Creation_Change#,
+    INSERT INTO panorama.Panorama_TempStatXS (SNAP_ID, DBID, INSTANCE_NUMBER, FILE#, Creation_Change#,
                                      PHYRDS, PHYWRTS, SINGLEBLKRDS, READTIM, WRITETIM, SINGLEBLKRDTIM, PHYBLKRD, PHYBLKWRT, WAIT_COUNT, TIME,
                                      CON_DBID, CON_ID
     ) SELECT p_Snap_ID, p_DBID, p_Instance, f.File#, d.Creation_Change#, f.PHYRDS, f.PHYWRTS, f.SINGLEBLKRDS, f.READTIM, f.WRITETIM, f.SINGLEBLKRDTIM, f.PHYBLKRD, f.PHYBLKWRT, NULL /* WAIT_COUNT */, NULL /* TIME */,
@@ -634,10 +634,10 @@ END Panorama_Sampler_Snapshot;
   BEGIN
     #{ PanoramaConnection.db_version >= '11.2' ?
            "
-    INSERT INTO Panorama_TopLevelCall_Name (DBID, Top_Level_Call#, Top_Level_Call_Name, Con_DBID, Con_ID)
+    INSERT INTO panorama.Panorama_TopLevelCall_Name (DBID, Top_Level_Call#, Top_Level_Call_Name, Con_DBID, Con_ID)
     SELECT p_DBID, Top_Level_Call#, Top_Level_Call_Name, p_Con_DBID, #{PanoramaConnection.db_version >= '12.1' ? "s.Con_ID" : "0"}
     FROM   v$TopLevelCall s
-    WHERE  NOT EXISTS (SELECT 1 FROM Panorama_TopLevelCall_Name t WHERE t.DBID = p_DBID AND t.Top_Level_Call# = s.Top_Level_Call# AND t.Con_DBID = p_Con_DBID)
+    WHERE  NOT EXISTS (SELECT 1 FROM panorama.Panorama_TopLevelCall_Name t WHERE t.DBID = p_DBID AND t.Top_Level_Call# = s.Top_Level_Call# AND t.Con_DBID = p_Con_DBID)
     ;
            " : "NULL;"
     }
@@ -645,14 +645,14 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_UndoStat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
-    INSERT INTO Panorama_UndoStat(BEGIN_TIME, END_TIME, DBID, INSTANCE_NUMBER, SNAP_ID, UNDOTSN, UNDOBLKS, TXNCOUNT, MAXQUERYLEN, MAXQUERYSQLID, MAXCONCURRENCY, UNXPSTEALCNT,
+    INSERT INTO panorama.Panorama_UndoStat(BEGIN_TIME, END_TIME, DBID, INSTANCE_NUMBER, SNAP_ID, UNDOTSN, UNDOBLKS, TXNCOUNT, MAXQUERYLEN, MAXQUERYSQLID, MAXCONCURRENCY, UNXPSTEALCNT,
                                   UNXPBLKRELCNT, UNXPBLKREUCNT, EXPSTEALCNT, EXPBLKRELCNT, EXPBLKREUCNT, SSOLDERRCNT, NOSPACEERRCNT, ACTIVEBLKS, UNEXPIREDBLKS, EXPIREDBLKS,
                                   TUNED_UNDORETENTION, CON_DBID, CON_ID)
     SELECT BEGIN_TIME, END_TIME, p_DBID, p_INSTANCE, p_SNAP_ID, UNDOTSN, UNDOBLKS, TXNCOUNT, MAXQUERYLEN, MAXQUERYID, MAXCONCURRENCY, UNXPSTEALCNT, UNXPBLKRELCNT,
            UNXPBLKREUCNT, EXPSTEALCNT, EXPBLKRELCNT, EXPBLKREUCNT, SSOLDERRCNT, NOSPACEERRCNT, ACTIVEBLKS, UNEXPIREDBLKS, EXPIREDBLKS, TUNED_UNDORETENTION,
            p_Con_DBID,  #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
     FROM   V$UndoStat u
-    WHERE NOT EXISTS (SELECT 1 FROM Panorama_UndoStat i WHERE i.BEGIN_TIME = u.Begin_Time AND i.END_TIME = u.End_time AND i.DBID = p_DBID AND i.INSTANCE_NUMBER = p_Instance AND i.CON_DBID = p_Con_DBID)
+    WHERE NOT EXISTS (SELECT 1 FROM panorama.Panorama_UndoStat i WHERE i.BEGIN_TIME = u.Begin_Time AND i.END_TIME = u.End_time AND i.DBID = p_DBID AND i.INSTANCE_NUMBER = p_Instance AND i.CON_DBID = p_Con_DBID)
     AND   u.Begin_Time < (SELECT MAX(Begin_Time) FROM V$UndoStat) /* Newest record is dynamically cumulated until age of 10 minutes */
     ;
   END Snap_UndoStat;
@@ -660,14 +660,14 @@ END Panorama_Sampler_Snapshot;
   PROCEDURE Snap_WR_Control(p_DBID IN NUMBER, p_Snapshot_Cycle IN NUMBER, p_Snapshot_Retention IN NUMBER) IS
   BEGIN
     -- Create record if not exists
-    INSERT INTO Panorama_WR_Control (DBID, SNAP_INTERVAL, RETENTION, Con_ID)
+    INSERT INTO panorama.Panorama_WR_Control (DBID, SNAP_INTERVAL, RETENTION, Con_ID)
     SELECT p_DBID, NUMTODSINTERVAL(p_Snapshot_Cycle, 'MINUTE'), NUMTODSINTERVAL(p_Snapshot_Retention, 'DAY'),
            #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
     FROM   v$Instance
-    WHERE  NOT EXISTS (SELECT 1 FROM Panorama_WR_Control WHERE DBID = p_DBID)
+    WHERE  NOT EXISTS (SELECT 1 FROM panorama.Panorama_WR_Control WHERE DBID = p_DBID)
     ;
 
-    UPDATE Panorama_WR_Control SET SNAP_INTERVAL  = NUMTODSINTERVAL(p_Snapshot_Cycle,     'MINUTE'),
+    UPDATE panorama.Panorama_WR_Control SET SNAP_INTERVAL  = NUMTODSINTERVAL(p_Snapshot_Cycle,     'MINUTE'),
                                    RETENTION      = NUMTODSINTERVAL(p_Snapshot_Retention, 'DAY'),
                                    Con_ID = (SELECT  #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"} FROM   v$Instance)
     WHERE DBID = p_DBID

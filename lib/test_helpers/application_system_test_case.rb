@@ -42,21 +42,18 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     end
   end
 
-  @@first_call = false
-
   # Login application at test-DB an create menu in browser
   def login_until_menu
-    unless @@first_call
-      @@first_call = true
-      puts "Waiting for chromedriver_helper to start"
-      sleep 10                                                                      # Prevent Exception 'unable to connect to chromedriver 127.0.0.1:9515' catched from calling visit root_path
-      puts "Assuming chromedriver_helper has started now and may accept network requests"
-    end
-
     begin
-      visit root_path                                                             # /env/index
+      begin
+        visit root_path                                                             # /env/index
+      rescue Exception => e
+        Rails.logger.error "Exception '#{e.message}' catched from calling visit root_path in first try"
+        sleep 10                                                                    # Waiting for chromedriver to prevent 'unable to connect to chromedriver 127.0.0.1:9515'
+        visit root_path                                                             # /env/index, second try
+      end
     rescue Exception => e
-      puts "Exception '#{e.message}' catched from calling visit root_path"
+      puts "Exception '#{e.message}' catched from calling visit root_path in second try"
       raise e
     end
 
@@ -69,19 +66,14 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
     test_config = PanoramaTestConfig.test_config
 
-    test_url          = test_config[:test_url].split(":")
-    test_host         = test_url[3].delete "@"
-    test_port         = test_url[4].split('/')[0].split(':')[0]
-    test_sid          = test_url[5]
-    test_service_name = test_url[4].split('/')[1]
-    test_user         = test_config[:test_username]
-    test_password     = test_config[:test_password]
+    test_sid          = nil
+    test_service_name = test_config[:sid]
 
     page.find_by_id('database_modus_host').set(true)                            # Choose host/port/sid for entry
 #print page.html
 
-    fill_in('database[host]', with: test_host)
-    fill_in('database[port]', with: test_port)
+    fill_in('database[host]', with: test_config[:host])
+    fill_in('database[port]', with: test_config[:port])
     if test_sid
       page.find_by_id('database_sid_usage_SID').set(true)
       fill_in('database_sid', with: test_sid)
@@ -90,8 +82,8 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
       find_by_id('database_sid_usage_SERVICE_NAME').set(true)
       fill_in('database_sid', with: test_service_name)
     end
-    fill_in('database_user', with: test_user)
-    fill_in('database_password', with: test_password)
+    fill_in('database_user', with: test_config[:user])
+    fill_in('database_password', with: test_config[:password_decrypted])
     click_button('submit_login_dialog')
 
     wait_for_ajax                                                               # Wait until start_page is loaded

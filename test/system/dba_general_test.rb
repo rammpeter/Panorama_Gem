@@ -31,8 +31,9 @@ class DbaGeneralTest < ApplicationSystemTestCase
 #    click_first_xpath_hit("//div[contains(@class, 'slick-inner-cell') and contains(@row, '0') and contains(@column, 'col2')]",
 #                          'click first row column "Module" in grid')
 
-    click_first_xpath_hit("//div[contains(@class, 'slick-inner-cell') and contains(@row, '0') and contains(@column, 'col3')]",
-                          'click first row column "Action" in grid')
+# Action is not always set
+#    click_first_xpath_hit("//div[contains(@class, 'slick-inner-cell') and contains(@row, '0') and contains(@column, 'col3')]",
+#                          'click first row column "Action" in grid')
 
     page.click_button 'button_blocking_dml_locks'
     assert_ajax_success

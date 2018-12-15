@@ -40,48 +40,14 @@ class ActiveSupport::TestCase
     end
   end
 
-  def create_prepared_database_config(test_config)
-    db_config = {}
-
-    raise "Missing entry test_url in Hash" if !test_config.has_key?(:test_url)
-    test_url = test_config[:test_url].split(":")
-    db_config[:modus]        = 'host'
-
-    db_config[:host]         = test_url[3].delete "@"
-    if test_url[4]['/']                                                         # Service_Name
-      db_config[:port]       = test_url[4].split('/')[0]
-      db_config[:sid]        = test_url[4].split('/')[1]
-
-      db_config[:sid_usage]  = :SERVICE_NAME
-    else                                                                        # SID
-      db_config[:port]       = test_url[4]
-      db_config[:sid]        = test_url[5]
-      db_config[:sid_usage]  = :SID
-    end
-
-    db_config[:user]         = test_config[:test_username]
-    db_config[:panorama_sampler_schema] = db_config[:user]                      # Use test user for panorama-sampler
-    db_config[:tns]          = test_config[:test_url].split('@')[1]     # Alles nach jdbc:oracle:thin@
-    db_config[:privilege]    = 'normal'
-
-    db_config[:management_pack_license] = management_pack_license
-
-    #puts 'Database config for test is:'
-    #puts db_config.inspect
-
-    db_config
-  end
-
   # Method shared with Panorama children
-  def connect_oracle_db_internal(test_config)
-    current_database = create_prepared_database_config(test_config)
-
+  def connect_oracle_db_internal(current_database)
     # Config im Cachestore ablegen
     # Sicherstellen, dass ApplicationHelper.get_cached_client_key nicht erneut den client_key entschlüsseln will
     initialize_client_key_cookie
 
     # Passwort verschlüsseln in session
-    current_database[:password] = Encryption.encrypt_value(test_config[:test_password], cookies['client_salt'])
+    current_database[:password] = Encryption.encrypt_value(test_config[:password_decrypted], cookies['client_salt'])
 
     @browser_tab_id = 1
     browser_tab_ids = { @browser_tab_id => {

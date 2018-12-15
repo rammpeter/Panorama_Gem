@@ -77,6 +77,7 @@ class PanoramaSamplerConfig
       # System does not have SELECT-grant on V$-Tables from within packages! Tested for 18.3-EE and 18.4-XE
       # Ensure using anonymous PL/SQL instead of package if user is system
       @config_hash[:select_any_table] = false if @config_hash[:user].upcase == 'SYSTEM' || @config_hash[:owner].upcase == 'SYSTEM'
+      @config_hash[:select_any_table] = true if @config_hash[:user].upcase == 'SYS' # no DBA_Sys_Privs exists for SYS
     end
     @config_hash[:select_any_table]
   end
@@ -252,7 +253,7 @@ class PanoramaSamplerConfig
 
 
   # Modify some content after edit and before storage
-  def self.prepare_saved_entry(entry)
+  def self.prepare_saved_entry!(entry)
     entry[:tns]                               = PanoramaConnection.get_host_tns(entry) if entry[:modus].to_sym == :host
     entry[:id]                                = entry[:id].to_i
     entry[:awr_ash_snapshot_cycle]            = entry[:awr_ash_snapshot_cycle].to_i

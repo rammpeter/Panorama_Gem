@@ -450,15 +450,15 @@ class PanoramaConnection
           begin
             PanoramaConnection.direct_select_one(jdbc_connection, "SELECT /* Panorama first connection test for tns */ SYSDATE FROM DUAL")    # Connect with TNS-Alias has second try if does not function
           rescue Exception => e                                                   # Switch to host/port/sid instead
-            Rails.logger.error "Error connecting to database: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{Thread.current[:panorama_connection_connect_info][:tns]}' User='#{Thread.current[:panorama_connection_connect_info][:user]}'"
+            Rails.logger.error "PanoramaConnection: Error connecting to database in first try: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{Thread.current[:panorama_connection_connect_info][:tns]}' User='#{Thread.current[:panorama_connection_connect_info][:user]}'"
             Rails.logger.error "#{e.class.name} #{e.message}"
-            log_exception_backtrace(e, 20)
+            log_exception_backtrace(e, 30)
 
             jdbc_connection.logoff if !jdbc_connection.nil?                     # close/free wrong connection
             Thread.current[:panorama_connection_connect_info][:modus] = 'host'
             Thread.current[:panorama_connection_connect_info][:tns]   = PanoramaConnection.get_host_tns(Thread.current[:panorama_connection_connect_info])
             Rails.logger.info "Second try to connect with host/port/sid instead of TNS-alias: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{Thread.current[:panorama_connection_connect_info][:tns]}' User='#{Thread.current[:panorama_connection_connect_info][:user]}'"
-            do_login
+            jdbc_connection = do_login
             PanoramaConnection.direct_select_one(jdbc_connection, "SELECT /* Panorama second connection test for tns */ SYSDATE FROM DUAL")    # Connect with host/port/sid as second try if does not function
           end
         else
@@ -466,9 +466,9 @@ class PanoramaConnection
         end
       rescue Exception => e
         jdbc_connection.logoff if !jdbc_connection.nil?                     # close/free wrong connection
-        Rails.logger.error "Error connecting to database: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{Thread.current[:panorama_connection_connect_info][:tns]}' User='#{Thread.current[:panorama_connection_connect_info][:user]}'"
+        Rails.logger.error "PanoramaConnection: Error connecting to database in second try: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{Thread.current[:panorama_connection_connect_info][:tns]}' User='#{Thread.current[:panorama_connection_connect_info][:user]}'"
         Rails.logger.error "#{e.class.name} #{e.message}"
-        log_exception_backtrace(e, 20)
+        log_exception_backtrace(e, 30)
         raise
       end
 

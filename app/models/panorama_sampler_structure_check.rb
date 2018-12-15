@@ -1471,9 +1471,8 @@ ORDER BY Column_ID
       PanoramaConnection.sql_execute("DROP PACKAGE #{@sampler_config.get_owner}.#{package.object_name}")
     end
 
-    ora_tables = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config.get_owner.upcase]
     TABLES.each do |table|
-      if ora_tables.include?({'table_name' => table[:table_name].upcase})
+      if 0 < PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM All_Tables WHERE Owner = ? AND Table_Name = ?", @sampler_config.get_owner.upcase, table[:table_name].upcase])
         begin
           ############# Drop Table
           sql = "DROP TABLE #{@sampler_config.get_owner}.#{table[:table_name]}"
@@ -1647,7 +1646,7 @@ ORDER BY Column_ID
           sql << "#{pk},"
         end
         sql[(sql.length) - 1] = ' '                                               # remove last ,
-        sql << ") USING INDEX #{pk_name}"
+        sql << ") USING INDEX #{@sampler_config.get_owner}.#{pk_name}"
         log(sql)
         PanoramaConnection.sql_execute(sql)
       end

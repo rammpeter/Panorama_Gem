@@ -8,3 +8,4 @@ TEST_PORT               Default: 1521
 TEST_SERVICENAME        Default: ORCLPDB1
 TEST_USERNAME           Default: panorama_test
 TEST_PASSWORD           Default: panorama_test
+TEST_SYSPASSWORD        Default: oracle

@@ -80,7 +80,8 @@ class WorkerThread
     controller.add_statusbar_message("Trial connect to '#{@sampler_config.get_name}' not successful!\nExcpetion: #{e.message}\nFor details see Panorama-Log for details")
     @sampler_config.set_error_message(e.message)
     PanoramaConnection.release_connection                                       # Free DB connection in Pool
-    raise e if ENV['RAILS_ENV'] != 'test'                                       # don't log this exception in test.log
+#    raise e if ENV['RAILS_ENV'] != 'test'                                       # don't log this exception in test.log
+    raise e
   end
 
   # Execute first part of job synchroneous with job's PanoramaConnection
@@ -135,7 +136,7 @@ class WorkerThread
       Rails.logger.error("Error #{e.message} during WorkerThread.create_ash_sampler_daemon (1st try) for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})")
       log_exception_backtrace(e, 20) if ENV['RAILS_ENV'] != 'test'
 
-      PanoramaSamplerSampling.exec_shrink_space('Internal_V$Active_Sess_History')   # try to shrink size of object
+      PanoramaSamplerSampling.new(@sampler_config).exec_shrink_space('Internal_V$Active_Sess_History')   # try to shrink size of object
       PanoramaSamplerSampling.run_ash_daemon(@sampler_config, snapshot_time)    # Try again to execute sampler
 
     rescue Exception => x

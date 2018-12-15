@@ -45,7 +45,7 @@ class PanoramaSamplerController < ApplicationController
     config_entry[:cache_objects_active]   = config_entry[:cache_objects_active]   == '1'
     config_entry[:blocking_locks_active]  = config_entry[:blocking_locks_active]  == '1'
 
-    config_entry = PanoramaSamplerConfig.prepare_saved_entry(config_entry)      # Password encryption called here
+    PanoramaSamplerConfig.prepare_saved_entry!(config_entry)      # Password encryption called here
 
     if PanoramaSamplerConfig.config_entry_exists?(config_entry[:id])            # entry already saved?
       org_entry = PanoramaSamplerConfig.get_config_entry_by_id(config_entry[:id]).get_cloned_config_hash  # Test with copy

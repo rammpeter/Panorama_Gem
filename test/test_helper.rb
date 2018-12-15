@@ -13,7 +13,6 @@ require "minitest/reporters"
 # Load own helpers
 require File.expand_path("../../lib/test_helpers/oracle_connection_test_helper.rb", __FILE__)       # requires config/environment.rb loaded
 require File.expand_path("../../lib/test_helpers/menu_test_helper.rb", __FILE__)
-require File.expand_path("../../lib/test_helpers/capybara_test_helper.rb", __FILE__)
 require File.expand_path("../../lib/test_helpers/application_system_test_case", __FILE__)
 
 # Filter out Minitest backtrace while allowing backtrace from other libraries
@@ -97,26 +96,29 @@ class ActiveSupport::TestCase
   end
 
 
-  def prepare_panorama_sampler_thread_db_config
+  def prepare_panorama_sampler_thread_db_config(user = nil)
     EngineConfig.config.panorama_sampler_master_password = 'hugo'
 
-    test_config = PanoramaTestConfig.test_config
-
-    sampler_config = create_prepared_database_config(test_config)
+    sampler_config = PanoramaTestConfig.test_config
 
     sampler_config[:id]                             = 1
     sampler_config[:name]                           = 'Test-Config'
     sampler_config[:client_salt]                    = EngineConfig.config.panorama_sampler_master_password  # identic doubled like WorkerThread.initialized
     sampler_config[:management_pack_license]        = :none                     # assume no management packs are licensed for PanoramaSampler-execution
-    sampler_config[:privilege]                      = 'normal'
-
-    sampler_config[:password] = Encryption.encrypt_value(test_config[:test_password], sampler_config[:client_salt])
-    sampler_config[:panorama_sampler_schema]        = sampler_config[:user]     # Schema for panorama-sampler-tables, should be the same like user
-
     sampler_config[:owner]                          = sampler_config[:user]     # assume owner = connected user for test
-    sampler_config[:management_pack_license]        = management_pack_license   # from environment
+
+    if user.nil?
+      sampler_config[:password] = sampler_config[:password_decrypted]           # Encryption is done by PanoramaSamplerConfig.prepare_saved_entry!
+      #sampler_config[:password] = Encryption.encrypt_value(sampler_config[:password_decrypted], sampler_config[:client_salt])
+    else
+      sampler_config[:password] = sampler_config[:syspassword_decrypted]        # Encryption is done by PanoramaSamplerConfig.prepare_saved_entry!
+      #sampler_config[:password] = Encryption.encrypt_value(sampler_config[:syspassword_decrypted], sampler_config[:client_salt])
+      sampler_config[:user]                          = user                     # use SYS or SYSTEM for connect
+    end
 
     set_panorama_sampler_config_defaults!(sampler_config)
+
+    PanoramaSamplerConfig.prepare_saved_entry!(sampler_config)
 
     config_object = PanoramaSamplerConfig.get_config_entry_by_id_or_nil(sampler_config[:id])
 
@@ -149,13 +151,22 @@ class PanoramaTestConfig
     test_servicename  = ENV['TEST_SERVICENAME'] || 'ORCLPDB1'
     test_username     = ENV['TEST_USERNAME']    || 'panorama_test'
     test_password     = ENV['TEST_PASSWORD']    || 'panorama_test'
-
+    test_syspassword  = ENV['TEST_SYSPASSWORD'] || 'oracle'
 
     config = {
-        adapter:        'nulldb',
-        test_url:       "jdbc:oracle:thin:@#{test_host}:#{test_port}/#{test_servicename}",
-        test_username:  test_username,
-        test_password:  test_password
+        adapter:                  'nulldb',
+        host:                     test_host,
+        management_pack_license:  ENV['MANAGEMENT_PACK_LICENSE'] ? ENV['MANAGEMENT_PACK_LICENSE'].to_sym : :diagnostics_and_tuning_pack,
+        modus:                    'host',
+        panorama_sampler_schema:  test_username,                     # Use test user for panorama-sampler if not specified
+        password_decrypted:       test_password,
+        port:                     test_port,
+        privilege:                'normal',
+        sid:                      test_servicename,
+        sid_usage:                :SERVICE_NAME,
+        syspassword_decrypted:    test_syspassword,
+        user:                     test_username,
+        tns:                      "#{test_host}:#{test_port}/#{test_servicename}",
     }
 
     config

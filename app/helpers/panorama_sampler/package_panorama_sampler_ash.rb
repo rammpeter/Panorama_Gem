@@ -275,11 +275,11 @@ END Panorama_Sampler_ASH;
       LEFT OUTER JOIN v$Sess_Time_Model stm_db  ON stm_db.SID = s.SID AND stm_db.Stat_Name = 'DB time'
       LEFT OUTER JOIN v$Sess_Time_Model stm_cp  ON stm_cp.SID = s.SID AND stm_cp.Stat_Name = 'DB CPU'
       LEFT OUTER JOIN (SELECT Session_ID, MAX(Sample_ID) Max_Sample_ID
-                       FROM   Internal_V$Active_Sess_History phm
+                       FROM   panorama.Internal_V$Active_Sess_History phm
                        WHERE  phm.Instance_Number = p_Instance_Number
                        GROUP BY Session_ID
                       ) phms ON phms.Session_ID = s.SID
-      LEFT OUTER JOIN Internal_V$Active_Sess_History ph ON ph.Instance_Number = p_Instance_Number AND ph.Session_ID = s.SID AND ph.Sample_ID = phms.Max_Sample_ID
+      LEFT OUTER JOIN panorama.Internal_V$Active_Sess_History ph ON ph.Instance_Number = p_Instance_Number AND ph.Session_ID = s.SID AND ph.Sample_ID = phms.Max_Sample_ID
       LEFT OUTER JOIN (SELECT Session_Addr, SUM(Blocks) Blocks
                        FROM   v$Tempseg_Usage
                        GROUP BY Session_Addr) ts ON ts.Session_Addr = s.SAddr
@@ -305,7 +305,7 @@ END Panorama_Sampler_ASH;
         p_Counter := 0;
 
         FORALL Idx IN 1 .. AshTable.COUNT
-        INSERT INTO Internal_V$Active_Sess_History (
+        INSERT INTO panorama.Internal_V$Active_Sess_History (
           Instance_Number, Sample_ID, Sample_Time, Is_AWR_Sample, Session_ID, Session_Serial#,
           Session_Type, Flags, User_ID, SQL_ID, Is_SQLID_Current, SQL_Child_Number,
           SQL_OpCode, SQL_OpName, FORCE_MATCHING_SIGNATURE, TOP_LEVEL_SQL_ID, TOP_LEVEL_SQL_OPCODE,
@@ -374,7 +374,7 @@ END Panorama_Sampler_ASH;
       -- Ensure that local database time controls end of PL/SQL-execution (allows different time zones and some seconds delay between Panorama and DB)
       -- but assumes that PL/SQL-Job is started at the exact second
       v_LastSampleTime := SYSDATE + p_Snapshot_Cycle_Seconds/86400 - 1/86400;
-      SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM Internal_V$Active_Sess_History;
+      SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM panorama.Internal_V$Active_Sess_History;
 
       LOOP
         v_Bulk_Size := 10; -- Number of seconds between persists/commits
