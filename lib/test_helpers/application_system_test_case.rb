@@ -22,9 +22,6 @@ Capybara.register_driver :headless_chrome do |app|
       desired_capabilities: capabilities,
       driver_opts: { port_server: 9215, logLevel: :debug}     # pin chromedriver to use port 9215
   )
-  puts "Waiting for chromedriver_helper to start"
-  sleep 10                                                                      # Prevent Exception 'unable to connect to chromedriver 127.0.0.1:9515' catched from calling visit root_path
-  puts "Assuming chromedriver_helper has started now and may accept network requests"
   driver
 end
 
@@ -45,8 +42,16 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     end
   end
 
+  @@first_call = false
+
   # Login application at test-DB an create menu in browser
   def login_until_menu
+    unless @@first_call
+      @@first_call = true
+      puts "Waiting for chromedriver_helper to start"
+      sleep 10                                                                      # Prevent Exception 'unable to connect to chromedriver 127.0.0.1:9515' catched from calling visit root_path
+      puts "Assuming chromedriver_helper has started now and may accept network requests"
+    end
 
     begin
       visit root_path                                                             # /env/index
