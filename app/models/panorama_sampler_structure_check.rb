@@ -122,6 +122,7 @@ class PanoramaSamplerStructureCheck
       }
   ]
 =end
+
   TABLES = [
       {
           table_name: 'Internal_V$Active_Sess_History',
@@ -1122,9 +1123,21 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
           primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'FILE#', 'CON_DBID'], compress: 2 },
       },
-      {
+      {   # Table used for both domains ASH and AWR, therefore duplicated. Structure must be identical !!!
           table_name: 'Panorama_TopLevelCall_Name',
           domain: :ASH,
+          columns: [
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'Top_Level_Call#',                column_type:   'NUMBER',    not_null: true},
+              { column_name:  'Top_Level_Call_Name',            column_type:   'VARCHAR2',  precision: 64 },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+              { column_name:  'CON_ID',                         column_type:   'NUMBER',    not_null: true },
+          ],
+          primary_key: { columns: ['DBID', 'Top_Level_Call#', 'Con_DBID'] },
+      },
+      {   # Table used for both domains ASH and AWR, therefore duplicated. Structure must be identical !!!
+          table_name: 'Panorama_TopLevelCall_Name',
+          domain: :AWR,
           columns: [
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
               { column_name:  'Top_Level_Call#',                column_type:   'NUMBER',    not_null: true},
