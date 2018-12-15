@@ -47,7 +47,7 @@ class ActiveSupport::TestCase
     initialize_client_key_cookie
 
     # Passwort verschlüsseln in session
-    current_database[:password] = Encryption.encrypt_value(test_config[:password_decrypted], cookies['client_salt'])
+    current_database[:password] = Encryption.encrypt_value(current_database[:password_decrypted], cookies['client_salt'])
 
     @browser_tab_id = 1
     browser_tab_ids = { @browser_tab_id => {
