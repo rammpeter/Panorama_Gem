@@ -55,12 +55,11 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
   test "save_config with xhr: true" do
     ['Save', 'Test connection'].each do |button|                                # Simulate pressed button "Save" or "Test connection"
       ['Existing', 'New'].each do |mode|                                        # Simulate change of existing or new record
-        ['Right', 'Wrong', 'System'].each do |right|                            # Valid or invalid connection info
+        ['Right', 'Wrong'].each do |right|                            # Valid or invalid connection info
           id = mode=='New' ? PanoramaSamplerConfig.get_max_id + 1 : PanoramaSamplerConfig.get_max_id
           config = @config_entry_without_id.clone
           response_format = :html                                                        # Default
           config[:user] = 'blabla' if right == 'Wrong'                          # Force connect error or not
-          config[:owner] = 'system' if right == 'System'
           response_format = :js if (right == 'Wrong' || right == 'System') && button == 'Test connection'  # Popup-Dialog per JS expected
 
           get '/panorama_sampler/save_config',
@@ -70,8 +69,11 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
                   :id     => id,
                   :config => config
               }
-          assert_response :success, "save_config for button='#{button}', mode='#{mode}', right='#{right}'"
-
+          if right == 'Wrong' && button == 'Test connection'
+            assert_response :error, "save_config for button='#{button}', mode='#{mode}', right='#{right}'"
+          else
+            assert_response :success, "save_config for button='#{button}', mode='#{mode}', right='#{right}'"
+          end
         end
       end
     end

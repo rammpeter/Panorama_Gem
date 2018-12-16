@@ -80,7 +80,6 @@ class WorkerThread
     controller.add_statusbar_message("Trial connect to '#{@sampler_config.get_name}' not successful!\nExcpetion: #{e.message}\nFor details see Panorama-Log for details")
     @sampler_config.set_error_message(e.message)
     PanoramaConnection.release_connection                                       # Free DB connection in Pool
-#    raise e if ENV['RAILS_ENV'] != 'test'                                       # don't log this exception in test.log
     raise e
   end
 

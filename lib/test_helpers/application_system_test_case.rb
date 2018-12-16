@@ -37,8 +37,11 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
       loop_count += 1
       # puts "After #{loop_count} seconds: indicator_call_stack_depth = #{page.evaluate_script('indicator_call_stack_depth')}"
     end
+    sleep(0.1)                                                                  # Wait for browser to refresh
     if loop_count == timeout_secs
-      Rails.logger.error "############ Timeout raised in wait_for_ajax after #{loop_count} seconds, indicator_call_stack_depth=#{page.evaluate_script('indicator_call_stack_depth') }"
+      message = "Timeout raised in wait_for_ajax after #{loop_count} seconds, indicator_call_stack_depth=#{page.evaluate_script('indicator_call_stack_depth') }"
+      Rails.logger.error "############ #{message}"
+      raise message
     end
   end
 
