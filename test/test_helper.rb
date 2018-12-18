@@ -104,7 +104,7 @@ class ActiveSupport::TestCase
     sampler_config[:id]                             = 1
     sampler_config[:name]                           = 'Test-Config'
     sampler_config[:client_salt]                    = EngineConfig.config.panorama_sampler_master_password  # identic doubled like WorkerThread.initialized
-    sampler_config[:management_pack_license]        = :none                     # assume no management packs are licensed for PanoramaSampler-execution
+    sampler_config[:management_pack_license]        = management_pack_license   # use same management_pack_license as all other tests
     sampler_config[:owner]                          = sampler_config[:user]     # assume owner = connected user for test
 
     if user.nil?
@@ -140,6 +140,76 @@ class ActiveSupport::TestCase
     else
       assert_response(:success, "Expected :success but response is #{@response.response_code}: #{comment}")
     end
+  end
+
+  def initialize_min_max_snap_id_and_times
+    two_snaps_sql = "SELECT Snap_ID - 1 Max_Snap_ID,
+                                         Snap_ID - 2 Min_Snap_ID,
+                                         Start_Time, End_Time
+                                  FROM   (
+                                          SELECT Snap_ID, Startup_Time,
+                                                 LAG(Startup_Time, 1, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_1,
+                                                 LAG(Startup_Time, 2, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_2,
+                                                 LAG(Startup_Time, 3, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_3,
+                                                 LAG(End_Interval_Time, 1, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) End_Time,
+                                                 LAG(Begin_Interval_Time, 2, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Start_Time
+                                          FROM   DBA_Hist_Snapshot
+                                          WHERE  Instance_Number = 1
+                                          -- ORDER BY Snap_ID DESC /* order by corrupts result of LAG */
+                                         )
+                                  WHERE  Startup_Time = Startup_1
+                                  AND    Startup_Time = Startup_2
+                                  AND    Startup_Time = Startup_3
+                                  ORDER BY Snap_ID DESC"
+
+
+    # Ensure existence of panorama_sampler_snapshots
+    if management_pack_license == :panorama_sampler
+      # Ensure existence of structure
+      sampler_config = prepare_panorama_sampler_thread_db_config
+      PanoramaSamplerStructureCheck.domains.each do |domain|
+        PanoramaSamplerStructureCheck.do_check(sampler_config, domain)
+      end
+
+      snaps = sql_select_first_row two_snaps_sql                                # Look for 2 subsequent snapshots in the middle of 4 snapshots with same startup time
+      if snaps.nil?                                                             # Not enough snapshots exists, create 4 subsequent
+        WorkerThread.new(@sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
+        sleep(61)                                                               # Wait until next minute
+        WorkerThread.new(@sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
+        sleep(61)                                                               # Wait until next minute
+        WorkerThread.new(@sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
+        sleep(61)                                                               # Wait until next minute
+        WorkerThread.new(@sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
+      end
+    end
+
+
+    # Get 2 subsequent snapshots in the middle of 4 snapshots with same startup time
+    snaps = sql_select_first_row two_snaps_sql
+
+    if snaps.nil?
+      message = "No 4 subsequent snapshots with same startup_time found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')}"
+      puts message
+
+      last_10_snaps = sql_select_all "SELECT *
+                                      FROM   (SELECT *
+                                              FROM DBA_Hist_Snapshot
+                                              ORDER BY Begin_Interval_Time DESC
+                                             )
+                                      WHERE RowNum <= 10"
+
+      puts "Last 10 snapshots are:"
+      last_10_snaps.each do |s|
+        puts "Snap_ID = #{s.snap_id}, Instance = #{s.instance_number}, Begin_Interval_Time = #{localeDateTime(s.begin_interval_time)}"
+      end
+      raise message
+    end
+
+    @min_snap_id = snaps.min_snap_id
+    @max_snap_id = snaps.max_snap_id
+
+    @time_selection_start = (snaps.start_time-1).strftime("%d.%m.%Y %H:%M")
+    @time_selection_end   = snaps.end_time.strftime("%d.%m.%Y %H:%M")
   end
 
 end

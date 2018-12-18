@@ -81,7 +81,12 @@ class PackLicense
         table_name = table_name[0, table_name.index(',')] if table_name[',']    # Tablename ends at ....
         table_name = table_name[0, table_name.index('(')] if table_name['(']    # Tablename ends at ....
         table_name = table_name[0, table_name.index(')')] if table_name[')']    # Tablename ends at ....
-        raise PopupMessageException.new("Access denied on table #{table_name} because of missing license for Oracle #{pack_name} Pack!\nPanorama-config for management_pack_license is #{@license_type}")
+
+        message = "Access denied on table #{table_name} because of missing license for Oracle #{pack_name} Pack!\nPanorama-config for management_pack_license is #{@license_type}"
+        Rails.logger.error message
+        Rails.logger.error sql
+
+        raise PopupMessageException.new(message)
       end
       sql_up = sql_up[search_string.length, sql_up.length]                      # Step n chars next to lookup next match
     end
