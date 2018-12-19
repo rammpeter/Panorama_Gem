@@ -34,13 +34,25 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
     loop_count = 0
     while page.evaluate_script('indicator_call_stack_depth') > 0 && loop_count < timeout_secs
-      sleep(1)
-      loop_count += 1
+      sleep(0.1)
+      loop_count += 0.1
       # puts "After #{loop_count} seconds: indicator_call_stack_depth = #{page.evaluate_script('indicator_call_stack_depth')}"
     end
-    sleep(0.1)                                                                  # Wait for browser to refresh
-    if loop_count == timeout_secs
+    if loop_count >= timeout_secs
       message = "Timeout raised in wait_for_ajax after #{loop_count} seconds, indicator_call_stack_depth=#{page.evaluate_script('indicator_call_stack_depth') }"
+      Rails.logger.error "############ #{message}"
+      raise message
+    end
+
+    # Wait until indicator dialog becomes really unvisible
+    loop_count = 0
+    while page.has_css?('#ajax_indicator', visible: true) && loop_count < timeout_secs
+      Rails.logger.info "wait_for_ajax: ajax_indicator is still visible, retrying..."
+      sleep(0.1)
+      loop_count += 0.1
+    end
+    if loop_count >= timeout_secs
+      message = "Timeout raised in wait_for_ajax after #{loop_count} seconds, indicator-dialog did not disappear') }"
       Rails.logger.error "############ #{message}"
       raise message
     end
