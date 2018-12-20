@@ -41,15 +41,13 @@ class WorkerThreadTest < ActiveSupport::TestCase
 
   test "do_sampling_awr_ash" do
     [nil, 'SYS', 'SYSTEM'].each do |connection_user|                            # Use different user for connect
-      @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
 
       # Test-user needs SELECT ANY TABLE for read access on V$-Tables from PL/SQL-Packages
       [true, false].each do |select_any_table|                                  # Test package and anonymous PL/SQL
+        @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
         Rails.logger.info "######### Testing for connection_user=#{connection_user}, select_any_table=#{select_any_table}"
 
         @sampler_config.set_select_any_table(select_any_table)
-
-        PanoramaConnection.set_connection_info_for_request(@sampler_config)     # Ensures existing Thread.current[:panorama_connection_connect_info]. This is reset by WorkerThread via PanoramaConnection.release_connection
 
         PanoramaSamplerStructureCheck.remove_tables(@sampler_config)            # ensure missing objects is tested
 
