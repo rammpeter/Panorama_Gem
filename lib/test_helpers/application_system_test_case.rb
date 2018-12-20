@@ -148,8 +148,8 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     !error_dialog.nil? && error_dialog.visible?
   end
 
-  def assert_ajax_success
-    wait_for_ajax
+  def assert_ajax_success(timeout_secs = 60)
+    wait_for_ajax(timeout_secs)
     assert_not error_dialog_open?
   end
 
