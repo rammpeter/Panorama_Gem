@@ -45,10 +45,24 @@ class WorkerThreadTest < ActiveSupport::TestCase
 
       # Test-user needs SELECT ANY TABLE for read access on V$-Tables from PL/SQL-Packages
       [true, false].each do |select_any_table|                                  # Test package and anonymous PL/SQL
+        Rails.logger.info "######### Testing for connection_user=#{connection_user}, select_any_table=#{select_any_table}"
+
         @sampler_config.set_select_any_table(select_any_table)
+
+        PanoramaConnection.set_connection_info_for_request(@sampler_config)     # Ensures existing Thread.current[:panorama_connection_connect_info]. This is reset by WorkerThread via PanoramaConnection.release_connection
+
+        PanoramaSamplerStructureCheck.remove_tables(@sampler_config)            # ensure missing objects is tested
+
         WorkerThread.new(@sampler_config, 'test_check_structure_synchron').check_structure_synchron
         WorkerThread.new(@sampler_config, 'test_create_ash_sampler_daemon').create_ash_sampler_daemon(Time.now.round)
         WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
+
+        sleep(61)                                                               # Ensure next execution in next minute
+
+        WorkerThread.new(@sampler_config, 'test_check_structure_synchron').check_structure_synchron
+        WorkerThread.new(@sampler_config, 'test_create_ash_sampler_daemon').create_ash_sampler_daemon(Time.now.round)
+        WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
+
       end
     end
   end

@@ -83,6 +83,7 @@ class ApplicationController < ActionController::Base
 
     begin
       current_database = get_current_database
+      Rails.logger.error "ApplicationController.begin_request: current_database is nil"
       raise PopupMessageException.new('No current DB connect info set! Please reconnect to DB!') unless current_database
       set_connection_info_for_request(current_database)
     rescue StandardError => e                                                   # Problem bei Zugriff auf verschlüsselte Cookies

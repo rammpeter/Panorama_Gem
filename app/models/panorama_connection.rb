@@ -256,6 +256,8 @@ class PanoramaConnection
 
   def self.jdbc_thin_url
     unless Thread.current[:panorama_connection_connect_info]
+      Rails.logger.error "PanoramaConnection.jdbc_thin_url: Thread.current[:panorama_connection_connect_info] does not exist"
+      Rails.logger.error "Stack trace:\n#{Thread.current.backtrace.join("\n")}"
       raise 'No current DB connect info set! Please reconnect to DB!'
     end
     "jdbc:oracle:thin:@#{Thread.current[:panorama_connection_connect_info][:tns]}"

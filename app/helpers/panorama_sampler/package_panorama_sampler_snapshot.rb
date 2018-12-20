@@ -65,7 +65,7 @@ END Panorama_Sampler_Snapshot;
              p_Con_DBID,
              #{PanoramaConnection.db_version >= '12.1' ? "d.Con_ID" : "0"}
       FROM   v$Datafile d
-      JOIN   v$Tablespace ts ON ts.ts# = d.ts#
+      JOIN   v$Tablespace ts ON ts.ts# = d.ts# #{" AND ts.Con_ID = d.Con_ID" if PanoramaConnection.db_version >= '12.1'}
       AND    NOT EXISTS (SELECT 1 FROM panorama.Panorama_Datafile di WHERE di.DBID = p_DBID AND di.FILE# = d.FILE# AND di.CREATION_CHANGE# = d.CREATION_CHANGE# AND di.Con_DBID = p_Con_DBID)
     ;
   END Snap_Datafile;
