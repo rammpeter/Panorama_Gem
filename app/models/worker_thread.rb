@@ -122,7 +122,7 @@ class WorkerThread
       return
     end
 
-    Rails.logger.info "#{Time.now}: Create new ASH daemon for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}'"
+    Rails.logger.info "#{Time.now}: Create new ASH daemon for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}', Duration=#{@sampler_config.get_awr_ash_snapshot_cycle} Minutes"
 
     @@active_ash_daemons[@sampler_config.get_id] = true                           # Create semaphore for thread, begin processing
     # Check data structure only for ASH-tables is already done in check_structure_synchron

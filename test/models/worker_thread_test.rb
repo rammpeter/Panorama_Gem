@@ -20,22 +20,16 @@ class WorkerThreadTest < ActiveSupport::TestCase
 
   test "check_structure" do
     [nil, 'SYS', 'SYSTEM'].each do |connection_user|                            # Use different user for connect
-      @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
+      [true, false].each do |select_any_table|                                  # Test package and anonymous PL/SQL
+        @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
+        @sampler_config.set_select_any_table(select_any_table)
 
-      PanoramaSamplerStructureCheck.remove_tables(@sampler_config)              # ensure missing objects is tested
+        PanoramaSamplerStructureCheck.remove_tables(@sampler_config)              # ensure missing objects is tested
 
-      PanoramaSamplerStructureCheck.domains.each do |domain|
-        PanoramaSamplerStructureCheck.do_check(@sampler_config, domain)
-      end                                                                       # leave all objects existing because other tests rely on
-
-      # Recreate 5 snapshots to stay until next execution, now done by initialize_min_max_snap_id_and_times instead
-      #@sampler_config.set_select_any_table(false)
-      #WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
-      #WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
-      #WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
-      #WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
-      #WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
-
+        PanoramaSamplerStructureCheck.domains.each do |domain|
+          PanoramaSamplerStructureCheck.do_check(@sampler_config, domain)
+        end                                                                       # leave all objects existing because other tests rely on
+      end
     end
   end
 

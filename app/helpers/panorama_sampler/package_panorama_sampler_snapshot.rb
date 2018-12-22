@@ -139,14 +139,21 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_IOStat_Filetype;
 
-  PROCEDURE Snap_Latch(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  PROCEDURE Snap_Latch(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER) IS
   BEGIN
     INSERT INTO panorama.Panorama_Latch (SNAP_ID, DBID, INSTANCE_NUMBER, LATCH_HASH, LATCH_NAME, LEVEL#, GETS, MISSES, SLEEPS, IMMEDIATE_GETS, IMMEDIATE_MISSES,
                                 SPIN_GETS, SLEEP1, SLEEP2, SLEEP3, SLEEP4, WAIT_TIME, CON_DBID, CON_ID
     )
     SELECT p_SNAP_ID, p_DBID, p_INSTANCE, HASH, NAME, LEVEL#, GETS, MISSES, SLEEPS, IMMEDIATE_GETS, IMMEDIATE_MISSES,
-           SPIN_GETS, SLEEP1, SLEEP2, SLEEP3, SLEEP4, WAIT_TIME, p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
-    FROM   v$Latch
+           SPIN_GETS, SLEEP1, SLEEP2, SLEEP3, SLEEP4, WAIT_TIME,
+           c.DBID, #{PanoramaConnection.db_version >= '12.1' ? "l.Con_ID" : "0"}
+    FROM   v$Latch l
+    JOIN   (SELECT /*+ NO_MERGE */ 0 Con_ID, DBID FROM v$Database
+    #{PanoramaConnection.db_version >= '12.1' ? "
+            UNION ALL
+            SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers
+           ) c ON c.Con_ID = l.Con_ID" : "
+           ) c ON c.Con_ID = 0"}
     ;
   END Snap_Latch;
 
@@ -218,17 +225,25 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_PGAStat;
 
-  PROCEDURE Snap_Process_Mem_Summary(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  PROCEDURE Snap_Process_Mem_Summary(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER) IS
   BEGIN
     INSERT INTO panorama.Panorama_Process_Mem_Summary (SNAP_ID, DBID, INSTANCE_NUMBER, CATEGORY, IS_INSTANCE_WIDE,
                                               NUM_PROCESSES, NON_ZERO_ALLOCS, USED_TOTAL, ALLOCATED_TOTAL, ALLOCATED_AVG,
-                                              ALLOCATED_STDDEV, ALLOCATED_MAX, MAX_ALLOCATED_MAX, CON_DBID, CON_ID
-    ) SELECT p_Snap_ID, p_DBID, p_Instance, Category, DECODE(#{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}, 0, 1, 0),
-             COUNT(*), SUM(DECODE(Allocated, 0, 0, 1)), SUM(Used), SUM(Allocated), AVG(Allocated),
-             STDDEV(Allocated), MAX(Max_Allocated), SUM(Max_Allocated), p_Con_DBID,
-             #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
-      FROM   v$Process_Memory
-      GROUP BY Category, DECODE(#{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}, 0, 1, 0), #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+                                              ALLOCATED_STDDEV, ALLOCATED_MAX, MAX_ALLOCATED_MAX, CON_ID, CON_DBID
+    ) SELECT p.*, c.DBID
+      FROM   (SELECT p_Snap_ID, p_DBID, p_Instance, Category, DECODE(#{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}, 0, 1, 0),
+                     COUNT(*), SUM(DECODE(Allocated, 0, 0, 1)), SUM(Used), SUM(Allocated), AVG(Allocated),
+                     STDDEV(Allocated), MAX(Max_Allocated), SUM(Max_Allocated),
+                     #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"} Con_ID
+              FROM   v$Process_Memory
+              GROUP BY Category, DECODE(#{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}, 0, 1, 0), #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+             ) p
+    JOIN   (SELECT /*+ NO_MERGE */ 0 Con_ID, DBID FROM v$Database
+    #{PanoramaConnection.db_version >= '12.1' ? "
+            UNION ALL
+            SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers
+           ) c ON c.Con_ID = p.Con_ID" : "
+           ) c ON c.Con_ID = 0"}
     ;
   END Snap_Process_Mem_Summary;
 
@@ -413,7 +428,7 @@ END Panorama_Sampler_Snapshot;
   END Snap_SQL_Plan;
 
   -- call before dependent statistics like text, binds etc.
-  PROCEDURE Snap_SQLStat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER, p_Begin_Interval_Time IN DATE, p_SQL_Min_No_of_Execs IN NUMBER, p_SQL_Min_Runtime_MilliSecs IN NUMBER) IS
+  PROCEDURE Snap_SQLStat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Begin_Interval_Time IN DATE, p_SQL_Min_No_of_Execs IN NUMBER, p_SQL_Min_Runtime_MilliSecs IN NUMBER) IS
   BEGIN
     -- Child cursors created in this snapshot period should count full in delta because they are not counted in previous snapshot's total values
     -- Child cursors created in former snapshots shoud only count with the difference new total - old total, but not smaller than 0
@@ -466,10 +481,10 @@ END Panorama_Sampler_Snapshot;
               #{"s.IO_Cell_Uncompressed_Bytes,      GREATEST(NVL(s.IO_Cell_Uncompressed_Bytes_O, 0) - NVL(p.Cell_Uncompressed_Bytes_Total,  0), 0) + NVL(s.IO_Cell_Uncompressed_Bytes_N,  0), "  if PanoramaConnection.db_version >= '12.1'}
               #{"s.IO_Offload_Return_Bytes,         GREATEST(NVL(s.IO_Offload_Return_Bytes_O   , 0) - NVL(p.IO_Offload_Return_Bytes_Total,  0), 0) + NVL(s.IO_Offload_Return_Bytes_N,     0), "  if PanoramaConnection.db_version >= '12.2'}
               s.Bind_Data,
-              p_Con_DBID,
-              #{PanoramaConnection.db_version >= '12.1' ? "s.Con_ID" : "0"}
+              c.DBID,
+              s.Con_ID
       FROM   --v$SQLArea s
-             (SELECT SQL_ID, Plan_Hash_Value, #{"Con_ID, " if PanoramaConnection.db_version >= '12.1' } MAX(Optimizer_Cost) Optimizer_Cost, MAX(Optimizer_Mode) Optimizer_Mode, MAX(Optimizer_Env_Hash_Value) Optimizer_Env_Hash_Value,
+             (SELECT SQL_ID, Plan_Hash_Value, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0 Con_ID" },  MAX(Optimizer_Cost) Optimizer_Cost, MAX(Optimizer_Mode) Optimizer_Mode, MAX(Optimizer_Env_Hash_Value) Optimizer_Env_Hash_Value,
                      SUM(SHARABLE_MEM) SHARABLE_MEM, SUM(LOADED_VERSIONS) LOADED_VERSIONS, COUNT(*) VERSION_COUNT, MAX(Module) Module, MAX(Action) Action, MAX(SQL_PROFILE) SQL_PROFILE, MAX(FORCE_MATCHING_SIGNATURE) FORCE_MATCHING_SIGNATURE,
                      MAX(PARSING_SCHEMA_ID) PARSING_SCHEMA_ID, MAX(PARSING_SCHEMA_NAME) PARSING_SCHEMA_NAME, MAX(PARSING_USER_ID) PARSING_USER_ID,
                      SUM(Fetches) Fetches,                                            SUM(CASE WHEN dLast_Load_Time >  i.Begin THEN Fetches END) Fetches_N,                                        SUM(CASE WHEN dLast_Load_Time <= i.Begin THEN Fetches END) Fetches_O,
@@ -507,32 +522,45 @@ END Panorama_Sampler_Snapshot;
               GROUP BY SQL_ID, Plan_Hash_Value #{", Con_ID" if PanoramaConnection.db_version >= '12.1' }
               HAVING MAX(Last_Active_time) > MAX(i.Begin)  -- Count all childs if one child is active in period
              ) s
+      JOIN   (SELECT /*+ NO_MERGE */ 0 Con_ID, DBID FROM v$Database
+      #{PanoramaConnection.db_version >= '12.1' ? "
+              UNION ALL
+              SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers
+             ) c ON c.Con_ID = s.Con_ID" : "
+             ) c ON c.Con_ID = 0"}
       LEFT OUTER JOIN  (SELECT MAX(Snap_ID) Max_Snap_ID, DBID, Instance_Number, SQL_ID, Plan_Hash_Value, Con_DBID
                         FROM   panorama.Panorama_SQLStat
                         GROUP BY DBID, Instance_Number, SQL_ID, Plan_Hash_Value, Con_DBID
-                       ) ms ON ms.DBID=p_DBID AND ms.Instance_Number=p_Instance AND ms.SQL_ID=s.SQL_ID AND ms.Plan_Hash_Value=s.Plan_Hash_Value AND ms.Con_DBID=p_Con_DBID
-      LEFT OUTER JOIN panorama.Panorama_SQLStat p ON  p.DBID=p_DBID AND p.Snap_ID=ms.Max_Snap_ID AND p.Instance_Number=p_Instance AND p.SQL_ID=s.SQL_ID AND p.Plan_Hash_Value=s.Plan_Hash_Value AND p.Con_DBID=p_Con_DBID
+                       ) ms ON ms.DBID=p_DBID AND ms.Instance_Number=p_Instance AND ms.SQL_ID=s.SQL_ID AND ms.Plan_Hash_Value=s.Plan_Hash_Value AND ms.Con_DBID=c.DBID
+      LEFT OUTER JOIN panorama.Panorama_SQLStat p ON  p.DBID=p_DBID AND p.Snap_ID=ms.Max_Snap_ID AND p.Instance_Number=p_Instance AND p.SQL_ID=s.SQL_ID AND p.Plan_Hash_Value=s.Plan_Hash_Value AND p.Con_DBID=c.DBID
       WHERE  (GREATEST(NVL(s.Executions_O   , 0) - NVL(p.Executions_Total,   0), 0) + NVL(s.Executions_N,   0))      >= p_SQL_Min_No_of_Execs
       OR     (GREATEST(NVL(s.Elapsed_Time_O , 0) - NVL(p.Elapsed_Time_Total, 0), 0) + NVL(s.Elapsed_Time_N, 0))/1000 >= p_SQL_Min_Runtime_MilliSecs
     ;
   END Snap_SQLStat;
 
-  PROCEDURE Snap_SQLText(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
+  PROCEDURE Snap_SQLText(p_Snap_ID IN NUMBER, p_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO panorama.Panorama_SQLText (DBID, SQL_ID, SQL_Text, Command_Type, Con_DBID, Con_ID)
-    SELECT p_DBID, s.SQL_ID, s.SQL_FullText, s.Command_Type, p_Con_DBID,
-           #{PanoramaConnection.db_version >= '12.1' ? "s.Con_ID" : "0"}
-    FROM   v$SQLArea s
-    LEFT OUTER JOIN panorama.Panorama_SQLText p ON p.DBID=p_DBID AND p.SQL_ID=s.SQL_ID AND p.Con_DBID=p_Con_DBID
+    SELECT p_DBID, s.SQL_ID, s.SQL_FullText, s.Command_Type, c.DBID, s.Con_ID
+    FROM   (SELECT SQL_ID, SQL_FullText, Command_Type, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0 Con_ID"}
+            FROM   v$SQLArea
+           ) s
+    JOIN   (SELECT /*+ NO_MERGE */ 0 Con_ID, DBID FROM v$Database
+    #{PanoramaConnection.db_version >= '12.1' ? "
+            UNION ALL
+            SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers
+           ) c ON c.Con_ID = s.Con_ID" : "
+           ) c ON c.Con_ID = 0"}
+    LEFT OUTER JOIN panorama.Panorama_SQLText p ON p.DBID=p_DBID AND p.SQL_ID=s.SQL_ID AND p.Con_DBID=c.DBID
     WHERE  p.SQL_ID IS NULL  -- SQLText does not already exist
-    AND    EXISTS (SELECT 1 FROM panorama.Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = s.SQL_ID AND ss.Con_DBID = p_Con_DBID) -- Only for SQLs recorded in Panorama_SQLStat in same snapshot
+    AND    EXISTS (SELECT 1 FROM panorama.Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = s.SQL_ID AND ss.Con_DBID = c.DBID) -- Only for SQLs recorded in Panorama_SQLStat in same snapshot
     ;
   END Snap_SQLText;
 
-  PROCEDURE Snap_StatName(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
+  PROCEDURE Snap_StatName(p_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO panorama.Internal_StatName(DBID, STAT_ID, Name, Con_DBID, Con_ID)
-    SELECT p_DBID, Stat_ID, Name, p_Con_DBID, 0
+    SELECT p_DBID, Stat_ID, Name, p_DBID, 0 /* Con_ID is always 0 and Con_DBID = DBID */
     FROM   V$StatName n
     WHERE  n.Stat_ID NOT IN (SELECT Stat_ID FROM panorama.Internal_StatName)
     ;
@@ -685,22 +713,22 @@ END Panorama_Sampler_Snapshot;
     Snap_FileStatXS           (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_IOStat_Detail        (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_IOStat_Filetype      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
-    Snap_Latch                (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_Latch                (p_Snap_ID,   p_DBID,     p_Instance);
     Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Memory_Resize_Ops    (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID,     p_Begin_Interval_Time);
     Snap_Metric_Name          (p_DBID,      p_Con_DBID);
     Snap_Parameter            (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_PGAStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
-    Snap_Process_Mem_Summary  (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_Process_Mem_Summary  (p_Snap_ID,   p_DBID,     p_Instance);
     Snap_Resource_Limit       (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Service_Name         (p_DBID,      p_Con_DBID);
     Snap_Seg_Stat             (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     -- call Snap_SQLStat before any dependent statistic, because dependents record only for SQLs already in SQLStat
-    Snap_SQLStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID,     p_Begin_Interval_Time,     p_SQL_Min_No_of_Execs,      p_SQL_Min_Runtime_MilliSecs);
+    Snap_SQLStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Begin_Interval_Time,     p_SQL_Min_No_of_Execs,      p_SQL_Min_Runtime_MilliSecs);
     Snap_SQLBind              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_SQL_Plan             (p_Snap_ID,   p_DBID,      p_Con_DBID);
-    Snap_SQLText              (p_Snap_ID,   p_DBID,     p_Con_DBID);
-    Snap_StatName             (p_DBID,      p_Con_DBID);
+    Snap_SQLText              (p_Snap_ID,   p_DBID);
+    Snap_StatName             (p_DBID);
     Snap_Sysmetric_History    (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Sysmetric_Summary    (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_System_Event         (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
