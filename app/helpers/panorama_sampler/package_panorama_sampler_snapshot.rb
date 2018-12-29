@@ -621,40 +621,58 @@ END Panorama_Sampler_Snapshot;
     ;
   END Snap_SysStat;
 
-  PROCEDURE Snap_Tablespace(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
+  PROCEDURE Snap_Tablespace(p_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO panorama.Panorama_Tablespace (DBID, TS#, TSNAME, CONTENTS, SEGMENT_SPACE_MANAGEMENT, EXTENT_MANAGEMENT, BLOCK_SIZE, CON_DBID, CON_ID
     ) SELECT p_DBID, d.TS#, d.NAME, t.CONTENTS, t.SEGMENT_SPACE_MANAGEMENT, t.EXTENT_MANAGEMENT, t.BLOCK_SIZE,
-             p_Con_DBID,
+             c.DBID,
              #{PanoramaConnection.db_version >= '12.1' ? "d.Con_ID" : "0"}
       FROM   v$Tablespace d
       JOIN   DBA_Tablespaces t ON t.Tablespace_Name = d.Name
-      AND    NOT EXISTS (SELECT 1 FROM panorama.Panorama_Tablespace di WHERE di.DBID = p_DBID AND di.TS# = d.TS# AND di.Con_DBID = p_Con_DBID)
+      JOIN   (SELECT /*+ NO_MERGE */ 0 Con_ID, DBID FROM v$Database
+      #{PanoramaConnection.db_version >= '12.1' ? "
+              UNION ALL
+              SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers
+             ) c ON c.Con_ID = d.Con_ID" : "
+             ) c ON c.Con_ID = 0"}
+      WHERE  NOT EXISTS (SELECT 1 FROM panorama.Panorama_Tablespace di WHERE di.DBID = p_DBID AND di.TS# = d.TS# AND di.Con_DBID = c.DBID)
     ;
   END Snap_Tablespace;
 
-  PROCEDURE Snap_Tempfile(p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
+  PROCEDURE Snap_Tempfile(p_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO panorama.Panorama_Tempfile (DBID, FILE#, CREATION_CHANGE#, FILENAME, TS#, TSNAME, BLOCK_SIZE, CON_DBID, CON_ID
     ) SELECT p_DBID, d.File#, d.Creation_Change#, d.Name, d.TS#, ts.Name, d.Block_Size,
-             p_Con_DBID,
+             c.DBID,
              #{PanoramaConnection.db_version >= '12.1' ? "d.Con_ID" : "0"}
       FROM   v$Tempfile d
-      JOIN   v$Tablespace ts ON ts.ts# = d.ts#
-      AND    NOT EXISTS (SELECT 1 FROM panorama.Panorama_Tempfile di WHERE di.DBID = p_DBID AND di.FILE# = d.FILE# AND di.CREATION_CHANGE# = d.CREATION_CHANGE# AND di.Con_DBID = p_Con_DBID)
+      JOIN   v$Tablespace ts ON ts.ts# = d.ts##{" AND ts.Con_ID = d.Con_ID" if PanoramaConnection.db_version >= '12.1'}
+      JOIN   (SELECT /*+ NO_MERGE */ 0 Con_ID, DBID FROM v$Database
+      #{PanoramaConnection.db_version >= '12.1' ? "
+              UNION ALL
+              SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers
+             ) c ON c.Con_ID = d.Con_ID" : "
+             ) c ON c.Con_ID = 0"}
+      WHERE  NOT EXISTS (SELECT 1 FROM panorama.Panorama_Tempfile di WHERE di.DBID = p_DBID AND di.FILE# = d.FILE# AND di.CREATION_CHANGE# = d.CREATION_CHANGE# AND di.Con_DBID = c.DBID)
     ;
   END Snap_Tempfile;
 
-  PROCEDURE Snap_TempStatXS(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  PROCEDURE Snap_TempStatXS(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER) IS
   BEGIN
     INSERT INTO panorama.Panorama_TempStatXS (SNAP_ID, DBID, INSTANCE_NUMBER, FILE#, Creation_Change#,
                                      PHYRDS, PHYWRTS, SINGLEBLKRDS, READTIM, WRITETIM, SINGLEBLKRDTIM, PHYBLKRD, PHYBLKWRT, WAIT_COUNT, TIME,
                                      CON_DBID, CON_ID
     ) SELECT p_Snap_ID, p_DBID, p_Instance, f.File#, d.Creation_Change#, f.PHYRDS, f.PHYWRTS, f.SINGLEBLKRDS, f.READTIM, f.WRITETIM, f.SINGLEBLKRDTIM, f.PHYBLKRD, f.PHYBLKWRT, NULL /* WAIT_COUNT */, NULL /* TIME */,
-             p_Con_DBID,
+             c.DBID,
              #{PanoramaConnection.db_version >= '12.1' ? "f.Con_ID" : "0"}
       FROM   v$TempStat f
       JOIN   v$Tempfile d ON d.File# = f.File#
+      JOIN   (SELECT /*+ NO_MERGE */ 0 Con_ID, DBID FROM v$Database
+      #{PanoramaConnection.db_version >= '12.1' ? "
+              UNION ALL
+              SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers
+             ) c ON c.Con_ID = f.Con_ID" : "
+             ) c ON c.Con_ID = 0"}
     ;
   END Snap_TempStatXS;
 
@@ -733,9 +751,9 @@ END Panorama_Sampler_Snapshot;
     Snap_Sysmetric_Summary    (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_System_Event         (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_SysStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
-    Snap_Tablespace           (p_DBID,      p_Con_DBID);
-    Snap_Tempfile             (p_DBID,      p_Con_DBID);
-    Snap_TempStatXS           (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_Tablespace           (p_DBID);
+    Snap_Tempfile             (p_DBID);
+    Snap_TempStatXS           (p_Snap_ID,   p_DBID,     p_Instance);
     Snap_TopLevelCallName     (p_DBID,      p_Con_DBID);
     Snap_UndoStat             (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_WR_Control           (p_DBID,      p_Snapshot_Cycle, p_Snapshot_Retention);

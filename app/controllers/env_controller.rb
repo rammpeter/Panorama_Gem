@@ -164,7 +164,7 @@ class EnvController < ApplicationController
       if get_current_database[:cdb]
         @containers = sql_select_all "SELECT c.*, s.Con_ID Connected_Con_ID
                                       FROM   gv$Containers c
-                                      JOIN   v$session s ON audsid = userenv('sessionid')
+                                      JOIN   v$session s ON SID = SYS_CONTEXT('userenv', 'sid')
                                      "
       end
     rescue Exception => e
