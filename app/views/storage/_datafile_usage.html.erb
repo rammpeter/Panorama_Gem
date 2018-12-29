@@ -15,11 +15,12 @@ column_options =
     {:caption=>'Block size',       :data=>proc{|rec| fn(rec.block_size)},                   :title=>"Block size in byte for whole tablespace", align: :right},
     {:caption=>"Status",           :data=>proc{|rec| rec.online_status},                    :title=>"Online-Status"},
   ]
+  column_options << {:caption=>"Con-ID",  :data=>proc{|rec| rec.con_id},           :title=>"Container-ID", align: :right} if is_cdb?
 
 %>
 <div>
   <%= gen_slickgrid(@datafiles, column_options, {
-      :caption => "Datafile-Details from DBA_Data_Files/DBA_Temp_Files#{" for tablespace #{@tablespace_name}" if @tablespace_name}",
+      :caption => "Datafile-Details from #{dba_or_cdb('DBA_Data_Files')}/#{dba_or_cdb('DBA_Temp_Files')}#{" for tablespace #{@tablespace_name}" if @tablespace_name}",
       :width   => :auto,
       :max_height => 450, show_pin_icon: 2
   }) %>
@@ -57,6 +58,7 @@ column_options =
         DNFS_LIB - The file is accessed through direct NFS library"},
         {:caption=>"Retries",          :data=>proc{|rec| formattedNumber(rec.retries_on_error)},        :title=>"Number of read retries on error",    :align=>:right},
       ]
+    column_options << {:caption=>"Con-ID",  :data=>proc{|rec| rec.con_id},           :title=>"Container-ID", align: :right} if is_cdb?
 
     %>
 

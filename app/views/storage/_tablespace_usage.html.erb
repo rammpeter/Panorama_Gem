@@ -223,6 +223,10 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
     column_options =
         [
             {:caption=>"Tablespace",          :data=>proc{|rec| rec.tablespace_name},             :title=>t(:storage_tablespace_usage_tablespace_name_hint, :default=>'Name of tablespace')},
+        ]
+    column_options << {:caption=>"Con-ID",  :data=>proc{|rec| rec.con_id},           :title=>"Container-ID", align: :right} if is_cdb?
+
+    column_options.concat [
             {:caption=>"Contents",            :data=>proc{|rec| rec.contents},                    :title=>t(:storage_tablespace_usage_tablespace_content_hint, :default=>'Type/content of tablespace'), data_title: proc{|rec| "%t: #{rec.content_hint}"} },
             {:caption=>"Block size",          :data=>proc{|rec| formattedNumber(rec.blocksize)},  :title=>t(:storage_tablespace_usage_tablespace_blocksize_hint, :default=>'Blocksize of tablespace in Bytes'),        :align=>:right},
             {:caption=>"MB Total",            :data=>proc{|rec| formattedNumber(rec.mbtotal)},    :title=>"Total current size of tablespace in MB\n(without possible autoextend-expansion)",           :align=>:right, show_pct_hint: true},
@@ -253,7 +257,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
   %>
 
   <div class="flex-row-element">
-    <%= gen_slickgrid(@tablespaces, column_options, {:caption => "Tablespace-usage total", :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
+    <%= gen_slickgrid(@tablespaces, column_options, {:caption => "Tablespace-usage total from #{dba_or_cdb('DBA_Tablespaces')}", :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
   </div>
 
 </div>

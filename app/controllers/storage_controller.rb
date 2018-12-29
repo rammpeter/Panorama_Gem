@@ -22,24 +22,25 @@ class StorageController < ApplicationController
              f.AutoExtensible, f.Max_Size_MB, f.File_Count
              #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
              #{ ", t.Def_InMemory" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
-      FROM  DBA_Tablespaces t
+             #{", t.Con_ID" if is_cdb?}
+      FROM  #{dba_or_cdb('DBA_Tablespaces')} t
       LEFT OUTER JOIN
             (
             SELECT /* Panorama-Tool Ramm */
-                   f.TABLESPACE_NAME,
+                   f.TABLESPACE_NAME, #{"f.Con_ID," if is_cdb?}
                    Sum(f.BYTES)/1048576     MBFree
-            FROM   DBA_FREE_SPACE f
-            GROUP BY f.TABLESPACE_NAME
-            ) free ON free.Tablespace_Name = t.Tablespace_Name
+            FROM   #{dba_or_cdb('DBA_FREE_SPACE')} f
+            GROUP BY f.TABLESPACE_NAME #{", f.Con_ID" if is_cdb?}
+            ) free ON free.Tablespace_Name = t.Tablespace_Name #{" AND free.Con_ID = t.Con_ID" if is_cdb?}
       LEFT OUTER JOIN
             (
-            SELECT d.TableSpace_Name, SUM(d.Bytes)/1048576 FileSize,
+            SELECT d.TableSpace_Name, #{"d.Con_ID," if is_cdb?} SUM(d.Bytes)/1048576 FileSize,
                    CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
                    SUM(DECODE(d.AutoExtensible, 'YES', d.MaxBytes, d.Bytes))/1048576 Max_Size_MB,
                    COUNT(*) File_Count
-            FROM   DBA_Data_Files d
-            GROUP BY d.Tablespace_Name
-            ) f ON f.Tablespace_Name = t.TableSpace_Name
+            FROM   #{dba_or_cdb('DBA_Data_Files')} d
+            GROUP BY d.Tablespace_Name #{", d.Con_ID" if is_cdb?}
+            ) f ON f.Tablespace_Name = t.TableSpace_Name #{" AND f.Con_ID = t.Con_ID" if is_cdb?}
       WHERE Contents != 'TEMPORARY'
       UNION ALL
       SELECT f.Tablespace_Name, NULL Inst_ID,
@@ -56,18 +57,19 @@ class StorageController < ApplicationController
              f.AutoExtensible, f.Max_Size_MB, f.File_Count
              #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
              #{ ", t.Def_InMemory" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
-      FROM  DBA_Tablespaces t
-      LEFT OUTER JOIN (SELECT Tablespace_Name, SUM(Bytes)/1048576 MBTotal, SUM(Bytes)/SUM(Blocks) BlockSize,
+             #{", t.Con_ID" if is_cdb?}
+      FROM  #{dba_or_cdb('DBA_Tablespaces')} t
+      LEFT OUTER JOIN (SELECT Tablespace_Name, #{"Con_ID," if is_cdb?} SUM(Bytes)/1048576 MBTotal, SUM(Bytes)/SUM(Blocks) BlockSize,
                               CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
                               SUM(DECODE(AutoExtensible, 'YES', MaxBytes, Bytes))/1048576 Max_Size_MB,
                               COUNT(*) File_Count
-                       FROM DBA_Temp_Files
-                       GROUP BY Tablespace_Name
-                      ) f ON f.Tablespace_Name = t.TableSpace_Name
-      LEFT OUTER JOIN (SELECT Tablespace_Name, SUM(Total_Blocks) Used_Blocks
+                       FROM #{dba_or_cdb('DBA_Temp_Files')}
+                       GROUP BY Tablespace_Name #{", Con_ID" if is_cdb?}
+                      ) f ON f.Tablespace_Name = t.TableSpace_Name #{" AND f.Con_ID = t.Con_ID" if is_cdb?}
+      LEFT OUTER JOIN (SELECT Tablespace_Name, #{"Con_ID," if is_cdb?} SUM(Total_Blocks) Used_Blocks
                        FROM   GV$Sort_Segment
-                       GROUP BY Tablespace_Name
-                      ) s ON s.Tablespace_Name = t.TableSpace_Name
+                       GROUP BY Tablespace_Name #{", Con_ID" if is_cdb?}
+                      ) s ON s.Tablespace_Name = t.TableSpace_Name #{" AND s.Con_ID = t.Con_ID" if is_cdb?}
       WHERE t.Contents = 'TEMPORARY'
       UNION ALL
       SELECT 'Redo Inst='||l.Inst_ID    Tablespace_Name, l.Inst_ID,
@@ -101,10 +103,11 @@ class StorageController < ApplicationController
              COUNT(*)                   File_Count
              #{ ", NULL Encrypted, NULL Compress_For" if get_db_version >= '11.2'}
              #{ ", NULL Def_InMemory" if get_db_version >= '12.1.0.2'  && PanoramaConnection.edition == :enterprise}
+             #{", l.Con_ID" if is_cdb?}
       FROM   gv$Log l
       JOIN   gv$LogFile lf ON lf.Inst_ID = l.Inst_ID AND lf.Group# = l.Group#
       WHERE  l.Inst_ID = l.Thread#  -- im gv$-View werden jeweils die Logs der anderen Instanzen noch einmal in jeder Instance mit Thread# getzeigt, dies verhindert die Dopplung
-      GROUP BY l.Inst_ID, lf.Is_Recovery_Dest_File
+      GROUP BY l.Inst_ID, lf.Is_Recovery_Dest_File#{", l.Con_ID" if is_cdb?}
       ORDER BY 5 DESC NULLS LAST
       ")
 
@@ -504,7 +507,7 @@ class StorageController < ApplicationController
 
     if @tablespace_name && @tablespace_name != ''
       where_string_1 = " WHERE d.Tablespace_Name = ?"
-      where_string_2 = " WHERE NVL(d.Tablespace_Name, t.Tablespace_Name) = ?"
+      where_string_2 = " WHERE ts.Name = ?"
       where_values << @tablespace_name
     end
 
@@ -518,19 +521,19 @@ class StorageController < ApplicationController
              MaxBytes/1048576                  MaxMB,
              Increment_By*Block_size/1048576   Increment_ByMB,
              Increment_By,
-             Block_Size
+             Block_Size#{", Con_ID" if is_cdb?}
       FROM   (SELECT f.File_Name, f.File_ID, f.Tablespace_Name, f.Bytes, f.Blocks,
-                     f.Status, f.AutoExtensible, f.MaxBytes, f.Increment_By, f.Online_Status, t.Block_Size
-              FROM   DBA_Data_Files f
-              LEFT OUTER JOIN DBA_Tablespaces t ON t.Tablespace_Name = f.Tablespace_Name
+                     f.Status, f.AutoExtensible, f.MaxBytes, f.Increment_By, f.Online_Status, t.Block_Size#{", f.Con_ID" if is_cdb?}
+              FROM   #{dba_or_cdb('DBA_Data_Files')} f
+              LEFT OUTER JOIN #{dba_or_cdb('DBA_Tablespaces')} t ON t.Tablespace_Name = f.Tablespace_Name #{"AND t.Con_ID = f.Con_ID" if is_cdb?}
               UNION ALL
               SELECT f.File_Name, f.File_ID, f.Tablespace_Name, f.Bytes, f.Blocks,
-                     f.Status, f.AutoExtensible, f.MaxBytes, f.Increment_By, '[UNKNOWN]' Online_Status, t.Block_Size
-              FROM   DBA_Temp_Files f
-              LEFT OUTER JOIN DBA_Tablespaces t ON t.Tablespace_Name = f.Tablespace_Name
+                     f.Status, f.AutoExtensible, f.MaxBytes, f.Increment_By, '[UNKNOWN]' Online_Status, t.Block_Size#{", f.Con_ID" if is_cdb?}
+              FROM   #{dba_or_cdb('DBA_Temp_Files')} f
+              LEFT OUTER JOIN #{dba_or_cdb('DBA_Tablespaces')} t ON t.Tablespace_Name = f.Tablespace_Name #{"AND t.Con_ID = f.Con_ID" if is_cdb?}
              )d
       LEFT JOIN (SELECT File_ID, Tablespace_Name, SUM(Bytes) Bytes
-                 FROM   DBA_FREE_SPACE
+                 FROM   #{dba_or_cdb('DBA_FREE_SPACE')}
                  GROUP BY File_ID, Tablespace_Name
                 ) f ON f.FILE_ID = d.FILE_ID AND f.Tablespace_Name = d.Tablespace_Name -- DATA und Temp verwenden File_ID redundant
       #{where_string_1}
@@ -539,11 +542,14 @@ class StorageController < ApplicationController
     if get_db_version >= "11.2"
       @file_usage = sql_select_iterator ["\
         SELECT f.*,
-               NVL(d.File_Name, t.File_Name) File_Name,
-               NVL(d.Tablespace_Name, t.Tablespace_Name) Tablespace_Name
+               dt.Name File_Name,
+               ts.Name Tablespace_Name
         FROM   gv$IOStat_File f
-        LEFT JOIN DBA_Data_Files d ON d.File_ID = f.File_No AND f.FileType_Name='Data File'   -- DATA und Temp verwenden File_ID redundant
-        LEFT JOIN DBA_Temp_Files t ON t.File_ID = f.File_No AND f.FileType_Name='Temp File'
+        LEFT OUTER JOIN (SELECT 'Data File' Type, File#, Name, TS# FROM v$DataFile
+                         UNION ALL
+                         SELECT 'Temp File' Type, File#, Name, TS# FROM v$TempFile
+                        ) dt ON dt.File# = f.File_No AND dt.Type = f.FileType_Name /* DATA und Temp verwenden File_ID redundant, aber über Con_ID unique */
+        LEFT OUTER JOIN v$Tablespace ts ON ts.TS# = dt.TS# #{" AND ts.Con_ID = f.Con_ID" if is_cdb?}
         #{where_string_2}
         ORDER BY f.Inst_ID, f.File_No
       "].concat(where_values)
