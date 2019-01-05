@@ -1680,7 +1680,7 @@ ORDER BY Column_ID
 
       # Check Status of index
       if @ora_indexes[index_name.upcase].status != 'VALID'
-        sql = "DROP INDEX #{@sampler_config.get_owner}.#{index_name}"           # Force recreation of index
+        sql = "ALTER INDEX #{@sampler_config.get_owner}.#{index_name} REBUILD"           # Force recreation of index
         log(sql)
         PanoramaConnection.sql_execute(sql)
       end
