@@ -1413,7 +1413,7 @@ ORDER BY Column_ID
 
     # Existing index-structure
     @ora_indexes = {}
-    indexes      = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Compression, Prefix_Length FROM All_Indexes WHERE Owner = ? AND Table_Name NOT LIKE 'BIN$%'", @sampler_config.get_owner.upcase]
+    indexes      = PanoramaConnection.sql_select_all ["SELECT Table_Name, Index_Name, Compression, Prefix_Length, Status FROM All_Indexes WHERE Owner = ? AND Table_Name NOT LIKE 'BIN$%'", @sampler_config.get_owner.upcase]
     indexes.each do |i|
       @ora_indexes[i.index_name] = i
       @ora_indexes[i.index_name][:columns] = []
@@ -1676,7 +1676,15 @@ ORDER BY Column_ID
   # compress - Number of columns to compress
   def check_index(table_name, index_name, columns, compress)
     if @ora_indexes[index_name.upcase] && @ora_indexes[index_name.upcase].table_name == table_name.upcase # Index exists
-    # if @ora_indexes.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase})  # Index exists
+      # if @ora_indexes.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase})  # Index exists
+
+      # Check Status of index
+      if @ora_indexes[index_name.upcase].status != 'VALID'
+        sql = "DROP INDEX #{@sampler_config.get_owner}.#{index_name}"           # Force recreation of index
+        log(sql)
+        PanoramaConnection.sql_execute(sql)
+      end
+
       ########### Check columns of index
       columns.each_index do |i|
         column = columns[i]
