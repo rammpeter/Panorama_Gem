@@ -111,6 +111,7 @@ class PanoramaConnection
   attr_reader :jdbc_connection
   attr_accessor :used_in_thread
   attr_accessor :last_used_time
+  attr_accessor :last_used_query_timeout
   attr_reader :instance_number
   attr_reader :db_version
   attr_reader :dbid
@@ -121,6 +122,7 @@ class PanoramaConnection
   attr_reader :edition
   attr_reader :password_hash
   attr_reader :sql_stmt_in_execution
+
 
   # Array of PanoramaConnection instances, elements consists of:
   #   @jdbc_connection
@@ -134,10 +136,11 @@ class PanoramaConnection
 
   ############################ instance methods #########################
   def initialize(new_jdbc_connection)                                           # Object instantiation is always done within working thread
-    @jdbc_connection = new_jdbc_connection
-    @used_in_thread  = true
-    @last_used_time  = Time.now
-    @password_hash   = PanoramaConnection.get_decrypted_password.hash
+    @jdbc_connection          = new_jdbc_connection
+    @used_in_thread           = true
+    @last_used_query_timeout  = 600                                             # initial value, should be overwritten in check_for_open_connection
+    @last_used_time           = Time.now
+    @password_hash            = PanoramaConnection.get_decrypted_password.hash
   end
 
   def read_initial_attributes
@@ -204,11 +207,23 @@ class PanoramaConnection
   def self.disconnect_aged_connections(min_age_for_disconnect)
     @@connection_pool_mutex.synchronize do
       @@connection_pool.clone.each do |conn|                                    # clone to ensure eqch connection is checked even if Array-nodes are removed between
+
         if !conn.used_in_thread && conn.last_used_time < Time.now - min_age_for_disconnect
           config = conn.jdbc_connection.instance_variable_get(:@config)
           Rails.logger.info "Disconnect DB connection because last used is older than #{min_age_for_disconnect} seconds: URL='#{config[:url]}' User='#{config[:username]}' Last used=#{conn.last_used_time}"
           destroy_connection_in_mutexed_pool(conn)
         end
+
+        min_age_for_active_disconnect = min_age_for_disconnect
+        min_age_query_timeout = Time.now.round - conn.last_used_query_timeout * 2                                       # Min age according to query timeout
+        min_age_for_active_disconnect = min_age_query_timeout if min_age_query_timeout < min_age_for_active_disconnect  # Use min age for query timeout only if older than min_age_for_disconnect
+
+        if conn.used_in_thread && conn.last_used_time < Time.now - min_age_for_active_disconnect
+          config = conn.jdbc_connection.instance_variable_get(:@config)
+          Rails.logger.info "Disconnect active DB connection because last used is older than #{min_age_for_active_disconnect} seconds: URL='#{config[:url]}' User='#{config[:username]}' last used=#{conn.last_used_time}, last query timeout=#{conn.last_used_query_timeout}"
+          destroy_connection_in_mutexed_pool(conn)
+        end
+
       end
     end
   end
@@ -400,6 +415,10 @@ class PanoramaConnection
       end
       Thread.current[:panorama_connection_app_info_set] = true
     end
+
+    # remember last used query timeout for usage in connection_terminate_job
+    Thread.current[:panorama_connection_connection_object].last_used_query_timeout = Thread.current[:panorama_connection_connect_info][:query_timeout]
+
   end
 
   # get existing free connection from pool or create new connection

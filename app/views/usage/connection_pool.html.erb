@@ -10,16 +10,17 @@
   column_options =
       [
 
-          {:caption=>'Used in thread', :data=>proc{|rec| rec.used_in_thread ? 'Y' : ''},          :title=>"Is connection currently used in active thread / active request processing at Panorama server"},
-          {:caption=>'URL',            :data=>proc{|rec| rec.get_config[:url]},                   :title=>"Connection URL"},
-          {:caption=>'Username',       :data=>proc{|rec| rec.get_config[:username]},              :title=>"Username of connection"},
-          {:caption=>'DB name',        :data=>proc{|rec| rec.database_name},                      :title=>"Internal DB name"},
-          {:caption=>'DB version',     :data=>proc{|rec| rec.db_version},                         :title=>"DB version"},
-          {:caption=>'Instance',       :data=>proc{|rec| rec.instance_number},                    :title=>"Number of connected instance", align: :right},
-          {:caption=>'Edition',        :data=>proc{|rec| rec.edition},                            :title=>"DB edition"},
-          {:caption=>'DBID',           :data=>proc{|rec| fn rec.dbid},                            :title=>"DB ID", align: :right},
-          {:caption=>'Last used time', :data=>proc{|rec| localeDateTime(rec.last_used_time)},     :title=>"Timestamp of last retrieval of connection from pool"},
-          {:caption=>'Executed SQL',   :data=>proc{|rec| link_sql_text(rec)},                     :title=>"SQL currently executed by connection"},
+          {:caption=>'Used in thread',          :data=>proc{|rec| rec.used_in_thread ? 'Y' : ''},               :title=>"Is connection currently used in active thread / active request processing at Panorama server"},
+          {:caption=>'URL',                     :data=>proc{|rec| rec.get_config[:url]},                        :title=>"Connection URL"},
+          {:caption=>'Username',                :data=>proc{|rec| rec.get_config[:username]},                   :title=>"Username of connection"},
+          {:caption=>'DB name',                 :data=>proc{|rec| rec.database_name},                           :title=>"Internal DB name"},
+          {:caption=>'DB version',              :data=>proc{|rec| rec.db_version},                              :title=>"DB version"},
+          {:caption=>'Instance',                :data=>proc{|rec| rec.instance_number},                         :title=>"Number of connected instance", align: :right},
+          {:caption=>'Edition',                 :data=>proc{|rec| rec.edition},                                 :title=>"DB edition"},
+          {:caption=>'DBID',                    :data=>proc{|rec| fn rec.dbid},                                 :title=>"DB ID", align: :right},
+          {:caption=>'Last used time',          :data=>proc{|rec| localeDateTime(rec.last_used_time)},          :title=>"Timestamp of last retrieval of connection from pool"},
+          {:caption=>'Last used query timout',  :data=>proc{|rec| fn(rec.last_used_query_timeout)},             :title=>"Query timeout used for last SQL execution in seconds", align: :right},
+          {:caption=>'Executed SQL',            :data=>proc{|rec| link_sql_text(rec)},                          :title=>"SQL currently executed by connection"},
       ]
 %>
 <%= gen_slickgrid(PanoramaConnection.get_connection_pool, column_options, {:caption=>"Current connections in connection pool of Panorama server", :max_height=>450}) %>

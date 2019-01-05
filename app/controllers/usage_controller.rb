@@ -30,11 +30,11 @@ class UsageController < ApplicationController
         action     = recs[4]
 
         if months[month]
-          months[month][:Requests] = months[month][:Requests] +1
-          months[month][:Databases][db]           = months[month][:Databases][db]           ? months[month][:Databases][db] +1           : 1
-          months[month][:Clients][ip]             = months[month][:Clients][ip]             ? months[month][:Clients][ip] +1             : 1
-          months[month][:Controllers][controller] = months[month][:Controllers][controller] ? months[month][:Controllers][controller] +1 : 1
-          months[month][:Actions][action]         = months[month][:Actions][action]         ? months[month][:Actions][action] +1         : 1
+          months[month][:Requests] = (months[month][:Requests]) +1
+          months[month][:Databases][db]           = months[month][:Databases][db]           ? (months[month][:Databases][db]) +1           : 1
+          months[month][:Clients][ip]             = months[month][:Clients][ip]             ? (months[month][:Clients][ip]) +1             : 1
+          months[month][:Controllers][controller] = months[month][:Controllers][controller] ? (months[month][:Controllers][controller]) +1 : 1
+          months[month][:Actions][action]         = months[month][:Actions][action]         ? (months[month][:Actions][action]) +1         : 1
         else
           months[month] = {:Requests     => 1,
                            :Databases    => { db         => 1},
@@ -92,11 +92,11 @@ class UsageController < ApplicationController
 
         if filtered
           if groups[groupvalue]
-            groups[groupvalue][:Requests] = groups[groupvalue][:Requests] +1
-            groups[groupvalue][:Databases][db]           = groups[groupvalue][:Databases][db]           ? (groups[groupvalue][:Databases][db] +1)           : 1
-            groups[groupvalue][:Clients][ip]             = groups[groupvalue][:Clients][ip]             ? (groups[groupvalue][:Clients][ip] +1)             : 1
-            groups[groupvalue][:Controllers][controller] = groups[groupvalue][:Controllers][controller] ? (groups[groupvalue][:Controllers][controller] +1) : 1
-            groups[groupvalue][:Actions][action]         = groups[groupvalue][:Actions][action]         ? (groups[groupvalue][:Actions][action] +1)         : 1
+            groups[groupvalue][:Requests] = (groups[groupvalue][:Requests]) +1
+            groups[groupvalue][:Databases][db]           = groups[groupvalue][:Databases][db]           ? (groups[groupvalue][:Databases][db]) +1           : 1
+            groups[groupvalue][:Clients][ip]             = groups[groupvalue][:Clients][ip]             ? (groups[groupvalue][:Clients][ip]) +1             : 1
+            groups[groupvalue][:Controllers][controller] = groups[groupvalue][:Controllers][controller] ? (groups[groupvalue][:Controllers][controller]) +1 : 1
+            groups[groupvalue][:Actions][action]         = groups[groupvalue][:Actions][action]         ? (groups[groupvalue][:Actions][action]) +1         : 1
           else
             groups[groupvalue] = {:Requests     => 1,
                                   :Databases    => { db         => 1},

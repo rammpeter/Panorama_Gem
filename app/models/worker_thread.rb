@@ -73,14 +73,14 @@ class WorkerThread
 
       controller.add_statusbar_message("Trial connect to '#{@sampler_config.get_name}' successful")
     end
-    PanoramaConnection.release_connection                                       # Free DB connection in Pool
     dbid
   rescue Exception => e
     Rails.logger.error "Exception #{e.message} raised in WorkerThread.check_connection_internal"
     controller.add_statusbar_message("Trial connect to '#{@sampler_config.get_name}' not successful!\nExcpetion: #{e.message}\nFor details see Panorama-Log for details")
     @sampler_config.set_error_message(e.message)
-    PanoramaConnection.release_connection                                       # Free DB connection in Pool
     raise e
+  ensure
+    PanoramaConnection.release_connection                                       # Free DB connection in Pool in any case
   end
 
   # Execute first part of job synchroneous with job's PanoramaConnection
@@ -96,14 +96,14 @@ class WorkerThread
 
     PanoramaSamplerStructureCheck.do_check(@sampler_config, :ASH)               # Check data structure preconditions, but only for ASH-tables
     @@synchron__structure_checks.delete(@sampler_config.get_id)                 # Remove semaphore
-    PanoramaConnection.release_connection                                       # Free DB connection in Pool
   rescue Exception => e
     @@synchron__structure_checks.delete(@sampler_config.get_id)                 # Remove semaphore
     Rails.logger.error("Error #{e.message} during WorkerThread.check_structure_synchron for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})")
     log_exception_backtrace(e, 20) if ENV['RAILS_ENV'] != 'test'
     @sampler_config.set_error_message("Error #{e.message} during WorkerThread.check_structure_synchron")
-    PanoramaConnection.release_connection                                       # Free DB connection in Pool
     raise e
+  ensure
+    PanoramaConnection.release_connection                                       # Free DB connection in Pool in any case
   end
 
 
