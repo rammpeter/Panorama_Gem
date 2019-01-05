@@ -151,7 +151,7 @@ END Panorama_Sampler_Snapshot;
     JOIN   (SELECT /*+ NO_MERGE */ 0 Con_ID, DBID FROM v$Database
     #{PanoramaConnection.db_version >= '12.1' ? "
             UNION ALL
-            SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers
+            SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers WHERE Con_ID != 0
            ) c ON c.Con_ID = l.Con_ID" : "
            ) c ON c.Con_ID = 0"}
     ;
@@ -241,7 +241,7 @@ END Panorama_Sampler_Snapshot;
     JOIN   (SELECT /*+ NO_MERGE */ 0 Con_ID, DBID FROM v$Database
     #{PanoramaConnection.db_version >= '12.1' ? "
             UNION ALL
-            SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers
+            SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers WHERE Con_ID != 0
            ) c ON c.Con_ID = p.Con_ID" : "
            ) c ON c.Con_ID = 0"}
     ;
@@ -525,7 +525,7 @@ END Panorama_Sampler_Snapshot;
       JOIN   (SELECT /*+ NO_MERGE */ 0 Con_ID, DBID FROM v$Database
       #{PanoramaConnection.db_version >= '12.1' ? "
               UNION ALL
-              SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers
+              SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers WHERE Con_ID != 0
              ) c ON c.Con_ID = s.Con_ID" : "
              ) c ON c.Con_ID = 0"}
       LEFT OUTER JOIN  (SELECT MAX(Snap_ID) Max_Snap_ID, DBID, Instance_Number, SQL_ID, Plan_Hash_Value, Con_DBID
@@ -548,7 +548,7 @@ END Panorama_Sampler_Snapshot;
     JOIN   (SELECT /*+ NO_MERGE */ 0 Con_ID, DBID FROM v$Database
     #{PanoramaConnection.db_version >= '12.1' ? "
             UNION ALL
-            SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers
+            SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers WHERE Con_ID != 0
            ) c ON c.Con_ID = s.Con_ID" : "
            ) c ON c.Con_ID = 0"}
     LEFT OUTER JOIN panorama.Panorama_SQLText p ON p.DBID=p_DBID AND p.SQL_ID=s.SQL_ID AND p.Con_DBID=c.DBID
@@ -632,7 +632,7 @@ END Panorama_Sampler_Snapshot;
       JOIN   (SELECT /*+ NO_MERGE */ 0 Con_ID, DBID FROM v$Database
       #{PanoramaConnection.db_version >= '12.1' ? "
               UNION ALL
-              SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers
+              SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers WHERE Con_ID != 0
              ) c ON c.Con_ID = d.Con_ID" : "
              ) c ON c.Con_ID = 0"}
       WHERE  NOT EXISTS (SELECT 1 FROM panorama.Panorama_Tablespace di WHERE di.DBID = p_DBID AND di.TS# = d.TS# AND di.Con_DBID = c.DBID)
@@ -650,7 +650,7 @@ END Panorama_Sampler_Snapshot;
       JOIN   (SELECT /*+ NO_MERGE */ 0 Con_ID, DBID FROM v$Database
       #{PanoramaConnection.db_version >= '12.1' ? "
               UNION ALL
-              SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers
+              SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers WHERE Con_ID != 0
              ) c ON c.Con_ID = d.Con_ID" : "
              ) c ON c.Con_ID = 0"}
       WHERE  NOT EXISTS (SELECT 1 FROM panorama.Panorama_Tempfile di WHERE di.DBID = p_DBID AND di.FILE# = d.FILE# AND di.CREATION_CHANGE# = d.CREATION_CHANGE# AND di.Con_DBID = c.DBID)
@@ -670,7 +670,7 @@ END Panorama_Sampler_Snapshot;
       JOIN   (SELECT /*+ NO_MERGE */ 0 Con_ID, DBID FROM v$Database
       #{PanoramaConnection.db_version >= '12.1' ? "
               UNION ALL
-              SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers
+              SELECT /*+ NO_MERGE */ Con_ID, DBID FROM v$Containers WHERE Con_ID != 0
              ) c ON c.Con_ID = f.Con_ID" : "
              ) c ON c.Con_ID = 0"}
     ;
