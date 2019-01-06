@@ -214,14 +214,17 @@ class PanoramaConnection
           destroy_connection_in_mutexed_pool(conn)
         end
 
+        # Ensure that cancelled network connections do not lead to overflow of connection pool
+        # Kill connections only after query timeout shuold cancel execution
         min_age_for_active_disconnect = min_age_for_disconnect
-        min_age_query_timeout = Time.now.round - conn.last_used_query_timeout * 2                                       # Min age according to query timeout
-        min_age_for_active_disconnect = min_age_query_timeout if min_age_query_timeout < min_age_for_active_disconnect  # Use min age for query timeout only if older than min_age_for_disconnect
+        min_age_query_timeout = conn.last_used_query_timeout * 2                # Max seconds since last used according to query timeout
+        min_age_for_active_disconnect = min_age_query_timeout if min_age_query_timeout > min_age_for_active_disconnect  # Use min age for query timeout only if greater than min_age_for_disconnect
 
         if conn.used_in_thread && conn.last_used_time < Time.now - min_age_for_active_disconnect
           config = conn.jdbc_connection.instance_variable_get(:@config)
           Rails.logger.info "Disconnect active DB connection because last used is older than #{min_age_for_active_disconnect} seconds: URL='#{config[:url]}' User='#{config[:username]}' last used=#{conn.last_used_time}, last query timeout=#{conn.last_used_query_timeout}"
           destroy_connection_in_mutexed_pool(conn)
+          Rails.logger.info "Finished disconnect active DB connection because last used is older than #{min_age_for_active_disconnect} seconds: URL='#{config[:url]}' User='#{config[:username]}' last used=#{conn.last_used_time}, last query timeout=#{conn.last_used_query_timeout}"
         end
 
       end

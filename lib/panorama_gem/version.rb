@@ -2,8 +2,8 @@ require 'date'
 
 module PanoramaGem
   # VERSION and RELEASE_DATE should have fix syntax and positions because they are parsed from other sites
-  VERSION = '2.8.04'
-  RELEASE_DATE = Date.parse('2019-01-05')
+  VERSION = '2.8.05'
+  RELEASE_DATE = Date.parse('2019-01-06')
 
   RELEASE_DAY   = "%02d" % RELEASE_DATE.day
   RELEASE_MONTH = "%02d" % RELEASE_DATE.month
