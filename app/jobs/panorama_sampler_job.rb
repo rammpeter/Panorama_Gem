@@ -11,7 +11,7 @@ class PanoramaSamplerJob < ApplicationJob
 
     snapshot_time = Time.now.round                                              # cut subseconds
 
-    min_snapshot_cycle = PanoramaSamplerConfig.min_snapshot_cycle
+    min_snapshot_cycle = PanoramaSamplerConfig.min_snapshot_cycle               # smallest cycle in minutes
 
     # calculate next snapshot time from now
     last_snapshot_minute = snapshot_time.min-snapshot_time.min % min_snapshot_cycle

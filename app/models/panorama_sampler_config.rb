@@ -197,6 +197,21 @@ class PanoramaSamplerConfig
       min_snapshot_cycle = config.get_cache_objects_snapshot_cycle      if config.get_cache_objects_active  && config.get_cache_objects_snapshot_cycle    < min_snapshot_cycle  # Rerun job at smallest snapshot cycle config
       min_snapshot_cycle = config.get_blocking_locks_snapshot_cycle     if config.get_blocking_locks_active && config.get_blocking_locks_snapshot_cycle   < min_snapshot_cycle  # Rerun job at smallest snapshot cycle config
     end
+
+    # Check if smallest divider matches over all configs
+    get_config_array.each do |config|
+      while true
+        reminder_exists = false                                                   # Assume no reminder exists for all jobs
+        reminder_exists = true if config.get_awr_ash_active        && config.get_awr_ash_snapshot_cycle         % min_snapshot_cycle != 0
+        reminder_exists = true if config.get_cache_objects_active  && config.get_cache_objects_snapshot_cycle   % min_snapshot_cycle != 0
+        reminder_exists = true if config.get_blocking_locks_active && config.get_blocking_locks_snapshot_cycle  % min_snapshot_cycle != 0
+
+        break unless reminder_exists                                              # if all jobs don't have reminders
+        min_snapshot_cycle -= 1                                                   # reduce cycle and try again
+        raise "PanoramaSamplerConfig.min_snapshot_cycle: min_snapshot_cycle < 1 not allowed" if min_snapshot_cycle < 1
+      end
+    end
+
     min_snapshot_cycle
   end
 
