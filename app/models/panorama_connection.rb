@@ -122,7 +122,7 @@ class PanoramaConnection
   attr_reader :edition
   attr_reader :password_hash
   attr_reader :sql_stmt_in_execution
-
+  attr_reader :last_used_action_name
 
   # Array of PanoramaConnection instances, elements consists of:
   #   @jdbc_connection
@@ -166,8 +166,22 @@ class PanoramaConnection
     else
       @con_id        = 0
     end
+  end
 
+  def register_sql_execution(stmt)
+    @sql_stmt_in_execution = stmt
+  end
 
+  def unregister_sql_execution
+    @sql_stmt_in_execution = nil
+  end
+
+  def set_module_action(action_name)
+    @last_used_action_name = action_name
+
+    @jdbc_connection.exec_update("call dbms_application_info.set_Module('Panorama', :action)", 'set_application_info',
+                                 [ActiveRecord::Relation::QueryAttribute.new(':action', action_name, ActiveRecord::Type::Value.new)]
+    )
   end
 
   ########################### class methods #############################
@@ -205,30 +219,45 @@ class PanoramaConnection
 
   # disconnect connections that are not used for x seconds
   def self.disconnect_aged_connections(min_age_for_disconnect)
+    active_connections_to_disconnect = []                                       # Buffer JDBC connections and do logoff outside mutex, because it may block
+
     @@connection_pool_mutex.synchronize do
       @@connection_pool.clone.each do |conn|                                    # clone to ensure eqch connection is checked even if Array-nodes are removed between
 
         if !conn.used_in_thread && conn.last_used_time < Time.now - min_age_for_disconnect
           config = conn.jdbc_connection.instance_variable_get(:@config)
-          Rails.logger.info "Disconnect DB connection because last used is older than #{min_age_for_disconnect} seconds: URL='#{config[:url]}' User='#{config[:username]}' Last used=#{conn.last_used_time}"
+          Rails.logger.info "Disconnect DB connection because last used is older than #{min_age_for_disconnect} seconds: URL='#{config[:url]}' user='#{config[:username]}' last used=#{conn.last_used_time} last action='#{conn.last_used_action_name}'"
           destroy_connection_in_mutexed_pool(conn)
         end
 
         # Ensure that cancelled network connections do not lead to overflow of connection pool
-        # Kill connections only after query timeout shuold cancel execution
+        # Kill connections only after query timeout should have cancel execution
         min_age_for_active_disconnect = min_age_for_disconnect
         min_age_query_timeout = conn.last_used_query_timeout * 2                # Max seconds since last used according to query timeout
         min_age_for_active_disconnect = min_age_query_timeout if min_age_query_timeout > min_age_for_active_disconnect  # Use min age for query timeout only if greater than min_age_for_disconnect
 
         if conn.used_in_thread && conn.last_used_time < Time.now - min_age_for_active_disconnect
           config = conn.jdbc_connection.instance_variable_get(:@config)
-          Rails.logger.info "Disconnect active DB connection because last used is older than #{min_age_for_active_disconnect} seconds: URL='#{config[:url]}' User='#{config[:username]}' last used=#{conn.last_used_time}, last query timeout=#{conn.last_used_query_timeout}"
-          destroy_connection_in_mutexed_pool(conn)
-          Rails.logger.info "Finished disconnect active DB connection because last used is older than #{min_age_for_active_disconnect} seconds: URL='#{config[:url]}' User='#{config[:username]}' last used=#{conn.last_used_time}, last query timeout=#{conn.last_used_query_timeout}"
+          Rails.logger.info "Mark active DB connection for disconnect because last used is older than #{min_age_for_active_disconnect} seconds: URL='#{config[:url]}' User='#{config[:username]}', last used=#{conn.last_used_time}, last action='#{conn.last_used_action_name}', last query timeout=#{conn.last_used_query_timeout}"
+          active_connections_to_disconnect << conn.jdbc_connection              # Mark for logoff outside mutex
         end
-
       end
     end
+
+    active_connections_to_disconnect.each do|jdbc_conn|                         # do logoff outside mutex, because it may block
+      begin
+        config = jdbc_conn.instance_variable_get(:@config)
+        Rails.logger.info "Do logoff JDBC connection: URL='#{config[:url]}' User='#{config[:username]}'"
+        jdbc_conn.logoff
+        Rails.logger.info "Finished logoff JDBC connection: URL='#{config[:url]}' User='#{config[:username]}'"
+      rescue Exception => e
+        Rails.logger.error "logoff JDBC connection: Exception #{e.message} during logoff. URL='#{config[:url]}' User='#{config[:username]}'"
+      end
+    end
+  rescue Exception => e
+    Rails.logger.error "Exception in disconnect_aged_connections:\n#{e.message}"
+    log_exception_backtrace(e, 40)
+    raise e
   end
 
 
@@ -392,13 +421,6 @@ class PanoramaConnection
     Thread.current[:panorama_connection_connect_info]
   end
 
-  def register_sql_execution(stmt)
-    @sql_stmt_in_execution = stmt
-  end
-
-  def unregister_sql_execution
-    @sql_stmt_in_execution = nil
-  end
 
   private
   # ensure that Oracle-Connection exists and DBMS__Application_Info is executed
@@ -575,9 +597,7 @@ class PanoramaConnection
 
   def self.set_application_info
     # This method raises connection exception at first database access
-    Thread.current[:panorama_connection_connection_object].jdbc_connection.exec_update("call dbms_application_info.set_Module('Panorama', :action)", 'set_application_info',
-                                  [ActiveRecord::Relation::QueryAttribute.new(':action', "#{Thread.current[:panorama_connection_connect_info][:current_controller_name]}/#{Thread.current[:panorama_connection_connect_info][:current_action_name]}", ActiveRecord::Type::Value.new)]
-    )
+    Thread.current[:panorama_connection_connection_object].set_module_action("#{Thread.current[:panorama_connection_connect_info][:current_controller_name]}/#{Thread.current[:panorama_connection_connect_info][:current_action_name]}")
   end
 
   # Translate text in SQL-statement

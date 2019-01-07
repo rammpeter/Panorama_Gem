@@ -18,6 +18,7 @@
           {:caption=>'Instance',                :data=>proc{|rec| rec.instance_number},                         :title=>"Number of connected instance", align: :right},
           {:caption=>'Edition',                 :data=>proc{|rec| rec.edition},                                 :title=>"DB edition"},
           {:caption=>'DBID',                    :data=>proc{|rec| fn rec.dbid},                                 :title=>"DB ID", align: :right},
+          {:caption=>'Last used action',        :data=>proc{|rec| rec.last_used_action_name},                   :title=>"Last used action info (Module is always 'Panorama')"},
           {:caption=>'Last used time',          :data=>proc{|rec| localeDateTime(rec.last_used_time)},          :title=>"Timestamp of last retrieval of connection from pool"},
           {:caption=>'Last used query timout',  :data=>proc{|rec| fn(rec.last_used_query_timeout)},             :title=>"Query timeout used for last SQL execution in seconds", align: :right},
           {:caption=>'Executed SQL',            :data=>proc{|rec| link_sql_text(rec)},                          :title=>"SQL currently executed by connection"},
