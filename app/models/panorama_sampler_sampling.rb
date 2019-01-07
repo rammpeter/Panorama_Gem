@@ -125,25 +125,24 @@ class PanoramaSamplerSampling
 
   # Run daemon, daeomon returns 1 second before next snapshot timestamp
   def run_ash_daemon_internal(snapshot_time)
-    start_delay_from_snapshot = Time.now - snapshot_time
-    snapshot_cycle_seconds = @sampler_config.get_awr_ash_snapshot_cycle * 60
-    if start_delay_from_snapshot > 30                                           # ASH-daemon starts more than 30 seconds after snapshot due to structure-check before
-      snapshot_cycle_seconds -= start_delay_from_snapshot.to_i - 30             # Limit delay so that ASH-daemon terminates max. 30 seconds after next snapshot
-    end
+    start_delay_from_snapshot = (Time.now - snapshot_time).round                # at seconds bound
     next_snapshot_start_seconds = @sampler_config.get_awr_ash_snapshot_cycle * 60 - start_delay_from_snapshot # Number of seconds until next snapshot start
+
     if @sampler_config.get_select_any_table                                     # call PL/SQL package ?
-      sql = " BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_ASH.Run_Sampler_Daemon(?, ?, ?, ?); END;"
+      sql = " BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_ASH.Run_Sampler_Daemon(?, ?, ?); END;"
     else
       sql = "
         DECLARE
         #{panorama_sampler_ash_code.gsub(/PANORAMA\./i, "#{@sampler_config.get_owner.upcase}.")}
         BEGIN
-          Run_Sampler_Daemon(?, ?, ?, ?);
+          Run_Sampler_Daemon(?, ?, ?);
         END;
         "
     end
 
-    PanoramaConnection.sql_execute [sql, snapshot_cycle_seconds, PanoramaConnection.instance_number, PanoramaConnection.con_id, next_snapshot_start_seconds]
+    Rails.logger.info "#{Time.now}: Create new ASH daemon for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}', Instance=#{PanoramaConnection.instance_number}, next_snapshot_start_seconds=#{next_snapshot_start_seconds}"
+
+    PanoramaConnection.sql_execute [sql, PanoramaConnection.instance_number, PanoramaConnection.con_id, next_snapshot_start_seconds]
   end
 
   def do_object_size_sampling(snapshot_time)

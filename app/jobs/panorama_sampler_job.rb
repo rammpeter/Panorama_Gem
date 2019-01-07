@@ -7,6 +7,8 @@ class PanoramaSamplerJob < ApplicationJob
 
   SECONDS_LATE_ALLOWED = 3                                                      # x seconds delay after job creation are accepted
 
+  @@first_call_after_startup = true                                             # Panorama has just started
+
   def perform(*args)
 
     snapshot_time = Time.now.round                                              # cut subseconds
@@ -19,19 +21,38 @@ class PanoramaSamplerJob < ApplicationJob
     next_snapshot_time = last_snapshot_time + min_snapshot_cycle * 60
     PanoramaSamplerJob.set(wait_until: next_snapshot_time).perform_later
 
-    if last_snapshot_time < snapshot_time-SECONDS_LATE_ALLOWED                  # Filter first Job execution at server startup, 2 seconds delay are allowed
-      Rails.logger.info "#{snapshot_time}: Job suspended because not started at exact snapshot time #{last_snapshot_time}"
-      return
-    end
+#    if last_snapshot_time < snapshot_time-SECONDS_LATE_ALLOWED                  # Filter first Job execution at server startup, 2 seconds delay are allowed
+#      Rails.logger.info "#{snapshot_time}: Job suspended because not started at exact snapshot time #{last_snapshot_time}"
+#      return
+#    end
 
     # Iterate over PanoramaSampler entries
     PanoramaSamplerConfig.get_config_array.each do |config|
-      check_for_sampling(config, snapshot_time, :AWR_ASH)
-      check_for_sampling(config, snapshot_time, :OBJECT_SIZE, 60)
-      check_for_sampling(config, snapshot_time, :CACHE_OBJECTS)
-      check_for_sampling(config, snapshot_time, :BLOCKING_LOCKS)
-      WorkerThread.check_analyze(config)
+
+      if @@first_call_after_startup
+        if config.get_domain_active(:AWR_ASH)
+          snapshot_cycle_minutes  = config.get_domain_snapshot_cycle(:AWR_ASH)
+          next_full_snapshot_time = Time.now                                        # look for next regular snapshot time from now
+          next_full_snapshot_time += 60 - next_full_snapshot_time.sec               # Next full minute
+          while snapshot_cycle_minutes > 60 && next_full_snapshot_time.hour % snapshot_cycle_minutes/60 != 0
+            next_full_snapshot_time += 3600 - next_full_snapshot_time.min * 60      # next full hour
+          end
+          while snapshot_cycle_minutes <= 60 && next_full_snapshot_time.min % snapshot_cycle_minutes != 0
+            next_full_snapshot_time += 60                                           # next full minute
+          end
+          prev_regular_snapshot_time = next_full_snapshot_time - snapshot_cycle_minutes * 60
+          WorkerThread.run_ash_sampler_daemon(config, prev_regular_snapshot_time)   # start ASH daemon at first startup
+        end
+      else                                                                        # regular operation in snapshot cycle
+        check_for_sampling(config, snapshot_time, :AWR_ASH)
+        check_for_sampling(config, snapshot_time, :OBJECT_SIZE, 60)
+        check_for_sampling(config, snapshot_time, :CACHE_OBJECTS)
+        check_for_sampling(config, snapshot_time, :BLOCKING_LOCKS)
+        WorkerThread.check_analyze(config)
+      end
     end
+
+    @@first_call_after_startup = false                                          # regular operation now
   rescue Exception => e
     Rails.logger.error "Exception in PanoramaSamplerJob.perform:\n#{e.message}"
     log_exception_backtrace(e, 40)
@@ -56,7 +77,6 @@ class PanoramaSamplerJob < ApplicationJob
         Rails.logger.error "May be sampling is done by multiple Panorama instances?"
       end
     end
-
   end
 
 end

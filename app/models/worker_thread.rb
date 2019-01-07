@@ -19,20 +19,24 @@ class WorkerThread
   def self.create_snapshot(sampler_config, snapshot_time, domain)
 
     if domain == :AWR_ASH
-      WorkerThread.new(sampler_config, 'check_structure_synchron').check_structure_synchron # Ensure existence of objects necessary for both Threads, synchron with job's thread
-      thread = Thread.new{WorkerThread.new(sampler_config, 'ash_sampler_daemon').create_ash_sampler_daemon(snapshot_time)} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
-
+      WorkerThread.run_ash_sampler_daemon(sampler_config, snapshot_time)
       create_snapshot(sampler_config, snapshot_time, :AWR)                      # recall method with changed domain
     else
-      thread = Thread.new{WorkerThread.new(sampler_config, "create #{domain} snapshot").create_snapshot_internal(snapshot_time, domain)}  # Excute the snapshot and terminate
+      Thread.new{WorkerThread.new(sampler_config, "create #{domain} snapshot").create_snapshot_internal(snapshot_time, domain)}  # Excute the snapshot and terminate
     end
   rescue Exception => e
     Rails.logger.error "Exception #{e.message} raised in WorkerThread.create_snapshot for config-ID=#{sampler_config.get_id} and domain=#{domain}"
     # Don't raise exception because it should not stop calling job processing
   end
 
+  # Used also for running ash daemon at Panorama-startup, snapshot_time must be time according to regular snapshot cycle
+  def self.run_ash_sampler_daemon(sampler_config, snapshot_time)
+    WorkerThread.new(sampler_config, 'check_structure_synchron').check_structure_synchron # Ensure existence of objects necessary for both Threads, synchron with job's thread
+    Thread.new{WorkerThread.new(sampler_config, 'ash_sampler_daemon').create_ash_sampler_daemon(snapshot_time)} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
+  end
+
   def self.check_analyze(sampler_config)
-    thread = Thread.new{WorkerThread.new(sampler_config, 'check_analyze').check_analyze_internal}
+    Thread.new{WorkerThread.new(sampler_config, 'check_analyze').check_analyze_internal}
   rescue Exception => e
     Rails.logger.error "Exception #{e.message} raised in WorkerThread.check_analyze for config-ID=#{sampler_config.get_id}"
   end
@@ -121,8 +125,6 @@ class WorkerThread
       @sampler_config.set_error_message("Previous ASH daemon not yet finished, new ASH daemon for snapshot not started! Restart Panorama server if this problem persists.")
       return
     end
-
-    Rails.logger.info "#{Time.now}: Create new ASH daemon for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}', Duration=#{@sampler_config.get_awr_ash_snapshot_cycle} Minutes"
 
     @@active_ash_daemons[@sampler_config.get_id] = true                           # Create semaphore for thread, begin processing
     # Check data structure only for ASH-tables is already done in check_structure_synchron
