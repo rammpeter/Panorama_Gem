@@ -370,7 +370,7 @@ END Panorama_Sampler_ASH;
       v_Counter := 0;
       -- Ensure that local database time controls end of PL/SQL-execution (allows different time zones and some seconds delay between Panorama and DB)
       -- but assumes that PL/SQL-Job is started at the exact second
-      v_LastSampleTime := SYSDATE + p_Next_Snapshot_Start_Seconds/86400 - 1/86400;
+      v_LastSampleTime := SYSDATE + p_Next_Snapshot_Start_Seconds/86400;
       SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM panorama.Internal_V$Active_Sess_History;
 
       LOOP

@@ -127,6 +127,7 @@ class PanoramaSamplerSampling
   def run_ash_daemon_internal(snapshot_time)
     start_delay_from_snapshot = (Time.now - snapshot_time).round                # at seconds bound
     next_snapshot_start_seconds = @sampler_config.get_awr_ash_snapshot_cycle * 60 - start_delay_from_snapshot # Number of seconds until next snapshot start
+    next_snapshot_start_seconds += 5                                            # Assume 5 seconds delay until start of sampling to fill with previous daemon
 
     if @sampler_config.get_select_any_table                                     # call PL/SQL package ?
       sql = " BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_ASH.Run_Sampler_Daemon(?, ?, ?); END;"
