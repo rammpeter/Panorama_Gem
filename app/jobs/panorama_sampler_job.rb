@@ -31,17 +31,22 @@ class PanoramaSamplerJob < ApplicationJob
 
       if @@first_call_after_startup
         if config.get_domain_active(:AWR_ASH)
-          snapshot_cycle_minutes  = config.get_domain_snapshot_cycle(:AWR_ASH)
-          next_full_snapshot_time = Time.now                                        # look for next regular snapshot time from now
-          next_full_snapshot_time += 60 - next_full_snapshot_time.sec               # Next full minute
-          while snapshot_cycle_minutes > 60 && next_full_snapshot_time.hour % snapshot_cycle_minutes/60 != 0
-            next_full_snapshot_time += 3600 - next_full_snapshot_time.min * 60      # next full hour
+          begin
+            snapshot_cycle_minutes  = config.get_domain_snapshot_cycle(:AWR_ASH)
+            next_full_snapshot_time = Time.now                                        # look for next regular snapshot time from now
+            next_full_snapshot_time += 60 - next_full_snapshot_time.sec               # Next full minute
+            while snapshot_cycle_minutes > 60 && next_full_snapshot_time.hour % snapshot_cycle_minutes/60 != 0
+              next_full_snapshot_time += 3600 - next_full_snapshot_time.min * 60      # next full hour
+            end
+            while snapshot_cycle_minutes <= 60 && next_full_snapshot_time.min % snapshot_cycle_minutes != 0
+              next_full_snapshot_time += 60                                           # next full minute
+            end
+            prev_regular_snapshot_time = next_full_snapshot_time - snapshot_cycle_minutes * 60
+            WorkerThread.run_ash_sampler_daemon(config, prev_regular_snapshot_time)   # start ASH daemon at first startup
+          rescue Exception => e
+            Rails.logger.error "Exception #{e.message} raised in PanoramaSamplerJob.perform at startup ASH-init for config-ID=#{config.get_id}"
+              # Don't raise exception because it should not stop calling job processing
           end
-          while snapshot_cycle_minutes <= 60 && next_full_snapshot_time.min % snapshot_cycle_minutes != 0
-            next_full_snapshot_time += 60                                           # next full minute
-          end
-          prev_regular_snapshot_time = next_full_snapshot_time - snapshot_cycle_minutes * 60
-          WorkerThread.run_ash_sampler_daemon(config, prev_regular_snapshot_time)   # start ASH daemon at first startup
         end
       else                                                                        # regular operation in snapshot cycle
         check_for_sampling(config, snapshot_time, :AWR_ASH)
