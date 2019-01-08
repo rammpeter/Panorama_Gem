@@ -69,6 +69,8 @@ class ActiveSupport::TestCase
   end
 
   def set_session_test_db_context
+    Rails.logger.info Time.now                                                  # set timestamp in test.log
+
     message = "#{Time.now} : #{self.class}.#{self.name} started"
     #puts message
 
