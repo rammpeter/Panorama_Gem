@@ -6,10 +6,16 @@ class SpecAdditionsTest < ApplicationSystemTestCase
     # Call menu entry
     login_and_menu_call('Spec. additions', 'menu_dragnet_show_selection')
     assert_ajax_success
-    sleep 2                                                                     # Wait for content displayed
 
     assert_text 'Dragnet investigation for performance bottlenecks and usage of anti-pattern'
     assert_text 'Select dragnet-SQL for execution'
+
+    # Wait until content/list becomes visible
+    loop_count = 0
+    while loop_count < 10 && !page.has_text?(:visible, '1. Potential in DB-structures')
+      sleep 1
+      loop_count += 1
+    end
     assert_text '1. Potential in DB-structures'
 
     # click first node
