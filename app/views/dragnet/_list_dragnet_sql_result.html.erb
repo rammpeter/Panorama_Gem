@@ -38,7 +38,7 @@ if @res.count > 0
         @res.each do |r|                         # Iteration über Zeilen des Results
           fieldval = r[col[:caption]]              # Aktueller Feldinhalt
 
-          if isNumber && fieldval.class!=Integer && fieldval.class!=Fixnum && fieldval.class!=BigDecimal && fieldval.class!=NilClass    # Prüfen auf alle Werte der Spalte numerisch
+          if isNumber && fieldval.class!=Integer && fieldval.class.name !='Fixnum' && fieldval.class!=BigDecimal && fieldval.class!=NilClass    # Prüfen auf alle Werte der Spalte numerisch
             isNumber = false;
           else
             if fieldval.class.name =="BigDecimal" && scale_count(fieldval) > scale

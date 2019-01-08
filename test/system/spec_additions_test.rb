@@ -6,6 +6,7 @@ class SpecAdditionsTest < ApplicationSystemTestCase
     # Call menu entry
     login_and_menu_call('Spec. additions', 'menu_dragnet_show_selection')
     assert_ajax_success
+    sleep 2                                                                     # Wait for content displayed
 
     assert_text 'Dragnet investigation for performance bottlenecks and usage of anti-pattern'
     assert_text 'Select dragnet-SQL for execution'
