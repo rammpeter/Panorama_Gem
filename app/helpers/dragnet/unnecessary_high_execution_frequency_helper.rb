@@ -142,7 +142,7 @@ This earns little reduction of CPU-contention and runtime.
             :desc  => t(:dragnet_helper_90_desc, :default=>'For larger results per execution it is worth to access multiple records per fetch with bulk operation instead of single fetches.
 This earns little reduction of CPU-contention and runtime.
 '),
-            :sql=> "SELECT s.*, (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=s.DBID AND t.SQL_ID=s.SQL_ID ) SQL_Text
+            :sql=> "SELECT s.*, (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=s.DBID AND t.SQL_ID=s.SQL_ID AND RowNum < 2) SQL_Text
                       FROM (
                       SELECT s.Instance_Number Instance, s.DBID, Parsing_Schema_Name, Module,
                              SQL_ID, SUM(Executions_Delta) Executions, SUM(Fetches_Delta) Fetches,

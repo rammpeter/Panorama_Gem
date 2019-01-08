@@ -16,7 +16,7 @@ If optimizer does not decide to do so himself, you can use hints /*+ PARALLEL_IN
                              ) Num_Rows_Index, s.Instance_Number,
                              (SELECT MAX(Begin_Interval_Time) FROM DBA_Hist_SnapShot ss
                               WHERE ss.DBID=p.DBID AND ss.Snap_ID=s.MaxSnapID AND ss.Instance_Number=s.Instance_Number ) MaxIntervalTime,
-                             (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=p.DBID AND t.SQL_ID=p.SQL_ID) SQLText,
+                             (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=p.DBID AND t.SQL_ID=p.SQL_ID AND RowNum < 2) SQLText,
                              s.Elapsed_Secs, s.Executions, s.Disk_Reads, s.Buffer_Gets
                       FROM  (
                               SELECT DISTINCT p.DBID, p.Plan_Hash_Value, p.SQL_ID, p.Object_Owner, p.Object_Name
@@ -55,7 +55,7 @@ They are out of place for OLTP-like access (small access time, many executions).
                      SELECT /* DB-Tools Ramm FullTableScan */ p.SQL_ID, p.Object_Owner, p.Object_Name,
                               (SELECT Num_Rows FROM DBA_Tables t WHERE t.Owner = p.Object_Owner AND t.Table_Name = p.Object_Name) Num_Rows,
                               s.Elapsed_Secs, s.Executions, s.Disk_Reads, s.Buffer_Gets, s.Rows_Processed,
-                             (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=p.DBID AND t.SQL_ID=p.SQL_ID) SQLText
+                             (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=p.DBID AND t.SQL_ID=p.SQL_ID AND RowNum < 2) SQLText
                       FROM  (
                               SELECT /*+ NO_MERGE */ DISTINCT p.DBID, p.Plan_Hash_Value, p.SQL_ID, p.Object_Owner, p.Object_Name /*, p.Access_Predicates, p.Filter_Predicates */
                               FROM  DBA_Hist_SQL_Plan p
@@ -94,7 +94,7 @@ They are out of place for OLTP-like access (small access time, many executions).
             :sql=> "SELECT /* DB-Tools Ramm FullTableScans */ * FROM (
                             SELECT i.SQL_ID, i.Object_Owner, i.Object_Name, ROUND(i.Rows_Processed/i.Executions,2) Rows_per_Exec,
                                    i.Num_Rows, i.Elapsed_Time_Secs, i.Executions, i.Disk_Reads, i.Buffer_Gets, i.Rows_Processed,
-                                   (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=i.DBID AND t.SQL_ID=i.SQL_ID) SQL_Text
+                                   (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=i.DBID AND t.SQL_ID=i.SQL_ID AND RowNum < 2) SQL_Text
                             FROM
                                    (
                                     SELECT /*+ PARALLEL(p,4) PARALLEL(s,4) PARALLEL(ss.4) */

@@ -20,7 +20,7 @@ module Dragnet::SqlsWrongExecutionPlanHelper
                              SUBSTR(SQL_Text,1, 200) \"SQL-Text\"
                       FROM   (
                               SELECT SQL_ID,
-                                     (SELECT SQL_TExt FROM DBA_Hist_SQLText t WHERE t.DBID=s.DBID AND t.SQL_ID=s.SQL_ID
+                                     (SELECT SQL_TExt FROM DBA_Hist_SQLText t WHERE t.DBID=s.DBID AND t.SQL_ID=s.SQL_ID AND RowNum < 2
                                      ) SQL_Text,
                                      COUNT(*) Plan_Variationen,
                                      MIN(Elapsed_Time_Secs) KEEP (DENSE_RANK FIRST ORDER BY First_Occurence)  Elapsed_Time_Secs_First_Plan,
