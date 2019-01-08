@@ -59,18 +59,25 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   end
 
   # Login application at test-DB an create menu in browser
+  MAX_LOOPS = 100
   def login_until_menu
-    begin
+    loop_count = 0
+    msg = ''
+    while loop_count < MAX_LOOPS
       begin
         visit root_path                                                             # /env/index
+        break
       rescue Exception => e
-        Rails.logger.error "Exception '#{e.message}' catched from calling visit root_path in first try"
-        sleep 10                                                                    # Waiting for chromedriver to prevent 'unable to connect to chromedriver 127.0.0.1:9515'
-        visit root_path                                                             # /env/index, second try
+        Rails.logger.error "Exception '#{e.message}' catched from calling visit root_path in first tries"
+        msg = e.message
+        sleep 1                                                                     # Waiting for chromedriver to prevent 'unable to connect to chromedriver 127.0.0.1:9515'
+        loop_count += 1
       end
-    rescue Exception => e
-      puts "Exception '#{e.message}' catched from calling visit root_path in second try"
-      raise e
+    end
+
+    if loop_count >= MAX_LOOPS
+      puts "Exception '#{msg}' catched from calling visit root_path in last try"
+      raise msg
     end
 
     begin
