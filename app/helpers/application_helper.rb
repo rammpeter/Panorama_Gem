@@ -183,7 +183,7 @@ module ApplicationHelper
     number = number.to_f if number.instance_of?(String) || number.instance_of?(BigDecimal)   # Numerisches Format erzwingen
     number = number.round(decimalCount) if number.instance_of?(Float) # Ueberlauf von Stellen kompensieren
 
-    raise "formattedNumber: unsupported datatype #{number.class}" if !(number.instance_of?(Float) || number.class.name == 'Fixnum' || number.instance_of?(Bignum))
+    raise "formattedNumber: unsupported datatype #{number.class}" if !(number.instance_of?(Float) || number.class.name == 'Fixnum' || number.class.name == 'Bignum')
 
     return if supress_0_value && number == 0  # Leere Ausgabe bei Wert 0 und Unterdrückung Ausgabe angefordert
 
