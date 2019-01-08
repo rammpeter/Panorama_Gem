@@ -183,8 +183,6 @@ module ApplicationHelper
     number = number.to_f if number.instance_of?(String) || number.instance_of?(BigDecimal)   # Numerisches Format erzwingen
     number = number.round(decimalCount) if number.instance_of?(Float) # Ueberlauf von Stellen kompensieren
 
-    raise "formattedNumber: unsupported datatype #{number.class}" if !(number.instance_of?(Float) || number.class.name == 'Fixnum' || number.class.name == 'Bignum')
-
     return if supress_0_value && number == 0  # Leere Ausgabe bei Wert 0 und Unterdrückung Ausgabe angefordert
 
     return if number == Float::INFINITY || number.to_f.nan? # Division / 0 erlaubt in Float, bringt Infinity
@@ -212,8 +210,12 @@ module ApplicationHelper
     output
   rescue Exception => e
     log_exception_backtrace(e, 20)
-    raise "formattedNumber: #{e.message} evaluating number=#{number}, decimalCount=#{decimalCount}, supress_0_value=#{supress_0_value}"
-
+    msg = e.message
+    msg << " unsupported datatype #{number.class}" if !(number.instance_of?(Float)  || number.class.name == 'Integer' || number.class.name == 'Fixnum' || number.class.name == 'Bignum')
+    raise "formattedNumber: #{msg} evaluating number=#{number} (#{number.class}), decimalCount=#{decimalCount} (#{decimalCount.class}), supress_0_value=#{supress_0_value} (#{supress_0_value.class})"
+  rescue
+    msg = " unsupported datatype #{number.class}" if !(number.instance_of?(Float)  || number.class.name == 'Integer' || number.class.name == 'Fixnum' || number.class.name == 'Bignum')
+    raise "formattedNumber: #{msg} evaluating number=#{number} (#{number.class}), decimalCount=#{decimalCount} (#{decimalCount.class}), supress_0_value=#{supress_0_value} (#{supress_0_value.class})"
   end
 
   alias fn formattedNumber

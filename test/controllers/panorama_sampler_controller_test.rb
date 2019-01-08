@@ -53,6 +53,8 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "save_config with xhr: true" do
+    Thread.report_on_exception = false                                          # Suppress exception messages and stacktrace in sysout
+
     ['Save', 'Test connection'].each do |button|                                # Simulate pressed button "Save" or "Test connection"
       ['Existing', 'New'].each do |mode|                                        # Simulate change of existing or new record
         ['Right', 'Wrong'].each do |right|                            # Valid or invalid connection info
