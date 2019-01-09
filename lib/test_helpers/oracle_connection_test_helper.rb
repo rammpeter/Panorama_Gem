@@ -69,15 +69,7 @@ class ActiveSupport::TestCase
   end
 
   def set_session_test_db_context
-    Rails.logger.info Time.now                                                  # set timestamp in test.logs
-
-    message = "#{Time.now} : #{self.class}.#{self.name} started"
-    #puts message
-
-    # Client Info store entfernen, da dieser mit anderem Schlüssel verschlüsselt sein kann
-    #FileUtils.rm_rf(Application.config.client_info_filename)
-
-    #initialize_client_key_cookie                                                # Ensure browser cookie for client_key exists
+    Rails.logger.info "#{Time.now} : set_session_test_db_context #{self.class}.#{self.name}" # set timestamp in test.logs
 
     # 2017/07/26 cookies are reset in ActionDispatch::IntegrationTest if using initialize_client_key_cookie
     cookies['client_salt'] = 100
