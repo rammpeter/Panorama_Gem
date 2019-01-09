@@ -26,6 +26,7 @@ class DragnetController < ApplicationController
   #   a_attr      : {}  // attributes for the generated A node
   # }
   def get_selection_list
+Rails.logger.info "get_selection_list started" if  ENV['RAILS_ENV'] == 'test'
     filter = params[:filter]
     filter = nil if filter == ''
     include_description = params[:include_description] == 'true'
@@ -63,7 +64,9 @@ class DragnetController < ApplicationController
 
     response = '[ '                                                             # JSON-Buffer
     entry_id = 0
+Rails.logger.info "get_selection_list: Starting render_entry_json" if  ENV['RAILS_ENV'] == 'test'
     dragnet_sql_list.each do |s|
+Rails.logger.info "get_selection_list: Looping in render_entry_json" if  ENV['RAILS_ENV'] == 'test'
       subresult = render_entry_json('', entry_id, s, filter, include_description)
       response << subresult if subresult
       entry_id = entry_id + 1
@@ -71,7 +74,9 @@ class DragnetController < ApplicationController
     response[response.length-1] = ' '                                           # letztes Komma entfernen
     response << ']'
 
-    render :json => response.html_safe, :status => 200
+Rails.logger.info "get_selection_list: calling render" if  ENV['RAILS_ENV'] == 'test'
+  render :json => response.html_safe, :status => 200
+Rails.logger.info "get_selection_list: called render" if  ENV['RAILS_ENV'] == 'test'
   end # get_selection_list
 
 

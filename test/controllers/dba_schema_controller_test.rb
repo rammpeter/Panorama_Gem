@@ -34,7 +34,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
       @subpart_index_index_name       = subpart_index.index_name
       @subpart_index_partition_name   = subpart_index.partition_name
     else
-      puts "DbaSchemaControllerTest.setup: There are no index subpartitions in database"
+      Rails.logger.info "DbaSchemaControllerTest.setup: There are no index subpartitions in database"
       @subpart_index_owner            = nil
       @subpart_index_index_name       = nil
       @subpart_index_partition_name   = nil
