@@ -10,9 +10,12 @@ class SpecAdditionsTest < ApplicationSystemTestCase
     assert_text 'Dragnet investigation for performance bottlenecks and usage of anti-pattern'
     assert_text 'Select dragnet-SQL for execution'
 
+    assert_ajax_success                                                         # Wait for content
+
     # Wait until content/list becomes visible
     loop_count = 0
-    while loop_count < 10 && !page.has_text?(:visible, '1. Potential in DB-structures')
+    while loop_count < 100 && !page.has_text?(:visible, '1. Potential in DB-structures')
+      Rails.logger.info "Waiting #{loop_count} seconds for '1. Potential in DB-structures'"
       sleep 1
       loop_count += 1
     end

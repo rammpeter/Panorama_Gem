@@ -67,15 +67,12 @@ class ActiveSupport::TestCase
   # damit wird bei Connect auf diese DB zurückgegriffen
 
   def connect_oracle_db
-
-
     test_config = PanoramaTestConfig.test_config
 
     Rails.logger.info "#{Time.now} : Starting Test with configuration #{test_config}"
 
     connect_oracle_db_internal(test_config)   # aus lib/test_helpers/oracle_connection_test_helper
     @db_version = PanoramaConnection.db_version                                 # Store db_version outside PanoramaConnection
-
   end
 
   # Don't use PanoramaConnection.db_version because PanoramaConnection.reset_thread_local_attributes is called at end of each request

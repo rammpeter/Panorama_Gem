@@ -6,8 +6,9 @@ class DragnetControllerTest < ActionController::TestCase
   include DragnetHelper
 
   setup do
-    #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
-    set_session_test_db_context
+    #@routes = Engine.routes                                                    # Suppress routing error if only routes for dummy application are active
+    set_session_test_db_context                                                 # Ensure existence of AWR snapshots
+    initialize_min_max_snap_id_and_times
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
