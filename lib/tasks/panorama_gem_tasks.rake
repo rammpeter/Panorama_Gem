@@ -39,6 +39,7 @@ Rake::TaskManager.class_eval do
   puts "TEST_PASSWORD             = #{ENV['TEST_PASSWORD']            || 'not set, defaults to panorama_test'}"
   puts "TEST_SYSPASSWORD          = #{ENV['TEST_SYSPASSWORD']         || 'not set, defaults to oracle'}"
   puts "MANAGEMENT_PACK_LICENSE   = #{ENV['MANAGEMENT_PACK_LICENSE']  || 'not set, defaults to :diagnostics_and_tuning_pack'}"
+  puts "JRUBY_OPTS                = #{ENV['JRUBY_OPTS']}"
   puts ''
 end
 
