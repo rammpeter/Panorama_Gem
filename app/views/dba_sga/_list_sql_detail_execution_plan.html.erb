@@ -19,22 +19,22 @@
      sql_starts = 1   # Default falls keine andere Aussage wegen division / 0
      sql_starts = mp[:plans][0].starts if mp[:plans][0] && mp[:plans][0].starts && mp[:plans][0].starts > 0
 
-       if @include_ash_in_sql
-         @sum_io_requests = 0
-         @sum_interconnect_io_bytes = 0
-         @sum_cpu_seconds = 0                             # Anzahl der Samples
-         @sum_waiting_seconds = 0                         # Anzahl der Samples
-         @sum_db_time_seconds = 0
-         @min_sample_time     = nil
-         mp[:plans].each do |p|
-           @sum_io_requests           += p.io_requests             if p.io_requests
-           @sum_interconnect_io_bytes += p.interconnect_io_bytes   if p.interconnect_io_bytes
-           @sum_cpu_seconds           += p.cpu_seconds             if p.cpu_seconds
-           @sum_waiting_seconds       += p.waiting_seconds         if p.waiting_seconds
-           @sum_db_time_seconds       += p.db_time_seconds         if p.db_time_seconds
-           @min_sample_time           =  p.min_sample_time         if @min_sample_time.nil? || p.min_sample_time && p.min_sample_time < @min_sample_time  # Kleinste Aufzeichnung eines Samples
-         end
+     @min_sample_time     = nil
+     if @include_ash_in_sql
+       @sum_io_requests = 0
+       @sum_interconnect_io_bytes = 0
+       @sum_cpu_seconds = 0                             # Anzahl der Samples
+       @sum_waiting_seconds = 0                         # Anzahl der Samples
+       @sum_db_time_seconds = 0
+       mp[:plans].each do |p|
+         @sum_io_requests           += p.io_requests             if p.io_requests
+         @sum_interconnect_io_bytes += p.interconnect_io_bytes   if p.interconnect_io_bytes
+         @sum_cpu_seconds           += p.cpu_seconds             if p.cpu_seconds
+         @sum_waiting_seconds       += p.waiting_seconds         if p.waiting_seconds
+         @sum_db_time_seconds       += p.db_time_seconds         if p.db_time_seconds
+         @min_sample_time           =  p.min_sample_time         if @min_sample_time.nil? || p.min_sample_time && p.min_sample_time < @min_sample_time  # Kleinste Aufzeichnung eines Samples
        end
+     end
 
      link_column_wait = proc do |rec|
          ajax_link(fn(nn_pct(rec.waiting_seconds, @sum_waiting_seconds),1), {
