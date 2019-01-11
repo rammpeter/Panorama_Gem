@@ -92,6 +92,10 @@ class ActiveSupport::TestCase
     sampler_config.merge!(PanoramaSamplerConfig.new(sampler_config).get_cloned_config_hash)
   end
 
+  def register_test_start_in_log
+    Rails.logger.info "#{Time.now} : start of test #{self.class}.#{self.name}" # set timestamp in test.logs
+  end
+
 
   def prepare_panorama_sampler_thread_db_config(user = nil)
     EngineConfig.config.panorama_sampler_master_password = 'hugo'

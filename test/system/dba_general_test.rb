@@ -1,6 +1,9 @@
 require "test_helper"
 
 class DbaGeneralTest < ApplicationSystemTestCase
+  setup do
+    register_test_start_in_log
+  end
 
   test "Start page" do
     login_and_menu_call('DBA general', 'menu_env_start_page')
