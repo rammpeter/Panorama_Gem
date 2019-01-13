@@ -109,10 +109,12 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     fill_in('database_password', with: test_config[:password_decrypted])
     click_button('submit_login_dialog')
 
-    wait_for_ajax                                                               # Wait until start_page is loaded
+    wait_for_ajax                                                               # Wait until choose management pack is loaded
+    sleep 0.2
+    wait_for_ajax                                                               # Wait until list management pack is loaded
 
     if page.html['please choose your management pack license'] && page.html['Usage of Oracle management packs by Panorama']
-      page.find_by_id('management_pack_license_diagnostics_and_tuning_pack').set(true)
+      page.find_by_id("management_pack_license_#{management_pack_license}").set(true) # Set license according to test setting
       click_button('Acknowledge and proceed')
       wait_for_ajax                                                               # Wait until start_page is loaded
     end
