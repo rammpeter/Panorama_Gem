@@ -164,8 +164,8 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   # accept error due to missing management pack license
   # Error message "Access denied" called for _management_pack_license = :none ?
-  def assert_ajax_success_and_test_for_access_denied
-    wait_for_ajax
+  def assert_ajax_success_and_test_for_access_denied(timeout_secs = 60)
+    wait_for_ajax(timeout_secs)
     error_dialog = page.first(:css, '#error_dialog')
     if  !error_dialog.nil? && error_dialog.visible?
       if management_pack_license == :none

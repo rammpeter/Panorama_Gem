@@ -67,8 +67,9 @@ class DbaGeneralTest < ApplicationSystemTestCase
     fill_in('time_selection_start_default', with: get_time_string(1440))
     fill_in('time_selection_end_default',   with: get_time_string)
     page.click_button 'Show blocking locks'
-    assert_ajax_success(300)                                                    # May last a bit longer
-    assert_text 'Blocking locks between'
+    unless assert_ajax_success_and_test_for_access_denied(300)                  # May last a bit longer
+      assert_text 'Blocking locks between'
+    end
   end
 
 
