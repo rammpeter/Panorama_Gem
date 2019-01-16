@@ -32,7 +32,7 @@
   end
 
   @error_style = proc do |rec|
-    "background-color:coral;" if rec[:last_successful_connect].nil? || (rec[:last_successful_connect] && rec[:last_error_time] && rec[:last_error_time] > rec[:last_successful_connect])
+    "background-color:coral;" if PanoramaSamplerConfig.new(rec).current_error_exists?
   end
 
   snapshot_duration = proc do |start_ts, end_ts|

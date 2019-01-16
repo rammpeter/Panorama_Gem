@@ -65,7 +65,8 @@ class PanoramaSamplerConfig
 
   def get_domain_active(domain);              get_config_value("#{domain.downcase}_active".to_sym);               end
   def get_domain_snapshot_cycle(domain);      get_config_value("#{domain.downcase}_snapshot_cycle".to_sym);       end
-  def get_Last_domain_snapshot_start(domain); get_config_value("last_#{domain.downcase}_snapshot_start".to_sym);  end
+  def get_last_domain_snapshot_start(domain); get_config_value("last_#{domain.downcase}_snapshot_start".to_sym);  end
+  def get_last_domain_snapshot_end(domain);   get_config_value("last_#{domain.downcase}_snapshot_end".to_sym);    end
 
   # Does the user have SELECT ANY TABLE? This ensures that user may select V$-Tables from within packages
   def get_select_any_table
@@ -81,6 +82,25 @@ class PanoramaSamplerConfig
     end
     @config_hash[:select_any_table]
   end
+
+  def current_error_exists?
+    retval = false
+    last_snap = nil
+    PanoramaSamplerConfig.get_domains.each do |domain|
+      sn_start = get_last_domain_snapshot_start(domain)
+      if domain == :AWR_ASH
+        sn_end   = get_last_domain_snapshot_end(:AWR)
+      else
+        sn_end   = get_last_domain_snapshot_end(domain)
+      end
+      retval = true if get_domain_active(domain) && !sn_start.nil? && (sn_end.nil? || sn_end < sn_start)
+      last_snap = sn_start if get_domain_active(domain) && (last_snap.nil? || (!sn_start.nil? && last_snap < sn_start))
+      last_snap = sn_end   if get_domain_active(domain) && (last_snap.nil? || (!sn_end.nil?   && last_snap < sn_end))
+    end
+    retval = true if !last_snap.nil? && !get_config_value(:last_error_time).nil? && last_snap < get_config_value(:last_error_time)  # if last_error is younger than any other timestamp
+    retval
+  end
+
 
   def set_select_any_table(value)
     raise "Method is for test purpose only" if ENV['RAILS_ENV'] != 'test'
@@ -143,6 +163,11 @@ class PanoramaSamplerConfig
   end
 
   #----------------------------- class methods -----------------------------------
+  # List of config-domains (AWR and ASH are AWR_ASH)
+  def self.get_domains
+    [:AWR_ASH, :OBJECT_SIZE, :CACHE_OBJECTS, :BLOCKING_LOCKS ]
+  end
+
   # get array initialized from session store. Call inside Mutex.synchronize only
   def self.get_config_array
     if @@config_array.nil?
@@ -157,6 +182,27 @@ class PanoramaSamplerConfig
       end
     end
     @@config_array
+  end
+
+  # Get only values without confidential state
+  def self.get_reduced_config_array_for_status_monitor
+    retval = []
+    @@config_access_mutex.synchronize do
+      config_hash_array = EngineConfig.get_client_info_store.read(client_info_store_key)  # get stored values as Hash
+      config_hash_array = [] if config_hash_array.nil?
+
+      config_hash_array.each do |config_hash|
+        retval << { id:                       config_hash[:id],
+                    dbid:                     config_hash[:dbid],
+                    name:                     config_hash[:name],
+                    last_successful_connect:  config_hash[:last_successful_connect],
+                    last_error_time:          config_hash[:last_error_time],
+                    last_error_message:       config_hash[:last_error_message],
+                    error_active:             PanoramaSamplerConfig.new(config_hash).current_error_exists?
+        }
+      end
+    end
+    retval
   end
 
   def self.get_config_entry_by_id(p_id)

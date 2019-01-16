@@ -1,3 +1,5 @@
+require 'json'
+
 class PanoramaSamplerController < ApplicationController
   def show_config
     request_master_password
@@ -57,15 +59,11 @@ class PanoramaSamplerController < ApplicationController
     config_entry[:dbid] = dbid unless dbid.nil?                                 # Save dbid if real value
     config_entry[:last_successful_connect] = Time.now unless dbid.nil?
 
-    if params[:commit] == 'Save'
-      store_config(config_entry)  # Should replace instance
-    else                                                                        # Check connection pressed
-      if dbid.nil?
-        show_popup_message("Connect to '#{config_entry[:name]}' not successful!\nException: #{config_entry[:last_error_message]}\nSee Panorama-Log for further details")
-      else
-        store_config(config_entry)                                                # add or modify entry in persistence
-      end
-    end
+    store_config(config_entry)                                                  # add or modify entry in persistence
+  rescue Exception => e                                                         # if params[:commit] != 'Save' ('Test connection') Exception is raised if connect error occurs
+    existing_config = PanoramaSamplerConfig.get_config_entry_by_id_or_nil(config_entry[:id])  # Check if config already exists
+    existing_config.set_error_message(e.message) if existing_config
+    raise e
   end
 
   def store_config(config_entry)
@@ -98,4 +96,30 @@ class PanoramaSamplerController < ApplicationController
     list_config
   end
 
+  def monitor_sampler_status
+    status = 200                                                                # Default
+
+    config_array = PanoramaSamplerConfig.get_reduced_config_array_for_status_monitor
+
+    retval = "{\n\"config_list\": ["
+    config_array.each do |config|
+      status = 500 if config[:error_active]
+      retval << "\n#{JSON.pretty_generate(config, {indent: '  '})},"
+
+
+=begin
+indent: a string used to indent levels (default: ''),
+space: a string that is put after, a : or , delimiter (default: ''),
+space_before: a string that is put before a : pair delimiter (default: ''),
+object_nl: a string that is put at the end of a JSON object (default: ''),
+array_nl: a string that is put at the end of a JSON array (default: ''),
+allow_nan: true if NaN, Infinity, and -Infinity should be generated, otherwise an exception is thrown if these values are encountered. This options defaults to false.
+max_nesting: The maximum depth of nesting allowed in the data structures from which JSON is to be generated. Disable depth checking with :max_nestin
+=end
+
+
+    end
+    retval << "\n]\n}"
+    render json: retval, status: status
+  end
 end

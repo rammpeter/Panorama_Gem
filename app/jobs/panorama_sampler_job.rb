@@ -70,7 +70,7 @@ class PanoramaSamplerJob < ApplicationJob
 
     last_snapshot_start_key = "last_#{domain.downcase}_snapshot_start".to_sym
     snapshot_cycle_minutes  = config.get_domain_snapshot_cycle(domain) * minute_factor
-    last_snapshot_start     = config.get_Last_domain_snapshot_start(domain)
+    last_snapshot_start     = config.get_last_domain_snapshot_start(domain)
 
     if config.get_domain_active(domain) && (snapshot_time.min % snapshot_cycle_minutes == 0  ||  # exact startup time at full hour + x*snapshot_cycle
         snapshot_time.min == 0 && snapshot_time.hour % snapshot_cycle_minutes/60 == 0)  # Full hour for snapshot cycle = n*hour
