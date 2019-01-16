@@ -100,7 +100,7 @@ class PanoramaSamplerController < ApplicationController
     retval = "{\n\"config_list\": ["
     config_array.each do |config|
       status = 500 if config[:error_active]
-      retval << "\n#{JSON.pretty_generate(config, {indent: '  '})},"
+      retval << "\n#{JSON.pretty_generate(config, {indent: '  '}).gsub(/\\n/, "\n")},"
 
 
 =begin
