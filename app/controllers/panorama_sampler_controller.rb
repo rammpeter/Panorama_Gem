@@ -60,10 +60,6 @@ class PanoramaSamplerController < ApplicationController
     config_entry[:last_successful_connect] = Time.now unless dbid.nil?
 
     store_config(config_entry)                                                  # add or modify entry in persistence
-  rescue Exception => e                                                         # if params[:commit] != 'Save' ('Test connection') Exception is raised if connect error occurs
-    existing_config = PanoramaSamplerConfig.get_config_entry_by_id_or_nil(config_entry[:id])  # Check if config already exists
-    existing_config.set_error_message(e.message) if existing_config
-    raise e
   end
 
   def store_config(config_entry)
