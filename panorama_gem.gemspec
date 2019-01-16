@@ -20,7 +20,7 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   s.files = Dir["{app,config,lib}/**/*", "Rakefile", "README.md", "README.rdoc"]
 
   #  use exactly this rails version
-  s.add_dependency "rails", "5.2.2"
+  s.add_dependency "rails", "5.2.1"
 
   s.add_dependency 'activerecord-nulldb-adapter'
   s.add_dependency 'activerecord-oracle_enhanced-adapter'     # lokal in Gemfile überschreiben mit : gem 'activerecord-oracle_enhanced-adapter', github: 'rsim/oracle-enhanced', branch: 'rails42'
