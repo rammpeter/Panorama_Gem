@@ -419,7 +419,7 @@ module ApplicationHelper
     def get_wait_stat_class_name(id)  # Ermitteln WaitStat aus x. Position nach Class-ID
       return '' unless id
       id = id.to_i
-      unless @block_classes           # Klassenvariable einmalig mit Daten befüllen wenn leer
+      unless defined?(@block_classes)                                           # Klassenvariable einmalig mit Daten befüllen wenn leer
         @block_classes = {}
         sql_select_all('SELECT /* Panorama-Tool Ramm */ RowNum, class ClassName FROM v$WaitStat').each do |w|
           @block_classes[w.rownum.to_i] = w.classname
