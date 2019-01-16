@@ -62,7 +62,7 @@ class EnvController < ApplicationController
   end
 
   # Auffüllen SELECT mit OPTION aus tns-Records
-  def get_tnsnames_records
+  def get_tnsnames_content
     tnsnames      = read_tnsnames
     target_object = params[:target_object]
     selected      = params[:selected]
