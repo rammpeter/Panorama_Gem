@@ -53,4 +53,6 @@ Problem: NameError: uninitialized constant Minitest::Rails::TestUnit
 Solution: change "Rails" to "::Rails" in .rvm/gems/jruby-9.1.16.0/gems/railties-5.2.0/lib/minitest/rails_plugin.rb:16
 
 
+16.01.2019
+Problem: With Oracle Linux 7 Server delivers website (rendered xxx in log) but browser does not get the response
 
