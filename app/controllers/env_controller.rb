@@ -9,7 +9,7 @@ require 'java'
 require "panorama_gem/version"
 
 class EnvController < ApplicationController
-  layout 'application'
+#  layout 'application'
 
 #  include ApplicationHelper       # application_helper leider nicht automatisch inkludiert bei Nutzung als Engine in anderer App
   include EnvHelper
