@@ -372,6 +372,9 @@ END Panorama_Sampler_ASH;
       -- but assumes that PL/SQL-Job is started at the exact second
       v_LastSampleTime := SYSDATE + p_Next_Snapshot_Start_Seconds/86400;
       SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM panorama.Internal_V$Active_Sess_History;
+      IF v_Sample_ID = 0                                                        // no sample found in Internal_V$Active_Sess_History
+        SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM panorama.Panorama_Active_Sess_History;  // look for Sample_ID in permanent table
+      END IF;
 
       LOOP
         v_Bulk_Size := 10; -- Number of seconds between persists/commits
