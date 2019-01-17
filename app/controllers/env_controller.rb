@@ -19,6 +19,10 @@ class EnvController < ApplicationController
   # Verhindern "ActionController::InvalidAuthenticityToken" bei erstem Aufruf der Seite und im Test
   protect_from_forgery :except => :index unless Rails.env.test?
 
+  def connect_check
+
+  end
+
   public
   # Einstieg in die Applikation, rendert nur das layout (default.rhtml), sonst nichts
   def index
