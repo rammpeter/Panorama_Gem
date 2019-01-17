@@ -70,8 +70,8 @@ class EnvControllerTest <  ActionDispatch::IntegrationTest
     end
   end
 
-  test "get_tnsnames_records with xhr: true" do
-    get '/env/get_tnsnames_records',  :params => {:format=>:js, :target_object=>:database}
+  test "get_tnsnames_content with xhr: true" do
+    get '/env/get_tnsnames_content',  :params => {:format=>:js, :target_object=>:database}
     assert_response :success
   end
 

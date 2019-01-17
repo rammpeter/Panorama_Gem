@@ -345,7 +345,7 @@ class PanoramaSamplerConfig
   private
 
   def self.client_info_store_key
-    raise "There was no Panorama-Sampler master password given at server startup (Environment variable PANORAMA_SERVER_MASTER_PASSWORD" if EngineConfig.config.panorama_sampler_master_password.nil?
+    raise "There was no Panorama-Sampler master password given at server startup (Environment variable PANORAMA_SERVER_MASTER_PASSWORD)!" if EngineConfig.config.panorama_sampler_master_password.nil?
     "panorama_sampler_master_config_#{EngineConfig.config.panorama_sampler_master_password.to_i(36)}_#{EngineConfig.config.panorama_sampler_master_password.length}"
   end
 

@@ -19,8 +19,8 @@ class ApplicationController < ActionController::Base
 
   include ApplicationHelper # Erweiterung der Controller um Helper-Methoden des GUI's 
 
-#  before_action :begin_request # , :except -Liste wird direkt in begin_request gehandelt
-#  after_action  :after_request
+  before_action :begin_request # , :except -Liste wird direkt in begin_request gehandelt
+  after_action  :after_request
 
   rescue_from Exception, :with => :global_exception_handler
 
@@ -73,7 +73,7 @@ class ApplicationController < ActionController::Base
 
     # Ausschluss von Methoden, die keine DB-Connection bebötigen
     # Präziser before_filter mit Test auf controller
-    if (controller_name == 'env' && ['index', 'get_tnsnames_records', 'set_locale', 'set_database_by_params', 'set_database_by_id'].include?(action_name) ) ||
+    if (controller_name == 'env' && ['index', 'get_tnsnames_content', 'set_locale', 'set_database_by_params', 'set_database_by_id'].include?(action_name) ) ||
               (controller_name == 'usage' && ['info', 'detail_sum', 'single_record', 'ip_info', 'connection_pool'].include?(action_name) ) ||
               (controller_name == 'help' && ['version_history'].include?(action_name)) ||
               (controller_name == 'panorama_sampler' && ['monitor_sampler_status'].include?(action_name))
