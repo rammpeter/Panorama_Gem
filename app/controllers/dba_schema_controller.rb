@@ -86,6 +86,7 @@ class DbaSchemaController < ApplicationController
 
     @objects = sql_select_iterator ["\
       SELECT /* Panorama-Tool Ramm */
+        RowNum,
         CASE WHEN Segment_Name LIKE 'SYS_LOB%' THEN
               Segment_Name||' ('||(SELECT Object_Name FROM DBA_Objects WHERE Object_ID=TO_NUMBER(SUBSTR(Segment_Name, 8, 10)) )||')'
              WHEN Segment_Name LIKE 'SYS_IL%' THEN
@@ -467,6 +468,8 @@ class DbaSchemaController < ApplicationController
         a.ini_trans         = subpartitions.ini_trans_count    == 1 ? subpartitions.ini_trans       : "< #{subpartitions.ini_trans_count} different >"     if subpartitions.ini_trans_count > 0
         a.max_trans         = subpartitions.max_trans_count    == 1 ? subpartitions.max_trans       : "< #{subpartitions.max_trans_count} different >"     if subpartitions.max_trans_count > 0
       end
+
+      @partition_expression = get_table_partition_expression(@owner, @table_name)
 
     else
       @partition_count = 0

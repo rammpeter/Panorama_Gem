@@ -1,6 +1,25 @@
 <%
   @update_area = get_unique_area_id
 
+  link_real_num_rows = proc do |rec|
+    if rec.segment_type['TABLE'] || rec.segment_type == 'INDEX'                 # index partitions not supported here
+      update_area = "#{@update_area}_num_rows_#{rec.rownum}"
+      ajax_link(rec.num_rows ? fn(rec.num_rows) : "[No analyze]", {
+                              :controller      => :storage,
+                              :action          => :list_real_num_rows,
+                              :owner           => rec.owner,
+                              :name            => rec.segment_name,
+                              object_type:     rec.segment_type,
+                              partition_name:  @show_partitions ? rec.partition_name : nil,
+                              :update_area     => update_area
+                             },
+                      :title=>"Count current number of rows in object. CAUTION: May be long running!")+"<br><div id=\"#{update_area}\"></div>".html_safe
+    else
+      fn(rec.num_rows)
+    end
+  end
+
+
    link_partition = proc do |rec|
      if @show_partitions
        rec.partition_name
@@ -76,7 +95,7 @@
     {:caption=> 'Min. ext.',         :data=>min_exts_data,                       :align=>:right, :title=> "Minimum number of extents allocated at object creation", data_title: min_exts_data_title},
     {:caption=> 'Used ext.',         :data=>proc{|rec| fn(rec.used_ext)},        :align=>:right, :title=> t(:dba_schema_list_objects_used_extents_hint, :default=>'Number of used extents')},
     {:caption=> 'MBytes',            :data=>proc{|rec| fn(rec.mbytes)},          :align=>:right, :title=> t(:dba_schema_list_objects_mbytes_hint, :default=>"Size of the object in tablespace in MBytes\nSum over size of all allocated extents."),  :show_pct_hint=>true},
-    {:caption=> 'No. of rows',       :data=>proc{|rec| fn(rec.num_rows)},        :align=>:right, :title=> t(:dba_schema_list_objects_num_rows_hint, :default=>'Number of rows acording to last analysis')},
+    {:caption=> 'No. of rows',       :data=>link_real_num_rows,                  :align=>:right, :title=> t(:dba_schema_list_objects_num_rows_hint, :default=>'Number of rows acording to last analysis')},
     {:caption=> 'Avg. row len.',     :data=>proc{|rec| fn(rec.avg_rowlen)},      :align=>:right, :title=> t(:dba_schema_list_objects_row_len_hint, :default=>'Average size of record according to last analysis (Avg_Row_Len for Tables, Sum of Avg_Col_Len + RowID for indexes)')  },
     {:caption=> '% unused',          :data=>proc{|rec| fn(rec.percent_free)},    :align=>:right, :title=> t(:dba_schema_list_objects_pct_free_hint, :default=>"Unused storage within the allocated extents in %.\nCalculated by size of allocated extents - (Avg_Row_Len*Num_Rows)")},
     {:caption=> 'MBytes unused ARL', :data=>proc{|rec| fn(rec.mbytes_free_avg_row_len)}, :align=>:right, :title=> t(:dba_schema_list_objects_mbytes_free_hint, :default=>"Unused storage within extents in MBytes.\nCalculated by size of all allocated extents - (Avg_Row_Len*Num_Rows)" ) },

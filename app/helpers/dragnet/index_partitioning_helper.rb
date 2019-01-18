@@ -13,12 +13,37 @@ For unique indexes this is only true if partition key is equal with first column
 Negative aspect is multiple access on every partition of index if partition key is not the same like indexed column(s) and partition key is not part of WHERE-filter.'),
             :sql=> "SELECT /* DB-Tools Local-Partitionierung*/
                              i.Owner, i.Table_Name, i.Index_Name,
-                             i.Num_Rows , i.Distinct_Keys
-                      FROM   DBA_Indexes i,
-                             DBA_Tables t
-                      WHERE  t.Owner      = i.Table_Owner
-                      AND    t.Table_Name = i.Table_Name
-                      AND    i.Partitioned = 'NO'
+                             i.Num_Rows , i.Distinct_Keys, seg.MBytes,
+                             p.Partitions Partitions_Table,
+                             sp.SubPartitions SubPartitions_Table,
+                             ic.Column_Name First_Index_Column,
+                             tc.Column_Name First_Partition_Key,
+                             DECODE(ic.Column_Name, tc.Column_Name, 'YES') \"Partit. Key = Index Column\"
+                      FROM   DBA_Indexes i
+                      JOIN   DBA_Tables t ON t.Owner = i.Table_Owner AND t.Table_Name = i.Table_Name
+                      JOIN   (SELECT /*+ NO_MERGE */ Table_Owner, Table_Name, COUNT(*) Partitions
+                              FROM   DBA_Tab_Partitions
+                              GROUP BY Table_Owner, Table_Name
+                             ) p ON p.Table_Owner = t.Owner AND p.Table_Name = t.Table_Name
+                      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Table_Owner, Table_Name, COUNT(*) SubPartitions
+                              FROM   DBA_Tab_SubPartitions
+                              GROUP BY Table_Owner, Table_Name
+                             ) sp ON sp.Table_Owner = t.Owner AND sp.Table_Name = t.Table_Name
+                      JOIN   DBA_Part_Key_Columns tc
+                             ON (    tc.Owner           = t.Owner
+                                 AND tc.Name            = t.Table_Name
+                                 AND tc.Object_Type     = 'TABLE'
+                                 AND tc.Column_Position = 1
+                                 /* Nur erste Spalte prüfen, danach manuell */
+                                )
+                      JOIN  DBA_Ind_Columns ic
+                             ON (    ic.Index_Owner     = i.Owner
+                                 AND ic.Index_Name      = i.Index_Name
+                                 AND ic.Column_Position = 1
+                                )
+                      JOIN   (SELECT /*+ NO_MERGE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name
+                             ) seg ON seg.Owner = i.Owner AND seg.Segment_Name = i.Index_Name
+                      WHERE  i.Partitioned = 'NO'
                       AND    t.Partitioned = 'YES'
                       AND    i.UniqueNess  = 'NONUNIQUE'
                       AND NOT EXISTS (
@@ -28,7 +53,7 @@ Negative aspect is multiple access on every partition of index if partition key 
                              AND    r.Constraint_Type = 'U'
                              AND    r.Index_Name  = i.Index_Name
                              )
-                      ORDER BY i.Num_Rows DESC NULLS LAST",
+                      ORDER BY DECODE(ic.Column_Name, tc.Column_Name, 'YES') NULLS LAST, i.Num_Rows DESC NULLS LAST",
         },
         {
             :name  => t(:dragnet_helper_12_name, :default=> 'Local-partitioning of unique indexes with partition-key = index-column'),
