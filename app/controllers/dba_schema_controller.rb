@@ -684,7 +684,9 @@ class DbaSchemaController < ApplicationController
                         DECODE(bitand(ou.flags, 1), 0, 'NO', NULL, 'Unknown', 'YES') Used,
                         TO_DATE(ou.start_monitoring, 'MM/DD/YYYY HH24:MI:SS') Start_Monitoring,
                         TO_DATE(ou.end_monitoring,   'MM/DD/YYYY HH24:MI:SS') End_Monitoring,
-                        do.Created, do.Last_DDL_Time, TO_DATE(do.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
+                        do.Created, do.Last_DDL_Time, TO_DATE(do.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
+                        CASE WHEN c.Constraint_Type = 'R' THEN 'Y' END Used_For_FK,
+                        c.Constraint_Name
                  FROM   DBA_Indexes i
                  JOIN   DBA_Users   u  ON u.UserName  = i.owner
                  JOIN   sys.Obj$    o  ON o.Owner# = u.User_ID AND o.Name = i.Index_Name
@@ -694,6 +696,9 @@ class DbaSchemaController < ApplicationController
                                   GROUP BY Owner, Segment_Name
                                  ) s ON s.Owner = i.Owner AND s.Segment_Name = i.Index_Name
                  LEFT OUTER JOIN DBA_Objects do ON do.Owner = i.Owner AND do.Object_Name = i.Index_Name AND do.Object_Type = 'INDEX'
+                 LEFT OUTER JOIN DBA_Ind_Columns ic ON ic.Index_Owner = i.Owner AND ic.Index_Name = i.Index_Name AND ic.Column_Position = 1 /* Columns for test of FK */
+                 LEFT OUTER JOIN DBA_Cons_Columns cc ON cc.Owner = i.Table_Owner AND cc.Table_Name = i.Table_Name AND cc.Column_Name = ic.Column_Name AND cc.Position = 1 /* First columns of constraint */
+                 LEFT OUTER JOIN DBA_Constraints c ON c.Owner = i.Table_Owner AND c.Table_Name = i.Table_Name AND c.Constraint_Name = cc.Constraint_Name
                  LEFT OUTER JOIN sys.object_usage ou ON ou.Obj# = o.Obj#
                  LEFT OUTER JOIN (SELECT ii.Index_Name, COUNT(*) Partition_Number,
                                   CASE WHEN COUNT(DISTINCT(ip.Tablespace_Name)) = 1 THEN MIN(ip.Tablespace_Name) ELSE NULL  END Partition_TS_Name,
@@ -722,17 +727,19 @@ class DbaSchemaController < ApplicationController
                  WHERE  i.Table_Owner = ? AND i.Table_Name = ?
                 ", @owner, @table_name, @owner, @table_name, @owner, @table_name]
 
-    @indexes.each do |i|
-      columns = sql_select_all ["\
-        SELECT ic.Column_Name, ie.Column_Expression
+
+    columns = sql_select_all ["\
+        SELECT ic.Index_Name, ic.Column_Name, ie.Column_Expression
         FROM   DBA_Ind_Columns ic
         LEFT OUTER JOIN DBA_Ind_Expressions ie ON ie.Index_Owner = ic.Index_Owner AND ie.Index_Name=ic.Index_Name AND ie.Column_Position = ic.Column_Position
         WHERE  ic.Table_Owner = ?
-        AND    ic.Index_Name  = ?
-        ORDER BY ic.Column_Position", @owner, i.index_name]
-      names = ""
+        AND    ic.Table_Name  = ?
+        ORDER BY ic.Column_Position", @owner, @table_name]
+
+    @indexes.each do |i|
+      names = ''
       columns.each do |c|
-        names << ", #{c.column_expression ? c.column_expression : c.column_name}"
+        names << ", #{c.column_expression ? c.column_expression : c.column_name}" if i.index_name == c.index_name
       end
       i[:column_names] = names[2,names.length]
 
@@ -801,8 +808,17 @@ class DbaSchemaController < ApplicationController
   end
 
   def list_references_from
-    @owner      = params[:owner]
-    @table_name = params[:table_name]
+    @owner            = params[:owner]
+    @table_name       = params[:table_name]
+    @constraint_name  = prepare_param(:constraint_name)
+
+    where_string = ''
+    where_values = []
+
+    if @constraint_name
+      where_string << "AND c.Constraint_Name = ?"
+      where_values << @constraint_name
+    end
 
     @references = sql_select_all ["\
       SELECT c.*, r.Table_Name R_Table_Name, rt.Num_Rows r_Num_Rows, ci.Index_Name, ci.Index_Number,
@@ -828,7 +844,8 @@ class DbaSchemaController < ApplicationController
       WHERE  c.Constraint_Type = 'R'
       AND    c.Owner      = ?
       AND    c.Table_Name = ?
-      ", @owner, @table_name, @owner, @table_name]
+      #{where_string}
+      ", @owner, @table_name, @owner, @table_name].concat(where_values)
 
     render_partial
   end

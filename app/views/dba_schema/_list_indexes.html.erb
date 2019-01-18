@@ -90,7 +90,11 @@
      )
   end
 
-   def link_extents(rec)
+  show_status = proc do |rec|
+    "#{rec.subpartition_status ? rec.subpartition_status : (rec.partition_status ? rec.partition_status : rec.status)}#{" #{rec.funcidx_status}" if !rec.funcidx_status.nil?}"
+  end
+
+   link_extents = proc do |rec|
      ajax_link(fn(rec.extents),
                 {:controller    => :storage,
                  :action        => :list_object_extents,
@@ -101,6 +105,19 @@
                 :title=>"List distribution of storage extents for index. Caution: Execution may last some time!"
     )
    end
+
+  link_fk = proc do |rec|
+    ajax_link(rec.used_for_fk,
+               {:controller    => :dba_schema,
+                :action        => :list_references_from,
+                :owner         => @owner,
+                :table_name    => @table_name,
+                constraint_name:  rec.constraint_name,
+                :update_area   => @update_area,
+               },
+               :title=>"Show details of foreign key constraint that is protected by thos index"
+   )
+  end
 
    column_options =
            [
@@ -115,14 +132,14 @@
                    {:caption=> 'Max Trans',        :data=>proc{|rec| fn(rec.subpartition_max_trans ? rec.subpartition_max_trans : (rec.partition_max_trans ? rec.partition_max_trans : rec.max_trans))},               :title=> 'Maximum number of transactions in transaction list of db block', :align=>:right},
                    {:caption=> 'Rows',             :data=>proc{|rec| link_current_index_stats(rec, fn(rec.num_rows))},    :title=> 'Number of rows calculated by last analyze run', :align=>:right},
                    {:caption=> 'Size (MB)',        :data=>proc{|rec| fn(rec.size_mb, 2)},                                 :title=> 'Current object size in megabytes', :align=>:right},
-                   {:caption=> 'Extents',          :data=>proc{|rec| link_extents(rec)},                                  :title=> 'Number of extents (from DBA_Segments)', :align=>:right},
+                   {:caption=> 'Ext.',             :data=>link_extents,                                                   :title=> 'Number of extents (from DBA_Segments)', :align=>:right},
                    {:caption=> 'B',                :data=>proc{|rec| fn(rec.blevel)},                                     :title=> "B*-Tree level (depth of the index from its root block to its leaf blocks).\nA depth of 0 indicates that the root block and leaf block are the same.", :align=>:right},
                    {:caption=> 'Leaf blocks',      :data=>proc{|rec| link_current_index_stats(rec, fn(rec.leaf_blocks))}, :title=> 'Number of leaf blocks in the index calculated by last analyze run', :align=>:right},
                    {:caption=> 'Distinct',         :data=>proc{|rec| fn(rec.distinct_keys)},                              :title=> 'Number of distinct keys in the index calculated by last analyze run', :align=>:right, :data_title=>proc{|rec| "%t, #{fn(rec.num_rows.to_f/rec.distinct_keys, 1) rescue nil} rows per key" }},
                    {:caption=> 'Avg. leaf blocks / key', :data=>proc{|rec| fn(rec.avg_leaf_blocks_per_key)},              :title=> "Average number of leaf blocks (calculated by last analyze run) in which each distinct value in the index appears,\nrounded to the nearest integer.\nFor indexes that enforce UNIQUE and PRIMARY KEY constraints, this value is always 1.", :align=>:right},
                    {:caption=> 'Avg. data blocks / key', :data=>proc{|rec| fn(rec.avg_data_blocks_per_key)},              :title=> "Average number of data blocks in the table (calculated by last analyze run) that are pointed to by a distinct value in the index rounded to the nearest integer.\nThis statistic is the average number of data blocks that contain rows that contain a given value for the indexed columns.", :align=>:right},
                    {:caption=> 'Cluster.',         :data=>proc{|rec| fn(rec.clustering_factor)},                          :title=> "A measurement of the amount of (dis)order of the table this index is for.\n\nIf the value is near the number of blocks,\nthen the table is very well ordered.\nIn this case, the index entries in a single leaf block tend to point to rows in the same data blocks.\n\nIf the value is near the number of rows,\nthen the table is very randomly ordered.\nIn this case, it is unlikely that index entries in the same leaf block point to rows in the same data blocks.", :align=>:right},
-                   {:caption=> 'Status',           :data=>proc{|rec| rec.subpartition_status ? rec.subpartition_status : (rec.partition_status ? rec.partition_status : rec.status) }, :title=> 'Index-Status'},
+                   {:caption=> 'Status',           :data=>show_status,                                                    :title=> 'Index-Status (and function status if index is function based)'},
                    {:caption=> 'Dg.',              :data=>proc{|rec| fn(rec.degree)},                                     :title=> 'Default parallel degree of table', :align=>:right},
                    {:caption=> 'Part.',            :data=>proc{|rec| link_ind_partitions(rec)},                           :title=> 'Number of index partitions ', :align=>:right},
                    {:caption=> 'Sub-<wbr>Part.',        :data=>proc{|rec| link_ind_subpartitions(rec)},                   :title=> 'Number of index sub-partitions ', :align=>:right},
@@ -130,7 +147,7 @@
                    {:caption=> 'Last DDL',         :data=>proc{|rec| localeDateTime(rec.last_ddl_time)},                  :title=> 'Timestamp of last DDL operation on index'},
                    { caption: 'Spec. TS',          data: proc{|rec| localeDateTime(rec.spec_ts)},                         title: "Timestamp for the last specification change of the index" },
                    {:caption=> 'Last analyzed',    :data=>proc{|rec| localeDateTime(rec.last_analyzed)},                  :title=> 'The date of the most recent time this table was analyzed'},
-                   {:caption=> 'F. Stat.',         :data=>proc{|rec| rec.funcidx_status},                                 :title=> 'Is the Function-based Index DISABLED or ENABLED?'},
+                   {:caption=> 'FK',               data: link_fk,                                                         title: 'Is index used for protection of foreign key constraint?', data_title: proc{|rec| "%t#{"\nConstraint = '#{rec.constraint_name}'" if rec.constraint_name}"}},
                    {:caption=> 'Use',              :data=>proc{|rec| rec.used},                                           :title=> 'Usage of index detected? From sys.Object_Usage', :data_title=>proc{|rec| "%t: monitoring index = #{rec.monitoring}, start monitoring = #{localeDateTime(rec.start_monitoring)}, end monitoring = #{localeDateTime(rec.end_monitoring)}"}, :data_style=>proc{|rec| 'background-color:coral;' if rec.used=='NO'} },
                    {:caption=> 'Action',           :data=>render_action_buttons,                                          :title=> 'Call action for this index'},
            ]
