@@ -108,7 +108,7 @@ Audit trail will usually be recorded in table sys.Aud$.'),
               )a
               LEFT OUTER JOIN DBA_Stmt_Audit_Opts d ON  d.Audit_Option = a.Name AND d.User_Name IS NULL AND d.Proxy_Name IS NULL
                                                     AND (d.Success = a.Success OR a.Success = 'NOT SET')
-                                                    AND d.Failure = a.Failure  OR a.Failure = 'NOT SET'
+                                                    AND (d.Failure = a.Failure  OR a.Failure = 'NOT SET')
               WHERE d.Audit_Option IS NULL
            ",
             :parameter=>[
