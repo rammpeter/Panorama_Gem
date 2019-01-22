@@ -63,9 +63,9 @@ If last analyze table was far enough in history this selection may help to detec
 Stated here are inserts and updates since last GATHER_TABLE_STATS for tables without any delete operations.
 '),
             :sql=> "SELECT /* DB-Tools Ramm Housekeeping*/
-                             m.Table_Owner, m.Table_Name, m.TimeStamp, t.Last_analyzed,
-                             ROUND(m.Timestamp - t.Last_Analyzed, 2) Days_After_Analyze,
-                             m.Inserts, m.Updates, m.Deletes, m.Truncated, m.Drop_Segments
+                             m.Table_Owner, m.Table_Name, t.Num_Rows, s.Size_MB, m.TimeStamp Last_DML_Timestamp, t.Last_analyzed, t.Monitoring,
+                             ROUND(SYSDATE - t.Last_Analyzed, 2) Days_After_Analyze,
+                             m.Inserts, ROUND(m.Inserts/(SYSDATE - t.Last_Analyzed)) Inserts_Per_Day, m.Updates, ROUND(m.Updates/(SYSDATE - t.Last_Analyzed)) Updates_Per_Day, m.Deletes, m.Truncated, m.Drop_Segments
                       FROM   (SELECT Table_Owner, Table_Name, MAX(Timestamp) Timestamp,
                                      SUM(Inserts) Inserts, SUM(Updates) Updates, SUM(Deletes) Deletes,
                                      MAX(Truncated) Truncated, SUM(Drop_Segments) Drop_Segments
@@ -73,8 +73,13 @@ Stated here are inserts and updates since last GATHER_TABLE_STATS for tables wit
                               GROUP BY Table_Owner, Table_Name
                              ) m
                       JOIN   DBA_Tables t ON t.Owner = m.Table_Owner AND t.Table_Name = m.Table_Name
+                      LEFT OUTER JOIN (SELECT Owner, Segment_Name, ROUND(SUM(Bytes)/(1024*1024),1) Size_MB
+                                       FROM DBA_Segments s
+                                       WHERE Owner NOT IN ('SYS', 'OUTLN', 'SYSTEM', 'DBSNMP', 'WMSYS', 'CTXSYS', 'XDB', 'APPQOSSYS')
+                                       GROUP BY Owner, Segment_Name
+                                      ) s ON s.Owner = t.Owner AND s.Segment_Name = t.Table_Name
                       WHERE m.Deletes = 0 AND m.Truncated = 'NO'
-                      ORDER BY m.Inserts+m.Updates+m.Deletes DESC NULLS LAST",
+                      ORDER BY (m.Inserts+m.Updates)/(SYSDATE - t.Last_Analyzed) * s.Size_MB DESC NULLS LAST",
         },
         {
             :name  => t(:dragnet_helper_128_name, :default=>'Tables without write access (DML) since last analysis'),
