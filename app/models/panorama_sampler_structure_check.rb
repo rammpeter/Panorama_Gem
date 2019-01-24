@@ -164,6 +164,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128,  not_null: true },
           ],
           primary_key: { columns: ['ID'] },
+          indexes: [ {index_name: 'LTT_Wait_Class_Name', columns: ['Name'] } ]
       },
       {
           table_name: 'LTT_Wait_Event',
@@ -173,6 +174,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128,  not_null: true },
           ],
           primary_key: { columns: ['ID'] },
+          indexes: [ {index_name: 'LTT_Wait_Event_Name', columns: ['Name'] } ]
       },
       {
           table_name: 'LTT_User',
@@ -182,6 +184,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128,  not_null: true },
           ],
           primary_key: { columns: ['ID'] },
+          indexes: [ {index_name: 'LTT_User_Name', columns: ['Name'] } ]
       },
       {
           table_name: 'LTT_Service',
@@ -191,6 +194,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128,  not_null: true },
           ],
           primary_key: { columns: ['ID'] },
+          indexes: [ {index_name: 'LTT_Service_Name', columns: ['Name'] } ]
       },
       {
           table_name: 'LTT_Machine',
@@ -200,6 +204,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128,  not_null: true },
           ],
           primary_key: { columns: ['ID'] },
+          indexes: [ {index_name: 'LTT_Machine_Name', columns: ['Name'] } ]
       },
       {
           table_name: 'LTT_Module',
@@ -209,6 +214,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128,  not_null: true },
           ],
           primary_key: { columns: ['ID'] },
+          indexes: [ {index_name: 'LTT_Module_Name', columns: ['Name'] } ]
       },
       {
           table_name: 'LTT_Action',
@@ -218,6 +224,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128,  not_null: true },
           ],
           primary_key: { columns: ['ID'] },
+          indexes: [ {index_name: 'LTT_Action_Name', columns: ['Name'] } ]
       },
       {
           table_name: 'Internal_V$Active_Sess_History',

@@ -254,6 +254,23 @@ class PanoramaSamplerSampling
     start_time = snapshot_time - @sampler_config.get_longterm_trend_snapshot_cycle * 3600 * 2
     end_time   = snapshot_time - @sampler_config.get_longterm_trend_snapshot_cycle * 3600
 
+    insert_0 = ''
+    insert_distinct = ''
+    [
+        'LTT_Wait_Class',
+        'LTT_Wait_Event',
+        'LTT_User',
+        'LTT_Service',
+        'LTT_Machine',
+        'LTT_Module',
+        'LTT_Action',
+    ].each do |table_name|
+      insert_0 << "        INSERT INTO #{@sampler_config.get_owner}.#{table_name}(ID, Name) SELECT 0, 'NOT SAMPLED' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM #{@sampler_config.get_owner}.#{table_name} WHERE ID = 0);\n"
+
+      insert_distinct << ""
+    end
+
+
     sql = "
       DECLARE
       BEGIN
@@ -274,9 +291,62 @@ class PanoramaSamplerSampling
                 AND    Sample_Time <  TO_DATE('#{end_time.strftime(  '%Y-%m-%d %H:%M:%S')}', 'YYYY-MM-DD HH24:MI:SS')
                )
         GROUP BY Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action;
+
+#{insert_0}
+
+        INSERT INTO #{@sampler_config.get_owner}.LTT_Wait_Class(ID, Name)
+        SELECT seq.Max_ID + RowNum, t.Wait_Class
+        FROM   (SELECT DISTINCT Wait_Class FROM #{@sampler_config.get_owner}.Longterm_Trend_Temp) t
+        CROSS JOIN (SELECT NVL(MAX(ID), 0) Max_ID FROM #{@sampler_config.get_owner}.LTT_Wait_Class) seq
+        WHERE  t.Wait_Class NOT IN (SELECT Name FROM #{@sampler_config.get_owner}.LTT_Wait_Class)
+        ;
+
+        INSERT INTO #{@sampler_config.get_owner}.LTT_Wait_Event(ID, Name)
+        SELECT seq.Max_ID + RowNum, t.Wait_Event
+        FROM   (SELECT DISTINCT Wait_Event FROM #{@sampler_config.get_owner}.Longterm_Trend_Temp) t
+        CROSS JOIN (SELECT NVL(MAX(ID), 0) Max_ID FROM #{@sampler_config.get_owner}.LTT_Wait_Event) seq
+        WHERE  t.Wait_Event NOT IN (SELECT Name FROM #{@sampler_config.get_owner}.LTT_Wait_Event)
+        ;
+
+        INSERT INTO #{@sampler_config.get_owner}.LTT_User(ID, Name)
+        SELECT seq.Max_ID + RowNum, u.UserName
+        FROM   (SELECT DISTINCT User_ID FROM #{@sampler_config.get_owner}.Longterm_Trend_Temp) t
+        CROSS JOIN (SELECT NVL(MAX(ID), 0) Max_ID FROM #{@sampler_config.get_owner}.LTT_User) seq
+        JOIN   All_Users u ON u.User_ID = t.User_ID
+        WHERE  u.UserName NOT IN (SELECT Name FROM #{@sampler_config.get_owner}.LTT_User)
+        ;
+
+        INSERT INTO #{@sampler_config.get_owner}.LTT_Service(ID, Name)
+        SELECT seq.Max_ID + RowNum, s.Name
+        FROM   (SELECT DISTINCT Service_Hash FROM #{@sampler_config.get_owner}.Longterm_Trend_Temp) t
+        CROSS JOIN (SELECT NVL(MAX(ID), 0) Max_ID FROM #{@sampler_config.get_owner}.LTT_Service) seq
+        JOIN   DBA_Services s ON s.Name_Hash = t.Service_Hash
+        WHERE  s.Name NOT IN (SELECT Name FROM #{@sampler_config.get_owner}.LTT_Service)
+        ;
+
+        INSERT INTO #{@sampler_config.get_owner}.LTT_Machine(ID, Name)
+        SELECT seq.Max_ID + RowNum, t.Machine
+        FROM   (SELECT DISTINCT Machine FROM #{@sampler_config.get_owner}.Longterm_Trend_Temp) t
+        CROSS JOIN (SELECT NVL(MAX(ID), 0) Max_ID FROM #{@sampler_config.get_owner}.LTT_Machine) seq
+        WHERE  t.Machine NOT IN (SELECT Name FROM #{@sampler_config.get_owner}.LTT_Machine)
+        ;
+
+        INSERT INTO #{@sampler_config.get_owner}.LTT_Module(ID, Name)
+        SELECT seq.Max_ID + RowNum, t.Module
+        FROM   (SELECT DISTINCT Module FROM #{@sampler_config.get_owner}.Longterm_Trend_Temp) t
+        CROSS JOIN (SELECT NVL(MAX(ID), 0) Max_ID FROM #{@sampler_config.get_owner}.LTT_Module) seq
+        WHERE  t.Module NOT IN (SELECT Name FROM #{@sampler_config.get_owner}.LTT_Module)
+        ;
+
+        INSERT INTO #{@sampler_config.get_owner}.LTT_Action(ID, Name)
+        SELECT seq.Max_ID + RowNum, t.Action
+        FROM   (SELECT DISTINCT Action FROM #{@sampler_config.get_owner}.Longterm_Trend_Temp) t
+        CROSS JOIN (SELECT NVL(MAX(ID), 0) Max_ID FROM #{@sampler_config.get_owner}.LTT_Action) seq
+        WHERE  t.Action NOT IN (SELECT Name FROM #{@sampler_config.get_owner}.LTT_Action)
+        ;
+
       END;
     "
-    puts sql
     PanoramaConnection.sql_execute [sql]
   end
 
