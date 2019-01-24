@@ -5,7 +5,7 @@ class PanoramaSamplerStructureCheck
   include PanoramaSampler::PackagePanoramaSamplerBlockingLocks
 
   def self.domains                                                              # supported domain names
-    [:ASH, :AWR, :OBJECT_SIZE, :CACHE_OBJECTS, :BLOCKING_LOCKS]                 # :ASH needs to be first before :AWR
+    [:ASH, :AWR, :OBJECT_SIZE, :CACHE_OBJECTS, :BLOCKING_LOCKS, :LONGTERM_TREND]                 # :ASH needs to be first before :AWR
   end
 
   def self.do_check(sampler_config, domain)
@@ -124,6 +124,101 @@ class PanoramaSamplerStructureCheck
 =end
 
   TABLES = [
+      {
+          table_name: 'Longterm_Trend',
+          domain: :LONGTERM_TREND,
+          columns: [
+              { column_name:  'Snapshot_Timestamp',             column_type:   'DATE',      not_null: true },
+              { column_name:  'Instance_Number',                column_type:   'NUMBER',    not_null: true },
+              { column_name:  'LTT_Wait_Class_ID',              column_type:   'NUMBER',    not_null: true },
+              { column_name:  'LTT_Wait_Event_ID',              column_type:   'NUMBER',    not_null: true },
+              { column_name:  'LTT_User_ID',                    column_type:   'NUMBER',    not_null: true },
+              { column_name:  'LTT_Service_ID',                 column_type:   'NUMBER',    not_null: true },
+              { column_name:  'LTT_Machine_ID',                 column_type:   'NUMBER',    not_null: true },
+              { column_name:  'LTT_Module_ID',                  column_type:   'NUMBER',    not_null: true },
+              { column_name:  'LTT_Action_ID',                  column_type:   'NUMBER',    not_null: true },
+              { column_name:  'Seconds_Active',                 column_type:   'NUMBER',    not_null: true },
+          ],
+          primary_key: { columns: ['Snapshot_Timestamp', 'Instance_Number', 'LTT_Wait_Class_ID', 'LTT_Wait_Event_ID', 'LTT_User_ID', 'LTT_Service_ID', 'LTT_Machine_ID', 'LTT_Module_ID', 'LTT_Action_ID'], compress: 1 },
+      },
+      {
+          table_name: 'Longterm_Trend_Temp',
+          domain: :LONGTERM_TREND,
+          columns: [
+              { column_name:  'Instance_Number',                column_type:   'NUMBER',                    not_null: true },
+              { column_name:  'Wait_Class',                     column_type:   'VARCHAR2',  precision: 128, not_null: true },
+              { column_name:  'Wait_Event',                     column_type:   'VARCHAR2',  precision: 128, not_null: true },
+              { column_name:  'User_ID',                        column_type:   'NUMBER',                    not_null: true },
+              { column_name:  'Service_Hash',                   column_type:   'NUMBER',                    not_null: true },
+              { column_name:  'Machine',                        column_type:   'VARCHAR2',  precision: 128, not_null: true },
+              { column_name:  'Module',                         column_type:   'VARCHAR2',  precision: 128, not_null: true },
+              { column_name:  'Action',                         column_type:   'VARCHAR2',  precision: 128, not_null: true },
+              { column_name:  'Seconds_Active',                 column_type:   'NUMBER',                    not_null: true },
+          ],
+      },
+      {
+          table_name: 'LTT_Wait_Class',
+          domain: :LONGTERM_TREND,
+          columns: [
+              { column_name:  'ID',                             column_type:   'NUMBER',    not_null: true },
+              { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128,  not_null: true },
+          ],
+          primary_key: { columns: ['ID'] },
+      },
+      {
+          table_name: 'LTT_Wait_Event',
+          domain: :LONGTERM_TREND,
+          columns: [
+              { column_name:  'ID',                             column_type:   'NUMBER',    not_null: true },
+              { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128,  not_null: true },
+          ],
+          primary_key: { columns: ['ID'] },
+      },
+      {
+          table_name: 'LTT_User',
+          domain: :LONGTERM_TREND,
+          columns: [
+              { column_name:  'ID',                             column_type:   'NUMBER',    not_null: true },
+              { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128,  not_null: true },
+          ],
+          primary_key: { columns: ['ID'] },
+      },
+      {
+          table_name: 'LTT_Service',
+          domain: :LONGTERM_TREND,
+          columns: [
+              { column_name:  'ID',                             column_type:   'NUMBER',    not_null: true },
+              { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128,  not_null: true },
+          ],
+          primary_key: { columns: ['ID'] },
+      },
+      {
+          table_name: 'LTT_Machine',
+          domain: :LONGTERM_TREND,
+          columns: [
+              { column_name:  'ID',                             column_type:   'NUMBER',    not_null: true },
+              { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128,  not_null: true },
+          ],
+          primary_key: { columns: ['ID'] },
+      },
+      {
+          table_name: 'LTT_Module',
+          domain: :LONGTERM_TREND,
+          columns: [
+              { column_name:  'ID',                             column_type:   'NUMBER',    not_null: true },
+              { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128,  not_null: true },
+          ],
+          primary_key: { columns: ['ID'] },
+      },
+      {
+          table_name: 'LTT_Action',
+          domain: :LONGTERM_TREND,
+          columns: [
+              { column_name:  'ID',                             column_type:   'NUMBER',    not_null: true },
+              { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128,  not_null: true },
+          ],
+          primary_key: { columns: ['ID'] },
+      },
       {
           table_name: 'Internal_V$Active_Sess_History',
           domain: :ASH,

@@ -10,20 +10,12 @@ module EnvHelper
 
   def init_management_pack_license(current_database)
     if current_database[:management_pack_license].nil?                          # not already set, calculate initial value
-      control_management_pack_access = read_control_management_pack_access
-      return :diagnostics_and_tuning_pack  if control_management_pack_access['TUNING']
-      return :diagnostics_pack             if control_management_pack_access['DIAGNOSTIC']
-      return :panorama_sampler             if !current_database[:panorama_sampler_schema].nil?  # Use Panorama-Sampler as default if data exists
-      return :none
+      PanoramaConnection.get_management_pack_license_from_db_as_symbol
+    else
+      current_database[:management_pack_license] # Use old value if already set
     end
-    current_database[:management_pack_license] # Use old value if already set
   end
 
-  def read_control_management_pack_access                                       # returns either NONE | DIAGNOSTIC | DIAGNOSTIC+TUNING
-    result = sql_select_one "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"  # ab Oracle 11 belegt
-    result = 'NONE' if result.nil?                                              # downward compatibility for Oracle 10
-    result
-  end
 
   # Einlesen last_logins aus client_info-store
   def read_last_logins

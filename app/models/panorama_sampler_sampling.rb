@@ -250,6 +250,44 @@ class PanoramaSamplerSampling
     exec_shrink_space('Panorama_Blocking_Locks') if shrink_space
   end
 
+  def do_longterm_trend_sampling(snapshot_time)
+    start_time = snapshot_time - @sampler_config.get_longterm_trend_snapshot_cycle * 3600 * 2
+    end_time   = snapshot_time - @sampler_config.get_longterm_trend_snapshot_cycle * 3600
+
+    sql = "
+      DECLARE
+      BEGIN
+        EXECUTE IMMEDIATE 'TRUNCATE TABLE #{@sampler_config.get_owner}.Longterm_trend_Temp';
+        INSERT INTO #{@sampler_config.get_owner}.Longterm_trend_Temp(Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action, Seconds_Active)
+        SELECT Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action, COUNT(*) * 10
+        FROM   (
+                SELECT Instance_Number,
+                       #{@sampler_config.get_longterm_trend_log_wait_class ? "NVL(Wait_Class,   'CPU')"  : "'NOT SAMPLED'"} Wait_Class,
+                       #{@sampler_config.get_longterm_trend_log_wait_event ? "NVL(Event, Session_State)" : "'NOT SAMPLED'"} Wait_Event,
+                       #{@sampler_config.get_longterm_trend_log_user       ? "NVL(User_ID,      0)"      : "'NOT SAMPLED'"} User_ID,
+                       #{@sampler_config.get_longterm_trend_log_service    ? "NVL(Service_Hash, 0)"      : "'NOT SAMPLED'"} Service_Hash,
+                       #{@sampler_config.get_longterm_trend_log_machine    ? "NVL(Machine,      'NULL')" : "'NOT SAMPLED'"} Machine,
+                       #{@sampler_config.get_longterm_trend_log_module     ? "NVL(Module,       'NULL')" : "'NOT SAMPLED'"} Module,
+                       #{@sampler_config.get_longterm_trend_log_action     ? "NVL(Action,       'NULL')" : "'NOT SAMPLED'"} Action
+                FROM   #{@sampler_config.get_longterm_trend_data_source == :oracle_ash ? "DBA_Hist_Active_Sess_History" : "#{@sampler_config.get_owner}.Panorama_Active_Sess_History"}
+                WHERE  Sample_Time >= TO_DATE('#{start_time.strftime('%Y-%m-%d %H:%M:%S')}', 'YYYY-MM-DD HH24:MI:SS')
+                AND    Sample_Time <  TO_DATE('#{end_time.strftime(  '%Y-%m-%d %H:%M:%S')}', 'YYYY-MM-DD HH24:MI:SS')
+               )
+        GROUP BY Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action;
+      END;
+    "
+    puts sql
+    PanoramaConnection.sql_execute [sql]
+  end
+
+  def do_longterm_trend_housekeeping(shrink_space)
+    execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.Longterm_Trend
+                           WHERE  Snapshot_Timestamp < SYSDATE - ?
+                          ", @sampler_config.get_longterm_trend_snapshot_retention]
+    exec_shrink_space('Longterm_Trend') if shrink_space
+  end
+
+
   def exec_shrink_space(table_name)
     Rails.logger.info "Executing ALTER TABLE #{@sampler_config.get_owner}.#{table_name} SHRINK SPACE CASCADE"
     PanoramaConnection.sql_execute("ALTER TABLE #{@sampler_config.get_owner}.#{table_name} ENABLE ROW MOVEMENT")

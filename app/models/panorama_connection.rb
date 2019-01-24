@@ -197,6 +197,24 @@ class PanoramaConnection
     Thread.current[:panorama_connection_connect_info] = nil
   end
 
+  def self.read_control_management_pack_access                                       # returns either NONE | DIAGNOSTIC | DIAGNOSTIC+TUNING
+    result = PanoramaConnection.sql_select_one "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"  # ab Oracle 11 belegt
+    result = 'NONE' if result.nil?                                              # downward compatibility for Oracle 10
+    result
+  end
+
+  def self.get_management_pack_license_from_db_as_symbol
+    control_management_pack_access = PanoramaConnection.read_control_management_pack_access
+    return :diagnostics_and_tuning_pack  if control_management_pack_access['TUNING']
+    return :diagnostics_pack             if control_management_pack_access['DIAGNOSTIC']
+    return :panorama_sampler             if !current_database[:panorama_sampler_schema].nil?  # Use Panorama-Sampler as default if data exists
+    return :none
+  end
+
+  def self.set_management_pack_license_from_db_in_connection
+    Thread.current[:panorama_connection_connect_info][:management_pack_license] = get_management_pack_license_from_db_as_symbol
+  end
+
   # Release connection at the end of request to mark free in pool or destroy
   def self.release_connection
     if Thread.current[:panorama_connection_connection_object]

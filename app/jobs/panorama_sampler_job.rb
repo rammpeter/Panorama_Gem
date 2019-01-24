@@ -53,7 +53,8 @@ class PanoramaSamplerJob < ApplicationJob
         check_for_sampling(config, snapshot_time, :OBJECT_SIZE, 60)
         check_for_sampling(config, snapshot_time, :CACHE_OBJECTS)
         check_for_sampling(config, snapshot_time, :BLOCKING_LOCKS)
-        WorkerThread.check_analyze(config)
+        check_for_sampling(config, snapshot_time, :LONGTERM_TREND, 1)  # TODO: Wechsel auf 60
+        WorkerThread.check_analyze(config) if config.any_domain_active?
       end
     end
 

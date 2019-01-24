@@ -461,7 +461,7 @@ public
   end
 
   def list_management_pack_license
-    @control_management_pack_access = read_control_management_pack_access       # ab Oracle 11 belegt
+    @control_management_pack_access = PanoramaConnection.read_control_management_pack_access       # ab Oracle 11 belegt
 
     # check if AWR/ASH-Sampling is really active for existing Panorama-Sampler-schema
     if get_current_database[:panorama_sampler_schema].nil?

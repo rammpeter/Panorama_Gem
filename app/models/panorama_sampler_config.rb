@@ -9,26 +9,46 @@ class PanoramaSamplerConfig
 
     # Intitalize defaults
     @config_hash[:id]                                 = PanoramaSamplerConfig.get_max_id+1     if !@config_hash.has_key?(:id)
+
     @config_hash[:awr_ash_snapshot_cycle]             = 60    if !@config_hash.has_key?(:awr_ash_snapshot_cycle)
     @config_hash[:awr_ash_snapshot_retention]         = 32    if !@config_hash.has_key?(:awr_ash_snapshot_retention)
     @config_hash[:sql_min_no_of_execs]                = 2     if !@config_hash.has_key?(:sql_min_no_of_execs)
     @config_hash[:sql_min_runtime_millisecs]          = 10    if !@config_hash.has_key?(:sql_min_runtime_millisecs)
     @config_hash[:awr_ash_active]                     = false if !@config_hash.has_key?(:awr_ash_active)
+
     @config_hash[:object_size_active]                 = false if !@config_hash.has_key?(:object_size_active)
     @config_hash[:object_size_snapshot_cycle]         = 24    if !@config_hash.has_key?(:object_size_snapshot_cycle)
     @config_hash[:object_size_snapshot_retention]     = 1000  if !@config_hash.has_key?(:object_size_snapshot_retention)
+
     @config_hash[:cache_objects_active]               = false if !@config_hash.has_key?(:cache_objects_active)
     @config_hash[:cache_objects_snapshot_cycle]       = 30    if !@config_hash.has_key?(:cache_objects_snapshot_cycle)
     @config_hash[:cache_objects_snapshot_retention]   = 60    if !@config_hash.has_key?(:cache_objects_snapshot_retention)
+
     @config_hash[:blocking_locks_active]              = false if !@config_hash.has_key?(:blocking_locks_active)
     @config_hash[:blocking_locks_snapshot_cycle]      = 2     if !@config_hash.has_key?(:blocking_locks_snapshot_cycle)
     @config_hash[:blocking_locks_snapshot_retention]  = 60    if !@config_hash.has_key?(:blocking_locks_snapshot_retention)
     @config_hash[:blocking_locks_long_locks_limit]    = 10000 if !@config_hash.has_key?(:blocking_locks_long_locks_limit)
+
+    @config_hash[:longterm_trend_active]              = false if !@config_hash.has_key?(:longterm_trend_active)
+    @config_hash[:longterm_trend_data_source]         = :oracle_ash if !@config_hash.has_key?(:longterm_trend_data_source)  # or :panorama_sampler
+    @config_hash[:longterm_trend_snapshot_cycle]      = 24    if !@config_hash.has_key?(:longterm_trend_snapshot_cycle)     # Hours
+    @config_hash[:longterm_trend_snapshot_retention]  = 3650  if !@config_hash.has_key?(:longterm_trend_snapshot_retention) # Days
+    @config_hash[:longterm_trend_log_wait_class]      = true  if !@config_hash.has_key?(:longterm_trend_log_wait_class)
+    @config_hash[:longterm_trend_log_wait_event]      = true  if !@config_hash.has_key?(:longterm_trend_log_wait_event)
+    @config_hash[:longterm_trend_log_user]            = true  if !@config_hash.has_key?(:longterm_trend_log_user)
+    @config_hash[:longterm_trend_log_service]         = true  if !@config_hash.has_key?(:longterm_trend_log_service)
+    @config_hash[:longterm_trend_log_machine]         = true  if !@config_hash.has_key?(:longterm_trend_log_machine)
+    @config_hash[:longterm_trend_log_module]          = true  if !@config_hash.has_key?(:longterm_trend_log_module)
+    @config_hash[:longterm_trend_log_action]          = false if !@config_hash.has_key?(:longterm_trend_log_action)
+
     @config_hash[:last_analyze_check_timestamp]       = nil   if !@config_hash.has_key?(:last_analyze_check_timestamp)
+
     @config_hash[:last_awr_ash_snapshot_start]        = nil   if !@config_hash.has_key?(:last_awr_ash_snapshot_start)
     @config_hash[:last_object_size_snapshot_start]    = nil   if !@config_hash.has_key?(:last_object_size_snapshot_start)
     @config_hash[:last_cache_objects_snapshot_start]  = nil   if !@config_hash.has_key?(:last_cache_objects_snapshot_start)
     @config_hash[:last_blocking_locks_snapshot_start] = nil   if !@config_hash.has_key?(:last_blocking_locks_snapshot_start)
+    @config_hash[:last_longterm_trend_snapshot_start] = nil   if !@config_hash.has_key?(:last_longterm_trend_snapshot_start)
+
   end
 
   def get_cloned_config_hash
@@ -42,6 +62,17 @@ class PanoramaSamplerConfig
     @config_hash[key]
   end
 
+  # route get_xxx to get_config_value(:xxx);
+  def method_missing(sym, *args, &block)
+    methodname = sym.to_s
+    if methodname['get_']                                                       # getter called
+      get_config_value(methodname[4, methodname.length-4].to_sym);
+    else
+      raise "No method #{sym} for #{self.class}"
+    end
+  end
+
+  # getter in direct declaration. Missing getters are catched by method_missing
   def get_id;                                 get_config_value(:id);                                  end
   def get_awr_ash_active;                     get_config_value(:awr_ash_active);                      end
   def get_awr_ash_snapshot_cycle;             get_config_value(:awr_ash_snapshot_cycle);              end
@@ -101,6 +132,12 @@ class PanoramaSamplerConfig
     retval
   end
 
+  def any_domain_active?
+    PanoramaSamplerConfig.get_domains.each do |domain|
+      return true if send("get_#{domain.downcase}_active")
+    end
+    false
+  end
 
   def set_select_any_table(value)
     raise "Method is for test purpose only" if ENV['RAILS_ENV'] != 'test'
@@ -279,8 +316,15 @@ class PanoramaSamplerConfig
       raise PopupMessageException.new "Object size snapshot cycle must be a divisible without remainder from 24 hours and max. 24 hours\ne.g. 1, 2, 3, 4, 6, 8, 12 or 24 hours"
     end
 
-    raise PopupMessageException.new "Object size snapshot cycle must be >= 1 hour>"   if config_hash[:object_size_snapshot_cycle].nil?      || config_hash[:object_size_snapshot_cycle]     <=0
+    raise PopupMessageException.new "Object size snapshot cycle must be >= 1 hour>"   if config_hash[:object_size_snapshot_cycle].nil?      || config_hash[:object_size_snapshot_cycle]     < 1
     raise PopupMessageException.new "Object size snapshot retention must be >= 1 day" if config_hash[:object_size_snapshot_retention].nil?  || config_hash[:object_size_snapshot_retention] < 1
+
+    raise PopupMessageException.new "Blocking locks snapshot cycle must be >= 1 minute>" if config_hash[:blocking_locks_snapshot_cycle].nil?      || config_hash[:blocking_locks_snapshot_cycle]     < 1
+    raise PopupMessageException.new "Blocking locks snapshot retention must be >= 1 day" if config_hash[:blocking_locks_snapshot_retention].nil?  || config_hash[:blocking_locks_snapshot_retention] < 1
+
+    raise PopupMessageException.new "You should also activate AWR/ASH-sampling if activating long-term trend with data-source Panorama-Sampler" if config_hash[:longterm_trend_active] && config_hash[:longterm_trend_data_source] == :oracle_ash && !config_hash[:awr_ash_active]
+    raise PopupMessageException.new "Long-term trend snapshot cycle must be >= 1 minute>" if config_hash[:longterm_trend_snapshot_cycle].nil?      || config_hash[:longterm_trend_snapshot_cycle]     < 1
+    raise PopupMessageException.new "Long-term trend snapshot retention must be >= 1 day" if config_hash[:longterm_trend_snapshot_retention].nil?  || config_hash[:longterm_trend_snapshot_retention] < 1
   end
 
   def self.config_entry_exists?(p_id)
@@ -315,18 +359,21 @@ class PanoramaSamplerConfig
 
   # Modify some content after edit and before storage
   def self.prepare_saved_entry!(entry)
-    entry[:tns]                               = PanoramaConnection.get_host_tns(entry) if entry[:modus].to_sym == :host
-    entry[:id]                                = entry[:id].to_i
-    entry[:awr_ash_snapshot_cycle]            = entry[:awr_ash_snapshot_cycle].to_i
-    entry[:awr_ash_snapshot_retention]        = entry[:awr_ash_snapshot_retention].to_i
-    entry[:owner]                             = entry[:user] if entry[:owner].nil? || entry[:owner] == ''             # User is default for owner
-    entry[:object_size_snapshot_cycle]        = entry[:object_size_snapshot_cycle].to_i
-    entry[:object_size_snapshot_retention]    = entry[:object_size_snapshot_retention].to_i
-    entry[:cache_objects_snapshot_cycle]      = entry[:cache_objects_snapshot_cycle].to_i
-    entry[:cache_objects_snapshot_retention]  = entry[:cache_objects_snapshot_retention].to_i
-    entry[:blocking_locks_snapshot_cycle]     = entry[:blocking_locks_snapshot_cycle].to_i
-    entry[:blocking_locks_snapshot_retention] = entry[:blocking_locks_snapshot_retention].to_i
-    entry[:blocking_locks_long_locks_limit]   = entry[:blocking_locks_long_locks_limit].to_i
+    entry[:tns]                                 = PanoramaConnection.get_host_tns(entry) if entry[:modus].to_sym == :host
+    entry[:id]                                  = entry[:id].to_i
+    entry[:awr_ash_snapshot_cycle]              = entry[:awr_ash_snapshot_cycle].to_i
+    entry[:awr_ash_snapshot_retention]          = entry[:awr_ash_snapshot_retention].to_i
+    entry[:owner]                               = entry[:user] if entry[:owner].nil? || entry[:owner] == ''             # User is default for owner
+    entry[:object_size_snapshot_cycle]          = entry[:object_size_snapshot_cycle].to_i
+    entry[:object_size_snapshot_retention]      = entry[:object_size_snapshot_retention].to_i
+    entry[:cache_objects_snapshot_cycle]        = entry[:cache_objects_snapshot_cycle].to_i
+    entry[:cache_objects_snapshot_retention]    = entry[:cache_objects_snapshot_retention].to_i
+    entry[:blocking_locks_snapshot_cycle]       = entry[:blocking_locks_snapshot_cycle].to_i
+    entry[:blocking_locks_snapshot_retention]   = entry[:blocking_locks_snapshot_retention].to_i
+    entry[:blocking_locks_long_locks_limit]     = entry[:blocking_locks_long_locks_limit].to_i
+    entry[:longterm_trend_data_source]          = entry[:longterm_trend_data_source].to_sym
+    entry[:longterm_trend_snapshot_cycle]       = entry[:longterm_trend_snapshot_cycle].to_i
+    entry[:longterm_trend_snapshot_retention]   = entry[:longterm_trend_snapshot_retention].to_i
 
     # Ensure that SYS always logs in as sysdba
     entry[:privilege]                         = :sysdba if entry[:user].upcase == 'SYS'

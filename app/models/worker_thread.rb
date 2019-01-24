@@ -49,7 +49,7 @@ class WorkerThread
     connection_config = sampler_config.get_cloned_config_hash                   # Structure similar to database
 
     connection_config[:client_salt]             = EngineConfig.config.panorama_sampler_master_password
-    connection_config[:management_pack_license] = :none                         # assume no management packs are licensed
+    connection_config[:management_pack_license] = :none                         # assume no management packs are licensed for first steps
     connection_config[:privilege]               = 'normal' if !connection_config.has_key?(:privilege)
     connection_config[:query_timeout]           = connection_config[:awr_ash_snapshot_cycle]*60+60 # 1 minute more than snapshot cycle
     connection_config[:current_controller_name] = 'WorkerThread'
@@ -57,6 +57,7 @@ class WorkerThread
 
     PanoramaConnection.set_connection_info_for_request(connection_config)
 
+    PanoramaConnection.set_management_pack_license_from_db_in_connection        # Set management_pack_license according to init-parameter 'control_management_pack_access'
   end
 
   # Check if connection may function and store result in config hash

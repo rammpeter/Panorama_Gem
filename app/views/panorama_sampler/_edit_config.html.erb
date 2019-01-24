@@ -18,6 +18,7 @@
         <li class="tab"><a href="#tab-object-size-history">Object size history</a></li>
         <li class="tab"><a href="#tab-db-cache-history">DB-cache history</a></li>
         <li class="tab"><a href="#tab-blocking-locks-history">Blocking locks history</a></li>
+        <li class="tab"><a href="#tab-longterm-trend-history">Long-term trend </a></li>
       </ul>
       <div class="panel-container">
         <div id="tab-database-config">
@@ -36,6 +37,7 @@
                 <td align="center">
                   <div title="Select mode for identification of database">
                     <%= radio_button_tag(:config_modus, :tns,  true,  {:name=>'config[modus]', :onclick => "jQuery('.edit_config_tns').css('display', '');     jQuery('.edit_config_host').css('display', 'none');" }) %>TNS-Names
+                    &nbsp;&nbsp;&nbsp;&nbsp;
                     <%= radio_button_tag(:config_modus, :host, false, {:name=>'config[modus]', :onclick => "jQuery('.edit_config_tns').css('display', 'none'); jQuery('.edit_config_host').css('display', '');" }) %>Host, Port, SID/Service-Name
                   </div>
                 </td>
@@ -51,14 +53,14 @@
                 </td>
               </tr>
 
-              <tr class="edit_config_host" style="display: none">
-                <td title="Host-name. Übersteuert TNS-Alias wenn belegt">Host</td>
-                <td align="center"><%= text_field_tag(:config_host, @config[:host], :name=>'config[host]', :style=>"width:95%;", :title=>t(:login_database_host_hint, :default=>"hostname or IP adress") ) %></td>
+              <tr class="edit_config_host" style="display: none" title="Hostname or IP-address">
+                <td>Host</td>
+                <td align="center"><%= text_field_tag(:config_host, @config[:host], :name=>'config[host]', :style=>"width:95%;") %></td>
               </tr>
 
-              <tr class="edit_config_host" style="display: none">
+              <tr class="edit_config_host" style="display: none" title="Port-number">
                 <td>Port</td>
-                <td align="center"><%= text_field_tag(:config_port, @config[:port], :name=>'config[port]', :style=>"width:95%;", :title=>"Port-Nummer" ) %></td>
+                <td align="center"><%= text_field_tag(:config_port, @config[:port], :name=>'config[port]', :style=>"width:95%;" ) %></td>
               </tr>
 
               <tr class="edit_config_host" style="display: none">
@@ -102,14 +104,14 @@
               <td>Sample AWR and ASH</td>
               <td align="center"><%= check_box_tag(:config_awr_ash_active, 1, @config[:awr_ash_active], :name=>'config[awr_ash_active]') %></td>
             </tr>
-            <tr>
+            <tr title="Delay between snapshots in minutes">
               <td>Snapshot cycle (minutes)</td>
-              <td align="center"><%= text_field_tag(:config_awr_ash_snapshot_cycle, @config[:awr_ash_snapshot_cycle], :name=>'config[awr_ash_snapshot_cycle]', size: 20, :style => "text-align: right;", :title=>'Delay between snapshots in minutes') %></td>
+              <td align="center"><%= text_field_tag(:config_awr_ash_snapshot_cycle, @config[:awr_ash_snapshot_cycle], :name=>'config[awr_ash_snapshot_cycle]', size: 20, :style => "text-align: right;") %></td>
             </tr>
 
-            <tr>
+            <tr title="Retention time for snapshot data in days before deletion">
               <td>Snapshot retention (days)</td>
-              <td align="center"><%= text_field_tag(:config_awr_ash_snapshot_retention, @config[:awr_ash_snapshot_retention], :name=>'config[awr_ash_snapshot_retention]', size: 20, :style => "text-align: right;", :title=>'Retention time for snapshot data in days before deletion') %></td>
+              <td align="center"><%= text_field_tag(:config_awr_ash_snapshot_retention, @config[:awr_ash_snapshot_retention], :name=>'config[awr_ash_snapshot_retention]', size: 20, :style => "text-align: right;") %></td>
             </tr>
 
             <tr title="or-combined limits for SQLs within snapshot cycle to be recorded by Panorama-Sampler">
@@ -132,14 +134,14 @@
               <td>Sample object sizes</td>
               <td align="center"><%= check_box_tag(:config_object_size_active, 1, @config[:object_size_active], :name=>'config[object_size_active]') %></td>
             </tr>
-            <tr>
+            <tr title="Delay between snapshots of object sizes in hours">
               <td>Snapshot cycle (hours)</td>
-              <td align="center"><%= text_field_tag(:config_object_size_snapshot_cycle, @config[:object_size_snapshot_cycle], :name=>'config[object_size_snapshot_cycle]', size: 6, :style => "text-align: right;", :title=>'Delay between snapshots of object sizes in hours') %></td>
+              <td align="center"><%= text_field_tag(:config_object_size_snapshot_cycle, @config[:object_size_snapshot_cycle], :name=>'config[object_size_snapshot_cycle]', size: 6, :style => "text-align: right;") %></td>
             </tr>
 
-            <tr>
+            <tr title="Retention time for object size snapshot data in days before deletion">
               <td>Snapshot retention (days)</td>
-              <td align="center"><%= text_field_tag(:config_object_size_snapshot_retention, @config[:object_size_snapshot_retention], :name=>'config[object_size_snapshot_retention]', size: 6, :style => "text-align: right;", :title=>'Retention time for object size snapshot data in days before deletion') %></td>
+              <td align="center"><%= text_field_tag(:config_object_size_snapshot_retention, @config[:object_size_snapshot_retention], :name=>'config[object_size_snapshot_retention]', size: 6, :style => "text-align: right;") %></td>
             </tr>
 
           </table>
@@ -152,14 +154,13 @@
               <td>Sample DB-cache objects</td>
               <td align="center"><%= check_box_tag(:config_cache_objects_active, 1, @config[:cache_objects_active], :name=>'config[cache_objects_active]') %></td>
             </tr>
-            <tr>
+            <tr title="Delay between snapshots of cache objects in minutes">
               <td>Snapshot cycle (minutes)</td>
-              <td align="center"><%= text_field_tag(:config_cache_objects_snapshot_cycle, @config[:cache_objects_snapshot_cycle], :name=>'config[cache_objects_snapshot_cycle]', size: 6, :style => "text-align: right;", :title=>'Delay between snapshots of cache objects in minutes') %></td>
+              <td align="center"><%= text_field_tag(:config_cache_objects_snapshot_cycle, @config[:cache_objects_snapshot_cycle], :name=>'config[cache_objects_snapshot_cycle]', size: 6, :style => "text-align: right;") %></td>
             </tr>
-
-            <tr>
+            <tr title="Retention time for cache objects snapshot data in days before deletion">
               <td>Snapshot retention (days)</td>
-              <td align="center"><%= text_field_tag(:config_cache_objects_snapshot_retention, @config[:cache_objects_snapshot_retention], :name=>'config[cache_objects_snapshot_retention]', size: 6, :style => "text-align: right;", :title=>'Retention time for cache objects snapshot data in days before deletion') %></td>
+              <td align="center"><%= text_field_tag(:config_cache_objects_snapshot_retention, @config[:cache_objects_snapshot_retention], :name=>'config[cache_objects_snapshot_retention]', size: 6, :style => "text-align: right;") %></td>
             </tr>
 
           </table>
@@ -172,20 +173,94 @@
               <td>Sample blocking locks</td>
               <td align="center"><%= check_box_tag(:config_blocking_locks_active, 1, @config[:blocking_locks_active], :name=>'config[blocking_locks_active]') %></td>
             </tr>
-            <tr>
+            <tr title="Delay between snapshots of blocking locks in minutes">
               <td>Snapshot cycle (minutes)</td>
-              <td align="center"><%= text_field_tag(:config_blocking_locks_snapshot_cycle, @config[:blocking_locks_snapshot_cycle], :name=>'config[blocking_locks_snapshot_cycle]', size: 6, :style => "text-align: right;", :title=>'Delay between snapshots of blocking locks in minutes') %></td>
+              <td align="center"><%= text_field_tag(:config_blocking_locks_snapshot_cycle, @config[:blocking_locks_snapshot_cycle], :name=>'config[blocking_locks_snapshot_cycle]', size: 6, :style => "text-align: right;") %></td>
             </tr>
-            <tr>
+            <tr title="Retention time for blocking locks snapshot data in days before deletion">
               <td>Snapshot retention (days)</td>
-              <td align="center"><%= text_field_tag(:config_blocking_locks_snapshot_retention, @config[:blocking_locks_snapshot_retention], :name=>'config[blocking_locks_snapshot_retention]', size: 6, :style => "text-align: right;", :title=>'Retention time for blocking locks snapshot data in days before deletion') %></td>
+              <td align="center"><%= text_field_tag(:config_blocking_locks_snapshot_retention, @config[:blocking_locks_snapshot_retention], :name=>'config[blocking_locks_snapshot_retention]', size: 6, :style => "text-align: right;") %></td>
             </tr>
-            <tr>
+            <tr title="Limit for long lasting DB-locks.\nLocks lasting longer than his limit are also recorded even if they are not blocking other transactions">
               <td>Limit for long locks (seconds)</td>
-              <td align="center"><%= text_field_tag(:config_blocking_locks_long_locks_limit, @config[:blocking_locks_long_locks_limit], :name=>'config[blocking_locks_long_locks_limit]', size: 6, :style => "text-align: right;", :title=>"Limit for long lasting DB-locks.\nLocks lasting longer than his limit are also recorded even if they are not blocking other transactions") %></td>
+              <td align="center"><%= text_field_tag(:config_blocking_locks_long_locks_limit, @config[:blocking_locks_long_locks_limit], :name=>'config[blocking_locks_long_locks_limit]', size: 6, :style => "text-align: right;") %></td>
             </tr>
           </table>
         </div>
+
+        <div id="tab-longterm-trend-history">
+          <table width="100%">
+            <tr title="Enable or disable sampling of long-term trend.
+
+            For RAC you need to configure this sampling only once because it samples over all instances at once.">
+              <td>Sample long-term trend</td>
+              <td align="center"><%= check_box_tag(:config_longterm_trend_active, 1, @config[:longterm_trend_active], :name=>'config[longterm_trend_active]') %></td>
+            </tr>
+            <tr title="Select data source for sampling of long-term trend.
+            If you choose 'Oracle-ASH' you should have licensed the Oracle Diagnostics Pack!!!">
+              <td>Data source</td>
+              <td align="center">
+                <div>
+                  <span title="Select data from Oracle's original Active Session History (ASH) as part of Active Workload Repository (AWR).
+                  Be careful: You have to have an Enterprise Edition and the Diagnostics Pack licensed
+                  if you choose this option!!!">
+                    <%= radio_button_tag(:config_longterm_trend_data_source, :oracle_ash,       @config[:longterm_trend_data_source] == :oracle_ash,        {:name=>'config[longterm_trend_data_source]'}) %>&nbsp;Oracle-ASH
+                  </span>
+                  &nbsp;&nbsp;&nbsp;&nbsp;
+                  <span title="Active Session History sampled by Panorama-Sampler.
+                  You should also activate 'AWR and ASH' for Panorama-Sampler to ensure that data exists where this function is based on.">
+                    <%= radio_button_tag(:config_longterm_trend_data_source, :panorama_sampler, @config[:longterm_trend_data_source] == :panorama_sampler,  {:name=>'config[longterm_trend_data_source]'}) %>&nbsp;Panorama-Sampler
+                  </span>
+                </div>
+              </td>
+            </tr>
+
+            <tr title="Delay between snapshots of long-term trend in hours">
+              <td>Snapshot cycle (hours)</td>
+              <td align="center"><%= text_field_tag(:config_longterm_trend_snapshot_cycle, @config[:longterm_trend_snapshot_cycle], :name=>'config[longterm_trend_snapshot_cycle]', size: 6, :style => "text-align: right;") %></td>
+            </tr>
+            <tr title="Retention time for long-term trend snapshot data in days before deletion">
+              <td>Snapshot retention (days)</td>
+              <td align="center"><%= text_field_tag(:config_longterm_trend_snapshot_retention, @config[:longterm_trend_snapshot_retention], :name=>'config[longterm_trend_snapshot_retention]', size: 6, :style => "text-align: right;") %></td>
+            </tr>
+            <tr title="Enable or disable detail level 'Wait class' for sampling
+            Disabling reduces amount of sampled data">
+              <td>Log wait class</td>
+              <td align="center"><%= check_box_tag(:config_longterm_trend_log_wait_class, 1, @config[:longterm_trend_log_wait_class], :name=>'config[longterm_trend_log_wait_class]') %></td>
+            </tr>
+            <tr title="Enable or disable detail level 'Wait event' for sampling
+            Disabling reduces amount of sampled data">
+              <td>Log wait event</td>
+              <td align="center"><%= check_box_tag(:config_longterm_trend_log_wait_event, 1, @config[:longterm_trend_log_wait_event], :name=>'config[longterm_trend_log_wait_event]') %></td>
+            </tr>
+            <tr title="Enable or disable detail level 'DB user' for sampling
+            Disabling reduces amount of sampled data">
+              <td>Log user</td>
+              <td align="center"><%= check_box_tag(:config_longterm_trend_log_user, 1, @config[:longterm_trend_log_user], :name=>'config[longterm_trend_log_user]') %></td>
+            </tr>
+            <tr title="Enable or disable detail level 'TNS-service' for sampling
+            Disabling reduces amount of sampled data">
+              <td>Log service</td>
+              <td align="center"><%= check_box_tag(:config_longterm_trend_log_service, 1, @config[:longterm_trend_log_service], :name=>'config[longterm_trend_log_service]') %></td>
+            </tr>
+            <tr title="Enable or disable detail level 'Client machine' for sampling
+            Disabling reduces amount of sampled data">
+              <td>Log machine</td>
+              <td align="center"><%= check_box_tag(:config_longterm_trend_log_machine, 1, @config[:longterm_trend_log_machine], :name=>'config[longterm_trend_log_machine]') %></td>
+            </tr>
+            <tr title="Enable or disable detail level 'Module' for sampling
+            Disabling reduces amount of sampled data">
+              <td>Log module</td>
+              <td align="center"><%= check_box_tag(:config_longterm_trend_log_module, 1, @config[:longterm_trend_log_module], :name=>'config[longterm_trend_log_module]') %></td>
+            </tr>
+            <tr title="Enable or disable detail level 'Action' for sampling
+            Disabling reduces amount of sampled data">
+              <td>Log action</td>
+              <td align="center"><%= check_box_tag(:config_longterm_trend_log_action, 1, @config[:longterm_trend_log_action], :name=>'config[longterm_trend_log_action]') %></td>
+            </tr>
+          </table>
+        </div>
+
 
       </div>
 
