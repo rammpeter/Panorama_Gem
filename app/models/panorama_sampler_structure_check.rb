@@ -145,6 +145,7 @@ class PanoramaSamplerStructureCheck
           table_name: 'Longterm_Trend_Temp',
           domain: :LONGTERM_TREND,
           columns: [
+              { column_name:  'Snapshot_Timestamp',             column_type:   'DATE',                      not_null: true },
               { column_name:  'Instance_Number',                column_type:   'NUMBER',                    not_null: true },
               { column_name:  'Wait_Class',                     column_type:   'VARCHAR2',  precision: 128, not_null: true },
               { column_name:  'Wait_Event',                     column_type:   'VARCHAR2',  precision: 128, not_null: true },

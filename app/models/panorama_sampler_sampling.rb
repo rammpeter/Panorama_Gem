@@ -251,9 +251,17 @@ class PanoramaSamplerSampling
   end
 
   def do_longterm_trend_sampling(snapshot_time)
-    start_time = snapshot_time - @sampler_config.get_longterm_trend_snapshot_cycle * 3600 * 2
-    end_time   = snapshot_time - @sampler_config.get_longterm_trend_snapshot_cycle * 3600
+    # start with start of last snapshot + snapshot_cycle. All records before are already considered
+    start_time = PanoramaConnection.sql_select_one "SELECT MAX(Snapshot_Timestamp)+#{@sampler_config.get_longterm_trend_snapshot_cycle}/24 FROM #{@sampler_config.get_owner}.Longterm_Trend"
+    start_time = Time.now - 86400*1000 if start_time.nil?                       # Start 1000 days back for first time
 
+    # End_time is cycle back - 1 hour for visibility of ASH - 1 hour carrence
+    # End time should completely cover one cycle
+    end_time = PanoramaConnection.sql_select_one "SELECT TRUNC(End_time_Uneven) + TRUNC(TO_NUMBER(TO_CHAR(End_time_Uneven, 'HH24'))/#{@sampler_config.get_longterm_trend_snapshot_cycle}) * #{@sampler_config.get_longterm_trend_snapshot_cycle} / 24
+                                                  FROM   (SELECT  SYSDATE - 2 / 24 End_time_Uneven
+                                                          FROM    Dual
+                                                         )
+                                                 "
     insert_0 = ''
     insert_distinct = ''
     [
@@ -271,14 +279,15 @@ class PanoramaSamplerSampling
     end
 
 
+
     sql = "
-      DECLARE
       BEGIN
         EXECUTE IMMEDIATE 'TRUNCATE TABLE #{@sampler_config.get_owner}.Longterm_trend_Temp';
-        INSERT INTO #{@sampler_config.get_owner}.Longterm_trend_Temp(Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action, Seconds_Active)
-        SELECT Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action, COUNT(*) * 10
+        INSERT INTO #{@sampler_config.get_owner}.Longterm_trend_Temp (Snapshot_Timestamp, Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action, Seconds_Active)
+        SELECT Snapshot_Timestamp, Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action, COUNT(*) * 10
         FROM   (
-                SELECT Instance_Number,
+                SELECT TRUNC(Sample_Time)+TRUNC(TO_NUMBER(TO_CHAR(Sample_Time, 'HH24'))/#{@sampler_config.get_longterm_trend_snapshot_cycle}) * #{@sampler_config.get_longterm_trend_snapshot_cycle} / 24 Snapshot_Timestamp,
+                       Instance_Number,
                        #{@sampler_config.get_longterm_trend_log_wait_class ? "NVL(Wait_Class,   'CPU')"  : "'NOT SAMPLED'"} Wait_Class,
                        #{@sampler_config.get_longterm_trend_log_wait_event ? "NVL(Event, Session_State)" : "'NOT SAMPLED'"} Wait_Event,
                        #{@sampler_config.get_longterm_trend_log_user       ? "NVL(User_ID,      0)"      : "'NOT SAMPLED'"} User_ID,
@@ -290,7 +299,7 @@ class PanoramaSamplerSampling
                 WHERE  Sample_Time >= TO_DATE('#{start_time.strftime('%Y-%m-%d %H:%M:%S')}', 'YYYY-MM-DD HH24:MI:SS')
                 AND    Sample_Time <  TO_DATE('#{end_time.strftime(  '%Y-%m-%d %H:%M:%S')}', 'YYYY-MM-DD HH24:MI:SS')
                )
-        GROUP BY Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action;
+        GROUP BY Snapshot_Timestamp, Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action;
 
 #{insert_0}
 
@@ -345,6 +354,30 @@ class PanoramaSamplerSampling
         WHERE  t.Action NOT IN (SELECT Name FROM #{@sampler_config.get_owner}.LTT_Action)
         ;
 
+        INSERT INTO #{@sampler_config.get_owner}.Longterm_Trend (Snapshot_Timestamp, Instance_Number, LTT_Wait_Class_ID, LTT_Wait_Event_ID, LTT_User_ID, LTT_Service_ID, LTT_Machine_ID, LTT_Module_ID, LTT_Action_ID, Seconds_Active)
+        SELECT t.Snapshot_Timestamp,
+               t.Instance_Number,
+               LTT_Wait_Class.ID,
+               LTT_Wait_Event.ID,
+               LTT_User.ID,
+               LTT_Service.ID,
+               LTT_Machine.ID,
+               LTT_Module.ID,
+               LTT_Action.ID,
+               t.Seconds_Active
+        FROM   #{@sampler_config.get_owner}.Longterm_Trend_Temp t
+        JOIN   #{@sampler_config.get_owner}.LTT_Wait_Class ON LTT_Wait_Class.Name = t.Wait_Class
+        JOIN   #{@sampler_config.get_owner}.LTT_Wait_Event ON LTT_Wait_Event.Name = t.Wait_Event
+        JOIN   All_Users u                                 ON u.User_ID           = t.User_ID
+        JOIN   #{@sampler_config.get_owner}.LTT_User       ON LTT_User.Name       = u.UserName
+        JOIN   DBA_Services s                              ON s.Name_Hash         = t.Service_Hash
+        JOIN   #{@sampler_config.get_owner}.LTT_Service    ON LTT_Service.Name    = s.Name
+        JOIN   #{@sampler_config.get_owner}.LTT_Machine    ON LTT_Machine.Name    = t.Machine
+        JOIN   #{@sampler_config.get_owner}.LTT_Module     ON LTT_Module.Name     = t.Module
+        JOIN   #{@sampler_config.get_owner}.LTT_Action     ON LTT_Action.Name     = t.Action
+        ;
+
+        COMMIT;
       END;
     "
     PanoramaConnection.sql_execute [sql]
