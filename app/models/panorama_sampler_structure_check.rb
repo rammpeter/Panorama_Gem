@@ -91,8 +91,8 @@ class PanoramaSamplerStructureCheck
   end
 
   def self.panorama_table_exists?(table_name)
-    return false if PanoramaConnection.get_config[:panorama_sampler_schema].nil?
-    PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM All_Tables WHERE Table_Name=? and Owner = '#{PanoramaConnection.get_config[:panorama_sampler_schema].upcase}'", table_name.upcase]) > 0
+    return false if PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema].nil?
+    PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM All_Tables WHERE Table_Name=? and Owner = '#{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema].upcase}'", table_name.upcase]) > 0
   end
 
   def initialize(sampler_config)
@@ -1437,9 +1437,9 @@ ORDER BY Column_ID
 #      Rails.logger.info "######################### #{start_index} #{sql[start_index, sql.length-start_index]}"
       get_table_and_view_names.each do |table|                                  # Check if table might be replaced by Panorama-Sampler
         if table[:table_name].upcase == up_sql[start_index, table[:table_name].length].gsub(/DBA_HIST/, 'PANORAMA')
-          sql   .insert(start_index, "#{PanoramaConnection.get_config[:panorama_sampler_schema]}.")       # Add schema name before table_name
-          up_sql.insert(start_index, "#{PanoramaConnection.get_config[:panorama_sampler_schema]}.")       # Increase size synchronously with sql
-          start_index += PanoramaConnection.get_config[:panorama_sampler_schema].length+1                 # Increase Pointer by schemaname
+          sql   .insert(start_index, "#{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.")       # Add schema name before table_name
+          up_sql.insert(start_index, "#{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.")       # Increase size synchronously with sql
+          start_index += PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema].length+1                 # Increase Pointer by schemaname
           7.downto(0) do |pos|                                                                            # Copy replacement table_name char by char into sql (DBA_HIST -> Panorama)
             sql[start_index+pos] = table[:table_name][pos]
           end
@@ -1454,10 +1454,10 @@ ORDER BY Column_ID
 
   # Replace DBA_Hist tablename in HTML-templates with corresponding Panorama-Sampler table and schema
   def self.adjust_table_name(org_table_name)
-    return org_table_name if PanoramaConnection.get_config[:management_pack_license] != :panorama_sampler   # Sampler not active
+    return org_table_name if PanoramaConnection.get_threadlocal_config[:management_pack_license] != :panorama_sampler   # Sampler not active
     replacement = replacement_table(org_table_name)
     return org_table_name if replacement.nil?
-    "#{PanoramaConnection.get_config[:panorama_sampler_schema].downcase}.#{replacement}" # Table replaced by sampler
+    "#{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema].downcase}.#{replacement}" # Table replaced by sampler
   end
 
   # Check existence of DBA_Hist-alternative in Panorama

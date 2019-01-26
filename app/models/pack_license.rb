@@ -7,20 +7,20 @@ class PackLicense
   end
 
   def self.diagnostics_pack_licensed?
-    license_type = PanoramaConnection.get_config[:management_pack_license].to_sym
+    license_type = PanoramaConnection.get_threadlocal_config[:management_pack_license].to_sym
     license_type == :diagnostics_pack || license_type == :diagnostics_and_tuning_pack
   end
 
   def self.tuning_pack_licensed?
-    PanoramaConnection.get_config[:management_pack_license].to_sym == :diagnostics_and_tuning_pack
+    PanoramaConnection.get_threadlocal_config[:management_pack_license].to_sym == :diagnostics_and_tuning_pack
   end
 
   def self.panorama_sampler_active?
-    PanoramaConnection.get_config[:management_pack_license].to_sym == :panorama_sampler
+    PanoramaConnection.get_threadlocal_config[:management_pack_license].to_sym == :panorama_sampler
   end
 
   def self.none_licensed?
-    PanoramaConnection.get_config[:management_pack_license].to_sym == :none
+    PanoramaConnection.get_threadlocal_config[:management_pack_license].to_sym == :none
   end
 
   # Filter SQL string or array for unlicensed Table Access
@@ -46,7 +46,7 @@ class PackLicense
       when :diagnostics_pack then
         check_for_tuning_pack_usage(sql)
       when :panorama_sampler then
-        raise "config[:panorama_sampler_schema] must be defined if config[:management_pack_license] == :panorama_sampler" if PanoramaConnection.get_config[:panorama_sampler_schema].nil?
+        raise "config[:panorama_sampler_schema] must be defined if config[:management_pack_license] == :panorama_sampler" if PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema].nil?
         # !!! Puma stops here if another thread is active, jetty does not stop here
         sql = PanoramaSamplerStructureCheck.transform_sql_for_sampler(sql)
         check_for_diagnostics_pack_usage(sql)

@@ -34,7 +34,7 @@ class AdditionController < ApplicationController
                              MIN(Sum_Total_per_Snapshot)  Sum_Total_per_Snapshot /* Always the same per group condition */
                       FROM   (SELECT o.*,
                                      SUM(Blocks_Total) OVER (PARTITION BY Snapshot_Timestamp) Sum_Total_per_Snapshot
-                              FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Cache_Objects o
+                              FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Cache_Objects o
                               WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
                               #{" AND Instance_Number=#{@instance}" if @instance}
                              )
@@ -69,7 +69,7 @@ class AdditionController < ApplicationController
       FROM   (
               SELECT o.*,
                      SUM(Blocks_Total) OVER (PARTITION BY Snapshot_Timestamp) Sum_Total_per_Snapshot
-              FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Cache_Objects o
+              FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Cache_Objects o
               WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
               AND    Instance_Number  = ?
              )
@@ -103,7 +103,7 @@ class AdditionController < ApplicationController
              MIN(Sum_Total_per_Snapshot) Sum_Total_per_Snapshot
       FROM   (SELECT o.*,
                      SUM(Blocks_Total) OVER (PARTITION BY Snapshot_Timestamp) Sum_Total_per_Snapshot
-              FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Cache_Objects o
+              FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Cache_Objects o
               WHERE  Snapshot_Timestamp = TO_DATE(?, '#{sql_datetime_second_mask}')
               AND    Instance_Number   = ?
              )
@@ -129,7 +129,7 @@ class AdditionController < ApplicationController
     singles = sql_select_all ["\
       SELECT /* Panorama-Tool Ramm */
              c.Instance_Number, c.Snapshot_Timestamp, c.Owner, c.Name, #{partition_expression} Partition_Name, SUM(c.Blocks_Total) Blocks_Total
-      FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Cache_Objects c
+      FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Cache_Objects c
       JOIN   (
               SELECT Instance_Number, Owner, Name, Partition_Name, SumBlocksTotal
               FROM   (SELECT Instance_Number, Owner, Name, Partition_Name,
@@ -137,7 +137,7 @@ class AdditionController < ApplicationController
                              SUM(Blocks_Total) SumBlocksTotal
                       FROM   (SELECT Instance_Number, Owner, Name, #{partition_expression} Partition_Name,
                                      SUM(Blocks_Total) Blocks_Total
-                              FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Cache_Objects c
+                              FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Cache_Objects c
                               WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
                               #{" AND Instance_Number=#{@instance}" if @instance}
                               -- Verdichten je Schnappschuss auf Gruppierung, um saubere Min/Max/Avg-Werte zu erhalten
@@ -320,7 +320,7 @@ class AdditionController < ApplicationController
              CASE WHEN COUNT(DISTINCT Blocking_SQL_ID) = 1 THEN TO_CHAR(MIN(Blocking_SQL_ID)) ELSE '< '||COUNT(DISTINCT Blocking_SQL_ID)||' >' END Blocking_SQL_ID
       FROM   (SELECT l.*,
                      (TO_CHAR(Snapshot_Timestamp,'J') * 24 + TO_CHAR(Snapshot_Timestamp, 'HH24')) * 60 + TO_CHAR(Snapshot_Timestamp, 'MI') Minutes
-              FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
+              FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
               WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
               #{@where_string}
              )
@@ -336,7 +336,7 @@ class AdditionController < ApplicationController
     @locks= sql_select_all ["\
      WITH /* Panorama-Tool Ramm */
            TSSel AS (SELECT /*+ NO_MERGE */ *
-                      FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
+                      FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
                       WHERE  l.Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
                       AND    l.Blocking_SID IS NOT NULL  -- keine langdauernden Locks beruecksichtigen
                       AND    l.Request != 0              -- nur Records beruecksichtigen, die wirklich auf Lock warten
@@ -441,7 +441,7 @@ class AdditionController < ApplicationController
 
     @locks= sql_select_all ["\
       WITH TSel AS (SELECT /*+ NO_MERGE */ *
-                    FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
+                    FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
                     WHERE  l.Snapshot_Timestamp = TO_DATE(?, '#{sql_datetime_second_mask}')
                    )
       SELECT o.Instance_Number, o.Sid, o.SerialNo, o.Seconds_In_Wait, o.SQL_ID, o.SQL_Child_Number,
@@ -537,7 +537,7 @@ class AdditionController < ApplicationController
              Blocking_User_Name, Blocking_Machine, Blocking_OS_User, Blocking_Process, Blocking_Program,
              NULL Waiting_App_Desc,
              NULL Blocking_App_Desc
-      FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
+      FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
       WHERE  1 = 1 -- Dummy um nachfolgend mit AND fortzusetzen
       #{@where_string}
       ORDER BY Snapshot_Timestamp"].concat(@where_values)
@@ -580,7 +580,7 @@ class AdditionController < ApplicationController
              CASE WHEN COUNT(DISTINCT Blocking_SerialNo)=1 THEN TO_CHAR(MIN(Blocking_SerialNo))ELSE '< '||COUNT(DISTINCT Blocking_SerialNo)||' >' END Blocking_SerialNo,
              CASE WHEN COUNT(DISTINCT Blocking_SQL_ID) = 1 THEN TO_CHAR(MIN(Blocking_SQL_ID)) ELSE '< '||COUNT(DISTINCT Blocking_SQL_ID)||' >' END Blocking_SQL_ID,
              CASE WHEN COUNT(DISTINCT Blocking_SQL_Child_Number)= 1 THEN TO_CHAR(MIN(Blocking_SQL_Child_Number))ELSE '< '||COUNT(DISTINCT Blocking_SQL_Child_Number)||' >' END Blocking_SQL_Child_Number
-      FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
+      FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
       WHERE  1 = 1
       #{@where_string}
       GROUP BY #{blocking_locks_groupfilter_values(@groupkey)[:sql]}
@@ -598,7 +598,7 @@ class AdditionController < ApplicationController
 
     @locks= sql_select_all ["\
       WITH TSel AS (SELECT /*+ NO_MERGE */ *
-                    FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
+                    FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
                     WHERE  l.Snapshot_Timestamp = TO_DATE(?, '#{sql_datetime_second_mask}')
                     AND    l.Request != 0  -- nur Records beruecksichtigen, die wirklich auf Lock warten
                    )
@@ -669,8 +669,8 @@ class AdditionController < ApplicationController
       @whereval << @tablespace_name
     end
 
-    @min_gather_date = sql_select_one ["SELECT MIN(Gather_Date) FROM #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes WHERE Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_start]
-    @max_gather_date = sql_select_one ["SELECT MAX(Gather_Date) FROM #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes WHERE Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_end]
+    @min_gather_date = sql_select_one ["SELECT MIN(Gather_Date) FROM #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes WHERE Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_start]
+    @max_gather_date = sql_select_one ["SELECT MAX(Gather_Date) FROM #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes WHERE Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_end]
 
     raise PopupMessageException.new("No data found after start time #{@time_selection_start}") if @min_gather_date.nil?
     raise PopupMessageException.new("No data found before end time #{@time_selection_end}")  if @max_gather_date.nil?
@@ -690,7 +690,7 @@ class AdditionController < ApplicationController
                      SUM(CASE WHEN s.Gather_Date = dates.Max_Gather_Date THEN Num_Rows END) End_Num_Rows,
                      COUNT(Distinct Gather_Date) Samples
               FROM   (SELECT ? Min_Gather_Date, ? Max_Gather_Date FROM DUAL) dates
-              CROSS JOIN #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
+              CROSS JOIN #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
               WHERE  Gather_Date IN (dates.Min_Gather_Date, dates.Max_Gather_Date)
               #{@wherestr}
               GROUP BY Owner, Segment_Name, Segment_Type
@@ -743,7 +743,7 @@ class AdditionController < ApplicationController
                Gather_Date,
                #{groupby} GroupBy,
                SUM(Bytes)/(1024*1024) MBytes
-        FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
+        FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
         WHERE  Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')
         AND    Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')
         #{@wherestr}
@@ -809,7 +809,7 @@ class AdditionController < ApplicationController
         :show_y_axes      => true,
         :plot_area_id     => @update_area,
         :max_height       => 450,
-        :caption          => "Size evolution over time grouped by #{groupby} from #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes#{", Tablespace='#{@tablespace_name}'" if @tablespace_name}#{", Schema='#{@schema_name}'" if @schema_name}"
+        :caption          => "Size evolution over time grouped by #{groupby} from #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes#{", Tablespace='#{@tablespace_name}'" if @tablespace_name}#{", Schema='#{@schema_name}'" if @schema_name}"
     })
     output << "</div><div id='#{@update_area}'></div>".html_safe
 
@@ -853,7 +853,7 @@ class AdditionController < ApplicationController
 
     @objects = sql_select_all ["\
       SELECT *
-      FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
+      FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
       WHERE  Gather_Date = TO_DATE(?, '#{sql_datetime_second_mask}')
       #{where_string}
       ORDER BY Bytes DESC
@@ -873,7 +873,7 @@ class AdditionController < ApplicationController
               SELECT Gather_Date,
                      SUM(Bytes)/(1024*1024) MBytes,
                      SUM(Num_Rows) Num_Rows
-              FROM   #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
+              FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
               WHERE  Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')
               AND    Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')
               AND    Owner        = ?
@@ -897,7 +897,7 @@ class AdditionController < ApplicationController
                                :multiple_y_axes => false,
                                :show_y_axes     => true,
                                :plot_area_id    => :list_object_increase_object_timeline_diagramm,
-                               :caption         => "Size evolution of object #{owner}.#{name} recorded in #{PanoramaConnection.get_config[:panorama_sampler_schema]}.Panorama_Object_Sizes",
+                               :caption         => "Size evolution of object #{owner}.#{name} recorded in #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes",
                                :max_height      => 450
                            }
     )

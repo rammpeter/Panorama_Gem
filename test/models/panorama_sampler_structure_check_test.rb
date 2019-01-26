@@ -27,14 +27,14 @@ class PanoramaSamplerStructureCheckTest < ActiveSupport::TestCase
   end
 
   test 'transform_sql_for_sampler' do
-    config = PanoramaConnection.get_config
+    config = PanoramaConnection.get_threadlocal_config
     assert_equal(PanoramaSamplerStructureCheck.transform_sql_for_sampler("SELECT * FROM DBA_Hist_SQLStat").upcase,          "SELECT * FROM #{config[:panorama_sampler_schema].upcase}.PANORAMA_SQLSTAT")
     assert_equal(PanoramaSamplerStructureCheck.transform_sql_for_sampler("SELECT * FROM gv$Active_Session_History").upcase, "SELECT * FROM #{config[:panorama_sampler_schema].upcase}.PANORAMA_V$ACTIVE_SESS_HISTORY")
     assert_equal(PanoramaSamplerStructureCheck.transform_sql_for_sampler("SELECT * FROM DBA_Hist_Hugo").upcase,             "SELECT * FROM DBA_HIST_HUGO")
   end
 
   test 'adjust_table_name' do
-    config = PanoramaConnection.get_config
+    config = PanoramaConnection.get_threadlocal_config
 
     config[:management_pack_license] = :none
     PanoramaConnection.set_connection_info_for_request(config)
