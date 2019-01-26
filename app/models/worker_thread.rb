@@ -227,6 +227,8 @@ class WorkerThread
     Rails.logger.error("Exception #{e.class} during WorkerThread.check_analyze_internal for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})");
     log_exception_backtrace(e, 40)
     raise e
+  ensure
+    PanoramaConnection.release_connection                                       # Free DB connection in Pool
   end
 
 end

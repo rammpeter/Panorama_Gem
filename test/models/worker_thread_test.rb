@@ -60,24 +60,14 @@ class WorkerThreadTest < ActiveSupport::TestCase
     end
   end
 
-  test "do_sampling_object_size" do
+  test "do_sampling_other_than_AWR_ASH" do
     [nil, 'SYS', 'SYSTEM'].each do |connection_user|                            # Use different user for connect
-      @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
-      WorkerThread.new(@sampler_config, 'do_sampling_object_size').create_snapshot_internal(Time.now.round, :OBJECT_SIZE)
-    end
-  end
-
-  test "do_sampling_cache_objects" do
-    [nil, 'SYS', 'SYSTEM'].each do |connection_user|                            # Use different user for connect
-      @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
-      WorkerThread.new(@sampler_config, 'do_sampling_cache_objects').create_snapshot_internal(Time.now.round, :CACHE_OBJECTS)
-    end
-  end
-
-  test "do_sampling_blocking_locks" do
-    [nil, 'SYS', 'SYSTEM'].each do |connection_user|                            # Use different user for connect
-      @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
-      WorkerThread.new(@sampler_config, 'do_sampling_blocking_locks').create_snapshot_internal(Time.now.round, :BLOCKING_LOCKS)
+      PanoramaSamplerConfig.get_domains.each do |domain|
+        if domain != :AWR_ASH
+          @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
+          WorkerThread.new(@sampler_config, "test_sampling_#{domain}").create_snapshot_internal(Time.now.round, domain)
+        end
+      end
     end
   end
 

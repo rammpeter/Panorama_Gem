@@ -142,7 +142,6 @@ class PanoramaSamplerSampling
     end
 
     Rails.logger.info "#{Time.now}: Create new ASH daemon for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}', Instance=#{PanoramaConnection.instance_number}, next_snapshot_start_seconds=#{next_snapshot_start_seconds}"
-
     PanoramaConnection.sql_execute [sql, PanoramaConnection.instance_number, PanoramaConnection.con_id, next_snapshot_start_seconds]
   end
 
@@ -239,7 +238,6 @@ class PanoramaSamplerSampling
         "
     end
 
-    # TODO: LongLocksSeconds in config
     PanoramaConnection.sql_execute [sql, PanoramaConnection.instance_number, @sampler_config.get_blocking_locks_long_locks_limit]
   end
 
