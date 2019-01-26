@@ -322,7 +322,7 @@ class PanoramaSamplerConfig
     raise PopupMessageException.new "Blocking locks snapshot cycle must be >= 1 minute>" if config_hash[:blocking_locks_snapshot_cycle].nil?      || config_hash[:blocking_locks_snapshot_cycle]     < 1
     raise PopupMessageException.new "Blocking locks snapshot retention must be >= 1 day" if config_hash[:blocking_locks_snapshot_retention].nil?  || config_hash[:blocking_locks_snapshot_retention] < 1
 
-    raise PopupMessageException.new "You should also activate AWR/ASH-sampling if activating long-term trend with data-source Panorama-Sampler" if config_hash[:longterm_trend_active] && config_hash[:longterm_trend_data_source] == :oracle_ash && !config_hash[:awr_ash_active]
+    raise PopupMessageException.new "You should also activate AWR/ASH-sampling if activating long-term trend with data-source Panorama-Sampler" if config_hash[:longterm_trend_active] && config_hash[:longterm_trend_data_source] == :panorama_sampler && !config_hash[:awr_ash_active]
     raise PopupMessageException.new "Long-term trend snapshot cycle must be >= 1 hour>" if config_hash[:longterm_trend_snapshot_cycle].nil?      || config_hash[:longterm_trend_snapshot_cycle]     < 1
     raise PopupMessageException.new "Long-term trend snapshot cycle must be <= 24 hours>" if config_hash[:longterm_trend_snapshot_cycle].nil?      || config_hash[:longterm_trend_snapshot_cycle]     > 24
     raise PopupMessageException.new "Long-term trend snapshot retention must be >= 1 day" if config_hash[:longterm_trend_snapshot_retention].nil?  || config_hash[:longterm_trend_snapshot_retention] < 1
