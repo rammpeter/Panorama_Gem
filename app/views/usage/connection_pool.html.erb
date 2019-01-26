@@ -24,7 +24,7 @@
           {:caption=>'Executed SQL',            :data=>proc{|rec| link_sql_text(rec)},                          :title=>"SQL currently executed by connection"},
       ]
 %>
-<%= gen_slickgrid(PanoramaConnection.get_connection_pool, column_options, {:caption=>"Current connections in connection pool of Panorama server", :max_height=>450}) %>
+<%= gen_slickgrid(PanoramaConnection.get_connection_pool, column_options, {:caption=>"Current connections in connection pool of Panorama server (#{fn(PanoramaConnection.get_connection_pool.count)})", :max_height=>450}) %>
 
 <div id="connection_pool_detail_area"></div>
 
