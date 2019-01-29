@@ -166,9 +166,9 @@
   context_menu_entries = []
   command_menu_entries = [get_recall_params_info_for_render_page_caption]
 
-  def create_context_menu_entry(point_group, context_menu_entries, command_menu_entries, icon_class)
+  def create_context_menu_entry(point_group, context_menu_entries, command_menu_entries, icon_class, addition = '')
     label   = "Show Top 10 in time line diagram, one point per #{point_group}"
-    hint    = "Show Top 10 ordered by total time waited in time line diagram, each point in graph for one #{point_group}"
+    hint    = "Show Top 10 ordered by total time waited in time line diagram, each point in graph for one #{point_group}#{addition}"
     action  = "$('##{@hidden_link_timeline_id}_#{point_group}').click();"
 
     context_menu_entries << {
@@ -190,7 +190,7 @@
 
   create_context_menu_entry(:week, context_menu_entries, command_menu_entries, 'cuis-chart-area')
   create_context_menu_entry(:day, context_menu_entries, command_menu_entries, 'cui-chart-area')
-  create_context_menu_entry(:hour, context_menu_entries, command_menu_entries,  'cui-chart-line')
+  create_context_menu_entry(:hour, context_menu_entries, command_menu_entries,  'cui-chart-line', ". Useful only if your snapshot cycle for recording is less than one day")
 
 
   gen_slickgrid(@sessions,

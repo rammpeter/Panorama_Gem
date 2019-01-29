@@ -70,7 +70,7 @@ class LongtermTrendController < ApplicationController
       SELECT /*+ ORDERED USE_HASH(u sv f) Panorama-Tool Ramm */
              TRUNC(Snapshot_Timestamp, '#{time_group_expr}') Snapshot_Start,
              NVL(TO_CHAR(#{longterm_trend_key_rule(@groupby)[:sql]}), 'NULL') Criteria,
-             ROUND(SUM(Seconds_Active)/#{period_seconds}, 4) Diagram_Value
+             SUM(Seconds_Active) / (COUNT(DISTINCT Snapshot_Timestamp) * MAX(Snapshot_Cycle_Hours) * 3600) Diagram_Value
       FROM   #{panorama_sampler_schema}.LongTerm_Trend t
       JOIN   #{panorama_sampler_schema}.LTT_Wait_Event    we ON we.ID = t.LTT_Wait_Event_ID
       JOIN   #{panorama_sampler_schema}.LTT_Wait_Class    wc ON wc.ID = t.LTT_Wait_Class_ID
@@ -108,9 +108,10 @@ class LongtermTrendController < ApplicationController
 
   private
   def include_longterm_trend_default_select_list
+    # Add pne cycle to duration because last occurrence points to start of last considered cycle
     retval = " MIN(Snapshot_Timestamp)             First_Occurrence,
                MAX(Snapshot_Timestamp)             Last_Occurrence,
-               (MAX(Snapshot_Timestamp) - MIN(Snapshot_Timestamp)) * 24 Sample_Duration_Hours"
+               (MAX(Snapshot_Timestamp) - MIN(Snapshot_Timestamp)) * 24 + MAX(Snapshot_Cycle_Hours) Sample_Duration_Hours"
 
     longterm_trend_key_rules.each do |key, value|
       retval << ",
