@@ -352,7 +352,7 @@ class PanoramaSamplerSampling
         WHERE  t.Action NOT IN (SELECT Name FROM #{@sampler_config.get_owner}.LTT_Action)
         ;
 
-        INSERT INTO #{@sampler_config.get_owner}.Longterm_Trend (Snapshot_Timestamp, Instance_Number, LTT_Wait_Class_ID, LTT_Wait_Event_ID, LTT_User_ID, LTT_Service_ID, LTT_Machine_ID, LTT_Module_ID, LTT_Action_ID, Seconds_Active)
+        INSERT INTO #{@sampler_config.get_owner}.Longterm_Trend (Snapshot_Timestamp, Instance_Number, LTT_Wait_Class_ID, LTT_Wait_Event_ID, LTT_User_ID, LTT_Service_ID, LTT_Machine_ID, LTT_Module_ID, LTT_Action_ID, Seconds_Active, Snapshot_Cycle_Hours)
         SELECT t.Snapshot_Timestamp,
                t.Instance_Number,
                LTT_Wait_Class.ID,
@@ -362,7 +362,8 @@ class PanoramaSamplerSampling
                LTT_Machine.ID,
                LTT_Module.ID,
                LTT_Action.ID,
-               t.Seconds_Active
+               t.Seconds_Active,
+               #{@sampler_config.longterm_trend_snapshot_cycle}
         FROM   #{@sampler_config.get_owner}.Longterm_Trend_Temp t
         JOIN   #{@sampler_config.get_owner}.LTT_Wait_Class ON LTT_Wait_Class.Name = t.Wait_Class
         JOIN   #{@sampler_config.get_owner}.LTT_Wait_Event ON LTT_Wait_Event.Name = t.Wait_Event

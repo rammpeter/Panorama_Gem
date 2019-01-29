@@ -68,13 +68,20 @@ OLTP-compression requires licensing of Advanced Compression Option.
 - Ensure delete performance of referenced table (suppress FullTable-Scan)
 - Supress lock propagation (shared lock on index instead of table)'),
             :sql=> "SELECT /* DB-Tools Ramm  Index fehlt fuer Foreign Key*/
-                           Ref.Owner, Ref.Table_Name, refcol.Column_Name, refcol.Position, reft.Num_Rows Rows_Org,
-                           Ref.R_Owner, target.Table_Name Target_Table, Ref.R_Constraint_Name, targett.Num_rows Rows_Target
+                           Ref.Owner, Ref.Table_Name \"Tablename\",
+                           reft.Num_Rows Rows_Org,
+                           refcol.Column_Name, refcol.Position,
+                           Ref.R_Owner Target_Owner, target.Table_Name Target_Table, targett.Num_rows Rows_Target, Ref.R_Constraint_Name, targett.Last_Analyzed Last_Analyzed_Target,
+                           target_mod.Deletes \"Target Deletes since analyze\"
                     FROM   DBA_Constraints Ref
                     JOIN   DBA_Cons_Columns refcol  ON refcol.Owner = Ref.Owner AND refcol.Constraint_Name = ref.Constraint_Name
                     JOIN   DBA_Constraints target   ON target.Owner = ref.R_Owner AND target.Constraint_Name = ref.R_Constraint_Name
                     JOIN   DBA_Tables reft          ON reft.Owner = ref.Owner AND reft.Table_Name = ref.Table_Name
                     JOIN   DBA_Tables targett       ON targett.Owner = target.Owner AND targett.Table_Name = target.Table_Name
+                    LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Table_Owner, Table_Name, SUM(Deletes) Deletes
+                                     FROM   DBA_Tab_Modifications
+                                     GROUP BY Table_Owner, Table_Name
+                                    ) target_mod ON target_mod.Table_Owner = target.Owner AND target_mod.Table_Name = target.Table_Name
                     WHERE  Ref.Constraint_Type='R'
                     AND    NOT EXISTS (SELECT 1 FROM DBA_Ind_Columns i
                                        WHERE  i.Table_Owner     = ref.Owner
