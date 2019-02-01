@@ -12,16 +12,21 @@ class DbaController < ApplicationController
       AND    l.Type NOT IN ('AE', 'PS')
     "
 
-    @ddl_count = sql_select_one "SELECT /* Panorama-Tool Ramm */ COUNT(*)
-                                FROM  dba_kgllock w,
-                                      dba_kgllock h
-                                WHERE   (((h.kgllkmod != 0)     and (h.kgllkmod != 1)
-                                and     ((h.kgllkreq = 0) or (h.kgllkreq = 1)))
-                                and     (((w.kgllkmod = 0) or (w.kgllkmod= 1))
-                                and     ((w.kgllkreq != 0) and (w.kgllkreq != 1))))
-                                and     w.kgllktype             = h.kgllktype
-                                and     w.kgllkhdl              = h.kgllkhdl
-    "
+    begin
+      @ddl_count = sql_select_one "SELECT /* Panorama-Tool Ramm */ COUNT(*)
+                                  FROM  dba_kgllock w,
+                                        dba_kgllock h
+                                  WHERE   (((h.kgllkmod != 0)     and (h.kgllkmod != 1)
+                                  and     ((h.kgllkreq = 0) or (h.kgllkreq = 1)))
+                                  and     (((w.kgllkmod = 0) or (w.kgllkmod= 1))
+                                  and     ((w.kgllkreq != 0) and (w.kgllkreq != 1))))
+                                  and     w.kgllktype             = h.kgllktype
+                                  and     w.kgllkhdl              = h.kgllkhdl
+      "
+    rescue Exception => e                                                       # Skip ORA-7445 during select
+      @ddl_count = nil
+      add_statusbar_message("Error skipped while counting the number of DDL-Locks:\n#{e.message}")
+    end
 
     @pending_2pc_count = sql_select_one "SELECT COUNT(*) FROM DBA_2PC_Pending"
 

@@ -363,7 +363,7 @@ class PanoramaSamplerSampling
                LTT_Module.ID,
                LTT_Action.ID,
                t.Seconds_Active,
-               #{@sampler_config.longterm_trend_snapshot_cycle}
+               #{@sampler_config.get_longterm_trend_snapshot_cycle}
         FROM   #{@sampler_config.get_owner}.Longterm_Trend_Temp t
         JOIN   #{@sampler_config.get_owner}.LTT_Wait_Class ON LTT_Wait_Class.Name = t.Wait_Class
         JOIN   #{@sampler_config.get_owner}.LTT_Wait_Event ON LTT_Wait_Event.Name = t.Wait_Event
