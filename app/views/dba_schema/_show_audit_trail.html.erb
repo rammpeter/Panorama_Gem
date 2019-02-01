@@ -41,7 +41,7 @@
     </div>
     <div class="flex-row-element" title="Count for top x hits to show as columns (only relevant if 'Grouping' is not 'none')">
       Top x for group
-      <%= text_field_tag(:top_x, "5", :size=>5) %>
+      <%= text_field_tag(:top_x, "5", :size=>5, style: "text-align:right;") %>
     </div>
     <div class="flex-row-element">
       <%= submit_tag("Show audit trail", :title => "Show audit trail records\n\nUse grouping by time unit if you expect large amount of audit records!") %>

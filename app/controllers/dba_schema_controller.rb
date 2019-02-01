@@ -1298,7 +1298,8 @@ WHERE RowNum < 100
     end
 
     if @instance
-      where_string << " AND Instance_Number=?"
+      # Instance_Number is 0 in DBA_Audit_Trail for non-RAC systems
+      where_string << " AND DECODE(Instance_Number, 0, 1, Instance_Number) =?"
       where_values << @instance
     end
 
