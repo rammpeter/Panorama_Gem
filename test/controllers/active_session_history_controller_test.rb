@@ -64,33 +64,42 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
 
   test "list_session_statistics_historic with xhr: true" do
     # Iteration über Gruppierungskriterien
+    counter = 0
     session_statistics_key_rules.each do |groupby, value|
-      post :list_session_statistic_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
-      assert_response_success_or_management_pack_violation('list_session_statistic_historic')
+      counter += 1
+      if counter % 2 == 0                                                       # use alternating attributes
+        instance = 1
+        filter = 'sys'
+      else
+        instance = ''
+        filter = ''
+      end
 
-      post :list_session_statistic_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :filter=>'sys', :update_area=>:hugo}
-      assert_response_success_or_management_pack_violation('list_session_statistic_historic, sys')
+      post :list_session_statistic_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, instance: instance, filter: filter, :update_area=>:hugo }
+      assert_response_success_or_management_pack_violation('list_session_statistic_historic')
     end
   end
 
   test "list_session_statistic_historic_grouping with xhr: true" do
     # Iteration über Gruppierungskriterien
+    counter = 0
     session_statistics_key_rules.each do |groupby, value_inner|
+      counter += 1
+      if counter % 2 == 0                                                       # use alternating attributes
+        add_filter = {Additional_Filter: 'sys', Instance: 1}
+      else
+        add_filter = {}
+      end
+
       # Test mit realem Wert
-      add_filter = {groupby => bind_value_from_key_rule(groupby)}
+      add_filter[groupby] = bind_value_from_key_rule(groupby)
       post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
       assert_response_success_or_management_pack_violation('list_session_statistic_historic_grouping groupby => value')
 
-      post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge(:Additional_Filter=>'sys'), :update_area=>:hugo }
-      assert_response_success_or_management_pack_violation('list_session_statistic_historic_grouping groupby => value, sys')
-
       # Test mit NULL als Filterkriterium
-      add_filter = {groupby => nil}
+      add_filter[groupby]= nil
       post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
       assert_response_success_or_management_pack_violation('list_session_statistic_historic_grouping groupby => nil')
-
-      post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter).merge(:Additional_Filter=>'sys'), :update_area=>:hugo }
-      assert_response_success_or_management_pack_violation('list_session_statistic_historic_grouping groupby => nil, sys')
     end
   end
 
