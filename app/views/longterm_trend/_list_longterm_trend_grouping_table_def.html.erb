@@ -39,7 +39,7 @@
 
       var groupby_value = dataContext.col0.replace(new RegExp(\"&\", 'g'), \"\\\\&\");
 
-      return '<a href=\"#\" title=\"#{"#{t(:active_session_history_samples_link_hint, :default=>'Show single samples of group')} #{@groupby}"}\" '+
+      return '<a href=\"#\" title=\"#{"Show single samples of group #{@groupby}"}\" '+
         'onclick=\"call_ajax_single_rows#{@update_area}('+String.fromCharCode(39)+groupby_value+String.fromCharCode(39)+', '+slickGrid.parseFloatLocale(cell_value)+' ); return false;\"'+
          '>'+cell_value+'</a>'
     "
@@ -103,26 +103,6 @@
         'onclick=\"call_ajax_grouping#{@update_area}('+String.fromCharCode(39)+groupby_value+String.fromCharCode(39)+', '+String.fromCharCode(39)+'#{next_groupby}'+String.fromCharCode(39)+'); return false;\"'+
          '>'+decorated_cell_value+'</a>'
     "
-  end
-
-
-  @link_temp_and_pga_usage = proc do |rec, value|
-    ajax_link(value,     # Verhindern Zeilenumbruch in Anzeige
-                    {:action  => :list_temp_usage_historic,
-                     :groupfilter  => @get_groupfilter.call(rec, @groupby, rec.group_value),
-                     :time_groupby => :day,
-                     :update_area  => @update_area,
-                            },
-                    :title=>"Show total TEMP and PGA usage for current filters"
-    )
-  end
-
-  @show_info = proc do |value|
-    if value.class == DateTime || value.class == Time
-      localeDateTime value
-    else
-      my_html_escape value
-    end
   end
 
   # Berechnung average load aus rec

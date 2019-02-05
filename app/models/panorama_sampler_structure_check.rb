@@ -97,6 +97,8 @@ class PanoramaSamplerStructureCheck
 
   def initialize(sampler_config)
     @sampler_config = sampler_config
+    @sampler_config = PanoramaSamplerConfig.new(@sampler_config) if @sampler_config.class == Hash
+    raise "PanoramaSamplerStructureCheck.intialize: Parameter class Hash or PanoramaSamplerConfig required, got #{@sampler_config.class}" if @sampler_config.class != PanoramaSamplerConfig
   end
 
   def log(message)

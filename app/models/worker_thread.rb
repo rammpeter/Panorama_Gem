@@ -45,8 +45,11 @@ class WorkerThread
 
   def initialize(sampler_config, action_name)
     @sampler_config = sampler_config
+    @sampler_config = PanoramaSamplerConfig.new(@sampler_config) if @sampler_config.class == Hash
+    raise "WorkerThread.intialize: Parameter class Hash or PanoramaSamplerConfig required, got #{@sampler_config.class}" if @sampler_config.class != PanoramaSamplerConfig
 
-    connection_config = sampler_config.get_cloned_config_hash                   # Structure similar to database
+
+    connection_config = @sampler_config.get_cloned_config_hash                  # Structure similar to database
 
     connection_config[:client_salt]             = EngineConfig.config.panorama_sampler_master_password
     connection_config[:management_pack_license] = :none                         # assume no management packs are licensed for first steps

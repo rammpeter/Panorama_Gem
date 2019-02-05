@@ -684,7 +684,7 @@ module ApplicationHelper
 
   # Ausliefern des client-Keys
   def get_decrypted_client_key
-    return nil if !cookies.has_key?('client_key') && !cookies.has_key?('client_salt')  # Connect vom Job oder monitor
+    return nil if cookies['client_key'].nil? && cookies['client_salt'].nil?  # Connect vom Job oder monitor
 
     Encryption.decrypt_value(cookies['client_key'], cookies['client_salt'])                                    # wirft ActiveSupport::MessageVerifier::InvalidSignature wenn cookies['client_key'] == nil
   rescue ActiveSupport::MessageVerifier::InvalidSignature => e

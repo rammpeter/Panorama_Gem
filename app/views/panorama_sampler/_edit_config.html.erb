@@ -258,6 +258,14 @@
               <td>Log action</td>
               <td align="center"><%= check_box_tag(:config_longterm_trend_log_action, 1, @config[:longterm_trend_log_action], :name=>'config[longterm_trend_log_action]') %></td>
             </tr>
+            <tr title="Limit for categories to be named exactly.
+            If wait time for a category within a snapshot is less than x * 1/1000 of total wait time for this snapshot
+            than this category is subsumed under '[OTHERS]' instead of using the original name.
+            This reduces the amount of sampled data.
+            0 = switch of this function">
+              <td>Subsume limit (per mille)</td>
+              <td align="center"><%= text_field_tag(:config_longterm_trend_subsume_limit, @config[:longterm_trend_subsume_limit], :name=>'config[longterm_trend_subsume_limit]', size: 6, :style => "text-align: right;") %></td>
+            </tr>
           </table>
         </div>
 

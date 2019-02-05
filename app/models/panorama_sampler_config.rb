@@ -40,6 +40,7 @@ class PanoramaSamplerConfig
     @config_hash[:longterm_trend_log_machine]         = true  if !@config_hash.has_key?(:longterm_trend_log_machine)
     @config_hash[:longterm_trend_log_module]          = true  if !@config_hash.has_key?(:longterm_trend_log_module)
     @config_hash[:longterm_trend_log_action]          = false if !@config_hash.has_key?(:longterm_trend_log_action)
+    @config_hash[:longterm_trend_subsume_limit]       = 10    if !@config_hash.has_key?(:longterm_trend_subsume_limit)      # per mille
 
     @config_hash[:last_analyze_check_timestamp]       = nil   if !@config_hash.has_key?(:last_analyze_check_timestamp)
 
@@ -280,6 +281,7 @@ class PanoramaSamplerConfig
       min_snapshot_cycle = config.get_cache_objects_snapshot_cycle      if config.get_cache_objects_active  && config.get_cache_objects_snapshot_cycle    < min_snapshot_cycle  # Rerun job at smallest snapshot cycle config
       min_snapshot_cycle = config.get_blocking_locks_snapshot_cycle     if config.get_blocking_locks_active && config.get_blocking_locks_snapshot_cycle   < min_snapshot_cycle  # Rerun job at smallest snapshot cycle config
     end
+    min_snapshot_cycle = 1 if min_snapshot_cycle == 0                           # not supported cycle < 1 minute
 
     # Check if smallest divider matches over all configs
     get_config_array.each do |config|
@@ -327,6 +329,7 @@ class PanoramaSamplerConfig
     raise PopupMessageException.new "Long-term trend snapshot cycle must be <= 24 hours" if config_hash[:longterm_trend_snapshot_cycle].nil?      || config_hash[:longterm_trend_snapshot_cycle]     > 24
     raise PopupMessageException.new "Long-term trend snapshot cycle must be integer" if config_hash[:longterm_trend_snapshot_cycle].nil?      || config_hash[:longterm_trend_snapshot_cycle].to_i != config_hash[:longterm_trend_snapshot_cycle]
     raise PopupMessageException.new "Long-term trend snapshot retention must be >= 1 day" if config_hash[:longterm_trend_snapshot_retention].nil?  || config_hash[:longterm_trend_snapshot_retention] < 1
+    raise PopupMessageException.new "Long-term trend subsume limit (per mille) must be between 0 and 1000" if config_hash[:longterm_trend_subsume_limit].nil?  || config_hash[:longterm_trend_subsume_limit] < 0 || config_hash[:longterm_trend_subsume_limit] >= 1000
   end
 
   def self.config_entry_exists?(p_id)
@@ -376,6 +379,7 @@ class PanoramaSamplerConfig
     entry[:longterm_trend_data_source]          = entry[:longterm_trend_data_source].to_sym
     entry[:longterm_trend_snapshot_cycle]       = entry[:longterm_trend_snapshot_cycle].to_i
     entry[:longterm_trend_snapshot_retention]   = entry[:longterm_trend_snapshot_retention].to_i
+    entry[:longterm_trend_subsume_limit]        = entry[:longterm_trend_subsume_limit].to_i
 
     # Ensure that SYS always logs in as sysdba
     entry[:privilege]                         = :sysdba if entry[:user].upcase == 'SYS'

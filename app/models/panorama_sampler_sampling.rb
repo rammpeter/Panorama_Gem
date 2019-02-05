@@ -281,25 +281,45 @@ class PanoramaSamplerSampling
     sql = "
       BEGIN
         EXECUTE IMMEDIATE 'TRUNCATE TABLE #{@sampler_config.get_owner}.Longterm_trend_Temp';
+
+        --
         INSERT INTO #{@sampler_config.get_owner}.Longterm_trend_Temp (Snapshot_Timestamp, Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action, Seconds_Active)
-        SELECT Snapshot_Timestamp, Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action, COUNT(*) * 10
+        SELECT Snapshot_Timestamp, Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action, SUM(Seconds_Active)
         FROM   (
-                SELECT TRUNC(Sample_Time)+TRUNC(TO_NUMBER(TO_CHAR(Sample_Time, 'HH24'))/#{@sampler_config.get_longterm_trend_snapshot_cycle}) * #{@sampler_config.get_longterm_trend_snapshot_cycle} / 24 Snapshot_Timestamp,
-                       Instance_Number,
-                       #{@sampler_config.get_longterm_trend_log_wait_class ? "NVL(Wait_Class,   'CPU')"  : "'NOT SAMPLED'"} Wait_Class,
-                       #{@sampler_config.get_longterm_trend_log_wait_event ? "NVL(Event, Session_State)" : "'NOT SAMPLED'"} Wait_Event,
-                       #{@sampler_config.get_longterm_trend_log_user       ? "NVL(User_ID,      0)"      : "'NOT SAMPLED'"} User_ID,
-                       #{@sampler_config.get_longterm_trend_log_service    ? "NVL(Service_Hash, 0)"      : "'NOT SAMPLED'"} Service_Hash,
-                       #{@sampler_config.get_longterm_trend_log_machine    ? "NVL(Machine,      'NULL')" : "'NOT SAMPLED'"} Machine,
-                       #{@sampler_config.get_longterm_trend_log_module     ? "NVL(Module,       'NULL')" : "'NOT SAMPLED'"} Module,
-                       #{@sampler_config.get_longterm_trend_log_action     ? "NVL(Action,       'NULL')" : "'NOT SAMPLED'"} Action
-                FROM   #{@sampler_config.get_longterm_trend_data_source == :oracle_ash ? "DBA_Hist_Active_Sess_History" : "#{@sampler_config.get_owner}.Panorama_Active_Sess_History"}
-                WHERE  Sample_Time >= TO_DATE('#{start_time.strftime('%Y-%m-%d %H:%M:%S')}', 'YYYY-MM-DD HH24:MI:SS')
-                AND    Sample_Time <  TO_DATE('#{end_time.strftime(  '%Y-%m-%d %H:%M:%S')}', 'YYYY-MM-DD HH24:MI:SS')
+                SELECT Snapshot_Timestamp, Instance_Number, Seconds_Active, Wait_Class,
+                       CASE WHEN SUM(Seconds_Active) OVER (PARTITION BY Wait_Event)   < Total_Seconds_Active / (1000 / #{@sampler_config.get_longterm_trend_subsume_limit}) THEN '[OTHERS]' ELSE Wait_Event   END Wait_Event,
+                       CASE WHEN SUM(Seconds_Active) OVER (PARTITION BY User_ID)      < Total_Seconds_Active / (1000 / #{@sampler_config.get_longterm_trend_subsume_limit}) THEN -1         ELSE User_ID      END User_ID,
+                       CASE WHEN SUM(Seconds_Active) OVER (PARTITION BY Service_Hash) < Total_Seconds_Active / (1000 / #{@sampler_config.get_longterm_trend_subsume_limit}) THEN -1         ELSE Service_Hash END Service_Hash,
+                       CASE WHEN SUM(Seconds_Active) OVER (PARTITION BY Machine)      < Total_Seconds_Active / (1000 / #{@sampler_config.get_longterm_trend_subsume_limit}) THEN '[OTHERS]' ELSE Machine      END Machine,
+                       CASE WHEN SUM(Seconds_Active) OVER (PARTITION BY Module)       < Total_Seconds_Active / (1000 / #{@sampler_config.get_longterm_trend_subsume_limit}) THEN '[OTHERS]' ELSE Module       END Module,
+                       CASE WHEN SUM(Seconds_Active) OVER (PARTITION BY Action)       < Total_Seconds_Active / (1000 / #{@sampler_config.get_longterm_trend_subsume_limit}) THEN '[OTHERS]' ELSE Action       END Action
+                FROM   (
+                        SELECT Snapshot_Timestamp, Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action, COUNT(*) * 10 Seconds_Active,
+                                SUM(COUNT(*) * 10) OVER (PARTITION BY Snapshot_Timestamp) Total_Seconds_Active
+                        FROM   (
+                                SELECT TRUNC(Sample_Time)+TRUNC(TO_NUMBER(TO_CHAR(Sample_Time, 'HH24'))/#{@sampler_config.get_longterm_trend_snapshot_cycle}) * #{@sampler_config.get_longterm_trend_snapshot_cycle} / 24 Snapshot_Timestamp,
+                                       Instance_Number,
+                                       #{@sampler_config.get_longterm_trend_log_wait_class ? "NVL(Wait_Class,   'CPU')"  : "'NOT SAMPLED'"} Wait_Class,
+                                       #{@sampler_config.get_longterm_trend_log_wait_event ? "NVL(Event, Session_State)" : "'NOT SAMPLED'"} Wait_Event,
+                                       #{@sampler_config.get_longterm_trend_log_user       ? "NVL(User_ID,      0)"      : "'NOT SAMPLED'"} User_ID,
+                                       #{@sampler_config.get_longterm_trend_log_service    ? "NVL(Service_Hash, 0)"      : "'NOT SAMPLED'"} Service_Hash,
+                                       #{@sampler_config.get_longterm_trend_log_machine    ? "NVL(Machine,      'NULL')" : "'NOT SAMPLED'"} Machine,
+                                       #{@sampler_config.get_longterm_trend_log_module     ? "NVL(Module,       'NULL')" : "'NOT SAMPLED'"} Module,
+                                       #{@sampler_config.get_longterm_trend_log_action     ? "NVL(Action,       'NULL')" : "'NOT SAMPLED'"} Action
+                                FROM   #{@sampler_config.get_longterm_trend_data_source == :oracle_ash ? "DBA_Hist_Active_Sess_History" : "#{@sampler_config.get_owner}.Panorama_Active_Sess_History"}
+                                WHERE  Sample_Time >= TO_DATE('#{start_time.strftime('%Y-%m-%d %H:%M:%S')}', 'YYYY-MM-DD HH24:MI:SS')
+                                AND    Sample_Time <  TO_DATE('#{end_time.strftime(  '%Y-%m-%d %H:%M:%S')}', 'YYYY-MM-DD HH24:MI:SS')
+                               )
+                        GROUP BY Snapshot_Timestamp, Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action
+                       )
                )
-        GROUP BY Snapshot_Timestamp, Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action;
+        GROUP BY Snapshot_Timestamp, Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action
+        ;
 
 #{insert_0}
+
+        INSERT INTO #{@sampler_config.get_owner}.LTT_User   (ID, Name) SELECT -1, '[OTHERS]' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM #{@sampler_config.get_owner}.LTT_User    WHERE ID = 1);
+        INSERT INTO #{@sampler_config.get_owner}.LTT_Service(ID, Name) SELECT -1, '[OTHERS]' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM #{@sampler_config.get_owner}.LTT_Service WHERE ID = 1);
 
         INSERT INTO #{@sampler_config.get_owner}.LTT_Wait_Class(ID, Name)
         SELECT seq.Max_ID + RowNum, t.Wait_Class
