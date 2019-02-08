@@ -95,7 +95,9 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
 
   test "refresh_time_selection with xhr: true" do
     longterm_trend_key_rules.each do |groupby, value|
-      post  '/longterm_trend/refresh_time_selection', :params => {:format=>:html, :groupfilter=>@groupfilter, :groupby=>groupby, :repeat_action => :list_longterm_trend_grouping, :update_area=>:hugo }
+      post  '/longterm_trend/refresh_time_selection', :params => {:format=>:html, :groupfilter=>@groupfilter, :groupby=>groupby,
+                                                                  :repeat_action => :list_longterm_trend_grouping,
+                                                                  :update_area=>:hugo }
       assert_response(:success, "list_longterm_trend_grouping #{groupby}")
     end
   end

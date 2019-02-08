@@ -288,7 +288,7 @@ Especially for references from large tables to small master data tables often th
 Due to the poor selectivity such indexes are mostly not useful for access optimization."),
             :sql=> "SELECT /* DB-Tools Ramm Unnecessary index on Ref-Constraint*/
                            ri.Rows_Origin, ri.Owner, ri.Table_Name, ri.Index_Name, p.Constraint_Name, ri.Column_Name,
-                           pi.Num_Rows Rows_Target, ri.Position, pi.Table_Name Target_Table, pi.Index_Name Target_Index
+                           pi.Num_Rows Rows_Target, ri.Position, pi.Table_Name Target_Table, pi.Index_Name Target_Index, ri.No_of_Referencing_FK
                     FROM   (SELECT /*+ NO_MERGE */
                                    r.Owner, r.Table_Name, r.Constraint_Name, rc.Column_Name, rc.Position, ric.Index_Name,
                                    r.R_Owner, r.R_Constraint_Name, ri.Num_Rows Rows_Origin
@@ -308,17 +308,15 @@ Due to the poor selectivity such indexes are mostly not useful for access optimi
                                               AND p.Constraint_Name  = ri.R_Constraint_Name
                     JOIN   DBA_Indexes     pi  ON pi.Owner           = p.Owner
                                               AND pi.Index_Name      = p.Index_Name
-                    JOIN   (SELECT /*+ NO_MERGE */ r_Owner, r_Constraint_Name                       /* Limit fk-target to max. x referencing tables */
+                    JOIN   (SELECT /*+ NO_MERGE */ r_Owner, r_Constraint_Name, COUNT(*) No_of_Referencing_FK /* Limit fk-target to max. x referencing tables */
                             FROM   DBA_Constraints
                             GROUP BY r_Owner, r_Constraint_Name
-                            HAVING COUNT(*) < ?
                            ) ri ON ri.r_owner = p.Owner AND ri.R_Constraint_Name=p.Constraint_Name
                     WHERE  pi.Num_Rows < ?                                                          /* Limit to small referenced tables */
-                    AND    ri.Rows_Origin > )                                                       /* Limit to huge referencing tables */
+                    AND    ri.Rows_Origin > ?                                                       /* Limit to huge referencing tables */
                     ORDER BY Rows_Origin DESC NULLS LAST
                    ",
             :parameter=>[
-                         {:name=> t(:dragnet_helper_6_param_3_name, :default=>'Max. number of referencing tables'), :size=>8, :default=>20, :title=>t(:dragnet_helper_6_param_3_hint, :default=>'Max. number of referencing tables (with large number there may be problems with FullTableScan during delete on master table)')},
                          {:name=> t(:dragnet_helper_6_param_1_name, :default=>'Max. number of rows in referenced table'), :size=>8, :default=>100, :title=> t(:dragnet_helper_6_param_1_hint, :default=>'Max. number of rows in referenced table')},
                          {:name=> t(:dragnet_helper_6_param_2_name, :default=>'Min. number of rows in referencing table'), :size=>8, :default=>100000, :title=> t(:dragnet_helper_6_param_2_hint, :default=>'Minimun number of rows in referencing table')},
             ]
