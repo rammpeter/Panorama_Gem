@@ -14,6 +14,8 @@ class PanoramaSamplerSamplingTest < ActiveSupport::TestCase
 #  end
 
   test "do_housekeeping" do
+    PanoramaSamplerStructureCheck.do_check(@sampler_config, :ASH)               # Check data structure preconditions, but only for ASH-tables
+
     [true, false].each do |shrink_space|
       PanoramaSamplerStructureCheck.domains.each do |domain|
         PanoramaSamplerStructureCheck.do_check(@sampler_config, domain)         # Ensure that structures are existing
