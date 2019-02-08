@@ -24,8 +24,10 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
     min_max = PanoramaConnection.sql_select_first_row "SELECT COUNT(*) Records, MIN(Snapshot_Timestamp) Min_TS, MAX(Snapshot_Timestamp) Max_TS FROM #{@sampler_config[:owner]}.Longterm_Trend"
 
     if min_max.records < 4
+      saved_config = Thread.current[:panorama_connection_connect_info]          # store current config before being reset by WorkerThread.create_snapshot_internal
       WorkerThread.new(@sampler_config, 'test_do_sampling_longterm_trend').create_snapshot_internal(Time.now.round, :LONGTERM_TREND) # Tables must be created before snapshot., first snapshot initialization called
-      min_max = PanoramaConnection.sql_select_first_row "SELECT COUNT(*) Records, MIN(Snapshot_Timestamp), MAX(Snapshot_Timestamp) FROM #{@sampler_config[:owner]}.Longterm_Trend"
+      PanoramaConnection.set_connection_info_for_request(saved_config)          # reconnect because create_snapshot_internal freed the connection
+      min_max = PanoramaConnection.sql_select_first_row "SELECT COUNT(*) Records, MIN(Snapshot_Timestamp) Min_TS, MAX(Snapshot_Timestamp) Max_TS FROM #{@sampler_config[:owner]}.Longterm_Trend"
       raise "LongtermTrendControllerTest.setup: Only #{min_max.records} records are in table #{@sampler_config[:owner]}.Longterm_Trend" if min_max.records < 4
     end
     @time_selection_start = min_max.min_ts.strftime("%d.%m.%Y %H:%M")
