@@ -292,35 +292,35 @@ Due to the poor selectivity such indexes are mostly not useful for access optimi
                     FROM   (SELECT /*+ NO_MERGE */
                                    r.Owner, r.Table_Name, r.Constraint_Name, rc.Column_Name, rc.Position, ric.Index_Name,
                                    r.R_Owner, r.R_Constraint_Name, ri.Num_Rows Rows_Origin
-                            FROM   DBA_Constraints r,
-                                   DBA_Cons_Columns rc,         -- Spalten des Foreign Key
-                                   DBA_Ind_Columns ric,         -- passende Spalten eines Index
-                                   DBA_Indexes ri
+                            FROM   DBA_Constraints r
+                            JOIN   DBA_Cons_Columns rc  ON rc.Owner            = r.Owner            /* Columns of foreign key */
+                                                       AND rc.Constraint_Name  = r.Constraint_Name
+                            JOIN   DBA_Ind_Columns ric  ON ric.Table_Owner     = r.Owner            /* matching columns of an index */
+                                                       AND ric.Table_Name      = r.Table_Name
+                                                       AND ric.Column_Name     = rc.Column_Name
+                                                       AND ric.Column_Position = rc.Position
+                            JOIN   DBA_Indexes ri       ON ri.Owner            = ric.Index_Owner
+                                                       AND ri.Index_Name       = ric.Index_Name
                             WHERE  r.Constraint_Type  = 'R'
-                            AND    rc.Owner           = r.Owner
-                            AND    rc.Constraint_Name = r.Constraint_Name
-                            AND    ric.Table_Owner    = r.Owner
-                            AND    ric.Table_Name     = r.Table_Name
-                            AND    ric.Column_Name    = rc.Column_Name
-                            AND    ric.Column_Position= rc.Position
-                            AND    ri.Owner           = ric.Index_Owner
-                            AND    ri.Index_Name      = ric.Index_Name
-                           ) ri,                      -- Indizierte Foreign Key-Constraints
-                           DBA_Constraints p,         -- referenzierter PKey-Constraint
-                           DBA_Indexes     pi         -- referenzierter PKey-Index
-                    WHERE  p.Owner            = ri.R_Owner
-                    AND    p.Constraint_Name  = ri.R_Constraint_Name
-                    AND    pi.Owner           = p.Owner
-                    AND    pi.Index_Name      = p.Index_Name
-                    AND    pi.Num_Rows < ?                -- Begrenzung auf kleine referenzierte Tabellen
-                    AND    ri.Rows_Origin > ?        -- Mindestgroesse fuer referenzierende Tabelle
-                    AND    (SELECT Count(*) FROM DBA_Constraints ri
-                            WHERE  ri.r_owner = p.Owner AND ri.R_Constraint_Name=p.Constraint_Name
-                           ) < ?                      -- Begrenzung auf Anzahl referenzierende Tabellen
-                    ORDER BY Rows_Origin DESC NULLS LAST",
-            :parameter=>[{:name=> t(:dragnet_helper_6_param_1_name, :default=>'Max. number of rows in referenced table'), :size=>8, :default=>100, :title=> t(:dragnet_helper_6_param_1_hint, :default=>'Max. number of rows in referenced table')},
-                         {:name=> t(:dragnet_helper_6_param_2_name, :default=>'Min. number of rows in referencing table'), :size=>8, :default=>100000, :title=> t(:dragnet_helper_6_param_2_hint, :default=>'Minimun number of rows in referencing table')},
+                            AND    ri.Owner NOT IN ('CTXSYS', 'DBSNMP', 'SYS', 'SYSTEM', 'XDB')
+                           ) ri                      -- Indizierte Foreign Key-Constraints
+                    JOIN   DBA_Constraints p   ON p.Owner            = ri.R_Owner                   /* referenced PKey-Constraint */
+                                              AND p.Constraint_Name  = ri.R_Constraint_Name
+                    JOIN   DBA_Indexes     pi  ON pi.Owner           = p.Owner
+                                              AND pi.Index_Name      = p.Index_Name
+                    JOIN   (SELECT /*+ NO_MERGE */ r_Owner, r_Constraint_Name                       /* Limit fk-target to max. x referencing tables */
+                            FROM   DBA_Constraints
+                            GROUP BY r_Owner, r_Constraint_Name
+                            HAVING COUNT(*) < ?
+                           ) ri ON ri.r_owner = p.Owner AND ri.R_Constraint_Name=p.Constraint_Name
+                    WHERE  pi.Num_Rows < ?                                                          /* Limit to small referenced tables */
+                    AND    ri.Rows_Origin > )                                                       /* Limit to huge referencing tables */
+                    ORDER BY Rows_Origin DESC NULLS LAST
+                   ",
+            :parameter=>[
                          {:name=> t(:dragnet_helper_6_param_3_name, :default=>'Max. number of referencing tables'), :size=>8, :default=>20, :title=>t(:dragnet_helper_6_param_3_hint, :default=>'Max. number of referencing tables (with large number there may be problems with FullTableScan during delete on master table)')},
+                         {:name=> t(:dragnet_helper_6_param_1_name, :default=>'Max. number of rows in referenced table'), :size=>8, :default=>100, :title=> t(:dragnet_helper_6_param_1_hint, :default=>'Max. number of rows in referenced table')},
+                         {:name=> t(:dragnet_helper_6_param_2_name, :default=>'Min. number of rows in referencing table'), :size=>8, :default=>100000, :title=> t(:dragnet_helper_6_param_2_hint, :default=>'Minimun number of rows in referencing table')},
             ]
         },
         {
