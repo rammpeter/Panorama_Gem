@@ -474,6 +474,7 @@ class DbaSchemaController < ApplicationController
     else
       @partition_count = 0
       @subpartition_count = 0
+      @partition_expression = nil
     end
 
     @size_mb_table = sql_select_one ["SELECT /*+ Panorama Ramm */ SUM(Bytes)/(1024*1024) FROM DBA_Segments WHERE Owner = ? AND Segment_Name = ?", @owner, @table_name]
