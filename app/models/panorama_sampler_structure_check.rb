@@ -1595,7 +1595,8 @@ ORDER BY Column_ID
   end
 
   def self.translate_plsql_aliases(config, source_buffer)
-    translated_source_buffer = source_buffer.gsub(/PANORAMA\./i, "#{config.get_owner.upcase}.")    # replace PANORAMA. with the real owner
+#    translated_source_buffer = source_buffer.gsub(/PANORAMA\./i, "#{config.get_owner.upcase}.")    # replace PANORAMA. with the real owner
+    translated_source_buffer = source_buffer.gsub(/PANORAMA_OWNER/i, "#{config.get_owner.upcase}")    # replace PANORAMA_OWNER with the real owner
     translated_source_buffer.gsub!(/COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME/, Time.now.to_s) # change source to provocate change of LAST_DDL_TIME even content is still the same
     translated_source_buffer.gsub!(/PANORAMA_VERSION/, PanoramaGem::VERSION) # stamp version to file
     translated_source_buffer

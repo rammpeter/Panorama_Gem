@@ -1,8 +1,9 @@
 module PanoramaSampler::PackagePanoramaSamplerBlockingLocks
   # PL/SQL-Package for blocking locks snapshot creation
+  # panorama_owner is replaced by real schema owner
   def panorama_sampler_blocking_locks_spec
     "
-CREATE OR REPLACE Package panorama.Panorama_Sampler_Block_Locks AS
+CREATE OR REPLACE Package panorama_owner.Panorama_Sampler_Block_Locks AS
   -- Panorama-Version: PANORAMA_VERSION
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
 
@@ -15,8 +16,8 @@ END Panorama_Sampler_Block_Locks;
   def panorama_sampler_blocking_locks_code
     "
   PROCEDURE Create_Block_Locks_Snapshot(p_Instance_Number IN NUMBER, p_LongLocksSeconds IN NUMBER) IS
-    v_Waiting_For_PK_Column_Name  panorama.Panorama_Blocking_Locks.Waiting_For_PK_Column_Name%TYPE;
-    v_Waiting_For_PK_Value        panorama.Panorama_Blocking_Locks.Waiting_For_PK_Value%TYPE;
+    v_Waiting_For_PK_Column_Name  panorama_owner.Panorama_Blocking_Locks.Waiting_For_PK_Column_Name%TYPE;
+    v_Waiting_For_PK_Value        panorama_owner.Panorama_Blocking_Locks.Waiting_For_PK_Value%TYPE;
     v_TableName                   VARCHAR2(30);
     v_First                       BOOLEAN;
     v_PKey_Cols                   VARCHAR2(300);
@@ -158,7 +159,7 @@ END Panorama_Sampler_Block_Locks;
       END IF;
 
       BEGIN
-      INSERT INTO panorama.Panorama_Blocking_Locks (
+      INSERT INTO panorama_owner.Panorama_Blocking_Locks (
         Snapshot_Timestamp, Instance_Number, SID, SerialNo, SQL_ID, SQL_Child_Number, Prev_SQL_ID, Prev_Child_Number,
         Status, Client_Info, Module, Action, Object_Name, User_Name, Machine, OS_User, Process, Program,
         Lock_Type, Seconds_in_Wait, ID1, ID2, Request, Lock_mode,
@@ -189,7 +190,7 @@ END Panorama_Sampler_Block_Locks;
   def panorama_sampler_blocking_locks_body
     "
 -- Package for use by Panorama-Sampler
-CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_Block_Locks AS
+CREATE OR REPLACE PACKAGE BODY panorama_owner.Panorama_Sampler_Block_Locks AS
   -- Panorama-Version: PANORAMA_VERSION
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
 #{panorama_sampler_blocking_locks_code}

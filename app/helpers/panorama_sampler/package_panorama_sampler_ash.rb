@@ -1,8 +1,9 @@
 module PanoramaSampler::PackagePanoramaSamplerAsh
   # PL/SQL-Package for snapshot creation
+  # panorama_owner is replaced by real schema owner
   def panorama_sampler_ash_spec
     "
-CREATE OR REPLACE Package panorama.Panorama_Sampler_ASH AS
+CREATE OR REPLACE Package panorama_owner.Panorama_Sampler_ASH AS
   -- Panorama-Version: PANORAMA_VERSION
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
 
@@ -273,11 +274,11 @@ END Panorama_Sampler_ASH;
       LEFT OUTER JOIN v$Sess_Time_Model stm_db  ON stm_db.SID = s.SID AND stm_db.Stat_Name = 'DB time'
       LEFT OUTER JOIN v$Sess_Time_Model stm_cp  ON stm_cp.SID = s.SID AND stm_cp.Stat_Name = 'DB CPU'
       LEFT OUTER JOIN (SELECT Session_ID, MAX(Sample_ID) Max_Sample_ID
-                       FROM   panorama.Internal_V$Active_Sess_History phm
+                       FROM   panorama_owner.Internal_V$Active_Sess_History phm
                        WHERE  phm.Instance_Number = p_Instance_Number
                        GROUP BY Session_ID
                       ) phms ON phms.Session_ID = s.SID
-      LEFT OUTER JOIN panorama.Internal_V$Active_Sess_History ph ON ph.Instance_Number = p_Instance_Number AND ph.Session_ID = s.SID AND ph.Sample_ID = phms.Max_Sample_ID
+      LEFT OUTER JOIN panorama_owner.Internal_V$Active_Sess_History ph ON ph.Instance_Number = p_Instance_Number AND ph.Session_ID = s.SID AND ph.Sample_ID = phms.Max_Sample_ID
       LEFT OUTER JOIN (SELECT Session_Addr, SUM(Blocks) Blocks
                        FROM   v$Tempseg_Usage
                        GROUP BY Session_Addr) ts ON ts.Session_Addr = s.SAddr
@@ -305,7 +306,7 @@ END Panorama_Sampler_ASH;
   ) IS
     BEGIN
       FORALL Idx IN 1 .. AshTable.COUNT
-      INSERT INTO panorama.Internal_V$Active_Sess_History (
+      INSERT INTO panorama_owner.Internal_V$Active_Sess_History (
         Instance_Number, Sample_ID, Sample_Time, Is_AWR_Sample, Session_ID, Session_Serial#,
         Session_Type, Flags, User_ID, SQL_ID, Is_SQLID_Current, SQL_Child_Number,
         SQL_OpCode, SQL_OpName, FORCE_MATCHING_SIGNATURE, TOP_LEVEL_SQL_ID, TOP_LEVEL_SQL_OPCODE,
@@ -362,6 +363,7 @@ END Panorama_Sampler_ASH;
     p_Next_Snapshot_Start_Seconds IN NUMBER
   ) IS
     v_Counter         INTEGER;
+    v_Dummy           INTEGER;
     v_Sample_ID       INTEGER;
     v_LastSampleTime  DATE;
     v_Bulk_Size       INTEGER;
@@ -371,9 +373,13 @@ END Panorama_Sampler_ASH;
       -- Ensure that local database time controls end of PL/SQL-execution (allows different time zones and some seconds delay between Panorama and DB)
       -- but assumes that PL/SQL-Job is started at the exact second
       v_LastSampleTime := SYSDATE + p_Next_Snapshot_Start_Seconds/86400;
-      SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM panorama.Internal_V$Active_Sess_History;
+      SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM panorama_owner.Internal_V$Active_Sess_History;
       IF v_Sample_ID = 0 THEN                                                   -- no sample found in Internal_V$Active_Sess_History
-        SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM panorama.Panorama_Active_Sess_History;  -- look for Sample_ID in permanent table
+        -- use EXECUTE IMMEDIATE for accessing panorama_owner.Panorama_Active_Sess_History because this view does not exists at first run
+        SELECT COUNT(*) INTO v_Dummy FROM All_Tables WHERE Owner = UPPER('panorama_owner') AND Table_Name = UPPER('Panorama_Active_Sess_History');
+        IF V_Dummy > 0 THEN
+          EXECUTE IMMEDIATE 'SELECT NVL(MAX(Sample_ID), 0) FROM panorama_owner.Panorama_Active_Sess_History' INTO v_Sample_ID;  -- look for Sample_ID in permanent table
+        END IF;
       END IF;
 
       LOOP
@@ -413,7 +419,7 @@ END Panorama_Sampler_ASH;
   def panorama_sampler_ash_body
     "
 -- Package for use by Panorama-Sampler
-CREATE OR REPLACE PACKAGE BODY panorama.Panorama_Sampler_ASH AS
+CREATE OR REPLACE PACKAGE BODY panorama_owner.Panorama_Sampler_ASH AS
   -- Panorama-Version: PANORAMA_VERSION
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
 #{panorama_sampler_ash_code}
