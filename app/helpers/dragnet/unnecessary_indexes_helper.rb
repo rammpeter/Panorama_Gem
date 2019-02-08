@@ -286,7 +286,7 @@ This selection already suppresses indexes used for elimination of 'table access 
 - possible shared lock issues on referencing table due to not existing index are no problem
 Especially for references from large tables to small master data tables often there's no use for the effort of indexing referencing column.
 Due to the poor selectivity such indexes are mostly not useful for access optimization."),
-            :sql=> "SELECT /* DB-Tools Ramm Unnoetige Indizes auf Ref-Constraint*/
+            :sql=> "SELECT /* DB-Tools Ramm Unnecessary index on Ref-Constraint*/
                            ri.Rows_Origin, ri.Owner, ri.Table_Name, ri.Index_Name, p.Constraint_Name, ri.Column_Name,
                            pi.Num_Rows Rows_Target, ri.Position, pi.Table_Name Target_Table, pi.Index_Name Target_Index
                     FROM   (SELECT /*+ NO_MERGE */
