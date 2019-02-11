@@ -9,58 +9,49 @@ module Dragnet::DragnetSqlsTuningSgaPgaHelper
             :name  => t(:dragnet_helper_96_name, :default=>'Identification of hot blocks in DB-cache: frequent access on small objects'),
             :desc  => t(:dragnet_helper_96_desc, :default=>"Statements with frequent read blocks in DB-cache cause risk of 'cache buffers chains' latch waits.
 This selection scans for objects with high block access rate compared to size of object."),
-            :sql=>  "SELECT /* DB-Tools Ramm Hot-Blocks im DB-Cache */*
-                             FROM
-                             (
-                              SELECT /*+ NO_MERGE USE_HASH(o s) */
-                                     s.Instance_Number Inst, o.Owner, o.Object_Name, o.SubObject_Name,
-                                     o.Object_Type,
-                                     s.Logical_Reads,
-                                     Num_Rows,
-                                     ROUND(s.Logical_Reads/Num_Rows,2) \"LReads/Row\",
-                                     Buffer_Busy_Waits \"BufBusyW\", DB_Block_Changes \"BlockChg\", Physical_Reads \"Phys.Reads\",
-                                     Physical_Writes \"Phys.Writes\", Physical_Reads_Direct \"Phys.Rd.Dir\",
-                                     Physical_Writes_Direct \"Phys.Wr.Dir\", ITL_Waits, Row_Lock_Waits
-                              FROM   (SELECT /*+ NO_MERGE */
-                                             s.Instance_Number, s.Obj#, SUM(s.Logical_Reads_Delta) Logical_Reads,
-                                             SUM(Buffer_Busy_Waits_Delta) Buffer_Busy_Waits,
-                                             SUM(DB_Block_Changes_Delta) DB_Block_Changes,
-                                             SUM(Physical_Reads_Delta) Physical_Reads,
-                                             SUM(Physical_Writes_Delta) Physical_Writes,
-                                             SUM(Physical_Reads_Direct_Delta) Physical_Reads_Direct,
-                                             SUM(Physical_Writes_Direct_Delta) Physical_Writes_Direct,
-                                             SUM(ITL_Waits_Delta) ITL_Waits,
-                                             SUM(Row_Lock_Waits_Delta) Row_Lock_Waits
-                                      FROM   DBA_Hist_Seg_Stat s,
-                                             DBA_Hist_Snapshot t
-                                      WHERE  t.DBID            = s.DBID
-                                      AND    t.Instance_Number = s.Instance_Number
-                                      AND    t.Snap_ID         = s.Snap_ID
-                                      AND    t.Begin_Interval_Time > SYSDATE-? /* Anzahl Tage der Betrachtung rueckwirkend */
-                                      GROUP BY s.Instance_Number, s.Obj#
-                                     )s,
-                                     (SELECT /*+ NO_MERGE */
-                                             Owner, Object_Name, SubObject_Name, Object_Type, Object_ID,
-                                             CASE
-                                             WHEN Object_Type = 'TABLE' THEN (SELECT Num_Rows FROM DBA_Tables a
-                                                                                WHERE a.Owner=o.Owner AND a.Table_Name=o.Object_Name)
-                                             WHEN Object_Type = 'INDEX' THEN (SELECT Num_Rows FROM DBA_Indexes a
-                                                                                WHERE a.Owner=o.Owner AND a.Index_Name=o.Object_Name)
-                                             WHEN Object_Type = 'TABLE PARTITION' THEN (SELECT Num_Rows FROM DBA_Tab_Partitions a
-                                                                                WHERE a.Table_Owner=o.Owner AND a.Table_Name=o.Object_Name AND a.Partition_Name=o.SubObject_Name)
-                                             WHEN Object_Type = 'INDEX PARTITION' THEN (SELECT Num_Rows FROM DBA_Ind_Partitions a
-                                                                                WHERE a.Index_Owner=o.Owner AND a.Index_Name=o.Object_Name AND a.Partition_Name=o.SubObject_Name)
-                                             END Num_Rows
-                                      FROM   DBA_Objects o
-                                      WHERE  Object_Type IN ('TABLE', 'TABLE PARTITION', 'INDEX', 'INDEX PARTITION')
-                                     ) o
-                              WHERE  o.Object_ID = s.Obj#
-                              AND    o.Num_Rows IS NOT NULL
-                              AND    o.Num_Rows > 0               /* gewichtete Aussage wird wertlos*/
-                              AND    s.Logical_Reads > 0
-                              ORDER BY Logical_Reads/Num_Rows DESC NULLS LAST
-                             ) s
-                      WHERE Num_Rows < ?",
+            :sql =>  "SELECT /*+ NO_MERGE USE_HASH(o s) */ /* DB-Tools Ramm Hot-Blocks im DB-Cache */
+                             s.Instance_Number Inst, o.Owner, o.Object_Name, o.SubObject_Name,
+                             o.Object_Type,
+                             s.Logical_Reads,
+                             Num_Rows,
+                             ROUND(s.Logical_Reads/Num_Rows,2) \"LReads/Row\",
+                             Buffer_Busy_Waits \"BufBusyW\", DB_Block_Changes \"BlockChg\", Physical_Reads \"Phys.Reads\",
+                             Physical_Writes \"Phys.Writes\", Physical_Reads_Direct \"Phys.Rd.Dir\",
+                             Physical_Writes_Direct \"Phys.Wr.Dir\", ITL_Waits, Row_Lock_Waits
+                      FROM   (SELECT /*+ NO_MERGE */
+                                     s.Instance_Number, s.Obj#, SUM(s.Logical_Reads_Delta) Logical_Reads,
+                                     SUM(Buffer_Busy_Waits_Delta) Buffer_Busy_Waits,
+                                     SUM(DB_Block_Changes_Delta) DB_Block_Changes,
+                                     SUM(Physical_Reads_Delta) Physical_Reads,
+                                     SUM(Physical_Writes_Delta) Physical_Writes,
+                                     SUM(Physical_Reads_Direct_Delta) Physical_Reads_Direct,
+                                     SUM(Physical_Writes_Direct_Delta) Physical_Writes_Direct,
+                                     SUM(ITL_Waits_Delta) ITL_Waits,
+                                     SUM(Row_Lock_Waits_Delta) Row_Lock_Waits
+                              FROM   DBA_Hist_Seg_Stat s
+                              JOIN   DBA_Hist_Snapshot t ON t.DBID = s.DBID AND t.Instance_Number = s.Instance_Number AND t.Snap_ID = s.Snap_ID
+                              WHERE  t.Begin_Interval_Time > SYSDATE-? /* Anzahl Tage der Betrachtung rueckwirkend */
+                              GROUP BY s.Instance_Number, s.Obj#
+                             )s,
+                             (SELECT /*+ NO_MERGE */ o.Owner, o.Object_Name, o.SubObject_Name, o.Object_Type, o.Object_ID,
+                                     CASE
+                                     WHEN Object_Type = 'TABLE' THEN t.Num_Rows
+                                     WHEN Object_Type = 'INDEX' THEN i.Num_Rows
+                                     WHEN Object_Type = 'TABLE PARTITION' THEN tp.Num_Rows
+                                     WHEN Object_Type = 'INDEX PARTITION' THEN ip.Num_Rows
+                                     END Num_Rows
+                              FROM   DBA_Objects o
+                              LEFT OUTER JOIN DBA_Tables          t  ON t.Owner = o.Owner AND t.Table_Name = O.Object_Name AND o.Object_Type = 'TABLE'
+                              LEFT OUTER JOIN DBA_Indexes         i  ON i.Owner = o.Owner AND i.Index_Name = O.Object_Name AND o.Object_Type = 'INDEX'
+                              LEFT OUTER JOIN DBA_Tab_Partitions  tp ON tp.Table_Owner = o.Owner AND tp.Table_Name = O.Object_Name AND tp.Partition_Name = o.SubObject_Name AND o.Object_Type = 'TABLE PARTITION'
+                              LEFT OUTER JOIN DBA_Ind_Partitions  ip ON ip.Index_Owner = o.Owner AND ip.Index_Name = O.Object_Name AND ip.Partition_Name = o.SubObject_Name AND o.Object_Type = 'INDEX PARTITION'
+                             ) o
+                      WHERE  o.Object_ID = s.Obj#
+                      AND    o.Num_Rows IS NOT NULL
+                      AND    o.Num_Rows > 0               /* gewichtete Aussage wird wertlos*/
+                      AND    o.Num_Rows < ?
+                      AND    s.Logical_Reads > 0
+                      ORDER BY Logical_Reads/Num_Rows DESC NULLS LAST",
             :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
                          {:name=>t(:dragnet_helper_96_param_1_name, :default=>'Maximum number of rows of table'), :size=>8, :default=>200, :title=>t(:dragnet_helper_96_param_1_hint, :default=>'Maximum number of rows of table for consideration in result')}]
         },
