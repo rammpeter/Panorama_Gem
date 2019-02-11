@@ -2134,7 +2134,8 @@ END;
       result << "
 -- Next commands remove the current existing cursors of this SQL from SGA to ensure hard parse with SQL plan baseline at next execution
 -- If you are working on a RAC system you should execute this 'DBMS_SHARED_POOL.PURGE'-commands once again connected on the appropriate RAC-instance
-      "
+
+"
     end
     cursors.each do |r|
       result << "-- For instance = #{r.inst_id}:

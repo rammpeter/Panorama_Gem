@@ -64,7 +64,7 @@ class PanoramaSamplerSampling
       # replace PANORAMA. with the real owner in PL/SQL-Source
       sql = "
         DECLARE
-        #{panorama_sampler_snapshot_code.gsub(/PANORAMA\./i, "#{@sampler_config.get_owner.upcase}.")}
+        #{PanoramaSamplerStructureCheck.translate_plsql_aliases(@sampler_config, panorama_sampler_snapshot_code)}
         BEGIN
           #{do_snapshot_call};
         END;
@@ -134,7 +134,7 @@ class PanoramaSamplerSampling
     else
       sql = "
         DECLARE
-        #{panorama_sampler_ash_code.gsub(/PANORAMA\./i, "#{@sampler_config.get_owner.upcase}.")}
+        #{PanoramaSamplerStructureCheck.translate_plsql_aliases(@sampler_config, panorama_sampler_ash_code)}
         BEGIN
           Run_Sampler_Daemon(?, ?, ?);
         END;
