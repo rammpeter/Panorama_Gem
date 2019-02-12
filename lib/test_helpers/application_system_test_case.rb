@@ -168,15 +168,21 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     wait_for_ajax(timeout_secs)
     error_dialog = page.first(:css, '#error_dialog')
     if  !error_dialog.nil? && error_dialog.visible?
-      if management_pack_license == :none
-        message = "ApplicationSystemTestCase.assert_ajax_success_or_access_denied: Error dialog raised but not because missing management pack license. Error dialog:\n#{error_dialog.text}"
-        assert(((error_dialog.text['Access denied on table'] && error_dialog.text['because of missing license for ']) ||
-            error_dialog.text['Sorry, accessing DBA_HIST_Reports requires licensing of Diagnostics and Tuning Pack']
-               ),
-               message)
-      else
-        assert(false, "Error dialog shown for management_pack_license != :none")
+      allowed_msg_content = []
+      if management_pack_license != :diagnostics_and_tuning_pack
+        allowed_msg_content << 'Sorry, accessing DBA_HIST_Reports requires licensing of Diagnostics and Tuning Pack'
       end
+
+      if management_pack_license == :none
+        allowed_msg_content <<  'because of missing license for '       # Access denied on table
+      end
+
+      raise_error = true
+      allowed_msg_content.each do |amc|
+        raise_error = false if error_dialog.text[amc]                           # No error if dialog contains any of the strings
+      end
+
+      assert(!raise_error, "ApplicationSystemTestCase.assert_ajax_success_or_access_denied: Error dialog raised but not because missing management pack license. Error dialog:\n#{error_dialog.text}")
       return true
     else
       return false                                                              # Error dialog not shown
