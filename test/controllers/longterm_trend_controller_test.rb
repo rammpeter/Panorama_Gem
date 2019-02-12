@@ -28,7 +28,13 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
       WorkerThread.new(@sampler_config, 'test_do_sampling_longterm_trend').create_snapshot_internal(Time.now.round, :LONGTERM_TREND) # Tables must be created before snapshot., first snapshot initialization called
       PanoramaConnection.set_connection_info_for_request(saved_config)          # reconnect because create_snapshot_internal freed the connection
       min_max = PanoramaConnection.sql_select_first_row "SELECT COUNT(*) Records, MIN(Snapshot_Timestamp) Min_TS, MAX(Snapshot_Timestamp) Max_TS FROM #{@sampler_config[:owner]}.Longterm_Trend"
-      raise "LongtermTrendControllerTest.setup: Only #{min_max.records} records are in table #{@sampler_config[:owner]}.Longterm_Trend" if min_max.records < 4
+
+      # put some records into
+      if min_max.records < 4
+        msg = "LongtermTrendControllerTest.setup: Only #{min_max.records} records are in table #{@sampler_config[:owner]}.Longterm_Trend"
+        Rails.logger.error msg
+        raise msg
+      end
     end
     @time_selection_start = min_max.min_ts.strftime("%d.%m.%Y %H:%M")
     @time_selection_end   = min_max.max_ts.strftime("%d.%m.%Y %H:%M")

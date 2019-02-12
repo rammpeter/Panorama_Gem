@@ -203,7 +203,7 @@ class PanoramaSamplerConfig
   #----------------------------- class methods -----------------------------------
   # List of config-domains (AWR and ASH are AWR_ASH)
   def self.get_domains
-    [:AWR_ASH, :OBJECT_SIZE, :CACHE_OBJECTS, :BLOCKING_LOCKS ]
+    [:AWR_ASH, :OBJECT_SIZE, :CACHE_OBJECTS, :BLOCKING_LOCKS, :LONGTERM_TREND ]
   end
 
   # get array initialized from session store. Call inside Mutex.synchronize only

@@ -60,9 +60,33 @@ class WorkerThreadTest < ActiveSupport::TestCase
     end
   end
 
+
+
+  test "do_sampling_longterm_trend" do
+    [nil, 'SYS', 'SYSTEM'].each do |connection_user|                            # Use different user for connect
+      [true, false].each do |log_item|
+        @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
+
+        @mod_sampler_config = PanoramaSamplerConfig.new(@sampler_config.get_cloned_config_hash.merge(
+            longterm_trend_log_wait_class:  log_item,
+            longterm_trend_log_wait_event:  log_item,
+            longterm_trend_log_user:        log_item,
+            longterm_trend_log_service:     log_item,
+            longterm_trend_log_machine:     log_item,
+            longterm_trend_log_module:      log_item,
+            longterm_trend_log_action:      log_item,
+            longterm_trend_subsume_limit:   400  # per mille
+        ))
+        WorkerThread.new(@mod_sampler_config, "test_sampling_longterm_trend").create_snapshot_internal(Time.now.round, :LONGTERM_TREND)
+      end
+    end
+  end
+
+
+
   test "do_sampling_other_than_AWR_ASH" do
     [nil, 'SYS', 'SYSTEM'].each do |connection_user|                            # Use different user for connect
-      PanoramaSamplerConfig.get_domains.each do |domain|
+      [:OBJECT_SIZE, :CACHE_OBJECTS, :BLOCKING_LOCKS ].each do |domain|
         if domain != :AWR_ASH
           @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
           WorkerThread.new(@sampler_config, "test_sampling_#{domain}").create_snapshot_internal(Time.now.round, domain)

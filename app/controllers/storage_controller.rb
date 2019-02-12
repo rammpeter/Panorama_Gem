@@ -640,8 +640,8 @@ class StorageController < ApplicationController
              s.Inst_ID, s.SID, s.Serial# SerialNo, s.UserName, s.Program, s.Status, s.OSUser, s.Client_Info, s.Module, s.Action,
              t.Start_Time, t.Recursive, t.Used_Ublk Used_Undo_Blocks, t.Used_URec Used_Undo_Records, t.Log_IO, t.Phy_IO, RawToHex(t.XID) XID,
              t.XIDUSN Segment, t.XIDSLOT Slot, t.XIDSQN Sequence, t.CR_get, t.CR_Change
-      FROM   v$Transaction t
-      JOIN   gv$Session s ON s.TAddr = t.Addr
+      FROM   gv$Transaction t
+      JOIN   gv$Session s ON s.Inst_ID = t.Inst_ID AND s.TAddr = t.Addr
       #{'WHERE  t.XIDUsn = ?' if @segment_id}
       ORDER BY t.Used_Ublk DESC
       "].concat(@segment_id ? [@segment_id] : [])

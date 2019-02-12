@@ -301,8 +301,8 @@ class PanoramaSamplerSampling
                                        Instance_Number,
                                        #{@sampler_config.get_longterm_trend_log_wait_class ? "NVL(Wait_Class,   'CPU')"  : "'NOT SAMPLED'"} Wait_Class,
                                        #{@sampler_config.get_longterm_trend_log_wait_event ? "NVL(Event, Session_State)" : "'NOT SAMPLED'"} Wait_Event,
-                                       #{@sampler_config.get_longterm_trend_log_user       ? "NVL(User_ID,      0)"      : "'NOT SAMPLED'"} User_ID,
-                                       #{@sampler_config.get_longterm_trend_log_service    ? "NVL(Service_Hash, 0)"      : "'NOT SAMPLED'"} Service_Hash,
+                                       #{@sampler_config.get_longterm_trend_log_user       ? "NVL(User_ID,      0)"      : "-2"}            User_ID,
+                                       #{@sampler_config.get_longterm_trend_log_service    ? "NVL(Service_Hash, 0)"      : "-2"}            Service_Hash,
                                        #{@sampler_config.get_longterm_trend_log_machine    ? "NVL(Machine,      'NULL')" : "'NOT SAMPLED'"} Machine,
                                        #{@sampler_config.get_longterm_trend_log_module     ? "NVL(Module,       'NULL')" : "'NOT SAMPLED'"} Module,
                                        #{@sampler_config.get_longterm_trend_log_action     ? "NVL(Action,       'NULL')" : "'NOT SAMPLED'"} Action
@@ -316,10 +316,12 @@ class PanoramaSamplerSampling
         GROUP BY Snapshot_Timestamp, Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action
         ;
 
+        COMMIT;
+
 #{insert_0}
 
-        INSERT INTO #{@sampler_config.get_owner}.LTT_User   (ID, Name) SELECT -1, '[OTHERS]' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM #{@sampler_config.get_owner}.LTT_User    WHERE ID = 1);
-        INSERT INTO #{@sampler_config.get_owner}.LTT_Service(ID, Name) SELECT -1, '[OTHERS]' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM #{@sampler_config.get_owner}.LTT_Service WHERE ID = 1);
+        INSERT INTO #{@sampler_config.get_owner}.LTT_User   (ID, Name) SELECT -1, '[OTHERS]' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM #{@sampler_config.get_owner}.LTT_User    WHERE ID = -1);
+        INSERT INTO #{@sampler_config.get_owner}.LTT_Service(ID, Name) SELECT -1, '[OTHERS]' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM #{@sampler_config.get_owner}.LTT_Service WHERE ID = -1);
 
         INSERT INTO #{@sampler_config.get_owner}.LTT_Wait_Class(ID, Name)
         SELECT seq.Max_ID + RowNum, t.Wait_Class
@@ -387,9 +389,15 @@ class PanoramaSamplerSampling
         FROM   #{@sampler_config.get_owner}.Longterm_Trend_Temp t
         JOIN   #{@sampler_config.get_owner}.LTT_Wait_Class ON LTT_Wait_Class.Name = t.Wait_Class
         JOIN   #{@sampler_config.get_owner}.LTT_Wait_Event ON LTT_Wait_Event.Name = t.Wait_Event
-        JOIN   All_Users u                                 ON u.User_ID           = t.User_ID
+        JOIN   (SELECT User_ID, UserName FROM All_Users
+                UNION ALL SELECT -1, '[OTHERS]'    FROM DUAL
+                UNION ALL SELECT -2, 'NOT SAMPLED' FROM DUAL
+               )  u                                        ON u.User_ID           = t.User_ID
         JOIN   #{@sampler_config.get_owner}.LTT_User       ON LTT_User.Name       = u.UserName
-        JOIN   DBA_Services s                              ON s.Name_Hash         = t.Service_Hash
+        JOIN   (SELECT Name_Hash, Name FROM DBA_Services
+                UNION ALL SELECT -1, '[OTHERS]'    FROM DUAL
+                UNION ALL SELECT -2, 'NOT SAMPLED' FROM DUAL
+               ) s                                         ON s.Name_Hash         = t.Service_Hash
         JOIN   #{@sampler_config.get_owner}.LTT_Service    ON LTT_Service.Name    = s.Name
         JOIN   #{@sampler_config.get_owner}.LTT_Machine    ON LTT_Machine.Name    = t.Machine
         JOIN   #{@sampler_config.get_owner}.LTT_Module     ON LTT_Module.Name     = t.Module

@@ -82,13 +82,14 @@ class ActiveSupport::TestCase
 
   def set_panorama_sampler_config_defaults!(sampler_config)
 
-    sampler_config[:query_timeout]                  = 20                            # single test should not last longer
+    sampler_config[:query_timeout]                  = 20                        # single test should not last longer
     sampler_config[:awr_ash_active]                 = true
     sampler_config[:object_size_active]             = true
     sampler_config[:cache_objects_active]           = true
     sampler_config[:blocking_locks_active]          = true
 
     sampler_config[:awr_ash_snapshot_cycle]         = 1                         # Ensure small runtime of test run
+    sampler_config[:longterm_trend_snapshot_cycle]  = 1                         # one hour
     sampler_config.merge!(PanoramaSamplerConfig.new(sampler_config).get_cloned_config_hash)
   end
 
