@@ -46,7 +46,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
     # Wait until indicator dialog becomes really unvisible
     loop_count = 0
-    while page.has_css?('#ajax_indicator', visible: true) && loop_count < timeout_secs
+    while page.has_css?('#ajax_indicator') && loop_count < timeout_secs   # only visible elements evaluate to true in has_css?
       Rails.logger.info "wait_for_ajax: ajax_indicator is still visible, retrying..."
       sleep(0.1)
       loop_count += 0.1
