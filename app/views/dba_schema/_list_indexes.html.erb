@@ -31,6 +31,27 @@
      end
    end
 
+   list_states = proc do |rec|
+     result = ''
+     result << "#{'<br/>' if result.length > 0}Degree =  #{rec.degree}"                                                                    if rec.degree.to_i != 1
+     result << "#{'<br/>' if result.length > 0}Status =  #{rec.status}"                                                                    if !(rec.status == 'VALID' || rec.status == 'N/A' || rec.status == 'USABLE')
+     result << "#{'<br/>' if result.length > 0}Func.idx-Status =  #{rec.funcidx_status}"                                                   if !(rec.funcidx_status.nil? || rec.funcidx_status == 'ENABLED')
+     result << "#{'<br/>' if result.length > 0}Key Compression =  #{rec.compression}#{" (#{rec.prefix_length})" if rec.prefix_length}"  if !(rec.compression == 'DISABLED')
+     result << "#{'<br/>' if result.length > 0}Flash Cache = #{rec.flash_cache}"                                                           if get_db_version >= '12.1' && !(rec.flash_cache.nil? || rec.flash_cache == 'DEFAULT')
+     result << "#{'<br/>' if result.length > 0}Cell Flash Cache = #{rec.cell_flash_cache}"                                                 if get_db_version >= '12.1' && !(rec.cell_flash_cache.nil? || rec.cell_flash_cache == 'DEFAULT')
+     result.html_safe
+   end
+
+   title_states = "Special states of index (shown only if not default):
+- Default parallel degree (if != 1)
+- Status (if != 'VALID')
+- Function Index Status (if set and != 'ENABLED')
+- Index key compression with number of compressed columns
+- Smart flash cache
+- Cell flash cache
+"
+
+
   render_action_buttons = proc do |rec|
      retval =
      "<div style=\"float:left\">#{
@@ -90,10 +111,6 @@
      )
   end
 
-  show_status = proc do |rec|
-    "#{rec.subpartition_status ? rec.subpartition_status : (rec.partition_status ? rec.partition_status : rec.status)}#{" #{rec.funcidx_status}" if !rec.funcidx_status.nil?}"
-  end
-
    link_extents = proc do |rec|
      ajax_link(fn(rec.extents),
                 {:controller    => :storage,
@@ -125,11 +142,9 @@
                    {:caption=> 'Columns',          :data=>proc{|rec| rec.column_names},                                   :title=> 'Indexes columns / expressions'},
                    {:caption=> 'Type',             :data=>proc{|rec| rec.index_type},                                     :title=> 'Type of index'},
                    {:caption=> 'Unique',           :data=>proc{|rec| rec.uniqueness},                                     :title=> 'Uniqueness status of the index: UNIQUE,  NONUNIQUE or BITMAP'},
-                   {:caption=> 'Compr.',           :data=>proc{|rec| "#{rec.compression}#{" (#{rec.prefix_length})" if rec.prefix_length}"},  :title=> 'Compression an number of key columns for compression'},
-                   {:caption=> 'TS',               :data=>proc{|rec| rec.subpartition_ts_name ? rec.subpartition_ts_name : (rec.partition_ts_name ? rec.partition_ts_name : rec.tablespace_name)},             :title=> 'Tablespace name'},
-                   {:caption=> 'Pct Free',         :data=>proc{|rec| fn(rec.subpartition_pct_free ? rec.subpartition_pct_free : (rec.partition_pct_free ? rec.partition_pct_free : rec.pct_free))},                :title=> 'Percent free', :align=>:right},
-                   {:caption=> 'Ini Trans',        :data=>proc{|rec| fn(rec.subpartition_ini_trans ? rec.subpartition_ini_trans : (rec.partition_ini_trans ? rec.partition_ini_trans : rec.ini_trans))},               :title=> 'Number of initial entries in transaction list of db block', :align=>:right},
-                   {:caption=> 'Max Trans',        :data=>proc{|rec| fn(rec.subpartition_max_trans ? rec.subpartition_max_trans : (rec.partition_max_trans ? rec.partition_max_trans : rec.max_trans))},               :title=> 'Maximum number of transactions in transaction list of db block', :align=>:right},
+                   {:caption=> 'TS',               :data=>proc{|rec| rec.tablespace_name},                                :title=> 'Tablespace name'},
+                   {:caption=> 'Pct Free',         :data=>proc{|rec| rec.pct_free},                                       :title=> 'Percent free', :align=>:right},
+                   {:caption=> 'Ini Trans',        :data=>proc{|rec| rec.ini_trans},                                      :title=> 'Number of initial entries in transaction list of db block', data_title: proc{|rec| "%t\nNumber of maximum transactions (MAX_TRANS) = #{rec.max_trans}"}, :align=>:right},
                    {:caption=> 'Rows',             :data=>proc{|rec| link_current_index_stats(rec, fn(rec.num_rows))},    :title=> 'Number of rows calculated by last analyze run', :align=>:right},
                    {:caption=> 'Size (MB)',        :data=>proc{|rec| fn(rec.size_mb, 2)},                                 :title=> 'Current object size in megabytes', :align=>:right},
                    {:caption=> 'Ext.',             :data=>link_extents,                                                   :title=> 'Number of extents (from DBA_Segments)', :align=>:right},
@@ -139,8 +154,6 @@
                    {:caption=> 'Avg. leaf blocks / key', :data=>proc{|rec| fn(rec.avg_leaf_blocks_per_key)},              :title=> "Average number of leaf blocks (calculated by last analyze run) in which each distinct value in the index appears,\nrounded to the nearest integer.\nFor indexes that enforce UNIQUE and PRIMARY KEY constraints, this value is always 1.", :align=>:right},
                    {:caption=> 'Avg. data blocks / key', :data=>proc{|rec| fn(rec.avg_data_blocks_per_key)},              :title=> "Average number of data blocks in the table (calculated by last analyze run) that are pointed to by a distinct value in the index rounded to the nearest integer.\nThis statistic is the average number of data blocks that contain rows that contain a given value for the indexed columns.", :align=>:right},
                    {:caption=> 'Cluster.',         :data=>proc{|rec| fn(rec.clustering_factor)},                          :title=> "A measurement of the amount of (dis)order of the table this index is for.\n\nIf the value is near the number of blocks,\nthen the table is very well ordered.\nIn this case, the index entries in a single leaf block tend to point to rows in the same data blocks.\n\nIf the value is near the number of rows,\nthen the table is very randomly ordered.\nIn this case, it is unlikely that index entries in the same leaf block point to rows in the same data blocks.", :align=>:right},
-                   {:caption=> 'Status',           :data=>show_status,                                                    :title=> 'Index-Status (and function status if index is function based)'},
-                   {:caption=> 'Dg.',              :data=>proc{|rec| fn(rec.degree)},                                     :title=> 'Default parallel degree of table', :align=>:right},
                    {:caption=> 'Part.',            :data=>proc{|rec| link_ind_partitions(rec)},                           :title=> 'Number of index partitions ', :align=>:right},
                    {:caption=> 'Sub-<wbr>Part.',        :data=>proc{|rec| link_ind_subpartitions(rec)},                   :title=> 'Number of index sub-partitions ', :align=>:right},
                    {:caption=> 'Created',          :data=>proc{|rec| localeDateTime(rec.created)},                        :title=> 'Timestamp of index creation'},
@@ -149,6 +162,7 @@
                    {:caption=> 'Last analyzed',    :data=>proc{|rec| localeDateTime(rec.last_analyzed)},                  :title=> 'The date of the most recent time this table was analyzed'},
                    {:caption=> 'FK',               data: link_fk,                                                         title: 'Is index used for protection of foreign key constraint?', data_title: proc{|rec| "%t#{"\nConstraint = '#{rec.constraint_name}'" if rec.constraint_name}"}},
                    {:caption=> 'Use',              :data=>proc{|rec| rec.used},                                           :title=> 'Usage of index detected? From sys.Object_Usage', :data_title=>proc{|rec| "%t: monitoring index = #{rec.monitoring}, start monitoring = #{localeDateTime(rec.start_monitoring)}, end monitoring = #{localeDateTime(rec.end_monitoring)}"}, :data_style=>proc{|rec| 'background-color:coral;' if rec.used=='NO'} },
+                   {:caption=> 'Several States',   :data=>list_states,                                                    :title=> title_states},
                    {:caption=> 'Action',           :data=>render_action_buttons,                                          :title=> 'Call action for this index'},
            ]
 

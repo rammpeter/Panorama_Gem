@@ -423,12 +423,13 @@ class DbaSchemaController < ApplicationController
 
     if @attribs.count > 0 && @attribs[0].partitioned == 'YES'
       partitions = sql_select_first_row ["SELECT COUNT(*) Anzahl,
-                                                 COUNT(DISTINCT Compression)      Compression_Count, MIN(Compression)     Compression,
-                                                 COUNT(DISTINCT Tablespace_Name)  Tablespace_Count,  MIN(Tablespace_Name) Tablespace_Name,
-                                                 COUNT(DISTINCT Pct_Free)         Pct_Free_Count,    MIN(Pct_Free)        Pct_Free,
-                                                 COUNT(DISTINCT Ini_Trans)        Ini_Trans_Count,   MIN(Ini_Trans)       Ini_Trans,
-                                                 COUNT(DISTINCT Max_Trans)        Max_Trans_Count,   MIN(Max_Trans)       Max_Trans
-                                          #{', COUNT(DISTINCT Compress_For) Compress_For_Count, MIN(Compress_For) Compress_For' if get_db_version >= '11.2'}
+                                                 COUNT(DISTINCT Compression)      Compression_Count,  MIN(Compression)     Compression,
+                                                 COUNT(DISTINCT Tablespace_Name)  Tablespace_Count,   MIN(Tablespace_Name) Tablespace_Name,
+                                                 COUNT(DISTINCT Pct_Free)         Pct_Free_Count,     MIN(Pct_Free)        Pct_Free,
+                                                 COUNT(DISTINCT Ini_Trans)        Ini_Trans_Count,    MIN(Ini_Trans)       Ini_Trans,
+                                                 COUNT(DISTINCT Max_Trans)        Max_Trans_Count,    MIN(Max_Trans)       Max_Trans
+                                            #{", COUNT(DISTINCT Compress_For)     Compress_For_Count, MIN(Compress_For)    Compress_For,
+                                                 COUNT(DISTINCT InMemory)         InMemory_Count,     MIN(InMemory)        InMemory" if get_db_version >= '11.2'}
                                           FROM DBA_Tab_Partitions WHERE  Table_Owner = ? AND Table_Name = ?", @owner, @table_name]
       @partition_count = partitions.anzahl
 
@@ -438,7 +439,8 @@ class DbaSchemaController < ApplicationController
                                                     COUNT(DISTINCT Pct_Free)        Pct_Free_Count,     MIN(Pct_Free)         Pct_Free,
                                                     COUNT(DISTINCT Ini_Trans)       Ini_Trans_Count,    MIN(Ini_Trans)        Ini_Trans,
                                                     COUNT(DISTINCT Max_Trans)       Max_Trans_Count,    MIN(Max_Trans)        Max_Trans
-                                             #{', COUNT(DISTINCT Compress_For) Compress_For_Count, MIN(Compress_For) Compress_For' if get_db_version >= '11.2'}
+                                               #{", COUNT(DISTINCT Compress_For)    Compress_For_Count, MIN(Compress_For)     Compress_For,
+                                                    COUNT(DISTINCT InMemory)        InMemory_Count,     MIN(InMemory)         InMemory" if get_db_version >= '11.2'}
                                              FROM DBA_Tab_SubPartitions WHERE  Table_Owner = ? AND Table_Name = ?", @owner, @table_name]
       @subpartition_count = subpartitions.anzahl
 
@@ -459,6 +461,7 @@ class DbaSchemaController < ApplicationController
         a.pct_free          = partitions.pct_free_count     == 1 ? partitions.pct_free        : "< #{partitions.pct_free_count} different >"              if partitions.pct_free_count > 0
         a.ini_trans         = partitions.ini_trans_count    == 1 ? partitions.ini_trans       : "< #{partitions.ini_trans_count} different >"             if partitions.ini_trans_count > 0
         a.max_trans         = partitions.max_trans_count    == 1 ? partitions.max_trans       : "< #{partitions.max_trans_count} different >"             if partitions.max_trans_count > 0
+        a.inmemory          = partitions.inmemory_count     == 1 ? partitions.inmemory        : "< #{partitions.inmemory_count} different >"              if partitions.inmemory_count > 0 && get_db_version >= '11.2'
 
         # Subpartition-Werte überschreieben evtl. die Partition-Werte wieder
         a.compression       = subpartitions.compression_count  == 1 ? subpartitions.compression     : "< #{subpartitions.compression_count} different >"   if subpartitions.compression_count > 0
@@ -467,6 +470,7 @@ class DbaSchemaController < ApplicationController
         a.pct_free          = subpartitions.pct_free_count     == 1 ? subpartitions.pct_free        : "< #{subpartitions.pct_free_count} different >"      if subpartitions.pct_free_count > 0
         a.ini_trans         = subpartitions.ini_trans_count    == 1 ? subpartitions.ini_trans       : "< #{subpartitions.ini_trans_count} different >"     if subpartitions.ini_trans_count > 0
         a.max_trans         = subpartitions.max_trans_count    == 1 ? subpartitions.max_trans       : "< #{subpartitions.max_trans_count} different >"     if subpartitions.max_trans_count > 0
+        a.inmemory          = subpartitions.inmemory_count     == 1 ? subpartitions.inmemory        : "< #{subpartitions.inmemory_count} different >"      if subpartitions.inmemory_count > 0 && get_db_version >= '11.2'
       end
 
       @partition_expression = get_table_partition_expression(@owner, @table_name)
@@ -612,13 +616,43 @@ class DbaSchemaController < ApplicationController
                       )
       SELECT  st.MB Size_MB, p.*,
               m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments,
-              o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
+              o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
+              sp.SubPartition_Count,
+              SP_Compression_Count,  SP_Compression,
+              SP_Tablespace_Count,   SP_Tablespace_Name,
+              SP_Pct_Free_Count,     SP_Pct_Free,
+              SP_Ini_Trans_Count,    SP_Ini_Trans,
+              SP_Max_Trans_Count,    SP_Max_Trans
+         #{", SP_Compress_For_Count, SP_Compress_For,
+              SP_InMemory_Count,     SP_InMemory" if get_db_version >= '11.2'}
       FROM DBA_Tab_Partitions p
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Table_Owner AND o.Object_Name = p.Table_Name AND o.SubObject_Name = p.Partition_Name AND o.Object_Type = 'TABLE PARTITION'
       LEFT OUTER JOIN Storage st ON st.Partition_Name = p.Partition_Name
       LEFT OUTER JOIN DBA_Tab_Modifications m ON  m.Table_Owner = p.Table_Owner AND m.Table_Name = p.Table_Name AND m.Partition_Name = p.Partition_Name AND m.SubPartition_Name IS NULL
+      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Partition_Name, COUNT(*) SubPartition_Count,
+                              COUNT(DISTINCT Compression)     SP_Compression_Count,  MIN(Compression)      SP_Compression,
+                              COUNT(DISTINCT Tablespace_Name) SP_Tablespace_Count,   MIN(Tablespace_Name)  SP_Tablespace_Name,
+                              COUNT(DISTINCT Pct_Free)        SP_Pct_Free_Count,     MIN(Pct_Free)         SP_Pct_Free,
+                              COUNT(DISTINCT Ini_Trans)       SP_Ini_Trans_Count,    MIN(Ini_Trans)        SP_Ini_Trans,
+                              COUNT(DISTINCT Max_Trans)       SP_Max_Trans_Count,    MIN(Max_Trans)        SP_Max_Trans
+                         #{", COUNT(DISTINCT Compress_For)    SP_Compress_For_Count, MIN(Compress_For)     SP_Compress_For,
+                              COUNT(DISTINCT InMemory)        SP_InMemory_Count,     MIN(InMemory)         SP_InMemory" if get_db_version >= '11.2'}
+                       FROM   DBA_Tab_SubPartitions WHERE  Table_Owner = ? AND Table_Name = ?
+                       GROUP BY Partition_Name
+                      ) sp ON sp.Partition_Name = p.Partition_Name
       WHERE p.Table_Owner = ? AND p.Table_Name = ?
-      ", @owner, @table_name, @owner, @table_name]
+      ", @owner, @table_name, @owner, @table_name, @owner, @table_name]
+
+    @partitions.each do |p|
+      p.compression       = p.sp_compression_count  == 1 ? p.sp_compression     : "< #{p.sp_compression_count} different >"           if p.sp_compression_count > 0
+      p.compress_for      = p.sp_compress_for_count == 1 ? p.sp_compress_for    : "< #{p.sp_compress_for_count} different >"          if get_db_version >= '11.2' && p.sp_compression_count > 0
+      p.tablespace_name   = p.sp_tablespace_count   == 1 ? p.sp_tablespace_name : "< #{p.sp_tablespace_count} different >"            if p.sp_tablespace_count > 0
+      p.pct_free          = p.sp_pct_free_count     == 1 ? p.sp_pct_free        : "< #{p.sp_pct_free_count} different >"              if p.sp_pct_free_count > 0
+      p.ini_trans         = p.sp_ini_trans_count    == 1 ? p.sp_ini_trans       : "< #{p.sp_ini_trans_count} different >"             if p.sp_ini_trans_count > 0
+      p.max_trans         = p.sp_max_trans_count    == 1 ? p.sp_max_trans       : "< #{p.sp_max_trans_count} different >"             if p.sp_max_trans_count > 0
+      p.inmemory          = p.sp_inmemory_count     == 1 ? p.sp_inmemory        : "< #{p.sp_inmemory_count} different >"              if get_db_version >= '11.2' && p.sp_inmemory_count > 0
+    end
+
 
     render_partial
   end
@@ -680,9 +714,7 @@ class DbaSchemaController < ApplicationController
     @table_name = params[:table_name]
 
     @indexes = sql_select_all ["\
-                 SELECT /*+ Panorama Ramm */ i.*, p.Partition_Number, sp.SubPartition_Number, Partition_TS_Name, SubPartition_TS_Name,
-                        Partition_Status, SubPartition_Status, Partition_Pct_Free, SubPartition_Pct_Free,
-                        Partition_Ini_Trans, SubPartition_Ini_Trans, Partition_Max_Trans, SubPartition_Max_Trans,
+                 SELECT /*+ Panorama Ramm */ i.*, p.Partition_Number, sp.SubPartition_Number,
                         s.Size_MB, s.Extents,
                         DECODE(bitand(io.flags, 65536), 0, 'NO', 'YES') Monitoring,
                         DECODE(bitand(ou.flags, 1), 0, 'NO', NULL, 'Unknown', 'YES') Used,
@@ -690,7 +722,19 @@ class DbaSchemaController < ApplicationController
                         TO_DATE(ou.end_monitoring,   'MM/DD/YYYY HH24:MI:SS') End_Monitoring,
                         do.Created, do.Last_DDL_Time, TO_DATE(do.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
                         CASE WHEN c.Constraint_Type = 'R' THEN 'Y' END Used_For_FK,
-                        c.Constraint_Name
+                        c.Constraint_Name,
+                        p.P_Status_Count,         p.P_Status,
+                        p.P_Compression_Count,    p.P_Compression,
+                        p.P_Tablespace_Count,     p.P_Tablespace_Name,
+                        p.P_Pct_Free_Count,       p.P_Pct_Free,
+                        p.P_Ini_Trans_Count,      p.P_Ini_Trans,
+                        p.P_Max_Trans_Count,      p.P_Max_Trans,
+                        sp.SP_Status_Count,       sp.SP_Status,
+                        sp.SP_Compression_Count,  sp.SP_Compression,
+                        sp.SP_Tablespace_Count,   sp.SP_Tablespace_Name,
+                        sp.SP_Pct_Free_Count,     sp.SP_Pct_Free,
+                        sp.SP_Ini_Trans_Count,    sp.SP_Ini_Trans,
+                        sp.SP_Max_Trans_Count,    sp.SP_Max_Trans
                  FROM   DBA_Indexes i
                  JOIN   DBA_Users   u  ON u.UserName  = i.owner
                  JOIN   sys.Obj$    o  ON o.Owner# = u.User_ID AND o.Name = i.Index_Name
@@ -705,11 +749,12 @@ class DbaSchemaController < ApplicationController
                  LEFT OUTER JOIN DBA_Constraints c ON c.Owner = i.Table_Owner AND c.Table_Name = i.Table_Name AND c.Constraint_Name = cc.Constraint_Name
                  LEFT OUTER JOIN sys.object_usage ou ON ou.Obj# = o.Obj#
                  LEFT OUTER JOIN (SELECT ii.Index_Name, COUNT(*) Partition_Number,
-                                  CASE WHEN COUNT(DISTINCT(ip.Tablespace_Name)) = 1 THEN MIN(ip.Tablespace_Name) ELSE NULL  END Partition_TS_Name,
-                                  CASE WHEN COUNT(DISTINCT(ip.Status))          = 1 THEN MIN(ip.Status)          ELSE 'N/A' END Partition_Status,
-                                  CASE WHEN COUNT(DISTINCT(ip.PCT_Free))        = 1 THEN MIN(ip.PCT_Free)        ELSE NULL  END Partition_PCT_Free,
-                                  CASE WHEN COUNT(DISTINCT(ip.INI_Trans))       = 1 THEN MIN(ip.INI_Trans)       ELSE NULL  END Partition_INI_Trans,
-                                  CASE WHEN COUNT(DISTINCT(ip.MAX_Trans))       = 1 THEN MIN(ip.MAX_Trans)       ELSE NULL  END Partition_MAX_Trans
+                                  COUNT(DISTINCT ip.Status)          P_Status_Count,       MIN(ip.Status)           P_Status,
+                                  COUNT(DISTINCT ip.Compression)     P_Compression_Count,  MIN(ip.Compression)      P_Compression,
+                                  COUNT(DISTINCT ip.Tablespace_Name) P_Tablespace_Count,   MIN(ip.Tablespace_Name)  P_Tablespace_Name,
+                                  COUNT(DISTINCT ip.Pct_Free)        P_Pct_Free_Count,     MIN(ip.Pct_Free)         P_Pct_Free,
+                                  COUNT(DISTINCT ip.Ini_Trans)       P_Ini_Trans_Count,    MIN(ip.Ini_Trans)        P_Ini_Trans,
+                                  COUNT(DISTINCT ip.Max_Trans)       P_Max_Trans_Count,    MIN(ip.Max_Trans)        P_Max_Trans
                                   FROM   DBA_Indexes ii
                                   JOIN   DBA_Ind_Partitions ip ON ip.Index_Owner=ii.Owner AND ip.Index_Name =ii.Index_Name
                                   WHERE  ii.Table_Owner = ?
@@ -717,11 +762,12 @@ class DbaSchemaController < ApplicationController
                                   GROUP BY ii.Index_Name
                                  ) p ON p.Index_Name = i.Index_Name
                  LEFT OUTER JOIN (SELECT ii.Index_Name, COUNT(*) SubPartition_Number,
-                                  CASE WHEN COUNT(DISTINCT(ip.Tablespace_Name)) = 1 THEN MIN(ip.Tablespace_Name) ELSE NULL  END SubPartition_TS_Name,
-                                  CASE WHEN COUNT(DISTINCT(ip.Status))          = 1 THEN MIN(ip.Status)          ELSE 'N/A' END SubPartition_Status,
-                                  CASE WHEN COUNT(DISTINCT(ip.PCT_Free))        = 1 THEN MIN(ip.PCT_Free)        ELSE NULL  END SubPartition_PCT_Free,
-                                  CASE WHEN COUNT(DISTINCT(ip.INI_Trans))       = 1 THEN MIN(ip.INI_Trans)       ELSE NULL  END SubPartition_INI_Trans,
-                                  CASE WHEN COUNT(DISTINCT(ip.MAX_Trans))       = 1 THEN MIN(ip.MAX_Trans)       ELSE NULL  END SubPartition_MAX_Trans
+                                  COUNT(DISTINCT ip.Status)          SP_Status_Count,       MIN(ip.Status)           SP_Status,
+                                  COUNT(DISTINCT ip.Compression)     SP_Compression_Count,  MIN(ip.Compression)      SP_Compression,
+                                  COUNT(DISTINCT ip.Tablespace_Name) SP_Tablespace_Count,   MIN(ip.Tablespace_Name)  SP_Tablespace_Name,
+                                  COUNT(DISTINCT ip.Pct_Free)        SP_Pct_Free_Count,     MIN(ip.Pct_Free)         SP_Pct_Free,
+                                  COUNT(DISTINCT ip.Ini_Trans)       SP_Ini_Trans_Count,    MIN(ip.Ini_Trans)        SP_Ini_Trans,
+                                  COUNT(DISTINCT ip.Max_Trans)       SP_Max_Trans_Count,    MIN(ip.Max_Trans)        SP_Max_Trans
                                   FROM   DBA_Indexes ii
                                   JOIN   DBA_Ind_SubPartitions ip ON ip.Index_Owner=ii.Owner AND ip.Index_Name =ii.Index_Name
                                   WHERE  ii.Table_Owner = ?
@@ -746,6 +792,29 @@ class DbaSchemaController < ApplicationController
         names << ", #{c.column_expression ? c.column_expression : c.column_name}" if i.index_name == c.index_name
       end
       i[:column_names] = names[2,names.length]
+
+      # Set values of partitions if they exist
+      if !i.partition_number.nil? && i.partition_number > 0
+        i.status            = i.p_status_count       == 1 ? i.p_status          : "< #{i.p_status_count} different >"                if i.p_status_count      > 0
+        i.compression       = i.p_compression_count  == 1 ? i.p_compression     : "< #{i.p_compression_count} different >"           if i.p_compression_count > 0
+        i.tablespace_name   = i.p_tablespace_count   == 1 ? i.p_tablespace_name : "< #{i.p_tablespace_count} different >"            if i.p_tablespace_count  > 0
+        i.pct_free          = i.p_pct_free_count     == 1 ? i.p_pct_free        : "< #{i.p_pct_free_count} different >"              if i.p_pct_free_count    > 0
+        i.ini_trans         = i.p_ini_trans_count    == 1 ? i.p_ini_trans       : "< #{i.p_ini_trans_count} different >"             if i.p_ini_trans_count   > 0
+        i.max_trans         = i.p_max_trans_count    == 1 ? i.p_max_trans       : "< #{i.p_max_trans_count} different >"             if i.p_max_trans_count   > 0
+
+        if !i.subpartition_number.nil? && i.subpartition_number > 0
+          # Set values of subpartitions if they exist
+          i.status            = i.sp_status_count       == 1 ? i.sp_status          : "< #{i.sp_status_count} different >"                if i.sp_status_count      > 0
+          i.compression       = i.sp_compression_count  == 1 ? i.sp_compression     : "< #{i.sp_compression_count} different >"           if i.sp_compression_count > 0
+          i.tablespace_name   = i.sp_tablespace_count   == 1 ? i.sp_tablespace_name : "< #{i.sp_tablespace_count} different >"            if i.sp_tablespace_count  > 0
+          i.pct_free          = i.sp_pct_free_count     == 1 ? i.sp_pct_free        : "< #{i.sp_pct_free_count} different >"              if i.sp_pct_free_count    > 0
+          i.ini_trans         = i.sp_ini_trans_count    == 1 ? i.sp_ini_trans       : "< #{i.sp_ini_trans_count} different >"             if i.sp_ini_trans_count   > 0
+          i.max_trans         = i.sp_max_trans_count    == 1 ? i.sp_max_trans       : "< #{i.sp_max_trans_count} different >"             if i.sp_max_trans_count   > 0
+        end
+
+      end
+
+
 
     end
 
@@ -1129,11 +1198,37 @@ class DbaSchemaController < ApplicationController
                    FROM   DBA_Segments s
                    WHERE  s.Owner = p.Index_Owner AND s.Segment_Name = p.Index_Name AND s.Partition_Name = p.Partition_Name
                   ) Size_MB,
-             o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
+             o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
+              sp.SubPartition_Count,
+              SP_Status_Count,       SP_Status,
+              SP_Compression_Count,  SP_Compression,
+              SP_Tablespace_Count,   SP_Tablespace_Name,
+              SP_Pct_Free_Count,     SP_Pct_Free,
+              SP_Ini_Trans_Count,    SP_Ini_Trans,
+              SP_Max_Trans_Count,    SP_Max_Trans
       FROM DBA_Ind_Partitions p
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Index_Owner AND o.Object_Name = p.Index_Name AND o.SubObject_Name = p.Partition_Name AND o.Object_Type = 'INDEX PARTITION'
+      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Partition_Name, COUNT(*) SubPartition_Count,
+                              COUNT(DISTINCT Status)          SP_Status_Count,       MIN(Status)           SP_Status,
+                              COUNT(DISTINCT Compression)     SP_Compression_Count,  MIN(Compression)      SP_Compression,
+                              COUNT(DISTINCT Tablespace_Name) SP_Tablespace_Count,   MIN(Tablespace_Name)  SP_Tablespace_Name,
+                              COUNT(DISTINCT Pct_Free)        SP_Pct_Free_Count,     MIN(Pct_Free)         SP_Pct_Free,
+                              COUNT(DISTINCT Ini_Trans)       SP_Ini_Trans_Count,    MIN(Ini_Trans)        SP_Ini_Trans,
+                              COUNT(DISTINCT Max_Trans)       SP_Max_Trans_Count,    MIN(Max_Trans)        SP_Max_Trans
+                       FROM   DBA_Ind_SubPartitions WHERE  Index_Owner = ? AND Index_Name = ?
+                       GROUP BY Partition_Name
+                      ) sp ON sp.Partition_Name = p.Partition_Name
       WHERE p.Index_Owner = ? AND p.Index_Name = ?
-      ", @owner, @index_name]
+      ", @owner, @index_name, @owner, @index_name]
+
+    @partitions.each do |p|
+      p.status            = p.sp_status_count       == 1 ? p.sp_status          : "< #{p.sp_status_count} different >"                if p.sp_status_count      > 0
+      p.compression       = p.sp_compression_count  == 1 ? p.sp_compression     : "< #{p.sp_compression_count} different >"           if p.sp_compression_count > 0
+      p.tablespace_name   = p.sp_tablespace_count   == 1 ? p.sp_tablespace_name : "< #{p.sp_tablespace_count} different >"            if p.sp_tablespace_count  > 0
+      p.pct_free          = p.sp_pct_free_count     == 1 ? p.sp_pct_free        : "< #{p.sp_pct_free_count} different >"              if p.sp_pct_free_count    > 0
+      p.ini_trans         = p.sp_ini_trans_count    == 1 ? p.sp_ini_trans       : "< #{p.sp_ini_trans_count} different >"             if p.sp_ini_trans_count   > 0
+      p.max_trans         = p.sp_max_trans_count    == 1 ? p.sp_max_trans       : "< #{p.sp_max_trans_count} different >"             if p.sp_max_trans_count   > 0
+    end
 
     render_partial
   end

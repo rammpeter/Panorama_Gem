@@ -18,14 +18,31 @@
     end
 
 
+    list_states = proc do |rec|
+      result = ''
+      result << "#{'<br/>' if result.length > 0}Compression = #{rec.compression}#{" (#{rec.compress_for})" if get_db_version >= '11.2'}"    if !(rec.compression.nil? || rec.compression == 'DISABLED' || rec.compression == 'N/A' || rec.compression == 'NONE')
+      result << "#{'<br/>' if result.length > 0}InMemory = #{rec.inmemory}"                                                                 if get_db_version >= '12.1' && !(rec.inmemory == 'DISABLED' || rec.inmemory == 'N/A')
+      result << "#{'<br/>' if result.length > 0}Flash Cache = #{rec.flash_cache}"                                                           if get_db_version >= '12.1' && !(rec.flash_cache.nil? || rec.flash_cache == 'DEFAULT')
+      result << "#{'<br/>' if result.length > 0}Cell Flash Cache = #{rec.cell_flash_cache}"                                                 if get_db_version >= '12.1' && !(rec.cell_flash_cache.nil? || rec.cell_flash_cache == 'DEFAULT')
+      result.html_safe
+    end
+
+    title_states = "Special states of table (shown only if not default):
+- Compression of partition
+- InMemory
+- Smart flash cache
+- Cell flash cache
+"
+
+
     column_options =
     [
       {:caption=> 'Part. name',             :data=>proc{|rec| rec.partition_name},               :title=> 'Partition name'},
       {:caption=> 'High value',             :data=>proc{|rec| rec.high_value},                   :title=> 'Partition bound value expression'},
       {:caption=> 'Pos.',                   :data=>proc{|rec| fn rec.partition_position},        :title=> 'Position of the partition within the table', :align=>:right},
       {:caption=> 'Tablespace',             :data=>proc{|rec| rec.tablespace_name},              :title=> 'Name of the tablespace containing the partition'},
-      {:caption=> 'Pct. free',              :data=>proc{|rec| fn rec.pct_free},                  :title=> 'Minimum percentage of free space in a block', :align=>:right},
-      {:caption=> 'Ini. trans',             :data=>proc{|rec| fn rec.ini_trans},                 :title=> 'Initial number of transactions', :align=>:right},
+      {:caption=> 'Pct. free',              :data=>proc{|rec| rec.pct_free},                     :title=> 'Minimum percentage of free space in a block', :align=>:right},
+      {:caption=> 'Ini. trans',             :data=>proc{|rec| rec.ini_trans},                    :title=> 'Initial number of transactions', :align=>:right, data_title: proc{|rec| "%t\nNumber of maximum transactions (MAX_TRANS) = #{rec.max_trans}"}},
     ]
 
     column_options.concat [
@@ -47,11 +64,8 @@
     column_options << {:caption=> 'Trunc.',           :data=>proc{|rec| rec.truncated},                   :title=> "Has table been truncated since last table analysis if table has MONITORING-flag.\nStatistics are populated in memory by database. Run the DBMS_STATS.FLUSH_DATABASE_MONITORING_INFO to see the latest information here."}  if get_db_version >= '11.2'
     column_options << {:caption=> 'Drop seg.',        :data=>proc{|rec| fn rec.drop_segments},            :title=> "Number of partition and subpartition segments dropped since last table analysis if table has MONITORING-flag.\nStatistics are populated in memory by database. Run the DBMS_STATS.FLUSH_DATABASE_MONITORING_INFO to see the latest information here.", :align=>:right}
     column_options << {:caption=> 'Last DML',         :data=>proc{|rec| localeDateTime(rec.last_dml)},    :title=> "Timestamp of last DML-operations since last table analysis if table has MONITORING-flag.\nStatistics are populated in memory by database. Run the DBMS_STATS.FLUSH_DATABASE_MONITORING_INFO to see the latest information here."}
-    column_options << {:caption=> 'Compression',      :data=>proc{|rec| rec.compression},                 :title=> 'Indicates the actual compression property for a partition'}
-    column_options << {:caption=> 'Compress for',     :data=>proc{|rec| rec.compress_for},                :title=> 'Default compression for what kind of operations'} if get_db_version >= '11.2'
-    column_options << {:caption=> 'Flash cache',      :data=>proc{|rec| rec.flash_cache},                 :title=> 'Database Smart Flash Cache hint to be used for partition blocks'}  if get_db_version >= '11.2'
-    column_options << {:caption=> 'Cell flash cache', :data=>proc{|rec| rec.flash_cache},                 :title=> 'Cell flash cache hint to be used for partition blocks'}  if get_db_version >= '11.2'
     column_options << {:caption=> 'Intv.',            :data=>proc{|rec| rec.interval},                    :title=> 'Indicates whether the partition is in the interval section of an interval partitioned table (YES) or whether the partition is in the range section (NO)'}  if get_db_version >= '11.2'
+    column_options << {:caption=> 'Several States',   :data=>list_states,                          :title=> title_states}
 
     gen_slickgrid(@partitions, column_options, {
       :caption => "Partitions of table #{@owner}.#{@table_name} #{@partition_expression}",
