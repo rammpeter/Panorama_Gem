@@ -1,11 +1,3 @@
-20.06.2018
-NameError: uninitialized constant Minitest::Rails::TestUnit
-
-go to gems/railties-5.2.0/lib/minitest/rails_plugin.rb and replaced
-Rails::TestUnit::Runner.attach_before_load_options(opts)
-with
-::Rails::TestUnit::Runner.attach_before_load_options(opts),
-it's working on a new 5.2 project.
 
 27.04.2017
 http-Requests kommen nicht zurück unter Oracle-Linux 6.5 (panorama.osp-dd.de), wenn jruby-jars 9.1.8.0 verwendet werden. Zurück auf 9.1.7.0 löste das Problem
@@ -52,7 +44,18 @@ Solution: remove chromedriver from jruby/bin
 Problem: NameError: uninitialized constant Minitest::Rails::TestUnit
 Solution: change "Rails" to "::Rails" in .rvm/gems/jruby-9.1.16.0/gems/railties-5.2.0/lib/minitest/rails_plugin.rb:16
 
+20.06.2018
+NameError: uninitialized constant Minitest::Rails::TestUnit
+
+go to gems/railties-5.2.0/lib/minitest/rails_plugin.rb and replaced
+Rails::TestUnit::Runner.attach_before_load_options(opts)
+with
+::Rails::TestUnit::Runner.attach_before_load_options(opts),
+it's working on a new 5.2 project.
+
 
 16.01.2019
 Problem: With Oracle Linux 7 Server delivers website (rendered xxx in log) but browser does not get the response
 
+19.02.2019
+Catch console-output from chromedriver into logfile

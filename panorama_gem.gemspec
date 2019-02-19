@@ -28,7 +28,8 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   # Use SCSS for stylesheets
   s.add_dependency  'sass-rails', '~> 5.0'                                      # still needed
 
-  s.add_dependency 'i18n', '1.1.0'                                              # 1.3.0 leads to error NoMethodError: undefined method `symbolize_key' for #<Hash:0x5e9f73b>
+  #s.add_dependency 'i18n', '1.1.0'                                              # 1.3.0 leads to error NoMethodError: undefined method `symbolize_key' for #<Hash:0x5e9f73b>
+  s.add_dependency 'i18n'
 
   #s.add_dependency  'turbolinks'                                               # needed for redirect_to
 

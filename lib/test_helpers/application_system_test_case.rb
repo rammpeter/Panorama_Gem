@@ -10,7 +10,7 @@ Capybara.register_driver :headless_chrome do |app|
   args.concat ["--enable-logging", "--verbose", "--log-path=chromedriver.log"]   # don't suppress chromedriver_helper log output
 
   capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
-      loggingPrefs: {browser: 'ALL', driver: 'DEBUG'},                           # Activate logging by selenium webdriver
+      loggingPrefs: {browser: 'ALL', driver: 'ALL', performance: 'ALL'},                           # Activate logging by selenium webdriver
       chromeOptions: { args: args }
   )
 
@@ -20,9 +20,10 @@ Capybara.register_driver :headless_chrome do |app|
       app,
       browser: :chrome,
       desired_capabilities: capabilities,
-      #driver_opts: { port_server: 9215, logLevel: :debug},     # pin chromedriver to use port 9215
-      driver_opts: { logLevel: :debug},
   )
+
+  Selenium::WebDriver.logger.level = :debug                                     # Enable logging to console
+
   driver
 end
 
