@@ -644,13 +644,15 @@ class DbaSchemaController < ApplicationController
       ", @owner, @table_name, @owner, @table_name, @owner, @table_name]
 
     @partitions.each do |p|
-      p.compression       = p.sp_compression_count  == 1 ? p.sp_compression     : "< #{p.sp_compression_count} different >"           if p.sp_compression_count > 0
-      p.compress_for      = p.sp_compress_for_count == 1 ? p.sp_compress_for    : "< #{p.sp_compress_for_count} different >"          if get_db_version >= '11.2' && p.sp_compression_count > 0
-      p.tablespace_name   = p.sp_tablespace_count   == 1 ? p.sp_tablespace_name : "< #{p.sp_tablespace_count} different >"            if p.sp_tablespace_count > 0
-      p.pct_free          = p.sp_pct_free_count     == 1 ? p.sp_pct_free        : "< #{p.sp_pct_free_count} different >"              if p.sp_pct_free_count > 0
-      p.ini_trans         = p.sp_ini_trans_count    == 1 ? p.sp_ini_trans       : "< #{p.sp_ini_trans_count} different >"             if p.sp_ini_trans_count > 0
-      p.max_trans         = p.sp_max_trans_count    == 1 ? p.sp_max_trans       : "< #{p.sp_max_trans_count} different >"             if p.sp_max_trans_count > 0
-      p.inmemory          = p.sp_inmemory_count     == 1 ? p.sp_inmemory        : "< #{p.sp_inmemory_count} different >"              if get_db_version >= '11.2' && p.sp_inmemory_count > 0
+      if !p.subpartition_count.nil? && p.subpartition_count > 0
+        p.compression       = p.sp_compression_count  == 1 ? p.sp_compression     : "< #{p.sp_compression_count} different >"           if p.sp_compression_count > 0
+        p.compress_for      = p.sp_compress_for_count == 1 ? p.sp_compress_for    : "< #{p.sp_compress_for_count} different >"          if get_db_version >= '11.2' && p.sp_compression_count > 0
+        p.tablespace_name   = p.sp_tablespace_count   == 1 ? p.sp_tablespace_name : "< #{p.sp_tablespace_count} different >"            if p.sp_tablespace_count > 0
+        p.pct_free          = p.sp_pct_free_count     == 1 ? p.sp_pct_free        : "< #{p.sp_pct_free_count} different >"              if p.sp_pct_free_count > 0
+        p.ini_trans         = p.sp_ini_trans_count    == 1 ? p.sp_ini_trans       : "< #{p.sp_ini_trans_count} different >"             if p.sp_ini_trans_count > 0
+        p.max_trans         = p.sp_max_trans_count    == 1 ? p.sp_max_trans       : "< #{p.sp_max_trans_count} different >"             if p.sp_max_trans_count > 0
+        p.inmemory          = p.sp_inmemory_count     == 1 ? p.sp_inmemory        : "< #{p.sp_inmemory_count} different >"              if get_db_version >= '11.2' && p.sp_inmemory_count > 0
+      end
     end
 
 
