@@ -30,10 +30,15 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
       min_max = PanoramaConnection.sql_select_first_row "SELECT COUNT(*) Records, MIN(Snapshot_Timestamp) Min_TS, MAX(Snapshot_Timestamp) Max_TS FROM #{@sampler_config[:owner]}.Longterm_Trend"
 
       # put some records into
-      if min_max.records < 4
-        msg = "LongtermTrendControllerTest.setup: Only #{min_max.records} records are in table #{@sampler_config[:owner]}.Longterm_Trend"
-        Rails.logger.error msg
-        raise msg
+      if min_max.records > 4
+        Rails.logger.error "LongtermTrendControllerTest.setup: Only #{min_max.records} records are in table #{@sampler_config[:owner]}.Longterm_Trend. Producing synthetic records now!"
+        4.downto(1) do |num|
+          sleep 2                                                               # Ensure unique timestamps
+          PanoramaConnection.sql_execute "INSERT INTO #{@sampler_config[:owner]}.Longterm_Trend (
+                                            Snapshot_Timestamp, Instance_Number, LTT_Wait_Class_ID, LTT_Wait_Event_ID, LTT_User_ID, LTT_Service_ID,
+                                            LTT_Machine_ID, LTT_Module_ID, LTT_Action_ID, Seconds_Active, Snapshot_Cycle_Hours
+                                          ) VALUES (SYSDATE, 1, 0, 0, 0, 0, 0, 0, 0, 12, 1)"
+        end
       end
     end
     @time_selection_start = min_max.min_ts.strftime("%d.%m.%Y %H:%M")
