@@ -286,13 +286,18 @@ This selection already suppresses indexes used for elimination of 'table access 
 - possible shared lock issues on referencing table due to not existing index are no problem
 Especially for references from large tables to small master data tables often there's no use for the effort of indexing referencing column.
 Due to the poor selectivity such indexes are mostly not useful for access optimization."),
-            :sql=> "SELECT /* DB-Tools Ramm Unnecessary index on Ref-Constraint*/
-                           ri.Rows_Origin, ri.Owner, ri.Table_Name, ri.Index_Name, p.Constraint_Name, ri.Column_Name,
-                           pi.Num_Rows Rows_Target, ri.Position, pi.Table_Name Target_Table, pi.Index_Name Target_Index, ri.No_of_Referencing_FK
+            :sql=> "WITH Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name , Constraint_Name, Constraint_Type, R_Owner, R_Constraint_Name, Index_Name
+                     FROM   DBA_Constraints
+                     WHERE  Constraint_Type IN ('R', 'P', 'U')
+                     AND    Owner NOT IN ('CTXSYS', 'DBSNMP', 'SYS', 'SYSTEM', 'XDB')
+                    )
+                    SELECT /* DB-Tools Ramm Unnecessary index on Ref-Constraint*/
+                           ri.Owner, ri.Table_Name, ri.Index_Name, ri.Rows_Origin \"No. of rows origin\", p.Constraint_Name, ri.Column_Name,
+                           ri.Position, pi.Table_Name Target_Table, pi.Index_Name Target_Index, pi.Num_Rows \"No. of rows target\", ri.No_of_Referencing_FK
                     FROM   (SELECT /*+ NO_MERGE */
                                    r.Owner, r.Table_Name, r.Constraint_Name, rc.Column_Name, rc.Position, ric.Index_Name,
                                    r.R_Owner, r.R_Constraint_Name, ri.Num_Rows Rows_Origin
-                            FROM   DBA_Constraints r
+                            FROM   Constraints r
                             JOIN   DBA_Cons_Columns rc  ON rc.Owner            = r.Owner            /* Columns of foreign key */
                                                        AND rc.Constraint_Name  = r.Constraint_Name
                             JOIN   DBA_Ind_Columns ric  ON ric.Table_Owner     = r.Owner            /* matching columns of an index */
@@ -302,20 +307,19 @@ Due to the poor selectivity such indexes are mostly not useful for access optimi
                             JOIN   DBA_Indexes ri       ON ri.Owner            = ric.Index_Owner
                                                        AND ri.Index_Name       = ric.Index_Name
                             WHERE  r.Constraint_Type  = 'R'
-                            AND    ri.Owner NOT IN ('CTXSYS', 'DBSNMP', 'SYS', 'SYSTEM', 'XDB')
                            ) ri                      -- Indizierte Foreign Key-Constraints
-                    JOIN   DBA_Constraints p   ON p.Owner            = ri.R_Owner                   /* referenced PKey-Constraint */
-                                              AND p.Constraint_Name  = ri.R_Constraint_Name
+                    JOIN   Constraints p   ON p.Owner            = ri.R_Owner                   /* referenced PKey-Constraint */
+                                          AND p.Constraint_Name  = ri.R_Constraint_Name
                     JOIN   DBA_Indexes     pi  ON pi.Owner           = p.Owner
                                               AND pi.Index_Name      = p.Index_Name
                     JOIN   (SELECT /*+ NO_MERGE */ r_Owner, r_Constraint_Name, COUNT(*) No_of_Referencing_FK /* Limit fk-target to max. x referencing tables */
-                            FROM   DBA_Constraints
+                            FROM   Constraints
+                            WHERE  Constraint_Type = 'R'
                             GROUP BY r_Owner, r_Constraint_Name
                            ) ri ON ri.r_owner = p.Owner AND ri.R_Constraint_Name=p.Constraint_Name
                     WHERE  pi.Num_Rows < ?                                                          /* Limit to small referenced tables */
                     AND    ri.Rows_Origin > ?                                                       /* Limit to huge referencing tables */
-                    ORDER BY Rows_Origin DESC NULLS LAST
-                   ",
+                    ORDER BY Rows_Origin DESC NULLS LAST",
             :parameter=>[
                          {:name=> t(:dragnet_helper_6_param_1_name, :default=>'Max. number of rows in referenced table'), :size=>8, :default=>100, :title=> t(:dragnet_helper_6_param_1_hint, :default=>'Max. number of rows in referenced table')},
                          {:name=> t(:dragnet_helper_6_param_2_name, :default=>'Min. number of rows in referencing table'), :size=>8, :default=>100000, :title=> t(:dragnet_helper_6_param_2_hint, :default=>'Minimun number of rows in referencing table')},
