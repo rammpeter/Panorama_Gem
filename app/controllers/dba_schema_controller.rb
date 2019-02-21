@@ -1224,12 +1224,14 @@ class DbaSchemaController < ApplicationController
       ", @owner, @index_name, @owner, @index_name]
 
     @partitions.each do |p|
-      p.status            = p.sp_status_count       == 1 ? p.sp_status          : "< #{p.sp_status_count} different >"                if p.sp_status_count      > 0
-      p.compression       = p.sp_compression_count  == 1 ? p.sp_compression     : "< #{p.sp_compression_count} different >"           if p.sp_compression_count > 0
-      p.tablespace_name   = p.sp_tablespace_count   == 1 ? p.sp_tablespace_name : "< #{p.sp_tablespace_count} different >"            if p.sp_tablespace_count  > 0
-      p.pct_free          = p.sp_pct_free_count     == 1 ? p.sp_pct_free        : "< #{p.sp_pct_free_count} different >"              if p.sp_pct_free_count    > 0
-      p.ini_trans         = p.sp_ini_trans_count    == 1 ? p.sp_ini_trans       : "< #{p.sp_ini_trans_count} different >"             if p.sp_ini_trans_count   > 0
-      p.max_trans         = p.sp_max_trans_count    == 1 ? p.sp_max_trans       : "< #{p.sp_max_trans_count} different >"             if p.sp_max_trans_count   > 0
+      if !p.subpartition_count.nil? && p.subpartition_count > 0
+        p.status            = p.sp_status_count       == 1 ? p.sp_status          : "< #{p.sp_status_count} different >"                if p.sp_status_count      > 0
+        p.compression       = p.sp_compression_count  == 1 ? p.sp_compression     : "< #{p.sp_compression_count} different >"           if p.sp_compression_count > 0
+        p.tablespace_name   = p.sp_tablespace_count   == 1 ? p.sp_tablespace_name : "< #{p.sp_tablespace_count} different >"            if p.sp_tablespace_count  > 0
+        p.pct_free          = p.sp_pct_free_count     == 1 ? p.sp_pct_free        : "< #{p.sp_pct_free_count} different >"              if p.sp_pct_free_count    > 0
+        p.ini_trans         = p.sp_ini_trans_count    == 1 ? p.sp_ini_trans       : "< #{p.sp_ini_trans_count} different >"             if p.sp_ini_trans_count   > 0
+        p.max_trans         = p.sp_max_trans_count    == 1 ? p.sp_max_trans       : "< #{p.sp_max_trans_count} different >"             if p.sp_max_trans_count   > 0
+      end
     end
 
     render_partial
