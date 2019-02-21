@@ -26,7 +26,7 @@ Capybara.register_driver :headless_chrome do |app|
       }
   )
 
-  Selenium::WebDriver.logger.level = :debug                                     # Enable logging to console
+  # Selenium::WebDriver.logger.level = :debug                                     # Enable Selenium logging to console
 
   driver
 end
