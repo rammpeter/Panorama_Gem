@@ -21,7 +21,7 @@ Capybara.register_driver :headless_chrome do |app|
       browser: :chrome,
       desired_capabilities: capabilities,
       driver_opts: {
-          verbose: true,
+          # verbose: true,                                                      # list chromedriver debug output
           whitelisted_ips: '',                                                  # Allow usage of port 9515 without EXPOSE in Dockerfile
       }
   )
