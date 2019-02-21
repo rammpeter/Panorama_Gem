@@ -73,6 +73,7 @@ segment_statistics = false
 
       begin
         # Capybara.ignore_hidden_elements = false
+        sleep 0.1                                                               # try to prevent Selenium::WebDriver::Error::NoSuchDriverError: invalid session id
         link_to_click = page.find(:css, '#main_menu #'+menu_link[:id], visible: false)
         if !link_to_click.visible?
           puts "Sleeping waiting for menu link '#main_menu ##{menu_link[:id]}' to become visible"
