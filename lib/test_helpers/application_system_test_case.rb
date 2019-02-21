@@ -7,7 +7,10 @@ Capybara.register_driver :headless_chrome do |app|
   args = ['window-size=1400,1000']                                              # window must be large enough in Y-dimension to paint full menu
   args.concat %w[headless disable-gpu] if RbConfig::CONFIG['host_os'] != 'darwin' # run headless if not Mac-OS
   args.concat ['--no-sandbox']                                                  # allow running chrome as root in docker
-  args.concat ["--enable-logging", "--verbose", "--log-path=chromedriver.log"]   # don't suppress chromedriver_helper log output
+  args.concat ["--enable-logging", "--verbose", "--log-path=chromedriver.log"]  # don't suppress chromedriver_helper log output
+  args.concat ['--disable-dev-shm-usage']                                       # try to prevent Selenium::WebDriver::Error::NoSuchDriverError: invalid session id
+
+
 
   capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
       loggingPrefs: {browser: 'ALL', driver: 'ALL', performance: 'ALL'},                           # Activate logging by selenium webdriver
