@@ -293,7 +293,7 @@ Due to the poor selectivity such indexes are mostly not useful for access optimi
                     )
                     SELECT /* DB-Tools Ramm Unnecessary index on Ref-Constraint*/
                            ri.Owner, ri.Table_Name, ri.Index_Name, ri.Rows_Origin \"No. of rows origin\", p.Constraint_Name, ri.Column_Name,
-                           ri.Position, pi.Table_Name Target_Table, pi.Index_Name Target_Index, pi.Num_Rows \"No. of rows target\", ri.No_of_Referencing_FK
+                           ri.Position, pi.Table_Name Target_Table, pi.Index_Name Target_Index, pi.Num_Rows \"No. of rows target\", ri.No_of_Referencing_FK \"No. of referencing fk\"
                     FROM   (SELECT /*+ NO_MERGE */
                                    r.Owner, r.Table_Name, r.Constraint_Name, rc.Column_Name, rc.Position, ric.Index_Name,
                                    r.R_Owner, r.R_Constraint_Name, ri.Num_Rows Rows_Origin
