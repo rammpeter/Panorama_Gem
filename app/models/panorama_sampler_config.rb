@@ -190,6 +190,13 @@ class PanoramaSamplerConfig
     end
   end
 
+  # Allow snapshot cycle with less than 1 minute for tests
+  def set_test_awr_ash_snapshot_cycle(seconds)
+    raise "Method only allowed for test purpose" if !Rails.env.test?
+    @config_hash[:awr_ash_snapshot_cycle] = seconds.to_f/60
+    PanoramaSamplerConfig.write_config_array_to_store
+  end
+
   # Modify object with values from hash
   def modify(modified_config_hash)
     @@config_access_mutex.synchronize do

@@ -43,6 +43,7 @@ class WorkerThreadTest < ActiveSupport::TestCase
         Rails.logger.info "######### Testing for connection_user=#{connection_user}, select_any_table=#{select_any_table}"
 
         @sampler_config.set_select_any_table(select_any_table)
+        @sampler_config.set_test_awr_ash_snapshot_cycle(0)                      # Allow AWR/ASH Snapshots each x seconds, 5 seconds added by executing method
 
         PanoramaSamplerStructureCheck.remove_tables(@sampler_config)            # ensure missing objects is tested
 
@@ -50,7 +51,7 @@ class WorkerThreadTest < ActiveSupport::TestCase
         WorkerThread.new(@sampler_config, 'test_create_ash_sampler_daemon').create_ash_sampler_daemon(Time.now.round)
         WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
 
-        sleep(61)                                                               # Ensure next execution in next minute
+        #sleep(61)                                                               # Ensure next execution in next minute
 
         WorkerThread.new(@sampler_config, 'test_check_structure_synchron').check_structure_synchron
         WorkerThread.new(@sampler_config, 'test_create_ash_sampler_daemon').create_ash_sampler_daemon(Time.now.round)
