@@ -8,7 +8,6 @@ end
 class WorkerThreadTest < ActiveSupport::TestCase
 
   setup do
-    register_test_start_in_log
     @sampler_config = prepare_panorama_sampler_thread_db_config
   end
 

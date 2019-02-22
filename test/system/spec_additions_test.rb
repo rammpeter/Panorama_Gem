@@ -1,9 +1,6 @@
 require "test_helper"
 
 class SpecAdditionsTest < ApplicationSystemTestCase
-  setup do
-    register_test_start_in_log
-  end
 
   test "Dragnet investigation" do
     # Call menu entry

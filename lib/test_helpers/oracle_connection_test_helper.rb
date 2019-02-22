@@ -69,7 +69,6 @@ class ActiveSupport::TestCase
   end
 
   def set_session_test_db_context
-    register_test_start_in_log
     # 2017/07/26 cookies are reset in ActionDispatch::IntegrationTest if using initialize_client_key_cookie
     cookies['client_salt'] = 100
     cookies['client_key']  = Encryption.encrypt_value(100, cookies['client_salt'])

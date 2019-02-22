@@ -93,10 +93,17 @@ class ActiveSupport::TestCase
     sampler_config.merge!(PanoramaSamplerConfig.new(sampler_config).get_cloned_config_hash)
   end
 
-  def register_test_start_in_log
-    Rails.logger.info "#{Time.now} : start of test #{self.class}.#{self.name}" # set timestamp in test.logs
+  setup do
+    @test_start_time = Time.now
+    Rails.logger.info "#{@test_start_time} : start of test #{self.class}.#{self.name}" # set timestamp in test.logs
   end
 
+  teardown do
+    @test_end_time = Time.now
+    Rails.logger.info "#{@test_end_time} : end of test #{self.class}.#{self.name}" # set timestamp in test.logs
+    Rails.logger.info "#{@test_end_time-@test_start_time} seconds for test #{self.class}.#{self.name}" # set timestamp in test.logs
+    Rails.logger.info ''
+  end
 
   def prepare_panorama_sampler_thread_db_config(user = nil)
     EngineConfig.config.panorama_sampler_master_password = 'hugo'

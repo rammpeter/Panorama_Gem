@@ -67,6 +67,8 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+
+
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
   test "test_controllers_menu_entries_with_actions with xhr: true" do
     call_controllers_menu_entries_with_actions

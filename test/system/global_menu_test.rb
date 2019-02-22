@@ -1,9 +1,6 @@
 require "test_helper"
 
 class GlobalMenuTest < ApplicationSystemTestCase
-  setup do
-    register_test_start_in_log
-  end
 
   test "visiting the index" do
      visit root_path
