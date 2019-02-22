@@ -28,10 +28,11 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
       saved_config = Thread.current[:panorama_connection_connect_info]          # store current config before being reset by WorkerThread.create_snapshot_internal
       WorkerThread.new(@sampler_config, 'test_do_sampling_longterm_trend').create_snapshot_internal(Time.now.round, :LONGTERM_TREND) # Tables must be created before snapshot., first snapshot initialization called
       PanoramaConnection.set_connection_info_for_request(saved_config)          # reconnect because create_snapshot_internal freed the connection
+
       min_max = PanoramaConnection.sql_select_first_row min_max_sql             # Read after inserts
 
       # put some records into
-      if min_max.records > 4
+      if min_max.records < 4
         Rails.logger.error "LongtermTrendControllerTest.setup: Only #{min_max.records} records are in table #{@sampler_config[:owner]}.Longterm_Trend. Producing synthetic records now!"
         4.downto(1) do |num|
           sleep 2                                                               # Ensure unique timestamps
@@ -40,6 +41,7 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
                                             LTT_Machine_ID, LTT_Module_ID, LTT_Action_ID, Seconds_Active, Snapshot_Cycle_Hours
                                           ) VALUES (SYSDATE, 1, 0, 0, 0, 0, 0, 0, 0, 12, 1)"
         end
+        PanoramaConnection.sql_execute "COMMIT"
         min_max = PanoramaConnection.sql_select_first_row min_max_sql           # Read after inserts
       end
     end
