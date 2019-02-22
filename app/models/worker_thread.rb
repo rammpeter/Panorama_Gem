@@ -107,7 +107,7 @@ class WorkerThread
   rescue Exception => e
     @@synchron__structure_checks.delete(@sampler_config.get_id)                 # Remove semaphore
     Rails.logger.error("Error #{e.message} during WorkerThread.check_structure_synchron for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})")
-    log_exception_backtrace(e, 20) if ENV['RAILS_ENV'] != 'test'
+    log_exception_backtrace(e, 20) if !Rails.env.test?
     @sampler_config.set_error_message("Error #{e.message} during WorkerThread.check_structure_synchron")
     raise e
   ensure
@@ -139,7 +139,7 @@ class WorkerThread
   rescue Exception => e
     begin
       Rails.logger.error("Error #{e.message} during WorkerThread.create_ash_sampler_daemon (1st try) for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})")
-      log_exception_backtrace(e, 20) if ENV['RAILS_ENV'] != 'test'
+      log_exception_backtrace(e, 20) if !Rails.env.test?
 
       PanoramaSamplerSampling.new(@sampler_config).exec_shrink_space('Internal_V$Active_Sess_History')   # try to shrink size of object
       PanoramaSamplerSampling.run_ash_daemon(@sampler_config, snapshot_time)    # Try again to execute sampler
@@ -187,7 +187,7 @@ class WorkerThread
     rescue Exception => e
       begin
         Rails.logger.error("Error #{e.message} during WorkerThread.create_snapshot_internal for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}")
-        log_exception_backtrace(e, 30) if ENV['RAILS_ENV'] != 'test'
+        log_exception_backtrace(e, 30) if !Rails.env.test?
         PanoramaSamplerStructureCheck.do_check(@sampler_config, domain)         # Check data structure preconditions first in case of error
         PanoramaSamplerSampling.do_housekeeping(@sampler_config, true, domain)  # Do housekeeping also in case of exception to clear full tablespace quota etc. + shrink space
         if domain == :AWR

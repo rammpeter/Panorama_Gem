@@ -91,7 +91,7 @@ class PanoramaSamplerSampling
   def do_awr_housekeeping(shrink_space)
     snapshots_to_delete = PanoramaConnection.sql_select_all ["SELECT Snap_ID FROM #{@sampler_config.get_owner}.Panorama_Snapshot WHERE DBID = ? AND Begin_Interval_Time < SYSDATE - ?", PanoramaConnection.dbid, @sampler_config.get_awr_ash_snapshot_retention]
 
-    Rails.logger.info("PanoramaSampler_Sampling.do_awr_housekeeping with awr_ash_snapshot_retention=#{@sampler_config.get_awr_ash_snapshot_retention}")  if  ENV['RAILS_ENV'] == 'test'
+    Rails.logger.info("PanoramaSampler_Sampling.do_awr_housekeeping with awr_ash_snapshot_retention=#{@sampler_config.get_awr_ash_snapshot_retention}")  if  Rails.env.test?
     # Delete from tables with columns DBID and SNAP_ID
     snapshots_to_delete.each do |snapshot|
       PanoramaSamplerStructureCheck.tables.each do |table|

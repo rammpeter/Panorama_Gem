@@ -63,7 +63,7 @@ class ApplicationController < ActionController::Base
       I18n.locale = 'en'                                                        # wenn Problem bei Lesen des Cookies auftreten, dann Default verwenden
     end
 
-    if ENV['RAILS_ENV'] == 'test'
+    if Rails.env.test?
       @browser_tab_id = 1                                                       # Use browser_tab_id 1 for test instead of param
     else
       @browser_tab_id = params[:browser_tab_id]

@@ -1546,7 +1546,7 @@ ORDER BY Column_ID
       check_view(view) if view[:domain] == domain
     end
 
-    Rails.logger.info("Running test with @sampler_config.get_select_any_table = #{@sampler_config.get_select_any_table}")  if  ENV['RAILS_ENV'] == 'test'
+    Rails.logger.info("Running test with @sampler_config.get_select_any_table = #{@sampler_config.get_select_any_table}")  if  Rails.env.test?
 
     if @sampler_config.get_select_any_table                                     # call PL/SQL package? v$Tables with SELECT_ANY_CATALOG-role are accessible in PL/SQL only if SELECT ANY TABLE is granted
       case domain

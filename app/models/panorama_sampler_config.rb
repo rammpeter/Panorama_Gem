@@ -141,7 +141,7 @@ class PanoramaSamplerConfig
   end
 
   def set_select_any_table(value)
-    raise "Method is for test purpose only" if ENV['RAILS_ENV'] != 'test'
+    raise "Method is for test purpose only" if !Rails.env.test?
     @config_hash[:select_any_table] = value
   end
 
