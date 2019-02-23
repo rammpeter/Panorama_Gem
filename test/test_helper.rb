@@ -169,6 +169,7 @@ class ActiveSupport::TestCase
                                   WHERE  Startup_Time = Startup_1
                                   AND    Startup_Time = Startup_2
                                   AND    Startup_Time = Startup_3
+                                  AND    EXTRACT (MINUTE FROM End_Time-Start_Time) > 0  /* At least one minute should be between the two snapshots */
                                   ORDER BY Snap_ID DESC"
 
 
