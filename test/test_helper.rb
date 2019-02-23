@@ -193,13 +193,13 @@ class ActiveSupport::TestCase
           Rails.logger.info "initialize_min_max_snap_id_and_times: new snaps executed because duration between snapshots is only #{} seconds"
         end
 
-        WorkerThread.new(@sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
+        WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
         sleep(61)                                                               # Wait until next minute
-        WorkerThread.new(@sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
+        WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
         sleep(61)                                                               # Wait until next minute
-        WorkerThread.new(@sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
+        WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
         sleep(61)                                                               # Wait until next minute
-        WorkerThread.new(@sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
+        WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
       end
     end
 
