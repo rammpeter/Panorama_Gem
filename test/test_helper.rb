@@ -101,7 +101,7 @@ class ActiveSupport::TestCase
   teardown do
     @test_end_time = Time.now
     Rails.logger.info "#{@test_end_time} : end of test #{self.class}.#{self.name}" # set timestamp in test.logs
-    Rails.logger.info "#{@test_end_time-@test_start_time} seconds for test #{self.class}.#{self.name}" # set timestamp in test.logs
+    Rails.logger.info "#{fn(@test_end_time-@test_start_time, 2)} seconds for test #{self.class}.#{self.name}" # set timestamp in test.logs
     Rails.logger.info ''
   end
 
@@ -193,6 +193,8 @@ class ActiveSupport::TestCase
           Rails.logger.info "initialize_min_max_snap_id_and_times: new snaps executed because duration between snapshots is only #{} seconds"
         end
 
+        PanoramaSamplerStructureCheck.remove_tables(@sampler_config)            # ensure missing objects is tested
+
         WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
         sleep(61)                                                               # Wait until next minute
         WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
@@ -200,6 +202,9 @@ class ActiveSupport::TestCase
         WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
         sleep(61)                                                               # Wait until next minute
         WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
+
+        PanoramaConnection.set_connection_info_for_request(saved_config)        # reconnect because create_snapshot_internal freed the connection
+
       end
     end
 
