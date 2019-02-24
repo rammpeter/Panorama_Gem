@@ -177,6 +177,7 @@ class ActiveSupport::TestCase
     if management_pack_license == :panorama_sampler
       # Ensure existence of structure
       sampler_config = prepare_panorama_sampler_thread_db_config
+
       PanoramaSamplerStructureCheck.domains.each do |domain|
         PanoramaSamplerStructureCheck.do_check(sampler_config, domain)
       end
@@ -193,7 +194,7 @@ class ActiveSupport::TestCase
           Rails.logger.info "initialize_min_max_snap_id_and_times: new snaps executed because duration between snapshots is only #{} seconds"
         end
 
-        PanoramaSamplerStructureCheck.remove_tables(@sampler_config)            # ensure missing objects is tested
+        saved_config = Thread.current[:panorama_connection_connect_info]        # store current config before being reset by WorkerThread.create_snapshot_internal
 
         WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
         sleep(61)                                                               # Wait until next minute
