@@ -189,7 +189,7 @@ class ActiveSupport::TestCase
           snaps.end_time.nil?    ||                                             # Not enough snapshots exists, create 4 subsequent
           (snaps.end_time - snaps.start_time) < 61                              # at least one minute should be between snapshots
 
-        if !snaps.start_time.nil? && !snaps.end_time.nil? && (snaps.end_time - snaps.start_time) < 61
+        if !snaps.nil? && !snaps.start_time.nil? && !snaps.end_time.nil? && (snaps.end_time - snaps.start_time) < 61
           Rails.logger.info "initialize_min_max_snap_id_and_times: new snaps executed because duration between snapshots is only #{} seconds"
         end
 
