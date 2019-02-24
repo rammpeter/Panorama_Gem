@@ -207,7 +207,7 @@ class ActiveSupport::TestCase
     # Get 2 subsequent snapshots in the middle of 4 snapshots with same startup time
     snaps = sql_select_first_row two_snaps_sql
 
-    if snaps.nil?
+    if snaps.nil? || snaps.min_snap_id.nil? || snaps.max_snap_id.nil? || snaps.start_time.nil? || snaps.end_time.nil?
       message = "No 4 subsequent snapshots with same startup_time found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')}"
       puts message
 
