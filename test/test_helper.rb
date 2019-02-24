@@ -101,7 +101,7 @@ class ActiveSupport::TestCase
   teardown do
     @test_end_time = Time.now
     Rails.logger.info "#{@test_end_time} : end of test #{self.class}.#{self.name}" # set timestamp in test.logs
-    Rails.logger.info "#{fn(@test_end_time-@test_start_time, 2)} seconds for test #{self.class}.#{self.name}" # set timestamp in test.logs
+    Rails.logger.info "#{(@test_end_time-@test_start_time).round(2)} seconds for test #{self.class}.#{self.name}" # set timestamp in test.logs
     Rails.logger.info ''
   end
 
