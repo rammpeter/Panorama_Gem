@@ -99,11 +99,15 @@ class ActiveSupport::TestCase
       snapshots = sql_select_one "SELECT COUNT(*) FROM Panorama_Snapshot"
     end
     if snapshots < 4
+      saved_config = Thread.current[:panorama_connection_connect_info]        # store current config before being reset by WorkerThread.create_snapshot_internal
+
       WorkerThread.new(sampler_config, 'ensure_panorama_sampler_tables_exist_with_content').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
       3.times do
         sleep(20)
         WorkerThread.new(sampler_config, 'ensure_panorama_sampler_tables_exist_with_content').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
       end
+
+      PanoramaConnection.set_connection_info_for_request(saved_config)        # reconnect because create_snapshot_internal freed the connection
     end
   end
 
