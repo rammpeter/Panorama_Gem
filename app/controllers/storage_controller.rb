@@ -632,8 +632,33 @@ class StorageController < ApplicationController
   end
 
   def list_undo_transactions
-    @segment_id = params[:segment_id]
-    @segment_id = nil if @segment_id == ''
+    @segment_id = prepare_param(:segment_id)
+    @instance   = prepare_param_instance
+    @sid        = prepare_param(:sid)
+    @serialno   = prepare_param(:serialno)
+
+    @where_string = ''
+    @where_values = []
+
+    if @segment_id
+      @where_string << " AND t.XIDUsn = ?"
+      @where_values << @segment_id
+    end
+
+    if @instance
+      @where_string << " AND s.Inst_ID = ?"
+      @where_values << @instance
+    end
+
+    if @sid
+      @where_string << " AND s.SID = ?"
+      @where_values << @sid
+    end
+
+    if @serialno
+      @where_string << " AND s.Serial# = ?"
+      @where_values << @serialno
+    end
 
     @undo_transactions = sql_select_iterator ["\
       SELECT /* Panorama-Tool Ramm */
@@ -642,9 +667,9 @@ class StorageController < ApplicationController
              t.XIDUSN Segment, t.XIDSLOT Slot, t.XIDSQN Sequence, t.CR_get, t.CR_Change
       FROM   gv$Transaction t
       JOIN   gv$Session s ON s.Inst_ID = t.Inst_ID AND s.TAddr = t.Addr
-      #{'WHERE  t.XIDUsn = ?' if @segment_id}
+      WHERE  1=1 #{@where_string}
       ORDER BY t.Used_Ublk DESC
-      "].concat(@segment_id ? [@segment_id] : [])
+      "].concat(@where_values)
 
     render_partial
   end

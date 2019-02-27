@@ -112,4 +112,13 @@ class StorageControllerTest < ActionController::TestCase
     post :list_sysaux_occupants, :params => { :format=>:html}
     assert_response :success
   end
+
+  test "list_undo_transactions with xhr: true" do
+    post :list_undo_transactions, params: {format: :html, segment_id: 1}
+    assert_response :success
+
+    post :list_undo_transactions, params: {format: :html, instance: 1, sid: 1, serialno: 1}
+    assert_response :success
+
+  end
 end

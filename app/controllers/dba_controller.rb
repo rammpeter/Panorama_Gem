@@ -791,6 +791,8 @@ Solution: Execute as user 'SYS':
                   s.UserName, s.Machine, s.OSUser, s.Process, s.Program,
                   SYSDATE - (s.Last_Call_Et/86400) Last_Call,
                   s.Logon_Time, p.spID,
+                  RawToHex(tx.XID) Tx_ID,
+                  tx.Start_Time,
                   c.AUTHENTICATION_TYPE
                   #{", c.Client_CharSet, c.Client_Connection, c.Client_OCI_Library, c.Client_Version, c.Client_Driver" if get_db_version >= "11.2" }
                   #{", s.SQL_Exec_Start, s.SQL_Exec_ID, s.Prev_Exec_Start, s.Prev_Exec_ID" if get_db_version >= '11.1' }
@@ -803,6 +805,7 @@ Solution: Execute as user 'SYS':
                             #{' AND Serial#=?' if get_db_version >= '11.2' }
                             AND    RowNum < 2         /* Verdichtung da fuer jede Zeile des Network_Banners ein Record in GV$Session_Connect_Info existiert */
                            ) c ON c.Inst_ID = s.Inst_ID AND c.SID = s.SID #{'AND c.Serial# = s.Serial#'  if get_db_version >= '11.2' }
+           LEFT OUTER JOIN gv$Transaction tx ON tx.Inst_ID = s.Inst_ID AND tx.Addr = s.TAddr
            #{"LEFT OUTER JOIN gv$Containers con ON con.Inst_ID=s.Inst_ID AND con.Con_ID=s.Con_ID" if get_current_database[:cdb]}
            WHERE  s.Inst_ID=? AND s.SID=? AND s.Serial#=?",
            @instance, @sid].concat( get_db_version >= "11.2" ? [@serialno] : [] ).concat([@instance, @sid, @serialno])
