@@ -64,6 +64,10 @@ class WorkerThreadTest < ActiveSupport::TestCase
 
 
   test "do_sampling_longterm_trend" do
+    @sampler_config = prepare_panorama_sampler_thread_db_config                 # Config for StructureCheck only
+    PanoramaSamplerStructureCheck.do_check(@sampler_config, :AWR)               # Existing structure is precondition for test
+    PanoramaSamplerStructureCheck.do_check(@sampler_config, :LONGTERM_TREND)    # Existing structure is precondition for test
+
     [nil, 'SYS', 'SYSTEM'].each do |connection_user|                            # Use different user for connect
       [true, false].each do |log_item|
         @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
