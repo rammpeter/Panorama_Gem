@@ -624,7 +624,7 @@ class DbaSchemaController < ApplicationController
               SP_Ini_Trans_Count,    SP_Ini_Trans,
               SP_Max_Trans_Count,    SP_Max_Trans
          #{", SP_Compress_For_Count, SP_Compress_For,
-              SP_InMemory_Count,     SP_InMemory" if get_db_version >= '11.2'}
+              SP_InMemory_Count,     SP_InMemory" if get_db_version >= '12.1'}
       FROM DBA_Tab_Partitions p
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Table_Owner AND o.Object_Name = p.Table_Name AND o.SubObject_Name = p.Partition_Name AND o.Object_Type = 'TABLE PARTITION'
       LEFT OUTER JOIN Storage st ON st.Partition_Name = p.Partition_Name
@@ -636,7 +636,7 @@ class DbaSchemaController < ApplicationController
                               COUNT(DISTINCT Ini_Trans)       SP_Ini_Trans_Count,    MIN(Ini_Trans)        SP_Ini_Trans,
                               COUNT(DISTINCT Max_Trans)       SP_Max_Trans_Count,    MIN(Max_Trans)        SP_Max_Trans
                          #{", COUNT(DISTINCT Compress_For)    SP_Compress_For_Count, MIN(Compress_For)     SP_Compress_For,
-                              COUNT(DISTINCT InMemory)        SP_InMemory_Count,     MIN(InMemory)         SP_InMemory" if get_db_version >= '11.2'}
+                              COUNT(DISTINCT InMemory)        SP_InMemory_Count,     MIN(InMemory)         SP_InMemory" if get_db_version >= '12.1'}
                        FROM   DBA_Tab_SubPartitions WHERE  Table_Owner = ? AND Table_Name = ?
                        GROUP BY Partition_Name
                       ) sp ON sp.Partition_Name = p.Partition_Name
@@ -651,7 +651,7 @@ class DbaSchemaController < ApplicationController
         p.pct_free          = p.sp_pct_free_count     == 1 ? p.sp_pct_free        : "< #{p.sp_pct_free_count} different >"              if p.sp_pct_free_count > 0
         p.ini_trans         = p.sp_ini_trans_count    == 1 ? p.sp_ini_trans       : "< #{p.sp_ini_trans_count} different >"             if p.sp_ini_trans_count > 0
         p.max_trans         = p.sp_max_trans_count    == 1 ? p.sp_max_trans       : "< #{p.sp_max_trans_count} different >"             if p.sp_max_trans_count > 0
-        p.inmemory          = p.sp_inmemory_count     == 1 ? p.sp_inmemory        : "< #{p.sp_inmemory_count} different >"              if get_db_version >= '11.2' && p.sp_inmemory_count > 0
+        p.inmemory          = p.sp_inmemory_count     == 1 ? p.sp_inmemory        : "< #{p.sp_inmemory_count} different >"              if get_db_version >= '12.1' && p.sp_inmemory_count > 0
       end
     end
 
