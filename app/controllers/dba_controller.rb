@@ -1326,7 +1326,7 @@ Solution: Execute as user 'SYS':
                                          EXTRACT(HOUR FROM WINDOW_DURATION_LAST_30_DAYS)*3600   + EXTRACT(MINUTE FROM WINDOW_DURATION_LAST_30_DAYS)*60  + EXTRACT(SECOND FROM WINDOW_DURATION_LAST_30_DAYS) WINDOW_DURATION_30_DAYS_Secs,
                                          j.Job_Runs
                                   FROM   DBA_AutoTask_Client a
-                                  JOIN   (SELECT Client_Name, COUNT(*) Job_Runs
+                                  JOIN   (SELECT /*+ NO_MERGE */ Client_Name, COUNT(*) Job_Runs
                                           FROM   DBA_AUTOTASK_JOB_HISTORY
                                           GROUP BY Client_Name
                                          ) j ON j.Client_Name = a.Client_Name
