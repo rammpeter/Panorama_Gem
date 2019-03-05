@@ -272,10 +272,12 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       [:diagnostics_pack, :diagnostics_and_tuning_pack].include? management_pack_license
     end
 
-    [nil, 1].each do |instance|
-      # download_oracle_com_reachable: simulate test from previous dialog
-      post '/dba_history/list_performance_hub_report', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>instance, download_oracle_com_reachable: true }
-      assert_response management_pack_license_ok? ? :success : :error
+    if get_db_version >= '12.1'
+      [nil, 1].each do |instance|
+        # download_oracle_com_reachable: simulate test from previous dialog
+        post '/dba_history/list_performance_hub_report', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>instance, download_oracle_com_reachable: true }
+        assert_response management_pack_license_ok? ? :success : :error
+      end
     end
 
     post '/dba_history/list_awr_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
