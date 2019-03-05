@@ -109,7 +109,7 @@
             action:       :expand_sql_text,
             sql_id:       @sql_id,
             update_area:  @update_area
-        }, :title=>"Expand SQL-statement: replace accessed views with their original SQL content")
+        }, :title=>"Expand SQL-statement: replace accessed views with their original SQL content.\nUsing DBMS_UTILITY.expand_sql_text\nRequires you log in to Panorama as the User who has executed this SQL or SQL uses table names qualified with owner.")
       %>
     </div>
   <% end %>

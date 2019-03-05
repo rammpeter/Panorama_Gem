@@ -1313,7 +1313,11 @@ Solution: Execute as user 'SYS':
   end
 
   def show_dba_autotask_jobs
-    @windows = sql_select_iterator "SELECT * from DBA_AUTOTASK_WINDOW_CLIENTS"
+    @windows = sql_select_iterator "SELECT c.*,
+                                           w.Resource_Plan, w.Schedule_Type, w.Repeat_Interval, w.Window_Priority, w.Comments
+                                    FROM   DBA_AUTOTASK_WINDOW_CLIENTS c
+                                    LEFT OUTER JOIN DBA_Scheduler_Windows w ON w.Owner = 'SYS' AND w.Window_Name = c.Window_Name
+                                   "
 
     @tasks = sql_select_iterator "SELECT a.*,
                                          EXTRACT(HOUR FROM Mean_Job_Duration)*3600              + EXTRACT(MINUTE FROM Mean_Job_Duration)*60             + EXTRACT(SECOND FROM Mean_Job_Duration)            Mean_Job_Duration_Secs,

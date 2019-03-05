@@ -15,6 +15,6 @@
       ]
 
 %>
-<%= gen_slickgrid(@job_runs, column_options, {:caption=>"Automated Maintenance Tasks job runs for client name = '#{@client_name}' from DBA_Autotask_Job_History", :width=>:auto, show_pin_icon: 1}) %>
+<%= gen_slickgrid(@job_runs, column_options, {:caption=>"Automated Maintenance Tasks job runs for client name = '#{@client_name}' from DBA_Autotask_Job_History", max_height: 450, :width=>:auto, show_pin_icon: 1}) %>
 
 <div id="<%= @update_area %>"></div>
