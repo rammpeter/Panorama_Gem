@@ -1316,7 +1316,7 @@ Solution: Execute as user 'SYS':
     @windows = sql_select_iterator "SELECT c.*,
                                            w.Resource_Plan, w.Schedule_Type, w.Repeat_Interval, w.Window_Priority, w.Comments
                                     FROM   DBA_AUTOTASK_WINDOW_CLIENTS c
-                                    LEFT OUTER JOIN DBA_Scheduler_Windows w ON #{"w.Owner = 'SYS' AND " if get_db_version >= '11.2'}w.Window_Name = c.Window_Name
+                                    LEFT OUTER JOIN DBA_Scheduler_Windows w ON #{"w.Owner = 'SYS' AND " if get_db_version >= '12.1'}w.Window_Name = c.Window_Name
                                    "
 
     @tasks = sql_select_iterator "SELECT a.*,
