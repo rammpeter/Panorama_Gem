@@ -39,7 +39,6 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   driven_by :headless_chrome
 
   def wait_for_ajax(timeout_secs = 60)
-
     loop_count = 0
     while page.evaluate_script('indicator_call_stack_depth') > 0 && loop_count < timeout_secs
       sleep(0.1)
@@ -64,6 +63,16 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
       message = "Timeout raised in wait_for_ajax after #{loop_count} seconds, indicator-dialog did not disappear') }"
       Rails.logger.error "############ #{message}"
       raise message
+    end
+  end
+
+  def click_button_with_retry(caption)
+    begin
+      click_button(caption)
+    rescue Exception => e
+      Rails.logger.info "click_button_with_retry for '#{caption}': Retry after #{e.class} #{e.message}"
+      sleep 5
+      click_button(caption)
     end
   end
 
@@ -119,13 +128,11 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     click_button('submit_login_dialog')
 
     wait_for_ajax                                                               # Wait until choose management pack is loaded
-    sleep 0.2
-    wait_for_ajax                                                               # Wait until list management pack is loaded
 
     if page.html['please choose your management pack license'] && page.html['Usage of Oracle management packs by Panorama']
       page.find_by_id("management_pack_license_#{management_pack_license}").set(true) # Set license according to test setting
-      click_button('Acknowledge and proceed')
-      wait_for_ajax                                                               # Wait until start_page is loaded
+      click_button_with_retry('Acknowledge and proceed')
+      wait_for_ajax                                                             # Wait until start_page is loaded
     end
   end
 
