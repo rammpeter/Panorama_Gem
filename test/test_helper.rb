@@ -219,9 +219,9 @@ class ActiveSupport::TestCase
                                              )
                                       WHERE RowNum <= 10"
 
-    puts "Last 10 snapshots are:"
+    Rails.logger.info "Last 10 snapshots are:"
     last_10_snaps.each do |s|
-      puts "Snap_ID = #{s.snap_id}, Instance = #{s.instance_number}, Begin_Interval_Time = #{localeDateTime(s.begin_interval_time)}"
+      Rails.logger.info "Snap_ID = #{s.snap_id}, Instance = #{s.instance_number}, Begin_Interval_Time = #{localeDateTime(s.begin_interval_time)}"
     end
 
     if snaps.nil? || snaps.min_snap_id.nil? || snaps.max_snap_id.nil? || snaps.start_time.nil? || snaps.end_time.nil?
