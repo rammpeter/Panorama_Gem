@@ -158,7 +158,7 @@ column_options =
     result << "#{'<br/>' if result.length > 0}Degree =  #{rec.degree}"                                                                    if rec.degree.to_i != 1
     result << "#{'<br/>' if result.length > 0}Cached =  #{rec.cache}"                                                                     if rec.cache.strip != 'N'
     result << "#{'<br/>' if result.length > 0}Compression = #{rec.compression}#{" (#{rec.compress_for})" if get_db_version >= '11.2'}"    if !(rec.compression.nil? || rec.compression == 'DISABLED' || rec.compression == 'N/A')
-    result << "#{'<br/>' if result.length > 0}InMemory = #{rec.inmemory}"                                                                 if get_db_version >= '12.1' && !(rec.inmemory == 'DISABLED' || rec.inmemory == 'N/A')
+    result << "#{'<br/>' if result.length > 0}InMemory = #{rec.inmemory}"                                                                 if get_db_version >= '12.1.0.2' && !(rec.inmemory == 'DISABLED' || rec.inmemory == 'N/A')
     result << "#{'<br/>' if result.length > 0}Flash Cache = #{rec.flash_cache}"                                                           if get_db_version >= '12.1' && rec.flash_cache != 'DEFAULT'
     result << "#{'<br/>' if result.length > 0}Cell Flash Cache = #{rec.cell_flash_cache}"                                                 if get_db_version >= '12.1' && rec.cell_flash_cache != 'DEFAULT'
     result.html_safe

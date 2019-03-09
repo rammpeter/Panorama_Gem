@@ -67,12 +67,21 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   end
 
   def click_button_with_retry(caption)
-    begin
-      click_button(caption)
-    rescue Exception => e
-      Rails.logger.info "click_button_with_retry for '#{caption}': Retry after #{e.class} #{e.message}"
-      sleep 5
-      click_button(caption)
+    retry_count = 0
+    while retry_count < 10 do
+      retry_count += 1
+      begin
+        click_button(caption)
+        break                                                                   # Leave while loop if successful
+      rescue Exception => e
+        if retry_count == 10
+          Rails.logger.info "#{Time.now} click_button_with_retry for '#{caption}': Last retry failed with #{e.class} #{e.message}"
+          raise e
+        else
+          Rails.logger.info "#{Time.now} click_button_with_retry for '#{caption}': Retry after #{e.class} #{e.message}"
+          sleep 5
+        end
+      end
     end
   end
 
@@ -83,7 +92,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     msg = ''
     while loop_count < MAX_LOOPS
       begin
-        visit root_path                                                             # /env/index
+        visit root_path                                                         # /env/index
         break
       rescue Exception => e
         Rails.logger.error "Exception '#{e.message}' catched from calling visit root_path in first tries"

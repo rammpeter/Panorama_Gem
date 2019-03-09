@@ -327,6 +327,7 @@ class DbaSgaController < ApplicationController
     @instance               = prepare_param_instance
     @child_number           = (params[:child_number].nil? || params[:child_number] == '') ? nil : (params[:child_number].to_i rescue nil)
     @child_address          = params[:child_address] == '' ? nil : params[:child_address]
+    @show_adative_plans     = params[:show_adaptive_plans] == 'true'
 
     where_string = ''
     where_values = []
@@ -351,6 +352,25 @@ class DbaSgaController < ApplicationController
       #{where_string}
       GROUP BY Plan_Hash_Value
       ", @sql_id, @instance].concat(where_values)
+
+    if get_db_version >= '12.1'
+      display_maps = sql_select_all ["\
+        SELECT plan_hash_Value, X.*
+        FROM gv$sql_plan,
+        XMLTABLE ( '/other_xml/display_map/row' passing XMLTYPE(other_xml ) COLUMNS
+          op  NUMBER PATH '@op',    -- operation
+          dis NUMBER PATH '@dis',   -- display
+          par NUMBER PATH '@par',   -- parent
+          prt NUMBER PATH '@prt',   -- unkown
+          dep NUMBER PATH '@dep',   -- depth
+          skp NUMBER PATH '@skp' )  -- skip
+        AS X
+        WHERE  SQL_ID = ?
+        AND    Inst_ID = ?
+        #{where_string}
+        AND other_xml   IS NOT NULL
+        ", @sql_id, @instance].concat(where_values)
+    end
 
     all_plans = sql_select_all ["\
         SELECT /* Panorama-Tool Ramm */
@@ -435,10 +455,22 @@ class DbaSgaController < ApplicationController
 
 
     @multiplans.each do |mp|
+      display_skip_map = {}
+      if get_db_version >= '12.1'
+        # Calculate rows to skip due to adaptive plan
+        display_maps.each do |m|
+          if m.plan_hash_value == mp.plan_hash_value && m['skp'] == 1
+            display_skip_map[m['op']] = 1
+            mp[:adaptive_plan] = true                                           # Mark plan as adaptive
+          end
+        end
+      end
+
       mp[:plans] = []
       all_plans.each do |p|
         if p.plan_hash_value == mp.plan_hash_value && p.child_number == mp.min_child_number
-          mp[:plans] << p
+            p[:skipped_adaptive_plan] = display_skip_map.has_key?(p['id'])
+            mp[:plans] << p if !display_skip_map.has_key?(p['id']) || @show_adative_plans
         end
       end
 
@@ -462,6 +494,21 @@ class DbaSgaController < ApplicationController
               :value        => info.children.text
           }.extend SelectHashHelper)
         end
+
+        xml_doc.xpath('//bind').each do |bind|
+          attributes = ''
+          bind.attributes.each do |key, val|
+            attributes << "#{key}=#{val} "
+          end
+
+          mp[:plan_additions] << ({
+              :record_type  => 'Peeked bind',
+#              :attribute    => Hash[bind.attributes.map {|key, val| [key, val.to_s]}].to_s,
+              :attribute    => attributes,
+              :value        => bind.children.text
+          }.extend SelectHashHelper)
+        end
+
         xml_doc.xpath('//hint').each do |hint|
           mp[:plan_additions] << ({
               :record_type  => 'Hint',

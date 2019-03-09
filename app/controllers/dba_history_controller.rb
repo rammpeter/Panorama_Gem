@@ -632,6 +632,7 @@ class DbaHistoryController < ApplicationController
     @sql_id      = params[:sql_id]
     @parsing_schema_name = params[:parsing_schema_name]   # optional, Kann '[UNKNOWN]' enthalten, dann kein Match möglich
     save_session_time_selection   # werte in session puffern
+    @show_adative_plans     = params[:show_adaptive_plans] == 'true'
 
     where_stmt       = ""
     ash_where_stmt   = ""
@@ -669,6 +670,25 @@ class DbaHistoryController < ApplicationController
                                     GROUP BY s.Plan_Hash_Value, s.DBID, s.Parsing_Schema_Name
                                     ORDER BY MIN(ss.Begin_Interval_Time)
                                    ", @sql_id, @time_selection_start, @time_selection_end].concat(where_values)
+
+    if get_db_version >= '12.1'
+      display_maps = sql_select_all ["\
+        SELECT plan_hash_Value, X.*
+        FROM DBA_Hist_SQL_Plan,
+        XMLTABLE ( '/other_xml/display_map/row' passing XMLTYPE(other_xml ) COLUMNS
+          op  NUMBER PATH '@op',    -- operation
+          dis NUMBER PATH '@dis',   -- display
+          par NUMBER PATH '@par',   -- parent
+          prt NUMBER PATH '@prt',   -- unkown
+          dep NUMBER PATH '@dep',   -- depth
+          skp NUMBER PATH '@skp' )  -- skip
+        AS X
+        WHERE  DBID = ?
+        AND    SQL_ID = ?
+        AND other_xml   IS NOT NULL
+        ", get_dbid, @sql_id]
+    end
+
 
     all_plans = sql_select_all ["\
                          SELECT /*+ ORDERED USE_NL(p) Panorama-Tool Ramm */
@@ -712,10 +732,24 @@ class DbaHistoryController < ApplicationController
 
     # Iteration über unterschiedliche Ausführungspläne
     @multiplans.each do |mp|
+
+      display_skip_map = {}
+      if get_db_version >= '12.1'
+        # Calculate rows to skip due to adaptive plan
+        display_maps.each do |m|
+          if m.plan_hash_value == mp.plan_hash_value && m['skp'] == 1
+            display_skip_map[m['op']] = 1
+            mp[:adaptive_plan] = true                                           # Mark plan as adaptive
+          end
+        end
+      end
+
+
       mp[:plans] = []   # Konkreter Ausführungsplan, aus Gesamtmenge aller Pläne auszufiltern
       all_plans.each do |p|
         if p.dbid == mp.dbid && p.plan_hash_value == mp.plan_hash_value && p.parsing_schema_name == mp.parsing_schema_name
-          mp[:plans] << p
+          p[:skipped_adaptive_plan] = display_skip_map.has_key?(p['id'])
+          mp[:plans] << p if !display_skip_map.has_key?(p['id']) || @show_adative_plans
           mp[:timestamp] = p.timestamp                                          # Timestamp of parse
         end
       end
