@@ -154,7 +154,7 @@ class ActiveSupport::TestCase
   def initialize_min_max_snap_id_and_times
     two_snaps_sql = "SELECT Snap_ID - 1 Max_Snap_ID,
                                          Snap_ID - 2 Min_Snap_ID,
-                                         Start_Time, End_Time
+                                         x.*
                                   FROM   (
                                           SELECT Snap_ID, Startup_Time,
                                                  LAG(Startup_Time, 1, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_1,
@@ -165,7 +165,7 @@ class ActiveSupport::TestCase
                                           FROM   DBA_Hist_Snapshot
                                           WHERE  Instance_Number = 1
                                           -- ORDER BY Snap_ID DESC /* order by corrupts result of LAG */
-                                         )
+                                         ) x
                                   WHERE  Startup_Time = Startup_1
                                   AND    Startup_Time = Startup_2
                                   AND    Startup_Time = Startup_3
@@ -209,25 +209,25 @@ class ActiveSupport::TestCase
       end
     end
 
-
     # Get 2 subsequent snapshots in the middle of 4 snapshots with same startup time
     snaps = sql_select_first_row two_snaps_sql
 
-    if snaps.nil? || snaps.min_snap_id.nil? || snaps.max_snap_id.nil? || snaps.start_time.nil? || snaps.end_time.nil?
-      message = "No 4 subsequent snapshots with same startup_time found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')}"
-      puts message
-
-      last_10_snaps = sql_select_all "SELECT *
+    last_10_snaps = sql_select_all "SELECT *
                                       FROM   (SELECT *
                                               FROM DBA_Hist_Snapshot
                                               ORDER BY Begin_Interval_Time DESC
                                              )
                                       WHERE RowNum <= 10"
 
-      puts "Last 10 snapshots are:"
-      last_10_snaps.each do |s|
-        puts "Snap_ID = #{s.snap_id}, Instance = #{s.instance_number}, Begin_Interval_Time = #{localeDateTime(s.begin_interval_time)}"
-      end
+    puts "Last 10 snapshots are:"
+    last_10_snaps.each do |s|
+      puts "Snap_ID = #{s.snap_id}, Instance = #{s.instance_number}, Begin_Interval_Time = #{localeDateTime(s.begin_interval_time)}"
+    end
+
+    if snaps.nil? || snaps.min_snap_id.nil? || snaps.max_snap_id.nil? || snaps.start_time.nil? || snaps.end_time.nil?
+      message = "No 4 subsequent snapshots with same startup_time found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')}"
+      puts message
+
       raise message
     end
 
@@ -236,6 +236,7 @@ class ActiveSupport::TestCase
 
     @time_selection_start = (snaps.start_time-1).strftime("%d.%m.%Y %H:%M")
     @time_selection_end   = snaps.end_time.strftime("%d.%m.%Y %H:%M")
+    Rails.logger.info "initialize_min_max_snap_id_and_times: Selected Snap_IDs: #{@min_snap_id}, #{@max_snap_id} Times: #{@time_selection_start}, #{@time_selection_end}"
   end
 
 end
