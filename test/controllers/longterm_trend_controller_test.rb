@@ -19,6 +19,7 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
 
     set_panorama_sampler_config_defaults!(@sampler_config)
 
+    PanoramaSamplerStructureCheck.do_check(@sampler_config, :AWR);              # assure existence of DB objects
     PanoramaSamplerStructureCheck.do_check(@sampler_config, :LONGTERM_TREND);   # assure existence of DB objects
 
     min_max_sql = "SELECT COUNT(*) Records, MIN(Snapshot_Timestamp) Min_TS, MAX(Snapshot_Timestamp) Max_TS FROM #{@sampler_config[:owner]}.Longterm_Trend"
