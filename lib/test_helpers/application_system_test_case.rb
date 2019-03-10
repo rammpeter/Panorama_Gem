@@ -207,7 +207,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
         raise_error = false if error_dialog.text[amc]                           # No error if dialog contains any of the strings
       end
 
-      assert(!raise_error, "ApplicationSystemTestCase.assert_ajax_success_or_access_denied: Error dialog raised but not because missing management pack license. Error dialog:\n#{error_dialog.text}")
+      assert(!raise_error, "ApplicationSystemTestCase.assert_ajax_success_or_access_denied: Error dialog raised but not because missing management pack license.\nmanagement_pack_license = #{management_pack_license} (#{management_pack_license.class})\nError dialog:\n#{error_dialog.text}")
       return true
     else
       return false                                                              # Error dialog not shown
