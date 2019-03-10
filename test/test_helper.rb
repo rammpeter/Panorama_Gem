@@ -57,6 +57,7 @@ class ActionController::TestCase
 
 end
 
+$first_log_written = false
 
 class ActiveSupport::TestCase
   include ApplicationHelper
@@ -69,10 +70,15 @@ class ActiveSupport::TestCase
   def connect_oracle_db
     test_config = PanoramaTestConfig.test_config
 
-    Rails.logger.info "#{Time.now} : Starting Test with configuration #{test_config}"
-
     connect_oracle_db_internal(test_config)   # aus lib/test_helpers/oracle_connection_test_helper
     @db_version = PanoramaConnection.db_version                                 # Store db_version outside PanoramaConnection
+    Rails.logger.info "#{Time.now} : Starting Test with configuration #{test_config} DB-Version = #{@db_version}"
+
+
+    unless $first_log_written
+      $first_log_written = true
+      puts "Database version = #{@db_version}"
+    end
   end
 
   # Don't use PanoramaConnection.db_version because PanoramaConnection.reset_thread_local_attributes is called at end of each request
