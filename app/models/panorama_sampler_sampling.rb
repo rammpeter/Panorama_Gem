@@ -24,7 +24,12 @@ class PanoramaSamplerSampling
       end
 
     end
+
     PanoramaSamplerSampling.new(sampler_config).send("do_#{domain.downcase}_housekeeping".to_sym, shrink_space)
+
+    if shrink_space
+      PanoramaSamplerStructureCheck.do_check(sampler_config, domain)            # Recreate indexes to ensure complete structure before next execution
+    end
   end
 
   def self.run_ash_daemon(sampler_config, snapshot_time)
