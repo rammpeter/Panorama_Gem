@@ -157,7 +157,7 @@ class ActiveSupport::TestCase
     end
   end
 
-  def initialize_min_max_snap_id_and_times
+  def initialize_min_max_snap_id_and_times(time_format = :minutes)
     two_snaps_sql = "SELECT Snap_ID - 1 Max_Snap_ID,
                                          Snap_ID - 2 Min_Snap_ID,
                                          x.*
@@ -240,8 +240,8 @@ class ActiveSupport::TestCase
     @min_snap_id = snaps.min_snap_id
     @max_snap_id = snaps.max_snap_id
 
-    @time_selection_start = (snaps.start_time-1).strftime("%d.%m.%Y %H:%M")
-    @time_selection_end   = snaps.end_time.strftime("%d.%m.%Y %H:%M")
+    @time_selection_start = localeDateTime(snaps.start_time-1, time_format)
+    @time_selection_end   = localeDateTime(snaps.end_time, time_format)
     Rails.logger.info "initialize_min_max_snap_id_and_times: Selected Snap_IDs: #{@min_snap_id}, #{@max_snap_id} Times: #{@time_selection_start}, #{@time_selection_end}"
   end
 

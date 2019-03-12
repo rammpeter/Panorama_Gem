@@ -232,14 +232,4 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     raise
   end
 
-  def get_time_string(minutes_back = 0, mask = :minutes)
-    full_mask = case mask
-                  when :minutes then '%Y-%m-%d %H:%M'
-                  when :seconds then '%Y-%m-%d %H:%M:%S'
-                  else raise "Unknown mask '#{mask}'"
-                end
-
-    (Time.now - minutes_back * 60).strftime(full_mask)
-  end
-
 end

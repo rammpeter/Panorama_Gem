@@ -2,6 +2,12 @@ require "test_helper"
 
 class DbaGeneralTest < ApplicationSystemTestCase
 
+  setup do
+    set_session_test_db_context
+    set_I18n_locale('en')
+    initialize_min_max_snap_id_and_times(:minutes)
+  end
+
   test "Start page" do
     login_and_menu_call('DBA general', 'menu_env_start_page')
     assert_ajax_success
@@ -61,8 +67,8 @@ class DbaGeneralTest < ApplicationSystemTestCase
 
     assert_text 'Blocking Locks from '                                          # tablename may vary depending from panorama_sampler or not
 
-    fill_in('time_selection_start_default', with: get_time_string(1440))
-    fill_in('time_selection_end_default',   with: get_time_string)
+    fill_in('time_selection_start_default', with: @time_selection_start)
+    fill_in('time_selection_end_default',   with: @time_selection_end)
     page.click_button 'Show blocking locks'
     unless assert_ajax_success_and_test_for_access_denied(300)                  # May last a bit longer
       assert_text 'Blocking locks between'
