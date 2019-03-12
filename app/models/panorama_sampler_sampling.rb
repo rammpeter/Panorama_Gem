@@ -12,6 +12,18 @@ class PanoramaSamplerSampling
 
   # call housekeeping method a'a do_object_size_housekeeping(shrink_space)
   def self.do_housekeeping(sampler_config, shrink_space, domain)
+    if shrink_space
+      # Remove indexes (not PKeys) at first to reclaim some free space for tablespaces
+      PanoramaSamplerStructureCheck.tables.each do |table|
+        if table[:indexes]
+          table[:indexes].each do |index|
+            Rails.logger.info "Dropping index #{@sampler_config.get_owner}.#{index[:index_name]} to reclaim space for following SHRINK SPACE operations"
+            PanoramaConnection.sql_execute("DROP INDEX #{@sampler_config.get_owner}.#{index[:index_name]}")
+          end
+        end
+      end
+
+    end
     PanoramaSamplerSampling.new(sampler_config).send("do_#{domain.downcase}_housekeeping".to_sym, shrink_space)
   end
 
