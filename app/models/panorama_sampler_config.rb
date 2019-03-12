@@ -59,7 +59,9 @@ class PanoramaSamplerConfig
   end
 
   def get_config_value(key)
-    Rails.logger.info "PanoramaSamplerConfig.get_config_value: Missing hash key '#{key}' of class '#{key.class}' for panorama-sampler config with ID=#{get_id}" if !@config_hash.has_key?(key);
+    if !@config_hash.has_key?(key)
+      Rails.logger.info "PanoramaSamplerConfig.get_config_value: Missing hash key '#{key}' of class '#{key.class}' for panorama-sampler config with ID=#{get_id}"
+    end
     @config_hash[key]
   end
 

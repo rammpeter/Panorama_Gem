@@ -46,6 +46,7 @@ class PanoramaSamplerController < ApplicationController
     config_entry[:object_size_active]     = config_entry[:object_size_active]     == '1'
     config_entry[:cache_objects_active]   = config_entry[:cache_objects_active]   == '1'
     config_entry[:blocking_locks_active]  = config_entry[:blocking_locks_active]  == '1'
+    config_entry[:longterm_trend_active]  = config_entry[:longterm_trend_active]  == '1'
 
     PanoramaSamplerConfig.prepare_saved_entry!(config_entry)      # Password encryption called here
 
