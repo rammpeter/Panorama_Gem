@@ -12,19 +12,6 @@ class PanoramaSamplerSampling
 
   # call housekeeping method a'a do_object_size_housekeeping(shrink_space)
   def self.do_housekeeping(sampler_config, shrink_space, domain)
-    if shrink_space
-      # Remove indexes (not PKeys) at first to reclaim some free space for tablespaces
-      PanoramaSamplerStructureCheck.tables.each do |table|
-        if table[:indexes]
-          table[:indexes].each do |index|
-            Rails.logger.info "Dropping index #{@sampler_config.get_owner}.#{index[:index_name]} to reclaim space for following SHRINK SPACE operations"
-            PanoramaConnection.sql_execute("DROP INDEX #{@sampler_config.get_owner}.#{index[:index_name]}")
-          end
-        end
-      end
-
-    end
-
     PanoramaSamplerSampling.new(sampler_config).send("do_#{domain.downcase}_housekeeping".to_sym, shrink_space)
 
     if shrink_space
@@ -436,9 +423,28 @@ class PanoramaSamplerSampling
 
 
   def exec_shrink_space(table_name)
-    Rails.logger.info "Executing ALTER TABLE #{@sampler_config.get_owner}.#{table_name} SHRINK SPACE CASCADE"
+    shrink_cmd = "ALTER TABLE #{@sampler_config.get_owner}.#{table_name} SHRINK SPACE CASCADE"
+
+    Rails.logger.info "Executing #{shrink_cmd}"
     PanoramaConnection.sql_execute("ALTER TABLE #{@sampler_config.get_owner}.#{table_name} ENABLE ROW MOVEMENT")
-    PanoramaConnection.sql_execute("ALTER TABLE #{@sampler_config.get_owner}.#{table_name} SHRINK SPACE CASCADE")
+    begin
+      PanoramaConnection.sql_execute(shrink_cmd)
+    rescue Exception => e
+      Rails.logger.error "Exception #{e.message} during #{shrink_cmd}"
+      # get one index name to drop that is not PK etc.
+      index_name = PanoramaConnection.sql_select_one "SELECT Index_Name
+                                                      FROM   All_Indexes i
+                                                      WHERE  i.Owner = '#{@sampler_config.get_owner.upcase}'
+                                                      AND    Index_Name NOT IN (SELECT Index_Name FROM All_Constraints c WHERE c.Owner = '#{@sampler_config.get_owner.upcase}' AND Index_Name IS NOT NULL)
+                                                      "
+      if index_name.nil?
+        Rails.logger.info "No more non-PK indexes to drop for reclaiming space"
+      else
+        Rails.logger.info "Dropping index #{@sampler_config.get_owner}.#{index_name} to reclaim space for following SHRINK SPACE operations"
+        PanoramaConnection.sql_execute("DROP INDEX #{@sampler_config.get_owner}.#{index_name}")
+        PanoramaConnection.sql_execute(shrink_cmd)                              # try again to shrink
+      end
+    end
   end
 
   private
