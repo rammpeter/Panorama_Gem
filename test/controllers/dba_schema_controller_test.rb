@@ -79,10 +79,14 @@ class DbaSchemaControllerTest < ActionController::TestCase
       assert_response :success
     end
 
-    get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"DBMS_LOCK", :object_type=>'PACKAGE', :update_area=>:hugo }
-    assert_response :success
-    get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"DBMS_LOCK", :object_type=>'PACKAGE BODY', :update_area=>:hugo }
-    assert_response :success
+    [nil, 1].each do |show_line_numbers|
+      get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"DBMS_LOCK", :object_type=>'PACKAGE', show_line_numbers: show_line_numbers, :update_area=>:hugo }
+      assert_response :success
+
+      get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"DBMS_LOCK", :object_type=>'PACKAGE BODY', show_line_numbers: show_line_numbers, :update_area=>:hugo }
+      assert_response :success
+    end
+
     get :list_object_description, :params => {:format=>:html, :segment_name=>"ALL_TABLES", :update_area=>:hugo }                  # View
     assert_response :success
 
@@ -106,6 +110,11 @@ class DbaSchemaControllerTest < ActionController::TestCase
 
     post :list_triggers, :params => {:format=>:html, :owner=>"SYS", :table_name=>"AUD$", :update_area=>:hugo }
     assert_response :success
+
+    [nil, 1].each do |show_line_numbers|
+      post :list_trigger_body, :params => {:format=>:html, :owner=>"SYS", :trigger_name=>"LOGMNRGGC_TRIGGER", show_line_numbers: show_line_numbers, :update_area=>:hugo }
+      assert_response :success
+    end
 
     post :list_lobs, :params => {:format=>:html, :owner=>"SYS", :table_name=>"AUD$", :update_area=>:hugo }
     assert_response :success

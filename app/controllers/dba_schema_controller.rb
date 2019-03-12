@@ -1072,9 +1072,7 @@ class DbaSchemaController < ApplicationController
     @object_name          = params[:object_name]
     @object_type          = params[:object_type]
     @current_update_area  = params[:update_area]
-    @show_line_numbers    = params[:show_line_numbers]
-    @show_line_numbers    = nil if @show_line_numbers == ''
-
+    @show_line_numbers    = prepare_param(:show_line_numbers)
 
     @dependencies = get_dependencies_count(@owner, @object_name, @object_type)
     @grants       = get_grant_count(@owner, @object_name)
@@ -1177,16 +1175,31 @@ class DbaSchemaController < ApplicationController
   end
 
   def list_trigger_body
-    body = sql_select_one ["\
+    @owner                = prepare_param(:owner)
+    @trigger_name         = prepare_param(:trigger_name)
+    @current_update_area  = params[:update_area]
+    @show_line_numbers    = prepare_param(:show_line_numbers)
+
+    @body = sql_select_one ["\
       SELECT Trigger_Body
       FROM   DBA_Triggers
       WHERE  Owner = ?
       AND    Trigger_Name  = ?
       ", params[:owner], params[:trigger_name]]
 
-    respond_to do |format|
-      format.html {render :html => body.html_safe }
+    if @show_line_numbers
+      line_body = ''
+
+      line_no = 1
+      @body.lines.each do |l|
+        line_body << "#{line_no.to_s.rjust(5)}  #{l}"
+        line_no += 1
+      end
+
+      @body = line_body
     end
+
+    render_partial
   end
 
   def list_index_partitions
