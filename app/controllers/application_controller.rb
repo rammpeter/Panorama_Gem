@@ -151,6 +151,8 @@ class ApplicationController < ActionController::Base
 
   def show_popup_message(message, response_format=:js)
 
+    Rails.logger.info "show_popup_message with format #{response_format}: #{message}"
+
     case response_format.to_sym
       when :js
         respond_to do |format|
@@ -164,7 +166,5 @@ class ApplicationController < ActionController::Base
         raise "show_popup_message: unsupported format #{response_format}"
     end
   end
-
-
 
 end

@@ -477,7 +477,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'User_Name',                      column_type:   'VARCHAR2',  precision: 128,                 comment: 'Owner of blocked session' },
               { column_name:  'Machine',                        column_type:   'VARCHAR2',  precision: 64,                  comment: 'Machine of blocked session' },
               { column_name:  'OS_User',                        column_type:   'VARCHAR2',  precision: 128,                 comment: 'OS-user of blocked session' },
-              { column_name:  'Process',                        column_type:   'VARCHAR2',  precision: 12,                  comment: 'Process-ID of blocked session' },
+              { column_name:  'Process',                        column_type:   'VARCHAR2',  precision: 128,                 comment: 'Process-ID of blocked session' },
               { column_name:  'Program',                        column_type:   'VARCHAR2',  precision: 48,                  comment: 'Program of blocked session' },
               { column_name:  'Lock_Type',                      column_type:   'VARCHAR2',  precision: 2, not_null: true,   comment: 'Lock type of blocked session' },
               { column_name:  'Seconds_In_Wait',                column_type:   'NUMBER',                                    comment: 'Number of seconds in current wait state' },
