@@ -63,13 +63,14 @@ class DbaSchemaControllerTest < ActionController::TestCase
     assert_response :success;
   end
 
-  test "list_table_description with xhr: true" do
+  test "list_object_description with xhr: true" do
     [
         {owner: 'SYS',      segment_name: 'AUD$'},                              # Table
         {owner: 'SYS',      segment_name: 'AUD$%'},                             # Table (Wildcard with one hit)
         {owner: 'SYS',      segment_name: 'A%'},                                # (Wildcard with multiple hit)
         {owner: 'SYS',      segment_name: 'TAB$'},                              # Table
         {owner: 'SYS',      segment_name: 'COL$'},                              # Table
+        {owner: 'SYS',      segment_name: 'WRH$_ACTIVE_SESSION_HISTORY'},       # partitioned Table
         {owner: 'PUBLIC',   segment_name: 'V$ARCHIVE'},                         # Synonym
         {owner: 'SYS',      segment_name: 'DBMS_LOCK'},                         # Package oder Body
     ]

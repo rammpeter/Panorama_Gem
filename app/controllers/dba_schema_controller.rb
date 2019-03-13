@@ -429,7 +429,7 @@ class DbaSchemaController < ApplicationController
                                                  COUNT(DISTINCT Ini_Trans)        Ini_Trans_Count,    MIN(Ini_Trans)       Ini_Trans,
                                                  COUNT(DISTINCT Max_Trans)        Max_Trans_Count,    MIN(Max_Trans)       Max_Trans
                                             #{", COUNT(DISTINCT Compress_For)     Compress_For_Count, MIN(Compress_For)    Compress_For,
-                                                 COUNT(DISTINCT InMemory)         InMemory_Count,     MIN(InMemory)        InMemory" if get_db_version >= '11.2'}
+                                                 COUNT(DISTINCT InMemory)         InMemory_Count,     MIN(InMemory)        InMemory" if get_db_version >= '12.1'}
                                           FROM DBA_Tab_Partitions WHERE  Table_Owner = ? AND Table_Name = ?", @owner, @table_name]
       @partition_count = partitions.anzahl
 
@@ -440,7 +440,7 @@ class DbaSchemaController < ApplicationController
                                                     COUNT(DISTINCT Ini_Trans)       Ini_Trans_Count,    MIN(Ini_Trans)        Ini_Trans,
                                                     COUNT(DISTINCT Max_Trans)       Max_Trans_Count,    MIN(Max_Trans)        Max_Trans
                                                #{", COUNT(DISTINCT Compress_For)    Compress_For_Count, MIN(Compress_For)     Compress_For,
-                                                    COUNT(DISTINCT InMemory)        InMemory_Count,     MIN(InMemory)         InMemory" if get_db_version >= '11.2'}
+                                                    COUNT(DISTINCT InMemory)        InMemory_Count,     MIN(InMemory)         InMemory" if get_db_version >= '12.1'}
                                              FROM DBA_Tab_SubPartitions WHERE  Table_Owner = ? AND Table_Name = ?", @owner, @table_name]
       @subpartition_count = subpartitions.anzahl
 
@@ -456,21 +456,21 @@ class DbaSchemaController < ApplicationController
       ", @owner, @table_name]
       @attribs.each do |a|
         a.compression       = partitions.compression_count  == 1 ? partitions.compression     : "< #{partitions.compression_count} different >"           if partitions.compression_count > 0
-        a.compress_for      = partitions.compress_for_count == 1 ? partitions.compress_for    : "< #{partitions.compress_for_count} different >"          if get_db_version >= '11.2' && partitions.compression_count > 0
+        a.compress_for      = partitions.compress_for_count == 1 ? partitions.compress_for    : "< #{partitions.compress_for_count} different >"          if get_db_version >= '12.1' && partitions.compression_count > 0
         a.tablespace_name   = partitions.tablespace_count   == 1 ? partitions.tablespace_name : "< #{partitions.tablespace_count} different >"            if partitions.tablespace_count > 0
         a.pct_free          = partitions.pct_free_count     == 1 ? partitions.pct_free        : "< #{partitions.pct_free_count} different >"              if partitions.pct_free_count > 0
         a.ini_trans         = partitions.ini_trans_count    == 1 ? partitions.ini_trans       : "< #{partitions.ini_trans_count} different >"             if partitions.ini_trans_count > 0
         a.max_trans         = partitions.max_trans_count    == 1 ? partitions.max_trans       : "< #{partitions.max_trans_count} different >"             if partitions.max_trans_count > 0
-        a.inmemory          = partitions.inmemory_count     == 1 ? partitions.inmemory        : "< #{partitions.inmemory_count} different >"              if partitions.inmemory_count > 0 && get_db_version >= '11.2'
+        a.inmemory          = partitions.inmemory_count     == 1 ? partitions.inmemory        : "< #{partitions.inmemory_count} different >"              if get_db_version >= '12.1' && partitions.inmemory_count > 0
 
         # Subpartition-Werte überschreieben evtl. die Partition-Werte wieder
         a.compression       = subpartitions.compression_count  == 1 ? subpartitions.compression     : "< #{subpartitions.compression_count} different >"   if subpartitions.compression_count > 0
-        a.compress_for      = subpartitions.compress_for_count == 1 ? subpartitions.compress_for    : "< #{subpartitions.compress_for_count} different >"  if get_db_version >= '11.2' && subpartitions.compression_count > 0
+        a.compress_for      = subpartitions.compress_for_count == 1 ? subpartitions.compress_for    : "< #{subpartitions.compress_for_count} different >"  if get_db_version >= '12.1' && subpartitions.compression_count > 0
         a.tablespace_name   = subpartitions.tablespace_count   == 1 ? subpartitions.tablespace_name : "< #{subpartitions.tablespace_count} different >"    if subpartitions.tablespace_count > 0
         a.pct_free          = subpartitions.pct_free_count     == 1 ? subpartitions.pct_free        : "< #{subpartitions.pct_free_count} different >"      if subpartitions.pct_free_count > 0
         a.ini_trans         = subpartitions.ini_trans_count    == 1 ? subpartitions.ini_trans       : "< #{subpartitions.ini_trans_count} different >"     if subpartitions.ini_trans_count > 0
         a.max_trans         = subpartitions.max_trans_count    == 1 ? subpartitions.max_trans       : "< #{subpartitions.max_trans_count} different >"     if subpartitions.max_trans_count > 0
-        a.inmemory          = subpartitions.inmemory_count     == 1 ? subpartitions.inmemory        : "< #{subpartitions.inmemory_count} different >"      if subpartitions.inmemory_count > 0 && get_db_version >= '11.2'
+        a.inmemory          = subpartitions.inmemory_count     == 1 ? subpartitions.inmemory        : "< #{subpartitions.inmemory_count} different >"      if get_db_version >= '12.1' && subpartitions.inmemory_count > 0
       end
 
       @partition_expression = get_table_partition_expression(@owner, @table_name)
