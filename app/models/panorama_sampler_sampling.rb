@@ -93,18 +93,24 @@ class PanoramaSamplerSampling
   end
 
   def do_awr_housekeeping(shrink_space)
-    snapshots_to_delete = PanoramaConnection.sql_select_all ["SELECT Snap_ID FROM #{@sampler_config.get_owner}.Panorama_Snapshot WHERE DBID = ? AND Begin_Interval_Time < SYSDATE - ?", PanoramaConnection.dbid, @sampler_config.get_awr_ash_snapshot_retention]
+    max_snap_id = PanoramaConnection.sql_select_one ["SELECT Max(Snap_ID)
+                                                      FROM   #{@sampler_config.get_owner}.Panorama_Snapshot
+                                                      WHERE  DBID = ?
+                                                      AND    Instance_Number = ?
+                                                      AND    Begin_Interval_Time < SYSDATE - ?
+                                                     ", PanoramaConnection.dbid, PanoramaConnection.instance_number, @sampler_config.get_awr_ash_snapshot_retention]
 
-    Rails.logger.info("PanoramaSampler_Sampling.do_awr_housekeeping with awr_ash_snapshot_retention=#{@sampler_config.get_awr_ash_snapshot_retention}")  if  Rails.env.test?
-    # Delete from tables with columns DBID and SNAP_ID
-    snapshots_to_delete.each do |snapshot|
+    Rails.logger.info("PanoramaSampler_Sampling.do_awr_housekeeping with awr_ash_snapshot_retention=#{@sampler_config.get_awr_ash_snapshot_retention} Max. Snap_ID to delete = #{max_snap_id}")
+
+    if !max_snap_id.nil?                                                        # Snaps to delete exists
+      # Delete from tables with columns DBID and SNAP_ID and Instance_Number
       PanoramaSamplerStructureCheck.tables.each do |table|
-        if PanoramaSamplerStructureCheck.has_column?(table[:table_name], 'Snap_ID')
-          execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.#{table[:table_name]} WHERE DBID = ? AND Snap_ID <= ?", PanoramaConnection.dbid, snapshot.snap_id]
-          exec_shrink_space(table[:table_name]) if shrink_space
+        if table[:domain] == :AWR && PanoramaSamplerStructureCheck.has_column?(table[:table_name], 'Snap_ID')
+          execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.#{table[:table_name]} WHERE DBID = ? AND Instance_Number = ? AND Snap_ID <= ?", PanoramaConnection.dbid, PanoramaConnection.instance_number, max_snap_id]
         end
       end
     end
+
     # Delete from tables without columns DBID and SNAP_ID
     execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.Panorama_SQL_Plan p
                            WHERE  DBID      = ?
@@ -114,7 +120,6 @@ class PanoramaSamplerSampling
                                                  AND    s.Con_DBID  = ?
                                                 )
                           ", PanoramaConnection.dbid, con_dbid, PanoramaConnection.dbid, con_dbid]
-    exec_shrink_space('Panorama_SQL_Plan') if shrink_space
 
     execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.Panorama_SQLText t
                            WHERE  DBID      = ?
@@ -124,7 +129,13 @@ class PanoramaSamplerSampling
                                                  AND    s.Con_DBID  = ?
                                                 )
                           ", PanoramaConnection.dbid, con_dbid, PanoramaConnection.dbid, con_dbid]
-    exec_shrink_space('Panorama_SQLText') if shrink_space
+
+    if shrink_space
+      PanoramaSamplerStructureCheck.tables.each do |table|
+        exec_shrink_space(table[:table_name]) if table[:domain] == :AWR
+      end
+    end
+
   end
 
   # Run daemon, daeomon returns 1 second before next snapshot timestamp

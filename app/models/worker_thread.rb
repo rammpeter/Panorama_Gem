@@ -186,17 +186,13 @@ class WorkerThread
       Rails.logger.info "#{Time.now}: Finished creating new #{domain} snapshot for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}' and domain=#{domain}"
     rescue Exception => e
       begin
-        Rails.logger.error("Error #{e.message} during WorkerThread.create_snapshot_internal for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}")
+        Rails.logger.error("Error during WorkerThread.create_snapshot_internal in first try for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}\n#{e.message}")
         log_exception_backtrace(e, 30) if !Rails.env.test?
         PanoramaSamplerStructureCheck.do_check(@sampler_config, domain)         # Check data structure preconditions first in case of error
         PanoramaSamplerSampling.do_housekeeping(@sampler_config, true, domain)  # Do housekeeping also in case of exception to clear full tablespace quota etc. + shrink space
-        if domain == :AWR
-          raise e
-        else
-          PanoramaSamplerSampling.do_sampling(@sampler_config, snapshot_time, domain)  # Retry sampling
-        end
+        PanoramaSamplerSampling.do_sampling(@sampler_config, snapshot_time, domain)  # Retry sampling
       rescue Exception => x
-        Rails.logger.error "WorkerThread.create_snapshot_internal: Exception #{x.message} in exception handler for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}"
+        Rails.logger.error "WorkerThread.create_snapshot_internal: Exception in exception handler for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}\n#{x.message}"
         log_exception_backtrace(x, 40)
         @sampler_config.set_error_message("Error #{e.message} during WorkerThread.create_snapshot_internal for domain=#{domain}")
         raise x
