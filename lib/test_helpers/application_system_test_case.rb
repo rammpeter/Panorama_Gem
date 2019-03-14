@@ -79,7 +79,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
           raise e
         else
           Rails.logger.info "#{Time.now} click_button_with_retry for '#{caption}': Retry after #{e.class} #{e.message}"
-          sleep 5
+          sleep 5+retry_count                                                   # sleep a bit longer with each retry
         end
       end
     end

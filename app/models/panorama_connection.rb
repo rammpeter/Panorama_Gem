@@ -97,11 +97,7 @@ ActiveRecord::ConnectionAdapters::OracleEnhanced::JDBCConnection.class_eval do
       res
     end
   end
-
-
-
 end #class_eval
-
 
 # Holds DB-Connection(s) to several Oracle-targets thread-safe apart from ActiveRecord
 
@@ -144,6 +140,7 @@ class PanoramaConnection
     @last_used_query_timeout  = 600                                             # initial value, should be overwritten in check_for_open_connection
     @last_used_time           = Time.now
     @password_hash            = PanoramaConnection.get_decrypted_password.hash
+
   end
 
   def read_initial_attributes
