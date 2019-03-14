@@ -315,7 +315,7 @@ class DbaHistoryController < ApplicationController
                  COUNT(DISTINCT s.Snap_ID)          Sample_Count,
                  CASE WHEN COUNT(DISTINCT s.Instance_number) = 1 THEN MIN(s.Instance_Number) ELSE NULL END Instance_Number,
                  COUNT(DISTINCT s.Instance_number)  Instance_Count,
-                 COUNT(DISTINCT CASE WHEN s.Plan_Hash_Value = 0 THEN NULL ELSE s.Plan_Hash_Value END)  Plans,
+                 COUNT(DISTINCT p.Plan_Hash_Value)  Plans,    /* Count only existing plans */
                  NVL(Parsing_Schema_Name, '[UNKNOWN]')  Parsing_Schema_Name, /* sollte immer gleich sein in Gruppe */
                  SUM(Executions_Delta)              Executions,
                  SUM(Elapsed_Time_Delta)/1000000    Elapsed_Time_Secs,
@@ -354,6 +354,7 @@ class DbaHistoryController < ApplicationController
                  ) snap
           JOIN   DBA_Hist_SQLStat s   ON s.DBID=snap.DBID AND s.Instance_Number=snap.Instance_Number AND s.Snap_ID BETWEEN snap.Start_Snap_ID AND snap.End_Snap_ID
           JOIN   DBA_Hist_Snapshot ss ON ss.DBID=s.DBID   AND ss.Instance_Number=s.Instance_Number   AND ss.Snap_ID = s.Snap_ID -- konkreter Snapshot des SQL
+          LEFT OUTER JOIN DBA_Hist_SQL_Plan p ON p.DBID = s.DBID AND p.SQL_ID = s.SQL_ID AND p.Plan_Hash_Value = s.Plan_Hash_Value AND p.ID = 1   /* first record of plan,  count only real execution plans */
           #{where_string_innen}
           GROUP BY s.DBID, s.SQL_ID, s.Parsing_Schema_Name #{', s.Instance_Number' if groupby_instance}
            ) s
@@ -434,7 +435,7 @@ class DbaHistoryController < ApplicationController
          SELECT /*+ NO_MERGE ORDERED Panorama-Tool Ramm */
                  NVL(MIN(Parsing_Schema_Name), '[UNKNOWN]')  Parsing_Schema_Name,
                  MAX(s.Plan_Hash_Value) KEEP (DENSE_RANK LAST ORDER BY s.Snap_ID) Last_Plan_Hash_Value,
-                 COUNT(DISTINCT CASE WHEN s.Plan_Hash_Value = 0 THEN NULL ELSE s.Plan_Hash_Value END)  Plan_Hash_Value_Count,
+                 COUNT(DISTINCT p.Plan_Hash_Value)  Plan_Hash_Value_Count,
                  MAX(s.Optimizer_Env_Hash_Value) KEEP (DENSE_RANK LAST ORDER BY s.Snap_ID) Last_Optimizer_Env_Hash_Value,
                  COUNT(DISTINCT s.Optimizer_Env_Hash_Value)  Optimizer_Env_Hash_Value_Count,
                  SUM(Executions_Delta)              Executions,
@@ -474,6 +475,7 @@ class DbaHistoryController < ApplicationController
                  MAX(s.Force_Matching_Signature)    Force_Matching_Signature
          FROM   Snaps
           JOIN   DBA_Hist_SQLStat s ON s.DBID = Snaps.DBID AND s.Instance_Number = Snaps.Instance_Number AND s.Snap_ID BETWEEN Snaps.Start_Snap_ID AND Snaps.End_Snap_ID
+          LEFT OUTER JOIN DBA_Hist_SQL_Plan p ON p.DBID = s.DBID AND p.SQL_ID = s.SQL_ID AND p.Plan_Hash_Value = s.Plan_Hash_Value AND p.ID = 1   /* first record of plan */
           WHERE  s.SQL_ID = ?
           #{'AND s.Parsing_Schema_Name = ?' if @parsing_schema_name}
           ",
@@ -662,10 +664,10 @@ class DbaHistoryController < ApplicationController
                                            MAX(ss.Snap_ID)             Max_Snap_ID
                                     FROM   DBA_Hist_SQLStat s
                                     JOIN   DBA_Hist_Snapshot ss ON ss.DBID=s.DBID AND ss.Instance_Number=s.Instance_Number AND ss.Snap_ID=s.Snap_ID
+                                    JOIN   DBA_Hist_SQL_Plan p ON p.DBID = s.DBID AND p.SQL_ID = s.SQL_ID AND p.Plan_Hash_Value = s.Plan_Hash_Value AND p.ID = 1   /* first record of plan,  count only real execution plans */
                                     WHERE  s.SQL_ID = ?
                                     AND    ss.End_Interval_time   > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
                                     AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                                    AND    s.Plan_Hash_Value != 0 -- count only real execution plans
                                     #{where_stmt}
                                     GROUP BY s.Plan_Hash_Value, s.DBID, s.Parsing_Schema_Name
                                     ORDER BY MIN(ss.Begin_Interval_Time)
@@ -681,8 +683,8 @@ class DbaHistoryController < ApplicationController
           par NUMBER PATH '@par',   -- parent
           prt NUMBER PATH '@prt',   -- unkown
           dep NUMBER PATH '@dep',   -- depth
-          skp NUMBER PATH '@skp' )  -- skip
-        AS X
+          skp NUMBER PATH '@skp'    -- skip
+        ) (+) AS X
         WHERE  DBID = ?
         AND    SQL_ID = ?
         AND other_xml   IS NOT NULL
@@ -972,7 +974,7 @@ SELECT /* Panorama-Tool Ramm */
 FROM (
         SELECT p.DBID, p.SQL_ID, s.Instance_Number, Parsing_Schema_Name, p.Operation, p.Options, p.Other_Tag,
                COUNT(DISTINCT s.Snap_ID)          Sample_Count,
-               COUNT(DISTINCT CASE WHEN s.Plan_Hash_Value = 0 THEN NULL ELSE s.Plan_Hash_Value END) Plans,
+               COUNT(DISTINCT s.Plan_Hash_Value END) Plans,
                COUNT(DISTINCT s.Instance_number)  Instance_Count,
                MIN(snap.Begin_Interval_Time)      First_Occurrence,
                MAX(snap.End_Interval_Time)        Last_Occurrence,
@@ -1809,7 +1811,7 @@ FROM (
                             MIN(s.Instance_Number) Min_Instance_Number,
                             s.SQL_ID, s.DBID, s.Parsing_Schema_Name,
                             MAX(s.Plan_Hash_Value) Max_Plan_Hash_Value,
-                            COUNT(DISTINCT CASE WHEN s.Plan_Hash_Value = 0 THEN NULL ELSE s.Plan_Hash_Value END) Execution_Plan_Count,
+                            COUNT(DISTINCT s.Plan_Hash_Value) Execution_Plan_Count,
                             SUM(s.Elapsed_Time_Delta) Elapsed_Time,
                             SUM(Executions_Delta)     Executions,
                             SUM(Rows_Processed_Delta) Rows_Processed,
@@ -1826,7 +1828,7 @@ FROM (
                             MIN(s.Instance_Number) Min_Instance_Number,
                             s.SQL_ID, s.DBID, s.Parsing_Schema_Name,
                             MAX(s.Plan_Hash_Value) Max_Plan_Hash_Value,
-                            COUNT(DISTINCT CASE WHEN s.Plan_Hash_Value = 0 THEN NULL ELSE s.Plan_Hash_Value END) Execution_Plan_Count,
+                            COUNT(DISTINCT s.Plan_Hash_Value Execution_Plan_Count,
                             SUM(s.Elapsed_Time_Delta) Elapsed_Time,
                             SUM(Executions_Delta)     Executions,
                             SUM(Rows_Processed_Delta) Rows_Processed,

@@ -69,7 +69,9 @@ ActiveRecord::ConnectionAdapters::OracleEnhanced::JDBCConnection.class_eval do
       end
       fetch_options = {:get_lob_value => (name != 'Writable Large Object')}
       # noinspection RubyAssignmentExpressionInConditionalInspection
+      row_count = 0
       while row = cursor.fetch(fetch_options)
+        row_count += 1
         result_hash = {}
         columns.each_index do |index|
           result_hash[columns[index]] = row[index]
@@ -80,6 +82,7 @@ ActiveRecord::ConnectionAdapters::OracleEnhanced::JDBCConnection.class_eval do
         yield result_hash
       end
 
+      Rails.logger.info "#{row_count} records selected"
       cursor.close
       nil
     end

@@ -363,8 +363,8 @@ class DbaSgaController < ApplicationController
           par NUMBER PATH '@par',   -- parent
           prt NUMBER PATH '@prt',   -- unkown
           dep NUMBER PATH '@dep',   -- depth
-          skp NUMBER PATH '@skp' )  -- skip
-        AS X
+          skp NUMBER PATH '@skp'    -- skip
+        ) (+) AS X
         WHERE  SQL_ID = ?
         AND    Inst_ID = ?
         #{where_string}
