@@ -1828,7 +1828,7 @@ FROM (
                             MIN(s.Instance_Number) Min_Instance_Number,
                             s.SQL_ID, s.DBID, s.Parsing_Schema_Name,
                             MAX(s.Plan_Hash_Value) Max_Plan_Hash_Value,
-                            COUNT(DISTINCT s.Plan_Hash_Value Execution_Plan_Count,
+                            COUNT(DISTINCT s.Plan_Hash_Value) Execution_Plan_Count,
                             SUM(s.Elapsed_Time_Delta) Elapsed_Time,
                             SUM(Executions_Delta)     Executions,
                             SUM(Rows_Processed_Delta) Rows_Processed,
