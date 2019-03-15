@@ -974,7 +974,7 @@ SELECT /* Panorama-Tool Ramm */
 FROM (
         SELECT p.DBID, p.SQL_ID, s.Instance_Number, Parsing_Schema_Name, p.Operation, p.Options, p.Other_Tag,
                COUNT(DISTINCT s.Snap_ID)          Sample_Count,
-               COUNT(DISTINCT s.Plan_Hash_Value END) Plans,
+               COUNT(DISTINCT s.Plan_Hash_Value)  Plans,
                COUNT(DISTINCT s.Instance_number)  Instance_Count,
                MIN(snap.Begin_Interval_Time)      First_Occurrence,
                MAX(snap.End_Interval_Time)        Last_Occurrence,
