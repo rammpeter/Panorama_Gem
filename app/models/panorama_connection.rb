@@ -122,6 +122,7 @@ class PanoramaConnection
   attr_reader :db_wordsize
   attr_reader :database_name
   attr_reader :edition
+  attr_reader :instance_count
   attr_reader :password_hash
   attr_reader :sql_stmt_in_execution
   attr_reader :last_used_action_name
@@ -149,9 +150,10 @@ class PanoramaConnection
   def read_initial_attributes
     db_config   = PanoramaConnection.direct_select_one(@jdbc_connection,
                   "SELECT i.Instance_Number, i.Version, d.DBID, d.Name Database_Name,
-                          (SELECT /*+ NO_MERGE */ TO_NUMBER(Value) FROM v$parameter WHERE UPPER(Name) = 'DB_BLOCK_SIZE') db_blocksize,
+                          (SELECT /*+ NO_MERGE */ TO_NUMBER(Value) FROM v$parameter WHERE UPPER(Name) = 'DB_BLOCK_SIZE')                                    db_blocksize,
                           (SELECT /*+ NO_MERGE */ DECODE (INSTR (banner, '64bit'), 0, 4, 8) Word_Size FROM v$version WHERE Banner LIKE '%Oracle Database%') db_wordsize,
-                          (SELECT /*+ NO_MERGE */ COUNT(*) FROM v$version WHERE Banner like '%Enterprise Edition%') enterprise_edition_count
+                          (SELECT /*+ NO_MERGE */ COUNT(*) FROM v$version WHERE Banner like '%Enterprise Edition%')                                         enterprise_edition_count,
+                          (SELECT /*+ NO_MERGE */ COUNT(*) FROM gv$Instance)                                                                                instance_count
                    FROM   v$Instance i
                    CROSS JOIN v$Database d
                   ")
@@ -162,6 +164,7 @@ class PanoramaConnection
     @db_blocksize    = db_config['db_blocksize']
     @db_wordsize     = db_config['db_wordsize']
     @edition         = (db_config['enterprise_edition_count'] > 0  ? :enterprise : :standard)
+    @instance_count  = db_config['instance_count']
 
     if db_version >= '12.1'
       con_id_data   = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT Con_ID FROM v$Session WHERE audsid = userenv('sessionid')") # Con_ID of connected session
@@ -298,6 +301,7 @@ class PanoramaConnection
   def self.db_wordsize;       check_for_open_connection; Thread.current[:panorama_connection_connection_object].db_wordsize;       end
   def self.edition;           check_for_open_connection; Thread.current[:panorama_connection_connection_object].edition;           end
   def self.con_id;            check_for_open_connection; Thread.current[:panorama_connection_connection_object].con_id;            end  # Container-ID for PDBs or 0
+  def self.rac?;              check_for_open_connection; Thread.current[:panorama_connection_connection_object].instance_count > 1;end
 
   private
 

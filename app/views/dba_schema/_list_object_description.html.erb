@@ -184,6 +184,51 @@ column_options =
     fn(100 - (mb_used.call(rec) * 100 / rec.size_mb_table), 1) rescue nil
   end
 
+   list_rac_master = proc do |rec|
+     if @rac_attribs
+       if @rac_attribs.current_master_cnt == 1
+         value = @rac_attribs.current_master
+       else
+         value = "<&nbsp;#{@rac_attribs.current_master_cnt}&nbsp;>".html_safe
+       end
+
+       ajax_link(value,
+                {controller:  :dba_waits,
+                 action:      :list_drm_historic_single_records,
+                 owner:       @owner,
+                 object_name: @table_name,
+                 update_area: @update_area,
+                },
+                :title=>"List dynamic remastering events for this object"
+    )
+
+     else
+       'No info'
+     end
+   end
+
+   data_title_rac_master = proc do |rec|
+     title = "%t"
+     if @rac_attribs
+       if @rac_attribs.previous_master_cnt == 1
+         if @rac_attribs.previous_master == 32768
+           title << "\nNo previous master instance because no remastering happened"
+         else
+           title << "\nPrevious master instance = #{@rac_attribs.previous_master}"
+         end
+       else
+         title << "\n#{@rac_attribs.previous_master_cnt} different previous master instances"
+       end
+
+       if @rac_attribs.gc_mastering_policy_cnt == 1
+         title << "\nGC mastering policy = #{@rac_attribs.gc_mastering_policy}"
+       else
+         title << "\n#{@rac_attribs.gc_mastering_policy_cnt} different mastering policies"
+       end
+       title << "\nNumber of remastering events = #{@rac_attribs.remaster_cnt}"
+     end
+     title
+   end
 
    column_options = []
    column_options << {:caption=> 'TS',               :data=>proc{|rec| rec.tablespace_name},                  :title=> 'Tablespace name'}
@@ -215,6 +260,8 @@ column_options =
    column_options << {:caption=> 'Drop seg.',        :data=>proc{|rec| fn rec.drop_segments},                 :title=> "Number of partition and subpartition segments dropped since last table analysis if table has MONITORING-flag.\nStatistics are populated in memory by database. Run the DBMS_STATS.FLUSH_DATABASE_MONITORING_INFO to see the latest information here.", :align=>:right}
    column_options << {:caption=> 'Last DML',         :data=>proc{|rec| localeDateTime(rec.last_dml)},         :title=> "Timestamp of last DML-operations since last table analysis if table has MONITORING-flag.\nStatistics are populated in memory by database. Run the DBMS_STATS.FLUSH_DATABASE_MONITORING_INFO to see the latest information here."}
    column_options << {:caption=> 'Several States',   :data=>list_states,                          :title=> title_states}
+   column_options << {:caption=> 'RAC master inst.', :data=>list_rac_master,                                  :title=> "Master instance for cache block states in RAC", data_title: data_title_rac_master} if PanoramaConnection.rac?
+
 
 %>
 

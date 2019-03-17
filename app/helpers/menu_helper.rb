@@ -49,7 +49,6 @@ module MenuHelper
                 ].concat(
                 PanoramaSamplerStructureCheck.panorama_table_exists?('LongTerm_Trend') ? [{class: 'item', caption: t(:menu_wait_longterm_trend_caption, :default=>'Long-term trend'), controller: :longterm_trend, action: :show_longterm_trend, hint: t(:menu_wait_longterm_trend_hint, :default=>'Long-term trend recording of session waits')}] : [] )
             },
-            {:class=> 'item', :caption=> 'GC Request Latency historisch',      :controller=> 'dba_waits',  :action=> 'gc_request_latency',    :hint=>t(:menu_wait_gc_historic_hint, :default=> 'Analysis of global cache activity') },
             { :class=> 'menu', :caption=> 'Segment Statistics', :content=>[
                 {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),         :controller=>:dba,          :action=> 'segment_stat',             :hint=>t(:menu_wait_segment_current_hint, :default=> 'Current waits by DB-objects') },
                 {:class=> 'item', :caption=>t(:menu_historic_caption, :default=> 'Historic'),      :controller=> 'dba_history',  :action=> 'segment_stat_historic',    :hint=>t(:menu_wait_segment_historic_hint, :default=> 'Historic values (waits etc.) by DB-objects')  },
@@ -92,6 +91,11 @@ module MenuHelper
                 {:class=> 'item', :caption=>'ASH report',                 :controller=>:dba_history,    :action=> 'show_ash_report',          :hint=>'Genuine Oracle active session history report by time period and instance' },
                 {:class=> 'item', :caption=>'ASH global report (RAC)',    :controller=>:dba_history,    :action=> 'show_ash_global_report',   :hint=>'Genuine Oracle active session history global report for RAC by time period and instance (optional)' },
                 ])
+            },
+            { :class=> 'menu', :caption=>t(:menu_wait_rac, :default=> 'RAC related analysis'), :content=>[
+                {:class=> 'item', :caption=> 'GC Request Latency historic',      :controller=> 'dba_waits',  :action=> 'gc_request_latency',    :hint=>t(:menu_wait_gc_historic_hint, :default=> 'Analysis of global cache activity') },
+                {class: 'item', caption: t(:menu_wait_drm_historic_caption, default: 'Dynamic Remastering (DRM) events historic'),  controller: :dba_waits,  action: :show_drm_historic,    hint: t(:menu_wait_drm_historic_hint, default: 'History of master role changes for DB-objects between RAC-instances') },
+            ]
             },
             { :class=> 'menu', :caption=>t(:menu_wait_special_caption, :default=> 'Special event analysis'), :content=>[
                 {:class=> 'item', :caption=> 'Latch: cache buffer chains',:controller=>:dba,  :action=> 'latch_cache_buffers_chains',   :hint=>t(:menu_wait_latch_cbc_hint, :default=>"Current reasons for 'cache buffer chains' latch-waits")  },

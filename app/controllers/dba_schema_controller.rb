@@ -397,6 +397,16 @@ class DbaSchemaController < ApplicationController
       @xml_attribs = []
     end
 
+    if PanoramaConnection.rac?
+      @rac_attribs = sql_select_first_row ["SELECT MIN(i.GC_Mastering_Policy) GC_Mastering_Policy,  COUNT(DISTINCT i.GC_Mastering_Policy) GC_Mastering_Policy_Cnt,
+                                                   MIN(i.Current_Master) + 1  Current_Master,       COUNT(DISTINCT i.Current_Master)      Current_Master_Cnt,
+                                                   MIN(i.Previous_Master) + 1  Previous_Master,     COUNT(DISTINCT DECODE(i.Previous_Master, 32767, NULL, i.Previous_Master)) Previous_Master_Cnt,
+                                                   SUM(i.Remaster_Cnt) Remaster_Cnt
+                                            FROM   DBA_Objects o
+                                            JOIN   V$GCSPFMASTER_INFO i ON i.Data_Object_ID = o.Data_Object_ID
+                                            WHERE  o.Owner = ? AND o.Object_Name = ?
+                                           ", @owner, @table_name]
+    end
 
     @comment = sql_select_one ["SELECT Comments FROM DBA_Tab_Comments WHERE Owner = ? AND Table_Name = ?", @owner, @table_name]
 

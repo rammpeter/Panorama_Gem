@@ -304,4 +304,155 @@ class DbaWaitsController < ApplicationController
     render_partial
   end
 
+  def show_drm_historic
+
+    render_partial
+  end
+
+  def list_drm_historic
+    save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
+
+    case params[:commit]
+      when 'Show event history'       then list_drm_historic_events
+      when 'Show objects with events' then list_drm_historic_objects
+    else
+      raise "Unknown commit button #{params[:commit]}"
+    end
+  end
+
+  def list_drm_historic_events
+    @time_groupby = params[:time_groupby].to_sym if params[:time_groupby]
+
+    where_string = ''
+    where_values = []
+
+    case @time_groupby
+    when :second then group_by_value = "TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS')"
+    when :minute then group_by_value = "TRUNC(TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS'), 'MI')"
+    when :hour   then group_by_value = "TRUNC(TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS'), 'HH24')"
+    when :day    then group_by_value = "TRUNC(TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS'))"
+    when :week   then group_by_value = "TRUNC(TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS'), 'WW')"
+    else
+      raise "Unsupported value for parameter :groupby (#{@time_groupby})"
+    end
+
+    history = sql_select_iterator ["SELECT #{group_by_value} Begin_Period,
+                                           MIN(TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS')) Min_Event_Date,
+                                           MAX(TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS')) Max_Event_Date,
+                                           Target_Instance_Number,
+                                           COUNT(*) Record_Count
+                                    FROM   gv$Policy_History
+                                    WHERE  TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS') BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+                                    AND    Policy_Event = 'initiate_affinity'
+                                    #{where_string}
+                                    GROUP BY #{group_by_value}, Target_Instance_Number
+                                    ORDER BY #{group_by_value}
+                                   ", @time_selection_start, @time_selection_end].concat(where_values)
+
+    history_h = {}
+    @instances = {}
+    history.each do |h|
+      unless history_h.has_key?(h.begin_period)
+        history_h[h.begin_period] = { begin_period:       h.begin_period,
+                                      total_records:      0,
+                                      min_event_date:     h.min_event_date,
+                                      max_event_date:     h.max_event_date,
+        }
+
+      end
+
+      history_h[h.begin_period][:total_records] += h.record_count
+      history_h[h.begin_period][:min_event_date] = h.min_event_date if h.min_event_date < history_h[h.begin_period][:min_event_date]
+      history_h[h.begin_period][:max_event_date] = h.max_event_date if h.max_event_date > history_h[h.begin_period][:max_event_date]
+
+      @instances[h.target_instance_number] = true
+      inst_tag = "records_instance_#{h.target_instance_number}"
+      history_h[h.begin_period][inst_tag] = 0 unless history_h[h.begin_period].has_key?(inst_tag)
+      history_h[h.begin_period][inst_tag] += h.record_count
+    end
+
+    @history = []
+    history_h.each do |key, value|
+      value.extend SelectHashHelper
+      @history << value
+    end
+    render_partial :list_drm_historic_events
+  end
+
+  def list_drm_historic_objects
+
+    where_string = ''
+    where_values = []
+
+    @objects = sql_select_iterator ["SELECT p.*, o.Owner, o.Object_Name, o.Subobject_Name, o.Object_Type
+                                     FROM   (
+                                             SELECT COUNT(*) Record_Count, p.Data_Object_ID,
+                                                    MIN(TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS')) First_Occurrence,
+                                                    MAX(TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS')) Last_Occurrence
+                                             FROM   gv$Policy_History p
+                                             WHERE  TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS') BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+                                             AND    Policy_Event = 'initiate_affinity'
+                                             #{where_string}
+                                             GROUP BY p.Data_Object_ID
+                                            ) p
+                                     LEFT OUTER JOIN DBA_Objects o ON o.Data_Object_ID = p.Data_Object_ID
+                                     ORDER BY p.Record_Count DESC
+                                    ", @time_selection_start, @time_selection_end].concat(where_values)
+
+    render_partial :list_drm_historic_objects
+  end
+
+  def list_drm_historic_single_records
+    @time_selection_start = prepare_param(:time_selection_start)                # allow seconds in timestamp
+    @time_selection_end   = prepare_param(:time_selection_end)                  # allow seconds in timestamp
+    @target_instance      = prepare_param(:target_instance)
+    @data_object_id       = prepare_param(:data_object_id)
+    @owner                = prepare_param(:owner)
+    @object_name          = prepare_param(:object_name)
+
+    where_string = ''
+    where_values = []
+
+    if @time_selection_start && @time_selection_end
+      where_string << "AND TO_DATE(p.Event_Date, 'MM/DD/YYYY HH24:MI:SS') BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')"
+      where_values << @time_selection_start
+      where_values << @time_selection_end
+    end
+
+    if @target_instance
+      where_string << " AND p.Target_Instance_Number = ?"
+      where_values << @target_instance
+    end
+
+    if @data_object_id
+      where_string << " AND p.data_object_id = ?"
+      where_values << @data_object_id
+    end
+
+    if @owner
+      where_string << " AND o.Owner = ?"
+      where_values << @owner
+    end
+
+    if @object_name
+      where_string << " AND o.Object_Name = ?"
+      where_values << @object_name
+    end
+
+    @records = sql_select_iterator ["SELECT TO_DATE(p.Event_Date, 'MM/DD/YYYY HH24:MI:SS') Conv_Event_Date,
+                                            p.Inst_ID, ts.Name Tablespace_Name,
+                                            p.Data_Object_ID, p.Policy_Event,
+                                            o.Owner, o.Object_Name, o.Subobject_Name, o.Object_Type,
+                                            p.Target_Instance_Number
+                                            #{", p.Con_ID" if get_db_version >= '12.1'}
+                                     FROM   gv$Policy_History p
+                                     LEFT OUTER JOIN v$Tablespace ts ON ts.TS# = p.Tablespace_ID #{" AND ts.Con_ID = p.Con_ID" if get_db_version >= '12.1'}
+                                     LEFT OUTER JOIN DBA_Objects o ON o.Data_Object_ID = p.Data_Object_ID
+                                     WHERE 1=1
+                                     #{where_string}
+                                     ORDER BY TO_DATE(p.Event_Date, 'MM/DD/YYYY HH24:MI:SS')
+                                     "].concat(where_values)
+
+    render_partial
+  end
 end

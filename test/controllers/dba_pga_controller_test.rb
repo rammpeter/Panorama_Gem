@@ -1,7 +1,7 @@
 # encoding: utf-8
 require 'test_helper'
 
-class DbaPgaControllerTest < ActionController::TestCase
+class DbaPgaControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     set_session_test_db_context
@@ -16,7 +16,7 @@ class DbaPgaControllerTest < ActionController::TestCase
 
 
   test "list_pga_stat_historic with xhr: true" do
-    post :list_pga_stat_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :instance =>1 }
+    post '/dba_pga/list_pga_stat_historic', :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :instance =>1 }
     assert_response management_pack_license == :none ? :error : :success
   end
 
