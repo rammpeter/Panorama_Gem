@@ -50,7 +50,7 @@ class DbaWaitsControllerTest < ActionDispatch::IntegrationTest
     post  '/dba_waits/list_drm_historic', params: {format: :html, commit: 'Show objects with events', time_selection_start: @time_selection_start, time_selection_end: @time_selection_end, update_area: :hugo }
     assert_response :success
 
-    [[nil,nil], [@time_selection_start, time_selection_end: @time_selection_end]].each do |times|
+    [[nil,nil], [@time_selection_start, @time_selection_end]].each do |times|
       [nil, 1].each do |target_instance|
         post  '/dba_waits/list_drm_historic_single_records', params: {format: :html, target_instance: target_instance, time_selection_start: times[0], time_selection_end: times[1], update_area: :hugo }
         assert_response :success
