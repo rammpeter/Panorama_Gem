@@ -79,6 +79,7 @@ Stated here are inserts and updates since last GATHER_TABLE_STATS for tables wit
                                        GROUP BY Owner, Segment_Name
                                       ) s ON s.Owner = t.Owner AND s.Segment_Name = t.Table_Name
                       WHERE m.Deletes = 0 AND m.Truncated = 'NO'
+                      AND   t.Last_Analyzed < SYSDATE    /* avoid division by zero */
                       ORDER BY (m.Inserts+m.Updates)/(SYSDATE - t.Last_Analyzed) * s.Size_MB DESC NULLS LAST",
         },
         {
