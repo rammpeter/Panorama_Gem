@@ -409,6 +409,7 @@ class DbaWaitsController < ApplicationController
     @data_object_id       = prepare_param(:data_object_id)
     @owner                = prepare_param(:owner)
     @object_name          = prepare_param(:object_name)
+    @subobject_name       = prepare_param(:subobject_name)
 
     where_string = ''
     where_values = []
@@ -439,14 +440,19 @@ class DbaWaitsController < ApplicationController
       where_values << @object_name
     end
 
+    if @subobject_name
+      where_string << " AND o.SubObject_Name = ?"
+      where_values << @subobject_name
+    end
+
     @records = sql_select_iterator ["SELECT TO_DATE(p.Event_Date, 'MM/DD/YYYY HH24:MI:SS') Conv_Event_Date,
-                                            p.Inst_ID, ts.Name Tablespace_Name,
+                                            p.Inst_ID, #{"ts.Name Tablespace_Name," if get_db_version >= '12.1'}
                                             p.Data_Object_ID, p.Policy_Event,
                                             o.Owner, o.Object_Name, o.Subobject_Name, o.Object_Type,
                                             p.Target_Instance_Number
                                             #{", p.Con_ID" if get_db_version >= '12.1'}
                                      FROM   gv$Policy_History p
-                                     LEFT OUTER JOIN v$Tablespace ts ON ts.TS# = p.Tablespace_ID #{" AND ts.Con_ID = p.Con_ID" if get_db_version >= '12.1'}
+                                     #{"LEFT OUTER JOIN v$Tablespace ts ON ts.TS# = p.Tablespace_ID AND ts.Con_ID = p.Con_ID" if get_db_version >= '12.1'}
                                      LEFT OUTER JOIN DBA_Objects o ON o.Data_Object_ID = p.Data_Object_ID
                                      WHERE 1=1
                                      #{where_string}

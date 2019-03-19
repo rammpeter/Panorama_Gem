@@ -52,8 +52,10 @@ class DbaWaitsControllerTest < ActionDispatch::IntegrationTest
 
     [[nil,nil], [@time_selection_start, @time_selection_end]].each do |times|
       [nil, 1].each do |target_instance|
-        post  '/dba_waits/list_drm_historic_single_records', params: {format: :html, target_instance: target_instance, time_selection_start: times[0], time_selection_end: times[1], update_area: :hugo }
-        assert_response :success
+        [[nil, nil, nil], ['sys', 'obj$', nil], ['sys', 'dummy', 'dummy']].each do |objects|
+          post  '/dba_waits/list_drm_historic_single_records', params: {format: :html, target_instance: target_instance, time_selection_start: times[0], time_selection_end: times[1], owner: objects[0], object_name: objects[1], subobject_name: objects[2], update_area: :hugo }
+          assert_response :success
+        end
       end
     end
   end

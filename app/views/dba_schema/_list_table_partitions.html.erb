@@ -34,6 +34,37 @@
 - Cell flash cache
 "
 
+    list_rac_master = proc do |rec|
+      if rec.current_master
+        ajax_link(rec.current_master,
+                 {controller:     :dba_waits,
+                  action:         :list_drm_historic_single_records,
+                  owner:          @owner,
+                  object_name:    @table_name,
+                  subobject_name: rec.partition_name,
+                  update_area:    @update_area,
+                 },
+                 :title=>"List dynamic remastering events for this object"
+        )
+      else
+        'No info'
+      end
+    end
+
+    data_title_rac_master = proc do |rec|
+      title = "%t"
+      if rec.current_master
+        if rec.previous_master == 32768
+          title << "\nNo previous master instance because no remastering happened"
+        else
+          title << "\nPrevious master instance = #{rec.previous_master}"
+        end
+        title << "\nGC mastering policy = #{rec.gc_mastering_policy}"
+        title << "\nNumber of remastering events = #{rec.remaster_cnt}"
+      end
+      title
+    end
+
 
     column_options =
     [
@@ -65,7 +96,9 @@
     column_options << {:caption=> 'Drop seg.',        :data=>proc{|rec| fn rec.drop_segments},            :title=> "Number of partition and subpartition segments dropped since last table analysis if table has MONITORING-flag.\nStatistics are populated in memory by database. Run the DBMS_STATS.FLUSH_DATABASE_MONITORING_INFO to see the latest information here.", :align=>:right}
     column_options << {:caption=> 'Last DML',         :data=>proc{|rec| localeDateTime(rec.last_dml)},    :title=> "Timestamp of last DML-operations since last table analysis if table has MONITORING-flag.\nStatistics are populated in memory by database. Run the DBMS_STATS.FLUSH_DATABASE_MONITORING_INFO to see the latest information here."}
     column_options << {:caption=> 'Intv.',            :data=>proc{|rec| rec.interval},                    :title=> 'Indicates whether the partition is in the interval section of an interval partitioned table (YES) or whether the partition is in the range section (NO)'}  if get_db_version >= '11.2'
-    column_options << {:caption=> 'Several States',   :data=>list_states,                          :title=> title_states}
+    column_options << {:caption=> 'Several States',   :data=>list_states,                                 :title=> title_states}
+    column_options << {:caption=> 'RAC master inst.', :data=>list_rac_master,                             :title=> "Current master instance for cache block states in RAC", data_title: data_title_rac_master} if PanoramaConnection.rac?
+
 
     gen_slickgrid(@partitions, column_options, {
       :caption => "Partitions of table #{@owner}.#{@table_name} #{@partition_expression}",

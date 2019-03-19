@@ -26,7 +26,7 @@
 %>
 <%= gen_slickgrid(@history, column_options, {
     :caption => "Dynamic remastering events from gv$Policy_History (Policy event = 'initiate_affinity') from #{@time_selection_start} until #{@time_selection_end}",
-    :max_height => 450
+    :max_height => 450, show_pin_icon: 1
 })
 %>
 

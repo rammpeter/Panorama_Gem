@@ -9,21 +9,19 @@
     end
   end
 
-  column_options =
-      [
-          {caption: "Event date",       data: proc{|rec| localeDateTime(rec.conv_event_date)},      title: "Timestamp of event"},
-          {caption: "Policy event",     data: proc{|rec| rec.policy_event},                         title: "Name of policy event"},
-          {caption: "Inst.",            data: proc{|rec| rec.inst_id},                              title: "RAC-instance recording this event", align: :right},
-          {caption: "Tablespace",       data: proc{|rec| rec.tablespace_name},                      title: "Name of tablespace"},
-          {caption: "Object",           data: link_object,                                          title: "Object master role has changed for"},
-          {caption: "Target inst.",     data: proc{|rec| rec.target_instance_number},               title: "New master instance for this object", align: :right},
-      ]
-  column_options <<  {caption: "Con-ID",     data: proc{|rec| rec.con_id},                          title: "Container-ID", align: :right} if get_db_version >= '12.1'
+  column_options = []
+  column_options << {caption: "Event date",       data: proc{|rec| localeDateTime(rec.conv_event_date)},      title: "Timestamp of event"}
+  column_options << {caption: "Policy event",     data: proc{|rec| rec.policy_event},                         title: "Name of policy event"}
+  column_options << {caption: "Inst.",            data: proc{|rec| rec.inst_id},                              title: "RAC-instance recording this event", align: :right}
+  column_options << {caption: "Tablespace",       data: proc{|rec| rec.tablespace_name},                      title: "Name of tablespace"} if get_db_version >= '12.1'
+  column_options << {caption: "Object",           data: link_object,                                          title: "Object master role has changed for"}
+  column_options << {caption: "Target inst.",     data: proc{|rec| rec.target_instance_number},               title: "New master instance for this object", align: :right}
+  column_options << {caption: "Con-ID",     data: proc{|rec| rec.con_id},                          title: "Container-ID", align: :right} if get_db_version >= '12.1'
 
 %>
 <%= gen_slickgrid(@records, column_options, {
     :caption => "Dynamic remastering events from gv$Policy_History#{" from #{@time_selection_start} until #{@time_selection_end}" if @time_selection_start && @time_selection_end}#{", target instance = #{@target_instance}" if @target_instance}#{", Data-Object-ID = #{@data_object_id}" if @data_object_id}",
-    :max_height => 450
+    :max_height => 450, show_pin_icon: 1
 })
 %>
 

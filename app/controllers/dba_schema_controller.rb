@@ -635,6 +635,7 @@ class DbaSchemaController < ApplicationController
               SP_Max_Trans_Count,    SP_Max_Trans
          #{", SP_Compress_For_Count, SP_Compress_For,
               SP_InMemory_Count,     SP_InMemory" if get_db_version >= '12.1'}
+         #{", mi.GC_Mastering_Policy,  mi.Current_Master + 1  Current_Master,  mi.Previous_Master + 1  Previous_Master, mi.Remaster_Cnt" if PanoramaConnection.rac?}
       FROM DBA_Tab_Partitions p
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Table_Owner AND o.Object_Name = p.Table_Name AND o.SubObject_Name = p.Partition_Name AND o.Object_Type = 'TABLE PARTITION'
       LEFT OUTER JOIN Storage st ON st.Partition_Name = p.Partition_Name
@@ -650,6 +651,7 @@ class DbaSchemaController < ApplicationController
                        FROM   DBA_Tab_SubPartitions WHERE  Table_Owner = ? AND Table_Name = ?
                        GROUP BY Partition_Name
                       ) sp ON sp.Partition_Name = p.Partition_Name
+      #{"LEFT OUTER JOIN V$GCSPFMASTER_INFO mi ON mi.Data_Object_ID = o.Data_Object_ID" if PanoramaConnection.rac?}
       WHERE p.Table_Owner = ? AND p.Table_Name = ?
       ", @owner, @table_name, @owner, @table_name, @owner, @table_name]
 
@@ -683,9 +685,11 @@ class DbaSchemaController < ApplicationController
                   ) Size_MB,
              m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments,
              o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
+         #{", mi.GC_Mastering_Policy,  mi.Current_Master + 1  Current_Master,  mi.Previous_Master + 1  Previous_Master, mi.Remaster_Cnt" if PanoramaConnection.rac?}
       FROM DBA_Tab_SubPartitions p
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Table_Owner AND o.Object_Name = p.Table_Name AND o.SubObject_Name = p.SubPartition_Name AND o.Object_Type = 'TABLE SUBPARTITION'
       LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = p.Table_Owner AND m.Table_Name = p.Table_Name AND m.Partition_Name = p.Partition_Name AND m.SubPartition_Name = p.SubPartition_Name
+      #{"LEFT OUTER JOIN V$GCSPFMASTER_INFO mi ON mi.Data_Object_ID = o.Data_Object_ID" if PanoramaConnection.rac?}
       WHERE p.Table_Owner = ? AND p.Table_Name = ?
       #{" AND p.Partition_Name = ?" if @partition_name}
       ", @owner, @table_name, @partition_name]

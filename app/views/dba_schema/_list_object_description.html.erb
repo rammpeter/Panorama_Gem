@@ -189,7 +189,7 @@ column_options =
        if @rac_attribs.current_master_cnt == 1
          value = @rac_attribs.current_master
        else
-         value = "<&nbsp;#{@rac_attribs.current_master_cnt}&nbsp;>".html_safe
+         value = "<&nbsp;#{@rac_attribs.current_master_cnt} different&nbsp;>".html_safe
        end
 
        ajax_link(value,
@@ -260,7 +260,7 @@ column_options =
    column_options << {:caption=> 'Drop seg.',        :data=>proc{|rec| fn rec.drop_segments},                 :title=> "Number of partition and subpartition segments dropped since last table analysis if table has MONITORING-flag.\nStatistics are populated in memory by database. Run the DBMS_STATS.FLUSH_DATABASE_MONITORING_INFO to see the latest information here.", :align=>:right}
    column_options << {:caption=> 'Last DML',         :data=>proc{|rec| localeDateTime(rec.last_dml)},         :title=> "Timestamp of last DML-operations since last table analysis if table has MONITORING-flag.\nStatistics are populated in memory by database. Run the DBMS_STATS.FLUSH_DATABASE_MONITORING_INFO to see the latest information here."}
    column_options << {:caption=> 'Several States',   :data=>list_states,                          :title=> title_states}
-   column_options << {:caption=> 'RAC master inst.', :data=>list_rac_master,                                  :title=> "Master instance for cache block states in RAC", data_title: data_title_rac_master} if PanoramaConnection.rac?
+   column_options << {:caption=> 'RAC master inst.', :data=>list_rac_master,                                  :title=> "Current master instance for cache block states in RAC", data_title: data_title_rac_master} if defined?(@rac_attribs) # PanoramaConnection.rac?
 
 
 %>
