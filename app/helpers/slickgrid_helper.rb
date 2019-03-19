@@ -247,7 +247,7 @@ module SlickgridHelper
             celldata = eval_with_rec("#{col[:data]}.to_s", rec)                   # Inhalt eines Feldes incl. html-Code für Link, Style etc.
           end
         rescue Exception => e
-          log_exception_backtrace(e, 30)
+          log_exception_backtrace(e)
           raise "Error #{e.class}: '#{e.message}' evaluating :data-expression for column '#{col[:caption]}'"
         end
         begin
