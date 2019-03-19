@@ -136,6 +136,53 @@
    )
   end
 
+   list_rac_master = proc do |rec|
+     if rec.current_master_cnt
+       if rec.current_master_cnt == 1
+         value = rec.current_master
+       else
+         value = "<&nbsp;#{rec.current_master_cnt} different&nbsp;>".html_safe
+       end
+
+       ajax_link(value,
+                {controller:  :dba_waits,
+                 action:      :list_drm_historic_single_records,
+                 owner:       rec.owner,
+                 object_name: rec.index_name,
+                 update_area: @update_area,
+                },
+                :title=>"List dynamic remastering events for this object"
+    )
+
+     else
+       'No info'
+     end
+   end
+
+   data_title_rac_master = proc do |rec|
+     title = "%t"
+     if rec.current_master_cnt
+       if rec.previous_master_cnt == 1
+         if rec.previous_master == 32768
+           title << "\nNo previous master instance because no remastering happened"
+         else
+           title << "\nPrevious master instance = #{rec.previous_master}"
+         end
+       else
+         title << "\n#{rec.previous_master_cnt} different previous master instances"
+       end
+
+       if rec.gc_mastering_policy_cnt == 1
+         title << "\nGC mastering policy = #{rec.gc_mastering_policy}"
+       else
+         title << "\n#{rec.gc_mastering_policy_cnt} different mastering policies"
+       end
+       title << "\nNumber of remastering events = #{rec.remaster_cnt}"
+     end
+     title
+   end
+
+
    column_options =
            [
                    {:caption=> 'Name',             :data=>proc{|rec| rec.index_name},                                     :title=> 'Name of index'},
@@ -165,6 +212,7 @@
                    {:caption=> 'Several States',   :data=>list_states,                                                    :title=> title_states},
                    {:caption=> 'Action',           :data=>render_action_buttons,                                          :title=> 'Call action for this index'},
            ]
+   column_options << {:caption=> 'RAC master inst.', :data=>list_rac_master,                                  :title=> "Current master instance for cache block states in RAC", data_title: data_title_rac_master} if PanoramaConnection.rac?
 
 %>
 

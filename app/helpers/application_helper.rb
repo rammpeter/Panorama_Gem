@@ -337,7 +337,7 @@ module ApplicationHelper
 
   # Sichern der Parameter time_selection_start und time_selection_end in session, Prüfen auf Valides Format
   def save_session_time_selection
-    def check_timestamp_picture(ts)    # Test auf struktur DD.MM.YYYY HH:MM
+    def check_timestamp_picture(ts)    # Test auf struktur DD.MM.YYYY HH:MM or DD.MM.YYYY HH:MM:SS
       # Test auf Identität der Trennzeichen zwischen Maske und Prüftext
       index = 0
       sql_datetime_minute_mask.split(//).each do |m|
@@ -348,7 +348,7 @@ module ApplicationHelper
       end
 
       daypos = sql_datetime_minute_mask.index 'DD'
-      raise "#{t(:application_helper_length_error, :default=>'Length of expression')} != 16" if ts.length != 16
+      raise "#{t(:application_helper_length_error, :default=>'Length of expression')} != 16 or 19" if ts.length != 16 && ts.length != 19                      # Minute or seconds
       raise t(:application_helper_range_error_day, :default=>'Day not between 01 and 31')        if  ts[daypos,1] < '0' || ts[daypos,1] > '3' ||      # Tag
                                                       ts[daypos+1,1] < '0' || ts[daypos+1,1] > '9' ||
                                                       ts[daypos,2].to_i < 1  ||
@@ -376,7 +376,13 @@ module ApplicationHelper
                                                        ts[minutepos+1,1] < '0' || ts[minutepos+1,1] > '9' ||
                                                        ts[minutepos,2].to_i > 59
 
-      ts      # Return-wert
+      if ts.length == 19                                                        # Timestamp contains seconds as last section
+        second_pos = 17
+        raise t(:application_helper_range_error_second, :default=>'Second not between 00 and 59') if ts[second_pos,1] < '0' || ts[second_pos,1] > '5' ||    # Second
+            ts[second_pos+1,1] < '0' || ts[second_pos+1,1] > '9' ||
+            ts[second_pos,2].to_i > 59
+      end
+        #ts      # Return-wert
     rescue Exception => e
       raise "#{t(:application_helper_ts_invalid_format, :default=>'Invalid format of timestamp')} '#{ts}'. #{t(:application_helper_ts_expected, :default=>'Expected is')} '#{human_datetime_minute_mask}'! Problem: #{e.message}"
     end

@@ -18,9 +18,16 @@
   column_options << {caption: "Target inst.",     data: proc{|rec| rec.target_instance_number},               title: "New master instance for this object", align: :right}
   column_options << {caption: "Con-ID",     data: proc{|rec| rec.con_id},                          title: "Container-ID", align: :right} if get_db_version >= '12.1'
 
+
+  caption = "Dynamic remastering events from gv$Policy_History"
+  caption << " from #{@time_selection_start} until #{@time_selection_end}"  if @time_selection_start && @time_selection_end
+  caption << ", target instance = #{@target_instance}"                      if @target_instance
+  caption << ", Data-Object-ID = #{@data_object_id}"                        if @data_object_id
+  caption << ", Owner = #{@owner}"                                          if @owner
+  caption << ", Objectname = #{@object_name}"                               if @object_name
 %>
 <%= gen_slickgrid(@records, column_options, {
-    :caption => "Dynamic remastering events from gv$Policy_History#{" from #{@time_selection_start} until #{@time_selection_end}" if @time_selection_start && @time_selection_end}#{", target instance = #{@target_instance}" if @target_instance}#{", Data-Object-ID = #{@data_object_id}" if @data_object_id}",
+    :caption => caption,
     :max_height => 450, show_pin_icon: 1
 })
 %>

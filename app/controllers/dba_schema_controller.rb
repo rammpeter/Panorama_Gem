@@ -737,7 +737,7 @@ class DbaSchemaController < ApplicationController
                         TO_DATE(ou.start_monitoring, 'MM/DD/YYYY HH24:MI:SS') Start_Monitoring,
                         TO_DATE(ou.end_monitoring,   'MM/DD/YYYY HH24:MI:SS') End_Monitoring,
                         do.Created, do.Last_DDL_Time, TO_DATE(do.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
-                        CASE WHEN c.Constraint_Type = 'R' THEN 'Y' END Used_For_FK,
+                        CASE WHEN c.Constraint_Name IS NOT NULL THEN 'Y' END Used_For_FK,
                         c.Constraint_Name,
                         p.P_Status_Count,         p.P_Status,
                         p.P_Compression_Count,    p.P_Compression,
@@ -751,6 +751,7 @@ class DbaSchemaController < ApplicationController
                         sp.SP_Pct_Free_Count,     sp.SP_Pct_Free,
                         sp.SP_Ini_Trans_Count,    sp.SP_Ini_Trans,
                         sp.SP_Max_Trans_Count,    sp.SP_Max_Trans
+                        #{", mi.GC_Mastering_Policy, mi.GC_Mastering_Policy_Cnt, mi.Current_Master, mi.Current_Master, mi.Current_Master_Cnt, mi.Previous_Master, mi.Previous_Master_Cnt, mi.Remaster_Cnt" if PanoramaConnection.rac?}
                  FROM   DBA_Indexes i
                  JOIN   DBA_Users   u  ON u.UserName  = i.owner
                  JOIN   sys.Obj$    o  ON o.Owner# = u.User_ID AND o.Name = i.Index_Name
@@ -760,9 +761,14 @@ class DbaSchemaController < ApplicationController
                                   GROUP BY Owner, Segment_Name
                                  ) s ON s.Owner = i.Owner AND s.Segment_Name = i.Index_Name
                  LEFT OUTER JOIN DBA_Objects do ON do.Owner = i.Owner AND do.Object_Name = i.Index_Name AND do.Object_Type = 'INDEX'
-                 LEFT OUTER JOIN DBA_Ind_Columns ic ON ic.Index_Owner = i.Owner AND ic.Index_Name = i.Index_Name AND ic.Column_Position = 1 /* Columns for test of FK */
-                 LEFT OUTER JOIN DBA_Cons_Columns cc ON cc.Owner = i.Table_Owner AND cc.Table_Name = i.Table_Name AND cc.Column_Name = ic.Column_Name AND cc.Position = 1 /* First columns of constraint */
-                 LEFT OUTER JOIN DBA_Constraints c ON c.Owner = i.Table_Owner AND c.Table_Name = i.Table_Name AND c.Constraint_Name = cc.Constraint_Name
+                 LEFT OUTER JOIN (SELECT ii.Index_Name, MIN(c.Constraint_Name) Constraint_Name
+                                  FROM   DBA_Indexes ii
+                                  LEFT OUTER JOIN DBA_Ind_Columns ic ON ic.Index_Owner = ii.Owner AND ic.Index_Name = ii.Index_Name AND ic.Column_Position = 1 /* Columns for test of FK */
+                                  LEFT OUTER JOIN DBA_Cons_Columns cc ON cc.Owner = ii.Table_Owner AND cc.Table_Name = ii.Table_Name AND cc.Column_Name = ic.Column_Name AND cc.Position = 1 /* First columns of constraint */
+                                  LEFT OUTER JOIN DBA_Constraints c ON c.Owner = ii.Table_Owner AND c.Table_Name = ii.Table_Name AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Name = 'R'
+                                  WHERE  ii.Table_Owner = ? AND ii.Table_Name = ?
+                                  GROUP BY ii.Index_Name
+                                 ) c ON c.Index_Name = i.Index_Name
                  LEFT OUTER JOIN sys.object_usage ou ON ou.Obj# = o.Obj#
                  LEFT OUTER JOIN (SELECT ii.Index_Name, COUNT(*) Partition_Number,
                                   COUNT(DISTINCT ip.Status)          P_Status_Count,       MIN(ip.Status)           P_Status,
@@ -790,8 +796,33 @@ class DbaSchemaController < ApplicationController
                                   AND    ii.Table_Name = ?
                                   GROUP BY ii.Index_Name
                                  ) sp ON sp.Index_Name = i.Index_Name
+              #{"LEFT OUTER JOIN (SELECT ii.Index_Name, MIN(i.GC_Mastering_Policy) GC_Mastering_Policy,  COUNT(DISTINCT i.GC_Mastering_Policy) GC_Mastering_Policy_Cnt,
+                                  MIN(i.Current_Master) + 1  Current_Master,       COUNT(DISTINCT i.Current_Master)      Current_Master_Cnt,
+                                  MIN(i.Previous_Master) + 1  Previous_Master,     COUNT(DISTINCT DECODE(i.Previous_Master, 32767, NULL, i.Previous_Master)) Previous_Master_Cnt,
+                                  SUM(i.Remaster_Cnt) Remaster_Cnt
+                                  FROM   DBA_Indexes ii
+                                  JOIN   DBA_Objects o ON o.Owner = ii.Owner AND o.Object_Name = ii.Index_Name
+                                  JOIN   V$GCSPFMASTER_INFO i ON i.Data_Object_ID = o.Data_Object_ID
+                                  WHERE  ii.Table_Owner = ? AND ii.Table_Name = ?
+                                  GROUP BY ii.Index_Name
+                                 ) mi ON mi.Index_Name = i.Index_Name" if PanoramaConnection.rac?}
                  WHERE  i.Table_Owner = ? AND i.Table_Name = ?
-                ", @owner, @table_name, @owner, @table_name, @owner, @table_name]
+                ", @owner, @table_name, @owner, @table_name, @owner, @table_name, @owner, @table_name].concat(PanoramaConnection.rac? ? [@owner, @table_name] : [])
+
+
+    if PanoramaConnection.rac?
+      @rac_attribs = sql_select_first_row ["SELECT MIN(i.GC_Mastering_Policy) GC_Mastering_Policy,  COUNT(DISTINCT i.GC_Mastering_Policy) GC_Mastering_Policy_Cnt,
+                                                   MIN(i.Current_Master) + 1  Current_Master,       COUNT(DISTINCT i.Current_Master)      Current_Master_Cnt,
+                                                   MIN(i.Previous_Master) + 1  Previous_Master,     COUNT(DISTINCT DECODE(i.Previous_Master, 32767, NULL, i.Previous_Master)) Previous_Master_Cnt,
+                                                   SUM(i.Remaster_Cnt) Remaster_Cnt
+                                            FROM   DBA_Objects o
+                                            JOIN   V$GCSPFMASTER_INFO i ON i.Data_Object_ID = o.Data_Object_ID
+                                            WHERE  o.Owner = ? AND o.Object_Name = ?
+                                           ", @owner, @table_name]
+    end
+
+
+
 
 
     columns = sql_select_all ["\
@@ -1235,6 +1266,7 @@ class DbaSchemaController < ApplicationController
               SP_Pct_Free_Count,     SP_Pct_Free,
               SP_Ini_Trans_Count,    SP_Ini_Trans,
               SP_Max_Trans_Count,    SP_Max_Trans
+              #{", mi.GC_Mastering_Policy,  mi.Current_Master + 1  Current_Master,  mi.Previous_Master + 1  Previous_Master, mi.Remaster_Cnt" if PanoramaConnection.rac?}
       FROM DBA_Ind_Partitions p
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Index_Owner AND o.Object_Name = p.Index_Name AND o.SubObject_Name = p.Partition_Name AND o.Object_Type = 'INDEX PARTITION'
       LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Partition_Name, COUNT(*) SubPartition_Count,
@@ -1247,6 +1279,7 @@ class DbaSchemaController < ApplicationController
                        FROM   DBA_Ind_SubPartitions WHERE  Index_Owner = ? AND Index_Name = ?
                        GROUP BY Partition_Name
                       ) sp ON sp.Partition_Name = p.Partition_Name
+   #{"LEFT OUTER JOIN V$GCSPFMASTER_INFO mi ON mi.Data_Object_ID = o.Data_Object_ID" if PanoramaConnection.rac?}
       WHERE p.Index_Owner = ? AND p.Index_Name = ?
       ", @owner, @index_name, @owner, @index_name]
 
@@ -1278,8 +1311,10 @@ class DbaSchemaController < ApplicationController
                    WHERE  s.Owner = p.Index_Owner AND s.Segment_Name = p.Index_Name AND s.Partition_Name = p.SubPartition_Name
                   ) Size_MB,
              o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
+              #{", mi.GC_Mastering_Policy,  mi.Current_Master + 1  Current_Master,  mi.Previous_Master + 1  Previous_Master, mi.Remaster_Cnt" if PanoramaConnection.rac?}
       FROM DBA_Ind_SubPartitions p
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Index_Owner AND o.Object_Name = p.Index_Name AND o.SubObject_Name = p.SubPartition_Name AND o.Object_Type = 'INDEX SUBPARTITION'
+   #{"LEFT OUTER JOIN V$GCSPFMASTER_INFO mi ON mi.Data_Object_ID = o.Data_Object_ID" if PanoramaConnection.rac?}
       WHERE p.Index_Owner = ? AND p.Index_Name = ?
       #{" AND p.Partition_Name = ?" if @partition_name}
       ", @owner, @index_name, @partition_name]
