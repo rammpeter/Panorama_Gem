@@ -242,13 +242,14 @@ module SlickgridHelper
       column_options.each do |col|
         begin
           if col[:data].class == Proc
-            celldata = (col[:data].call(rec)).to_s                                # Inhalt eines Feldes incl. html-Code für Link, Style etc., Ressourcen-Intensiv
+            celldata = (col[:data].call(rec)).to_s                              # Inhalt eines Feldes incl. html-Code für Link, Style etc., Ressourcen-Intensiv
           else
-            celldata = eval_with_rec("#{col[:data]}.to_s", rec)                   # Inhalt eines Feldes incl. html-Code für Link, Style etc.
+            celldata = eval_with_rec("#{col[:data]}.to_s", rec)                 # Inhalt eines Feldes incl. html-Code für Link, Style etc.
           end
         rescue Exception => e
-          log_exception_backtrace(e)
-          raise "Error #{e.class}: '#{e.message}' evaluating :data-expression for column '#{col[:caption]}'"
+          new_ex = Exception.new("Error #{e.class}: '#{e.message}' evaluating :data-expression for column '#{col[:caption]}'")
+          new_ex.set_backtrace(e.backtrace)                                     # Ensure catching this exception gets the original backtrace
+          raise new_ex
         end
         begin
           celldata.encode!(Encoding::UTF_8) if celldata.encoding != Encoding::UTF_8 # Ensure that other content is translated to UTF-8

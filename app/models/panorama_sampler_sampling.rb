@@ -432,16 +432,15 @@ class PanoramaSamplerSampling
     exec_shrink_space('Longterm_Trend') if shrink_space
   end
 
-
   def exec_shrink_space(table_name)
-    shrink_cmd = "ALTER TABLE #{@sampler_config.get_owner}.#{table_name} SHRINK SPACE CASCADE"
 
-    Rails.logger.info "Executing #{shrink_cmd}"
     PanoramaConnection.sql_execute("ALTER TABLE #{@sampler_config.get_owner}.#{table_name} ENABLE ROW MOVEMENT")
     begin
+      shrink_cmd = "ALTER TABLE #{@sampler_config.get_owner}.#{table_name} SHRINK SPACE CASCADE"
+      Rails.logger.info "Executing #{shrink_cmd}"
       PanoramaConnection.sql_execute(shrink_cmd)
     rescue Exception => e
-      Rails.logger.error "Exception #{e.message} during #{shrink_cmd}"
+      Rails.logger.error "Exception #{e.message}"
       # get one index name to drop that is not PK etc.
       index_name = PanoramaConnection.sql_select_one "SELECT Index_Name
                                                       FROM   All_Indexes i
@@ -454,6 +453,25 @@ class PanoramaSamplerSampling
         Rails.logger.info "Dropping index #{@sampler_config.get_owner}.#{index_name} to reclaim space for following SHRINK SPACE operations"
         PanoramaConnection.sql_execute("DROP INDEX #{@sampler_config.get_owner}.#{index_name}")
         PanoramaConnection.sql_execute(shrink_cmd)                              # try again to shrink
+      end
+    end
+
+    # SHRINK / MOVE LOB segments if available
+    lobs = PanoramaConnection.sql_select_all ["SELECT Column_Name, Tablespace_Name FROM DBA_Lobs WHERE Owner = ? AND Table_Name = ?", @sampler_config.get_owner.upcase, table_name.upcase]
+    lobs.each do |lob|
+      lob_cmd = "ALTER TABLE #{@sampler_config.get_owner}.#{table_name} MODIFY LOB (#{lob.column_name}) (SHRINK SPACE)"
+      Rails.logger.info "Executing #{lob_cmd}"
+      begin
+        PanoramaConnection.sql_execute(lob_cmd)
+      rescue Exception => e
+        Rails.logger.error "Exception #{e.message}\ntrying move instead"
+        lob_cmd = "ALTER TABLE #{@sampler_config.get_owner}.#{table_name} MOVE LOB (#{lob.column_name}) STORE AS (TABLESPACE #{lob.tablespace_name})"
+        Rails.logger.info "Executing #{lob_cmd}"
+        begin
+          PanoramaConnection.sql_execute(lob_cmd)
+        rescue Exception => e
+          Rails.logger.error "Exception #{e.message}\nError ignored"
+        end
       end
     end
   end

@@ -424,7 +424,7 @@ class PanoramaConnection
 
     # Ensure stacktrace of first exception is show
     msg = "Error while executing SQL:\n#{e.message}\nSQL-Statement:\n#{sql}\n#{bind_text.length > 0 ? "Bind-Values:\n#{bind_text}" : ''}"
-    Rails.logger.error("PanoramaConnection.sql_execute: #{msg}")
+    # Rails.logger.error("PanoramaConnection.sql_execute: #{msg}")  # Logging is done in outer exception handler
     new_ex = Exception.new(msg)
     new_ex.set_backtrace(e.backtrace)
     raise new_ex
