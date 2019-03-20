@@ -131,26 +131,38 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
 
   test "list_temp_usage_historic with xhr: true" do
     if get_db_version >= "11.2"
+      all_groupby_to_test = true                                                # All groupby have to tested in advance
       session_statistics_key_rules.each do |outer_filter, value|
         # Iteration über Gruppierungskriterien
+        first_groupby_to_test = true                                            # First group should be tested
         temp_historic_grouping_options.each do |time_groupby, inner_value|
-          add_filter = {outer_filter => bind_value_from_key_rule(outer_filter)}
-          post :list_temp_usage_historic, :params => {:format=>:html, :time_groupby=>time_groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
-          assert_response_success_or_management_pack_violation("list_temp_usage_historic outer_filter=#{outer_filter} time_groupby=#{time_groupby}")
+          if first_groupby_to_test || all_groupby_to_test
+            first_groupby_to_test = false                                       # First group tested, skip the rest
+            add_filter = {outer_filter => bind_value_from_key_rule(outer_filter)}
+            post :list_temp_usage_historic, :params => {:format=>:html, :time_groupby=>time_groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
+            assert_response_success_or_management_pack_violation("list_temp_usage_historic outer_filter=#{outer_filter} time_groupby=#{time_groupby}")
+          end
         end
+        all_groupby_to_test = false                                             # all grouby have been tested, not again
       end
     end
   end
 
   test "list_pga_usage_historic with xhr: true" do
     if get_db_version >= "11.2"
+      all_groupby_to_test = true                                                # All groupby have to tested in advance
       session_statistics_key_rules.each do |outer_filter, value|
         # Iteration über Gruppierungskriterien
+        first_groupby_to_test = true                                            # First group should be tested
         temp_historic_grouping_options.each do |time_groupby, inner_value|
-          add_filter = {outer_filter => bind_value_from_key_rule(outer_filter)}
-          post :list_pga_usage_historic, :params => {:format=>:html, :time_groupby=>time_groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
-          assert_response_success_or_management_pack_violation("list_pga_usage_historic outer_filter=#{outer_filter} time_groupby=#{time_groupby}")
+          if first_groupby_to_test || all_groupby_to_test
+            first_groupby_to_test = false                                       # First group tested, skip the rest
+            add_filter = {outer_filter => bind_value_from_key_rule(outer_filter)}
+            post :list_pga_usage_historic, :params => {:format=>:html, :time_groupby=>time_groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
+            assert_response_success_or_management_pack_violation("list_pga_usage_historic outer_filter=#{outer_filter} time_groupby=#{time_groupby}")
+          end
         end
+        all_groupby_to_test = false                                             # all grouby have been tested, not again
       end
     end
   end
