@@ -121,6 +121,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
   <div class="flex-row-element">
     <%= gen_slickgrid(@tablespace_per_schema, column_options, {:caption => "Tablespace-usage per schema", :width => :auto, :max_height => 450, :no_wrap => true}) %>
   </div>
+</div>
 
   <%
 
@@ -147,7 +148,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
                             :tablespace   => rec.tablespace_name,
                             :update_area  => @update_area,
                            },
-                   :title=>t(:storage_tablespace_usage_tablespaces_mbfree_hint, :default=>"Show free extents of tablespace and their size distribution.\nAllows you to evaluate fragmentation of free extents of this tablespace.")
+                   :title=>t(:storage_tablespace_usage_tablespaces_mbfree_hint, :default=>"Show free extents of tablespace and their size distribution. Allows you to evaluate fragmentation of free extents of this tablespace.")
        )
       else
         fn rec.mbfree
@@ -176,10 +177,18 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
     end
 
     show_max_size = proc do |rec|
-      if rec.autoextensible == 'NO'
+      unless rec.autoextensible == 'YES'
         nil
       else
         fn(rec.max_size_mb)
+      end
+    end
+
+    data_title_max_size = proc do |rec|
+      unless rec.autoextensible == 'YES'
+        "%t"
+      else
+        "%t\n\nFree space incl. possible autoextend = #{fn(rec.max_size_mb - rec.mbused) rescue nil} MB"
       end
     end
 
@@ -234,8 +243,8 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
             {:caption=>"MB Free",             :data=>link_mb_free,                                :title=>"Free space in tablespace in MB\n(without possible autoextend-expansion)",           :align=>:right, show_pct_hint: true},
             {:caption=>"% used",              :data=>show_pct_used,                               :title=>"Usage in percent\n(without possible autoextend-expansion)",                         :align=>:right},
             {:caption=>"Auto ext.",           :data=>proc{|rec| rec.autoextensible},              :title=>"Auto-Extensible ?"},
-            {:caption=>"MB max.",             :data=>show_max_size,                               :title=>"Maximum size of tablespace in MB including autoextend.\nFilled only if autoextend is used for at least one datafile.", align: :right, data_style: proc{|rec| "background-color: orange;" if rec.max_size_mb && rec.max_size_mb < rec.mbtotal}},
-            {:caption=>"% used max.",         :data=>show_pct_used_max,                           :title=>"Usage in percent of maximum size of tablespace including autoextend.\nFilled only if autoextend is used for at least one datafile.", align: :right},
+            {:caption=>"MB max.",             :data=>show_max_size,                               :title=>"Maximum size of tablespace in MB including autoextend.\nFilled only if autoextend is used for at least one datafile.", align: :right, data_title: data_title_max_size, data_style: proc{|rec| "background-color: orange;" if rec.max_size_mb && rec.max_size_mb < rec.mbtotal}},
+            {:caption=>"% used max.",         :data=>show_pct_used_max,                           :title=>"Usage in percent of maximum size of tablespace including autoextend.\nFilled only if autoextend is used for at least one datafile.", data_title: data_title_max_size, align: :right},
             {:caption=>"Files",               :data=>link_file_count,                             :title=>"Number of data files, temp files or redo log groups", align: :right},
             {:caption=>"Status",              :data=>proc{|rec| rec.status}},
             {:caption=>"Content",             :data=>proc{|rec| rec.contents}},
@@ -256,10 +265,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
 
   %>
 
-  <div class="flex-row-element">
-    <%= gen_slickgrid(@tablespaces, column_options, {:caption => "Tablespace-usage total from #{dba_or_cdb('DBA_Tablespaces')}", :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
-  </div>
+  <%= gen_slickgrid(@tablespaces, column_options, {:caption => "Tablespace-usage total from #{dba_or_cdb('DBA_Tablespaces')}", :max_height=>450, :no_wrap=>true}) %>
 
-</div>
 <div id="<%= @update_area %>"></div>
 

@@ -1740,9 +1740,7 @@
   storage_tablespace_usage_tablespaces_link_hint:           Anzeige der Objekte des Tablespaces und ihrer Größen
   storage_tablespace_usage_tablespace_blocksize_hint:       Blocksize in Byte des Tablespaces
   storage_tablespace_usage_tablespace_content_hint:         Typ/Inhalt des Tablespace
-  storage_tablespace_usage_tablespaces_mbfree_hint: |-
-    Anzeige der freien Extents des Tablespaces und ihrer Größenverteilung
-    Erlaubt die Berwertung der Fragmentierung des freien Speichers des Tablespaces
+  storage_tablespace_usage_tablespaces_mbfree_hint:         Anzeige der freien Extents des Tablespaces und ihrer Größenverteilung. Erlaubt die Berwertung der Fragmentierung des freien Speichers des Tablespaces.
   storage_tablespace_usage_tablespace_name_hint:            Name des Tablespace
   storage_tablespace_usage_total_caption:                   Summen total
   storage_tablespace_usage_total_pct_hint:                  Prozentuale Auslastung
