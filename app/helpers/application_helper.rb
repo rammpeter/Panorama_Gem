@@ -382,7 +382,7 @@ module ApplicationHelper
             ts[second_pos+1,1] < '0' || ts[second_pos+1,1] > '9' ||
             ts[second_pos,2].to_i > 59
       end
-        #ts      # Return-wert
+      ts                                                                        # Function Return-wert
     rescue Exception => e
       raise "#{t(:application_helper_ts_invalid_format, :default=>'Invalid format of timestamp')} '#{ts}'. #{t(:application_helper_ts_expected, :default=>'Expected is')} '#{human_datetime_minute_mask}'! Problem: #{e.message}"
     end
