@@ -70,6 +70,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
         {owner: 'SYS',      segment_name: 'A%'},                                # (Wildcard with multiple hit)
         {owner: 'SYS',      segment_name: 'TAB$'},                              # Table
         {owner: 'SYS',      segment_name: 'COL$'},                              # Table
+        {owner: nil,        segment_name: 'ALL_TABLES'},                        # View
         {owner: 'SYS',      segment_name: 'WRH$_ACTIVE_SESSION_HISTORY'},       # partitioned Table
         {owner: 'PUBLIC',   segment_name: 'V$ARCHIVE'},                         # Synonym
         {owner: 'SYS',      segment_name: 'DBMS_LOCK'},                         # Package oder Body
@@ -87,9 +88,6 @@ class DbaSchemaControllerTest < ActionController::TestCase
       get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"DBMS_LOCK", :object_type=>'PACKAGE BODY', show_line_numbers: show_line_numbers, :update_area=>:hugo }
       assert_response :success
     end
-
-    get :list_object_description, :params => {:format=>:html, :segment_name=>"ALL_TABLES", :update_area=>:hugo }                  # View
-    assert_response :success
 
     post :list_indexes, :params => {:format=>:html, :owner=>"SYS", :table_name=>"AUD$", :update_area=>:hugo }
     assert_response :success
