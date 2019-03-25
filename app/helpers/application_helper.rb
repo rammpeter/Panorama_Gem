@@ -58,7 +58,9 @@ module ApplicationHelper
   #     key: Key to find
   #     default_proc: proc to kalkulate value if does not yet exists
   def read_from_client_info_store(key)
+    Rails.logger.debug "read_from_client_info_store: start read"
     full_hash = EngineConfig.get_client_info_store.read(get_decrypted_client_key)               # Auslesen des kompletten Hashes aus Cache
+    Rails.logger.debug "read_from_client_info_store: full_hash = #{full_hash}"
     if full_hash.nil? || full_hash.class != Hash                                # Abbruch wenn Struktur nicht passt
       Rails.logger.error "Key '#{key}' not found in ApplicationHelper.read_from_client_info_store"
       return nil
@@ -67,12 +69,14 @@ module ApplicationHelper
   end
 
   def read_from_browser_tab_client_info_store(key)
+    Rails.logger.debug "read_from_browser_tab_client_info_store: start read for key = #{key}"
     browser_tab_ids = read_from_client_info_store(:browser_tab_ids)             # read full tree with all browser-tab-specific connections
     raise "No session state available at Panorama-Server: Please restart app in browser" if browser_tab_ids.nil?
     browser_tab_ids[@browser_tab_id][key]                                       # get current value for current browser tab
   end
 
   def write_to_browser_tab_client_info_store(key, value)
+    Rails.logger.debug "write_from_browser_tab_client_info_store: start read for key = #{key}"
     browser_tab_ids = read_from_client_info_store(:browser_tab_ids)             # read full tree with all browser-tab-specific connections
     raise "No session state available at Panorama-Server: Please restart app in browser" if browser_tab_ids.nil?
     browser_tab_ids[@browser_tab_id][key] = value                               # set current value for current browser tab
@@ -690,6 +694,7 @@ module ApplicationHelper
 
   # Ausliefern des client-Keys
   def get_decrypted_client_key
+    Rails.logger.debug "get_decrypted_client_key: client_key = #{cookies['client_key']} client_salt = #{cookies['client_salt']}"
     return nil if cookies['client_key'].nil? && cookies['client_salt'].nil?  # Connect vom Job oder monitor
 
     Encryption.decrypt_value(cookies['client_key'], cookies['client_salt'])                                    # wirft ActiveSupport::MessageVerifier::InvalidSignature wenn cookies['client_key'] == nil
