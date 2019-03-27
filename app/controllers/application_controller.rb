@@ -114,7 +114,7 @@ class ApplicationController < ActionController::Base
       # Ausgabe Logging-Info in File für Usage-Auswertung
       filename = EngineConfig.config.usage_info_filename
       File.open(filename, 'a'){|file| file.write("#{request.remote_ip.nil? ? 'localhost': request.remote_ip} #{PanoramaConnection.database_name} #{Time.now.year}/#{'%02d' % Time.now.month} #{real_controller_name} #{real_action_name} #{Time.now.strftime('%Y/%m/%d-%H:%M:%S')} #{get_current_database[:tns]}\n")}
-      Rails.logger.info "remote_ip = #{request.remote_ip}, X-Real-IP = #{request.getHeader("X-Real-IP")}, X-Forwarded-For = #{request.getHeader("X-Forwarded-For")}"
+      Rails.logger.info "remote_ip = #{request.remote_ip}, X-Real-IP = #{request.get_header("X-Real-IP")}, X-Forwarded-For = #{request.get_header("X-Forwarded-For")}"
     rescue Exception => e
       Rails.logger.warn("#### ApplicationController.begin_request: #{t(:application_helper_usage_error, :default=>'Exception while writing in')} #{filename}: #{e.message}")
     end
