@@ -41,12 +41,15 @@ module ApplicationHelper
 
   # Schreiben eines client-bezogenen Wertes in serverseitigen Cache
   def write_to_client_info_store(key, value)
-    cached_client_key = get_decrypted_client_key                                   # ausserhalb des Exception-Handlers, da evtl. ActiveSupport::MessageVerifier::InvalidSignature bereits in get_cached_client_key gefangen wird
+    cached_client_key = get_decrypted_client_key                                # ausserhalb des Exception-Handlers, da evtl. ActiveSupport::MessageVerifier::InvalidSignature bereits in get_cached_client_key gefangen wird
+    if !defined?(@buffered_client_info_store) || @buffered_client_info_store.nil?  # First access after initiation of object
+      @buffered_client_info_store = EngineConfig.get_client_info_store.read(cached_client_key)                 # Kompletten Hash aus Cache auslesen
+    end
+    @buffered_client_info_store = {} if @buffered_client_info_store.nil? || @buffered_client_info_store.class != Hash  # Neustart wenn Struktur nicht passt
+
+    @buffered_client_info_store[key] = value                                      # Wert in Hash verankern
     begin
-      full_hash = EngineConfig.get_client_info_store.read(cached_client_key)                 # Kompletten Hash aus Cache auslesen
-      full_hash = {} if full_hash.nil? || full_hash.class != Hash               # Neustart wenn Struktur nicht passt
-      full_hash[key] = value                                                    # Wert in Hash verankern
-      EngineConfig.get_client_info_store.write(cached_client_key, full_hash)                 # Überschreiben des kompletten Hashes im Cache
+      EngineConfig.get_client_info_store.write(cached_client_key, @buffered_client_info_store)  # Überschreiben des kompletten Hashes im Cache
     rescue Exception =>e
       Rails.logger.error("Exception '#{e.message}' raised while writing file store at '#{EngineConfig.config.client_info_filename}'")
       raise "Exception '#{e.message}' while writing file store at '#{EngineConfig.config.client_info_filename}'"
@@ -58,25 +61,25 @@ module ApplicationHelper
   #     key: Key to find
   #     default_proc: proc to kalkulate value if does not yet exists
   def read_from_client_info_store(key)
-    Rails.logger.debug "read_from_client_info_store: start read"
-    full_hash = EngineConfig.get_client_info_store.read(get_decrypted_client_key)               # Auslesen des kompletten Hashes aus Cache
-    Rails.logger.debug "read_from_client_info_store: full_hash = #{full_hash}"
-    if full_hash.nil? || full_hash.class != Hash                                # Abbruch wenn Struktur nicht passt
-      Rails.logger.error "Key '#{key}' not found in ApplicationHelper.read_from_client_info_store"
+    if !defined?(@buffered_client_info_store) || @buffered_client_info_store.nil?                                           # First access after initiation of object
+      @buffered_client_info_store = EngineConfig.get_client_info_store.read(get_decrypted_client_key)    # Auslesen des kompletten Hashes aus Cache
+    end
+    if @buffered_client_info_store.nil? || @buffered_client_info_store.class != Hash                       # Abbruch wenn Struktur nicht passt
+      Rails.logger.error "read_from_client_info_store: No data found in client_info_store while looking for key=#{key}"
       return nil
     end
-    full_hash[key]                                                              # return value regardless it's nil or not
+    @buffered_client_info_store[key]                                              # return value regardless it's nil or not
   end
 
   def read_from_browser_tab_client_info_store(key)
-    Rails.logger.debug "read_from_browser_tab_client_info_store: start read for key = #{key}"
+#    Rails.logger.debug "read_from_browser_tab_client_info_store: start read for key = #{key}"
     browser_tab_ids = read_from_client_info_store(:browser_tab_ids)             # read full tree with all browser-tab-specific connections
     raise "No session state available at Panorama-Server: Please restart app in browser" if browser_tab_ids.nil?
     browser_tab_ids[@browser_tab_id][key]                                       # get current value for current browser tab
   end
 
   def write_to_browser_tab_client_info_store(key, value)
-    Rails.logger.debug "write_from_browser_tab_client_info_store: start read for key = #{key}"
+#    Rails.logger.debug "write_from_browser_tab_client_info_store: start read for key = #{key}"
     browser_tab_ids = read_from_client_info_store(:browser_tab_ids)             # read full tree with all browser-tab-specific connections
     raise "No session state available at Panorama-Server: Please restart app in browser" if browser_tab_ids.nil?
     browser_tab_ids[@browser_tab_id][key] = value                               # set current value for current browser tab
@@ -694,10 +697,12 @@ module ApplicationHelper
 
   # Ausliefern des client-Keys
   def get_decrypted_client_key
-    Rails.logger.debug "get_decrypted_client_key: client_key = #{cookies['client_key']} client_salt = #{cookies['client_salt']}"
-    return nil if cookies['client_key'].nil? && cookies['client_salt'].nil?  # Connect vom Job oder monitor
-
-    Encryption.decrypt_value(cookies['client_key'], cookies['client_salt'])                                    # wirft ActiveSupport::MessageVerifier::InvalidSignature wenn cookies['client_key'] == nil
+    if !defined?(@buffered_client_key) || @buffered_client_key.nil?
+#      Rails.logger.debug "get_decrypted_client_key: client_key = #{cookies['client_key']} client_salt = #{cookies['client_salt']}"
+      return nil if cookies['client_key'].nil? && cookies['client_salt'].nil?  # Connect vom Job oder monitor
+      @buffered_client_key = Encryption.decrypt_value(cookies['client_key'], cookies['client_salt'])      # wirft ActiveSupport::MessageVerifier::InvalidSignature wenn cookies['client_key'] == nil
+    end
+    @buffered_client_key
   rescue ActiveSupport::MessageVerifier::InvalidSignature => e
     Rails.logger.error("Exception '#{e.message}' raised while decrypting cookies['client_key'] (#{cookies['client_key']})")
     #log_exception_backtrace(e, 20)

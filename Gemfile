@@ -20,7 +20,8 @@ gem 'puma'
 
 group :test do
   gem 'selenium-webdriver'
-  gem "chromedriver-helper"
+  #gem "chromedriver-helper"
+  gem "webdrivers"
   gem "minitest-rails-capybara", ">= 3.0.1" # Under Linux otherwise version 0.0.2 is installed
   gem "minitest-reporters"
 
