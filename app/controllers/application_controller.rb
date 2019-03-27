@@ -113,8 +113,11 @@ class ApplicationController < ActionController::Base
     begin
       # Ausgabe Logging-Info in File für Usage-Auswertung
       filename = EngineConfig.config.usage_info_filename
-      File.open(filename, 'a'){|file| file.write("#{request.remote_ip.nil? ? 'localhost': request.remote_ip} #{PanoramaConnection.database_name} #{Time.now.year}/#{'%02d' % Time.now.month} #{real_controller_name} #{real_action_name} #{Time.now.strftime('%Y/%m/%d-%H:%M:%S')} #{get_current_database[:tns]}\n")}
-      Rails.logger.info "remote_ip = #{request.remote_ip}, ENV = #{request.env}"
+      client_ip = request.remote_ip
+      client_ip = 'localhost'                       if request.remote_ip.nil?
+      client_ip = request.env['HTTP_X_REAL_IP']     if request.env['HTTP_X_REAL_IP']  # original address behind reverse proxy
+
+      File.open(filename, 'a'){|file| file.write("#{client_ip} #{PanoramaConnection.database_name} #{Time.now.year}/#{'%02d' % Time.now.month} #{real_controller_name} #{real_action_name} #{Time.now.strftime('%Y/%m/%d-%H:%M:%S')} #{get_current_database[:tns]}\n")}
     rescue Exception => e
       Rails.logger.warn("#### ApplicationController.begin_request: #{t(:application_helper_usage_error, :default=>'Exception while writing in')} #{filename}: #{e.message}")
     end
