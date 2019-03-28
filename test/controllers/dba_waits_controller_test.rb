@@ -43,17 +43,17 @@ class DbaWaitsControllerTest < ActionDispatch::IntegrationTest
 
   test "drm_history with xhr: true" do
     [:second, :minute, :hour, :day, :week].each do |time_groupby|
-      post  '/dba_waits/list_drm_historic', params: {format: :html, commit: 'Show event history', time_groupby: time_groupby, time_selection_start: @time_selection_start, time_selection_end: @time_selection_end, update_area: :hugo }
+      post  '/dba_waits/list_drm_historic', params: {format: :html, commit: 'Show event history', time_groupby: time_groupby, time_selection_start: @time_selection_start, time_selection_end: @time_selection_end, policy_event: 'initiate_affinity', update_area: :hugo }
       assert_response :success
     end
 
-    post  '/dba_waits/list_drm_historic', params: {format: :html, commit: 'Show objects with events', time_selection_start: @time_selection_start, time_selection_end: @time_selection_end, update_area: :hugo }
+    post  '/dba_waits/list_drm_historic', params: {format: :html, commit: 'Show objects with events', time_selection_start: @time_selection_start, time_selection_end: @time_selection_end, policy_event: 'initiate_affinity', update_area: :hugo }
     assert_response :success
 
     [[nil,nil], [@time_selection_start, @time_selection_end]].each do |times|
       [nil, 1].each do |target_instance|
         [[nil, nil, nil], ['sys', 'obj$', nil], ['sys', 'dummy', 'dummy']].each do |objects|
-          post  '/dba_waits/list_drm_historic_single_records', params: {format: :html, target_instance: target_instance, time_selection_start: times[0], time_selection_end: times[1], owner: objects[0], object_name: objects[1], subobject_name: objects[2], update_area: :hugo }
+          post  '/dba_waits/list_drm_historic_single_records', params: {format: :html, target_instance: target_instance, time_selection_start: times[0], time_selection_end: times[1], owner: objects[0], object_name: objects[1], subobject_name: objects[2], policy_event: 'initiate_affinity', update_area: :hugo }
           assert_response :success
         end
       end

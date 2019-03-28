@@ -7,6 +7,7 @@
                         time_selection_start: localeDateTime(rec.min_event_date),
                         time_selection_end:   localeDateTime(rec.max_event_date),
                         target_instance:      target_instance,
+                        policy_event:         (@policy_event == '[All]' ? nil : @policy_event),
                         update_area:          @update_area
                 },
                 :title=>'Show single records for period' )
@@ -25,7 +26,7 @@
 
 %>
 <%= gen_slickgrid(@history, column_options, {
-    :caption => "Dynamic remastering events from gv$Policy_History (Policy event = 'initiate_affinity') from #{@time_selection_start} until #{@time_selection_end}",
+    :caption => "Dynamic remastering events from gv$Policy_History (Policy event = '#{@policy_event}') from #{@time_selection_start} until #{@time_selection_end}",
     :max_height => 450, show_pin_icon: 1
 })
 %>

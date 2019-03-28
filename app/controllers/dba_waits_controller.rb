@@ -305,12 +305,15 @@ class DbaWaitsController < ApplicationController
   end
 
   def show_drm_historic
+    @policy_events = sql_select_all "SELECT DISTINCT Policy_Event FROM gv$Policy_History ORDER BY 1"
 
     render_partial
   end
 
   def list_drm_historic
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
+
+    @policy_event = prepare_param(:policy_event)
 
     case params[:commit]
       when 'Show event history'       then list_drm_historic_events
@@ -325,6 +328,12 @@ class DbaWaitsController < ApplicationController
 
     where_string = ''
     where_values = []
+
+
+    if @policy_event != '[All]'
+      where_string << " AND Policy_Event = ?"
+      where_values << @policy_event
+    end
 
     case @time_groupby
     when :second then group_by_value = "TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS')"
@@ -343,7 +352,6 @@ class DbaWaitsController < ApplicationController
                                            COUNT(*) Record_Count
                                     FROM   gv$Policy_History
                                     WHERE  TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS') BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
-                                    AND    Policy_Event = 'initiate_affinity'
                                     #{where_string}
                                     GROUP BY #{group_by_value}, Target_Instance_Number
                                     ORDER BY #{group_by_value}
@@ -384,6 +392,11 @@ class DbaWaitsController < ApplicationController
     where_string = ''
     where_values = []
 
+    if @policy_event != '[All]'
+      where_string << " AND Policy_Event = ?"
+      where_values << @policy_event
+    end
+
     @objects = sql_select_iterator ["SELECT p.*, o.Owner, o.Object_Name, o.Subobject_Name, o.Object_Type
                                      FROM   (
                                              SELECT COUNT(*) Record_Count, p.Data_Object_ID,
@@ -391,7 +404,6 @@ class DbaWaitsController < ApplicationController
                                                     MAX(TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS')) Last_Occurrence
                                              FROM   gv$Policy_History p
                                              WHERE  TO_DATE(Event_Date, 'MM/DD/YYYY HH24:MI:SS') BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
-                                             AND    Policy_Event = 'initiate_affinity'
                                              #{where_string}
                                              GROUP BY p.Data_Object_ID
                                             ) p
@@ -410,6 +422,7 @@ class DbaWaitsController < ApplicationController
     @owner                = prepare_param(:owner)
     @object_name          = prepare_param(:object_name)
     @subobject_name       = prepare_param(:subobject_name)
+    @policy_event         = prepare_param(:policy_event)
 
     where_string = ''
     where_values = []
@@ -443,6 +456,11 @@ class DbaWaitsController < ApplicationController
     if @subobject_name
       where_string << " AND o.SubObject_Name = ?"
       where_values << @subobject_name
+    end
+
+    if @policy_event
+      where_string << " AND p.Policy_Event = ?"
+      where_values << @policy_event
     end
 
     @records = sql_select_iterator ["SELECT TO_DATE(p.Event_Date, 'MM/DD/YYYY HH24:MI:SS') Conv_Event_Date,

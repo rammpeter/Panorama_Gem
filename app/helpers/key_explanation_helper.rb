@@ -646,6 +646,18 @@ module KeyExplanationHelper
     retval
   end
 
+  def policy_event_explanation(search_name)
+    policy_events = {
+      'initiate_affinity'     => 'Change or fix master role of object to RAC instance',
+    }
+
+    if policy_events[search_name]
+      policy_events[search_name]
+    else
+      "unknown policy event '#{search_name}'"
+    end
+  end
+
 
 
 end

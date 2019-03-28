@@ -11,7 +11,7 @@
 
   column_options = []
   column_options << {caption: "Event date",       data: proc{|rec| localeDateTime(rec.conv_event_date)},      title: "Timestamp of event"}
-  column_options << {caption: "Policy event",     data: proc{|rec| rec.policy_event},                         title: "Name of policy event"}
+  column_options << {caption: "Policy event",     data: proc{|rec| rec.policy_event},                         title: "Name of policy event", data_title: proc{|rec| "%t\n#{policy_event_explanation(rec.policy_event)}"}}
   column_options << {caption: "Inst.",            data: proc{|rec| rec.inst_id},                              title: "RAC-instance recording this event", align: :right}
   column_options << {caption: "Tablespace",       data: proc{|rec| rec.tablespace_name},                      title: "Name of tablespace"} if get_db_version >= '12.1'
   column_options << {caption: "Object",           data: link_object,                                          title: "Object master role has changed for"}
@@ -25,6 +25,7 @@
   caption << ", Data-Object-ID = #{@data_object_id}"                        if @data_object_id
   caption << ", Owner = #{@owner}"                                          if @owner
   caption << ", Objectname = #{@object_name}"                               if @object_name
+  caption << ", Event = '#{@policy_event}'"                                 if @policy_event
 %>
 <%= gen_slickgrid(@records, column_options, {
     :caption => caption,
