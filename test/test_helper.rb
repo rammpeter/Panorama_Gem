@@ -158,26 +158,14 @@ class ActiveSupport::TestCase
   end
 
   def initialize_min_max_snap_id_and_times(time_format = :minutes)
-    two_snaps_sql = "SELECT Snap_ID - 1 Max_Snap_ID,
-                                         Snap_ID - 2 Min_Snap_ID,
-                                         x.*
-                                  FROM   (
-                                          SELECT Snap_ID, Startup_Time,
-                                                 LAG(Startup_Time, 1, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_1,
-                                                 LAG(Startup_Time, 2, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_2,
-                                                 LAG(Startup_Time, 3, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Startup_3,
-                                                 LAG(End_Interval_Time, 1, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) End_Time,
-                                                 LAG(Begin_Interval_Time, 2, NULL) OVER (PARTITION BY Instance_Number ORDER BY Snap_ID) Start_Time
-                                          FROM   DBA_Hist_Snapshot
-                                          WHERE  Instance_Number = 1
-                                          -- ORDER BY Snap_ID DESC /* order by corrupts result of LAG */
-                                         ) x
-                                  WHERE  Startup_Time = Startup_1
-                                  AND    Startup_Time = Startup_2
-                                  AND    Startup_Time = Startup_3
-                                  AND    EXTRACT (MINUTE FROM End_Time-Start_Time) > 0  /* At least one minute should be between the two snapshots */
-                                  ORDER BY Snap_ID DESC"
-
+    two_snaps_sql = "SELECT s2.Snap_ID Max_Snap_ID, s3.Snap_ID Min_Snap_ID, s2.End_Interval_Time End_Time, s3.Begin_Interval_Time Start_Time
+                     FROM   DBA_Hist_Snapshot s1
+                     JOIN   DBA_Hist_Snapshot s2 ON s2.Instance_Number = s1.Instance_Number AND s2.DBID = s1.DBID AND s2.Snap_ID = s1.Snap_ID -1 AND s2.Startup_Time = s1.Startup_Time
+                     JOIN   DBA_Hist_Snapshot s3 ON s3.Instance_Number = s1.Instance_Number AND s3.DBID = s1.DBID AND s3.Snap_ID = s1.Snap_ID -2 AND s3.Startup_Time = s1.Startup_Time
+                     JOIN   DBA_Hist_Snapshot s4 ON s4.Instance_Number = s1.Instance_Number AND s4.DBID = s1.DBID AND s4.Snap_ID = s1.Snap_ID -3 AND s4.Startup_Time = s1.Startup_Time
+                     WHERE  s1.Instance_Number = 1
+                     AND    EXTRACT (MINUTE FROM s2.End_Interval_Time-s3.Begin_Interval_Time) > 0  /* At least one minute should be between the two snapshots */
+                     ORDER BY s1.Snap_ID DESC"
 
     # Ensure existence of panorama_sampler_snapshots
     if management_pack_license == :panorama_sampler
