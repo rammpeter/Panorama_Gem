@@ -121,11 +121,13 @@ class PanoramaConnection
   attr_reader :db_blocksize
   attr_reader :db_wordsize
   attr_reader :database_name
+  attr_reader :sid
   attr_reader :edition
   attr_reader :instance_count
   attr_reader :password_hash
   attr_reader :sql_stmt_in_execution
   attr_reader :last_used_action_name
+  attr_reader :control_management_pack_access
 
   # Array of PanoramaConnection instances, elements consists of:
   #   @jdbc_connection
@@ -149,22 +151,25 @@ class PanoramaConnection
 
   def read_initial_attributes
     db_config   = PanoramaConnection.direct_select_one(@jdbc_connection,
-                  "SELECT i.Instance_Number, i.Version, d.DBID, d.Name Database_Name,
+                  "SELECT i.Instance_Number, i.Version, d.DBID, d.Name Database_Name, SYS_CONTEXT('USERENV', 'SID') SID,
                           (SELECT /*+ NO_MERGE */ TO_NUMBER(Value) FROM v$parameter WHERE UPPER(Name) = 'DB_BLOCK_SIZE')                                    db_blocksize,
                           (SELECT /*+ NO_MERGE */ DECODE (INSTR (banner, '64bit'), 0, 4, 8) Word_Size FROM v$version WHERE Banner LIKE '%Oracle Database%') db_wordsize,
                           (SELECT /*+ NO_MERGE */ COUNT(*) FROM v$version WHERE Banner like '%Enterprise Edition%')                                         enterprise_edition_count,
-                          (SELECT /*+ NO_MERGE */ COUNT(*) FROM gv$Instance)                                                                                instance_count
+                          (SELECT /*+ NO_MERGE */ COUNT(*) FROM gv$Instance)                                                                                instance_count,
+                          NVL((SELECT /*+ NO_MERGE */ Value    FROM V$Parameter WHERE name='control_management_pack_access'), 'NONE')                       control_management_pack_access
                    FROM   v$Instance i
                    CROSS JOIN v$Database d
                   ")
-    @instance_number = db_config['instance_number']
-    @db_version      = db_config['version']
-    @dbid            = db_config['dbid']
-    @database_name   = db_config['database_name']
-    @db_blocksize    = db_config['db_blocksize']
-    @db_wordsize     = db_config['db_wordsize']
-    @edition         = (db_config['enterprise_edition_count'] > 0  ? :enterprise : :standard)
-    @instance_count  = db_config['instance_count']
+    @instance_number                = db_config['instance_number']
+    @db_version                     = db_config['version']
+    @dbid                           = db_config['dbid']
+    @database_name                  = db_config['database_name']
+    @db_blocksize                   = db_config['db_blocksize']
+    @db_wordsize                    = db_config['db_wordsize']
+    @sid                            = db_config['sid']                          # Session-ID on DB-Server
+    @edition                        = (db_config['enterprise_edition_count'] > 0  ? :enterprise : :standard)
+    @instance_count                 = db_config['instance_count']
+    @control_management_pack_access = db_config['control_management_pack_access']
 
     if db_version >= '12.1'
       con_id_data   = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT Con_ID FROM v$Session WHERE audsid = userenv('sessionid')") # Con_ID of connected session
@@ -203,20 +208,15 @@ class PanoramaConnection
     Thread.current[:panorama_connection_connect_info] = nil
   end
 
-  def self.read_control_management_pack_access                                       # returns either NONE | DIAGNOSTIC | DIAGNOSTIC+TUNING
-    result = PanoramaConnection.sql_select_one "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"  # ab Oracle 11 belegt
-    result = 'NONE' if result.nil?                                              # downward compatibility for Oracle 10
-    result
-  end
-
   def self.get_management_pack_license_from_db_as_symbol
-    control_management_pack_access = PanoramaConnection.read_control_management_pack_access
+    control_management_pack_access = PanoramaConnection.control_management_pack_access
     return :diagnostics_and_tuning_pack  if control_management_pack_access['TUNING']
     return :diagnostics_pack             if control_management_pack_access['DIAGNOSTIC']
     return :panorama_sampler             if !get_threadlocal_config[:panorama_sampler_schema].nil?  # Use Panorama-Sampler as default if data exists
     return :none
   end
 
+  # Each user of one PanoramaConnection can have different setting
   def self.set_management_pack_license_from_db_in_connection
     get_threadlocal_config[:management_pack_license] = get_management_pack_license_from_db_as_symbol
   end
@@ -293,15 +293,16 @@ class PanoramaConnection
     @jdbc_connection.instance_variable_get(:@config)
   end
 
-  def self.instance_number;   check_for_open_connection; Thread.current[:panorama_connection_connection_object].instance_number;   end
-  def self.db_version;        check_for_open_connection; Thread.current[:panorama_connection_connection_object].db_version;        end
-  def self.dbid;              check_for_open_connection; Thread.current[:panorama_connection_connection_object].dbid;              end
-  def self.database_name;     check_for_open_connection; Thread.current[:panorama_connection_connection_object].database_name;     end
-  def self.db_blocksize;      check_for_open_connection; Thread.current[:panorama_connection_connection_object].db_blocksize;      end
-  def self.db_wordsize;       check_for_open_connection; Thread.current[:panorama_connection_connection_object].db_wordsize;       end
-  def self.edition;           check_for_open_connection; Thread.current[:panorama_connection_connection_object].edition;           end
-  def self.con_id;            check_for_open_connection; Thread.current[:panorama_connection_connection_object].con_id;            end  # Container-ID for PDBs or 0
-  def self.rac?;              check_for_open_connection; Thread.current[:panorama_connection_connection_object].instance_count > 1;end
+  def self.instance_number;                 check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_number;                end
+  def self.db_version;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_version;                     end
+  def self.dbid;                            check_for_open_connection         Thread.current[:panorama_connection_connection_object].dbid;                           end
+  def self.database_name;                   check_for_open_connection;        Thread.current[:panorama_connection_connection_object].database_name;                  end
+  def self.db_blocksize;                    check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_blocksize;                   end
+  def self.db_wordsize;                     check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_wordsize;                    end
+  def self.edition;                         check_for_open_connection;        Thread.current[:panorama_connection_connection_object].edition;                        end
+  def self.con_id;                          check_for_open_connection;        Thread.current[:panorama_connection_connection_object].con_id;                         end  # Container-ID for PDBs or 0
+  def self.rac?;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_count > 1;             end
+  def self.control_management_pack_access;  check_for_open_connection(false); Thread.current[:panorama_connection_connection_object].control_management_pack_access; end
 
   private
 
@@ -451,12 +452,12 @@ class PanoramaConnection
 
   private
   # ensure that Oracle-Connection exists and DBMS__Application_Info is executed
-  def self.check_for_open_connection
+  def self.check_for_open_connection(register_module_action = true)
     if Thread.current[:panorama_connection_connection_object].nil?                # No JDBC-Connection allocated for thread
       Thread.current[:panorama_connection_connection_object] = retrieve_from_pool_or_create_new_connection
     end
 
-    if Thread.current[:panorama_connection_app_info_set].nil?                   # dbms_application_info not yet set in thread
+    if register_module_action && Thread.current[:panorama_connection_app_info_set].nil?  # dbms_application_info not yet set in thread
       begin
         set_application_info
       rescue Exception => e
@@ -485,7 +486,7 @@ class PanoramaConnection
             connection_config[:url] == jdbc_thin_url &&
             connection_config[:username] == get_threadlocal_config[:user] &&
             conn.password_hash == get_decrypted_password.hash                   # Password must be equal to that used in pooled connection
-          Rails.logger.info "Using existing database connection from pool: URL='#{jdbc_thin_url}' User='#{get_threadlocal_config[:user]}' Last used=#{conn.last_used_time} Pool size=#{@@connection_pool.count}"
+          Rails.logger.info "Using existing database connection from pool: URL='#{jdbc_thin_url}' User='#{get_threadlocal_config[:user]}' SID=#{conn.sid} Last used=#{conn.last_used_time} Pool size=#{@@connection_pool.count}"
           conn.used_in_thread = true                                          # Mark as used in pool and leave loop
           conn.last_used_time = Time.now                                      # Reset ast used time
           retval = conn
@@ -609,6 +610,7 @@ class PanoramaConnection
         :cursor_sharing => :exact             # oracle_enhanced_adapter setzt cursor_sharing per Default auf force
     )
     Rails.logger.info "New database connection created: URL='#{jdbc_thin_url}' User='#{get_threadlocal_config[:user]}' Pool size=#{@@connection_pool.count+1}"
+
     jdbc_connection
   end
 

@@ -13,6 +13,7 @@
           {:caption=>'Used in thread',          :data=>proc{|rec| rec.used_in_thread ? 'Y' : ''},               :title=>"Is connection currently used in active thread / active request processing at Panorama server"},
           {:caption=>'URL',                     :data=>proc{|rec| rec.get_config_from_jdbc_connection[:url]},   :title=>"Connection URL"},
           {:caption=>'Username',                :data=>proc{|rec| rec.get_config_from_jdbc_connection[:username]}, :title=>"Username of connection"},
+          {:caption=>'SID',                     :data=>proc{|rec| rec.sid},                                     :title=>"Session-ID on DB", align: :right},
           {:caption=>'DB name',                 :data=>proc{|rec| rec.database_name},                           :title=>"Internal DB name"},
           {:caption=>'DB version',              :data=>proc{|rec| rec.db_version},                              :title=>"DB version"},
           {:caption=>'Instance',                :data=>proc{|rec| rec.instance_number},                         :title=>"Number of connected instance", align: :right},
