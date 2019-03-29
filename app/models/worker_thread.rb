@@ -60,7 +60,7 @@ class WorkerThread
 
     PanoramaConnection.set_connection_info_for_request(connection_config)
 
-    PanoramaConnection.set_management_pack_license_from_db_in_connection        # Set management_pack_license according to init-parameter 'control_management_pack_access'
+    PanoramaConnection.set_management_pack_license_from_db_in_connection
   end
 
   # Check if connection may function and store result in config hash
@@ -160,6 +160,7 @@ class WorkerThread
   end
 
   # Generic method to create snapshots
+  @@checked_db_domains = {}                                                     # Flag to ensure that each domain has et least one structure check after panorama restart
   @@active_snapshots = {}
   def create_snapshot_internal(snapshot_time, domain)
     snapshot_semaphore_key = "#{@sampler_config.get_id}_#{domain}"
@@ -176,7 +177,11 @@ class WorkerThread
 
       @sampler_config.last_successful_connect(domain, PanoramaConnection.instance_number) # Set after first successful SQL
 
-      PanoramaSamplerStructureCheck.do_check(@sampler_config, domain);          # Check data structure preconditions, but nor for ASH-tables
+      checked_signature = "#{@sampler_config.get_id}_#{domain}"
+      if !@@checked_db_domains.has_key?(checked_signature)                      # Is domain for this DB already checked after Panorama startup
+        PanoramaSamplerStructureCheck.do_check(@sampler_config, domain);        # Check data structure preconditions, but not for ASH-tables
+        @@checked_db_domains[checked_signature] = 1                             # Mark domain for this DB as initially checked
+      end
 
       PanoramaSamplerSampling.do_sampling(@sampler_config, snapshot_time, domain)  # Do Sampling
       PanoramaSamplerSampling.do_housekeeping(@sampler_config, false, domain)   # Do housekeeping without shrink space
