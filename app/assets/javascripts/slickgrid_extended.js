@@ -1246,6 +1246,8 @@ function SlickGridExtended(container_id, options){
         var data    = thiz.grid.getData().getItems();                  // JS-Aray mit Daten-Struktur gespeichert an DOM-Element, Originaldaten des Slickgrid, daher kein Speichern nötig
 
         function get_numeric_content(celldata){ // Ermitteln des numerischen html-Inhaltes einer TD-Zelle bzw. ihrer Kinder, wenn weitere enthalten sind
+            if (celldata == '')
+                return 0;
             if (options['locale'] === 'de'){
                 return parseFloat(celldata.replace(/\./g, "").replace(/,/,"."));   // Deutsche nach englische Float-Darstellung wandeln (Dezimatrenner, Komma)
             }

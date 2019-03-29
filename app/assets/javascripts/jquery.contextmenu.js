@@ -143,8 +143,8 @@
     menu.html(content);
 
     // if there's an onShowMenu, run it now -- must run after content has been added
-		// if you try to alter the content variable before the menu.html(), IE6 has issues
-		// updating the content
+	// if you try to alter the content variable before the menu.html(), IE6 has issues
+	// updating the content
     if (!!cur.onShowMenu) menu = cur.onShowMenu(e, menu);
 
     $.each(cur.bindings, function(id, func) {
@@ -156,7 +156,12 @@
 
     menu.css({'left':e[cur.eventPosX],'top':e[cur.eventPosY]}).show();
     if (cur.shadow) shadow.css({width:menu.width(),height:menu.height(),left:e.pageX+2,top:e.pageY+2}).show();
-    $(document).one('click', hide);
+
+
+    // Add delay
+    // Peter Ramm, 29.03.2019 before registering hide for click. Direct registration receives current click event in Firefox for Mac-OS
+    setTimeout(function(){$(document).one('click', hide)}, 400);
+    //$(document).one('click', hide);
   }
 
   function hide() {
