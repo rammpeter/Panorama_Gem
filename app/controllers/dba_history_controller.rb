@@ -860,20 +860,20 @@ class DbaHistoryController < ApplicationController
     @groupby = 'snap' if @groupby.nil? || @groupby == ''  # Default
     case @groupby.to_s
       when "snap" then        # Direkte Anzeige der Snapshots
-        @begin_interval_sql = "snap.Begin_Interval_Time"
-        @end_interval_sql   = "snap.End_Interval_Time"
+        @begin_interval_sql = "ss.Begin_Interval_Time"
+        @end_interval_sql   = "ss.End_Interval_Time"
       when "hour" then
-        @begin_interval_sql = "TRUNC(snap.Begin_Interval_Time, 'HH24')"
-        @end_interval_sql   = "TRUNC(snap.Begin_Interval_Time, 'HH24') + INTERVAL '1' HOUR"
+        @begin_interval_sql = "TRUNC(ss.Begin_Interval_Time, 'HH24')"
+        @end_interval_sql   = "TRUNC(ss.Begin_Interval_Time, 'HH24') + INTERVAL '1' HOUR"
       when "day" then
-        @begin_interval_sql = "TRUNC(snap.Begin_Interval_Time)"
-        @end_interval_sql   = "TRUNC(snap.Begin_Interval_Time) + INTERVAL '1' DAY"
+        @begin_interval_sql = "TRUNC(ss.Begin_Interval_Time)"
+        @end_interval_sql   = "TRUNC(ss.Begin_Interval_Time) + INTERVAL '1' DAY"
       when "week" then
-        @begin_interval_sql = "TRUNC(snap.Begin_Interval_Time, 'IW')"
-        @end_interval_sql   = "TRUNC(snap.Begin_Interval_Time, 'IW') + INTERVAL '7' DAY"
+        @begin_interval_sql = "TRUNC(ss.Begin_Interval_Time, 'IW')"
+        @end_interval_sql   = "TRUNC(ss.Begin_Interval_Time, 'IW') + INTERVAL '7' DAY"
       when "month" then
-        @begin_interval_sql = "TRUNC(snap.Begin_Interval_Time, 'MM')"
-        @end_interval_sql   = "TRUNC(snap.Begin_Interval_Time, 'MM') + INTERVAL '1' MONTH"
+        @begin_interval_sql = "TRUNC(ss.Begin_Interval_Time, 'MM')"
+        @end_interval_sql   = "TRUNC(ss.Begin_Interval_Time, 'MM') + INTERVAL '1' MONTH"
       else
         raise "Unsupported value for parameter :groupby (#{@groupby})"
     end
@@ -899,8 +899,8 @@ class DbaHistoryController < ApplicationController
       SELECT /* Panorama-Tool Ramm */
              #{@begin_interval_sql}             Begin_Interval_Time,
              #{@end_interval_sql}               End_Interval_Time,
-             MIN(snap.Begin_Interval_Time)      First_Occurrence,
-             MAX(snap.End_Interval_Time)        Last_Occurrence,
+             MIN(ss.Begin_Interval_Time)        First_Occurrence,
+             MAX(ss.End_Interval_Time)          Last_Occurrence,
              COUNT(DISTINCT s.Plan_Hash_Value)  Execution_Plans,
              MIN(Plan_Hash_Value)               First_Plan_Hash_Value,
              COUNT(DISTINCT s.Optimizer_Env_Hash_Value) Optimizer_Envs,
@@ -929,19 +929,33 @@ class DbaHistoryController < ApplicationController
              100 * (SUM(s.Buffer_Gets_Delta) - SUM(s.Disk_Reads_Delta)) / GREATEST(SUM(s.Buffer_Gets_Delta), 1) Hit_Ratio,
              MIN(s.Snap_ID)                     Min_Snap_ID,
              MAX(s.Snap_ID)                     Max_Snap_ID
-      FROM   DBA_Hist_SQLStat s
-      JOIN   dba_hist_snapshot snap ON snap.DBID = s.DBID AND snap.Instance_Number= s.instance_number AND snap.Snap_ID = s.Snap_ID
-      WHERE  s.DBID            = ?
-      AND    s.SQL_ID          = ?
-      AND    snap.End_Interval_time    > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-      AND    snap.Begin_Interval_time  < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+      FROM  (SELECT  /*+ ORDERED */ s.DBID, s.Instance_Number, NVL(StartMin, StartMax) Start_Snap_ID, NVL(EndMax, EndMin) End_Snap_ID,
+                  start_s.Begin_Interval_Time Start_Time, end_s.End_Interval_Time End_Time
+                  FROM    (
+                           SELECT /*+ NO_MERGE */ DBID, Instance_Number,
+                                  MAX(CASE WHEN Begin_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) StartMin,
+                                  MIN(CASE WHEN Begin_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) StartMax,
+                                  MAX(CASE WHEN End_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) EndMin,
+                                  MIN(CASE WHEN End_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) EndMax
+                           FROM   DBA_Hist_Snapshot
+                           WHERE  DBID=? #{" AND Instance_Number = ?" if @instance}
+                           GROUP BY Instance_Number, DBID
+                  ) s
+                  JOIN    DBA_Hist_Snapshot start_s ON start_s.DBID=s.DBID AND start_s.Instance_Number=s.Instance_Number AND start_s.Snap_ID = NVL(StartMin, StartMax)
+                  JOIN    DBA_Hist_Snapshot end_s   ON end_s.DBID=s.DBID   AND end_s.Instance_Number=s.Instance_Number   AND end_s.Snap_ID = NVL(EndMax, EndMin)
+                 ) snap
+      JOIN   DBA_Hist_SQLStat s   ON s.DBID=snap.DBID AND s.Instance_Number=snap.Instance_Number AND s.Snap_ID BETWEEN snap.Start_Snap_ID AND snap.End_Snap_ID
+      JOIN   DBA_Hist_Snapshot ss ON ss.DBID=s.DBID   AND ss.Instance_Number=s.Instance_Number   AND ss.Snap_ID = s.Snap_ID -- konkreter Snapshot des SQL
+      WHERE  s.SQL_ID          = ?
       #{@parsing_schema_name ? "AND    s.Parsing_Schema_Name = ?" : ""  }
       #{@instance            ? "AND    s.Instance_Number     = ?" : ""  }
       GROUP BY #{@begin_interval_sql}, #{@end_interval_sql}
       ORDER BY #{@begin_interval_sql} DESC
-      ", @dbid, @sql_id, @time_selection_start, @time_selection_end].
-                               concat(@parsing_schema_name ? [@parsing_schema_name] : []).
-                               concat(@instance            ? [@instance]            : [])
+      ", @time_selection_start, @time_selection_start, @time_selection_end, @time_selection_end, @dbid]
+                                .concat(@instance            ? [@instance]            : [])
+                                .concat([@sql_id])
+                                .concat(@parsing_schema_name ? [@parsing_schema_name] : [])
+                                .concat(@instance            ? [@instance]            : [])
     )
 
     render_partial :list_sql_history_snapshots
