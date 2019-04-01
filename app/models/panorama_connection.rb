@@ -295,7 +295,7 @@ class PanoramaConnection
 
   def self.instance_number;                 check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_number;                end
   def self.db_version;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_version;                     end
-  def self.dbid;                            check_for_open_connection         Thread.current[:panorama_connection_connection_object].dbid;                           end
+  def self.dbid;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].dbid;                           end
   def self.database_name;                   check_for_open_connection;        Thread.current[:panorama_connection_connection_object].database_name;                  end
   def self.db_blocksize;                    check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_blocksize;                   end
   def self.db_wordsize;                     check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_wordsize;                    end
