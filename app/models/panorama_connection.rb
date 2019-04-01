@@ -82,7 +82,7 @@ ActiveRecord::ConnectionAdapters::OracleEnhanced::JDBCConnection.class_eval do
         yield result_hash
       end
 
-      Rails.logger << "#{row_count} records " if Rails.env.test? || Rails.env.development?
+      Rails.logger << "#{row_count} records " if Rails.env.test? || Rails.env.development? || ENV['PANORAMA_LOG_SQL']
       cursor.close
       nil
     end
