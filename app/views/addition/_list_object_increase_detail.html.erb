@@ -47,6 +47,8 @@ column_options =
     {:caption=>"Name",            :data=>show_name,                                   :title=>"Segment-name"},
     {:caption=>"Type",            :data=>proc{|rec| rec.segment_type},                :title=>"Segment-type"},
     {:caption=>"Tablespace",      :data=>proc{|rec| show_ts(rec)},                    :title=>"Tablespace of object at the end of considered period"},
+    {:caption=>'First sample',    :data=>proc{|rec| localeDateTime(rec.min_gather_date)},     :title=>"Timestamp of first sample of object in considered period"},
+    {:caption=>'Last sample',     :data=>proc{|rec| localeDateTime(rec.max_gather_date)},     :title=>"Timestamp of last sample of object in considered period"},
     {:caption=>"MB start",        :data=>proc{|rec| fn(rec.start_mbytes, 2)},         :title=>"Size of object in MB at start of considered period",              :align=>:right},
     {:caption=>"MB end",          :data=>proc{|rec| fn(rec.end_mbytes, 2)},           :title=>"Size of object in MB at end of considered period",                 :align=>:right},
     {:caption=>"MB change",       :data=>proc{|rec| fn(rec.aenderung_abs, 2)},        :title=>"Change of object size in MB within considered period",  :align=>:right},

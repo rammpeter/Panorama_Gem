@@ -126,20 +126,24 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
 
     [all_dropdown_selector_name, 'SYSTEM'].each do |tablespace|
       [all_dropdown_selector_name, 'SYS'].each do |schema|
-        ['Segment_Type', 'Tablespace_Name', 'Owner'].each do |gruppierung_tag|
-          [{:detail=>1}, {:timeline=>1}].each do |submit_tag|
-            post '/addition/list_object_increase',  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
-                                                                  :tablespace=>{"name"=>tablespace}, "schema"=>{"name"=>schema}, :gruppierung=>{"tag"=>gruppierung_tag}, :update_area=>:hugo }.merge(submit_tag)
-            }
-            assert_response :success
 
-            if submit_tag[:timeline] == 1                                       # subdialog called only for timelime
-              post '/addition/list_object_increase_objects_per_time',  {:params => { :format=>:html, gather_date: @gather_date, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
-                                                                    Tablespace_Name: tablespace, Owner: schema, gruppierung_tag => 'Hugo', :update_area=>:hugo }.merge(submit_tag)
-              }
-              assert_response :success
-            end
-          end
+        [nil, 1].each do |row_count_changes|
+          post '/addition/list_object_increase',  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, row_count_changes: row_count_changes,
+                                                                :tablespace=>{"name"=>tablespace}, "schema"=>{"name"=>schema}, detail: 1, :update_area=>:hugo }
+          }
+          assert_response :success
+        end
+
+        ['Segment_Type', 'Tablespace_Name', 'Owner'].each do |gruppierung_tag|
+          post '/addition/list_object_increase',  {:params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
+                                                                :tablespace=>{"name"=>tablespace}, "schema"=>{"name"=>schema}, :gruppierung=>{"tag"=>gruppierung_tag}, timeline: 1, :update_area=>:hugo }
+          }
+          assert_response :success
+
+          post '/addition/list_object_increase_objects_per_time',  {:params => { :format=>:html, gather_date: @gather_date, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
+                                                                Tablespace_Name: tablespace, Owner: schema, gruppierung_tag => 'Hugo', timeline: 1, :update_area=>:hugo }
+          }
+          assert_response :success
         end
       end
     end

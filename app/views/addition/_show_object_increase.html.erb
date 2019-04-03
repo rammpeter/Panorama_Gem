@@ -17,10 +17,18 @@
     </div>
 
     <fieldset style="display: inline">
-      <div class="flex-row-element">
-        <%= submit_tag("Show detail changes", :title => "Show objects with changed sizes in period", :name=>"detail") %>
+      <div class="flex-row-container">
+        <div class="flex-row-element" title="List also row-count changes, not only size changes">
+          Row-count
+          <%= check_box_tag(:row_count_changes, 1, false) %>
+        </div>
+
+        <div class="flex-row-element">
+          <%= submit_tag("Show detail changes", :title => "Show objects with changed sizes in period", :name=>"detail") %>
+        </div>
       </div>
     </fieldset>
+
     <fieldset style="display: inline">
       <div class="flex-row-container">
         <div class="flex-row-element">

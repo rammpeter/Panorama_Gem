@@ -657,73 +657,46 @@ class AdditionController < ApplicationController
       @whereval << @schema_name
     end
 
-
-    list_object_increase_detail if params[:detail]
-    list_object_increase_timeline if params[:timeline]
-  end
-
-  def list_object_increase_detail
+    @tablespace_name = nil                                                      # initialization
     if params[:tablespace][:name] != all_dropdown_selector_name
       @tablespace_name = params[:tablespace][:name]
       @wherestr << " AND Tablespace_Name=? "
       @whereval << @tablespace_name
     end
 
-    @min_gather_date = sql_select_one ["SELECT MIN(Gather_Date) FROM #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes WHERE Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_start]
-    @max_gather_date = sql_select_one ["SELECT MAX(Gather_Date) FROM #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes WHERE Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')", @time_selection_end]
 
-    raise PopupMessageException.new("No data found after start time #{@time_selection_start}") if @min_gather_date.nil?
-    raise PopupMessageException.new("No data found before end time #{@time_selection_end}")  if @max_gather_date.nil?
+    list_object_increase_detail if params[:detail]
+    list_object_increase_timeline if params[:timeline]
+  end
+
+  def list_object_increase_detail
+    @row_count_changes = params[:row_count_changes] == '1'
 
     @incs = sql_select_all ["
       SELECT s.*,
-             NVL(End_Mbytes, 0) - NVL(Start_MBytes, 0) Aenderung_Abs,
-             CASE WHEN Start_MBytes != 0 THEN (End_MBytes/Start_MBytes-1)*100 END Aenderung_Pct
-      FROM   (SELECT Owner, Segment_Name, Segment_Type,
+             End_Mbytes - Start_MBytes       Aenderung_Abs,
+             (End_MBytes/Start_MBytes-1)*100 Aenderung_Pct
+      FROM   (
+              SELECT Owner, Segment_Name, Segment_Type,
                      CASE WHEN Segment_Type LIKE 'LOB%' THEN (SELECT Table_Name||'.'||Column_Name FROM DBA_Lobs l WHERE l.Owner = s.Owner AND l.Segment_Name = s.Segment_Name) END Name_Addition,
                      MAX(Tablespace_Name) KEEP (DENSE_RANK LAST ORDER BY Gather_Date) Last_TS,
                      COUNT(DISTINCT Tablespace_Name) Tablespaces,
-                     SUM(CASE WHEN s.Gather_Date = dates.Min_Gather_Date THEN Bytes END)/(1024*1024) Start_Mbytes,
-                     SUM(CASE WHEN s.Gather_Date = dates.Max_Gather_Date THEN Bytes END)/(1024*1024) End_Mbytes,
-                     REGR_SLOPE(Bytes, Gather_Date-TO_DATE('1900', 'YYYY')) Anstieg,
-                     SUM(CASE WHEN s.Gather_Date = dates.Min_Gather_Date THEN Num_Rows END) Start_Num_Rows,
-                     SUM(CASE WHEN s.Gather_Date = dates.Max_Gather_Date THEN Num_Rows END) End_Num_Rows,
-                     COUNT(Distinct Gather_Date) Samples
-              FROM   (SELECT ? Min_Gather_Date, ? Max_Gather_Date FROM DUAL) dates
-              CROSS JOIN #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
-              WHERE  Gather_Date IN (dates.Min_Gather_Date, dates.Max_Gather_Date)
+                     MIN(Bytes/(1024*1024))KEEP (DENSE_RANK FIRST ORDER BY Gather_Date)  Start_Mbytes,
+                     MAX(Bytes/(1024*1024))KEEP (DENSE_RANK LAST  ORDER BY Gather_Date)  End_Mbytes,
+                     MIN(Num_Rows) KEEP (DENSE_RANK FIRST ORDER BY Gather_Date)          Start_Num_Rows,
+                     MAX(Num_Rows) KEEP (DENSE_RANK LAST  ORDER BY Gather_Date)          End_Num_Rows,
+                     MIN(Gather_Date) Min_Gather_Date,
+                     MAX(Gather_Date) Max_Gather_Date
+              FROM   PANORAMA.Panorama_Object_Sizes s
+              WHERE  Gather_Date BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
               #{@wherestr}
               GROUP BY Owner, Segment_Name, Segment_Type
              ) s
       WHERE  NVL(Start_MBytes, 0) != NVL(End_MBytes, 0)
+      #{"OR     NVL(Start_Num_Rows, 0) != NVL(End_Num_Rows, 0)" if @row_count_changes}
       ORDER BY NVL(End_Mbytes, 0) - NVL(Start_MBytes, 0) DESC
-    ", @min_gather_date, @max_gather_date].concat(@whereval)
+    ", @time_selection_start, @time_selection_end].concat(@whereval)
 
-=begin
-    @incs = sql_select_all ["
-        SELECT s.*, End_Mbytes-Start_MBytes Aenderung_Abs,
-        CASE WHEN Start_MBytes != 0 THEN (End_MBytes/Start_MBytes-1)*100 END Aenderung_Pct
-        FROM   (SELECT /*+ PARALLEL(s,2) */
-                       Owner, Segment_Name, Segment_Type,
-                       MAX(Tablespace_Name) KEEP (DENSE_RANK LAST ORDER BY Gather_Date) Last_TS,
-                       MIN(Gather_Date) Date_Start,
-                       MAX(Gather_Date) Date_End,
-                       MIN(MBytes) KEEP (DENSE_RANK FIRST ORDER BY Gather_Date) Start_Mbytes,
-                       MAX(MBytes) KEEP (DENSE_RANK LAST ORDER BY Gather_Date) End_Mbytes,
-                       REGR_SLOPE(MBytes, Gather_Date-TO_DATE('1900', 'YYYY')) Anstieg,
-                       COUNT(*) Samples
-                FROM   #{@object_name} s
-                WHERE  Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')
-                AND    Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')
-                GROUP BY Owner, Segment_Name, Segment_Type
-               ) s
-        WHERE  Start_MBytes != End_MBytes
-        #{@wherestr}
-        ORDER BY End_Mbytes-Start_MBytes DESC",
-                            @time_selection_start, @time_selection_end
-                           ].concat(@whereval)
-
-=end
     render_partial "list_object_increase_detail"
   end
 
@@ -731,12 +704,6 @@ class AdditionController < ApplicationController
     @update_area = get_unique_area_id
     groupby = params[:gruppierung][:tag]
 
-    @tablespace_name = nil                                                      # initialization
-    if params[:tablespace][:name] != all_dropdown_selector_name
-      @tablespace_name = params[:tablespace][:name]
-      @wherestr << " AND Tablespace_Name=? "
-      @whereval << @tablespace_name
-    end
 
     sizes = sql_select_all ["
         SELECT /*+ PARALLEL(s,2) */
