@@ -38,7 +38,7 @@ class ApplicationController < ActionController::Base
     end
 
     Rails.logger.error @exception.message
-    log_exception_backtrace(@exception, 40)
+    log_exception_backtrace(@exception, Rails.env.test? ? nil : 40)
 
     if performed?                                                               # Render already called in action?, Suppress DoubleRenderError
       Rails.logger.error "Exception #{@exception.message} raised!\nAction has already rendered, so error cannot be shown as HTML-result with status 500"
