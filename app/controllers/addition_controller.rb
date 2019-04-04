@@ -687,7 +687,7 @@ class AdditionController < ApplicationController
                      MAX(Num_Rows) KEEP (DENSE_RANK LAST  ORDER BY Gather_Date)          End_Num_Rows,
                      MIN(Gather_Date) Min_Gather_Date,
                      MAX(Gather_Date) Max_Gather_Date
-              FROM   PANORAMA.Panorama_Object_Sizes s
+              FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
               WHERE  Gather_Date BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
               #{@wherestr}
               GROUP BY Owner, Segment_Name, Segment_Type
