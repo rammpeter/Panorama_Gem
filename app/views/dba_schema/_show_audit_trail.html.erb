@@ -72,6 +72,28 @@
         })
       %>
     </div>
+
+    <div class="flex-row-element">
+      <%
+        column_options =
+            [
+                {:caption=> 'Instance',         :data=>proc{|rec| rec.inst_id},         :title=> "Instance number"},
+                {:caption=> 'Parameter',        :data=>proc{|rec| rec.parameter},       :title=> "Parameter name"},
+                {:caption=> 'Value',            :data=>proc{|rec| rec.value},           :title=> "Parameter value"},
+            ]
+        column_options << {:caption=> 'Con-ID', :data=>proc{|rec| rec.con_id},          :title=> "Container-ID of PDB"} if @options.length > 0 && !@options[0]['con_id'].nil?
+      %>
+
+      <%=
+        gen_slickgrid(@options, column_options, {
+            :caption    => 'Unified auditing state from gv$Option',
+            :max_height => 450,
+            :width      => :auto,
+            show_pin_icon: 3
+        })
+      %>
+    </div>
+
     <% @update_area_init_params = get_unique_area_id %>
     <script type="text/javascript">
         ajax_html('<%= @update_area_init_params %>', 'dba', 'oracle_parameter', {

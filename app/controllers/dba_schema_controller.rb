@@ -1390,6 +1390,7 @@ class DbaSchemaController < ApplicationController
 
   def show_audit_trail
     @audits = sql_select_all "SELECT * FROM DBA_Stmt_Audit_Opts ORDER BY Audit_Option"
+    @options = sql_select_all "SELECT * FROM gv$Option WHERE Parameter = 'Unified Auditing' ORDER BY Inst_ID"
     render_partial
   end
 
