@@ -71,10 +71,11 @@ Often problematic usage of business keys can be detetcted by existence of refere
         {
             :name  => t(:dragnet_helper_52_name, :default=> 'Missing suggested AUDIT-options'),
             :desc  => t(:dragnet_helper_52_desc, :default=> 'You should have some minimal audit of logon and DDL operations for traceability of problematic DDL.
-Audit trail will usually be recorded in table sys.Aud$.'),
+Audit trail will usually be recorded in table sys.AUD$.
+Please remind also to establish housekeeping on table sys.AUD$.'),
             :sql=>  "
               SELECT /* Panorama-Tool Ramm: Auditing */
-                     '\"AUDIT '||NVL(a.Message, a.Name)||'\" suggested!'  Problem
+                     'AUDIT '||NVL(a.Message, a.Name)||';'  \”Suggested audit rule\"
               FROM
               (
               SELECT 'CLUSTER'                Name, 'BY ACCESS' Success, 'BY ACCESS' Failure, NULL Message FROM DUAL UNION ALL
