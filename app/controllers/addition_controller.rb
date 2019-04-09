@@ -923,6 +923,8 @@ class AdditionController < ApplicationController
         ORDER BY ID
         ", statement_id]
 
+    raise "Column 'DEPTH' missing in your Plan_Table (old structure)!\nPlease drop your local plan table to ensure usage of builtin public Plan_Table." if @plans.length > 0 && @plans[0]['depth'].nil?
+
     calculate_execution_order_in_plan(@plans)                                   # Calc. execution order by parent relationship
 
     render_partial

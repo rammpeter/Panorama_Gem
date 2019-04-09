@@ -132,6 +132,12 @@ class DbaSchemaController < ApplicationController
         MAX(Last_DDL_Time)              Last_DDL_Time,
         MAX(Spec_TS)                    Spec_TS
       FROM (
+        /* Views moved to with clause due to performance problems with 18.3 */
+        WITH Tab_Modifications AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Tab_Modifications WHERE Partition_Name IS NULL),
+             Segments          AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Segments s        WHERE s.SEGMENT_TYPE<>'CACHE' #{where_string}),
+             Objects           AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Objects),
+             Tables            AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Tables),
+             Indexes           AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Index_Type, Num_Rows, Compression, Last_Analyzed FROM DBA_Indexes)
         SELECT s.Segment_Name,                                  
                s.Partition_Name,                                
                s.Segment_Type,                                  
@@ -205,23 +211,21 @@ class DbaSchemaController < ApplicationController
                  'INDEX PARTITION',    im.Timestamp,
                  'INDEX SUBPARTITION', im.Timestamp,
                NULL) Last_DML_Timestamp
-        FROM DBA_SEGMENTS s
-        LEFT OUTER JOIN DBA_Objects o             ON o.Owner         = s.Owner       AND o.Object_Name          = s.Segment_name   AND (s.Partition_Name IS NULL OR o.SubObject_Name = s.Partition_Name)
-        LEFT OUTER JOIN DBA_Tables t              ON t.Owner         = s.Owner       AND t.Table_Name           = s.segment_name
+        FROM Segments s
+        LEFT OUTER JOIN Objects o                 ON o.Owner         = s.Owner       AND o.Object_Name          = s.Segment_name   AND (s.Partition_Name IS NULL OR o.SubObject_Name = s.Partition_Name)
+        LEFT OUTER JOIN Tables t                  ON t.Owner         = s.Owner       AND t.Table_Name           = s.segment_name
         LEFT OUTER JOIN DBA_Tab_Partitions tp     ON tp.Table_Owner  = s.Owner       AND tp.Table_Name          = s.segment_name   AND tp.Partition_Name        = s.Partition_Name
         LEFT OUTER JOIN DBA_Tab_SubPartitions tsp ON tsp.Table_Owner = s.Owner       AND tsp.Table_Name         = s.segment_name   AND tsp.SubPartition_Name    = s.Partition_Name
-        LEFT OUTER JOIN DBA_Tab_Modifications m   ON m.Table_Owner = t.Owner         AND m.Table_Name           = t.Table_Name     AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
-        LEFT OUTER JOIN DBA_indexes i             ON i.Owner         = s.Owner       AND i.Index_Name           = s.segment_name
+        LEFT OUTER JOIN Tab_Modifications m       ON m.Table_Owner = t.Owner         AND m.Table_Name           = t.Table_Name     AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
+        LEFT OUTER JOIN Indexes i                 ON i.Owner         = s.Owner       AND i.Index_Name           = s.segment_name
         LEFT OUTER JOIN DBA_Ind_Partitions ip     ON ip.Index_Owner  = s.Owner       AND ip.Index_Name          = s.segment_name   AND ip.Partition_Name        = s.Partition_Name
         LEFT OUTER JOIN DBA_Ind_SubPartitions isp ON isp.Index_Owner = s.Owner       AND isp.Index_Name         = s.segment_name   AND isp.SubPartition_Name    = s.Partition_Name
         LEFT OUTER JOIN DBA_Tables it             ON it.Owner        = i.Table_Owner AND it.Table_Name          = i.Table_Name
-        LEFT OUTER JOIN DBA_Tab_Modifications im  ON im.Table_Owner  = it.Owner      AND im.Table_Name          = it.Table_Name    AND im.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
+        LEFT OUTER JOIN Tab_Modifications im      ON im.Table_Owner  = it.Owner      AND im.Table_Name          = it.Table_Name    AND im.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
         LEFT OUTER JOIN DBA_Lobs l                ON l.Owner         = s.Owner       AND l.Segment_Name         = s.Segment_Name
         LEFT OUTER JOIN DBA_Lob_Partitions lp     ON lp.Table_Owner  = s.Owner       AND lp.Lob_Name            = s.Segment_Name   AND lp.Lob_Partition_Name     = s.Partition_Name
         LEFT OUTER JOIN DBA_Lob_SubPartitions lsp ON lsp.Table_Owner = s.Owner       AND lsp.Lob_Name           = s.Segment_Name   AND lsp.Lob_SubPartition_Name = s.Partition_Name
-        WHERE s.SEGMENT_TYPE<>'CACHE'
-        #{where_string}
-        )                                                       
+       )
       GROUP BY Owner, Segment_Name, Tablespace_Name, Segment_Type #{", Partition_Name" if @show_partitions }
       ) x
       ORDER BY x.MBytes DESC"
