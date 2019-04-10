@@ -80,20 +80,22 @@ if @res.count > 0
                                 )
 
                              }
-          when col[:caption].downcase == 'table_name' ||
-                  col[:caption].downcase == "table name" ||
-                  col[:caption].downcase == "tablename" ||
-                  col[:caption].downcase == "table-name" ||
-                  col[:caption].downcase == "object_name"
+          when col[:caption].downcase == 'table_name'       ||
+                  col[:caption].downcase == "table name"    ||
+                  col[:caption].downcase == "tablename"     ||
+                  col[:caption].downcase == "table-name"    ||
+                  col[:caption].downcase == "object_name"   ||
+                  col[:caption].downcase == "sequence_name"
           then
             col[:data] = proc{|rec|
                                 owner = nil                                     # Default
-                                owner = rec["table_owner"]          if rec["table_owner"]   && !owner
-                                owner = rec["Table owner"]          if rec["Table owner"]   && !owner
-                                owner = rec["object_owner"]         if rec["object_owner"]  && !owner
-                                owner = rec["owner"]                if rec["owner"]         && !owner
-                                owner = rec["Owner"]                if rec["Owner"]         && !owner
-                                owner = rec["Owner"]                if rec["Owner"]         && !owner
+                                owner = rec["table_owner"]          if rec["table_owner"]     && !owner
+                                owner = rec["Table owner"]          if rec["Table owner"]     && !owner
+                                owner = rec["object_owner"]         if rec["object_owner"]    && !owner
+                                owner = rec["owner"]                if rec["owner"]           && !owner
+                                owner = rec["Owner"]                if rec["Owner"]           && !owner
+                                owner = rec["Owner"]                if rec["Owner"]           && !owner
+                                owner = rec["sequence_owner"]       if rec["sequence_owner"]  && !owner
                                 if owner
                                   link_object_description(:exec_dragnet_sql_detail_area, owner, my_html_escape(rec[col[:caption]]), my_html_escape(rec[col[:caption]]))
                                 else

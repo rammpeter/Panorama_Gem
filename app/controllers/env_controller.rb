@@ -172,6 +172,7 @@ class EnvController < ApplicationController
                                       JOIN   v$session s ON SID = SYS_CONTEXT('userenv', 'sid')
                                      "
       end
+      @traces = sql_select_all "SELECT * from DBA_ENABLED_TRACES"
     rescue Exception => e
       Rails.logger.error "Exception: #{e.message}"
       log_exception_backtrace(e, 20)
