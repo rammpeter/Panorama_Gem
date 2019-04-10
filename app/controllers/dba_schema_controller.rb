@@ -249,11 +249,14 @@ class DbaSchemaController < ApplicationController
   public
 
   def list_object_description
-    @owner       = params[:owner].upcase          if params[:owner]
-    @owner       = nil                            if @owner == ''
-    @object_name = params[:segment_name].upcase   if params[:segment_name]
-    @object_type = params[:object_type] ? params[:object_type].upcase : nil
-    @object_type = nil                            if @object_type == ''
+    @owner = prepare_param(:owner)
+    @owner       = @owner.upcase                  if @owner
+
+    @object_name = prepare_param(:segment_name)
+    @object_name = @object_name.upcase            if @object_name
+
+    @object_type = prepare_param(:object_type)
+    @object_type = @object_type.upcase            if @object_type
 
     show_popup_message "Object name must be set! At least with wildcard character (%, _)." if @object_name == ''
 
