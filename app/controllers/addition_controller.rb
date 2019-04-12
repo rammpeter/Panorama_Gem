@@ -688,13 +688,13 @@ class AdditionController < ApplicationController
                      MIN(Gather_Date) Min_Gather_Date,
                      MAX(Gather_Date) Max_Gather_Date
               FROM   (SELECT Owner, Segment_Name, Segment_Type, Gather_Date,
-                             SUM(Bytes) Bytes, SUM(Num_Rows) Num_Rows,
+                             SUM(Bytes) Bytes, MIN(Num_Rows) Num_Rows,                  -- num_rows per record are over all tablespaces
                              MAX(Tablespace_Name) KEEP (DENSE_RANK LAST ORDER BY Bytes) Greatest_TS,
                              COUNT(DISTINCT Tablespace_Name)                            Tablespaces
                       FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes
                       WHERE  Gather_Date BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
                       #{@wherestr}
-                      GROUP BY Owner, Segment_Name, Segment_Type, Gather_Date -- group over partitions
+                      GROUP BY Owner, Segment_Name, Segment_Type, Gather_Date -- group over all tablespaces
                      ) s
               GROUP BY Owner, Segment_Name, Segment_Type
              ) s
@@ -846,7 +846,7 @@ class AdditionController < ApplicationController
       FROM   (
               SELECT Gather_Date,
                      SUM(Bytes)/(1024*1024) MBytes,
-                     SUM(Num_Rows) Num_Rows,
+                     MIN(Num_Rows) Num_Rows,                  -- Num_rows per record are over all tablespaces in sum
                       MAX(Tablespace_Name) KEEP (DENSE_RANK LAST ORDER BY Bytes) Greatest_TS,
                       COUNT(DISTINCT Tablespace_Name)                            Tablespaces
               FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
