@@ -103,11 +103,7 @@ Caution: For SELECT | INSERT | UPDATE | DELETE '),
               SELECT 'TRIGGER'                Name, 'BY ACCESS' Success, 'BY ACCESS' Failure, NULL Message FROM DUAL UNION ALL
               SELECT 'TYPE'                   Name, 'BY ACCESS' Success, 'BY ACCESS' Failure, NULL Message FROM DUAL UNION ALL
               SELECT 'USER'                   Name, 'BY ACCESS' Success, 'BY ACCESS' Failure, NULL Message FROM DUAL UNION ALL
-              SELECT 'VIEW'                   Name, 'BY ACCESS' Success, 'BY ACCESS' Failure, NULL Message FROM DUAL UNION ALL
-              SELECT 'SELECT TABLE'           Name, 'NOT SET'   Success, 'BY ACCESS' Failure, 'SELECT TABLE BY ACCESS WHENEVER NOT SUCCESSFUL' Message FROM DUAL UNION ALL
-              SELECT 'INSERT TABLE'           Name, 'NOT SET'   Success, 'BY ACCESS' Failure, 'INSERT TABLE BY ACCESS WHENEVER NOT SUCCESSFUL' Message FROM DUAL UNION ALL
-              SELECT 'UPDATE TABLE'           Name, 'NOT SET'   Success, 'BY ACCESS' Failure, 'UPDATE TABLE BY ACCESS WHENEVER NOT SUCCESSFUL' Message FROM DUAL UNION ALL
-              SELECT 'DELETE TABLE'           Name, 'NOT SET'   Success, 'BY ACCESS' Failure, 'DELETE TABLE BY ACCESS WHENEVER NOT SUCCESSFUL' Message FROM DUAL
+              SELECT 'VIEW'                   Name, 'BY ACCESS' Success, 'BY ACCESS' Failure, NULL Message FROM DUAL
               )a
               LEFT OUTER JOIN DBA_Stmt_Audit_Opts d ON  d.Audit_Option = a.Name AND d.User_Name IS NULL AND d.Proxy_Name IS NULL
                                                     AND (d.Success = a.Success OR a.Success = 'NOT SET')
