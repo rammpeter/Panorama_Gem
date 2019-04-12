@@ -60,5 +60,5 @@ column_options =
   ]
 %>
 
-<%= gen_slickgrid(@incs, column_options, {:caption=>"Object size evolution #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes#{", Tablespace='#{@tablespace_name}'" if defined?(@tablespace_name) && !@tablespace_name.nil?}#{", Schema='#{@schema_name}'" if defined?(@schema_name) && !@schema_name.nil?} between #{localeDateTime(@min_gather_date)} and #{localeDateTime(@max_gather_date)}", :max_height => 450 }) %>
+<%= gen_slickgrid(@incs, column_options, {:caption=>"Object size evolution #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes#{", Tablespace='#{@tablespace_name}'" if defined?(@tablespace_name) && !@tablespace_name.nil?}#{", Schema='#{@schema_name}'" if defined?(@schema_name) && !@schema_name.nil?} between #{@time_selection_start} and #{@time_selection_end}", :max_height => 450 }) %>
 <div id="<%= @update_area%>"></div>

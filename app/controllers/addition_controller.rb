@@ -679,17 +679,23 @@ class AdditionController < ApplicationController
       FROM   (
               SELECT Owner, Segment_Name, Segment_Type,
                      CASE WHEN Segment_Type LIKE 'LOB%' THEN (SELECT Table_Name||'.'||Column_Name FROM DBA_Lobs l WHERE l.Owner = s.Owner AND l.Segment_Name = s.Segment_Name) END Name_Addition,
-                     MAX(Tablespace_Name) KEEP (DENSE_RANK LAST ORDER BY Gather_Date) Last_TS,
-                     COUNT(DISTINCT Tablespace_Name) Tablespaces,
+                     MAX(Greatest_TS) KEEP (DENSE_RANK LAST ORDER BY Gather_Date) Last_TS,
+                     MAX(Tablespaces) KEEP (DENSE_RANK LAST ORDER BY Gather_Date) Tablespaces,
                      MIN(Bytes/(1024*1024))KEEP (DENSE_RANK FIRST ORDER BY Gather_Date)  Start_Mbytes,
                      MAX(Bytes/(1024*1024))KEEP (DENSE_RANK LAST  ORDER BY Gather_Date)  End_Mbytes,
                      MIN(Num_Rows) KEEP (DENSE_RANK FIRST ORDER BY Gather_Date)          Start_Num_Rows,
                      MAX(Num_Rows) KEEP (DENSE_RANK LAST  ORDER BY Gather_Date)          End_Num_Rows,
                      MIN(Gather_Date) Min_Gather_Date,
                      MAX(Gather_Date) Max_Gather_Date
-              FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
-              WHERE  Gather_Date BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-              #{@wherestr}
+              FROM   (SELECT Owner, Segment_Name, Segment_Type, Gather_Date,
+                             SUM(Bytes) Bytes, SUM(Num_Rows) Num_Rows,
+                             MAX(Tablespace_Name) KEEP (DENSE_RANK LAST ORDER BY Bytes) Greatest_TS,
+                             COUNT(DISTINCT Tablespace_Name)                            Tablespaces
+                      FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes
+                      WHERE  Gather_Date BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                      #{@wherestr}
+                      GROUP BY Owner, Segment_Name, Segment_Type, Gather_Date -- group over partitions
+                     ) s
               GROUP BY Owner, Segment_Name, Segment_Type
              ) s
       WHERE  NVL(Start_MBytes, 0) != NVL(End_MBytes, 0)
