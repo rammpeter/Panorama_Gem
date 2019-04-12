@@ -841,11 +841,14 @@ class AdditionController < ApplicationController
     name  = params[:name]
 
     @sizes = sql_select_all ["
-      SELECT Gather_Date, MBytes, Num_Rows,  MBytes - LAG(MBytes, 1, MBytes) OVER (ORDER BY Gather_Date) Increase_MB
+      SELECT Gather_Date, Greatest_TS, Tablespaces, MBytes, Num_Rows,
+             MBytes - LAG(MBytes, 1, MBytes) OVER (ORDER BY Gather_Date) Increase_MB
       FROM   (
               SELECT Gather_Date,
                      SUM(Bytes)/(1024*1024) MBytes,
-                     SUM(Num_Rows) Num_Rows
+                     SUM(Num_Rows) Num_Rows,
+                      MAX(Tablespace_Name) KEEP (DENSE_RANK LAST ORDER BY Bytes) Greatest_TS,
+                      COUNT(DISTINCT Tablespace_Name)                            Tablespaces
               FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
               WHERE  Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')
               AND    Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')
@@ -856,9 +859,18 @@ class AdditionController < ApplicationController
       ORDER BY Gather_Date",
                              @time_selection_start, @time_selection_end, owner, name ]
 
+    show_ts = proc do |rec|
+      if rec.tablespaces == 1
+        rec.greatest_ts
+      else
+        "<&nbsp;#{rec.tablespaces}&nbsp;different&nbsp;>"
+      end
+    end
+
     column_options =
         [
             {:caption=>"Date",            :data=>proc{|rec| localeDateTime(rec.gather_date)},         :title=>"Timestamp of gathering object size",       :plot_master_time=>true},
+            {:caption=>"Tablespace",      :data=>show_ts,                                             :title=>"Tablespace or number of different tablespaces"},
             {:caption=>"Size MB",         :data=>proc{|rec| formattedNumber(rec.mbytes, 2)},          :title=>"Size of object in MB at gather time",      :align=>"right" },
             {:caption=>"Increase (MB)",   :data=>proc{|rec| formattedNumber(rec.increase_mb, 2)},     :title=>"Size increase in MB since last snapshot",  :align=>"right" },
             {:caption=>"Num. rows",       :data=>proc{|rec| fn(rec.num_rows)},                        :title=>"Number of rows of object at snapshot time (from last preceding analyze run)",              :align=>:right},
