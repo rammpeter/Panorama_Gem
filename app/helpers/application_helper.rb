@@ -285,7 +285,8 @@ module ApplicationHelper
   def prepare_param(param_sym)
     retval = params[param_sym]
     retval = nil if retval == ''
-    retval.strip                                                                # Remove leading and trailing blanks
+    retval.strip! unless retval.nil?                                            # Remove leading and trailing blanks
+    retval
   end
 
   # Aufbereiten des Parameters "instance" aus Request, return nil wenn kein plausibler Wert
