@@ -178,18 +178,24 @@ class PanoramaSamplerSampling
                                                       FROM DBA_Tables
                                                       WHERE Num_Rows IS NOT NULL
                                                       UNION ALL /* Num_Rows from table for LOBs */
-                                                      SELECT l.Owner, l.Segment_Name Object_Name, t.Num_Rows, 'LOBSEGMENT' Type
-                                                      FROM DBA_Lobs l
-                                                      JOIN DBA_Tables  t ON t.Owner = l.Owner AND t.Table_Name = l.Table_Name
-                                                      UNION ALL /* Num_Rows from table for LOBs */
-                                                      SELECT l.Owner, l.Segment_Name Object_Name, t.Num_Rows, 'LOB PARTITION' Type
+                                                      SELECT l.Owner, l.Segment_Name Object_Name, t.Num_Rows, 'LOB' Type
                                                       FROM DBA_Lobs l
                                                       JOIN DBA_Tables  t ON t.Owner = l.Owner AND t.Table_Name = l.Table_Name
                                                       UNION ALL /* Num_Rows from table for LOB indexes because LOB-indexes themself does not contain valid num_rows after analysis */
                                                       SELECT l.Owner, l.Index_Name Object_Name, t.Num_Rows, 'LOBINDEX' Type
                                                       FROM DBA_Lobs l
                                                       JOIN DBA_Tables  t ON t.Owner = l.Owner AND t.Table_Name = l.Table_Name
-                                                     ) n ON n.Owner = s.Owner AND n.Object_Name = s.Segment_Name AND INSTR(s.Segment_Type, n.Type) > 0
+                                                     ) n ON n.Owner = s.Owner AND n.Object_Name = s.Segment_Name
+                                                     --AND INSTR(s.Segment_Type, n.Type) > 0
+                                                     AND DECODE(s.Segment_Type,
+                                                                'TABLE PARTITION',      'TABLE',
+                                                                'TABLE SUBPARTITION',   'TABLE',
+                                                                'INDEX PARTITION',      'INDEX',
+                                                                'INDEX SUBPARTITION',   'INDEX',
+                                                                'LOBSEGMENT',           'LOB',
+                                                                'LOB PARTITION',        'LOB',
+                                                                s.Segment_Type
+                                                                ) = n.Type
                                     ",
                                     snapshot_time.strftime('%Y-%m-%d %H:%M:%S')
                                    ]
