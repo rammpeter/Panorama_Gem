@@ -79,11 +79,16 @@ column_options =
 
 
 <script text="javascript">
+
   var download_oracle_com_reachable = false;                                    // Flag for visibility of download.oracle.com by browser
 
-  function on_iframe_load(){
-      download_oracle_com_reachable = true;                                     // successful loaded remote URL download.oracle.com in iframe
+  // Load an image to acknowledge existence or not existence of an URL
+  var img = document.createElement("img");
+  img.onload = function() {
+      download_oracle_com_reachable = true;
   }
+  img.src = "http://download.oracle.com/favicon.ico";
+
 
   function on_submit_click(){
       jQuery('.download_oracle_com_reachable').val(download_oracle_com_reachable); // store state in all hidden inputs at submit click
@@ -91,8 +96,4 @@ column_options =
 
 </script>
 
-<!-- load download.oracle.com in iframe to check if it is reachable -->
-<!-- <iframe src="https://download.oracle.com" onload="on_iframe_load()" style="display: none;"></iframe> -->
-
-<iframe src="http://download.oracle.com/otn_software/" onload="on_iframe_load()" ></iframe>
 
