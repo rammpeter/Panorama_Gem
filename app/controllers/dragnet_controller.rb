@@ -86,9 +86,12 @@ Rails.logger.info "get_selection_list: called render" if  Rails.env.test?
 
     parameter = ""
     if entry[:parameter]        # Parameter erwähnt (erwartet als Array)
+      parameter << "<br/><table>"
       entry[:parameter].each do |p|
-        parameter << "<div title='#{my_html_escape(p[:title])}'>#{my_html_escape(p[:name])} <input name='#{p[:name]}' size='#{p[:size]}' value='#{p[:default]}' type='text'></div><br/>"
+#        parameter << "<div title='#{my_html_escape(p[:title])}'>#{my_html_escape(p[:name])} <input name='#{p[:name]}' size='#{p[:size]}' value='#{p[:default]}' type='text'></div><br/>"
+        parameter << "<tr title='#{my_html_escape(p[:title])}'><td>#{my_html_escape(p[:name])}</td><td><input name='#{p[:name]}' size='#{p[:size]}' value='#{p[:default]}' type='text'></td></tr>"
       end
+      parameter << "</table><br/>"
     end
     respond_to do |format|
       format.js {render :js => "$('#show_selection_header_area').html('<b>#{j my_html_escape(entry[:name]) }</b>');

@@ -710,6 +710,8 @@
   dragnet_helper_9_param_2_hint:                            Unique Indizes werden benötigt für Absicheurng der Eindeutigkeit, auch wenn sie nicht genutzt werden
   dragnet_helper_9_param_2_name:                            Zeige auch Unique Indizes (YES/NO)
   dragnet_helper_9_param_3_hint:                            Nur Indizes dieses Schemas anlisten (optional)
+  dragnet_helper_9_param_4_hint:                            Maximale Anzahl DML-Operationen (Inserts + Updates + Deletes) auf der referenzierten Tabelle seit der letzten Analyse (optional)
+  dragnet_helper_9_param_4_name:                            Maximale Anzahl DML-Operationen auf der referenzierten Tabelle
 
   dragnet_helper_10_name:                                   Identifikation von Indizes mit unnötigen Spalten mit geringer Selektivität
   dragnet_helper_10_desc: |-

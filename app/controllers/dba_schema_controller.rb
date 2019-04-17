@@ -764,11 +764,12 @@ class DbaSchemaController < ApplicationController
                  JOIN   sys.Obj$    o  ON o.Owner# = u.User_ID AND o.Name = i.Index_Name
                  JOIN   sys.Ind$    io ON io.Obj# = o.Obj#
                  LEFT OUTER JOIN (SELECT Owner, Segment_Name, SUM(Bytes)/(1024*1024) Size_MB, SUM(Extents) Extents
-                                  FROM   DBA_Segments s
+                                  FROM   DBA_Segments
+                                  WHERE  Segment_Type LIKE 'INDEX%'
                                   GROUP BY Owner, Segment_Name
                                  ) s ON s.Owner = i.Owner AND s.Segment_Name = i.Index_Name
                  LEFT OUTER JOIN DBA_Objects do ON do.Owner = i.Owner AND do.Object_Name = i.Index_Name AND do.Object_Type = 'INDEX'
-                 LEFT OUTER JOIN (SELECT ii.Index_Name, MIN(c.Constraint_Name) Constraint_Name
+                 LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ii.Index_Name, MIN(c.Constraint_Name) Constraint_Name
                                   FROM   DBA_Indexes ii
                                   LEFT OUTER JOIN DBA_Ind_Columns ic ON ic.Index_Owner = ii.Owner AND ic.Index_Name = ii.Index_Name AND ic.Column_Position = 1 /* Columns for test of FK */
                                   LEFT OUTER JOIN DBA_Cons_Columns cc ON cc.Owner = ii.Table_Owner AND cc.Table_Name = ii.Table_Name AND cc.Column_Name = ic.Column_Name AND cc.Position = 1 /* First columns of constraint */
@@ -777,7 +778,7 @@ class DbaSchemaController < ApplicationController
                                   GROUP BY ii.Index_Name
                                  ) c ON c.Index_Name = i.Index_Name
                  LEFT OUTER JOIN sys.object_usage ou ON ou.Obj# = o.Obj#
-                 LEFT OUTER JOIN (SELECT ii.Index_Name, COUNT(*) Partition_Number,
+                 LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ii.Index_Name, COUNT(*) Partition_Number,
                                   COUNT(DISTINCT ip.Status)          P_Status_Count,       MIN(ip.Status)           P_Status,
                                   COUNT(DISTINCT ip.Compression)     P_Compression_Count,  MIN(ip.Compression)      P_Compression,
                                   COUNT(DISTINCT ip.Tablespace_Name) P_Tablespace_Count,   MIN(ip.Tablespace_Name)  P_Tablespace_Name,
@@ -790,7 +791,7 @@ class DbaSchemaController < ApplicationController
                                   AND    ii.Table_Name = ?
                                   GROUP BY ii.Index_Name
                                  ) p ON p.Index_Name = i.Index_Name
-                 LEFT OUTER JOIN (SELECT ii.Index_Name, COUNT(*) SubPartition_Number,
+                 LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ii.Index_Name, COUNT(*) SubPartition_Number,
                                   COUNT(DISTINCT ip.Status)          SP_Status_Count,       MIN(ip.Status)           SP_Status,
                                   COUNT(DISTINCT ip.Compression)     SP_Compression_Count,  MIN(ip.Compression)      SP_Compression,
                                   COUNT(DISTINCT ip.Tablespace_Name) SP_Tablespace_Count,   MIN(ip.Tablespace_Name)  SP_Tablespace_Name,
@@ -803,7 +804,7 @@ class DbaSchemaController < ApplicationController
                                   AND    ii.Table_Name = ?
                                   GROUP BY ii.Index_Name
                                  ) sp ON sp.Index_Name = i.Index_Name
-              #{"LEFT OUTER JOIN (SELECT ii.Index_Name, MIN(i.GC_Mastering_Policy) GC_Mastering_Policy,  COUNT(DISTINCT i.GC_Mastering_Policy) GC_Mastering_Policy_Cnt,
+              #{"LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ii.Index_Name, MIN(i.GC_Mastering_Policy) GC_Mastering_Policy,  COUNT(DISTINCT i.GC_Mastering_Policy) GC_Mastering_Policy_Cnt,
                                   MIN(i.Current_Master) + 1  Current_Master,       COUNT(DISTINCT i.Current_Master)      Current_Master_Cnt,
                                   MIN(i.Previous_Master) + 1  Previous_Master,     COUNT(DISTINCT DECODE(i.Previous_Master, 32767, NULL, i.Previous_Master)) Previous_Master_Cnt,
                                   SUM(i.Remaster_Cnt) Remaster_Cnt
