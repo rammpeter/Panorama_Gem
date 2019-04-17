@@ -707,8 +707,8 @@
     Weitere Informationen zur Nutzung bringt Anzeige 'Segment statistics historisch' und Analyse der ActiveSessionHistory über Spalte 'Time waited'.
   dragnet_helper_9_param_1_hint:                            Anzahl Tage, die der Start_Monitoring-Zeitstempel ungenutzter Indizes alt sein muss
   dragnet_helper_9_param_1_name:                            Tage rückwärts ohne Nutzung
-  dragnet_helper_9_param_2_hint:                            Minimale Anzahl Rows des Index für Aufnahme in Selektion
-  dragnet_helper_9_param_2_name:                            Minimale Anzahl Rows des Index
+  dragnet_helper_9_param_2_hint:                            Unique Indizes werden benötigt für Absicheurng der Eindeutigkeit, auch wenn sie nicht genutzt werden
+  dragnet_helper_9_param_2_name:                            Zeige auch Unique Indizes (YES/NO)
   dragnet_helper_9_param_3_hint:                            Nur Indizes dieses Schemas anlisten (optional)
 
   dragnet_helper_10_name:                                   Identifikation von Indizes mit unnötigen Spalten mit geringer Selektivität
@@ -1453,6 +1453,7 @@
     Erkennung von Indizes ohne MONITORING USAGE
   dragnet_helper_139_param_1_hint:                          Minimale Größe des Index in MB um in Selektion berücksichtigt zu werden
   dragnet_helper_139_param_1_name:                          Minimale Größe des Index in MB
+  dragnet_helper_139_param_2_hint:                          Nur Indizes dieses Schemas anlisten (optional)
 
   dragnet_helper_140_desc: |-
     Der freien Platz in DB-Blöcken definiert durch PCT_FREE kann genutzt werden für:

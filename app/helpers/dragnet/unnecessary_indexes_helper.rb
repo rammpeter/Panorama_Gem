@@ -147,7 +147,7 @@ Additional information about index usage can be requested from DBA_Hist_Seg_Stat
                     WITH Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Constraint_Type, Table_Name, R_Owner, R_Constraint_Name FROM DBA_Constraints)
                     SELECT /*+ USE_HASH(i ic cc c rc rt) */ u.Owner, u.Table_Name, u.Index_Name,
                            ic.Column_Name                                                             \"First Column name\",
-                           u.Monitoring, u.\"Start monitoring\", u.\"End monitoring\",
+                           u.\"Start monitoring\", u.\"End monitoring\",
                            ROUND(NVL(u.\"End monitoring\", SYSDATE)-u.\"Start monitoring\", 1) \"Days without usage\",
                            i.Num_Rows, i.Distinct_Keys, CASE WHEN i.Distinct_Keys IS NULL OR  i.Distinct_Keys = 0 THEN NULL ELSE ROUND(i.Num_Rows/i.Distinct_Keys) END \"Avg. rows per key\",
                            i.Compression||CASE WHEN i.Compression = 'ENABLED' THEN ' ('||i.Prefix_Length||')' END Compression,
@@ -156,7 +156,11 @@ Additional information about index usage can be requested from DBA_Hist_Seg_Stat
                            (SELECT IOT_Type FROM DBA_Tables t WHERE t.Owner = u.Owner AND t.Table_Name = u.Table_Name) \"IOT Type\",
                            c.Constraint_Name                                                          \"Foreign key protection\",
                            CASE WHEN rc.Table_Name IS NOT NULL THEN rc.Owner||'.'||rc.Table_Name END  \"Referenced table\",
-                           rt.Num_Rows                                                                \"Num rows of referenced table\"
+                           rt.Num_Rows                                                                \"Num rows of referenced table\",
+                           rt.Last_analyzed                                                           \"Last analyze referenced table\",
+                           m.Inserts                                                                  \"Inserts on ref. since anal.\",
+                           m.Updates                                                                  \"Updates on ref. since anal.\",
+                           m.Deletes                                                                  \"Deletes on ref. since anal.\"
                     FROM   (
                             SELECT /*+ NO_MERGE */ u.UserName Owner, io.name Index_Name, t.name Table_Name,
                                    decode(bitand(i.flags, 65536), 0, 'NO', 'YES') Monitoring,
@@ -178,17 +182,20 @@ Additional information about index usage can be requested from DBA_Hist_Seg_Stat
                     LEFT OUTER JOIN Constraints c     ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'R'
                     LEFT OUTER JOIN Constraints rc    ON rc.Owner = c.R_Owner AND rc.Constraint_Name = c.R_Constraint_Name
                     LEFT OUTER JOIN DBA_Tables rt         ON rt.Owner = rc.Owner AND rt.Table_Name = rc.Table_Name
+                    LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = rc.Owner AND m.Table_Name = rc.Table_Name AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
                     JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes
                           FROM   DBA_Segments
                           GROUP BY Owner, Segment_Name
                           HAVING SUM(bytes)/(1024*1024) > ?
                          ) seg ON seg.Owner = u.Owner AND seg.Segment_Name = u.Index_Name
                     WHERE u.Used='NO' AND u.Monitoring='YES'
+                    AND   (? = 'YES' OR i.Uniqueness != 'UNIQUE')
                     ORDER BY seg.MBytes DESC NULLS LAST
                    ",
           :parameter=>[{:name=>'Schema-Name (optional)',    :size=>20, :default=>'',   :title=>t(:dragnet_helper_9_param_3_hint, :default=>'List only indexes for this schema (optional)')},
                          {:name=>t(:dragnet_helper_9_param_1_name, :default=>'Number of days backwards without usage'),    :size=>8, :default=>7,   :title=>t(:dragnet_helper_9_param_1_hint, :default=>'Minumin age in days of Start-Monitoring timestamp of unused index')},
                          {:name=>t(:dragnet_helper_139_param_1_name, :default=>'Minimum size of index in MB'),    :size=>8, :default=>1,   :title=>t(:dragnet_helper_139_param_1_hint, :default=>'Minumin size of index in MB to be considered in selection')},
+                         {:name=>t(:dragnet_helper_9_param_2_name, :default=>'Show unique indexes also (YES/NO)'), :size=>4, :default=>'NO',   :title=>t(:dragnet_helper_9_param_2_hint, :default=>'Unique indexes are needed for uniqueness even if they are not used')},
             ]
         },
         {
@@ -222,7 +229,7 @@ Index usage can be evaluated than via v$Object_Usage or with previous selection.
                     AND   (s.Schema IS NULL OR i.Owner = UPPER(s.Schema))
                     ORDER BY seg.MBytes DESC NULLS LAST
             ",
-            :parameter=>[{:name=>'Schema-Name (optional)',    :size=>20, :default=>'',   :title=>t(:dragnet_helper_9_param_3_hint, :default=>'List only indexes for this schema (optional)')},
+            :parameter=>[{:name=>'Schema-Name (optional)',    :size=>20, :default=>'',   :title=>t(:dragnet_helper_139_param_2_hint, :default=>'List only indexes for this schema (optional)')},
                          {:name=>t(:dragnet_helper_139_param_1_name, :default=>'Minimum size of index in MB'),    :size=>8, :default=>1,   :title=>t(:dragnet_helper_139_param_1_hint, :default=>'Minumin size of index in MB to be considered in selection')},
             ]
         },

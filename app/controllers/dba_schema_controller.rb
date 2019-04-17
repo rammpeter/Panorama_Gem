@@ -772,7 +772,7 @@ class DbaSchemaController < ApplicationController
                                   FROM   DBA_Indexes ii
                                   LEFT OUTER JOIN DBA_Ind_Columns ic ON ic.Index_Owner = ii.Owner AND ic.Index_Name = ii.Index_Name AND ic.Column_Position = 1 /* Columns for test of FK */
                                   LEFT OUTER JOIN DBA_Cons_Columns cc ON cc.Owner = ii.Table_Owner AND cc.Table_Name = ii.Table_Name AND cc.Column_Name = ic.Column_Name AND cc.Position = 1 /* First columns of constraint */
-                                  LEFT OUTER JOIN DBA_Constraints c ON c.Owner = ii.Table_Owner AND c.Table_Name = ii.Table_Name AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Name = 'R'
+                                  LEFT OUTER JOIN DBA_Constraints c ON c.Owner = ii.Table_Owner AND c.Table_Name = ii.Table_Name AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'R'
                                   WHERE  ii.Table_Owner = ? AND ii.Table_Name = ?
                                   GROUP BY ii.Index_Name
                                  ) c ON c.Index_Name = i.Index_Name
