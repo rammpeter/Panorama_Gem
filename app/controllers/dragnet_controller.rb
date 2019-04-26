@@ -123,8 +123,9 @@ Rails.logger.info "get_selection_list: called render" if  Rails.env.test?
       @caption << ": "
       dragnet_sql[:parameter].each do |p|   # Binden evtl. Parameter
         command_array << params[p[:name]]           # Parameter aus Form mit Name erwartet
-        @caption << " '#{p[:name]}' = #{params[p[:name]]}"  # Ausgabe im Header
+        @caption << " '#{p[:name]}' = #{params[p[:name]]}," if params[p[:name]] && params[p[:name]] != ''  # Ausgabe im Header
       end
+      @caption[@caption.length-1] = ' '                                         # replace trailing comma
     end
 
     # Ausführen des SQL

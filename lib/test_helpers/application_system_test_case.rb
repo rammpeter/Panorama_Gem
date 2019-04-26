@@ -23,10 +23,10 @@ Capybara.register_driver :headless_chrome do |app|
       app,
       browser: :chrome,
       desired_capabilities: capabilities,
-      driver_opts: {
-          # verbose: true,                                                      # list chromedriver debug output
-          whitelisted_ips: '',                                                  # Allow usage of port 9515 without EXPOSE in Dockerfile
-      }
+#      driver_opts: {
+#          # verbose: true,                                                      # list chromedriver debug output
+#          whitelisted_ips: '',                                                  # Allow usage of port 9515 without EXPOSE in Dockerfile
+#      }
   )
 
   # Selenium::WebDriver.logger.level = :debug                                     # Enable Selenium logging to console
