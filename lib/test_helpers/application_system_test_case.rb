@@ -68,18 +68,19 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   def click_button_with_retry(caption)
     retry_count = 0
-    while retry_count < 10 do
+    max_retries = 100
+    while retry_count < max_retries do
       retry_count += 1
       begin
         click_button(caption)
         break                                                                   # Leave while loop if successful
       rescue Exception => e
-        if retry_count == 10
+        if retry_count == max_retries
           Rails.logger.info "#{Time.now} click_button_with_retry for '#{caption}': Last retry failed with #{e.class} #{e.message}"
           raise e
         else
           Rails.logger.info "#{Time.now} click_button_with_retry for '#{caption}': Retry after #{e.class} #{e.message}"
-          sleep 5+retry_count                                                   # sleep a bit longer with each retry
+          sleep 0.5                                                            # sleep not too long to prevent mouse over hint
         end
       end
     end
