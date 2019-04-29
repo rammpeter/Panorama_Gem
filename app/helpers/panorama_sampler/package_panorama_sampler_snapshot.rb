@@ -563,7 +563,7 @@ END Panorama_Sampler_Snapshot;
     INSERT INTO panorama_owner.Internal_StatName(DBID, STAT_ID, Name, Con_DBID, Con_ID)
     SELECT p_DBID, Stat_ID, Name, p_DBID, 0 /* Con_ID is always 0 and Con_DBID = DBID */
     FROM   V$StatName n
-    WHERE  n.Stat_ID NOT IN (SELECT Stat_ID FROM panorama_owner.Internal_StatName)
+    WHERE  n.Stat_ID NOT IN (SELECT Stat_ID FROM panorama_owner.Internal_StatName WHERE DBID = p_DBID AND Con_DBID = p_DBID)
     ;
   END Snap_StatName;
 

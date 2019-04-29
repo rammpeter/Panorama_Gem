@@ -1096,7 +1096,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'CON_DBID',                       column_type:   'NUMBER' },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
-          primary_key: { columns: ['STAT_ID'] },
+          primary_key: { columns: ['DBID', 'STAT_ID', 'Con_DBID'] },
       },
       {
           table_name: 'Internal_Sysmetric_History',
