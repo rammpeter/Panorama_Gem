@@ -1751,6 +1751,11 @@ ORDER BY Column_ID
         sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ADD CONSTRAINT #{pk_name} PRIMARY KEY ("
         table[:primary_key][:columns].each do |pk|
           sql << "#{pk},"
+
+          # Ensure that PK-Columns doesn't contain NULL-values
+          del_sql = "DELETE FROM #{@sampler_config.get_owner}.#{table[:table_name]} WHERE #{pk} IS NULL"
+          log(del_sql)
+          PanoramaConnection.sql_execute(del_sql)
         end
         sql[(sql.length) - 1] = ' '                                               # remove last ,
         sql << ") USING INDEX #{@sampler_config.get_owner}.#{pk_name}"

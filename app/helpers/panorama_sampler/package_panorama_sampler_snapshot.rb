@@ -560,8 +560,6 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_StatName(p_DBID IN NUMBER) IS
   BEGIN
-    DELETE FROM panorama_owner.Internal_StatName WHERE DBID IS NULL OR Con_DBID IS NULL;    -- Backward compatibility
-
     INSERT INTO panorama_owner.Internal_StatName(DBID, STAT_ID, Name, Con_DBID, Con_ID)
     SELECT p_DBID, Stat_ID, Name, p_DBID, 0 /* Con_ID is always 0 and Con_DBID = DBID */
     FROM   V$StatName n
