@@ -1090,10 +1090,10 @@ class PanoramaSamplerStructureCheck
           table_name: 'Internal_StatName',
           domain: :AWR,
           columns: [
-              { column_name:  'DBID',                           column_type:   'NUMBER' },
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
               { column_name:  'STAT_ID',                        column_type:   'NUMBER',    not_null: true },
               { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 64 },
-              { column_name:  'CON_DBID',                       column_type:   'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
           primary_key: { columns: ['DBID', 'STAT_ID', 'Con_DBID'] },
@@ -1690,8 +1690,17 @@ ORDER BY Column_ID
         PanoramaConnection.sql_execute(sql)
       else                                                                      # Check NULL state for existing columns
         if !@ora_tab_colnull.include?({'table_name' => table[:table_name].upcase, 'column_name' => column[:column_name].upcase, 'nullable' => (column[:not_null] ? 'N' : 'Y')})
-          sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} MODIFY ("
-          sql << "#{column[:column_name]} #{column[:not_null] ? 'NOT NULL' : 'NULL'}"
+          sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} MODIFY (#{column[:column_name]} "
+          if column[:not_null]
+            sql << 'NOT NULL'
+
+            # Ensure that Columns doesn't contain NULL-values
+            del_sql = "DELETE FROM #{@sampler_config.get_owner}.#{table[:table_name]} WHERE #{column[:column_name]} IS NULL"
+            log(del_sql)
+            PanoramaConnection.sql_execute(del_sql)
+          else
+            sql << 'NULL'
+          end
           sql << ")"
           log(sql)
           PanoramaConnection.sql_execute(sql)
