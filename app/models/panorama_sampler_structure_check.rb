@@ -1743,9 +1743,12 @@ ORDER BY Column_ID
             log(sql)
             PanoramaConnection.sql_execute(sql)
 
-            sql = "DROP INDEX #{@sampler_config.get_owner}.#{pk_name}"
-            log(sql)
-            PanoramaConnection.sql_execute(sql)
+            # Check if pk-Index remains and should be dropped separately
+            if 0 < PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM All_Indexes WHERE Owner = ? AND Index_Name = ?",  @sampler_config.get_owner.upcase, pk_name.upcase])
+              sql = "DROP INDEX #{@sampler_config.get_owner}.#{pk_name}"
+              log(sql)
+              PanoramaConnection.sql_execute(sql)
+            end
             break
           end
         end
