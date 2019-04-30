@@ -367,15 +367,19 @@ class PanoramaConnection
 
   public
 
+  # return SQL with optionally transformed DBA_Hist-Tablenames
+  def self.transform_sql_by_mgmt_pack_license(original_sql)
+    # Check for license violation and possible statement transformation
+    PackLicense.filter_sql_for_pack_license(original_sql, get_threadlocal_config[:management_pack_license])
+  end
+
   # Analog sql_select all, jedoch return ResultIterator mit each-Method
   # liefert Objekt zur späteren Iteration per each, erst dann wird SQL-Select ausgeführt (jedesmal erneut)
   # Parameter: sql = String mit Statement oder Array mit Statement und Bindevariablen
   #            modifier = proc für Anwendung auf die fertige Row
   def self.sql_select_iterator(sql, modifier=nil, query_name = 'sql_select_iterator')
     check_for_open_connection                                                   # ensure opened Oracle-connection
-    management_pack_license = get_threadlocal_config[:management_pack_license]
-    transformed_sql = PackLicense.filter_sql_for_pack_license(sql, management_pack_license)  # Check for license violation and possible statement transformation
-    stmt, binds = sql_prepare_binds(transformed_sql)   # Transform SQL and split SQL and binds
+    stmt, binds = sql_prepare_binds(transform_sql_by_mgmt_pack_license(sql))   # Transform SQL and split SQL and binds
     SqlSelectIterator.new(translate_sql(stmt), binds, modifier, get_threadlocal_config[:query_timeout], query_name)      # kann per Aufruf von each die einzelnen Records liefern
   end
 
