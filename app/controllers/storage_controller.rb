@@ -222,17 +222,19 @@ class StorageController < ApplicationController
                                 ORDER BY 2 DESC"
 
     @tablespace_per_schema = sql_select_all "
+      WITH Quotas AS (SELECT /*+ NO_MERGE MATERIALIZE */ Tablespace_Name, Username, Bytes, Max_Bytes FROM   DBA_TS_Quotas) -- without MATERIALIZE long runtime on 11.2
       SELECT /* Panorama-Tool Ramm */ s.Owner, s.Tablespace_Name, s.MBytes, q.Bytes Bytes_Charged, q.Max_Bytes Bytes_Quota
       FROM (
-        SELECT Owner,
+        SELECT /*+ NO_MERGE */ Owner,
                Tablespace_Name,
                SUM(Bytes)/1048576 MBytes
         FROM   DBA_Segments s
         GROUP BY Owner, Tablespace_Name
         ) s
-      LEFT OUTER JOIN DBA_TS_Quotas q ON q.Tablespace_Name = s.Tablespace_Name AND q.Username = s.Owner
+      LEFT OUTER JOIN Quotas q ON q.Tablespace_Name = s.Tablespace_Name AND q.Username = s.Owner
       WHERE s.MBytes > 0   -- Show only schemas with objects
-      ORDER BY s.MBytes DESC"
+      ORDER BY s.MBytes DESC
+    "
 
     render_partial
   end
