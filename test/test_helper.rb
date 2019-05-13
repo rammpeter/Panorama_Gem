@@ -8,7 +8,7 @@ require "rails/test_help"
 
 require 'fileutils'
 
-require "minitest/reporters"
+#require "minitest/reporters"
 
 # Load own helpers
 require File.expand_path("../../lib/test_helpers/oracle_connection_test_helper.rb", __FILE__)       # requires config/environment.rb loaded
@@ -32,10 +32,10 @@ require File.expand_path("../../lib/test_helpers/application_system_test_case", 
 # block in autorun at /home/ramm/.rvm/gems/jruby-9.1.7.0/gems/minitest-5.10.2/lib/minitest.rb:63
 # rake aborted!
 
-Minitest::Reporters.use!(
-    Minitest::Reporters::DefaultReporter.new,
-    ENV, Minitest.backtrace_filter
-)
+#Minitest::Reporters.use!(
+#    Minitest::Reporters::DefaultReporter.new,
+#    ENV, Minitest.backtrace_filter
+#)
 
 # Load fixtures from the engine
 #if ActiveSupport::TestCase.respond_to?(:fixture_path=)
