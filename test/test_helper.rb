@@ -215,7 +215,7 @@ class ActiveSupport::TestCase
 
     Rails.logger.info "Last 10 snapshots are:"
     last_10_snaps.each do |s|
-      Rails.logger.info "Snap_ID = #{s.snap_id}, Instance = #{s.instance_number}, Startup = #{localeDateTime(s.startup_time)}, Begin_Interval_Time = #{localeDateTime(s.begin_interval_time)}"
+      Rails.logger.info "Snap_ID = #{s.snap_id}, Instance = #{s.instance_number}, Startup = #{localeDateTime(s.startup_time)}, Begin_Interval_Time = #{localeDateTime(s.begin_interval_time)}, End_Interval_Time = #{localeDateTime(s.end_interval_time)}"
     end
 
     if snaps.nil? || snaps.min_snap_id.nil? || snaps.max_snap_id.nil? || snaps.start_time.nil? || snaps.end_time.nil?
