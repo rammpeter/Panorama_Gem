@@ -111,6 +111,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     begin
       assert_text "Please choose saved connection"
     rescue Capybara::ExpectationNotMet
+      Rails.logger.info "Retry Please choose saved connection"
       sleep 5                                                                   # Sleep some time let rails start
       assert_text "Please choose saved connection"                              # try again
     end
