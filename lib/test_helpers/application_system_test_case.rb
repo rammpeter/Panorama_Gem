@@ -151,11 +151,16 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   def login_and_menu_call(*args)
     login_until_menu
 
-    menu_node_0 = page.first(:css, '#main_menu #menu_node_0')                   # find menu 'Menu' if exists (small window width)
-    unless menu_node_0.nil?
-      menu_node_0.hover
+    if page.has_css?('#main_menu #menu_node_0')                                 #  menu 'Menu' if exists (small window width)
+      page.first(:css, '#main_menu #menu_node_0').hover                         # Open first level menu under "Menu"
       sleep 0.2
     end
+
+    #menu_node_0 = page.first(:css, '#main_menu #menu_node_0')                   # find menu 'Menu' if exists (small window width)
+    #unless menu_node_0.nil?
+    #  menu_node_0.hover
+    #  sleep 0.2
+    #end
 
     args.each_index do |i|
       if i < args.length-1                                                      # SubMenu
