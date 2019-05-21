@@ -185,4 +185,64 @@ class UsageController < ApplicationController
 
   end
 
+
+  def client_info_store_sizes
+    initialize_browser_tab_id
+    @locate_array = []
+    @result = get_client_info_store_elements
+  end
+
+  def client_info_detail
+    @locate_array = params[:locate_array].values
+
+    @result = get_client_info_store_elements(@locate_array)
+    render_partial :client_info_detail
+  end
+
+  private
+
+  def get_total_elements_no(element)
+    retval = 1                                                                  # count at least itself
+
+    if element.class == Hash
+      element.each do |key, value|
+        retval += get_total_elements_no(value)
+      end
+    end
+
+    if element.class == Array
+      element.each do |value|
+        retval += get_total_elements_no(value)
+      end
+    end
+
+    retval
+  end
+
+  def get_client_info_store_elements(locate_array = [])
+    client_info_store = EngineConfig.get_client_info_store.read(get_decrypted_client_key)
+
+    locate_array.each do |l|
+      # step down in hierarchy
+      l[:key_name] = l[:key_name].to_sym if l[:class_name] == 'Symbol'
+      l[:key_name] = l[:key_name].to_i   if l[:class_name] == 'Integer'
+      client_info_store = client_info_store[l[:key_name]]
+    end
+
+    result = []
+    client_info_store.each do |key, value|
+      row =  {
+          key_name:       key,
+          class_name:     value.class.name,
+          elements:       0,
+          total_elements: get_total_elements_no(value) - 1                      # Do not count the first element
+      }
+      row[:elements] = value.count if value.class == Hash || value.class == Array
+
+
+      result << row.extend(SelectHashHelper)
+    end
+    result
+  end
+
 end
