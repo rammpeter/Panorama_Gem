@@ -230,6 +230,10 @@ class UsageController < ApplicationController
     end
 
     result = []
+
+    # Convert Array to Hash before processing
+    client_info_store = client_info_store.map.with_index { |x, i| [i, x] }.to_h  if client_info_store.class == Array
+
     client_info_store.each do |key, value|
       row =  {
           key_name:       key,
