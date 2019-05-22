@@ -10,44 +10,47 @@ module MenuHelper
   # Bereitstellung Menü-Einträge als Array von hashes, Hash mit Spezialhandling-DB als Parameter
   def menu_content
     main_menu = [
-        { :class=> 'menu', :caption=>t(:menu_dba_caption, :default=> 'DBA general'), :content=>[
-            {:class=> 'item', :caption=> t(:menu_dba_start_page_caption, :default=>'Start page'),   :controller=>:env,             :action=>:start_page,  :hint=>t(:menu_dba_start_page_hint, :default=> 'Show global information for choosen database') },
-            { :class=> 'menu', :caption=> 'DB-Locks', :content=>[
-                {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),        :controller=>:dba,             :action=> 'show_locks',        :hint=>t(:menu_dba_locks_hint, :default=> 'shows current locking state incl. blocking sessions')   },
-                {:class=> 'item', :caption=>t(:menu_dba_blocking_locks_historic_caption, :default=> 'Blocking locks historic from ASH'), :controller=> 'active_session_history',  :action=> 'show_blocking_locks_historic',   :hint=>t(:menu_dba_blocking_locks_historic_hint, :default=> 'Show historic blocking locks information from Active Session History')   },
-                ].concat(
-                  PanoramaSamplerStructureCheck.panorama_table_exists?('Panorama_Blocking_Locks') ? [{:class=> 'item', :caption=>t(:menu_dba_blocking_locks_historic_panorama_caption, :default=>'Blocking locks historic from Panorama-Sampler'),           :controller=> :addition,                 :action=> :show_blocking_locks_history,     :hint=>t(:menu_dba_blocking_locks_historic_panorama_hint, :default=>'Show historic blocking locks information from Panorama-Sampler')}] : [] )
-            },
-            { :class=> 'menu', :caption=> 'Redo-Logs', :content=>[
-                {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),        :controller=>:dba,             :action=> 'show_redologs',        :hint=>t(:menu_dba_redologs_hint, :default=> 'Show current redo log info') },
-                {:class=> 'item', :caption=>t(:menu_historic_caption, :default=> 'Historic'), :controller=>:dba,  :action=> 'show_redologs_historic',   :hint=>t(:menu_dba_redologs_historic_hint, :default=> 'Show historic redo log info')   },
-                ]
-            },
-            {:class=> 'item', :caption=> 'Sessions',           :controller=>:dba,             :action=>:show_sessions,     :hint=>t(:menu_dba_sessions_hint, :default=> 'Show info of current DB-sessions') },
-            {:class=> 'item', :caption=> 'Oracle-Parameter',   :controller=>:dba,             :action=>:oracle_parameter,  :hint=>t(:menu_dba_parameter_hint, :default=> 'Show active instance-parameters') },
-            { :class=> 'menu', :caption=> 'Audit Trail', :content=>[
-                {:class=> 'item', :caption=> 'Standard Audit Trail', :controller=>:dba_schema,      :action=>:show_audit_trail,  :hint=>t(:menu_dba_schema_audit_trail_hint, :default=> 'Show activities logged by standard audit trail (DBA_Audit_Trail)') },
-            ].concat(get_db_version >= '12.1' ? [
-                {:class=> 'item', :caption=> 'Unified Audit Trail', :controller=>:dba_schema,     :action=>:show_unified_audit_trail,  :hint=>t(:menu_dba_schema_unified_audit_trail_hint, :default=> 'Show activities logged by unified audit trail') },
-            ] : [] )
-            },
-            {:class=> 'item', :caption=> 'Server Logs',        :controller=>:dba,             :action=>:show_server_logs,  :hint=>t(:menu_dba_server_logs_hint, :default=> 'Show content of server logs (alert.log, listener.log, ASM-log)') , :min_db_version => '11.2'},
-            {:class=> 'item', :caption=> 'Database Triggers',  :controller=>:dba,            :action=>:list_database_triggers,  :hint=>t(:menu_dba_database_triggers_hint, :default=> 'Show global database triggers (like LOGON etc.)') },
-            { :class=> 'menu', :caption=> 'Scheduled Jobs', :content=>[
-                {:class=> 'item', :caption=>'DBA autotask jobs', :controller=>:dba,          :action=>:show_dba_autotask_jobs, :hint=>'Show jobs from DBA_Autotask_Client', :min_db_version => '11.2' },
+        {class: 'menu', caption: t(:menu_dba_caption, :default => 'DBA general'), content: [
+            {class: 'item', caption: t(:menu_dba_start_page_caption, :default => 'Start page'), controller: :env, action: :start_page, hint: t(:menu_dba_start_page_hint, :default => 'Show global information for choosen database')},
+            {class: 'menu', caption: 'DB-Locks', content: [
+                {class: 'item', caption: t(:menu_current_caption, :default => 'Current'), controller: :dba, action: 'show_locks', hint: t(:menu_dba_locks_hint, :default => 'shows current locking state incl. blocking sessions')},
+                {class: 'item', caption: t(:menu_dba_blocking_locks_historic_caption, :default => 'Blocking locks historic from ASH'), controller: 'active_session_history', action: 'show_blocking_locks_historic', hint: t(:menu_dba_blocking_locks_historic_hint, :default => 'Show historic blocking locks information from Active Session History')},
+                {class: 'item', caption: t(:menu_dba_blocking_locks_historic_panorama_caption, :default => 'Blocking locks historic from Panorama-Sampler'), controller: :addition, action: :show_blocking_locks_history, hint: t(:menu_dba_blocking_locks_historic_panorama_hint, :default => 'Show historic blocking locks information from Panorama-Sampler'), condition: PanoramaSamplerStructureCheck.panorama_table_exists?('Panorama_Blocking_Locks')},
             ]
             },
-            {:class=> 'item', :caption=> 'Feature usage',      :controller=>:dba,             :action=>:list_feature_usage,  :hint=>t(:menu_dba_feature_usage_hint, :default=> 'Statistics about usage of features and packs of Oracle-DB') },
-            {:class=> 'item', :caption=> 'Upgrade/patch history', :controller=>:dba,          :action=>:list_patch_history,  :hint=>t(:menu_dba_patch_hint, :default=> 'History of upgrades / downgrades / patches') },
+            {:class => 'menu', :caption => 'Redo-Logs', :content => [
+                {:class => 'item', :caption => t(:menu_current_caption, :default => 'Current'), :controller => :dba, :action => 'show_redologs', :hint => t(:menu_dba_redologs_hint, :default => 'Show current redo log info')},
+                {:class => 'item', :caption => t(:menu_historic_caption, :default => 'Historic'), :controller => :dba, :action => 'show_redologs_historic', :hint => t(:menu_dba_redologs_historic_hint, :default => 'Show historic redo log info')},
             ]
+            },
+            {:class => 'item', :caption => 'Sessions', :controller => :dba, :action => :show_sessions, :hint => t(:menu_dba_sessions_hint, :default => 'Show info of current DB-sessions')},
+            {:class => 'item', :caption => 'Oracle-Parameter', :controller => :dba, :action => :oracle_parameter, :hint => t(:menu_dba_parameter_hint, :default => 'Show active instance-parameters')},
+            {:class => 'menu', :caption => 'Audit Trail', :content => [
+                {:class => 'item', :caption => 'Standard Audit Trail', :controller => :dba_schema, :action => :show_audit_trail, :hint => t(:menu_dba_schema_audit_trail_hint, :default => 'Show activities logged by standard audit trail (DBA_Audit_Trail)')},
+                {:class => 'item', :caption => 'Unified Audit Trail', :controller => :dba_schema, :action => :show_unified_audit_trail, :hint => t(:menu_dba_schema_unified_audit_trail_hint, :default => 'Show activities logged by unified audit trail'), min_db_version: '12.1'},
+            ]
+            },
+            {class: 'menu', caption: 'Server Files', content: [
+                {class: 'item', caption: 'Server Log Files', controller: :dba, action: :show_server_logs, hint: t(:menu_dba_server_logs_hint, :default => 'Show content of server logs (alert.log, listener.log, ASM-log)'), min_db_version: '11.2'},
+                {class: 'item', caption: 'Server Trace Files', controller: :dba, action: :show_trace_files, hint: t(:menu_dba_server_traces_hint, :default => 'Show trace files of DB server'), min_db_version: '12.2'},
+            ]
+            },
+            {class: 'item', caption: 'Database Triggers', controller: :dba, action: :list_database_triggers, hint: t(:menu_dba_database_triggers_hint, :default => 'Show global database triggers (like LOGON etc.)')},
+            {:class => 'menu', :caption => 'Scheduled Jobs', :content => [
+                {:class => 'item', :caption => 'DBA autotask jobs', :controller => :dba, :action => :show_dba_autotask_jobs, :hint => 'Show jobs from DBA_Autotask_Client', :min_db_version => '11.2'},
+            ]
+            },
+            {:class => 'item', :caption => 'Feature usage', :controller => :dba, :action => :list_feature_usage, :hint => t(:menu_dba_feature_usage_hint, :default => 'Statistics about usage of features and packs of Oracle-DB')},
+            {:class => 'item', :caption => 'Upgrade/patch history', :controller => :dba, :action => :list_patch_history, :hint => t(:menu_dba_patch_hint, :default => 'History of upgrades / downgrades / patches')},
+        ]
         },
         { :class=> 'menu', :caption=>t(:menu_wait_caption, :default=> 'Analyses / statistics'), :content=>[
             { :class=> 'menu', :caption=> 'Session-Waits', :content=>[
                 {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),         :controller=>:dba,                     :action=> 'show_session_waits',                  :hint=>t(:menu_wait_session_current_hint, :default=> 'All current session waits')   },
                 {:class=> 'item', :caption=>t(:menu_historic_caption, :default=> 'Historic'),      :controller=> 'active_session_history',  :action=> 'show_session_statistics_historic',    :hint=>t(:menu_wait_session_historic_hint, :default=> 'Prepared active session history from DBA_Hist_Active_Sess_History') },
                 {:class=> 'item', :caption=>'CPU-Usage / DB-Time',    :controller=> :dba_waits,  :action=> :show_cpu_usage_historic,    :hint=>t(:menu_wait_session_cpu_hint, :default=> "Historic CPU-Usage and DB-Time from DBA_Hist_Active_Sess_History.\nShows you the difference between real CPU-usage and waiting for CPU\nif you don't have Resource Manager activated.\nDifference means you have more sessions waiting for CPU than your system's number of CPU-cores.") },
-                ].concat(
-                PanoramaSamplerStructureCheck.panorama_table_exists?('LongTerm_Trend') ? [{class: 'item', caption: t(:menu_wait_longterm_trend_caption, :default=>'Long-term trend'), controller: :longterm_trend, action: :show_longterm_trend, hint: t(:menu_wait_longterm_trend_hint, :default=>'Long-term trend recording of session waits')}] : [] )
+                {class: 'item', caption: t(:menu_wait_longterm_trend_caption, :default=>'Long-term trend'), controller: :longterm_trend, action: :show_longterm_trend, hint: t(:menu_wait_longterm_trend_hint, :default=>'Long-term trend recording of session waits'), condition: PanoramaSamplerStructureCheck.panorama_table_exists?('LongTerm_Trend')},
+              ]
             },
             { :class=> 'menu', :caption=> 'Segment Statistics', :content=>[
                 {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),         :controller=>:dba,          :action=> 'segment_stat',             :hint=>t(:menu_wait_segment_current_hint, :default=> 'Current waits by DB-objects') },
@@ -82,15 +85,12 @@ module MenuHelper
             },
             {:class=> 'item', :caption=>t(:menu_wait_resource_limits_historic_caption, :default=> 'Resource limits historic'),      :controller=> 'dba_history',  :action=> 'show_resource_limits_historic',    :hint=>t(:menu_wait_resource_limits_historic_hint, :default=> 'Historic resource usage and resource limits from DBA_Hist_Resource_Limit') },
             { :class=> 'menu', :caption=> 'Genuine Oracle AWR-reports', :content=>[
-                ].concat(get_db_version >= '12.1' ? [
-                {:class=> 'item', :caption=>'Performance Hub',            :controller=>:dba_history,    :action=> 'show_performance_hub_report',     :hint=>'Genuine Oracle performance hub report by time period and instance' },
-                ] : [])
-                .concat([
+                {:class=> 'item', :caption=>'Performance Hub',            :controller=>:dba_history,    :action=> 'show_performance_hub_report',     :hint=>'Genuine Oracle performance hub report by time period and instance', min_db_version: '12.1'  },
                 {:class=> 'item', :caption=>'AWR report',                 :controller=>:dba_history,    :action=> 'show_awr_report',          :hint=>'Genuine Oracle active workload repository report by time period and instance' },
                 {:class=> 'item', :caption=>'AWR global report (RAC)',    :controller=>:dba_history,    :action=> 'show_awr_global_report',   :hint=>'Genuine Oracle active workload repository global report for RAC by time period and instance (optional)' },
                 {:class=> 'item', :caption=>'ASH report',                 :controller=>:dba_history,    :action=> 'show_ash_report',          :hint=>'Genuine Oracle active session history report by time period and instance' },
                 {:class=> 'item', :caption=>'ASH global report (RAC)',    :controller=>:dba_history,    :action=> 'show_ash_global_report',   :hint=>'Genuine Oracle active session history global report for RAC by time period and instance (optional)' },
-                ])
+                ]
             },
             { :class=> 'menu', :caption=>t(:menu_wait_rac, :default=> 'RAC related analysis'), :content=>[
                 {:class=> 'item', :caption=> 'GC Request Latency historic',      :controller=> 'dba_waits',  :action=> 'gc_request_latency',    :hint=>t(:menu_wait_gc_historic_hint, :default=> 'Analysis of global cache activity') },
@@ -114,32 +114,27 @@ module MenuHelper
             ]
             },
             {:class=> 'item', :caption=> 'Tablespace-Objects',  :controller=>:dba_schema,       :action=>:show_object_size,  :hint=>t(:menu_dba_schema_ts_objects_hint, :default=> 'DB-objects by size, utilization and wastage') },
-            ].concat(get_cached_panorama_object_sizes_exists ? [{:class=> 'item', :caption=>t(:menu_addition_size_evolution_caption, :default=>'Object size evolution'),           :controller=> 'addition',                 :action=> 'show_object_increase',     :hint=>t(:menu_addition_size_evolution_hint, :default=>'Evolution of object sizes in considered time period')}] : [])
-            .concat(
-                [
-                    {:class=> 'item', :caption=> 'Describe object',     :controller=>:dba_schema,       :action=>:describe_object,  :hint=>'Describe database object (table, index, materialized view ...)' },
-                    {:class=> 'item', :caption=> 'Invalid objects',     :controller=>:dba_schema,       :action=>:invalid_objects,  :hint=>'List invalid objects (from DBA_Objects)' },
-                    {:class=> 'item', :caption=> 'Recycle bin',     :controller=>:storage,       :action=>:list_recycle_bin,  :hint=>'Show content of recycle bin' },
-                    {:class=> 'item', :caption=> 'Materialized view structures',         :controller=>:storage,   :action=> 'show_materialized_views',  :hint=>t(:menu_storage_matview_hint, :default=> 'Show structure of materialzed views and MV-logs')   },
-                    {:class=> 'item', :caption=> t(:menu_storage_table_dependency_caption, :default=>'Table-dependencies'),         :controller=> 'table_dependencies',  :action=> 'show_frame',            :hint=> t(:menu_storage_table_dependency_hint, :default=>'Direct and indirect referential dependencies of tables')},
-                    { :class=> 'menu', :caption=> 'Temp usage', :content=>[
-                        {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),                  :controller=>:storage,     :action=>:temp_usage,        :hint=>t(:menu_dba_temp_usage_hint, :default=>'Current usage of TEMP-tablespace') },
-                        {:class=> 'item', :caption=>t(:menu_storage_temp_usage_historic_sysmetric_caption, :default=> 'Historic from SysMetric'),      :controller=>:storage ,  :action=>:show_temp_usage_sysmetric_historic,    :hint=>t(:menu_storage_temp_usage_historic_sysmetric_hint, :default=> 'Historic usage of TEMP tablespace from system metrics of AWR snapshots (down to sampling once per minute)'), :min_db_version => '11.2' },
-                        {:class=> 'item', :caption=>t(:menu_storage_temp_usage_historic_ash_caption, :default=> 'Historic from ASH'),      :controller=>:active_session_history ,  :action=>:show_temp_usage_historic,    :hint=>t(:menu_storage_temp_usage_historic_ash_hint, :default=> 'Historic usage of TEMP tablespace by active sessions from Active Session History (down to sampling once per second)'), :min_db_version => '11.2' },
-                    ]
-                    },
-                ]
-            )
-            .concat( isExadata? ? [
-                { :class=> 'menu', :caption=> t(:menu_storage_exadata_specific_caption, :default=>'EXADATA-specific'), :content=>[
-                    {:class=> 'item', :caption=>'Cell server config',            :controller=>:storage,     :action=>:list_exadata_cell_server,        :hint=>t(:menu_storage_exadata_specific_cell_server_hint, :default=>'Configuration of exadata cell server') },
-                    {:class=> 'item', :caption=>'Cell server physical disks',    :controller=>:storage,     :action=>:list_exadata_cell_physical_disk,  :hint=>'List physical disks of exadata cell server' },
-                    {:class=> 'item', :caption=>'Cell server cell disks',        :controller=>:storage,     :action=>:list_exadata_cell_cell_disk,      :hint=>'List configured cell disks of exadata cell server' },
-                    {:class=> 'item', :caption=>'Cell server grid disks',        :controller=>:storage,     :action=>:list_exadata_cell_grid_disk,      :hint=>'List configured grid disks of exadata cell server' },
-                ]
-                }
-            ] : []).
-            concat([{:class=> 'item', :caption=>t(:menu_sga_pga_object_by_file_and_block_caption, :default=> 'Object by file and block no.'),      :controller=> 'dba_schema',     :action=> 'show_object_nach_file_und_block',  :hint=>t(:menu_sga_pga_object_by_file_and_block_hint, :default=> 'Determine object-name by file- and block-no.') }])
+            {class: 'item', caption: t(:menu_addition_size_evolution_caption, :default => 'Object size evolution'), controller: 'addition', action: 'show_object_increase', hint: t(:menu_addition_size_evolution_hint, :default => 'Evolution of object sizes in considered time period'), condition: get_cached_panorama_object_sizes_exists},
+            {:class=> 'item', :caption=> 'Describe object',     :controller=>:dba_schema,       :action=>:describe_object,  :hint=>'Describe database object (table, index, materialized view ...)' },
+            {:class=> 'item', :caption=> 'Invalid objects',     :controller=>:dba_schema,       :action=>:invalid_objects,  :hint=>'List invalid objects (from DBA_Objects)' },
+            {:class=> 'item', :caption=> 'Recycle bin',     :controller=>:storage,       :action=>:list_recycle_bin,  :hint=>'Show content of recycle bin' },
+            {:class=> 'item', :caption=> 'Materialized view structures',         :controller=>:storage,   :action=> 'show_materialized_views',  :hint=>t(:menu_storage_matview_hint, :default=> 'Show structure of materialzed views and MV-logs')   },
+            {:class=> 'item', :caption=> t(:menu_storage_table_dependency_caption, :default=>'Table-dependencies'),         :controller=> 'table_dependencies',  :action=> 'show_frame',            :hint=> t(:menu_storage_table_dependency_hint, :default=>'Direct and indirect referential dependencies of tables')},
+            { :class=> 'menu', :caption=> 'Temp usage', :content=>[
+                {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),                  :controller=>:storage,     :action=>:temp_usage,        :hint=>t(:menu_dba_temp_usage_hint, :default=>'Current usage of TEMP-tablespace') },
+                {:class=> 'item', :caption=>t(:menu_storage_temp_usage_historic_sysmetric_caption, :default=> 'Historic from SysMetric'),      :controller=>:storage ,  :action=>:show_temp_usage_sysmetric_historic,    :hint=>t(:menu_storage_temp_usage_historic_sysmetric_hint, :default=> 'Historic usage of TEMP tablespace from system metrics of AWR snapshots (down to sampling once per minute)'), :min_db_version => '11.2' },
+                {:class=> 'item', :caption=>t(:menu_storage_temp_usage_historic_ash_caption, :default=> 'Historic from ASH'),      :controller=>:active_session_history ,  :action=>:show_temp_usage_historic,    :hint=>t(:menu_storage_temp_usage_historic_ash_hint, :default=> 'Historic usage of TEMP tablespace by active sessions from Active Session History (down to sampling once per second)'), :min_db_version => '11.2' },
+              ]
+            },
+            { :class=> 'menu', :caption=> t(:menu_storage_exadata_specific_caption, :default=>'EXADATA-specific'), condition: isExadata?,  :content=>[
+                {:class=> 'item', :caption=>'Cell server config',            :controller=>:storage,     :action=>:list_exadata_cell_server,        :hint=>t(:menu_storage_exadata_specific_cell_server_hint, :default=>'Configuration of exadata cell server') },
+                {:class=> 'item', :caption=>'Cell server physical disks',    :controller=>:storage,     :action=>:list_exadata_cell_physical_disk,  :hint=>'List physical disks of exadata cell server' },
+                {:class=> 'item', :caption=>'Cell server cell disks',        :controller=>:storage,     :action=>:list_exadata_cell_cell_disk,      :hint=>'List configured cell disks of exadata cell server' },
+                {:class=> 'item', :caption=>'Cell server grid disks',        :controller=>:storage,     :action=>:list_exadata_cell_grid_disk,      :hint=>'List configured grid disks of exadata cell server' },
+              ]
+            },
+            {:class=> 'item', :caption=>t(:menu_sga_pga_object_by_file_and_block_caption, :default=> 'Object by file and block no.'),      :controller=> 'dba_schema',     :action=> 'show_object_nach_file_und_block',  :hint=>t(:menu_sga_pga_object_by_file_and_block_hint, :default=> 'Determine object-name by file- and block-no.') },
+          ]
         },
         { :class=> 'menu', :caption=>t(:menu_io_caption, :default=> 'I/O analysis'), :content=>[
             {:class=> 'item', :caption=>t(:menu_io_iostat_detail_caption, :default=> 'I/O-Stat detail history'),         :controller=> 'io',             :action=> 'show_iostat_detail_history',  :hint=>t(:menu_io_iostat_detail_hint, :default=> 'I/O history based on DBA_Hist_IOStat_Detail') , :min_db_version => '11.1'  },
@@ -148,22 +143,20 @@ module MenuHelper
             ]
         },
         { :class=> 'menu', :caption=> 'SGA/PGA-Details', :content=>[
-            { :class=> 'menu', :caption=> 'SQL-Area', :content=>[
-                {:class=> 'item', :caption=>t(:menu_sga_pga_sqlarea_current_sqlid_caption, :default=> 'Current SQLs (SQL-ID)'),            :controller=> 'dba_sga',     :action=> 'show_sql_area_sql_id',          :hint=>t(:menu_sga_pga_sqlarea_current_sqlid_hint, :default=> 'Analysis of current SQL in SGA at level SQL-ID (cumulated across child-cursors)') },
-                {:class=> 'item', :caption=>t(:menu_sga_pga_sqlarea_current_sqlid_childno_caption, :default=> 'Current SQLs (SQL-ID / child-no.)'),:controller=> 'dba_sga',     :action=> 'show_sql_area_sql_id_childno',  :hint=>t(:menu_sga_pga_sqlarea_current_sqlid_childno_hint, :default=> 'Analysis of current SQL in SGA at level SQL-ID, child-no.') },
-                {:class=> 'item', :caption=>t(:menu_sga_pga_sqlarea_historic_caption, :default=> 'Historic SQLs'),                  :controller=> 'dba_history', :action=> 'show_sql_area_historic',        :hint=>t(:menu_sga_pga_sqlarea_historic_hint, :default=> 'Analysis of historic SQL from DBA_Hist_SQLStat') },
-                ].concat(get_db_version >= '12.1' ?
-                [{:class=> 'item', :caption=> t(:menu_sga_pga_sqlarea_historic_sql_monitor_caption, :default=>'SQL-Monitor reports historic') , controller: :dba_history, :action=> :show_sql_monitor_reports,     :hint=>t(:menu_sga_pga_sqlarea_historic_sql_monitor_hint, :default=>'Show recorded SQL-Monitor reports from DBA_HIST_Reports') }] : []
-            )
+            {class: 'menu', caption: 'SQL-Area', content: [
+                {:class => 'item', :caption => t(:menu_sga_pga_sqlarea_current_sqlid_caption, :default => 'Current SQLs (SQL-ID)'), :controller => 'dba_sga', :action => 'show_sql_area_sql_id', :hint => t(:menu_sga_pga_sqlarea_current_sqlid_hint, :default => 'Analysis of current SQL in SGA at level SQL-ID (cumulated across child-cursors)')},
+                {:class => 'item', :caption => t(:menu_sga_pga_sqlarea_current_sqlid_childno_caption, :default => 'Current SQLs (SQL-ID / child-no.)'), :controller => 'dba_sga', :action => 'show_sql_area_sql_id_childno', :hint => t(:menu_sga_pga_sqlarea_current_sqlid_childno_hint, :default => 'Analysis of current SQL in SGA at level SQL-ID, child-no.')},
+                {:class => 'item', :caption => t(:menu_sga_pga_sqlarea_historic_caption, :default => 'Historic SQLs'), :controller => 'dba_history', :action => 'show_sql_area_historic', :hint => t(:menu_sga_pga_sqlarea_historic_hint, :default => 'Analysis of historic SQL from DBA_Hist_SQLStat')},
+                {:class => 'item', :caption => t(:menu_sga_pga_sqlarea_historic_sql_monitor_caption, :default => 'SQL-Monitor reports historic'), controller: :dba_history, :action => :show_sql_monitor_reports, :hint => t(:menu_sga_pga_sqlarea_historic_sql_monitor_hint, :default => 'Show recorded SQL-Monitor reports from DBA_HIST_Reports'), min_db_version: '12.1'}
+            ]
             },
             {:class=> 'item', :caption=>t(:menu_sga_pga_day_compare_caption, :default=> 'SQL-Area day comparison'),         :controller=> 'dba_history', :action=> 'compare_sql_area_historic',     :hint=>t(:menu_sga_pga_day_compare_hint, :default=> 'Comparison of SQL-statements from two different days') },
 
             { :class=> 'menu', :caption=> 'SGA Memory', :content=>[
                 {:class=> 'item', :caption=>t(:menu_sga_pga_sga_components_caption, :default=> 'SGA-components'),                 :controller=> 'dba_sga',     :action=> 'show_sga_components',           :hint=>t(:menu_sga_pga_sga_components_hint, :default=> 'Show components of current SGA') },
-            ].concat(
-                get_db_version >= '11.1' ? [{:class=> 'item', :caption=>t(:menu_sga_pga_resize_operations_historic_caption, :default=>'SGA resize operations historic'), controller: :dba_sga,  action: :show_resize_operations_historic, hint: t(:menu_sga_pga_resize_operations_historic_hint, :default=>'Show historic evolution of SGA resize operations')}] : [] )
+                {:class=> 'item', :caption=>t(:menu_sga_pga_resize_operations_historic_caption, :default=>'SGA resize operations historic'), controller: :dba_sga,  action: :show_resize_operations_historic, hint: t(:menu_sga_pga_resize_operations_historic_hint, :default=>'Show historic evolution of SGA resize operations'), min_db_version: '11.1' },
+              ]
             },
-
 
             { :class=> 'menu', :caption=> 'DB-Cache', :content=>[
                 {:class=> 'item', :caption=>t(:menu_sga_pga_cache_usage_caption,  :default=> 'DB-cache usage current'),  :controller=> 'dba_sga',     :action=> 'db_cache_content',              :hint=>t(:menu_sga_pga_cache_usage_hint,  :default=> 'Current content of DB-cache') },
@@ -183,9 +176,9 @@ module MenuHelper
 
                 ]
             },
-            { :class=> 'menu', :caption=> 'Result Cache (from 11g)', :content=>[
-                  {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),                  :controller=> 'dba_sga',     :action=> 'show_result_cache',        :hint=>t(:menu_sga_pga_result_cache_current_hint, :default=> 'Show current usage of result cache') },
-                ]
+            {class: 'menu', caption: 'Result Cache (from 11g)', content: [
+                {:class => 'item', :caption => t(:menu_current_caption, :default => 'Current'), :controller => 'dba_sga', :action => 'show_result_cache', :hint => t(:menu_sga_pga_result_cache_current_hint, :default => 'Show current usage of result cache')},
+            ]
             },
             {:class=> 'item', :caption=> 'SQL plan management',        :controller=> 'dba_sga',      :action=> 'show_sql_plan_management',           :hint=>"#{t(:menu_sga_pga_sql_plan_management_hint, :default=> "Show all SQL plan management directives of database")}:\n- SQL profiles\n- SQL plan baselines\n- Stored outlines\n- SQL translations\n- SQL patches" },
             { :class=> 'menu', :caption=> 'Compare execution plans', :content=>[
@@ -268,8 +261,9 @@ private
     output << '<ul>
     '
     menu_entry[:content].each do |m|
-      output << build_menu_entry(m, "#{prev_menu_caption} / '#{m[:caption]}'") if m[:class] == 'menu'
-      unless m[:min_db_version] && get_db_version <  m[:min_db_version] # Prüfung auf unterstützte DB-Version
+      if (!m.has_key?(:min_db_version) || get_db_version >=  m[:min_db_version]) &&  # Prüfung auf unterstützte DB-Version
+         (!m.has_key?(:condition)      || m[:condition])                         # Check on condition
+        output << build_menu_entry(m, "#{prev_menu_caption} / '#{m[:caption]}'") if m[:class] == 'menu'
         output << "<li>#{ menu_link_remote(m[:caption], m[:controller], m[:action], m[:hint], prev_menu_caption) }</li>" if m[:class] == 'item'
       end
     end

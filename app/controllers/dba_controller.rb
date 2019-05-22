@@ -1496,4 +1496,9 @@ Solution: Execute as user 'SYS':
     render_partial
   end
 
+  def show_trace_files
+
+    render_partial
+  end
+
 end # Class

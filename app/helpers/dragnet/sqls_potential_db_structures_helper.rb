@@ -19,7 +19,8 @@ OLTP-compression requires licensing of Advanced Compression Option.
 
             :sql=> "\
               SELECT Owner, Table_Name,
-                     SUM(CASE WHEN Partition_Name IS NULL THEN 0 ELSE 1 END) Partitions,
+                     SUM(CASE WHEN Partition_Name IS NULL THEN NULL ELSE 1 END) \"Partitions to Compress\",
+                     MAX(CASE WHEN Partition_Name IS NULL THEN NULL ELSE Partitions_Total END) \"Partitions Total\",
                      SUM(Num_Rows) Num_Rows,
                      SUM(Size_MB)  Size_MB,
                      MAX(Last_Analyzed) Max_Last_analyzed,
@@ -29,26 +30,26 @@ OLTP-compression requires licensing of Advanced Compression Option.
                      MAX(Last_DML) Last_DML
               FROM   (
                       SELECT x.*, ROUND(s.Bytes/(1024*1024),2) Size_MB
-                      FROM   (
-                              SELECT t.Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed, NULL Partition_Name, m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML
-                              FROM   DBA_Tables t
-                              LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL
-                              WHERE  t.Compression = 'DISABLED'
-                              AND    t.Partitioned = 'NO'
-                              UNION ALL
-                              SELECT t.Table_Owner Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed, t.Partition_Name, m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML
-                              FROM   DBA_Tab_Partitions t
-                              LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name
-                              WHERE  t.Compression = 'DISABLED'
-                              AND    t.Composite = 'NO'
-                              UNION ALL
-                              SELECT t.Table_Owner Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed, t.SubPartition_Name Partition_Name, m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML
-                              FROM   DBA_Tab_SubPartitions t
-                              LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name AND m.SubPartition_Name = t.SubPartition_Name
-                              WHERE  t.Compression = 'DISABLED'
+                      FROM   (SELECT x.*, COUNT(*) OVER (PARTITION BY Owner, Table_Name) Partitions_Total
+                              FROM   (
+                                      SELECT t.Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed, NULL Partition_Name, m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, t.Compression
+                                      FROM   DBA_Tables t
+                                      LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL
+                                      WHERE  t.Partitioned = 'NO'
+                                      UNION ALL
+                                      SELECT t.Table_Owner Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed, t.Partition_Name, m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, t.Compression
+                                      FROM   DBA_Tab_Partitions t
+                                      LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name
+                                      WHERE  t.Composite = 'NO'
+                                      UNION ALL
+                                      SELECT t.Table_Owner Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed, t.SubPartition_Name Partition_Name, m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, t.Compression
+                                      FROM   DBA_Tab_SubPartitions t
+                                      LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name AND m.SubPartition_Name = t.SubPartition_Name
+                                     ) x
                              ) x
                       LEFT OUTER JOIN DBA_Segments s ON s.Owner = x.Owner AND s.Segment_Name = x.Table_Name AND NVL(s.Partition_Name, '-1') = NVL(x.Partition_Name, '-1')
                       WHERE  x.Owner NOT IN ('SYS', 'SYSTEM')
+                      AND    x.Compression = 'DISABLED'
                       AND    s.Bytes/(1024*1024) > ?
                       AND    (   x.Updates IS NULL                              -- no DML since last analyze
                               OR x.Updates < (x.Inserts + x.Deletes)/(100/?)    -- updates less than limit

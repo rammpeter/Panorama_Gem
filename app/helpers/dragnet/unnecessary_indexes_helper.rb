@@ -151,23 +151,24 @@ Additional information about index usage can be requested from DBA_Hist_Seg_Stat
                          Tab_Modifications AS  (SELECT /*+ NO_MERGE MATERIALIZE */  Table_Owner, Table_Name, Inserts, Updates, Deletes FROM DBA_Tab_Modifications WHERE Partition_Name IS NULL /* Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen */)
                     SELECT /*+ USE_HASH(i ic cc c rc rt) */ u.Owner, u.Table_Name, u.Index_Name,
                            ic.Column_Name                                                             \"First Column name\",
-                           u.\"Start monitoring\", u.\"End monitoring\",
+                           u.\"Start monitoring\",
                            ROUND(NVL(u.\"End monitoring\", SYSDATE)-u.\"Start monitoring\", 1) \"Days without usage\",
                            i.Num_Rows \"Num. rows\", i.Distinct_Keys \"Distinct keys\",
                            CASE WHEN i.Distinct_Keys IS NULL OR  i.Distinct_Keys = 0 THEN NULL ELSE ROUND(i.Num_Rows/i.Distinct_Keys) END \"Avg. rows per key\",
                            i.Compression||CASE WHEN i.Compression = 'ENABLED' THEN ' ('||i.Prefix_Length||')' END Compression,
                            seg.MBytes,
-                           i.Tablespace_Name \"Tablespace\",
                            i.Uniqueness||CASE WHEN i.Uniqueness != 'UNIQUE' AND uc.Constraint_Name IS NOT NULL THEN ' enforcing '||uc.Constraint_Name END Uniqueness,
-                           i.Index_Type,
-                           (SELECT IOT_Type FROM DBA_Tables t WHERE t.Owner = u.Owner AND t.Table_Name = u.Table_Name) \"IOT Type\",
                            cc.Constraint_Name                                                         \"Foreign key protection\",
-                           CASE WHEN cc.r_Table_Name IS NOT NULL THEN cc.r_Owner||'.'||cc.r_Table_Name END  \"Referenced table\",
+                           CASE WHEN cc.r_Table_Name IS NOT NULL THEN LOWER(cc.r_Owner)||'. '||cc.r_Table_Name END  \"Referenced table\",
                            cc.r_Num_Rows                                                              \"Num rows of referenced table\",
                            cc.r_Last_analyzed                                                         \"Last analyze referenced table\",
-                           cc.Inserts                                                                  \"Inserts on ref. since anal.\",
-                           cc.Updates                                                                  \"Updates on ref. since anal.\",
-                           cc.Deletes                                                                  \"Deletes on ref. since anal.\"
+                           cc.Inserts                                                                 \"Inserts on ref. since anal.\",
+                           cc.Updates                                                                 \"Updates on ref. since anal.\",
+                           cc.Deletes                                                                 \"Deletes on ref. since anal.\",
+                           i.Tablespace_Name                                                          \"Tablespace\",
+                           u.\"End monitoring\",
+                           i.Index_Type,
+                           (SELECT IOT_Type FROM DBA_Tables t WHERE t.Owner = u.Owner AND t.Table_Name = u.Table_Name) \"IOT Type\"
                     FROM   (
                             SELECT /*+ NO_MERGE */ u.UserName Owner, io.name Index_Name, t.name Table_Name,
                                    decode(bitand(i.flags, 65536), 0, 'NO', 'YES') Monitoring,
@@ -321,7 +322,7 @@ Due to the poor selectivity such indexes are mostly not useful for access optimi
                      AND    Owner NOT IN ('CTXSYS', 'DBSNMP', 'SYS', 'SYSTEM', 'XDB')
                     )
                     SELECT /* DB-Tools Ramm Unnecessary index on Ref-Constraint*/
-                           ri.Owner, ri.Table_Name, ri.Index_Name, ri.Rows_Origin \"No. of rows origin\", p.Constraint_Name, ri.Column_Name,
+                           ri.Owner, ri.Table_Name, ri.Index_Name, ri.Rows_Origin \"No. of rows origin\", s.Size_MB \"Size of Index in MB\", p.Constraint_Name, ri.Column_Name,
                            ri.Position, pi.Table_Name Target_Table, pi.Index_Name Target_Index, pi.Num_Rows \"No. of rows target\", ri.No_of_Referencing_FK \"No. of referencing fk\"
                     FROM   (SELECT /*+ NO_MERGE */
                                    r.Owner, r.Table_Name, r.Constraint_Name, rc.Column_Name, rc.Position, ric.Index_Name,
@@ -346,6 +347,11 @@ Due to the poor selectivity such indexes are mostly not useful for access optimi
                             WHERE  Constraint_Type = 'R'
                             GROUP BY r_Owner, r_Constraint_Name
                            ) ri ON ri.r_owner = p.Owner AND ri.R_Constraint_Name=p.Constraint_Name
+                    LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, ROUND(SUM(Bytes)/(1024*1024)) Size_MB
+                                     FROM   DBA_Segments
+                                     WHERE  Segment_Type LIKE 'INDEX%'
+                                     GROUP BY Owner, Segment_Name
+                                    ) s ON s.Owner = ri.Owner AND s.Segment_Name = ri.Index_Name
                     WHERE  pi.Num_Rows < ?                                                          /* Limit to small referenced tables */
                     AND    ri.Rows_Origin > ?                                                       /* Limit to huge referencing tables */
                     ORDER BY Rows_Origin DESC NULLS LAST",

@@ -9,6 +9,7 @@ module Dragnet::UnusedTablesHelper
             :name  => t(:dragnet_helper_64_name, :default => 'Detection of tables never accessed by SELECT statements'),
             :desc  => t(:dragnet_helper_64_desc, :default =>'Tables never used for selections may be questioned for their right to exist.
 This includes tables that were written, but never read.
+This selections scans SGA as well as AWR history.
 '),
             :sql=> "WITH Days AS (SELECT ? backward FROM DUAL)
                     SELECT /* DB-Tools Ramm Nicht genutzte Tabellen */ o.*, sz.MBytes, ob.Created, ob.Last_DDL_Time, tm.Timestamp Last_DML_Timestamp, tm.Inserts, tm.Updates, tm.Deletes

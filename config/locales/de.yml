@@ -873,6 +873,7 @@
   dragnet_helper_64_desc: |-
     Für niemals für Selektionen genutzte Tabellen kann kritisch die Daseinsberechtigung hinterfragt werden.
     Dies beinhaltet auch Tabellen, die zwar geschrieben aber nie gelesen werden.
+    Diese Selektion scannt sowohl SGA als auch AWR-Historie.
   dragnet_helper_64_name:                                   Ermittlung von Tabellen auf die nie per SELECT-Statement zugegriffen wird
   dragnet_helper_64_param_1_hint:                           Anzahl Tage rückwärts von jetzt für Auswertung der AWR-Historie bzgl. Verwendung der Tabelle in Ausführungsplänen von SELECT-Statements
   dragnet_helper_64_param_1_name:                           Betrachtung der AWR-Historie für SQL rückwärts in Tagen
@@ -1605,6 +1606,7 @@
   menu_dba_redologs_hint:                                   Anlistung der Redo-Logs
   menu_dba_redologs_historic_hint:                          Anlistung historischer Info der Redo-Logs
   menu_dba_server_logs_hint:                                Anlistung des Inhaltes der Server-Logs (alert.log, listener.log, ASM-Log)
+  menu_dba_server_traces_hint:                              Anlistung der Trace-Files des DB-Servers
   menu_dba_sessions_hint:                                   Anlistung der aktuellen Session-Info
   menu_dba_start_page_caption:                              Start-Seite
   menu_dba_start_page_hint:                                 Anzeige der globalen Informationen zur ausgewählten Datenbank

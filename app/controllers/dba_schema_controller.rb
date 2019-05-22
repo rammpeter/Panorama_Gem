@@ -738,7 +738,7 @@ class DbaSchemaController < ApplicationController
 
     @indexes = sql_select_all ["\
                  SELECT /*+ Panorama Ramm */ i.*, p.Partition_Number, sp.SubPartition_Number,
-                        s.Size_MB, s.Extents,
+                        NULL Size_MB, NULL Extents, /* both columns selected separately */
                         DECODE(bitand(io.flags, 65536), 0, 'NO', 'YES') Monitoring,
                         DECODE(bitand(ou.flags, 1), 0, 'NO', NULL, 'Unknown', 'YES') Used,
                         TO_DATE(ou.start_monitoring, 'MM/DD/YYYY HH24:MI:SS') Start_Monitoring,
@@ -763,11 +763,6 @@ class DbaSchemaController < ApplicationController
                  JOIN   DBA_Users   u  ON u.UserName  = i.owner
                  JOIN   sys.Obj$    o  ON o.Owner# = u.User_ID AND o.Name = i.Index_Name
                  JOIN   sys.Ind$    io ON io.Obj# = o.Obj#
-                 LEFT OUTER JOIN (SELECT Owner, Segment_Name, SUM(Bytes)/(1024*1024) Size_MB, SUM(Extents) Extents
-                                  FROM   DBA_Segments
-                                  WHERE  Segment_Type LIKE 'INDEX%'
-                                  GROUP BY Owner, Segment_Name
-                                 ) s ON s.Owner = i.Owner AND s.Segment_Name = i.Index_Name
                  LEFT OUTER JOIN DBA_Objects do ON do.Owner = i.Owner AND do.Object_Name = i.Index_Name AND do.Object_Type = 'INDEX'
                  LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ii.Index_Name, MIN(c.Constraint_Name) Constraint_Name
                                   FROM   DBA_Indexes ii
@@ -815,8 +810,18 @@ class DbaSchemaController < ApplicationController
                                   GROUP BY ii.Index_Name
                                  ) mi ON mi.Index_Name = i.Index_Name" if PanoramaConnection.rac?}
                  WHERE  i.Table_Owner = ? AND i.Table_Name = ?
-                ", @owner, @table_name, @owner, @table_name, @owner, @table_name, @owner, @table_name].concat(PanoramaConnection.rac? ? [@owner, @table_name] : [])
+                ",  @owner, @table_name, @owner, @table_name, @owner, @table_name, @owner, @table_name, @owner, @table_name].concat(PanoramaConnection.rac? ? [@owner, @table_name] : [])
 
+    # Selected separately because of long runtime if executed within complex SQL
+    index_sizes = sql_select_all ["\
+      SELECT /*+ NO_MERGE MATERIALIZE */ s.Owner, s.Segment_Name, SUM(s.Bytes)/(1024*1024) Size_MB, SUM(s.Extents) Extents
+      FROM   DBA_Indexes ii
+      JOIN   DBA_Segments s ON s.Owner = ii.Owner AND s.Segment_Name = ii.Index_Name
+      WHERE  s.Segment_Type LIKE 'INDEX%'
+      AND    ii.Table_Owner = ?
+      AND    ii.Table_Name = ?
+      GROUP BY s.Owner, s.Segment_Name
+    ", @owner, @table_name]
 
     if PanoramaConnection.rac?
       @rac_attribs = sql_select_first_row ["SELECT MIN(i.GC_Mastering_Policy) GC_Mastering_Policy,  COUNT(DISTINCT i.GC_Mastering_Policy) GC_Mastering_Policy_Cnt,
@@ -842,6 +847,14 @@ class DbaSchemaController < ApplicationController
         ORDER BY ic.Column_Position", @owner, @table_name]
 
     @indexes.each do |i|
+      # LEFT OUTER JOIN to separately selected sizes
+      index_sizes.each do |s|
+        if s.owner == i.owner && s.segment_name == i.index_name
+          i.size_mb = s.size_mb
+          i.extents = s.extents
+        end
+      end
+
       names = ''
       columns.each do |c|
         names << ", #{c.column_expression ? c.column_expression : c.column_name}" if i.index_name == c.index_name
