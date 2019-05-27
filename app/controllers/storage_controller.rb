@@ -460,17 +460,19 @@ class StorageController < ApplicationController
 
   # Ermittlung und Anzeige der realen Größe
   def list_real_num_rows
-    object_owner = params[:owner]
-    object_name  = params[:name]
-    partition_name = prepare_param(:partition_name)
-    object_type  = params[:object_type]
-    object_type  = 'TABLE' if object_type.nil? || object_type == ''
+    object_owner      = params[:owner]
+    object_name       = params[:name]
+    partition_name    = prepare_param(:partition_name)
+    subpartition_name = prepare_param(:subpartition_name)
+    object_type       = prepare_param(:object_type) || 'TABLE'
 
     case
-      when object_type == 'TABLE' || object_type == 'TABLE PARTITION' then
-        num_rows = sql_select_one ["\
-          SELECT /*+ PARALLEL_INDEX(l,2) */ COUNT(*)
-          FROM   #{object_owner}.\"#{object_name}\" #{"PARTITION (\"#{partition_name}\")" if partition_name} l"]
+    when object_type == 'TABLE' || object_type == 'TABLE PARTITION' then
+        sql = "SELECT /*+ PARALLEL_INDEX(l,2) */ COUNT(*) FROM   #{object_owner}.\"#{object_name}\""
+        sql << " PARTITION (\"#{partition_name}\")"         if partition_name
+        sql << " SUBPARTITION (\"#{subpartition_name}\")"   if subpartition_name
+        sql << " l"
+        num_rows = sql_select_one sql
     when object_type == 'INDEX' then
         raise PopupMessageException.new("Checking index size is not supported for partition level!") if partition_name
         expr = ''
