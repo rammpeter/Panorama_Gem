@@ -176,8 +176,8 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   # close popup dialog if open. May be this dialog hides menu entries
   def close_possible_popup_message
-    close_button = page.first(:css, '.ui-dialog-titlebar .ui-icon-closethick')
-    if !close_button.nil? && close_button.visible?
+    if page.has_css?('.ui-dialog-titlebar .ui-icon-closethick')
+      close_button = page.first(:css, '.ui-dialog-titlebar .ui-icon-closethick')
       close_button.click
       sleep 0.5
     end
