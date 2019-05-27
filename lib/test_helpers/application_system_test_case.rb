@@ -185,8 +185,9 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   # Check if error-dialog has been shown by previous ajax call
   def error_dialog_open?
-    error_dialog = page.first(:css, '#error_dialog')
-    !error_dialog.nil? && error_dialog.visible?
+    # error_dialog = page.first(:css, '#error_dialog')
+    # !error_dialog.nil? && error_dialog.visible?
+    page.has_css?('#error_dialog', visible: true)
   end
 
   def assert_ajax_success(timeout_secs = 60)
@@ -198,8 +199,8 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # Error message "Access denied" called for _management_pack_license = :none ?
   def assert_ajax_success_and_test_for_access_denied(timeout_secs = 60)
     wait_for_ajax(timeout_secs)
-    error_dialog = page.first(:css, '#error_dialog')
-    if  !error_dialog.nil? && error_dialog.visible?
+
+    if  error_dialog_open?
       allowed_msg_content = []
       if management_pack_license != :diagnostics_and_tuning_pack
         allowed_msg_content << 'Sorry, accessing DBA_HIST_Reports requires licensing of Diagnostics and Tuning Pack'
@@ -210,6 +211,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
       end
 
       raise_error = true
+      error_dialog = page.first(:css, '#error_dialog')
       allowed_msg_content.each do |amc|
         raise_error = false if error_dialog.text[amc]                           # No error if dialog contains any of the strings
       end
