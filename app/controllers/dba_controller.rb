@@ -1497,6 +1497,11 @@ Solution: Execute as user 'SYS':
   end
 
   def show_trace_files
+    @instance = sql_select_one "SELECT Instance_Number FROM v$Instance"
+    render_partial
+  end
+
+  def list_trace_files
 
     render_partial
   end
