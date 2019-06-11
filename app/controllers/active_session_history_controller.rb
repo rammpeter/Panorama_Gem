@@ -774,14 +774,12 @@ class ActiveSessionHistoryController < ApplicationController
   end
 
   def list_ash_dependecy_thread
-    @blocking_inst_id           = params[:blocking_inst_id]
-    @blocking_inst_id           = nil if @blocking_inst_id == ''
-
-    @blocking_session           = params[:blocking_session]
-    @blocking_session_serial_no = params[:blocking_session_serial_no]
-    @sample_time                = params[:sample_time]
-    @min_snap_id                = params[:min_snap_id]
-    @max_snap_id                = params[:max_snap_id]
+    @blocked_inst_id           = prepare_param(:blocked_inst_id)
+    @blocked_session           = params[:blocked_session]
+    @blocked_session_serial_no = params[:blocked_session_serial_no]
+    @sample_time               = params[:sample_time]
+    @min_snap_id               = params[:min_snap_id]
+    @max_snap_id               = params[:max_snap_id]
 
     record_modifier = proc{|rec|
       rec['sql_operation'] = translate_opcode(rec.sql_opcode)
@@ -805,7 +803,8 @@ class ActiveSessionHistoryController < ApplicationController
                      WHERE  (v.Min_Sample_Time IS NULL OR h.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
                      AND    h.DBID = ?
                      AND    h.Snap_ID BETWEEN ? AND ?
-                     AND    TRUNC(h.Sample_Time+INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(h.Sample_Time+INTERVAL '5' SECOND, 'SS'))/10)/8640  = TO_DATE(?, '#{sql_datetime_second_mask}')
+                     AND    TRUNC(h.Sample_Time+INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(h.Sample_Time+INTERVAL '5' SECOND, 'SS'))/10)/8640  =
+                            TRUNC(TO_DATE(?, '#{sql_datetime_second_mask}') + INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(TO_DATE(?, '#{sql_datetime_second_mask}') + INTERVAL '5' SECOND, 'SS'))/10)/8640 /* compare rounded to 10 seconds */
                      UNION ALL
                      SELECT 1 Sample_Cycle,
                             CAST(Sample_Time + INTERVAL '0.5' SECOND AS DATE) Rounded_Sample_Time /* auf eine Sekunde genau gerundete Zeit */,
@@ -823,7 +822,7 @@ class ActiveSessionHistoryController < ApplicationController
               CONNECT BY NOCYCLE PRIOR Blocking_Session           = Session_ID
                              AND PRIOR Blocking_Session_Serial_No = Session_Serial_No
                           #{'AND PRIOR Blocking_Inst_ID           = Instance_number ' if get_db_version >= '11.2'}
-              START WITH Session_ID = ? AND Session_Serial_No = ? #{" AND Instance_Number = ?" if @blocking_inst_id}
+              START WITH Session_ID = ? AND Session_Serial_No = ? #{" AND Instance_Number = ?" if @blocked_inst_id}
              ) x
        LEFT JOIN All_Users u ON u.User_ID = x.User_ID
        LEFT OUTER JOIN DBA_Objects o   ON o.Object_ID = CASE WHEN x.P2Text = 'object #' THEN /* Wait kennt Object */ x.P2 ELSE x.Current_Obj_No END
@@ -831,8 +830,8 @@ class ActiveSessionHistoryController < ApplicationController
        LEFT OUTER JOIN procs po  ON po.Object_ID = x.PLSQL_Object_ID        AND po.SubProgram_ID = x.PLSQL_SubProgram_ID
        LEFT OUTER JOIN DBA_Hist_Service_Name sv ON sv.DBID = ? AND sv.Service_Name_Hash = x.Service_Hash
        LEFT OUTER JOIN DBA_Data_Files f ON f.File_ID = x.Current_File_No
-      ", get_dbid, @min_snap_id, @max_snap_id, @sample_time, @sample_time, @blocking_session, @blocking_session_serial_no].
-        concat(@blocking_inst_id ? [@blocking_inst_id] : []).concat([get_dbid]), record_modifier)
+      ", get_dbid, @min_snap_id, @max_snap_id, @sample_time, @sample_time, @sample_time, @blocked_session, @blocked_session_serial_no].
+        concat(@blocked_inst_id ? [@blocked_inst_id] : []).concat([get_dbid]), record_modifier)
 
     render_partial
   end

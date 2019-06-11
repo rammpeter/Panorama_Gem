@@ -122,9 +122,9 @@
          ) + ' ' +
          ajax_submit('Thread', {
           action:                     :list_ash_dependecy_thread,
-          blocking_inst_id:           rec["blocking_inst_id"],
-          blocking_session:           rec.blocking_session,
-          blocking_session_serial_no: rec.blocking_session_serial_no,
+          blocked_inst_id:            rec.instance_number,
+          blocked_session:            rec.session_id,
+          blocked_session_serial_no:  rec.session_serial_no,
           sample_time:                localeDateTime(rec.start_sample_time),
           min_snap_id:                @groupfilter[:Min_Snap_ID],
           max_snap_id:                @groupfilter[:Max_Snap_ID],
