@@ -109,8 +109,7 @@ Solution for such situations is global (not) partitioning of index.'),
                                           AND    Options IN ('UNIQUE SCAN', 'RANGE SCAN', 'RANGE SCAN (MIN/MAX)')
                                           GROUP BY p.Object_Owner, p.Object_Name
                                         ) pl ON pl.Object_Owner = i.Owner AND pl.Object_Name = i.Index_Name
-                      WHERE  p.Partitioning_Type = 'HASH'
-                      AND    c.Column_Name != ic.Column_Name
+                      WHERE  c.Column_Name != ic.Column_Name
                       ORDER BY pl.Rows_Processed DESC NULLS LAST, pl.Executions DESC NULLS LAST, i.Num_Rows DESC NULLS LAST",
         },
 
