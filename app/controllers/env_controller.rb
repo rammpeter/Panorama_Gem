@@ -111,7 +111,10 @@ class EnvController < ApplicationController
       # Einlesen der DBID der Database, gleichzeitig Test auf Zugriffsrecht auf DataDictionary
       # Data for DB versions
       @version_info = sql_select_all "SELECT /* Panorama Tool Ramm */ Banner FROM V$Version"
-      @database_info = sql_select_first_row "SELECT /* Panorama Tool Ramm */ Name, Platform_name, Created, dbtimezone, sessiontimezone, SYSDATE FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
+      @database_info = sql_select_first_row "SELECT /* Panorama Tool Ramm */ Name, Platform_name, Created, dbtimezone, sessiontimezone,
+                                                    SYSTIMESTAMP,       TO_CHAR(SYSTIMESTAMP,       'TZH:TZM') Sys_Offset,
+                                                    CURRENT_TIMESTAMP,  TO_CHAR(CURRENT_TIMESTAMP,  'TZH:TZM') Current_Offset
+                                             FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
 
 
       client_info = sql_select_first_row "SELECT sys_context('USERENV', 'NLS_DATE_LANGUAGE') || '_' || sys_context('USERENV', 'NLS_TERRITORY') NLS_Lang FROM DUAL"
@@ -128,15 +131,23 @@ class EnvController < ApplicationController
         @version_info << ({:banner => "ORACLE_HOME: '#{oracle_home}'" }.extend SelectHashHelper)
       end
 
-      @version_info << ({:banner => "DB timezone offset: #{@database_info.dbtimezone}", :client_info=>"SYSDATE = '#{localeDateTime(@database_info.sysdate)}'" }.extend SelectHashHelper)
 
       @version_info.each {|vi| vi[:client_info] = nil if vi[:client_info].nil? }                         # each row should have this column defined
-      @version_info[0][:client_info] = "JDBC connect string = \"#{PanoramaConnection.jdbc_thin_url}\""                                                                           if @version_info.count > 0
-      @version_info[1][:client_info] = "JDBC driver version = \"#{PanoramaConnection.get_jdbc_driver_version}\""                                                if @version_info.count > 1
-      @version_info[2][:client_info] = "Java client time zone = \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}"  if @version_info.count > 2
-      @version_info[3][:client_info] = "DB client time zone = \"#{@database_info.sessiontimezone}\""                                                                        if @version_info.count > 3
-      @version_info[4][:client_info] = "DB client NLS setting = \"#{client_info.nls_lang}\""                                                                        if @version_info.count > 4
 
+      while @version_info.count < 5 do                                          # Ensure that at least 5 records exist
+        @version_info << ({banner: nil, client_info: nil}.extend SelectHashHelper)
+      end
+
+      @version_info[0][:client_info] = "JDBC connect string = \"#{PanoramaConnection.jdbc_thin_url}\""
+      @version_info[1][:client_info] = "JDBC driver version = \"#{PanoramaConnection.get_jdbc_driver_version}\""
+      @version_info[2][:client_info] = "Java client time zone = \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}"
+      @version_info[3][:client_info] = "DB client time zone = \"#{@database_info.sessiontimezone}\""
+      @version_info[4][:client_info] = "DB client NLS setting = \"#{client_info.nls_lang}\""
+
+      @version_info << ({:banner => "SYSDATE = '#{localeDateTime(@database_info.systimestamp)}' #{@database_info.sys_offset}",
+                         banner_title: "DB timezone offset given at CREATE DATABASE: #{@database_info.dbtimezone}",
+                         :client_info=>"CURRENT_DATE = '#{localeDateTime(@database_info.current_timestamp)}' #{@database_info.current_offset}"
+      }.extend SelectHashHelper)
 
 
       @instance_data = sql_select_all ["SELECT /* Panorama Tool Ramm */ gi.*, i.Instance_Number Instance_Connected,
