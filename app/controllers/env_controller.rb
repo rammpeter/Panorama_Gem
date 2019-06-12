@@ -112,8 +112,8 @@ class EnvController < ApplicationController
       # Data for DB versions
       @version_info = sql_select_all "SELECT /* Panorama Tool Ramm */ Banner FROM V$Version"
       @database_info = sql_select_first_row "SELECT /* Panorama Tool Ramm */ Name, Platform_name, Created, dbtimezone, sessiontimezone,
-                                                    SYSTIMESTAMP,       TO_CHAR(SYSTIMESTAMP,       'TZH:TZM') Sys_Offset,
-                                                    CURRENT_TIMESTAMP,  TO_CHAR(CURRENT_TIMESTAMP,  'TZH:TZM') Current_Offset
+                                                    SYSDATE,       TO_CHAR(SYSTIMESTAMP,       'TZH:TZM') Sys_Offset,
+                                                    CURRENT_DATE,  TO_CHAR(CURRENT_TIMESTAMP,  'TZH:TZM') Current_Offset
                                              FROM v$Database"  # Zugriff ueber Hash, da die Spalte nur in Oracle-Version > 9 existiert
 
 
@@ -144,9 +144,9 @@ class EnvController < ApplicationController
       @version_info[3][:client_info] = "DB client time zone = \"#{@database_info.sessiontimezone}\""
       @version_info[4][:client_info] = "DB client NLS setting = \"#{client_info.nls_lang}\""
 
-      @version_info << ({:banner => "SYSDATE = '#{localeDateTime(@database_info.systimestamp)}' #{@database_info.sys_offset}",
+      @version_info << ({:banner => "SYSDATE = '#{localeDateTime(@database_info.sysdate)}'&nbsp;&nbsp;#{@database_info.sys_offset}",
                          banner_title: "DB timezone offset given at CREATE DATABASE: #{@database_info.dbtimezone}",
-                         :client_info=>"CURRENT_DATE = '#{localeDateTime(@database_info.current_timestamp)}' #{@database_info.current_offset}"
+                         :client_info=>"CURRENT_DATE = '#{localeDateTime(@database_info.current_date)}'&nbsp;&nbsp;#{@database_info.current_offset}"
       }.extend SelectHashHelper)
 
 
