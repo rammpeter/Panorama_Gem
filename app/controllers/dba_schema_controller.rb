@@ -381,6 +381,7 @@ class DbaSchemaController < ApplicationController
     @attribs = sql_select_all ["SELECT t.*, o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, o.Object_ID Table_Object_ID,
                                        m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments,
                                        s.Size_MB_Table, s.Blocks Segment_Blocks, s.Extents
+                                       #{", ct.Clustering_Type, ct.On_Load CT_On_Load, ct.On_DataMovement CT_On_DataMovement, ct.Valid CT_Valid, ct.With_ZoneMap CT_With_Zonemap, ck.Clustering_Keys" if get_db_version >= '12.1'}
                                 FROM DBA_All_Tables t
                                 LEFT OUTER JOIN DBA_Objects o ON o.Owner = t.Owner AND o.Object_Name = t.Table_Name AND o.Object_Type = 'TABLE'
                                 LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
@@ -390,6 +391,11 @@ class DbaSchemaController < ApplicationController
                                                  WHERE  Owner = ? AND Segment_Name = ?
                                                  GROUP BY Owner, Segment_Name
                                                 ) s ON s.Owner = t.Owner AND s.Segment_name = t.Table_Name
+                                #{"LEFT OUTER JOIN DBA_Clustering_Tables ct ON ct.Owner = t.Owner AND ct.Table_Name = t.Table_Name
+                                LEFT OUTER JOIN (SELECT Owner, Table_Name, ListAgg(Detail_Column, ', ') WITHIN GROUP (ORDER BY Position) Clustering_Keys
+                                                 FROM   DBA_Clustering_Keys
+                                                 GROUP BY Owner, Table_Name
+                                                ) ck ON ck.Owner = t.Owner AND ck.Table_Name = t.Table_Name" if get_db_version >= '12.1'}
                                 WHERE t.Owner = ? AND t.Table_Name = ?
                                ", @owner, @table_name, @owner, @table_name]
 
