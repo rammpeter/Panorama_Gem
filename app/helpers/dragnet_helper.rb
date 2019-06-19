@@ -3,7 +3,7 @@
 # Liste der Rasterfahndungs-SQL
 include Dragnet::OptimalIndexStorageHelper
 include Dragnet::UnnecessaryIndexesHelper
-include Dragnet::IndexPartitioningHelper
+include Dragnet::PartitioningHelper
 include Dragnet::InstanceSetupTuning
 include Dragnet::UnusedTablesHelper
 include Dragnet::SqlsPotentialDbStructuresHelper
@@ -59,8 +59,8 @@ module DragnetHelper
                             {  :name    => t(:dragnet_helper_group_unnecessary_indexes, :default => 'Detection of possibly unnecessary indexes'),
                                :entries => unnecessary_indexes
                             },
-                            {  :name    => t(:dragnet_helper_group_index_partitioning, :default => 'Recommendations for index partitioning'),
-                               :entries => index_partitioning
+                            {  :name    => t(:dragnet_helper_group_partitioning, :default => 'Recommendations for partitioning'),
+                               :entries => partitioning
                             },
                             {  :name    => t(:dragnet_helper_group_unused_tables, :default => 'Detection of unused tables or columns'),
                                :entries => unused_tables
