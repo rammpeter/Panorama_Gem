@@ -159,14 +159,14 @@ column_options =
     result << "#{'<br/>' if result.length > 0}Cached =  #{rec.cache}"                                                                     if rec.cache.strip != 'N'
     result << "#{'<br/>' if result.length > 0}Compression = #{rec.compression}#{" (#{rec.compress_for})" if get_db_version >= '12.1'}"    if !(rec.compression.nil? || rec.compression == 'DISABLED' || rec.compression == 'N/A')
     result << "#{'<br/>' if result.length > 0}InMemory = #{rec.inmemory}"                                                                 if get_db_version >= '12.1.0.2' && !(rec.inmemory == 'DISABLED' || rec.inmemory == 'N/A')
-    result << "#{'<br/>' if result.length > 0}Flash Cache = #{rec.flash_cache}"                                                           if get_db_version >= '12.1' && rec.flash_cache != 'DEFAULT'
-    result << "#{'<br/>' if result.length > 0}Cell Flash Cache = #{rec.cell_flash_cache}"                                                 if get_db_version >= '12.1' && rec.cell_flash_cache != 'DEFAULT'
-    result << "#{'<br/>' if result.length > 0}Clustering Type = #{rec.clustering_type}"                                                   if get_db_version >= '12.1' && !rec.clustering_type.nil?
-    result << "#{'<br/>' if result.length > 0}Clustering Keys = #{rec.clustering_keys}"                                                   if get_db_version >= '12.1' && !rec.clustering_keys.nil?
-    result << "#{'<br/>' if result.length > 0}Clustering On Load = #{rec.ct_on_load}"                                                     if get_db_version >= '12.1' && rec.ct_on_load == 'YES'
-    result << "#{'<br/>' if result.length > 0}Clustering On DataMovement = #{rec.ct_on_datamovement}"                                     if get_db_version >= '12.1' && rec.ct_on_datamovement == 'YES'
-    result << "#{'<br/>' if result.length > 0}Clustering With Zonemap = #{rec.ct_with_zonemap}"                                           if get_db_version >= '12.1' && rec.ct_with_zonemap == 'YES'
-    result << "#{'<br/>' if result.length > 0}Clustering Valid = #{rec.ct_valid}"                                                         if get_db_version >= '12.1' && !rec.ct_valid.nil? && rec.ct_valid != 'YES'
+    result << "#{'<br/>' if result.length > 0}Flash Cache = #{rec.flash_cache}"                                                           if get_db_version >= '12.1.0.2' && rec.flash_cache != 'DEFAULT'
+    result << "#{'<br/>' if result.length > 0}Cell Flash Cache = #{rec.cell_flash_cache}"                                                 if get_db_version >= '12.1.0.2' && rec.cell_flash_cache != 'DEFAULT'
+    result << "#{'<br/>' if result.length > 0}Clustering Type = #{rec.clustering_type}"                                                   if get_db_version >= '12.1.0.2' && !rec.clustering_type.nil?
+    result << "#{'<br/>' if result.length > 0}Clustering Keys = #{rec.clustering_keys}"                                                   if get_db_version >= '12.1.0.2' && !rec.clustering_keys.nil?
+    result << "#{'<br/>' if result.length > 0}Clustering On Load = #{rec.ct_on_load}"                                                     if get_db_version >= '12.1.0.2' && rec.ct_on_load == 'YES'
+    result << "#{'<br/>' if result.length > 0}Clustering On DataMovement = #{rec.ct_on_datamovement}"                                     if get_db_version >= '12.1.0.2' && rec.ct_on_datamovement == 'YES'
+    result << "#{'<br/>' if result.length > 0}Clustering With Zonemap = #{rec.ct_with_zonemap}"                                           if get_db_version >= '12.1.0.2' && rec.ct_with_zonemap == 'YES'
+    result << "#{'<br/>' if result.length > 0}Clustering Valid = #{rec.ct_valid}"                                                         if get_db_version >= '12.1.0.2' && !rec.ct_valid.nil? && rec.ct_valid != 'YES'
     result.html_safe
   end
 

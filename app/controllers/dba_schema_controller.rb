@@ -118,7 +118,7 @@ class DbaSchemaController < ApplicationController
         MIN(Max_Extents)                Min_Max_Exts,
         MAX(Max_Extents)                Max_Max_Exts,
         SUM(Max_Extents)                Sum_Max_Exts,
-        #{"CASE WHEN COUNT(DISTINCT InMemory) = 1 THEN MIN(InMemory) ELSE '<'||COUNT(DISTINCT InMemory)||'>' END InMemory," if get_db_version >= '12.1'}
+        #{"CASE WHEN COUNT(DISTINCT InMemory) = 1 THEN MIN(InMemory) ELSE '<'||COUNT(DISTINCT InMemory)||'>' END InMemory," if get_db_version >= '12.1.0.2'}
         SUM(Num_Rows)                   Num_Rows,
         CASE WHEN COUNT(DISTINCT Compression) <= 1 THEN MIN(Compression) ELSE '<several>' END Compression,
         AVG(Avg_Row_Len)                Avg_RowLen,
@@ -147,7 +147,7 @@ class DbaSchemaController < ApplicationController
                s.Bytes,                                         
                s.Initial_Extent, s.Next_Extent, s.Min_Extents, s.Max_Extents,
                o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
-               #{"s.InMemory," if get_db_version >= '12.1'}
+               #{"s.InMemory," if get_db_version >= '12.1.0.2'}
                DECODE(s.Segment_Type,                           
                  'TABLE',              t.Num_Rows,
                  'TABLE PARTITION',    tp.Num_Rows,
@@ -381,7 +381,7 @@ class DbaSchemaController < ApplicationController
     @attribs = sql_select_all ["SELECT t.*, o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, o.Object_ID Table_Object_ID,
                                        m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments,
                                        s.Size_MB_Table, s.Blocks Segment_Blocks, s.Extents
-                                       #{", ct.Clustering_Type, ct.On_Load CT_On_Load, ct.On_DataMovement CT_On_DataMovement, ct.Valid CT_Valid, ct.With_ZoneMap CT_With_Zonemap, ck.Clustering_Keys" if get_db_version >= '12.1'}
+                                       #{", ct.Clustering_Type, ct.On_Load CT_On_Load, ct.On_DataMovement CT_On_DataMovement, ct.Valid CT_Valid, ct.With_ZoneMap CT_With_Zonemap, ck.Clustering_Keys" if get_db_version >= '12.1.0.2'}
                                 FROM DBA_All_Tables t
                                 LEFT OUTER JOIN DBA_Objects o ON o.Owner = t.Owner AND o.Object_Name = t.Table_Name AND o.Object_Type = 'TABLE'
                                 LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen

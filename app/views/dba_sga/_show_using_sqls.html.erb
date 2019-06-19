@@ -6,11 +6,24 @@
     link_sql_id(@update_area, rec.inst_id, rec.sql_id, rec.child_number, rec.parsing_schema_name)
   end
 
+   # build data title for columns cost and cardinality
+   cost_card_data_title = proc do |rec|
+     "%t\n#{"
+ CPU cost = #{fn rec.cpu_cost}"              if rec.cpu_cost}#{"
+ IO cost = #{fn rec.io_cost}"                if rec.io_cost}#{"
+ estimated bytes = #{fn rec.bytes}"          if rec.bytes}#{"
+ estimated time (secs.) = #{fn rec.time}"    if rec.time}#{"
+ partition start = #{rec.partition_start}"   if rec.partition_start}#{"
+ partition stop = #{rec.partition_stop}"     if rec.partition_stop}#{"
+ partition ID = #{rec.partition_id}"         if rec.partition_id}
+     "
+   end
+
 column_options =
 [
   {:caption=>"I",           :data=>proc{|rec| formattedNumber(rec.inst_id)},               :title=>"Instance-ID"},
   {:caption=>"User",        :data=>proc{|rec| rec.parsing_schema_name},                    :title=>"User-name during parse"},
-  {:caption=>"Operation",   :data=>proc{|rec| "#{rec.operation} #{rec.options}"},          :title=>"Operation in explain plan"},
+  {:caption=>"Operation",   :data=>proc{|rec| "#{rec.operation} #{rec.options}"},          :title=>"Operation in explain plan", data_title: cost_card_data_title },
   {:caption=>"Access",      :data=>proc{|rec| my_html_escape(rec.access_predicates)},      :title=>"Access criteria", :data_title=>proc{|rec| "%t:\n#{rec.access_predicates}"},  :max_wrap_width=>300},
   {:caption=>"Search columns", :data=>proc{|rec| fn rec.search_columns},                   :title=>'Number of columns with matching predicates for index scans', :align=>:right},
   {:caption=>'Filter',      :data=>proc{|rec| my_html_escape(rec.filter_predicates)},      :title=>'Filter criteria', :data_title=>proc{|rec| "%t:\n#{rec.filter_predicates}"},  :max_wrap_width=>300},
