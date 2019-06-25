@@ -1479,6 +1479,16 @@
   dragnet_helper_142_param_1_hint:                          Minimale Anzahl unterschiedlicher SQL-IDs je Plan-Hash-Value für Aufnahme in Selektion
   dragnet_helper_142_param_1_name:                          Minimale Anzahl unterschiedlicher SQL-IDs
 
+  dragnet_helper_143_desc: |-
+    Diese Auswahl sucht nach mehrspaltigen Indizes mit einer ersten Spalte mit schwacher Selektivität und einer zweiten Spalte mit starker Selektivität und einem weiteren einspaltigen Index, der mit der gleichen Spalte wie die zweite Spalte des mehrspaltigen Index existiert.
+    Wenn die Spaltenreihenfolge des mehrspaltigen Index geändert werden kann, kann der zusätzliche einspaltige Index obsolet werden.
+  dragnet_helper_143_name: |-
+    Entfernbare Indizes, wenn die Spaltenreihenfolge eines anderen mehrspaltigen Index geändert werden kann
+  dragnet_helper_143_param_1_hint:                          Minimale Anzahl rows per key für die erste Spalte des mehrspaltigen Index
+  dragnet_helper_143_param_1_name:                          Min. rows per key für die erste Spalte des Index
+  dragnet_helper_143_param_2_hint:                          Maximale Anzahl rows per key für die zwite Spalte des mehrspaltigen Index
+  dragnet_helper_143_param_2_name:                          Max. rows per key für die zweite Spalte des Index
+
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 

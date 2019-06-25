@@ -391,6 +391,36 @@ than this index can be removed"),
                     ORDER BY x.Distinct_Keys / DECODE(Table_Partitions, 0, 1, Table_Partitions), x.Num_Rows DESC
                     ",
         },
+        {
+            :name  => t(:dragnet_helper_143_name, :default=> 'Removable indexes if column order of another multi-column index can be changed'),
+            :desc  => t(:dragnet_helper_143_desc, :default=>"This selection looks for multi-column indexes with first column with weak selectivity and second column with strong selectivity and another single-column index existing with the same column like the second column of the multi-column index.
+If column order of the multi-column index can be changed than the additional single-column index may become obsolete."),
+            :sql=> "WITH Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, Owner, Index_Name, Uniqueness, Num_Rows
+                                     FROM   DBA_Indexes
+                                    ),
+                         Ind_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ ic.Index_Owner, ic.Index_Name, ic.Table_Owner, ic.Table_Name, ic.Column_Name, ic.Column_Position, tc.Num_Distinct, tc.Avg_Col_Len
+                                         FROM   DBA_Ind_Columns ic
+                                         JOIN   DBA_Tab_Columns tc ON tc.Owner = ic.Table_Owner AND tc.Table_Name = ic.Table_Name AND tc.Column_Name = ic.Column_Name
+                                         WHERE  tc.Num_Distinct IS NOT NULL /* Check only analyzed tables/indexes*/
+                                         AND    tc.Num_Distinct > 0         /* Suppress division by zero */
+                                        )
+                    SELECT /*+ ORDERED */ i.Table_Owner, i.Table_Name, i.Index_Name Index_To_Change, i.Uniqueness, i.Num_Rows,
+                           ic1.Column_Name Column_1, ic1.Num_Distinct Num_Dictinct_Col_1, ROUND(i.num_rows/ic1.Num_Distinct, 1) Rows_per_Key_Col_1,
+                           ic2.Column_Name Column_2, ic2.Num_Distinct Num_Dictinct_Col_2, ROUND(i.num_rows/ic2.Num_Distinct, 1) Rows_per_Key_Col_2,
+                           ica.Index_Name Index_To_Remove
+                    FROM   Indexes i
+                    JOIN   Ind_Columns ic1 ON ic1.Index_Owner = i.Owner AND ic1.Index_Name = i.Index_Name AND ic1.Column_Position = 1   /* First column of multi-column-index */
+                    JOIN   Ind_Columns ic2 ON ic2.Index_Owner = i.Owner AND ic2.Index_Name = i.Index_Name AND ic2.Column_Position = 2   /* Second column of multi-column-index */
+                    JOIN   Ind_Columns ica ON ica.Table_Owner = i.Table_Owner AND ica.Table_Name = i.Table_Name AND ica.Column_Name = ic2.Column_Name AND ica.Column_Position = 1 /* single-column index with same column as second column of multi-column index*/
+                    WHERE  i.num_rows/ic1.Num_Distinct > ?
+                    AND    i.num_rows/ic2.Num_Distinct < ?
+                    ORDER BY i.Num_Rows * ica.Avg_Col_Len DESC  /* Order by saving after removal of ica-index */
+            ",
+            :parameter=>[
+                {:name=> t(:dragnet_helper_143_param_1_name, :default=>'Min. rows per key for first column of index'), :size=>10, :default=>100000, :title=> t(:dragnet_helper_143_param_1_hint, :default=>'Minimun number of rows per key for first column of multi-column index')},
+                {:name=> t(:dragnet_helper_143_param_2_name, :default=>'Max. rows per key for second column of index'), :size=>10, :default=>1000,  :title=> t(:dragnet_helper_143_param_2_hint, :default=>'Maximun number of rows per key for second column of multi-column index')},
+            ]
+        },
 
     ]
   end # unnecessary_indexes
