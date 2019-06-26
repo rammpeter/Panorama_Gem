@@ -420,6 +420,65 @@ class DbaController < ApplicationController
     render_partial
   end
 
+  def list_redologs_log_history
+    @instance = prepare_param_instance
+    save_session_time_selection  # werte in session puffern
+    @time_groupby = prepare_param(:time_groupby).to_sym
+
+    wherestr = ""
+    whereval = []
+
+    if @instance
+      wherestr << " AND l.Inst_ID = ?"
+      whereval << @instance
+    end
+
+    if @time_groupby == :single
+      @switches = sql_select_iterator ["\
+        SELECT l.*
+        FROM   (SELECT l.*, (LEAD(l.First_Time, 1) OVER (PARTITION BY Thread# ORDER BY l.Sequence#) - l.First_Time) * 86400 Current_Duration_Secs
+                FROM   gv$Log_History l
+                WHERE  Inst_ID = Thread#  /* All instances know about all logs from other instances named by thread#, assuming thread# is equal to inst_id for duplicate entries */
+                #{wherestr}
+               ) l
+        WHERE  First_Time >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND First_Time < TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+        ORDER BY First_Time
+      "].concat(whereval).concat([@time_selection_start, @time_selection_end])
+    else
+      case @time_groupby
+      when :second    then group_by_value = "TO_NUMBER(TO_CHAR(l.First_Time, 'DDD')) * 86400 + TO_NUMBER(TO_CHAR(l.First_Time, 'SSSSS'))"
+      when :second_10 then group_by_value = "TO_NUMBER(TO_CHAR(l.First_Time, 'DDD')) * 8640 + TRUNC(TO_NUMBER(TO_CHAR(l.First_Time, 'SSSSS'))/10)"
+      when :minute    then group_by_value = "TRUNC(l.First_Time, 'MI')"
+      when :minute_10 then group_by_value = "TO_NUMBER(TO_CHAR(l.First_Time, 'DDD')) * 8640 + TRUNC(TO_NUMBER(TO_CHAR(l.First_Time, 'SSSSS'))/600)"
+      when :hour      then group_by_value = "TRUNC(l.First_Time, 'HH24')"
+      when :day       then group_by_value = "TRUNC(l.First_Time)"
+      when :week      then group_by_value = "TRUNC(l.First_Time) + INTERVAL '7' DAY"
+      else
+        raise "Unsupported value for parameter :time_groupby (#{@time_groupby})"
+      end
+
+      @switches = sql_select_iterator ["\
+        SELECT l.*, LEAD(l.Min_First_Time, 1) OVER (ORDER BY l.Min_First_Time) Next_time
+        FROM   (SELECT MIN(First_Time) Min_First_Time, COUNT(DISTINCT Inst_ID) Instances, COUNT(*) Log_Switches,
+                       AVG(Next_Time-First_Time) * 86400    Avg_Current_Duration_Secs,
+                       MIN(Next_Time-First_Time) * 86400    Min_Current_Duration_Secs,
+                       MAX(Next_Time-First_Time) * 86400    Max_Current_Duration_Secs,
+                       SUM(Next_Change# - First_Change#)    SCN_Increments
+                FROM   (SELECT l.*, LEAD(l.First_Time, 1) OVER (PARTITION BY Thread# ORDER BY l.Sequence#) Next_time
+                        FROM   gv$Log_History l
+                        WHERE  Inst_ID = Thread#  /* All instances know about all logs from other instances named by thread#, assuming thread# is equal to inst_id for duplicate entries */
+                        #{wherestr}
+                       ) l
+                WHERE  First_Time >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND First_Time < TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+                GROUP BY #{group_by_value}
+               ) l
+        ORDER BY 1
+      "].concat(whereval).concat([@time_selection_start, @time_selection_end])
+    end
+
+    render_partial
+  end
+
   def list_redologs_historic
     @instance = prepare_param_instance
     @dbid     = prepare_param_dbid

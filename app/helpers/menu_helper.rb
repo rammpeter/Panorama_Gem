@@ -19,8 +19,9 @@ module MenuHelper
             ]
             },
             {:class => 'menu', :caption => 'Redo-Logs', :content => [
-                {:class => 'item', :caption => t(:menu_current_caption, :default => 'Current'), :controller => :dba, :action => 'show_redologs', :hint => t(:menu_dba_redologs_hint, :default => 'Show current redo log info')},
-                {:class => 'item', :caption => t(:menu_historic_caption, :default => 'Historic'), :controller => :dba, :action => 'show_redologs_historic', :hint => t(:menu_dba_redologs_historic_hint, :default => 'Show historic redo log info')},
+                {:class => 'item', :caption => t(:menu_current_caption, :default => 'Current'), :controller => :dba, :action => 'show_redologs', :hint => t(:menu_dba_redologs_hint, :default => 'Show current redo log info from gv$Log')},
+                {:class => 'item', :caption => t(:menu_dba_redologs_log_history_caption, :default => 'Historic from gv$Log_History'), :controller => :dba, :action => :show_redologs_log_history, :hint => t(:menu_dba_redologs_log_history_hint, :default => 'Show detailed historic redo log info from gv$Log_History')},
+                {:class => 'item', :caption => t(:menu_historic_awr_caption, :default => 'Historic from AWR'), :controller => :dba, :action => 'show_redologs_historic', :hint => t(:menu_dba_redologs_historic_hint, :default => 'Show historic redo log info from Active Workload Repository (AWR)')},
             ]
             },
             {:class => 'item', :caption => 'Sessions', :controller => :dba, :action => :show_sessions, :hint => t(:menu_dba_sessions_hint, :default => 'Show info of current DB-sessions')},

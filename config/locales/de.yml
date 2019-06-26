@@ -127,6 +127,7 @@
   active_session_history_list_session_statistic_historic_grouping_link_hint: Anzeige der unterschiedlichen
 
   active_session_history_list_session_statistic_historic_single_record_caption:             Einzel Snapshot-Records für
+  active_session_history_list_session_statistic_historic_single_record_group_minute10_hint: 10 Minuten
   active_session_history_list_session_statistic_historic_single_record_group_no_hint:       Keine (Einzel-Records)
   active_session_history_list_session_statistic_historic_single_record_group_second10_hint: 10 Sekunden
   active_session_history_list_session_statistic_historic_single_record_object_hint: |-
@@ -1613,8 +1614,10 @@
   menu_dba_schema_ts_objects_hint:                          DB-Objekte nach Größe, Auslastung, Verschnitt
   menu_dba_schema_unified_audit_trail_hint:                 Anzeige von per Unified Audit Trail geloggten Aktivitäten
   menu_dba_parameter_hint:                                  Anlistung der aktiven Instance-Parameter
-  menu_dba_redologs_hint:                                   Anlistung der Redo-Logs
-  menu_dba_redologs_historic_hint:                          Anlistung historischer Info der Redo-Logs
+  menu_dba_redologs_hint:                                   Anlistung der Redo-Logs aus gv$Log
+  menu_dba_redologs_historic_hint:                          Anlistung historischer Info der Redo-Logs aus Active Workload Repository (AWR)
+  menu_dba_redologs_log_history_caption:                    Historisch aus gv$Log_History
+  menu_dba_redologs_log_history_hint:                       Anlistung detaillierter historischer Info der Redo-Logs aus gv$Log_History
   menu_dba_server_logs_hint:                                Anlistung des Inhaltes der Server-Logs (alert.log, listener.log, ASM-Log)
   menu_dba_server_traces_hint:                              Anlistung der Trace-Files des DB-Servers
   menu_dba_sessions_hint:                                   Anlistung der aktuellen Session-Info
@@ -1623,6 +1626,7 @@
   menu_dba_temp_usage_hint:                                 Aktuelle Nutzung Temp-Tablespace
 
   menu_historic_caption:                                    Historisch
+  menu_historic_awr_caption:                                Historisch aus AWR
 
   menu_io_iostat_detail_caption:                            I/O-Stat Detail Historie
   menu_io_iostat_detail_hint:                               I/O-Historie basierend auf DBA_Hist_IOStat_Detail
