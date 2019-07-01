@@ -154,13 +154,24 @@ class EnvController < ApplicationController
                                                       (SELECT n.Value FROM gv$NLS_Parameters n WHERE n.Inst_ID = gi.Inst_ID AND n.Parameter='NLS_CHARACTERSET') NLS_CharacterSet,
                                                       (SELECT n.Value FROM gv$NLS_Parameters n WHERE n.Inst_ID = gi.Inst_ID AND n.Parameter='NLS_NCHAR_CHARACTERSET') NLS_NChar_CharacterSet,
                                                       (SELECT p.Value FROM GV$Parameter p WHERE p.Inst_ID = gi.Inst_ID AND LOWER(p.Name) = 'cpu_count') CPU_Count,
-                                                      (SELECT p.Value FROM GV$Parameter p WHERE p.Inst_ID = gi.Inst_ID AND LOWER(p.Name) = 'resource_manager_plan') Resource_Manager_Plan,
+                                                      (SELECT p.Value FROM GV$Parameter p WHERE p.Inst_ID = gi.Inst_ID AND LOWER(p.Name) = 'resource_manager_plan')     Resource_Manager_Plan,
+                                                      s.Num_CPUs, s.Num_CPU_Cores, s.Num_CPU_Sockets, s.Phys_Mem_GB, s.Free_Mem_GB, s.Inactive_Mem_GB,
                                                       d.DBID, d.Open_Mode, d.Protection_Mode, d.Protection_Level, d.Switchover_Status, d.Dataguard_Broker, d.Force_Logging, d.Database_Role,
                                                       ws.Snap_Interval_Minutes, ws.Snap_Retention_Days
                                                       #{", CDB" if get_db_version >= '12.1'}
                                                FROM  GV$Instance gi
                                                CROSS JOIN  v$Database d
                                                LEFT OUTER JOIN v$Instance i ON i.Instance_Number = gi.Instance_Number
+                                               LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Inst_ID,
+                                                                       MAX(DECODE(Stat_Name, 'NUM_CPUS',              Comments||': '||Value))     Num_CPUs,
+                                                                       MAX(DECODE(Stat_Name, 'NUM_CPU_CORES',         Comments||': '||Value))     Num_CPU_Cores,
+                                                                       MAX(DECODE(Stat_Name, 'NUM_CPU_SOCKETS',       Comments||': '||Value))     Num_CPU_Sockets,
+                                                                       MAX(DECODE(Stat_Name, 'PHYSICAL_MEMORY_BYTES', Value)) / (1024*1024*1024)  Phys_Mem_GB,
+                                                                       MAX(DECODE(Stat_Name, 'FREE_MEMORY_BYTES', Value))     / (1024*1024*1024)  Free_Mem_GB,
+                                                                       MAX(DECODE(Stat_Name, 'INACTIVE_MEMORY_BYTES', Value)) / (1024*1024*1024)  Inactive_Mem_GB
+                                                                FROM   gv$OSStat
+                                                                GROUP BY Inst_ID
+                                                               ) s ON s.Inst_ID = gi.Inst_ID
                                                #{
       if PackLicense.diagnostics_pack_licensed?
         "LEFT OUTER JOIN (SELECT DBID, MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM DBA_Hist_WR_Control GROUP BY DBID) ws ON ws.DBID = d.DBID"

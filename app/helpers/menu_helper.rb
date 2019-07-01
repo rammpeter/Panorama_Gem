@@ -84,6 +84,11 @@ module MenuHelper
                 {:class=> 'item', :caption=> 'RAC Blocking Enqueue',  :controller=> 'dba_waits',  :action=> 'show_ges_blocking_enqueue',    :hint=>t(:menu_wait_enqueue_rac_hint, :default=> 'Blocking enqueue locks known by RAC lock-manager') },
                 ]
             },
+            { :class=> 'menu', :caption=>t(:menu_wait_os_caption, :default=> 'OS statistics'), :content=>[
+                {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),             :controller=> 'dba',                  :action=> 'list_os_statistics',             :hint=>t(:menu_wait_os_current_hint, :default=> 'Current statistics of operating system from gv$OSStat') },
+                {:class=> 'item', :caption=>t(:menu_historic_caption, :default=> 'Historic'),           :controller=> 'dba_history',          :action=> 'show_os_statistics',             :hint=>t(:menu_wait_os_historic_hint, :default=> 'Historic statistics of operating system from DBA_Hist_OSStat') },
+            ]
+            },
             {:class=> 'item', :caption=>t(:menu_wait_resource_limits_historic_caption, :default=> 'Resource limits historic'),      :controller=> 'dba_history',  :action=> 'show_resource_limits_historic',    :hint=>t(:menu_wait_resource_limits_historic_hint, :default=> 'Historic resource usage and resource limits from DBA_Hist_Resource_Limit') },
             { :class=> 'menu', :caption=> 'Genuine Oracle AWR-reports', :content=>[
                 {:class=> 'item', :caption=>'Performance Hub',            :controller=>:dba_history,    :action=> 'show_performance_hub_report',     :hint=>'Genuine Oracle performance hub report by time period and instance', min_db_version: '12.1'  },

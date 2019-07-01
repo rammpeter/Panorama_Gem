@@ -2380,4 +2380,68 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     end
   end
 
+  def list_os_statistics_historic
+    save_session_time_selection   # werte in session puffern
+    @instance  = prepare_param_instance
+
+    osstats = sql_select_iterator ["\
+      SELECT ROUND(Begin_Interval_Time, 'MI') Rounded_Begin_Interval_Time, MIN(Begin_Interval_Time) Min_Begin_Interval_Time, MAX(End_Interval_Time) Max_End_Interval_Time, Stat_Name, SUM(Value) Value
+      FROM   (SELECT ssi.Begin_Interval_Time, ssi.End_Interval_Time, REPLACE(s.Stat_Name, '_', ' ') Stat_Name, ss.Min_Snap_ID, s.Snap_ID,
+                     DECODE(#{get_db_version >= '11.2' ? "vs.cumulative" : "'NO'"}, 'YES',
+                                s.Value - LAG(s.Value, 1, s.Value) OVER (PARTITION BY s.Instance_Number, s.Stat_Name ORDER BY s.Snap_ID),
+                                s.Value
+                     ) Value
+              FROM   DBA_Hist_OSStat s
+              JOIN   (SELECT DBID, Instance_Number, MIN(Snap_ID) Min_Snap_ID, MAX(Snap_ID) Max_Snap_ID
+                      FROM   DBA_Hist_Snapshot
+                      WHERE  DBID = ?
+                      AND    Begin_Interval_Time >= TO_DATE(?, '#{sql_datetime_minute_mask}')
+                      AND    End_Interval_Time    < TO_DATE(?, '#{sql_datetime_minute_mask}')
+                      #{"AND Instance_Number = ?" if @instance}
+                      GROUP BY DBID, Instance_Number
+                     )ss ON ss.DBID = s.DBID AND ss.Instance_Number = s.Instance_Number
+              LEFT OUTER JOIN   v$OSStat vs ON vs.Stat_Name = s.Stat_Name /* Check for cumulative */
+              JOIN   DBA_Hist_Snapshot ssi ON ssi.DBID = s.DBID AND ssi.Instance_Number = s.Instance_Number AND ssi.Snap_ID = s.Snap_ID
+              WHERE   s.Snap_ID >= ss.Min_Snap_ID - 1 /* Including one previous record for LAG */
+              AND     s.Snap_ID <= ss.Max_Snap_ID
+             )
+      WHERE  Snap_ID >= Min_Snap_ID  /* Filter first Snap_ID that is only used for LAG */
+      GROUP BY ROUND(Begin_Interval_Time, 'MI'), Stat_Name
+      ORDER BY 1, Stat_Name
+    ", get_dbid, @time_selection_start, @time_selection_end].concat(@instance ? [@instance] : [])
+
+    osstats_pivot = {}
+    stat_names = {}
+
+    osstats.each do |o|
+      unless osstats_pivot.has_key?(o.rounded_begin_interval_time)
+        osstats_pivot[o.rounded_begin_interval_time] = {
+            rounded_begin_interval_time:  o.rounded_begin_interval_time,
+            min_begin_interval_time:      o.min_begin_interval_time,
+            max_end_interval_time:        o.max_end_interval_time,
+        }
+        osstats_pivot[o.rounded_begin_interval_time].extend(SelectHashHelper)
+      end
+
+      osstats_pivot[o.rounded_begin_interval_time][o.stat_name] = o.value
+      stat_names[o.stat_name] = { stat_name: o.stat_name}                       # register stat_name as used
+    end
+
+    if get_db_version >= '11.2'
+      sql_select_all("SELECT REPLACE(Stat_Name, '_', ' ') Stat_Name, Comments, Cumulative FROM v$OSStat").each do |s|
+        if stat_names.has_key?(s.stat_name)
+          stat_names[s.stat_name][:comments]    = s.comments
+          stat_names[s.stat_name][:cumulative]  = s.cumulative
+        end
+      end
+    end
+
+
+
+    @osstats    = osstats_pivot.values
+    @stat_names = stat_names.values
+
+    render_partial
+  end
+
 end #DbaHistoryController

@@ -256,6 +256,15 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
     assert_response management_pack_license == :none ? :error : :success
   end
 
+  test "list_osstat_historic with xhr: true" do
+    post '/dba_history/list_osstat_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_start }
+    assert_response management_pack_license == :none ? :error : :success
+
+    post '/dba_history/list_osstat_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_start, :instance=>1 }
+    assert_response management_pack_license == :none ? :error : :success
+  end
+
+
   test "list_compare_sql_area_historic with xhr: true" do
     if @hist_sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
       Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'

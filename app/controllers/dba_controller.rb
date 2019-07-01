@@ -1565,4 +1565,9 @@ Solution: Execute as user 'SYS':
     render_partial
   end
 
+  def list_os_statistics
+    @osstats = sql_select_iterator "SELECT * FROM gv$OSStat ORDER BY Stat_Name, Inst_ID"
+    render_partial
+  end
+
 end # Class

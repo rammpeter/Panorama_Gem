@@ -1714,6 +1714,9 @@
   menu_wait_longterm_trend_hint:                            Aufzeichnungen des Langzeit-Trends der Session-Waits
   menu_wait_mutex_caption:                                  Mutex-Statistiken
   menu_wait_mutex_historic_hint:                            Aufbereitete historische Informationen aus GV$Mutex_Sleep_History seit Start der Instance
+  menu_wait_os_caption:                                     OS-Statistiken
+  menu_wait_os_current_hint:                                Aktuelle Statistiken des Operating Systems aus gv$OSStat
+  menu_wait_os_historic_hint:                               Historische Statistiken des Operating Systems aus DBA_Hist_OSStat
   menu_wait_rac:                                            RAC-bezogene Analysen
   menu_wait_resource_limits_historic_caption:               Ressourcen-Limits historisch
   menu_wait_resource_limits_historic_hint:                  Historische Nutzung und Limits von Ressourcen aus DBA_Hist_Resource_Limit

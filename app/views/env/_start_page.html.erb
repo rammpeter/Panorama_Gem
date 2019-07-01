@@ -10,7 +10,16 @@
 
 
 
-<% column_options =
+<%
+  cpu_count_data_title = proc do |rec|
+    "%t\n#{rec.num_cpus}\n#{rec.num_cpu_cores}\n#{rec.num_cpu_sockets}"
+  end
+
+  phys_mem_data_title = proc do |rec|
+    "%t#{"\nPhysical free memory = #{fn(rec.free_mem_gb, 3)} GB" unless rec.free_mem_gb.nil?}#{"\nPhysical inactive memory = #{fn(rec.inactive_mem_gb, 3)} GB" unless rec.inactive_mem_gb.nil?}"
+  end
+
+  column_options =
        [
            {:caption=>'DBID',          :data=>proc{|rec| rec.dbid },                           :title=>"Unique identifier for this database"},
            {:caption=>"Instance",      :data=>proc{|rec| "#{rec.instance_number}#{" (*)" if rec.instance_connected && @instance_data.length >1}" },       :title=>"Instance number, (*) for connecting instance"},
@@ -21,7 +30,8 @@
            {:caption=>"Character-set", :data=>proc{|rec| rec.nls_characterset },               :title=>"Character set of database", :data_title=>proc{|rec| "%t: NChar_Character_Set=#{rec.nls_nchar_characterset}"}},
            {:caption=>'Database role', :data=>proc{|rec| rec.database_role },                  :title=>"Database role for data guard\nCan be one of the following:\n- SNAPSHOT STANDBY\n- LOGICAL STANDBY\n- PHYSICAL STANDBY\n- PRIMARY\n- FAR SYNC"},
            {:caption=>"Instance role", :data=>proc{|rec| rec["instance_role"] },               :title=>"Instance role for data guard"},
-           {:caption=>"CPU-Count",     :data=>proc{|rec| rec.cpu_count },                      :title=>"Number of CPUs counted for instance"},
+           {:caption=>"CPU-Count",     :data=>proc{|rec| rec.cpu_count },                      :title=>"Number of CPUs counted for instance (from gv$Parameter)", data_title: cpu_count_data_title, align: :right},
+           {:caption=>"Phys. memory (GB)", :data=>proc{|rec| fn(rec.phys_mem_gb, 3) },         :title=>"Physical server memory in Gigabyte (from gv$OSStat)", data_title: phys_mem_data_title, align: :right},
            {:caption=>"Resource manager plan", :data=>proc{|rec| rec.resource_manager_plan },  :title=>"Resource manager plan that is currently active.\nEmpty if resource manager is deactivated."},
            {:caption=>"Protection mode", :data=>proc{|rec| rec.protection_mode },              :title=>"Protection mode currently in effect for the database.\nLook at DB-parameter \"log_archive_dest_n\" to recognize what sync-mode is used for standby configuration (SYNC or NOSYNC, AFFIRM or NOAFFIRM).",  :data_title=>proc{|rec| "%t\nProtection level = #{rec.protection_level}"}},
            {:caption=>"Switchover status", :data=>proc{|rec| rec.switchover_status },          :title=>"Indicates whether switchover is allowed", :data_title=>proc{|rec| "%t\n#{explain_switchover_status(rec.switchover_status)}"}  },
