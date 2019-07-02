@@ -54,6 +54,13 @@ class DbaControllerTest < ActionController::TestCase
 
     post :list_blocking_dml_locks, :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
+
+    post :list_pending_two_phase_commits, :params => {:format=>:html, :update_area=>:hugo }
+    assert_response :success
+
+    post :list_2pc_neighbors, :params => {:format=>:html, local_tran_id: '100', :update_area=>:hugo }
+    assert_response :success
+
   end
 
   test "list_sessions with xhr: true" do

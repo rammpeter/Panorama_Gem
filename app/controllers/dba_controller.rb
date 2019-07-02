@@ -228,6 +228,13 @@ class DbaController < ApplicationController
     render_partial
   end
 
+  def list_2pc_neighbors
+    @local_tran_id = prepare_param(:local_tran_id)
+
+    @neighbors = sql_select_iterator ["SELECT * FROM DBA_2PC_Neighbors WHERE Local_Tran_ID = ?", @local_tran_id]
+    render_partial
+  end
+
   def convert_to_rowid
     @data_object_id = params[:data_object_id]
 

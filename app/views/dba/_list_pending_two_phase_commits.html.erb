@@ -1,7 +1,21 @@
 <%
+  @update_area = get_unique_area_id
+
+  link_local_tran = proc do |rec|
+    ajax_link(rec.local_tran_id, {
+               action:        :list_2pc_neighbors,
+               local_tran_id: rec.local_tran_id,
+               update_area:   @update_area
+              },
+       title: 'List affected neighbors of this local transaction'
+     )
+  end
+
+
+
   column_options =
       [
-          {:caption=>"Local Transaction",  :data=>proc{|rec| rec.local_tran_id },                        :title=>"Local Transaction-ID"},
+          {:caption=>"Local Transaction",  :data=>link_local_tran,                                       :title=>"Local Transaction-ID"},
           {:caption=>"Global Transaction", :data=>proc{|rec| rec.global_tran_id },                       :title=>"Global Transaction-ID\nThis ID can be used to manually commit the pending transaction by executing as SYSDBA:\nCOMMIT FORCE '<global transaction id>';"},
           {:caption=>"State",              :data=>proc{|rec| rec.state },                                :title=>"Status"},
           {:caption=>"Mixed",              :data=>proc{|rec| rec.mixed },                                :title=>""},
@@ -25,3 +39,4 @@
 })
 %>
 
+<div id="<%= @update_area %>"></div>
