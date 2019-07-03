@@ -11,12 +11,20 @@
      )
   end
 
+  fix_data_title = proc do |rec|
+    result = "%t\n"
+    result << "To fix this pending transaction execute as SYSDBA\n"
+    result << "COMMIT FORCE '#{rec.global_tran_id}';                           -- if Status != 'committed'"
+    result << "EXEC DBMS_TRANSACTION.PURGE_LOST_DB_ENTRY('#{local_tran_id}');  -- if Status == 'committed'"
+    result
+  end
+
 
 
   column_options =
       [
-          {:caption=>"Local Transaction",  :data=>link_local_tran,                                       :title=>"Local Transaction-ID"},
-          {:caption=>"Global Transaction", :data=>proc{|rec| rec.global_tran_id },                       :title=>"Global Transaction-ID\nThis ID can be used to manually commit the pending transaction by executing as SYSDBA:\nCOMMIT FORCE '<global transaction id>';"},
+          {:caption=>"Local Transaction",  :data=>link_local_tran,                                       :title=>"Local Transaction-ID",  data_title: fix_data_title},
+          {:caption=>"Global Transaction", :data=>proc{|rec| rec.global_tran_id },                       :title=>"Global Transaction-ID", data_title: fix_data_title},
           {:caption=>"State",              :data=>proc{|rec| rec.state },                                :title=>"Status"},
           {:caption=>"Mixed",              :data=>proc{|rec| rec.mixed },                                :title=>""},
           {:caption=>"Advice",             :data=>proc{|rec| rec.advice },                               :title=>""},
@@ -33,7 +41,7 @@
 
 %>
 <%= gen_slickgrid(@dist_locks, column_options, {
-    :caption =>  "Pending two-phase commits (DBA_2PC_Pending), see mouseover hint for column global transaction",
+    :caption =>  "Pending two-phase commits (DBA_2PC_Pending), see mouseover hint for columns local and global transaction",
     :max_height=>450,
     show_pin_icon: 1
 })
