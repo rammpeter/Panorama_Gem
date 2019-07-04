@@ -884,6 +884,8 @@
     Bei größerem Abstand der Ermittlung von analyze-Info hilft u.g. Statement zum Ermitteln von Lücken im Housekeeping.
     Es werden ausgewiesen die Inserts und Updates seit der letzten Tabellen-Analyse für Tabellen ohne Deletes.
   dragnet_helper_65_name:                                   Fehlendes Housekeeping bei Massendaten
+  dragnet_helper_65_param_1_hint:                           Minimale Anzahl Records einer Tabelle für Berücksichtigung in der Selektion
+  dragnet_helper_65_param_1_name:                           Minimale Anzahl Records einer Tabelle
 
   dragnet_helper_66_desc: |-
     Ungenutzte Spalten, die nur NULL-Werte enthalten, können möglicherweise entfernt werden.

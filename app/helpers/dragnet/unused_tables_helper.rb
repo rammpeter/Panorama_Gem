@@ -81,7 +81,10 @@ Stated here are inserts and updates since last GATHER_TABLE_STATS for tables wit
                                       ) s ON s.Owner = t.Owner AND s.Segment_Name = t.Table_Name
                       WHERE m.Deletes = 0 AND m.Truncated = 'NO'
                       AND   t.Last_Analyzed < SYSDATE    /* avoid division by zero */
+                      AND   t.Num_Rows > ?
                       ORDER BY (m.Inserts+m.Updates)/(SYSDATE - t.Last_Analyzed) * s.Size_MB DESC NULLS LAST",
+            :parameter=>[{:name=> t(:dragnet_helper_65_param_1_name, :default=>'Minimum number of records of table'), :size=>12, :default=>100000, :title=> t(:dragnet_helper_65_param_1_hint, :default=>'Number of records of table for consideration in selection')},
+            ]
         },
         {
             :name  => t(:dragnet_helper_128_name, :default=>'Tables without write access (DML) since last analysis'),
@@ -156,7 +159,7 @@ May be it their value is redundant to other columns of that table. In this case 
                       JOIN   DBA_Tables t ON t.Owner = c.Owner AND t.Table_Name = c.Table_Name
                       WHERE  NVL(c.Num_Distinct,0) > 0
                       AND    NVL(c.Num_Distinct,0) <= ?
-                      AND    (c.Num_Nulls > 0 OR UPPER(?) = 'YES')
+                      AND    (c.Num_Nulls = 0 OR UPPER(?) = 'YES')
                       AND    NVL(t.Num_Rows,0) > ?
                       AND    c.Owner NOT IN ('SYS', 'SYSTEM', 'WMSYS')
                       ORDER BY c.Num_Distinct, t.Num_Rows DESC NULLS LAST",
@@ -177,12 +180,9 @@ May be it their value is redundant to other columns of that table. In this case 
         {
             :name  => 'Dropped tables in recycle bin',
             :desc  => "Use 'PURGE RECYCLEBIN' to free space of dropped tables from recycle bin",
-            :sql=> "SELECT s.Size_MB, r.*
+            :sql=> "SELECT ROUND(r.Space * t.Block_Size / (1024*1024), 3) Size_MB, r.*
                     FROM   DBA_RecycleBin r
-                    LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(Bytes)/(1024*1024) Size_MB
-                                     FROM   DBA_Segments
-                                     GROUP BY Owner, Segment_Name
-                                    ) s ON s.Owner = r.Owner AND s.Segment_Name = r.Object_Name
+                    LEFT OUTER JOIN DBA_Tablespaces t ON t.TableSpace_Name = r.TS_Name
                     ORDER BY Size_MB DESC NULLS LAST",
         },
         {

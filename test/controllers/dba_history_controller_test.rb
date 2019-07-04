@@ -256,11 +256,11 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
     assert_response management_pack_license == :none ? :error : :success
   end
 
-  test "list_osstat_historic with xhr: true" do
-    post '/dba_history/list_osstat_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_start }
+  test "list_os_statistics_historic with xhr: true" do
+    post '/dba_history/list_os_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_start }
     assert_response management_pack_license == :none ? :error : :success
 
-    post '/dba_history/list_osstat_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_start, :instance=>1 }
+    post '/dba_history/list_os_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_start, :instance=>1 }
     assert_response management_pack_license == :none ? :error : :success
   end
 
