@@ -437,12 +437,12 @@ class PanoramaConnection
     Thread.current[:panorama_connection_connection_object].unregister_sql_execution
   end
 
-  def self.commit
-    PanoramaConnection.get_connection.commit;
+  def self.commit                                                               # only relevant if autocommit is switched off
+    PanoramaConnection.get_connection.commit
   end
 
   def self.rollback
-    PanoramaConnection.get_connection.rollback;
+    PanoramaConnection.get_connection.rollback                                  # only relevant if autocommit is switched off
   end
 
   def self.get_connection

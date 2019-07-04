@@ -49,7 +49,6 @@ class PanoramaSamplerSampling
     PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config.get_owner}.Panorama_Snapshot (Snap_ID, DBID, Instance_Number, Startup_Time, Begin_Interval_Time, End_Interval_Time, Con_ID
                                     ) SELECT ?, ?, ?, Startup_Time, ?, SYSDATE, ? FROM v$Instance",
                                     @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, begin_interval_time, PanoramaConnection.con_id]
-    PanoramaConnection.commit
 
     do_snapshot_call = "Do_Snapshot(p_Snap_ID                   => ?,
                                     p_Instance                  => ?,
@@ -91,7 +90,6 @@ class PanoramaSamplerSampling
                                     @sampler_config.get_sql_min_no_of_execs,
                                     @sampler_config.get_sql_min_runtime_millisecs
                                    ]
-    PanoramaConnection.commit                                                   # Ensure all actions in transaction before are committed
   end
 
   def do_awr_housekeeping(shrink_space)
@@ -109,7 +107,6 @@ class PanoramaSamplerSampling
       PanoramaSamplerStructureCheck.tables.each do |table|
         if table[:domain] == :AWR && PanoramaSamplerStructureCheck.has_column?(table[:table_name], 'Snap_ID')
           execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.#{table[:table_name]} WHERE DBID = ? AND Instance_Number = ? AND Snap_ID <= ?", PanoramaConnection.dbid, PanoramaConnection.instance_number, max_snap_id]
-          PanoramaConnection.commit
         end
       end
     end
@@ -123,7 +120,6 @@ class PanoramaSamplerSampling
                                                  AND    s.Con_DBID  = ?
                                                 )
                           ", PanoramaConnection.dbid, con_dbid, PanoramaConnection.dbid, con_dbid]
-    PanoramaConnection.commit
 
     execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.Panorama_SQLText t
                            WHERE  DBID      = ?
@@ -133,7 +129,6 @@ class PanoramaSamplerSampling
                                                  AND    s.Con_DBID  = ?
                                                 )
                           ", PanoramaConnection.dbid, con_dbid, PanoramaConnection.dbid, con_dbid]
-    PanoramaConnection.commit
 
     if shrink_space
       PanoramaSamplerStructureCheck.tables.each do |table|
