@@ -760,6 +760,30 @@ class PanoramaSamplerStructureCheck
           indexes: [ {index_name: 'Panorama_Object_Sizes_Gather', columns: ['Gather_Date'], compress: 1 } ]
       },
       {
+          table_name: 'Internal_OSStat',
+          domain: :AWR,
+          columns: [
+              { column_name:  'SNAP_ID',                        column_type:  'NUMBER',  not_null: true },
+              { column_name:  'DBID',                           column_type:  'NUMBER',  not_null: true },
+              { column_name:  'INSTANCE_NUMBER',                column_type:  'NUMBER',  not_null: true },
+              { column_name:  'Stat_ID',                        column_type:  'NUMBER',  not_null: true },
+              { column_name:  'Value',                          column_type:  'NUMBER' },
+              { column_name:  'CON_DBID',                       column_type:  'NUMBER',  not_null: true },
+          ],
+          primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'STAT_ID', 'CON_DBID'], compress: 3 },
+      },
+      {
+          table_name: 'Panorama_OSStat_Name',
+          domain: :AWR,
+          columns: [
+              { column_name:  'DBID',                           column_type:  'NUMBER',  not_null: true },
+              { column_name:  'Stat_ID',                        column_type:  'NUMBER',  not_null: true },
+              { column_name:  'Stat_Name',                      column_type:  'VARCHAR2', precision: 128,  not_null: true },
+              { column_name:  'CON_DBID',                       column_type:  'NUMBER',  not_null: true },
+          ],
+          primary_key: { columns: ['DBID', 'STAT_ID', 'CON_DBID'], compress: 1 },
+      },
+      {
           table_name: 'Panorama_Parameter',
           domain: :AWR,
           columns: [
@@ -1381,6 +1405,14 @@ ORDER BY Column_ID
                                       f.OPTIMIZED_PHYBLKRD, f.CON_DBID, f.CON_ID
                                FROM   Internal_FileStatXS f
                                JOIN   Panorama_DataFile d ON d.DBID = f.DBID AND d.File# = f.File# AND d.Creation_Change# = f.Creation_Change# AND d.Con_DBID = f.Con_DBID
+                              "}
+        },
+        {
+            view_name: 'Panorama_OSStat',
+            domain: :AWR,
+            view_select: proc{"SELECT s.Snap_ID, s.DBID, s.Instance_Number, s.STAT_ID, n.Stat_Name, s.Value, s.CON_DBID, 0 CON_ID
+                               FROM   Internal_OSStat s
+                               JOIN   Panorama_OSStat_Name n ON n.DBID = s.DBID AND n.Stat_ID = s.Stat_ID
                               "}
         },
         {

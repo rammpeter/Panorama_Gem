@@ -437,6 +437,13 @@ class PanoramaConnection
     Thread.current[:panorama_connection_connection_object].unregister_sql_execution
   end
 
+  def commit
+    PanoramaConnection.get_connection.commit;
+  end
+
+  def rollback
+    PanoramaConnection.get_connection.rollback;
+  end
 
   def self.get_connection
     check_for_open_connection
