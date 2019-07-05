@@ -16,8 +16,8 @@
      {:caption=>"ID",           :data=>proc{|rec| rec.id },                     :title=>"ID der Operation", :data_title=>proc{|rec| "Parent_ID=#{rec.parent_id}" }, :align=>:right  },
      {:caption=>"Object name",  :data=>proc{|rec| "#{rec.object_owner}.#{rec.object_name}" },  :title=>"Name des Objekts", :data_title=>proc{|rec| "Type=#{rec.object_type}" }  },
      {:caption=>"Parallel",     :data=>proc{|rec| rec.parallel_short },         :title=>"Parallelisierung (Other_Tag)", :data_title=>proc{|rec| rec.parallel }  },
-     {:caption=>"Access",       :data=>proc{|rec| html_escape rec.access_predicates },      :title=>"Zugrifskriterium auf Objekt",  :max_wrap_width=>200, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape rec.access_predicates}"} },
-     {:caption=>"Filter",       :data=>proc{|rec| html_escape rec.filter_predicates },      :title=>"Filterkriterium für Objekt",   :max_wrap_width=>200, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape rec.filter_predicates}"} },
+     {:caption=>"Access",       :data=>proc{|rec| my_html_escape rec.access_predicates },      :title=>"Zugrifskriterium auf Objekt",  :max_wrap_width=>200, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{my_html_escape rec.access_predicates}"} },
+     {:caption=>"Filter",       :data=>proc{|rec| my_html_escape rec.filter_predicates },      :title=>"Filterkriterium für Objekt",   :max_wrap_width=>200, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{my_html_escape rec.filter_predicates}"} },
    ]
 
    column_options.each do |c|

@@ -28,7 +28,7 @@
   end
 
   show_projektion = proc do |rec|
-    result = html_escape expand_compare_spaces(rec.projection)
+    result = my_html_escape expand_compare_spaces(rec.projection)
     unless result.nil?
       "#{result[0,10]}#{'...' if result.length > 10}"
     end
@@ -45,11 +45,11 @@
           { caption: "Cost",          data: proc{|rec| fn(rec.cost) },                                title: "Costs calculated by optimizer + additional optimizer calculations", :align=>:right, :data_title=>proc{|rec| cost_card_data_title(rec)} },
           { caption: 'Card.',         data: proc{|rec| fn(rec.cardinality) },                         title: 'Estimated number of rows produced by the operation', :align=>:right, :data_title=>proc{|rec| cost_card_data_title(rec)} },
           { caption: "Parallel",      data: proc{|rec| parallel_short(rec) },                         title: "Parallelization (from Other_Tag)", data_title: proc{|rec| "%t\n#{rec.other_tag}"} },
-          { caption: "Access",        data: proc{|rec| html_escape expand_compare_spaces(rec.access_predicates) },   title: 'Access criteria for data object', :max_wrap_width=>500, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape rec.access_predicates}#{"\nNumber of index columns with matching predicates = #{rec.search_columns}" if rec.search_columns }"} },
-          { caption: "Filter",        data: proc{|rec| html_escape expand_compare_spaces(rec.filter_predicates) },   title: 'Filter criteria for data object (after access)',  :max_wrap_width=>500, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape rec.filter_predicates}"} },
+          { caption: "Access",        data: proc{|rec| my_html_escape expand_compare_spaces(rec.access_predicates) },   title: 'Access criteria for data object', :max_wrap_width=>500, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{my_html_escape rec.access_predicates}#{"\nNumber of index columns with matching predicates = #{rec.search_columns}" if rec.search_columns }"} },
+          { caption: "Filter",        data: proc{|rec| my_html_escape expand_compare_spaces(rec.filter_predicates) },   title: 'Filter criteria for data object (after access)',  :max_wrap_width=>500, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{my_html_escape rec.filter_predicates}"} },
           { caption: 'Temp est.',     data: proc{|rec| fn(rec.temp_space.to_f/(1024*1024)) },                      title: "Temp-space in MB (estimated forecast by optimizer)", :align=>:right},
           { caption: "Distribution",  data: proc{|rec| rec.distribution},                             title: "Strategy of PQ-distribution"},
-          { caption: "Proj.",         data: show_projektion,                                          title: "Projection: table- and index-columns gotten by this operation", :max_wrap_width=>80, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{html_escape expand_compare_spaces(rec.projection)}"} },
+          { caption: "Proj.",         data: show_projektion,                                          title: "Projection: table- and index-columns gotten by this operation", :max_wrap_width=>80, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{my_html_escape expand_compare_spaces(rec.projection)}"} },
       ]
 %>
 
