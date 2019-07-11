@@ -63,7 +63,7 @@
     {:caption=>"Auto purge",    :data=>proc{|rec| rec.autopurge},                       :title=>"autopurge status of plan baseline" },
     {:caption=>'Optim. costs',  :data=>proc{|rec| fn(rec.optimizer_cost)},              :title=>"Optimizer cost at the time the plan baseline was created", :align=>:right },
     {:caption=>'Usages in SGA', :data=>link_sql_id,                                     :title=>"Number of current usage of this baseline in SGA (by gv$SQLArea.SQL_Plan_Baseline)\nand SQL-ID of one usage", :align=>:right },
-    {:caption=>"SQL",           :data=>link_sql_text,                                   :title=>"Un-normalized SQL text" },
+    {:caption=>"SQL",           :data=>link_sql_text,                                   :title=>"Un-normalized SQL text (first 30 characters)" },
     {:caption=>"Hints",         :data=>link_comp_data,                                  :title=>"Number of optimizer-hints of plan baseline" },
     {:caption=>'Module',        :data=>proc{|rec| rec.module},                          :title=>"Module at plan create" },
     {:caption=>'Action',        :data=>proc{|rec| rec.action},                          :title=>"Action at plan create" },

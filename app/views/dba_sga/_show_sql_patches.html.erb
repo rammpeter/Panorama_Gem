@@ -28,7 +28,7 @@
   column_options << {:caption=>'Name',                :data=>proc{|rec| rec.name},                              :title=>"Name of the SQL patch"}
   column_options << {:caption=>'Category',            :data=>proc{|rec| rec.category},                          :title=>"Category of the SQL patch"}
   column_options << {:caption=>'Signature',           :data=>proc{|rec| fn rec.signature},                      :title=>"Unique identifier generated from normalized SQL text", align: :right}
-  column_options << {:caption=>'SQL text',            :data=>link_sql_text,                                     :title=>"Un-normalized SQL text"}
+  column_options << {:caption=>'SQL text',            :data=>link_sql_text,                                     :title=>"Un-normalized SQL text (first 40 characters)"}
   column_options << {:caption=>'Optimizer hint',      :data=>show_comp_data,                                    :title=>"Optimizer hint text(s) extracted from outline_data XML structure", data_title: proc{|rec| "%t\n\nOriginal outline data:\n#{rec.comp_data}"}}
   column_options << {:caption=>'Created',             :data=>proc{|rec| localeDateTime rec.created},            :title=>"Timestamp when the SQL patch was created"}
   column_options << {:caption=>'Last modified',       :data=>proc{|rec| localeDateTime rec.last_modified},      :title=>"Timestamp when the SQL patch was last modified"}
