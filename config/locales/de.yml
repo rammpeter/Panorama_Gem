@@ -1401,7 +1401,7 @@
     Die Abfrage sucht über identische Ausführungspläne per Plan-Hash-Value aus Active Session History.
     Die Nutzung von force-matching-signature anstatt plan-hash-value für die Erkennung ist riskant, da ASH oft ungenaue Werte sampelt für for force-matching-signature.
   dragnet_helper_133_name: |-
-    Fehlende Nutzung von Bindevariablen: Ermittlung über identische Plan-Hash-Values aus Active Session History
+    Fehlende Nutzung von Bindevariablen: Ermittlung über identische Plan-Hash-Values aus SGA und Active Session History
   dragnet_helper_133_param_1_hint:                          Minimale Anzahl unterschiedlicher SQL-IDs je Plan-Hash-Value für Aufnahme in Selektion
   dragnet_helper_133_param_1_name:                          Minimale Anzahl unterschiedlicher SQL-IDs
 

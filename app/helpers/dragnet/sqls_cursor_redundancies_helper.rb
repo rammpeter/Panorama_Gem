@@ -5,8 +5,9 @@ module Dragnet::SqlsCursorRedundanciesHelper
 
   def sqls_cursor_redundancies
     [
+        # TODO: Show last SQL_ID with known SQL_Text instead of last SQL-ID
         {
-            :name  => t(:dragnet_helper_133_name, :default=>'Missing usage of bind variables: Detection by identical plan-hash-value from Active Session History'),
+            :name  => t(:dragnet_helper_133_name, :default=>'Missing usage of bind variables: Detection by identical plan-hash-value from SGA and Active Session History'),
             :desc  => t(:dragnet_helper_133_desc, :default=>"Usage of literals instead of bind variables with high number of different literals leads to high parse counts and flooding of SQL-Area in SGA.
 You may reduce the problem by setting cursor_sharing != EXACT, but you still need large amount of SGA-memory to match your SQL with the corresponding SQL with replaced bind variables.
 So strong suggestion is: Use bind variables!
