@@ -4,6 +4,7 @@ require 'resolv'
 
 # Diverse Ajax-Aufrufe und fachliche Code-Schnipsel
 module AjaxHelper
+  include ExceptionHelper
 
   # render menu button with submenu
   def render_command_array_menu(command_array)
@@ -154,6 +155,7 @@ module AjaxHelper
   end
 
   # Erzeugen eines Links aus den konkreten Wait-Parametern mit aktueller Erläuterung sowie link auf aufwendige Erklärung
+
   def link_wait_params(instance, event, p1, p1text, p1raw, p2, p2text, p2raw, p3, p3text, p3raw, unique_div_identifier)
       (""+  # Wenn kein String als erster Operand, funktioniert html_safe nicht auf Result !!!
        ajax_link("P1: #{p1text} = #{p1} P2: #{p2text} = #{p2} P3: #{p3text} = #{p3}", {
@@ -169,6 +171,9 @@ module AjaxHelper
                      ) +
          " #{quick_wait_params_info(event, p1, p1text, p1raw, p2, p2text, p2raw, p3, p3text, p3raw)}" +
          "<span id=\"#{unique_div_identifier}\"></span>").html_safe
+  rescue Exception => e
+    log_exception_backtrace(e)
+    "Exception #{e.class} #{e.message} during evaluation of parameters in link_wait_params"
   end
 
   # Erzeugen eines Links aus den Parametern auf Detail-Darstellung des SQL
