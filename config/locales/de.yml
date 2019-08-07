@@ -1492,6 +1492,12 @@
   dragnet_helper_143_param_2_hint:                          Maximale Anzahl rows per key für die zwite Spalte des mehrspaltigen Index
   dragnet_helper_143_param_2_name:                          Max. rows per key für die zweite Spalte des Index
 
+  dragnet_helper_144_desc: |-
+    Die Komprimierung von Securefile-LOBs erlaubt die Reduktion des Storage-Bedarfes wenn der LOB-Inhalt sinnvoll komprimierbar ist.
+    Aktivierung erfordert Neuaufbau der Tabelle a'la CREATE TABLE NewTab LOB(ColName) STORE AS SECUREFILE (COMPRESS HIGH) AS SELECT * FROM OrgTab;
+    Die Lizensierung der Advanced Compression Option ist notwendig für Nutzung der LOB-Komprimierung.
+  dragnet_helper_144_name: |-
+    Evtl. komprimierbare bislang unkomprimierte LOB-Segmente
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 

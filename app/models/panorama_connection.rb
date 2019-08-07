@@ -195,6 +195,10 @@ class PanoramaConnection
     )
   end
 
+  def get_config_from_jdbc_connection
+    @jdbc_connection.instance_variable_get(:@config)
+  end
+
   ########################### class methods #############################
   # Store connection redentials for this request in thread, marks begin of request
   def self.set_connection_info_for_request(config)
@@ -289,10 +293,6 @@ class PanoramaConnection
     @@connection_pool
   end
 
-  def get_config_from_jdbc_connection
-    @jdbc_connection.instance_variable_get(:@config)
-  end
-
   def self.instance_number;                 check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_number;                end
   def self.db_version;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_version;                     end
   def self.dbid;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].dbid;                           end
@@ -331,8 +331,13 @@ class PanoramaConnection
     "jdbc:oracle:thin:@#{get_threadlocal_config[:tns]}"
   end
 
+  def self.get_jdbc_raw_connection
+    check_for_open_connection
+    Thread.current[:panorama_connection_connection_object].jdbc_connection.raw_connection
+  end
+
   def self.get_jdbc_driver_version
-    Thread.current[:panorama_connection_connection_object].jdbc_connection.raw_connection.getMetaData.getDriverVersion
+    get_jdbc_raw_connection.getMetaData.getDriverVersion
   rescue Exception => e
     e.message                                                                   # return Exception message instead of raising exeption
   end

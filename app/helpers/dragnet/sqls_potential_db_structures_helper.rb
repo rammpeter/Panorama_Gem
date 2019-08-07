@@ -409,6 +409,26 @@ ORDER BY DECODE(ic.Index_Name, NULL, 1, 0), t.Num_Rows DESC
             :parameter=>[{:name=>t(:dragnet_helper_param_minimal_rows_name, :default=>'Minimum number of rows in table'), :size=>8, :default=>100000, :title=>t(:dragnet_helper_param_minimal_rows_hint, :default=>'Minimum number of rows in table for consideration in selection')}
             ]
         },
+        {
+            :name  => t(:dragnet_helper_144_name, :default=>'Possibly compressable but currently uncompressed LOB-segments'),
+            :desc  => t(:dragnet_helper_144_desc, :default=>"Compression of Securefile-LOBs allows decrease of storage requirement if LOB-content allows significant compression.
+Activation requires recreation of table a'la CREATE TABLE NewTab LOB(ColName) STORE AS SECUREFILE (COMPRESS HIGH) AS SELECT * FROM OrgTab;
+Licensing of Advanced Compression Option is required for usage of LOB-Compression."),
+            :sql=> "
+SELECT l.Owner, l.Table_name, l.Column_Name, tc.Data_Type, l.Segment_Name, l.Tablespace_Name, s.MBytes,
+       l.Encrypt, l.Compression, l.Deduplication, l.In_Row, l.Partitioned, l.Securefile, t.Num_Rows, tc.Num_Nulls, tc.Avg_Col_Len Avg_Col_Len_In_Row
+FROM   DBA_Lobs l
+LEFT OUTER JOIN DBA_Tables t       ON t.Owner = l.Owner AND t.Table_Name = l.Table_Name
+LEFT OUTER JOIN DBA_Tab_Columns tc ON tc.Owner = l.Owner AND tc.Table_Name = l.Table_Name AND tc.Column_Name = l.Column_Name
+JOIN   (SELECT /*+ NO_MERGE */ Owner, Segment_Name, Segment_Type, SUM(Bytes)/(1024*1024) MBytes
+        FROM   DBA_Segments
+        GROUP BY Owner, Segment_Name, Segment_Type
+       ) s ON s.Owner = l.Owner AND s.Segment_Name = l.Segment_Name
+WHERE  l.Owner NOT IN ('SYS', 'SYSTEM', 'OUTLN', 'WMSYS', 'CTXSYS', 'MDSYS', 'XDB', 'SYSMAN')
+AND    l.Compression LIKE 'NO%'
+ORDER BY s.MBytes DESC
+            ",
+        },
     ]
   end # sqls_potential_db_structures
 

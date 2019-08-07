@@ -9,14 +9,22 @@ class DbaSchemaControllerTest < ActionController::TestCase
 
     initialize_min_max_snap_id_and_times
 
-    lob_part_table = sql_select_first_row "SELECT Table_Owner, Table_Name, Lob_Name FROM DBA_Lob_Partitions WHERE RowNum < 2"
-    if lob_part_table
-      @lob_part_owner      = lob_part_table.table_owner
-      @lob_part_table_name = lob_part_table.table_name
-      @lob_part_lob_name   = lob_part_table.lob_name
+    lob_table = sql_select_first_row "SELECT Owner, Table_Name, Segment_Name FROM DBA_Lobs WHERE Segment_Created = 'YES' AND RowNum < 2"
+    if lob_table
+      @lob_owner        = lob_table.owner
+      @lob_table_name   = lob_table.table_name
+      @lob_segment_name = lob_table.segment_name
     end
 
-    subpart_table = sql_select_first_row "SELECT Table_Owner, Table_Name, Partition_Name FROM DBA_Tab_SubPartitions WHERE RowNum < 2"
+    lob_part_table = sql_select_first_row "SELECT Table_Owner, Table_Name, Lob_Name, LOB_Partition_Name FROM DBA_Lob_Partitions WHERE Segment_Created = 'YES' AND RowNum < 2"
+    if lob_part_table
+      @lob_part_owner           = lob_part_table.table_owner
+      @lob_part_table_name      = lob_part_table.table_name
+      @lob_part_lob_name        = lob_part_table.lob_name
+      @lob_part_partition_name  = lob_part_table.lob_partition_name
+    end
+
+    subpart_table = sql_select_first_row "SELECT Table_Owner, Table_Name, Partition_Name FROM DBA_Tab_SubPartitions WHERE Segment_Created = 'YES' AND RowNum < 2"
     if subpart_table
       @subpart_table_owner            = subpart_table.table_owner
       @subpart_table_table_name       = subpart_table.table_name
@@ -28,7 +36,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
       @subpart_table_partition_name   = nil
     end
 
-    subpart_index = sql_select_first_row "SELECT Index_Owner, Index_Name, Partition_Name FROM DBA_Ind_SubPartitions WHERE RowNum < 2"
+    subpart_index = sql_select_first_row "SELECT Index_Owner, Index_Name, Partition_Name FROM DBA_Ind_SubPartitions WHERE Segment_Created = 'YES' AND RowNum < 2"
     if subpart_index
       @subpart_index_owner            = subpart_index.index_owner
       @subpart_index_index_name       = subpart_index.index_name
@@ -194,6 +202,42 @@ class DbaSchemaControllerTest < ActionController::TestCase
   test "list_object_nach_file_und_block with xhr: true" do
     get :list_object_nach_file_und_block, :params => {:format=>:html, :fileno=>1, :blockno=>1, :update_area=>:hugo }
     assert_response :success
+  end
+
+  test "list_space_usage with xhr: true" do
+    Rails.logger.info "Table-Name for next test is #{@lob_owner}.#{@lob_table_name}"
+    get :list_space_usage, params: {format: :html, owner: @lob_owner, segment_name: @lob_segment_name , update_area: :hugo }
+    assert_response :success
+
+    if @lob_part_owner
+      Rails.logger.info "Table-Name for next test is #{@lob_part_owner}.#{@lob_part_table_name}"
+      # all partitions
+      get :list_space_usage, params: {format: :html, owner: @lob_part_owner, segment_name: @lob_part_lob_name , update_area: :hugo }
+      assert_response :success
+      # one partition
+      get :list_space_usage, params: {format: :html, owner: @lob_part_owner, segment_name: @lob_part_lob_name, partition_name: @lob_part_partition_name , update_area: :hugo }
+      assert_response :success
+    end
+
+    if @subpart_table_owner
+      Rails.logger.info "Table-Name for next test is #{@subpart_table_owner}.#{@subpart_table_table_name}"
+      # all partitions
+      get :list_space_usage, params: {format: :html, owner: @subpart_table_owner, segment_name: @subpart_table_table_name , update_area: :hugo }
+      assert_response :success
+      # one partition
+      get :list_space_usage, params: {format: :html, owner: @subpart_table_owner, segment_name: @subpart_table_table_name, partition_name: @subpart_table_partition_name , update_area: :hugo }
+      assert_response :success
+    end
+
+    if @subpart_index_owner
+      Rails.logger.info "Index-Name for next test is #{@subpart_index_owner}.#{@subpart_index_index_name}"
+      # all partitions
+      get :list_space_usage, params: {format: :html, owner: @subpart_index_owner, segment_name: @subpart_index_index_name , update_area: :hugo }
+      assert_response :success
+      # one partition
+      get :list_space_usage, params: {format: :html, owner: @subpart_index_owner, segment_name: @subpart_index_index_name, partition_name: @subpart_index_partition_name , update_area: :hugo }
+      assert_response :success
+    end
   end
 
 end

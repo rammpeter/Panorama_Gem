@@ -49,6 +49,19 @@
     title
   end
 
+  link_space_usage = proc do |rec, value|
+    ajax_link(value,
+                            {:action       => :list_space_usage,
+                             :owner        => @owner,
+                             :segment_name => @index_name,
+                             partition_name:  rec.subpartition_name,
+                             :update_area  => @update_area,
+                            },
+                    :title=>"Show space usage for #{@owner}.#{@index_name} from DBMS_SPACE.SPACE_USAGE"
+      )
+  end
+
+
   column_options =
       [
           {:caption=> 'Sub-part. name',         :data=>proc{|rec| rec.subpartition_name},            :title=> 'Sub-partition name'},
@@ -59,7 +72,7 @@
           {:caption=> 'Ini. trans',             :data=>proc{|rec| fn rec.ini_trans},                 :title=> 'Initial number of transactions', data_title: proc{|rec| "%t\nNumber of maximum transactions (MAX_TRANS) = #{rec.max_trans}"}, :align=>:right},
           {:caption=> 'Logging',                :data=>proc{|rec| rec.logging},                      :title=> 'Logging attribute of the sub-partition'},
           {:caption=> 'Rows',                   :data=>proc{|rec| fn rec.num_rows},                  :title=> 'Number of rows in the sub-partition', :align=>:right},
-          {:caption=> 'Size (MB)',              :data=>proc{|rec| fn(rec.size_mb,2)},                :title=> 'Current object size in megabytes', :align=>:right},
+          {:caption=> 'Size (MB)',              :data=>proc{|rec| link_space_usage.call(rec, fn(rec.size_mb,2))},  :title=> 'Current object size in megabytes', :align=>:right},
           {:caption=> 'BLevel',                 :data=>proc{|rec| fn rec.blevel},                    :title=> 'B*-Tree level: depth of the index from its root block to its leaf blocks. A depth of 0 indicates that the root block and leaf block are the same.', :align=>:right},
           {:caption=> 'Leaf blocks',            :data=>proc{|rec| fn rec.leaf_blocks},               :title=> 'Number of leaf blocks in the index sub-partition', :align=>:right},
           {:caption=> 'Dist. keys',             :data=>proc{|rec| fn rec.distinct_keys},             :title=> 'Number of distinct keys in the index sub-partition', :align=>:right, :data_title=>proc{|rec| "%t, #{fn((rec.num_rows/rec.distinct_keys rescue nil),1)} rows per key" }},

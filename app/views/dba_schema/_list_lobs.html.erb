@@ -1,7 +1,18 @@
 <%
-   @update_area = get_unique_area_id
+  @update_area = get_unique_area_id
 
-   def link_lob_partitions(rec)
+  link_size = proc do |rec|
+    ajax_link(fn(rec.size_mb, 2),
+                            {:action       => :list_space_usage,
+                             :owner        => rec.owner,
+                             :segment_name => rec.segment_name,
+                             :update_area  => @update_area,
+                            },
+                    :title=>"Show space usage for LOB #{rec.segment_name} of table #{rec.owner}.#{rec.table_name} from DBMS_SPACE.SPACE_USAGE"
+      )
+  end
+
+  link_lob_partitions = proc do |rec|
      if rec.partition_count == 0
        '0'
      else
@@ -12,12 +23,12 @@
                                 :lob_name      => rec.segment_name,
                                 :update_area  => @update_area,
                                },
-                       :title=>"Show partitions LOB #{rec.segment_name} of table #{rec.owner}.#{rec.table_name}"
+                       :title=>"Show partitions for LOB #{rec.segment_name} of table #{rec.owner}.#{rec.table_name}"
          )
      end
    end
 
-   def link_lob_subpartitions(rec)
+   link_lob_subpartitions = proc do |rec|
      if rec.subpartition_count == 0
        '0'
      else
@@ -28,7 +39,7 @@
                                 :lob_name      => rec.segment_name,
                                 :update_area  => @update_area,
                                },
-                       :title=>"Show sub-partitions of LOB #{rec.segment_name} of #{rec.owner}.#{rec.table_name}"
+                       :title=>"Show sub-partitions for LOB #{rec.segment_name} of #{rec.owner}.#{rec.table_name}"
        )
      end
    end
@@ -39,7 +50,8 @@
    column_options << {:caption=> 'Table',               :data=>proc{|rec| rec.table_name},              :title=> 'Table LOB belongs to'}
    column_options << {:caption=> 'Column',              :data=>proc{|rec| rec.column_name},             :title=> 'Column LOB belongs to'}
    column_options << {:caption=> 'Segment name',        :data=>proc{|rec| rec.segment_name},            :title=> 'Name of the LOB segment'}
-   column_options << {:caption=> 'Size (MB)',           :data=>proc{|rec| fn(rec.size_mb, 2)},          :title=> 'Size of LOB segment in MB', :align=>:right}
+   column_options << {:caption=> 'Size (MB)',           :data=>link_size,                               :title=> 'Size of LOB segment in MB', :align=>:right}
+   column_options << {:caption=> 'Blocks',              :data=>proc{|rec| fn(rec.blocks)},              :title=> 'Number of blocks of LOB segment', :align=>:right}
    column_options << {:caption=> 'Tablespace',          :data=>proc{|rec| rec.tablespace_name},         :title=> 'Name of the tablespace containing the LOB segment'}
    column_options << {:caption=> 'Index name',          :data=>proc{|rec| rec.index_name},              :title=> 'Name of the LOB index'}
    column_options << {:caption=> 'Chunk size (Bytes)',  :data=>proc{|rec| rec['chunk']},                :title=> 'Size (in bytes) of the LOB chunk as a unit of allocation or manipulation', :align=>:right}
@@ -53,8 +65,8 @@
    column_options << {:caption=> 'Dedup.',              :data=>proc{|rec| rec.deduplication},           :title=> 'Kind of deduplication used for this LOB.' } if get_db_version >= '11.2'
    column_options << {:caption=> 'In row',              :data=>proc{|rec| rec.in_row},                  :title=> 'Indicates whether some of the LOBs are stored inline with the base row (YES) or not (NO). For partitioned objects, refer to the *_LOB_PARTITIONS and *_PART_LOBS views.' }
    column_options << {:caption=> 'Format',              :data=>proc{|rec| rec.format},                  :title=> 'Indicates whether the LOB storage format is dependent on the endianness of the platform' }
-   column_options << {:caption=> 'Part.',               :data=>proc{|rec| link_lob_partitions(rec)},    :title=> "Number of partitions",    :align=>:right}
-   column_options << {:caption=> 'Sub-Part.',           :data=>proc{|rec| link_lob_subpartitions(rec)}, :title=> "Number of subpartitions", :align=>:right}
+   column_options << {:caption=> 'Part.',               :data=>link_lob_partitions,                     :title=> "Number of partitions",    :align=>:right}
+   column_options << {:caption=> 'Sub-Part.',           :data=>link_lob_subpartitions,                  :title=> "Number of subpartitions", :align=>:right}
    column_options << {:caption=> 'Secure file',         :data=>proc{|rec| rec.securefile},              :title=> 'Indicates whether the LOB is SecureFiles (YES) or not (NO)' } if get_db_version >= '11.2'
    column_options << {:caption=> 'Created',             :data=>proc{|rec| rec.segment_created},         :title=> 'Indicates whether the LOB segment has been created (YES) or not (NO)' } if get_db_version >= '11.2'
    column_options << {:caption=> 'Retention type',      :data=>proc{|rec| rec.retention_type},          :title=> 'Type of retention used for this LOB.' } if get_db_version >= '11.2.3'

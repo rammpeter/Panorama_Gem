@@ -31,6 +31,18 @@
      end
    end
 
+   link_space_usage = proc do |rec, value|
+     ajax_link(value,
+                             {:action       => :list_space_usage,
+                              :owner        => rec.owner,
+                              :segment_name => rec.index_name,
+                              :update_area  => @update_area,
+                             },
+                     :title=>"Show space usage for #{rec.owner}.#{rec.index_name} from DBMS_SPACE.SPACE_USAGE"
+       )
+   end
+
+
    list_states = proc do |rec|
      result = ''
      result << "#{'<br/>' if result.length > 0}Degree =  #{rec.degree}"                                                                    if rec.degree.to_i != 1
@@ -193,7 +205,7 @@
                    {:caption=> 'Pct Free',         :data=>proc{|rec| rec.pct_free},                                       :title=> 'Percent free', :align=>:right},
                    {:caption=> 'Ini Trans',        :data=>proc{|rec| rec.ini_trans},                                      :title=> 'Number of initial entries in transaction list of db block', data_title: proc{|rec| "%t\nNumber of maximum transactions (MAX_TRANS) = #{rec.max_trans}"}, :align=>:right},
                    {:caption=> 'Rows',             :data=>proc{|rec| link_current_index_stats(rec, fn(rec.num_rows))},    :title=> 'Number of rows calculated by last analyze run', :align=>:right},
-                   {:caption=> 'Size (MB)',        :data=>proc{|rec| fn(rec.size_mb, 2)},                                 :title=> 'Current object size in megabytes', :align=>:right},
+                   {:caption=> 'Size (MB)',        :data=>proc{|rec| link_space_usage.call(rec, fn(rec.size_mb, 2))},     :title=> 'Current object size in megabytes', :align=>:right},
                    {:caption=> 'Ext.',             :data=>link_extents,                                                   :title=> 'Number of extents (from DBA_Segments)', :align=>:right},
                    {:caption=> 'B',                :data=>proc{|rec| fn(rec.blevel)},                                     :title=> "B*-Tree level (depth of the index from its root block to its leaf blocks).\nA depth of 0 indicates that the root block and leaf block are the same.", :align=>:right},
                    {:caption=> 'Leaf blocks',      :data=>proc{|rec| link_current_index_stats(rec, fn(rec.leaf_blocks))}, :title=> 'Number of leaf blocks in the index calculated by last analyze run', :align=>:right},

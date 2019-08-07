@@ -1,4 +1,7 @@
 # encoding: utf-8
+
+require 'java'
+
 class DbaSchemaController < ApplicationController
   include DbaHelper
 
@@ -133,12 +136,20 @@ class DbaSchemaController < ApplicationController
         MAX(Spec_TS)                    Spec_TS
       FROM (
         /* Views moved to with clause due to performance problems with 18.3 */
-        WITH Tab_Modifications AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Tab_Modifications WHERE Partition_Name IS NULL),
+        WITH Tab_Modifications AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, Partition_Name, SubPartition_Name, Timestamp FROM DBA_Tab_Modifications WHERE Partition_Name IS NULL),
              Segments          AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Segments s        WHERE s.SEGMENT_TYPE<>'CACHE' #{where_string}),
-             Objects           AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Objects),
-             Tables            AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Tables),
-             Indexes           AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Index_Type, Num_Rows, Compression, Last_Analyzed FROM DBA_Indexes)
-        SELECT s.Segment_Name,                                  
+             Objects           AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Object_Name, SubObject_Name, Created, Last_DDL_Time, Timestamp FROM DBA_Objects),
+             Tables            AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Num_Rows, Avg_Row_Len, Empty_Blocks, Avg_Space, Last_Analyzed, Compression#{", Compress_For" if get_db_version >= '11.2'} FROM DBA_Tables),
+             Tab_Partitions    AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, Partition_Name, Num_Rows, Avg_Row_Len, Empty_Blocks, Avg_Space, Last_Analyzed, Compression#{", Compress_For" if get_db_version >= '11.2'} FROM DBA_Tab_Partitions),
+             Tab_SubPartitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, SubPartition_Name, Num_Rows, Avg_Row_Len, Empty_Blocks, Avg_Space, Last_Analyzed, Compression#{", Compress_For" if get_db_version >= '11.2'} FROM DBA_Tab_SubPartitions),
+             Indexes           AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Index_Type, Num_Rows, Compression, Last_Analyzed FROM DBA_Indexes),
+             Ind_Partitions    AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Partition_Name, Num_Rows, Last_Analyzed, Compression FROM DBA_Ind_Partitions),
+             Ind_SubPartitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, SubPartition_Name, Num_Rows, Last_Analyzed, Compression FROM DBA_Ind_SubPartitions),
+             Lobs              AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Segment_Name, Compression FROM DBA_Lobs),
+             Lob_Partitions    AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Lob_Name, Lob_Partition_Name, Compression FROM DBA_Lob_Partitions),
+             Lob_SubPartitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Lob_Name, Lob_SubPartition_Name, Compression FROM DBA_Lob_SubPartitions)
+        SELECT /*+ USE_HASH(s o t tp tsp m i ip isp im l lp lsp) */
+               s.Segment_Name,
                s.Partition_Name,                                
                s.Segment_Type,                                  
                s.Tablespace_Name,
@@ -214,17 +225,17 @@ class DbaSchemaController < ApplicationController
         FROM Segments s
         LEFT OUTER JOIN Objects o                 ON o.Owner         = s.Owner       AND o.Object_Name          = s.Segment_name   AND (s.Partition_Name IS NULL OR o.SubObject_Name = s.Partition_Name)
         LEFT OUTER JOIN Tables t                  ON t.Owner         = s.Owner       AND t.Table_Name           = s.segment_name
-        LEFT OUTER JOIN DBA_Tab_Partitions tp     ON tp.Table_Owner  = s.Owner       AND tp.Table_Name          = s.segment_name   AND tp.Partition_Name        = s.Partition_Name
-        LEFT OUTER JOIN DBA_Tab_SubPartitions tsp ON tsp.Table_Owner = s.Owner       AND tsp.Table_Name         = s.segment_name   AND tsp.SubPartition_Name    = s.Partition_Name
+        LEFT OUTER JOIN Tab_Partitions tp         ON tp.Table_Owner  = s.Owner       AND tp.Table_Name          = s.segment_name   AND tp.Partition_Name        = s.Partition_Name
+        LEFT OUTER JOIN Tab_SubPartitions tsp     ON tsp.Table_Owner = s.Owner       AND tsp.Table_Name         = s.segment_name   AND tsp.SubPartition_Name    = s.Partition_Name
         LEFT OUTER JOIN Tab_Modifications m       ON m.Table_Owner = t.Owner         AND m.Table_Name           = t.Table_Name     AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
         LEFT OUTER JOIN Indexes i                 ON i.Owner         = s.Owner       AND i.Index_Name           = s.segment_name
-        LEFT OUTER JOIN DBA_Ind_Partitions ip     ON ip.Index_Owner  = s.Owner       AND ip.Index_Name          = s.segment_name   AND ip.Partition_Name        = s.Partition_Name
-        LEFT OUTER JOIN DBA_Ind_SubPartitions isp ON isp.Index_Owner = s.Owner       AND isp.Index_Name         = s.segment_name   AND isp.SubPartition_Name    = s.Partition_Name
-        LEFT OUTER JOIN DBA_Tables it             ON it.Owner        = i.Table_Owner AND it.Table_Name          = i.Table_Name
+        LEFT OUTER JOIN Ind_Partitions ip         ON ip.Index_Owner  = s.Owner       AND ip.Index_Name          = s.segment_name   AND ip.Partition_Name        = s.Partition_Name
+        LEFT OUTER JOIN Ind_SubPartitions isp     ON isp.Index_Owner = s.Owner       AND isp.Index_Name         = s.segment_name   AND isp.SubPartition_Name    = s.Partition_Name
+        LEFT OUTER JOIN Tables it                 ON it.Owner        = i.Table_Owner AND it.Table_Name          = i.Table_Name
         LEFT OUTER JOIN Tab_Modifications im      ON im.Table_Owner  = it.Owner      AND im.Table_Name          = it.Table_Name    AND im.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
-        LEFT OUTER JOIN DBA_Lobs l                ON l.Owner         = s.Owner       AND l.Segment_Name         = s.Segment_Name
-        LEFT OUTER JOIN DBA_Lob_Partitions lp     ON lp.Table_Owner  = s.Owner       AND lp.Lob_Name            = s.Segment_Name   AND lp.Lob_Partition_Name     = s.Partition_Name
-        LEFT OUTER JOIN DBA_Lob_SubPartitions lsp ON lsp.Table_Owner = s.Owner       AND lsp.Lob_Name           = s.Segment_Name   AND lsp.Lob_SubPartition_Name = s.Partition_Name
+        LEFT OUTER JOIN Lobs l                    ON l.Owner         = s.Owner       AND l.Segment_Name         = s.Segment_Name
+        LEFT OUTER JOIN Lob_Partitions lp         ON lp.Table_Owner  = s.Owner       AND lp.Lob_Name            = s.Segment_Name   AND lp.Lob_Partition_Name     = s.Partition_Name
+        LEFT OUTER JOIN Lob_SubPartitions lsp     ON lsp.Table_Owner = s.Owner       AND lsp.Lob_Name           = s.Segment_Name   AND lsp.Lob_SubPartition_Name = s.Partition_Name
        )
       GROUP BY Owner, Segment_Name, Tablespace_Name, Segment_Type #{", Partition_Name" if @show_partitions }
       ) x
@@ -1281,10 +1292,13 @@ class DbaSchemaController < ApplicationController
     @partition_expression = get_index_partition_expression(@owner, @index_name)
 
     @partitions = sql_select_all ["\
-      SELECT p.*, (SELECT SUM(Bytes)/(1024*1024)
-                   FROM   DBA_Segments s
-                   WHERE  s.Owner = p.Index_Owner AND s.Segment_Name = p.Index_Name AND s.Partition_Name = p.Partition_Name
-                  ) Size_MB,
+      WITH Storage AS (SELECT /*+ NO_MERGE */   NVL(sp.Partition_Name, s.Partition_Name) Partition_Name, SUM(Bytes)/(1024*1024) MB
+                      FROM DBA_Segments s
+                      LEFT OUTER JOIN DBA_Ind_SubPartitions sp ON sp.Index_Owner = s.Owner AND sp.Index_Name = s.Segment_Name AND sp.SubPartition_Name = s.Partition_Name
+                      WHERE s.Owner = ? AND s.Segment_Name = ?
+                      GROUP BY NVL(sp.Partition_Name, s.Partition_Name)
+                      )
+      SELECT p.*, st.MB Size_MB,
              o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
               sp.SubPartition_Count,
               SP_Status_Count,       SP_Status,
@@ -1296,6 +1310,7 @@ class DbaSchemaController < ApplicationController
               #{", mi.GC_Mastering_Policy,  mi.Current_Master + 1  Current_Master,  mi.Previous_Master + 1  Previous_Master, mi.Remaster_Cnt" if PanoramaConnection.rac?}
       FROM DBA_Ind_Partitions p
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Index_Owner AND o.Object_Name = p.Index_Name AND o.SubObject_Name = p.Partition_Name AND o.Object_Type = 'INDEX PARTITION'
+      LEFT OUTER JOIN Storage st ON st.Partition_Name = p.Partition_Name
       LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Partition_Name, COUNT(*) SubPartition_Count,
                               COUNT(DISTINCT Status)          SP_Status_Count,       MIN(Status)           SP_Status,
                               COUNT(DISTINCT Compression)     SP_Compression_Count,  MIN(Compression)      SP_Compression,
@@ -1308,7 +1323,7 @@ class DbaSchemaController < ApplicationController
                       ) sp ON sp.Partition_Name = p.Partition_Name
    #{"LEFT OUTER JOIN V$GCSPFMASTER_INFO mi ON mi.Data_Object_ID = o.Data_Object_ID" if PanoramaConnection.rac?}
       WHERE p.Index_Owner = ? AND p.Index_Name = ?
-      ", @owner, @index_name, @owner, @index_name]
+      ", @owner, @index_name, @owner, @index_name, @owner, @index_name]
 
     @partitions.each do |p|
       if !p.subpartition_count.nil? && p.subpartition_count > 0
@@ -1374,7 +1389,9 @@ class DbaSchemaController < ApplicationController
     end
 
     @lobs = sql_select_all ["\
-      SELECT /*+ Panorama Ramm */ l.*, (SELECT SUM(Bytes)/(1024*1024) FROM DBA_Segments s WHERE s.Owner = l.Owner AND s.Segment_Name = l.Segment_Name) Size_MB,
+      SELECT /*+ Panorama Ramm */ l.*,
+             (SELECT SUM(Bytes)/(1024*1024) FROM DBA_Segments s WHERE s.Owner = l.Owner AND s.Segment_Name = l.Segment_Name) Size_MB,
+             (SELECT SUM(Blocks)            FROM DBA_Segments s WHERE s.Owner = l.Owner AND s.Segment_Name = l.Segment_Name) Blocks,
              (SELECT COUNT(*) FROM DBA_Lob_Partitions p WHERE p.Table_Owner = l.Owner AND p.Table_Name = l.Table_Name AND p.Lob_Name = l.Segment_Name) Partition_Count,
              (SELECT COUNT(*) FROM DBA_Lob_SubPartitions p WHERE p.Table_Owner = l.Owner AND p.Table_Name = l.Table_Name AND p.Lob_Name = l.Segment_Name) SubPartition_Count
       FROM   DBA_Lobs l
@@ -1750,5 +1767,203 @@ WHERE RowNum < 100
     ")
     render_partial
   end
+
+  def list_space_usage
+    @owner          = prepare_param(:owner)
+    @segment_name   = prepare_param(:segment_name)
+    @partition_name = prepare_param(:partition_name)
+
+    @segment_type = sql_select_one ["SELECT DECODE(Segment_Type,
+                                              'LOBSEGMENT',       'LOB',
+                                              Segment_Type
+                                            )
+                                     FROM   DBA_Segments
+                                     WHERE  Owner        = ?
+                                     AND    Segment_Name = ?
+                                     #{" AND Partition_Name = ? " if @partition_name}
+                                     AND    RowNum < 2 /* List only one record */
+                                    ",
+                                    @owner, @segment_name].concat(@partition_name ? [@partition_name] : [])
+    show_popup_message "Object does not exists in DBA_Segments for Owner = '#{@owner}', Segment_Name = '#{@segment_name}', Partition_Name = '#{@partition_name}'" if @segment_type.nil?
+
+    case @segment_type
+    when 'LOB', 'LOB PARTITION', 'LOB SUBPARTITION' then
+      securefile = sql_select_one ["SELECT Securefile FROM DBA_Lobs WHERE Owner = ? AND Segment_Name = ?", @owner, @segment_name]
+      show_popup_message "Object does not exists in DBA_Lobs for Owner = '#{@owner}', Segment_Name = '#{@segment_name}'" if securefile.nil?
+      if securefile == 'NO'
+        list_space_usage_default
+      else
+        list_space_usage_securefile
+      end
+
+      # check for securefile
+    else
+      list_space_usage_default
+    end
+  end
+
+  private
+  def list_space_usage_default
+    @result = []
+
+
+    segments = sql_select_all ["SELECT Partition_Name
+                               FROM   DBA_Segments
+                               WHERE  Owner        = ?
+                               AND    Segment_Name = ?
+                               #{" AND Partition_Name = ? " if @partition_name}
+                              ",
+                              @owner, @segment_name].concat(@partition_name ? [@partition_name] : [])
+
+    segments.each do |segment|
+      pct_free = nil                                                            # Default
+      pct_free = sql_select_one ["SELECT Pct_Free FROM DBA_Tables             WHERE Owner = ?       AND Table_Name = ?",                            @owner, @segment_name]                              if @segment_type == 'TABLE'
+      pct_free = sql_select_one ["SELECT Pct_Free FROM DBA_Tab_Partitions     WHERE Table_Owner = ? AND Table_Name = ? AND Partition_Name = ?",     @owner, @segment_name, segment.partition_name]      if @segment_type == 'TABLE PARTITION'
+      pct_free = sql_select_one ["SELECT Pct_Free FROM DBA_Tab_SubPartitions  WHERE Table_Owner = ? AND Table_Name = ? AND SubPartition_Name = ?",  @owner, @segment_name, segment.partition_name]      if @segment_type == 'TABLE SUBPARTITION'
+      pct_free = sql_select_one ["SELECT Pct_Free FROM DBA_Indexes            WHERE Owner = ?       AND Index_Name = ?",                            @owner, @segment_name]                              if @segment_type == 'INDEX'
+      pct_free = sql_select_one ["SELECT Pct_Free FROM DBA_Ind_Partitions     WHERE Index_Owner = ? AND Index_Name = ? AND Partition_Name = ?",     @owner, @segment_name, segment.partition_name]      if @segment_type == 'INDEX PARTITION'
+      pct_free = sql_select_one ["SELECT Pct_Free FROM DBA_Ind_SubPartitions  WHERE Index_Owner = ? AND Index_Name = ? AND SubPartition_Name = ?",  @owner, @segment_name, segment.partition_name]      if @segment_type == 'INDEX SUBPARTITION'
+
+
+      connection = PanoramaConnection.get_jdbc_raw_connection
+      cb = connection.prepareCall("CALL DBMS_SPACE.SPACE_USAGE(
+                                       segment_owner        => ?,
+                                       segment_name         => ?,
+                                       segment_type         => ?,
+                                       unformatted_blocks   => ?,
+                                       unformatted_bytes    => ?,
+                                       fs1_blocks           => ?,
+                                       fs1_bytes            => ?,
+                                       fs2_blocks           => ?,
+                                       fs2_bytes            => ?,
+                                       fs3_blocks           => ?,
+                                       fs3_bytes            => ?,
+                                       fs4_blocks           => ?,
+                                       fs4_bytes            => ?,
+                                       full_blocks          => ?,
+                                       full_bytes           => ?
+                                       #{", partition_name       => ?" if segment.partition_name}
+                                     )")
+
+
+      cb.setString(1, @owner)
+      cb.setString(2, @segment_name)
+      cb.setString(3, @segment_type)
+      cb.registerOutParameter(4,  java.sql.Types::DECIMAL)    # unformatted_blocks
+      cb.registerOutParameter(5,  java.sql.Types::DECIMAL)    # unformatted_bytes
+      cb.registerOutParameter(6,  java.sql.Types::DECIMAL)    # fs1_blocks
+      cb.registerOutParameter(7,  java.sql.Types::DECIMAL)    # fs1_bytes
+      cb.registerOutParameter(8,  java.sql.Types::DECIMAL)    # fs2_blocks
+      cb.registerOutParameter(9,  java.sql.Types::DECIMAL)    # fs2_bytes
+      cb.registerOutParameter(10, java.sql.Types::DECIMAL)    # fs3_blocks
+      cb.registerOutParameter(11, java.sql.Types::DECIMAL)    # fs3_bytes
+      cb.registerOutParameter(12, java.sql.Types::DECIMAL)    # fs4_blocks
+      cb.registerOutParameter(13, java.sql.Types::DECIMAL)    # fs4_bytes
+      cb.registerOutParameter(14, java.sql.Types::DECIMAL)    # full_blocks
+      cb.registerOutParameter(15, java.sql.Types::DECIMAL)    # full_bytes
+      cb.setString(16, segment.partition_name)  if segment.partition_name
+
+      cb.executeQuery();
+
+      @result << {
+          partition_name:     segment.partition_name,
+          unformatted_blocks: BigDecimal(cb.getBigDecimal(4).to_s),
+          unformatted_bytes:  BigDecimal(cb.getBigDecimal(5).to_s),
+          fs1_blocks:         BigDecimal(cb.getBigDecimal(6).to_s),
+          fs1_bytes:          BigDecimal(cb.getBigDecimal(7).to_s),
+          fs2_blocks:         BigDecimal(cb.getBigDecimal(8).to_s),
+          fs2_bytes:          BigDecimal(cb.getBigDecimal(9).to_s),
+          fs3_blocks:         BigDecimal(cb.getBigDecimal(10).to_s),
+          fs3_bytes:          BigDecimal(cb.getBigDecimal(11).to_s),
+          fs4_blocks:         BigDecimal(cb.getBigDecimal(12).to_s),
+          fs4_bytes:          BigDecimal(cb.getBigDecimal(13).to_s),
+          full_blocks:        BigDecimal(cb.getBigDecimal(14).to_s),
+          full_bytes:         BigDecimal(cb.getBigDecimal(15).to_s),
+          pct_free:           pct_free
+      }.extend(SelectHashHelper)
+
+    end
+
+
+    render_partial :list_space_usage_default
+  rescue Exception => e
+    if e.message['ORA-01031']
+      show_popup_message "You need the ANALYZE privilege on #{@owner}.#{@segment_name} to call DBMS_SPACE.SPACE_USAGE\n\n#{e.message}"
+    else
+      log_exception_backtrace(e)
+      raise e
+    end
+  end
+
+  def list_space_usage_securefile
+    @result = []
+
+
+    segments = sql_select_all ["SELECT Partition_Name
+                               FROM   DBA_Segments
+                               WHERE  Owner        = ?
+                               AND    Segment_Name = ?
+                               #{" AND Partition_Name = ? " if @partition_name}
+                               ",
+                               @owner, @segment_name].concat(@partition_name ? [@partition_name] : [])
+
+    segments.each do |segment|
+      connection = PanoramaConnection.get_jdbc_raw_connection
+      cb = connection.prepareCall("CALL DBMS_SPACE.SPACE_USAGE(
+                                       segment_owner        => ?,
+                                       segment_name         => ?,
+                                       segment_type         => ?,
+                                       segment_size_blocks  => ?,
+                                       segment_size_bytes   => ?,
+                                       used_blocks          => ?,
+                                       used_bytes           => ?,
+                                       expired_blocks       => ?,
+                                       expired_bytes        => ?,
+                                       unexpired_blocks     => ?,
+                                       unexpired_bytes      => ?
+                                       #{", partition_name       => ?" if segment.partition_name}
+                                     )")
+
+
+      cb.setString(1, @owner)
+      cb.setString(2, @segment_name)
+      cb.setString(3, @segment_type)
+      cb.registerOutParameter(4,  java.sql.Types::DECIMAL)    # segment_size_blocks
+      cb.registerOutParameter(5,  java.sql.Types::DECIMAL)    # segment_size_bytes
+      cb.registerOutParameter(6,  java.sql.Types::DECIMAL)    # used_blocks
+      cb.registerOutParameter(7,  java.sql.Types::DECIMAL)    # used_bytes
+      cb.registerOutParameter(8,  java.sql.Types::DECIMAL)    # expired_blocks
+      cb.registerOutParameter(9,  java.sql.Types::DECIMAL)    # expired_bytes
+      cb.registerOutParameter(10, java.sql.Types::DECIMAL)    # unexpired_blocks
+      cb.registerOutParameter(11, java.sql.Types::DECIMAL)    # unexpired_bytes
+      cb.setString(12, segment.partition_name)  if segment.partition_name
+
+      cb.executeQuery();
+
+      @result << {
+          partition_name:       segment.partition_name,
+          segment_size_blocks:  BigDecimal(cb.getBigDecimal(4).to_s),
+          segment_size_bytes:   BigDecimal(cb.getBigDecimal(5).to_s),
+          used_blocks:          BigDecimal(cb.getBigDecimal(6).to_s),
+          used_bytes:           BigDecimal(cb.getBigDecimal(7).to_s),
+          expired_blocks:       BigDecimal(cb.getBigDecimal(8).to_s),
+          expired_bytes:        BigDecimal(cb.getBigDecimal(9).to_s),
+          unexpired_blocks:     BigDecimal(cb.getBigDecimal(10).to_s),
+          unexpired_bytes:      BigDecimal(cb.getBigDecimal(11).to_s),
+      }.extend(SelectHashHelper)
+
+    end
+
+
+    render_partial :list_space_usage_securefile
+  rescue Exception => e
+    if e.message['ORA-01031']
+      show_popup_message "You need the ANALYZE privilege on #{@owner}.#{@segment_name} to call DBMS_SPACE.SPACE_USAGE\n\n#{e.message}"
+    else
+      log_exception_backtrace(e)
+      raise e
+    end
+  end
+
 
 end

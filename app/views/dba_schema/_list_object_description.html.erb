@@ -182,13 +182,19 @@ column_options =
 - Clustering
 "
 
+   link_space_usage = proc do |rec, value|
+     ajax_link(value,
+                             {:action       => :list_space_usage,
+                              :owner        => @owner,
+                              :segment_name => @table_name,
+                              :update_area  => @update_area,
+                             },
+                     :title=>"Show space usage for #{@owner}.#{@table_name} from DBMS_SPACE.SPACE_USAGE"
+       )
+   end
 
   mb_used = proc do |rec|
     rec.avg_row_len.to_f * rec.num_rows / (1024*1024) rescue nil
-  end
-
-  list_percent_unused = proc do |rec|
-    fn(100 - (mb_used.call(rec) * 100 / rec.size_mb_table), 1) rescue nil
   end
 
    list_rac_master = proc do |rec|
@@ -243,11 +249,11 @@ column_options =
    column_options << {:caption=> 'Init. Trans',      :data=>proc{|rec| rec.ini_trans},                        :title=> 'Number of initial entries in transaction list of db block', :align=>:right, data_title: proc{|rec| "%t\nNumber of maximum transactions (MAX_TRANS) = #{rec.max_trans}"}}
    column_options << {:caption=> 'Initial extent (KB)',:data=>proc{|rec| fn(rec.initial_extent/1024) rescue nil},   :title=> 'Size of initial extent allocated at object creation in kByte', :align=>:right, data_title: proc{|rec| "%t\nNext extent = #{fn(rec.next_extent/1024) rescue nil} kBytes\nMin. extents = #{fn(rec.min_extents)}\nMax. extents = #{fn(rec.max_extents)} "}}
    column_options << {:caption=> 'Rows',             :data=>link_real_num_rows,                               :title=> 'Number of rows calculated by last analyze run', :align=>:right}
-   column_options << {:caption=> 'Size (MB) Table',  :data=>proc{|rec| fn(rec.size_mb_table, 2)},             :title=> 'Current table size in megabytes', :align=>:right}
+   column_options << {:caption=> 'Size (MB) Table',  data: proc{|rec| link_space_usage.call(rec, fn(rec.size_mb_table, 2))}, :title=> 'Current table size in megabytes', :align=>:right}
    column_options << {:caption=> 'Size (MB) Total',  :data=>proc{|rec| fn(@size_mb_total, 2)},                :title=> 'Current total size in megabytes (includes table, indexes, LOBs)', :align=>:right}
    column_options << {:caption=> 'Ext.',             :data=>link_extents,                                     :title=> 'Number of extents (from DBA_Segments)', :align=>:right}
    column_options << {:caption=> 'Blocks',           :data=>proc{|rec| fn(rec.segment_blocks)},               :title=> 'Number of allocated blocks (from DBA_Segments)', :align=>:right}
-   column_options << {:caption=> '% unused',         :data=>list_percent_unused,                              :title=> "Unused storage of table within extents in percent.\nCalculated by size of all allocated extents - (Avg_Row_Len * Num_Rows)\nAlso includes the free space in blocks according to PCT_FREE\nMay be negative e.g. for compressed tables", data_title: proc{|rec| "%t\n\nCorrelating unused space in MB = #{fn(rec.size_mb_table - mb_used.call(rec), 2) rescue nil}"}, :align=>:right}
+   column_options << {:caption=> '% unused',         :data=>proc{|rec| link_space_usage.call(rec, (fn(100 - (mb_used.call(rec) * 100 / rec.size_mb_table), 1) rescue nil))}, :title=> "Unused storage of table within extents in percent.\nCalculated by size of all allocated extents - (Avg_Row_Len * Num_Rows)\nAlso includes the free space in blocks according to PCT_FREE\nMay be negative e.g. for compressed tables", data_title: proc{|rec| "%t\n\nCorrelating unused space in MB = #{fn(rec.size_mb_table - mb_used.call(rec), 2) rescue nil}"}, :align=>:right}
    column_options << {:caption=> 'Empty',            :data=>proc{|rec| fn(rec.empty_blocks)},                 :title=> "Number of empty (never used) blocks calculated by last analyze run\nThis value is populated only by execution of ALTER TABLE xxx COMPUTE STATISTICS;", :align=>:right}                                              if @attribs.count > 0 && @attribs[0].empty_blocks != 0
    column_options << {:caption=> 'Avg. Spc.',        :data=>proc{|rec| fn(rec.avg_space)},                    :title=> "Average amount of free space, in bytes, in a data block allocated to the table calculated by last analyze run\nThis value is populated only by execution of ALTER TABLE xxx COMPUTE STATISTICS;", :align=>:right}   if @attribs.count > 0 && @attribs[0].avg_space != 0
    column_options << {:caption=> 'Chn.',             :data=>proc{|rec| fn(rec.chain_cnt)},                    :title=> "Number of chained rows calculated by last analyze run.\nThis metric is not populated by calls of DBMS_STATS.Gather_xxx_Stats.\nThis value is populated only by execution of ALTER TABLE xxx COMPUTE STATISTICS;", :align=>:right}  if @attribs.count > 0 && @attribs[0].chain_cnt != 0
