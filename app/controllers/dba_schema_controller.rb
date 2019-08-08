@@ -4,6 +4,7 @@ require 'java'
 
 class DbaSchemaController < ApplicationController
   include DbaHelper
+  include DbaSchemaHelper
 
   # Einstieg in Seite (Menü-Action)
   def show_object_size
@@ -109,6 +110,7 @@ class DbaSchemaController < ApplicationController
         Owner,                                                  
         SUM(EXTENTS)                    Used_Ext,               
         SUM(bytes)/(1024*1024)          MBytes,
+        SUM(Blocks)                     Blocks,
         MIN(Initial_Extent)/1024        Min_Init_Ext_KB,
         MAX(Initial_Extent)/1024        Max_Init_Ext_KB,
         SUM(Initial_Extent)/1024        Sum_Init_Ext_KB,
@@ -123,10 +125,10 @@ class DbaSchemaController < ApplicationController
         SUM(Max_Extents)                Sum_Max_Exts,
         #{"CASE WHEN COUNT(DISTINCT InMemory) = 1 THEN MIN(InMemory) ELSE '<'||COUNT(DISTINCT InMemory)||'>' END InMemory," if get_db_version >= '12.1.0.2'}
         SUM(Num_Rows)                   Num_Rows,
+        SUM(Blocks * PCT_Free)  / SUM(Blocks) Pct_Free,     /* weighted value by number of blocks of partition */
+        SUM(Blocks * Ini_Trans) / SUM(Blocks) Ini_Trans,    /* weighted value by number of blocks of partition */
         CASE WHEN COUNT(DISTINCT Compression) <= 1 THEN MIN(Compression) ELSE '<several>' END Compression,
         AVG(Avg_Row_Len)                Avg_RowLen,
-        AVG(100-(((Avg_Row_Len)*Num_Rows*100)/Bytes)) Percent_Free,
-        AVG(100-(((Avg_Row_Len)*Num_Rows*100)/Bytes))*SUM(bytes)/(100*1024*1024) MBytes_Free_avg_row_len,
         SUM(Empty_Blocks)               Empty_Blocks,
         AVG(Avg_Space)                  Avg_Space,
         MIN(Last_Analyzed)              Last_Analyzed,
@@ -139,23 +141,27 @@ class DbaSchemaController < ApplicationController
         WITH Tab_Modifications AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, Partition_Name, SubPartition_Name, Timestamp FROM DBA_Tab_Modifications WHERE Partition_Name IS NULL),
              Segments          AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Segments s        WHERE s.SEGMENT_TYPE<>'CACHE' #{where_string}),
              Objects           AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Object_Name, SubObject_Name, Created, Last_DDL_Time, Timestamp FROM DBA_Objects),
-             Tables            AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Num_Rows, Avg_Row_Len, Empty_Blocks, Avg_Space, Last_Analyzed, Compression#{", Compress_For" if get_db_version >= '11.2'} FROM DBA_Tables),
-             Tab_Partitions    AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, Partition_Name, Num_Rows, Avg_Row_Len, Empty_Blocks, Avg_Space, Last_Analyzed, Compression#{", Compress_For" if get_db_version >= '11.2'} FROM DBA_Tab_Partitions),
-             Tab_SubPartitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, SubPartition_Name, Num_Rows, Avg_Row_Len, Empty_Blocks, Avg_Space, Last_Analyzed, Compression#{", Compress_For" if get_db_version >= '11.2'} FROM DBA_Tab_SubPartitions),
-             Indexes           AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Index_Type, Num_Rows, Compression, Last_Analyzed FROM DBA_Indexes),
-             Ind_Partitions    AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Partition_Name, Num_Rows, Last_Analyzed, Compression FROM DBA_Ind_Partitions),
-             Ind_SubPartitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, SubPartition_Name, Num_Rows, Last_Analyzed, Compression FROM DBA_Ind_SubPartitions),
+             Tables            AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Num_Rows, Pct_Free, Ini_Trans, Avg_Row_Len, Empty_Blocks, Avg_Space, Last_Analyzed, Compression#{", Compress_For" if get_db_version >= '11.2'} FROM DBA_Tables),
+             Tab_Partitions    AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, Partition_Name, Num_Rows, Pct_Free, Ini_Trans, Avg_Row_Len, Empty_Blocks, Avg_Space, Last_Analyzed, Compression#{", Compress_For" if get_db_version >= '11.2'} FROM DBA_Tab_Partitions),
+             Tab_SubPartitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, SubPartition_Name, Num_Rows, Pct_Free, Ini_Trans, Avg_Row_Len, Empty_Blocks, Avg_Space, Last_Analyzed, Compression#{", Compress_For" if get_db_version >= '11.2'} FROM DBA_Tab_SubPartitions),
+             Indexes           AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Index_Type, Num_Rows, Pct_Free, Ini_Trans, Compression, Last_Analyzed FROM DBA_Indexes),
+             Ind_Partitions    AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Partition_Name, Num_Rows, Pct_Free, Ini_Trans, Last_Analyzed, Compression FROM DBA_Ind_Partitions),
+             Ind_SubPartitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, SubPartition_Name, Num_Rows, Pct_Free, Ini_Trans, Last_Analyzed, Compression FROM DBA_Ind_SubPartitions),
+             Ind_Row_Len       AS (SELECT /*+ NO_MERGE MATERIALIZE */ ic.Index_Owner, ic.Index_Name, SUM(tc.Avg_Col_Len) + 10 /* Groesse RowID */ Avg_Rows_Len
+                                   FROM   DBA_Ind_Columns ic
+                                   JOIN   DBA_Tab_Columns tc ON tc.Owner = ic.Table_Owner AND tc.Table_Name = ic.Table_Name AND tc.Column_Name = ic.Column_Name
+                                   GROUP BY ic.Index_Owner, ic.Index_Name ),
              Lobs              AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Segment_Name, Compression FROM DBA_Lobs),
              Lob_Partitions    AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Lob_Name, Lob_Partition_Name, Compression FROM DBA_Lob_Partitions),
              Lob_SubPartitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Lob_Name, Lob_SubPartition_Name, Compression FROM DBA_Lob_SubPartitions)
-        SELECT /*+ USE_HASH(s o t tp tsp m i ip isp im l lp lsp) */
+        SELECT /*+ ORDERED USE_HASH(s o t tp tsp m i ip isp im l lp lsp) */
                s.Segment_Name,
                s.Partition_Name,                                
                s.Segment_Type,                                  
                s.Tablespace_Name,
                s.Owner,                                         
                s.Extents,                                       
-               s.Bytes,                                         
+               s.Bytes, s.Blocks,
                s.Initial_Extent, s.Next_Extent, s.Min_Extents, s.Max_Extents,
                o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
                #{"s.InMemory," if get_db_version >= '12.1.0.2'}
@@ -167,6 +173,22 @@ class DbaSchemaController < ApplicationController
                  'INDEX PARTITION',    ip.Num_Rows,
                  'INDEX SUBPARTITION', isp.Num_Rows,
                NULL) num_rows,
+               DECODE(s.Segment_Type,
+                 'TABLE',              t.Pct_Free,
+                 'TABLE PARTITION',    tp.Pct_Free,
+                 'TABLE SUBPARTITION', tsp.Pct_Free,
+                 'INDEX',              i.Pct_Free,
+                 'INDEX PARTITION',    ip.Pct_Free,
+                 'INDEX SUBPARTITION', isp.Pct_Free,
+               NULL) Pct_Free,
+               DECODE(s.Segment_Type,
+                 'TABLE',              t.Ini_Trans,
+                 'TABLE PARTITION',    tp.Ini_Trans,
+                 'TABLE SUBPARTITION', tsp.Ini_Trans,
+                 'INDEX',              i.Ini_Trans,
+                 'INDEX PARTITION',    ip.Ini_Trans,
+                 'INDEX SUBPARTITION', isp.Ini_Trans,
+               NULL) Ini_Trans,
                DECODE(s.Segment_Type,
                  'TABLE',              t.Compression  ||#{get_db_version >= '11.2' ? "CASE WHEN   t.Compression != 'DISABLED' THEN ' ('||  t.Compress_For||')' END" : "''"},
                  'TABLE PARTITION',    tp.Compression ||#{get_db_version >= '11.2' ? "CASE WHEN  tp.Compression != 'DISABLED' THEN ' ('|| tp.Compress_For||')' END" : "''"},
@@ -181,20 +203,8 @@ class DbaSchemaController < ApplicationController
                CASE WHEN s.Segment_Type = 'TABLE'              THEN t.Avg_Row_Len
                     WHEN s.Segment_Type = 'TABLE PARTITION'    THEN tp.Avg_Row_Len
                     WHEN s.Segment_Type = 'TABLE SUBPARTITION' THEN tsp.Avg_Row_Len
-                    WHEN s.Segment_Type IN ('INDEX', 'INDEX PARTITION', 'INDEX_SUBPARTITION') AND i.Index_Type = 'NORMAL' THEN
-                         (SELECT SUM(tc.Avg_Col_Len) + 10 /* Groesse RowID */
-                          FROM   DBA_Ind_Columns ic
-                          JOIN   DBA_Tab_Columns tc ON (    tc.Owner       = ic.Table_Owner
-                                                        AND tc.Table_Name  = ic.Table_Name
-                                                        AND tc.Column_Name = ic.Column_Name
-                                                       )
-                          WHERE ic.Index_Owner = s.Owner
-                          AND   ic.Index_Name  = s.Segment_Name
-                         )
-                    WHEN s.Segment_Type = 'INDEX' AND i.Index_Type =  'IOT - TOP' THEN
-                         (it.Avg_Row_Len + 10 /* Groesse RowID */ ) * 1.3 /* pauschaler Aufschlag fuer B-Baum */
-                    WHEN s.Segment_Type = 'INDEX PARTITION' AND i.Index_Type =  'IOT - TOP' THEN
-                         (it.Avg_Row_Len + 10 /* Groesse RowID */ ) * 1.3 /* pauschaler Aufschlag fuer B-Baum */
+                    WHEN s.Segment_Type IN ('INDEX', 'INDEX PARTITION', 'INDEX_SUBPARTITION') AND i.Index_Type = 'NORMAL'    THEN irl.Avg_Rows_Len
+                    WHEN s.Segment_Type IN ('INDEX', 'INDEX PARTITION', 'INDEX_SUBPARTITION') AND i.Index_Type = 'IOT - TOP' THEN (it.Avg_Row_Len + 10 /* Groesse RowID */ ) * 1.3 /* pauschaler Aufschlag fuer B-Baum */
                END avg_row_len,
                DECODE(s.Segment_Type,
                  'TABLE',              t.Empty_blocks,
@@ -223,7 +233,8 @@ class DbaSchemaController < ApplicationController
                  'INDEX SUBPARTITION', im.Timestamp,
                NULL) Last_DML_Timestamp
         FROM Segments s
-        LEFT OUTER JOIN Objects o                 ON o.Owner         = s.Owner       AND o.Object_Name          = s.Segment_name   AND (s.Partition_Name IS NULL OR o.SubObject_Name = s.Partition_Name)
+--        LEFT OUTER JOIN Objects o                 ON o.Owner         = s.Owner       AND o.Object_Name          = s.Segment_name   AND (s.Partition_Name IS NULL OR o.SubObject_Name = s.Partition_Name)
+        LEFT OUTER JOIN Objects o                 ON o.Owner         = s.Owner       AND o.Object_Name          = s.Segment_name   AND NVL(s.Partition_Name, '-1') = NVL(o.SubObject_Name, '-1')
         LEFT OUTER JOIN Tables t                  ON t.Owner         = s.Owner       AND t.Table_Name           = s.segment_name
         LEFT OUTER JOIN Tab_Partitions tp         ON tp.Table_Owner  = s.Owner       AND tp.Table_Name          = s.segment_name   AND tp.Partition_Name        = s.Partition_Name
         LEFT OUTER JOIN Tab_SubPartitions tsp     ON tsp.Table_Owner = s.Owner       AND tsp.Table_Name         = s.segment_name   AND tsp.SubPartition_Name    = s.Partition_Name
@@ -231,6 +242,7 @@ class DbaSchemaController < ApplicationController
         LEFT OUTER JOIN Indexes i                 ON i.Owner         = s.Owner       AND i.Index_Name           = s.segment_name
         LEFT OUTER JOIN Ind_Partitions ip         ON ip.Index_Owner  = s.Owner       AND ip.Index_Name          = s.segment_name   AND ip.Partition_Name        = s.Partition_Name
         LEFT OUTER JOIN Ind_SubPartitions isp     ON isp.Index_Owner = s.Owner       AND isp.Index_Name         = s.segment_name   AND isp.SubPartition_Name    = s.Partition_Name
+        LEFT OUTER JOIN Ind_Row_Len irl           ON irl.Index_Owner = i.Owner       AND irl.Index_Name         = i.Index_Name
         LEFT OUTER JOIN Tables it                 ON it.Owner        = i.Table_Owner AND it.Table_Name          = i.Table_Name
         LEFT OUTER JOIN Tab_Modifications im      ON im.Table_Owner  = it.Owner      AND im.Table_Name          = it.Table_Name    AND im.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
         LEFT OUTER JOIN Lobs l                    ON l.Owner         = s.Owner       AND l.Segment_Name         = s.Segment_Name

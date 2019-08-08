@@ -82,6 +82,29 @@
     result
   end
 
+  link_space_usage = proc do |rec, value|
+#    if rec.subpartition_count && rec.subpartition_count > 0                                    # show space only for non-subpartitoned
+    if false
+      value
+    else
+      ajax_link(value,
+                              {:action       => :list_space_usage,
+                               :owner        => rec.owner,
+                               :segment_name => rec.segment_name,
+                               partition_name:  (@show_partitions ? rec.partition_name : nil),
+                               :update_area  => @update_area,
+                              },
+                      :title=>"Show space usage for #{rec.owner}.#{rec.segment_name} from DBMS_SPACE.SPACE_USAGE"
+        )
+    end
+  end
+
+  list_percent_unused = proc do |rec|
+    link_space_usage.call(rec, (fn(100 - (mb_used.call(rec) * 100 / rec.size_mb), 1) rescue nil))
+  end
+
+  blocksize = PanoramaConnection.db_blocksize                                   # call only once
+
   column_options =
   [
     {:caption=> 'TS',                :data=>proc{|rec| rec.tablespace_name},                     :title=> 'Tablespace-Name'},
@@ -90,17 +113,19 @@
     {:caption=> 'Part.',             :data=>link_partition,                                      :title=> t(:dba_schema_list_objects_partition_hint, :default=>'Partition name or number of partitions')},
     {:caption=> 'Type',              :data=>proc{|rec| rec.segment_type},                        :title=> 'Object-Type'},
     {:caption=> 'Compr.',            :data=>proc{|rec| h rec.compression},                       :title=> t(:dba_schema_list_objects_compression_hint, :default => 'Type of compression if compression is used')},
-    {:caption=> 'Init. ext. (KB)',   :data=>init_ext_data,                       :align=>:right, :title=> "Size of initial extent in kByte", data_title: init_ext_data_title},
-    {:caption=> 'Next ext. (KB)',    :data=>next_ext_data,                       :align=>:right, :title=> "Size of next extent in kByte", data_title: next_ext_data_title},
-    {:caption=> 'Min. ext.',         :data=>min_exts_data,                       :align=>:right, :title=> "Minimum number of extents allocated at object creation", data_title: min_exts_data_title},
-    {:caption=> 'Used ext.',         :data=>proc{|rec| fn(rec.used_ext)},        :align=>:right, :title=> t(:dba_schema_list_objects_used_extents_hint, :default=>'Number of used extents')},
-    {:caption=> 'MBytes',            :data=>proc{|rec| fn(rec.mbytes)},          :align=>:right, :title=> t(:dba_schema_list_objects_mbytes_hint, :default=>"Size of the object in tablespace in MBytes\nSum over size of all allocated extents."),  :show_pct_hint=>true},
-    {:caption=> 'No. of rows',       :data=>link_real_num_rows,                  :align=>:right, :title=> t(:dba_schema_list_objects_num_rows_hint, :default=>'Number of rows acording to last analysis')},
-    {:caption=> 'Avg. row len.',     :data=>proc{|rec| fn(rec.avg_rowlen)},      :align=>:right, :title=> t(:dba_schema_list_objects_row_len_hint, :default=>'Average size of record according to last analysis (Avg_Row_Len for Tables, Sum of Avg_Col_Len + RowID for indexes)')  },
-    {:caption=> '% unused',          :data=>proc{|rec| fn(rec.percent_free)},    :align=>:right, :title=> t(:dba_schema_list_objects_pct_free_hint, :default=>"Unused storage within the allocated extents in %.\nCalculated by size of allocated extents - (Avg_Row_Len*Num_Rows)")},
-    {:caption=> 'MBytes unused ARL', :data=>proc{|rec| fn(rec.mbytes_free_avg_row_len)}, :align=>:right, :title=> t(:dba_schema_list_objects_mbytes_free_hint, :default=>"Unused storage within extents in MBytes.\nCalculated by size of all allocated extents - (Avg_Row_Len*Num_Rows)" ) },
-    {:caption=> 'Blocks empty',      :data=>proc{|rec| fn(rec.empty_blocks)},    :align=>:right, :title=> t(:dba_schema_list_objects_empty_blocks_hint, :default=>'Unused blocks according to empty_blocks')},
-    {:caption=> 'Avg. Space',        :data=>proc{|rec| fn(rec.avg_space)},       :align=>:right, :title=> t(:dba_schema_list_objects_avg_space_hint, :default=>'Average unused bytes per block according to avg_space') },
+    {:caption=> 'Init. ext. (KB)',   :data=>init_ext_data,                                                            :align=>:right, :title=> "Size of initial extent in kByte", data_title: init_ext_data_title},
+    {:caption=> 'Next ext. (KB)',    :data=>next_ext_data,                                                            :align=>:right, :title=> "Size of next extent in kByte", data_title: next_ext_data_title},
+    {:caption=> 'Min. ext.',         :data=>min_exts_data,                                                            :align=>:right, :title=> "Minimum number of extents allocated at object creation", data_title: min_exts_data_title},
+    {:caption=> 'Used ext.',         :data=>proc{|rec| fn(rec.used_ext)},                                             :align=>:right, :title=> t(:dba_schema_list_objects_used_extents_hint, :default=>'Number of used extents')},
+    {:caption=> 'Ini. trans.',       :data=>proc{|rec| fn(rec.ini_trans)},                                            :align=>:right, :title=> "Value for INI_TRANS of object. For partitioned objects this is average weighted by number of blocks"},
+    {:caption=> 'Pct free',          :data=>proc{|rec| fn(rec.pct_free)},                                             :align=>:right, :title=> "Value for PCT_FREE of object. For partitioned objects this is average weighted by number of blocks"},
+    {:caption=> 'MBytes',            :data=>proc{|rec| link_space_usage.call(rec, fn(rec.mbytes))},                   :align=>:right, :title=> t(:dba_schema_list_objects_mbytes_hint, :default=>"Size of the object in tablespace in MBytes\nSum over size of all allocated extents."),  :show_pct_hint=>true},
+    {:caption=> 'No. of rows',       :data=>link_real_num_rows,                                                       :align=>:right, :title=> t(:dba_schema_list_objects_num_rows_hint, :default=>'Number of rows acording to last analysis')},
+    {:caption=> 'Avg. row len.',     :data=>proc{|rec| fn(rec.avg_rowlen)},                                           :align=>:right, :title=> t(:dba_schema_list_objects_row_len_hint, :default=>'Average size of record according to last analysis (Avg_Row_Len for Tables, Sum of Avg_Col_Len + RowID for indexes)')  },
+    {:caption=> '% unused',          :data=>proc{|rec| link_space_usage.call(rec, fn(calc_free_space_pct_by_avg_row_len(rec.avg_rowlen, rec.num_rows, rec.pct_free, rec.ini_trans, blocksize, rec.mbytes)))}, :align=>:right, :title=> "Unused storage within the allocated extents in %.#{explain_calc_free_space_by_avg_row_len}"},
+   {:caption=> 'MBytes unused ARL', :data=>proc{|rec| link_space_usage.call(rec, fn(calc_free_space_mb_by_avg_row_len(rec.avg_rowlen, rec.num_rows, rec.pct_free, rec.ini_trans, blocksize, rec.mbytes)))},  :align=>:right, :title=> "Unused storage within extents in MBytes.#{explain_calc_free_space_by_avg_row_len}" },
+    {:caption=> 'Blocks empty',      :data=>proc{|rec| fn(rec.empty_blocks)},                                         :align=>:right, :title=> t(:dba_schema_list_objects_empty_blocks_hint, :default=>'Unused blocks according to empty_blocks')},
+    {:caption=> 'Avg. Space',        :data=>proc{|rec| fn(rec.avg_space)},                                            :align=>:right, :title=> t(:dba_schema_list_objects_avg_space_hint, :default=>'Average unused bytes per block according to avg_space') },
     {:caption=> 'Created',           :data=>proc{|rec| localeDateTime(rec.created)},             :title=> "Timestamp of object creation.\nIf grouped over partitions this is the creation timestamp of the oldest partition" },
     {:caption=> 'Last DDL time',     :data=>proc{|rec| localeDateTime(rec.last_ddl_time)},       :title=> "Timestamp of last DDL operation on object.\nIf grouped over partitions this is the last DDL operation on any partition" },
     {:caption=> 'Last spec. time',   :data=>proc{|rec| localeDateTime(rec.spec_ts)},             :title=> "Timestamp of last specification change on object.\nIf grouped over partitions this is the last specification change on any partition" },

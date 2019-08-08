@@ -61,13 +61,13 @@
   column_options << {caption: 'MBytes 75..100% free',   data: proc{|rec| fn(rec.fs4_bytes/(1024*1024), 2)},             align: :right,  title: 'MBytes in blocks having at least 75 up to 100% free space', data_title: proc{|rec| pct_mbytes_data_title.call(rec, rec.fs4_bytes)}}
   column_options << {caption: 'Approx. unused %',       data: show_approx_free_pct,                                     align: :right,  title: "Approx. unused % of data blocks#{approx_title_add.call}"}
   column_options << {caption: 'Approx. unused MBytes',  data: show_approx_free_mbytes,                                  align: :right,  title: "Approx. unused MBytes in data blocks#{approx_title_add.call}",   data_title: approx_data_title  }
-  column_options << {caption: 'Freeable MBytes',        data: proc{|rec| fn(approx_free_mbytes_without_pctfree.call(rec),2)},  align: :right,  title: "Max. freeable space in MBytes for reorganization of segment (in consideration of PCT_FREE)", data_title: proc{|rec| "%t#{"\nPCTFREE = #{rec.pct_free} %" if rec.pct_free}"} }
+  column_options << {caption: 'Freeable MBytes',        data: proc{|rec| fn(approx_free_mbytes_without_pctfree.call(rec),2)},  align: :right,  title: "Max. freeable space in MBytes for reorganization (index rebuild, table move) of segment (in consideration of PCT_FREE reallocation)\n\nNegative values means: object may become larger after reorganization due to reallocation of PCT_FREE", data_title: proc{|rec| "%t#{"\nPCTFREE = #{rec.pct_free} %" if rec.pct_free}"} }
 
 %>
 
 <%= gen_slickgrid(@result, column_options, {
     :caption => "Space usage under the high water mark from DBMS_SPACE.SPACE_USAGE for #{@owner}.#{@segment_name}",
-    :max_height => 450
+    :max_height => 450, show_pin_icon: 1
 })
 %>
 
