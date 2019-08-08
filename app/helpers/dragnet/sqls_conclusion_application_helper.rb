@@ -346,6 +346,35 @@ Detailed information about LOGON operations is available via menu 'DBA general /
                 {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>1, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
             ]
         },
+        {
+            :name  => t(:dragnet_helper_145_name, :default=>'Possibly missing guaranty of uniqueness by unique index or unique / primary key constraint'),
+            :desc  => t(:dragnet_helper_145_desc, :default=>"If an implicit expectation for uniqueness of a column exists, than this should be safeguarded by an unique index or unique constraint.
+This list shows all all columns with unique values at the time of last analysis if neither unqiue index nor unique constraint exists for this column.
+            "),
+            :sql=>  "
+SELECT tc.Owner, tc.Table_Name, tc.Column_Name, t.Num_Rows, tc.Num_Distinct, tc.Num_Nulls, tc.Num_Distinct+tc.Num_Nulls Distinct_and_Nulls
+FROM   DBA_Tab_Columns tc
+JOIN   DBA_Tables t ON t.Owner = tc.Owner AND t.Table_Name = tc.Table_Name
+WHERE  tc.Num_Distinct + tc.Num_Nulls >= t.Num_Rows
+AND    tc.Num_Distinct > 1
+AND    tc.Owner NOT IN ('SYS', 'SYSTEM', 'CTXSYS', 'DBSNMP', 'XDB', 'WMSYS')
+AND    (tc.Owner, tc.Table_Name, tc.Column_Name) NOT IN (
+            SELECT i.Table_Owner, i.Table_Name, ic.Column_Name
+            FROM   DBA_Ind_Columns ic
+            JOIN   DBA_Indexes i ON i.Owner = ic.Index_Owner AND i.Index_Name = ic.Index_Name
+            WHERE  i.Uniqueness       = 'UNIQUE'
+            AND    ic.Column_Position = 1
+)
+AND    (tc.Owner, tc.Table_Name, tc.Column_Name) NOT IN (
+            SELECT c.Owner, c.Table_Name, cc.Column_Name
+            FROM   DBA_Cons_Columns cc
+            JOIN   DBA_Constraints c ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name
+            WHERE  c.Constraint_Type IN ('P', 'U')
+            AND    cc.Position = 1
+)
+ORDER BY tc.Owner, tc.Table_Name
+           ",
+        },
     ]
   end
 
