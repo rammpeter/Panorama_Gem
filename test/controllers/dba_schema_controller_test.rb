@@ -9,19 +9,23 @@ class DbaSchemaControllerTest < ActionController::TestCase
 
     initialize_min_max_snap_id_and_times
 
-    lob_table = sql_select_first_row "SELECT Owner, Table_Name, Segment_Name FROM DBA_Lobs WHERE Segment_Created = 'YES' AND RowNum < 2"
+    lob_table = sql_select_first_row "SELECT Owner, Table_Name, Segment_Name FROM DBA_Lobs WHERE Segment_Created = 'YES' AND Owner NOT IN ('SYS', 'SYSTEM') AND RowNum < 2"
     if lob_table
       @lob_owner        = lob_table.owner
       @lob_table_name   = lob_table.table_name
       @lob_segment_name = lob_table.segment_name
+    else
+      puts "DbaSchemaControllerTest.setup: There are no LOB tables in database"
     end
 
-    lob_part_table = sql_select_first_row "SELECT Table_Owner, Table_Name, Lob_Name, LOB_Partition_Name FROM DBA_Lob_Partitions WHERE Segment_Created = 'YES' AND RowNum < 2"
+    lob_part_table = sql_select_first_row "SELECT Table_Owner, Table_Name, Lob_Name, LOB_Partition_Name FROM DBA_Lob_Partitions WHERE Segment_Created = 'YES' AND Table_Owner NOT IN ('SYS', 'SYSTEM') AND RowNum < 2"
     if lob_part_table
       @lob_part_owner           = lob_part_table.table_owner
       @lob_part_table_name      = lob_part_table.table_name
       @lob_part_lob_name        = lob_part_table.lob_name
       @lob_part_partition_name  = lob_part_table.lob_partition_name
+    else
+      puts "DbaSchemaControllerTest.setup: There are no partitioned LOB tables in database"
     end
 
     subpart_table = sql_select_first_row "SELECT Table_Owner, Table_Name, Partition_Name FROM DBA_Tab_SubPartitions WHERE Segment_Created = 'YES' AND RowNum < 2"
@@ -42,7 +46,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
       @subpart_index_index_name       = subpart_index.index_name
       @subpart_index_partition_name   = subpart_index.partition_name
     else
-      Rails.logger.info "DbaSchemaControllerTest.setup: There are no index subpartitions in database"
+      puts "DbaSchemaControllerTest.setup: There are no index subpartitions in database"
       @subpart_index_owner            = nil
       @subpart_index_index_name       = nil
       @subpart_index_partition_name   = nil
