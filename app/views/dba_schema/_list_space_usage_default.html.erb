@@ -18,11 +18,11 @@
   end
 
   approx_free_mbytes = proc do |rec|
-    (rec.fs1_bytes * 0.125 + rec.fs2_bytes * 0.375 + rec.fs3_bytes * 0.625 + rec.fs4_bytes * 0.875) / (1024*1024)
+    (rec.fs1_bytes * 0.125 + rec.fs2_bytes * 0.375 + rec.fs3_bytes * 0.625 + rec.fs4_bytes * 0.875).to_f / (1024*1024)
   end
 
   approx_free_mbytes_without_pctfree = proc do |rec|
-    approx_free_mbytes.call(rec) - sum_data_bytes.call(rec)/(1024*1024) * (rec.pct_free.nil? ? 0 : rec.pct_free) / 100 rescue nil
+    approx_free_mbytes.call(rec) - sum_data_bytes.call(rec).to_f/(1024*1024) * (rec.pct_free.nil? ? 0 : rec.pct_free) / 100 rescue nil
   end
 
   show_approx_free_mbytes = proc do |rec|
@@ -30,7 +30,7 @@
   end
 
   show_approx_free_pct = proc do |rec|
-    fn((approx_free_mbytes.call(rec) * 100.0) / (sum_data_bytes.call(rec) / (1024*1024)) , 2) rescue nil
+    fn((approx_free_mbytes.call(rec) * 100.0) / (sum_data_bytes.call(rec).to_f / (1024*1024)) , 2) rescue nil
   end
 
   approx_title_add = proc do |rec|

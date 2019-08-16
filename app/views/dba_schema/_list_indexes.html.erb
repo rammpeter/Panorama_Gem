@@ -194,6 +194,16 @@
      title
    end
 
+  data_title_use = proc do |rec|
+    "%t:\nmonitoring index = #{rec.monitoring}\nstart monitoring = #{localeDateTime(rec.start_monitoring)}\nend monitoring = #{localeDateTime(rec.end_monitoring)}#{"\nnot used since #{fn((Time.now - rec.start_monitoring)/86400)} days" if rec.start_monitoring && rec.used=='NO'}"
+  end
+
+   blocksize = PanoramaConnection.db_blocksize                                   # call only once
+
+  data_title_unused = proc do |rec|
+    "%t\n\nCorrelating unused space in MB = #{fn(calc_free_space_mb_index(rec.avg_row_len, rec.num_rows, rec.pct_free, rec.ini_trans, blocksize, rec.size_mb, rec.leaf_blocks), 3)}\nCalculated on base of avg. row len in index = #{fn(rec.avg_row_len)}"
+  end
+
 
    column_options =
            [
@@ -205,8 +215,9 @@
                    {:caption=> 'Pct Free',         :data=>proc{|rec| rec.pct_free},                                       :title=> 'Percent free', :align=>:right},
                    {:caption=> 'Ini Trans',        :data=>proc{|rec| rec.ini_trans},                                      :title=> 'Number of initial entries in transaction list of db block', data_title: proc{|rec| "%t\nNumber of maximum transactions (MAX_TRANS) = #{rec.max_trans}"}, :align=>:right},
                    {:caption=> 'Rows',             :data=>proc{|rec| link_current_index_stats(rec, fn(rec.num_rows))},    :title=> 'Number of rows calculated by last analyze run', :align=>:right},
-                   {:caption=> 'Size (MB)',        :data=>proc{|rec| link_space_usage.call(rec, fn(rec.size_mb, 2))},     :title=> 'Current object size in megabytes', :align=>:right},
+                   {:caption=> 'Size (MB)',        :data=>proc{|rec| link_space_usage.call(rec, fn(rec.size_mb, 2))},     :title=> 'Current object size in megabytes', :align=>:right, data_title: proc{|rec| "%t\n\nNumber of blocks = #{fn(rec.blocks)}"}},
                    {:caption=> 'Ext.',             :data=>link_extents,                                                   :title=> 'Number of extents (from DBA_Segments)', :align=>:right},
+                   {:caption=> '% unused',         :data=>proc{|rec| link_space_usage.call(rec, fn(calc_free_space_pct_index(rec.avg_row_len, rec.num_rows, rec.pct_free, rec.ini_trans, blocksize, rec.size_mb, rec.leaf_blocks)))}, :title=> "Unused storage of index within extents in percent.#{explain_calc_free_space_by_avg_row_len}", data_title: data_title_unused, :align=>:right},
                    {:caption=> 'B',                :data=>proc{|rec| fn(rec.blevel)},                                     :title=> "B*-Tree level (depth of the index from its root block to its leaf blocks).\nA depth of 0 indicates that the root block and leaf block are the same.", :align=>:right},
                    {:caption=> 'Leaf blocks',      :data=>proc{|rec| link_current_index_stats(rec, fn(rec.leaf_blocks))}, :title=> 'Number of leaf blocks in the index calculated by last analyze run', :align=>:right},
                    {:caption=> 'Distinct',         :data=>proc{|rec| fn(rec.distinct_keys)},                              :title=> 'Number of distinct keys in the index calculated by last analyze run', :align=>:right, :data_title=>proc{|rec| "%t, #{fn(rec.num_rows.to_f/rec.distinct_keys, 1) rescue nil} rows per key" }},
@@ -220,7 +231,7 @@
                    { caption: 'Spec. TS',          data: proc{|rec| localeDateTime(rec.spec_ts)},                         title: "Timestamp for the last specification change of the index" },
                    {:caption=> 'Last analyzed',    :data=>proc{|rec| localeDateTime(rec.last_analyzed)},                  :title=> 'The date of the most recent time this table was analyzed'},
                    {:caption=> 'FK',               data: link_fk,                                                         title: 'Is index used for protection of foreign key constraint?', data_title: proc{|rec| "%t#{"\nConstraint = '#{rec.constraint_name}'" if rec.constraint_name}"}},
-                   {:caption=> 'Use',              :data=>proc{|rec| rec.used},                                           :title=> 'Usage of index detected? From sys.Object_Usage', :data_title=>proc{|rec| "%t: monitoring index = #{rec.monitoring}, start monitoring = #{localeDateTime(rec.start_monitoring)}, end monitoring = #{localeDateTime(rec.end_monitoring)}"}, :data_style=>proc{|rec| 'background-color:coral;' if rec.used=='NO'} },
+                   {:caption=> 'Use',              :data=>proc{|rec| rec.used},                                           :title=> 'Usage of index detected? From sys.Object_Usage', data_title: data_title_use, data_style: proc{|rec| 'background-color:coral;' if rec.used=='NO'} },
                    {:caption=> 'Several States',   :data=>list_states,                                                    :title=> title_states},
                    {:caption=> 'Action',           :data=>render_action_buttons,                                          :title=> 'Call action for this index'},
            ]

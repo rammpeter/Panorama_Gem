@@ -135,7 +135,8 @@ class DbaSchemaController < ApplicationController
         MAX(Last_DML_Timestamp)         Last_DML_Timestamp,
         MIN(Created)                    Created,
         MAX(Last_DDL_Time)              Last_DDL_Time,
-        MAX(Spec_TS)                    Spec_TS
+        MAX(Spec_TS)                    Spec_TS,
+        SUM(Leaf_Blocks)                Leaf_Blocks
       FROM (
         /* Views moved to with clause due to performance problems with 18.3 */
         WITH Tab_Modifications AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, Partition_Name, SubPartition_Name, Timestamp FROM DBA_Tab_Modifications WHERE Partition_Name IS NULL),
@@ -144,13 +145,17 @@ class DbaSchemaController < ApplicationController
              Tables            AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Num_Rows, Pct_Free, Ini_Trans, Avg_Row_Len, Empty_Blocks, Avg_Space, Last_Analyzed, Compression#{", Compress_For" if get_db_version >= '11.2'} FROM DBA_Tables),
              Tab_Partitions    AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, Partition_Name, Num_Rows, Pct_Free, Ini_Trans, Avg_Row_Len, Empty_Blocks, Avg_Space, Last_Analyzed, Compression#{", Compress_For" if get_db_version >= '11.2'} FROM DBA_Tab_Partitions),
              Tab_SubPartitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, SubPartition_Name, Num_Rows, Pct_Free, Ini_Trans, Avg_Row_Len, Empty_Blocks, Avg_Space, Last_Analyzed, Compression#{", Compress_For" if get_db_version >= '11.2'} FROM DBA_Tab_SubPartitions),
-             Indexes           AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Index_Type, Num_Rows, Pct_Free, Ini_Trans, Compression, Last_Analyzed FROM DBA_Indexes),
-             Ind_Partitions    AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Partition_Name, Num_Rows, Pct_Free, Ini_Trans, Last_Analyzed, Compression FROM DBA_Ind_Partitions),
-             Ind_SubPartitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, SubPartition_Name, Num_Rows, Pct_Free, Ini_Trans, Last_Analyzed, Compression FROM DBA_Ind_SubPartitions),
-             Ind_Row_Len       AS (SELECT /*+ NO_MERGE MATERIALIZE */ ic.Index_Owner, ic.Index_Name, SUM(tc.Avg_Col_Len) + 10 /* Groesse RowID */ Avg_Rows_Len
+             Indexes           AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Index_Type, Num_Rows, Pct_Free, Ini_Trans, Compression, Last_Analyzed, Leaf_Blocks FROM DBA_Indexes),
+             Ind_Partitions    AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Partition_Name, Num_Rows, Pct_Free, Ini_Trans, Last_Analyzed, Compression, Leaf_Blocks FROM DBA_Ind_Partitions),
+             Ind_SubPartitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, SubPartition_Name, Num_Rows, Pct_Free, Ini_Trans, Last_Analyzed, Compression, Leaf_Blocks FROM DBA_Ind_SubPartitions),
+             Ind_Row_Len       AS (SELECT /*+ NO_MERGE MATERIALIZE */ ic.Index_Owner, ic.Index_Name, SUM(tc.Avg_Col_Len) Avg_Rows_Len
                                    FROM   DBA_Ind_Columns ic
                                    JOIN   DBA_Tab_Columns tc ON tc.Owner = ic.Table_Owner AND tc.Table_Name = ic.Table_Name AND tc.Column_Name = ic.Column_Name
                                    GROUP BY ic.Index_Owner, ic.Index_Name ),
+             Tab_Row_Len       AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, SUM(Avg_Col_Len) Avg_Rows_Len
+                                   FROM   DBA_Tab_Columns
+                                   GROUP BY Owner, Table_Name
+                                  ),
              Lobs              AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Segment_Name, Compression FROM DBA_Lobs),
              Lob_Partitions    AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Lob_Name, Lob_Partition_Name, Compression FROM DBA_Lob_Partitions),
              Lob_SubPartitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Lob_Name, Lob_SubPartition_Name, Compression FROM DBA_Lob_SubPartitions)
@@ -204,7 +209,9 @@ class DbaSchemaController < ApplicationController
                     WHEN s.Segment_Type = 'TABLE PARTITION'    THEN tp.Avg_Row_Len
                     WHEN s.Segment_Type = 'TABLE SUBPARTITION' THEN tsp.Avg_Row_Len
                     WHEN s.Segment_Type IN ('INDEX', 'INDEX PARTITION', 'INDEX_SUBPARTITION') AND i.Index_Type = 'NORMAL'    THEN irl.Avg_Rows_Len
-                    WHEN s.Segment_Type IN ('INDEX', 'INDEX PARTITION', 'INDEX_SUBPARTITION') AND i.Index_Type = 'IOT - TOP' THEN (it.Avg_Row_Len + 10 /* Groesse RowID */ ) * 1.3 /* pauschaler Aufschlag fuer B-Baum */
+                    WHEN s.Segment_Type = 'INDEX'              AND i.Index_Type = 'IOT - TOP' THEN trl.Avg_Rows_Len
+                    WHEN s.Segment_Type = 'INDEX PARTITION'    AND i.Index_Type = 'IOT - TOP' THEN trl.Avg_Rows_Len
+                    WHEN s.Segment_Type = 'INDEX SUBPARTITION' AND i.Index_Type = 'IOT - TOP' THEN trl.Avg_Rows_Len
                END avg_row_len,
                DECODE(s.Segment_Type,
                  'TABLE',              t.Empty_blocks,
@@ -231,7 +238,15 @@ class DbaSchemaController < ApplicationController
                  'INDEX',              im.Timestamp,
                  'INDEX PARTITION',    im.Timestamp,
                  'INDEX SUBPARTITION', im.Timestamp,
-               NULL) Last_DML_Timestamp
+               NULL) Last_DML_Timestamp,
+               DECODE(s.Segment_Type,
+                 'TABLE',              NULL,
+                 'TABLE PARTITION',    NULL,
+                 'TABLE SUBPARTITION', NULL,
+                 'INDEX',              i.Leaf_Blocks,
+                 'INDEX PARTITION',    ip.Leaf_Blocks,
+                 'INDEX SUBPARTITION', isp.Leaf_Blocks,
+               NULL) Leaf_Blocks
         FROM Segments s
 --        LEFT OUTER JOIN Objects o                 ON o.Owner         = s.Owner       AND o.Object_Name          = s.Segment_name   AND (s.Partition_Name IS NULL OR o.SubObject_Name = s.Partition_Name)
         LEFT OUTER JOIN Objects o                 ON o.Owner         = s.Owner       AND o.Object_Name          = s.Segment_name   AND NVL(s.Partition_Name, '-1') = NVL(o.SubObject_Name, '-1')
@@ -243,6 +258,7 @@ class DbaSchemaController < ApplicationController
         LEFT OUTER JOIN Ind_Partitions ip         ON ip.Index_Owner  = s.Owner       AND ip.Index_Name          = s.segment_name   AND ip.Partition_Name        = s.Partition_Name
         LEFT OUTER JOIN Ind_SubPartitions isp     ON isp.Index_Owner = s.Owner       AND isp.Index_Name         = s.segment_name   AND isp.SubPartition_Name    = s.Partition_Name
         LEFT OUTER JOIN Ind_Row_Len irl           ON irl.Index_Owner = i.Owner       AND irl.Index_Name         = i.Index_Name
+        LEFT OUTER JOIN Tab_Row_Len trl           ON trl.Owner       = i.Table_Owner AND trl.Table_Name         = i.Table_Name     /* Sum of column sizes for IOTs */
         LEFT OUTER JOIN Tables it                 ON it.Owner        = i.Table_Owner AND it.Table_Name          = i.Table_Name
         LEFT OUTER JOIN Tab_Modifications im      ON im.Table_Owner  = it.Owner      AND im.Table_Name          = it.Table_Name    AND im.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
         LEFT OUTER JOIN Lobs l                    ON l.Owner         = s.Owner       AND l.Segment_Name         = s.Segment_Name
@@ -766,6 +782,10 @@ class DbaSchemaController < ApplicationController
     @table_name = params[:table_name]
 
     @indexes = sql_select_all ["\
+                 WITH Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ *
+                                  FROM   DBA_Indexes
+                                  WHERE  Table_Owner = ? AND Table_Name = ?
+                                 )
                  SELECT /*+ Panorama Ramm */ i.*, p.Partition_Number, sp.SubPartition_Number,
                         NULL Size_MB, NULL Extents, /* both columns selected separately */
                         DECODE(bitand(io.flags, 65536), 0, 'NO', 'YES') Monitoring,
@@ -775,6 +795,15 @@ class DbaSchemaController < ApplicationController
                         do.Created, do.Last_DDL_Time, TO_DATE(do.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
                         CASE WHEN c.Constraint_Name IS NOT NULL THEN 'Y' END Used_For_FK,
                         c.Constraint_Name,
+                        CASE WHEN i.Index_Type = 'IOT - TOP' THEN
+                          (SELECT SUM(tc.Avg_Col_Len) FROM DBA_Tab_Columns tc WHERE tc.Owner = i.Table_Owner AND tc.Table_Name = i.Table_Name)
+                        ELSE
+                          (SELECT SUM(tc.Avg_Col_Len)
+                           FROM   DBA_Ind_Columns ic
+                           JOIN    DBA_Tab_Columns tc ON tc.Owner = ic.Table_Owner AND tc.Table_Name = ic.Table_Name AND tc.Column_Name = ic.Column_Name
+                           WHERE   ic.Index_Owner = i.Owner AND ic.Index_Name = i.Index_Name
+                          )
+                        END Avg_Row_Len,
                         p.P_Status_Count,         p.P_Status,
                         p.P_Compression_Count,    p.P_Compression,
                         p.P_Tablespace_Count,     p.P_Tablespace_Name,
@@ -788,17 +817,16 @@ class DbaSchemaController < ApplicationController
                         sp.SP_Ini_Trans_Count,    sp.SP_Ini_Trans,
                         sp.SP_Max_Trans_Count,    sp.SP_Max_Trans
                         #{", mi.GC_Mastering_Policy, mi.GC_Mastering_Policy_Cnt, mi.Current_Master, mi.Current_Master, mi.Current_Master_Cnt, mi.Previous_Master, mi.Previous_Master_Cnt, mi.Remaster_Cnt" if PanoramaConnection.rac?}
-                 FROM   DBA_Indexes i
+                 FROM   Indexes i
                  JOIN   DBA_Users   u  ON u.UserName  = i.owner
                  JOIN   sys.Obj$    o  ON o.Owner# = u.User_ID AND o.Name = i.Index_Name
                  JOIN   sys.Ind$    io ON io.Obj# = o.Obj#
                  LEFT OUTER JOIN DBA_Objects do ON do.Owner = i.Owner AND do.Object_Name = i.Index_Name AND do.Object_Type = 'INDEX'
                  LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ii.Index_Name, MIN(c.Constraint_Name) Constraint_Name
-                                  FROM   DBA_Indexes ii
+                                  FROM   Indexes ii
                                   LEFT OUTER JOIN DBA_Ind_Columns ic ON ic.Index_Owner = ii.Owner AND ic.Index_Name = ii.Index_Name AND ic.Column_Position = 1 /* Columns for test of FK */
                                   LEFT OUTER JOIN DBA_Cons_Columns cc ON cc.Owner = ii.Table_Owner AND cc.Table_Name = ii.Table_Name AND cc.Column_Name = ic.Column_Name AND cc.Position = 1 /* First columns of constraint */
                                   LEFT OUTER JOIN DBA_Constraints c ON c.Owner = ii.Table_Owner AND c.Table_Name = ii.Table_Name AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'R'
-                                  WHERE  ii.Table_Owner = ? AND ii.Table_Name = ?
                                   GROUP BY ii.Index_Name
                                  ) c ON c.Index_Name = i.Index_Name
                  LEFT OUTER JOIN sys.object_usage ou ON ou.Obj# = o.Obj#
@@ -809,10 +837,8 @@ class DbaSchemaController < ApplicationController
                                   COUNT(DISTINCT ip.Pct_Free)        P_Pct_Free_Count,     MIN(ip.Pct_Free)         P_Pct_Free,
                                   COUNT(DISTINCT ip.Ini_Trans)       P_Ini_Trans_Count,    MIN(ip.Ini_Trans)        P_Ini_Trans,
                                   COUNT(DISTINCT ip.Max_Trans)       P_Max_Trans_Count,    MIN(ip.Max_Trans)        P_Max_Trans
-                                  FROM   DBA_Indexes ii
+                                  FROM   Indexes ii
                                   JOIN   DBA_Ind_Partitions ip ON ip.Index_Owner=ii.Owner AND ip.Index_Name =ii.Index_Name
-                                  WHERE  ii.Table_Owner = ?
-                                  AND    ii.Table_Name = ?
                                   GROUP BY ii.Index_Name
                                  ) p ON p.Index_Name = i.Index_Name
                  LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ii.Index_Name, COUNT(*) SubPartition_Number,
@@ -822,28 +848,24 @@ class DbaSchemaController < ApplicationController
                                   COUNT(DISTINCT ip.Pct_Free)        SP_Pct_Free_Count,     MIN(ip.Pct_Free)         SP_Pct_Free,
                                   COUNT(DISTINCT ip.Ini_Trans)       SP_Ini_Trans_Count,    MIN(ip.Ini_Trans)        SP_Ini_Trans,
                                   COUNT(DISTINCT ip.Max_Trans)       SP_Max_Trans_Count,    MIN(ip.Max_Trans)        SP_Max_Trans
-                                  FROM   DBA_Indexes ii
+                                  FROM   Indexes ii
                                   JOIN   DBA_Ind_SubPartitions ip ON ip.Index_Owner=ii.Owner AND ip.Index_Name =ii.Index_Name
-                                  WHERE  ii.Table_Owner = ?
-                                  AND    ii.Table_Name = ?
                                   GROUP BY ii.Index_Name
                                  ) sp ON sp.Index_Name = i.Index_Name
               #{"LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ii.Index_Name, MIN(i.GC_Mastering_Policy) GC_Mastering_Policy,  COUNT(DISTINCT i.GC_Mastering_Policy) GC_Mastering_Policy_Cnt,
                                   MIN(i.Current_Master) + 1  Current_Master,       COUNT(DISTINCT i.Current_Master)      Current_Master_Cnt,
                                   MIN(i.Previous_Master) + 1  Previous_Master,     COUNT(DISTINCT DECODE(i.Previous_Master, 32767, NULL, i.Previous_Master)) Previous_Master_Cnt,
                                   SUM(i.Remaster_Cnt) Remaster_Cnt
-                                  FROM   DBA_Indexes ii
+                                  FROM   Indexes ii
                                   JOIN   DBA_Objects o ON o.Owner = ii.Owner AND o.Object_Name = ii.Index_Name
                                   JOIN   V$GCSPFMASTER_INFO i ON i.Data_Object_ID = o.Data_Object_ID
-                                  WHERE  ii.Table_Owner = ? AND ii.Table_Name = ?
                                   GROUP BY ii.Index_Name
                                  ) mi ON mi.Index_Name = i.Index_Name" if PanoramaConnection.rac?}
-                 WHERE  i.Table_Owner = ? AND i.Table_Name = ?
-                ",  @owner, @table_name, @owner, @table_name, @owner, @table_name, @owner, @table_name, @owner, @table_name].concat(PanoramaConnection.rac? ? [@owner, @table_name] : [])
+                ",  @owner, @table_name].concat(PanoramaConnection.rac? ? [@owner, @table_name] : [])
 
     # Selected separately because of long runtime if executed within complex SQL
     index_sizes = sql_select_all ["\
-      SELECT /*+ NO_MERGE MATERIALIZE */ s.Owner, s.Segment_Name, SUM(s.Bytes)/(1024*1024) Size_MB, SUM(s.Extents) Extents
+      SELECT /*+ NO_MERGE MATERIALIZE */ s.Owner, s.Segment_Name, SUM(s.Bytes)/(1024*1024) Size_MB, SUM(s.Extents) Extents, SUM(s.Blocks) Blocks
       FROM   DBA_Indexes ii
       JOIN   DBA_Segments s ON s.Owner = ii.Owner AND s.Segment_Name = ii.Index_Name
       WHERE  s.Segment_Type LIKE 'INDEX%'
@@ -881,6 +903,7 @@ class DbaSchemaController < ApplicationController
         if s.owner == i.owner && s.segment_name == i.index_name
           i.size_mb = s.size_mb
           i.extents = s.extents
+          i.blocks  = s.blocks
         end
       end
 

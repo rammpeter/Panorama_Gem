@@ -402,7 +402,7 @@
     Größe des Objektes im Tablespace in MBytes.
     Summe über die Größe aller allokierten Extents.
   dba_schema_list_objects_num_rows_hint:                    Anzahl Rows lt. letzter Analyse
-  dba_schema_list_objects_row_len_hint:                     Durchschn. Größe eines Records lt. letzter Analyse (Avg_Row_Len für Table, Summe Avg_Col_Len + RowID für Indizes)
+  dba_schema_list_objects_row_len_hint:                     Durchschn. Größe eines Records lt. letzter Analyse (Avg_Row_Len für Table, Summe Avg_Col_Len für Indizes)
   dba_schema_list_objects_partition_hint:                   Partition-Name bzw. Anzahl Partitionen
   dba_schema_list_objects_used_extents_hint:                Genutzte Anzahl Extents
 
@@ -683,9 +683,12 @@
 
   dragnet_helper_8_name:                                    Identifikation von Indizes mit doppelt indizierte Spalten
   dragnet_helper_8_desc: |-
-    Mehrfach indizierte Spalten bringen nur Nutzen im Such-Zugriff, wenn weitere Felder die Selektivität des Index verfeinern.
-    Die Indizierung einer Spalte, die bereits durch einen mehrspaltigen Index indiziert ist, ist oftmals überflüssig, z.B. zur Absicherung von Foreign Keys.
-    Alternativ kann mehrfache Indizierung der selben Spalte in verschiedenen Composite-Indizes jedoch der Optimierung von Join-Beziehungen dienen bzw. der vollständigen Abdeckung eines Zugriffs ohne Table-Access
+    Diese Selektion sucht nach Indizes bei denen die Spalten des einen Index ein Subset der Spalten des anderen Index darstellen, wobei beide mit den selben Spalten beginnen.
+    Die Rolle des ersten Index mit der kürzeren Spaltenmenge kann normalerweise durch den zweiten Index mit der größeren Spaltenmenge übernommen werden (inkl. der Absicherung von Foreign Key Constraints).
+    Daher kann der erste Index oft entfernt werden ohne Verlust an Funktionalität.
+    Der Effekt von weniger Indizes zu handeln und weniger Objekte im Datenbank-Cache mit besserer Cache-Hit-Rate der verbliebenen Objekte im Cache ist meist höher zu bewerten als der evtl. Overhead beim Range-Scan auf dem Index mit der größeren Spaltenmenge.
+
+    Wenn der Index mit der kleineren Spaltenmenge zur Absicherung von Eindeutigkeit dient, dann kann statt dessen ein Unique Constraint mit dieser Spaltenmenge basiert auf dem Index mit der größeren Spaltenmenge diese Aufgabe übernehmen.
   dragnet_helper_8_param_1_hint:                            Minimale Anzahl Rows des Index für Berücksichtigung in Auswertung
   dragnet_helper_8_param_1_name:                            Minmale Anzahl Rows des Index
 

@@ -94,42 +94,41 @@ Additional info about usage of index can be gained by querying DBA_Hist_Seg_Stat
         },
         {
             :name  => t(:dragnet_helper_8_name, :default=> 'Detection of indexes with multiple indexed columns'),
-            :desc  => t(:dragnet_helper_8_desc, :default=> 'Multiple indexed columns are useful for data access only if additional index-columns improve selectivity of index.
-             Indexing on column that is already indexed as first column of another multi-column index is often unnecessary, e.g. for coverage of foreign key.
-             Otherwise multiple indexing same column in different composite indexes may be used for optimization of joins or for access on table data without accessing table itself.'),
-            :sql=> "SELECT /* DB-Tools Ramm doppelt indizierte Spalten*/ d.*, i.Index_Name, ix.Num_Rows, ix.UniqueNess,
-                                 (
-                                                    SELECT Constraint_Name
-                                                    FROM   DBA_Constraints c
-                                                    WHERE  c.Table_Name  = d.Table_Name
-                                                    AND      c.Owner  = ix.Owner
-                                                    AND      c.Index_Name    = ix.Index_Name
-                                                    AND      c.Constraint_Type='P'
-                                 )  UsedForPKey,
-                                 s.MBytes
-                    FROM   (
-                            SELECT Table_Owner, Table_Name, Column_Name
-                            FROM DBA_Ind_columns
-                            WHERE Column_Position=1
-                            GROUP BY Table_Owner, Table_Name, Column_Name
-                            HAVING Count(*) > 1
-                           ) d
-                    JOIN   DBA_Ind_Columns i ON i.Table_Owner = d.Table_Owner AND i.Table_Name = d.Table_Name AND i.Column_Name = d.Column_Name AND i.Column_Position = 1
-                    JOIN   DBA_Indexes ix    ON ix.Table_Owner = d.Table_Owner AND ix.Table_Name = d.Table_Name AND ix.Index_Name = i.Index_Name
-                    LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(bytes)/(1024*1024) MBytes
-                                     FROM   DBA_SEGMENTS
-                                     GROUP BY Owner, Segment_Name
-                                    ) s ON s.Owner = ix.Owner AND s.Segment_Name = ix.Index_Name
-                    WHERE  NOT EXISTS (SELECT '!' FROM DBA_Ind_Columns ii
-                                       WHERE  ii. Table_Owner  = d.Table_Owner
-                                       AND    ii.Table_Name    = d.Table_Name
-                                       AND    ii.Index_Name    = i.Index_Name
-                                       AND    ii.Column_Position= 2
-                                      )
-                    AND    ix.Num_Rows > ?
-                    AND    d.Table_Owner NOT IN ('SYSMAN','SYS', 'XDB', 'SYSTEM')
-                    ORDER BY ix.Num_Rows DESC NULLS LAST
-                    ",
+            :desc  => t(:dragnet_helper_8_desc, :default=> 'This selection looks for indexes where one index indexes a subset of the columns of the other index, both starting with the same columns.
+The purpose of the index with the smaller column set can regularly be covered by the second index with the larger column set (including protection of foreign key constraints).
+So the first index often can be dropped without loss of function.
+The effect of less indexes to maintain and less objects in database cache with better cache hit rate for the remaining objects in cache is mostly higher rated than the possible overhead of using range scan on index with larger column set.
+
+If the index with the smaller column set ensures uniqueness, than an unique constraint with this column set based on the second index with the larger column set can also cover this task.
+'),
+            :sql=> "
+WITH Ind_Cols AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Listagg(Column_Name, ',') WITHIN GROUP (ORDER BY Column_Position) Columns
+                  FROM   DBA_Ind_Columns
+                  GROUP BY Index_Owner, Index_Name
+                 ),
+     Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Num_Rows, Uniqueness
+                 FROM   DBA_Indexes
+                 WHERE  Tablespace_Name NOT IN ('SYSTEM', 'SYSAUX')
+                )
+SELECT x.*, ROUND(s.MBytes, 2) Size_MB_Index1
+FROM   (
+        SELECT i1.owner, i1.Table_Name,
+               i1.Index_Name Index_1, ic1.Columns Columns_1, i1.Num_Rows Num_Rows_1, i1.Uniqueness Uniqueness_1,
+               i2.Index_Name Index_2, ic2.Columns Columns_2, i2.Num_Rows Num_Rows_2, i2.Uniqueness Uniqueness_2
+        FROM   Indexes i1
+        JOIN   Indexes i2 ON i2.Table_Owner = i1.Table_Owner AND i2.Table_Name = i1.Table_Name
+        JOIN   Ind_Cols ic1 ON ic1.Index_Owner = i1.Owner AND ic1.Index_Name = i1.Index_Name
+        JOIN   Ind_Cols ic2 ON ic2.Index_Owner = i2.Owner AND ic2.Index_Name = i2.Index_Name
+        WHERE  i1.Index_Name != i2.Index_Name
+        AND    ic2.Columns LIKE ic1.Columns || ',%' /* Columns of i1 are already indexed by i2 */
+        AND    i1.Num_Rows > ?
+       ) x
+LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(Bytes)/(1024*1024) MBytes
+                 FROM DBA_Segments
+                 GROUP BY Owner, Segment_Name
+                ) s ON s.Owner = x.Owner AND s.Segment_Name = x.Index_1
+ORDER BY s.MBytes DESC NULLS LAST
+            ",
             :parameter=>[{:name=> t(:dragnet_helper_8_param_1_name, :default=>'Minmum number of rows for index'), :size=>8, :default=>100000, :title=> t(:dragnet_helper_8_param_1_hint, :default=>'Minimum number of rows of index for consideration in result')}]
         },
         {

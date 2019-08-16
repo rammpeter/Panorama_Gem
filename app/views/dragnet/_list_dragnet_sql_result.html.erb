@@ -80,15 +80,23 @@ if @res.count > 0
                                 )
 
                              }
-          when col[:caption].downcase == 'table_name'       ||
-                  col[:caption].downcase == "table name"    ||
-                  col[:caption].downcase == "tablename"     ||
-                  col[:caption].downcase == "table-name"    ||
-                  col[:caption].downcase == "object_name"   ||
+          when col[:caption].downcase == 'table_name'           ||
+                  col[:caption].downcase == "table name"        ||
+                  col[:caption].downcase == "tablename"         ||
+                  col[:caption].downcase == "referenced table"  ||
+                  col[:caption].downcase == "table-name"        ||
+                  col[:caption].downcase == "object_name"       ||
                   col[:caption].downcase == "sequence_name"
           then
             col[:data] = proc{|rec|
+                                table_name = rec[col[:caption]]
                                 owner = nil                                     # Default
+
+                                if !table_name.nil? && table_name['.']          # extract schema and tablename from schema.tablename
+                                  owner = table_name[0, table_name.index('.')]
+                                  table_name = table_name[table_name.index('.'), table_name.length].delete('.').strip # extract tablename without leading . and whitespaces
+                                end
+
                                 owner = rec["table_owner"]          if rec["table_owner"]     && !owner
                                 owner = rec["Table owner"]          if rec["Table owner"]     && !owner
                                 owner = rec["object_owner"]         if rec["object_owner"]    && !owner
@@ -97,7 +105,7 @@ if @res.count > 0
                                 owner = rec["Owner"]                if rec["Owner"]           && !owner
                                 owner = rec["sequence_owner"]       if rec["sequence_owner"]  && !owner
                                 if owner
-                                  link_object_description(:exec_dragnet_sql_detail_area, owner, my_html_escape(rec[col[:caption]]), my_html_escape(rec[col[:caption]]))
+                                  link_object_description(:exec_dragnet_sql_detail_area, owner, my_html_escape(table_name), my_html_escape(rec[col[:caption]]))
                                 else
                                   my_html_escape(rec[col[:caption]])            # Ohne Link
                                 end

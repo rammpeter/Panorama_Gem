@@ -128,6 +128,14 @@ class PanoramaConnection
   attr_reader :sql_stmt_in_execution
   attr_reader :last_used_action_name
   attr_reader :control_management_pack_access
+  attr_reader :block_common_header_size
+  attr_reader :unsigned_byte_4_size
+  attr_reader :transaction_fixed_header_size
+  attr_reader :transaction_variable_header_size
+  attr_reader :data_header_size
+  attr_reader :table_directory_entry_size
+  attr_reader :rowid_size
+
 
   # Array of PanoramaConnection instances, elements consists of:
   #   @jdbc_connection
@@ -156,20 +164,35 @@ class PanoramaConnection
                           (SELECT /*+ NO_MERGE */ DECODE (INSTR (banner, '64bit'), 0, 4, 8) Word_Size FROM v$version WHERE Banner LIKE '%Oracle Database%') db_wordsize,
                           (SELECT /*+ NO_MERGE */ COUNT(*) FROM v$version WHERE Banner like '%Enterprise Edition%')                                         enterprise_edition_count,
                           (SELECT /*+ NO_MERGE */ COUNT(*) FROM gv$Instance)                                                                                instance_count,
+                          (SELECT Type_Size FROM v$Type_Size WHERE Type = 'KCBH')                                                                           Block_Common_Header_Size,
+                          (SELECT Type_Size FROM v$Type_Size WHERE Type = 'UB4')                                                                            Unsigned_Byte_4_Size,
+                          (SELECT Type_Size FROM v$Type_Size WHERE Type = 'KTBBH')                                                                          Transaction_Fixed_Header_Size,
+                          (SELECT Type_Size FROM v$Type_Size WHERE Type = 'KTBIT')                                                                          Transaction_Var_Header_Size, /* Size of ITL entry */
+                          (SELECT Type_Size FROM v$Type_Size WHERE Type = 'KDBH')                                                                           Data_Header_Size,
+                          (SELECT Type_Size FROM v$Type_Size WHERE Type = 'KDBT')                                                                           Table_Directory_Entry_Size,
+                          (SELECT VSIZE(rowid) FROM Dual)                                                                                                   RowID_Size,
                           NVL((SELECT /*+ NO_MERGE */ Value    FROM V$Parameter WHERE name='control_management_pack_access'), 'NONE')                       control_management_pack_access
                    FROM   v$Instance i
                    CROSS JOIN v$Database d
                   ")
-    @instance_number                = db_config['instance_number']
-    @db_version                     = db_config['version']
-    @dbid                           = db_config['dbid']
-    @database_name                  = db_config['database_name']
-    @db_blocksize                   = db_config['db_blocksize']
-    @db_wordsize                    = db_config['db_wordsize']
-    @sid                            = db_config['sid']                          # Session-ID on DB-Server
-    @edition                        = (db_config['enterprise_edition_count'] > 0  ? :enterprise : :standard)
-    @instance_count                 = db_config['instance_count']
-    @control_management_pack_access = db_config['control_management_pack_access']
+    @instance_number                  = db_config['instance_number']
+    @db_version                       = db_config['version']
+    @dbid                             = db_config['dbid']
+    @database_name                    = db_config['database_name']
+    @db_blocksize                     = db_config['db_blocksize']
+    @db_wordsize                      = db_config['db_wordsize']
+    @sid                              = db_config['sid']                          # Session-ID on DB-Server
+    @edition                          = (db_config['enterprise_edition_count'] > 0  ? :enterprise : :standard)
+    @instance_count                   = db_config['instance_count']
+    @control_management_pack_access   = db_config['control_management_pack_access']
+    @block_common_header_size         = db_config['block_common_header_size']
+    @unsigned_byte_4_size             = db_config['unsigned_byte_4_size']
+    @transaction_fixed_header_size    = db_config['transaction_fixed_header_size']
+    @transaction_variable_header_size = db_config['transaction_var_header_size']
+    @data_header_size                 = db_config['data_header_size']
+    @table_directory_entry_size       = db_config['table_directory_entry_size']
+    @table_directory_entry_size       = @unsigned_byte_4_size if @table_directory_entry_size.nil? # not set in any releases
+    @rowid_size                       = db_config['rowid_size']
 
     if db_version >= '12.1'
       con_id_data   = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT Con_ID FROM v$Session WHERE audsid = userenv('sessionid')") # Con_ID of connected session
@@ -293,16 +316,25 @@ class PanoramaConnection
     @@connection_pool
   end
 
-  def self.instance_number;                 check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_number;                end
-  def self.db_version;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_version;                     end
-  def self.dbid;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].dbid;                           end
-  def self.database_name;                   check_for_open_connection;        Thread.current[:panorama_connection_connection_object].database_name;                  end
-  def self.db_blocksize;                    check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_blocksize;                   end
-  def self.db_wordsize;                     check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_wordsize;                    end
-  def self.edition;                         check_for_open_connection;        Thread.current[:panorama_connection_connection_object].edition;                        end
-  def self.con_id;                          check_for_open_connection;        Thread.current[:panorama_connection_connection_object].con_id;                         end  # Container-ID for PDBs or 0
-  def self.rac?;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_count > 1;             end
-  def self.control_management_pack_access;  check_for_open_connection(false); Thread.current[:panorama_connection_connection_object].control_management_pack_access; end
+  def self.instance_number;                 check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_number;                   end
+  def self.db_version;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_version;                        end
+  def self.dbid;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].dbid;                              end
+  def self.database_name;                   check_for_open_connection;        Thread.current[:panorama_connection_connection_object].database_name;                     end
+  def self.db_blocksize;                    check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_blocksize;                      end
+  def self.db_wordsize;                     check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_wordsize;                       end
+  def self.edition;                         check_for_open_connection;        Thread.current[:panorama_connection_connection_object].edition;                           end
+  def self.con_id;                          check_for_open_connection;        Thread.current[:panorama_connection_connection_object].con_id;                            end  # Container-ID for PDBs or 0
+  def self.rac?;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_count > 1;                end
+  def self.control_management_pack_access;  check_for_open_connection(false); Thread.current[:panorama_connection_connection_object].control_management_pack_access;    end
+  def self.rac?;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_count > 1;                end
+  def self.block_common_header_size;        check_for_open_connection;        Thread.current[:panorama_connection_connection_object].block_common_header_size;          end
+  def self.unsigned_byte_4_size;            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].unsigned_byte_4_size;              end
+  def self.transaction_fixed_header_size;   check_for_open_connection;        Thread.current[:panorama_connection_connection_object].transaction_fixed_header_size;     end
+  def self.transaction_variable_header_size;check_for_open_connection;        Thread.current[:panorama_connection_connection_object].transaction_variable_header_size;  end
+  def self.data_header_size;                check_for_open_connection;        Thread.current[:panorama_connection_connection_object].data_header_size;                  end
+  def self.table_directory_entry_size;      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].table_directory_entry_size;        end
+  def self.table_directory_entry_size;      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].table_directory_entry_size;        end
+  def self.rowid_size;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].rowid_size;                        end
 
   private
 
