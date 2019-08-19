@@ -29,28 +29,32 @@ class DbaSchemaControllerTest < ActionController::TestCase
       puts "DbaSchemaControllerTest.setup: There are no partitioned LOB tables in database"
     end
 
-    subpart_table = sql_select_first_row "SELECT Table_Owner, Table_Name, Partition_Name FROM DBA_Tab_SubPartitions WHERE Segment_Created = 'YES' AND RowNum < 2"
+    subpart_table = sql_select_first_row "SELECT Table_Owner, Table_Name, Partition_Name, SubPartition_Name FROM DBA_Tab_SubPartitions WHERE Segment_Created = 'YES' AND RowNum < 2"
     if subpart_table
-      @subpart_table_owner            = subpart_table.table_owner
-      @subpart_table_table_name       = subpart_table.table_name
-      @subpart_table_partition_name   = subpart_table.partition_name
+      @subpart_table_owner              = subpart_table.table_owner
+      @subpart_table_table_name         = subpart_table.table_name
+      @subpart_table_partition_name     = subpart_table.partition_name
+      @subpart_table_subpartition_name  = subpart_table.subpartition_name
     else
       puts "DbaSchemaControllerTest.setup: There are no table subpartitions in database"
-      @subpart_table_owner            = nil
-      @subpart_table_table_name       = nil
-      @subpart_table_partition_name   = nil
+      @subpart_table_owner              = nil
+      @subpart_table_table_name         = nil
+      @subpart_table_partition_name     = nil
+      @subpart_table_subpartition_name  = nil
     end
 
-    subpart_index = sql_select_first_row "SELECT Index_Owner, Index_Name, Partition_Name FROM DBA_Ind_SubPartitions WHERE Segment_Created = 'YES' AND RowNum < 2"
+    subpart_index = sql_select_first_row "SELECT Index_Owner, Index_Name, Partition_Name, SubPartition_Name FROM DBA_Ind_SubPartitions WHERE Segment_Created = 'YES' AND RowNum < 2"
     if subpart_index
-      @subpart_index_owner            = subpart_index.index_owner
-      @subpart_index_index_name       = subpart_index.index_name
-      @subpart_index_partition_name   = subpart_index.partition_name
+      @subpart_index_owner              = subpart_index.index_owner
+      @subpart_index_index_name         = subpart_index.index_name
+      @subpart_index_partition_name     = subpart_index.partition_name
+      @subpart_index_subpartition_name  = subpart_index.subpartition_name
     else
       puts "DbaSchemaControllerTest.setup: There are no index subpartitions in database"
-      @subpart_index_owner            = nil
-      @subpart_index_index_name       = nil
-      @subpart_index_partition_name   = nil
+      @subpart_index_owner              = nil
+      @subpart_index_index_name         = nil
+      @subpart_index_partition_name     = nil
+      @subpart_index_subpartition_name  = nil
     end
 
   end
@@ -211,12 +215,13 @@ class DbaSchemaControllerTest < ActionController::TestCase
 
   test "list_space  _usage with xhr: true" do
     if @lob_owner
+      Rails.logger.info "Table-Name for next LOB test is #{@lob_owner}.#{@lob_table_name}"
       get :list_space_usage, params: {format: :html, owner: @lob_owner, segment_name: @lob_segment_name , update_area: :hugo }
       assert_response :success
     end
 
     if @lob_part_owner
-      Rails.logger.info "Table-Name for next test is #{@lob_part_owner}.#{@lob_part_table_name}"
+      Rails.logger.info "Table-Name for next LOB Partition test is #{@lob_part_owner}.#{@lob_part_table_name}"
       # all partitions
       get :list_space_usage, params: {format: :html, owner: @lob_part_owner, segment_name: @lob_part_lob_name , update_area: :hugo }
       assert_response :success
@@ -226,22 +231,22 @@ class DbaSchemaControllerTest < ActionController::TestCase
     end
 
     if @subpart_table_owner
-      Rails.logger.info "Table-Name for next test is #{@subpart_table_owner}.#{@subpart_table_table_name}"
+      Rails.logger.info "Table-Name for next table subpartition test is #{@subpart_table_owner}.#{@subpart_table_table_name}"
       # all partitions
       get :list_space_usage, params: {format: :html, owner: @subpart_table_owner, segment_name: @subpart_table_table_name , update_area: :hugo }
       assert_response :success
       # one partition
-      get :list_space_usage, params: {format: :html, owner: @subpart_table_owner, segment_name: @subpart_table_table_name, partition_name: @subpart_table_partition_name , update_area: :hugo }
+      get :list_space_usage, params: {format: :html, owner: @subpart_table_owner, segment_name: @subpart_table_table_name, partition_name: @subpart_table_subpartition_name , update_area: :hugo }
       assert_response :success
     end
 
     if @subpart_index_owner
-      Rails.logger.info "Index-Name for next test is #{@subpart_index_owner}.#{@subpart_index_index_name}"
+      Rails.logger.info "Index-Name for next index subpartition test is #{@subpart_index_owner}.#{@subpart_index_index_name}"
       # all partitions
       get :list_space_usage, params: {format: :html, owner: @subpart_index_owner, segment_name: @subpart_index_index_name , update_area: :hugo }
       assert_response :success
       # one partition
-      get :list_space_usage, params: {format: :html, owner: @subpart_index_owner, segment_name: @subpart_index_index_name, partition_name: @subpart_index_partition_name , update_area: :hugo }
+      get :list_space_usage, params: {format: :html, owner: @subpart_index_owner, segment_name: @subpart_index_index_name, partition_name: @subpart_index_subpartition_name , update_area: :hugo }
       assert_response :success
     end
   end
