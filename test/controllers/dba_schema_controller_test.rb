@@ -9,7 +9,8 @@ class DbaSchemaControllerTest < ActionController::TestCase
 
     initialize_min_max_snap_id_and_times
 
-    lob_table = sql_select_first_row "SELECT Owner, Table_Name, Segment_Name FROM DBA_Lobs WHERE Segment_Created = 'YES' AND Owner NOT IN ('SYS', 'SYSTEM') AND RowNum < 2"
+    # Use LOB for test from Panorama itself (if already created)m suppress ORA-10614: Operation not allowed on this segment
+    lob_table = sql_select_first_row "SELECT Owner, Table_Name, Segment_Name FROM DBA_Lobs WHERE Segment_Created = 'YES' AND Owner NOT IN ('SYS', 'SYSTEM') AND Table_Name LIKE 'PANORAMA%' AND RowNum < 2"
     if lob_table
       @lob_owner        = lob_table.owner
       @lob_table_name   = lob_table.table_name
@@ -208,10 +209,11 @@ class DbaSchemaControllerTest < ActionController::TestCase
     assert_response :success
   end
 
-  test "list_space_usage with xhr: true" do
-    Rails.logger.info "Table-Name for next test is #{@lob_owner}.#{@lob_table_name}"
-    get :list_space_usage, params: {format: :html, owner: @lob_owner, segment_name: @lob_segment_name , update_area: :hugo }
-    assert_response :success
+  test "list_space  _usage with xhr: true" do
+    if @lob_owner
+      get :list_space_usage, params: {format: :html, owner: @lob_owner, segment_name: @lob_segment_name , update_area: :hugo }
+      assert_response :success
+    end
 
     if @lob_part_owner
       Rails.logger.info "Table-Name for next test is #{@lob_part_owner}.#{@lob_part_table_name}"

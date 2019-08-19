@@ -787,7 +787,7 @@ class DbaSchemaController < ApplicationController
                                   WHERE  Table_Owner = ? AND Table_Name = ?
                                  )
                  SELECT /*+ Panorama Ramm */ i.*, p.Partition_Number, sp.SubPartition_Number,
-                        NULL Size_MB, NULL Extents, /* both columns selected separately */
+                        NULL Size_MB, NULL Extents, NULL Blocks, /* this columns are selected separately */
                         DECODE(bitand(io.flags, 65536), 0, 'NO', 'YES') Monitoring,
                         DECODE(bitand(ou.flags, 1), 0, 'NO', NULL, 'Unknown', 'YES') Used,
                         TO_DATE(ou.start_monitoring, 'MM/DD/YYYY HH24:MI:SS') Start_Monitoring,
