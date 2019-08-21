@@ -699,7 +699,7 @@
     Schemaübergreifend ist die Nutzung mit diese Selektion sichtbar.
     Achtung:
     - Rekursiver Index-Lookup während Foreign Key-Prüfung zählt nicht als Nutzung in v$Object_Usage.
-    - Bitte Vorsicht falls Index nur benötigt wird zur Absicherung der Foreign Key-Beziehung (verhindern Full-Scan auf Detail-Table bei Delete auf Master-Table).
+    - Bitte Vorsicht falls Index nur benötigt wird zur Absicherung der Foreign Key-Beziehung (verhindern Lock-Propagierung und Full-Scan auf Detail-Table bei Delete auf Master-Table).
     - Auch die Ausführung von GATHER_INDEX_STATS zählt als Nutzung, selbst wenn der Index nie durch andere Selects genutzt wurde. (nicht mehr festgestellt ab DB-Version >= 12)
 
     Weitere Informationen zur Nutzung bringt Anzeige 'Segment statistics historisch' und Analyse der ActiveSessionHistory über Spalte 'Time waited'.
@@ -1501,6 +1501,28 @@
     Es werden alle im Datenzustand zum Zeitpunkt der letzten Analyse eindeutigen Spalten angelistet, für die weder Unique Index noch Unique Constraint oder Primary Key Konstraint existieren.
   dragnet_helper_145_name: |-
     Evtl. fehlende Absicherung von Eindeutigkeiten per Unique Index bzw. Unique / Primary Key Constraint
+
+  dragnet_helper_146_desc: |-
+    Eine ID-Spalte mit Primary Key Constraint und zugehörigem Index ist eventuell verzichtbar, wenn der Primary Key Constraint nicht durch Foreign Key Constraints referenziert wird.
+    Dies ist oft dann der Fall, wenn:
+    - für Bewegungsdaten mehrspaltige Unique Constraints oder Unique Indizes existieren, die alternativ als eindeutiges Zugriffskriterium genutzt werden können
+    - oder kein Zugriff auf einen konkreten einzelnen Record erfolgen muss
+    - die verwendeten Frameworks nicht zwingend die Existenz einer technischen ID vorschreiben
+  dragnet_helper_146_name: |-
+    Tabellen mit einspaltigem Primary Key Constraint, der nie über Foreign Key Constraints referenziert wird
+
+  dragnet_helper_147_desc: |-
+    Beginnend mit Release 12.2 werden in DBA_Index_Usage Informationen zur Nutzung von Indizes gesammelt.
+    Diese Selektion zeigt basierend auf DBA_Index_Usage Indizes ohne Nutzung bzw. mit dem Datum der letzten Nutzung älter als x Tage.
+
+    Achtung:
+    - Per Default basiert diese Sammlung auf einem zyklischen Sampling, d.h. ohne 100% Garantie dass jede Nutzung wirklich aufgezeichnet wird (Kann übersteuert werden per "_iut_stat_collection_type"=ALL statt SAMPLED).
+    - Rekursiver Index-Lookup während Foreign Key-Prüfung zählt nicht als Nutzung in DBA_Index_Usage.
+    - Bitte Vorsicht falls Index nur benötigt wird zur Absicherung der Foreign Key-Beziehung (verhindern Lock-Propagierung und Full-Scan auf Detail-Table bei Delete auf Master-Table).
+
+  dragnet_helper_147_name: |-
+    Nicht genutzte Indizes laut DBA_Index_Usage (ab Release 12.2)
+
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 

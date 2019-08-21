@@ -43,6 +43,10 @@ class DbaSchemaControllerTest < ActionController::TestCase
       @subpart_table_subpartition_name  = nil
     end
 
+    index = sql_select_first_row "SELECT Owner, Index_Name FROM DBA_Indexes WHERE Segment_Created = 'YES' AND RowNum < 2"
+    @index_owner = index.owner
+    @index_name  = index.index_name
+
     subpart_index = sql_select_first_row "SELECT Index_Owner, Index_Name, Partition_Name, SubPartition_Name FROM DBA_Ind_SubPartitions WHERE Segment_Created = 'YES' AND RowNum < 2"
     if subpart_index
       @subpart_index_owner              = subpart_index.index_owner
@@ -108,6 +112,11 @@ class DbaSchemaControllerTest < ActionController::TestCase
 
     post :list_indexes, :params => {:format=>:html, :owner=>"SYS", :table_name=>"AUD$", :update_area=>:hugo }
     assert_response :success
+
+    if get_db_version >= '12.2'
+      post :list_index_usage, :params => {:format=>:html, owner: @index_owner, index_name: @index_name, :update_area=>:hugo }
+      assert_response :success
+    end
 
     post :list_current_index_stats, :params => {:format=>:html, :table_owner=>"SYS", :table_name=>"DIR$", :index_owner=>'SYS', :index_name=>'I_DIR1', :leaf_blocks=>1, :update_area=>:hugo }
     assert_response :success

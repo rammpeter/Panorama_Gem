@@ -138,12 +138,15 @@ Results of usage monitoring can be queried from v$Object_Usage but only for curr
 Over all schemas usage can be monitored with following SQL.
 Caution:
 - Recursive index-lookup by foreign key validation does not count as usage in v$Object_Usage.
-- So please be careful if index is only needed for foreign key protection (to prevent full scans on detail-table at deletes on master-table).
+- So please be careful if index is only needed for foreign key protection (to prevent lock propagation and full scans on detail-table at deletes on master-table).
 - GATHER_TABLE_STATS and GATHER_INDEX_STATS may also counts as usage even if no other select touches this index (no longer detected in DB-version >= 12).
 
 Additional information about index usage can be requested from DBA_Hist_Seg_Stat and DBA_Hist_Active_Sess_History."),
             :sql=> "
                     WITH Constraints AS        (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Constraint_Type, Table_Name, R_Owner, R_Constraint_Name FROM DBA_Constraints),
+                         Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Num_Rows, Last_Analyzed, Uniqueness, Index_Type, Tablespace_Name, Prefix_Length, Compression, Distinct_Keys
+                                     FROM   DBA_Indexes
+                                    ),
                          Ind_Columns AS        (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Table_Owner, Table_Name, Column_name, Column_Position FROM DBA_Ind_Columns),
                          Cons_Columns AS       (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Column_name, Position, Constraint_Name FROM DBA_Cons_Columns),
                          Tables AS             (SELECT /*+ NO_MERGE MATERIALIZE */  Owner, Table_Name, Num_Rows, Last_analyzed FROM DBA_Tables),
@@ -167,7 +170,7 @@ Additional information about index usage can be requested from DBA_Hist_Seg_Stat
                            i.Tablespace_Name                                                          \"Tablespace\",
                            u.\"End monitoring\",
                            i.Index_Type,
-                           (SELECT IOT_Type FROM DBA_Tables t WHERE t.Owner = u.Owner AND t.Table_Name = u.Table_Name) \"IOT Type\"
+                           (SELECT IOT_Type FROM DBA_Tables t WHERE t.Owner = i.Table_Owner AND t.Table_Name = i.Table_Name) \"IOT Type\"
                     FROM   (
                             SELECT /*+ NO_MERGE */ u.UserName Owner, io.name Index_Name, t.name Table_Name,
                                    decode(bitand(i.flags, 65536), 0, 'NO', 'YES') Monitoring,
@@ -183,7 +186,7 @@ Additional information about index usage can be requested from DBA_Hist_Seg_Stat
                             WHERE  TO_DATE(ou.Start_Monitoring, 'MM/DD/YYYY HH24:MI:SS') < SYSDATE-?
                             AND    (schema.name IS NULL OR schema.Name = u.UserName)
                            )u
-                    JOIN DBA_Indexes i                    ON i.Owner = u.Owner AND i.Index_Name = u.Index_Name AND i.Table_Name=u.Table_Name
+                    JOIN Indexes i                    ON i.Owner = u.Owner AND i.Index_Name = u.Index_Name AND i.Table_Name=u.Table_Name
                     LEFT OUTER JOIN Ind_Columns ic        ON ic.Index_Owner = u.Owner AND ic.Index_Name = u.Index_Name AND ic.Column_Position = 1
                     /* Indexes used for protection of FOREIGN KEY constraints */
                     LEFT OUTER JOIN (SELECT cc.Owner, cc.Table_Name, cc.Column_name, c.Constraint_Name, rc.Owner r_Owner, rt.Table_Name r_Table_Name, rt.Num_rows r_Num_rows, rt.Last_Analyzed r_Last_analyzed, m.Inserts, m.Updates, m.Deletes
@@ -418,6 +421,125 @@ If column order of the multi-column index can be changed than the additional sin
             :parameter=>[
                 {:name=> t(:dragnet_helper_143_param_1_name, :default=>'Min. rows per key for first column of index'), :size=>10, :default=>100000, :title=> t(:dragnet_helper_143_param_1_hint, :default=>'Minimun number of rows per key for first column of multi-column index')},
                 {:name=> t(:dragnet_helper_143_param_2_name, :default=>'Max. rows per key for second column of index'), :size=>10, :default=>1000,  :title=> t(:dragnet_helper_143_param_2_hint, :default=>'Maximun number of rows per key for second column of multi-column index')},
+            ]
+        },
+        {
+            :name  => t(:dragnet_helper_146_name, :default=> 'Tables with single-column primary key constraint which is not referenced by any foreign key constraint'),
+            :desc  => t(:dragnet_helper_146_desc, :default=>"An ID-column with primary key constraint and related index may by unnecessary if primary key constraint is not referenced by any foreign key constraint.
+Often this is the case if:
+- there are multi-column unique constraints or unique indexes for transaction data, which may be used as alternative unique access criteria
+- or there is no need for accessing single records
+- the used frameworks don't require the existence of technical ID
+"),
+            :sql=> "\
+WITH Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Constraint_Type, Table_Name, r_Owner, r_Constraint_Name, Index_Owner, Index_Name
+                     FROM   DBA_Constraints
+                     WHERE  Constraint_Type IN ('P', 'R', 'U')
+                    ),
+     Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Owner, Table_Name, Index_Name, Uniqueness, Index_Type
+                 FROM   DBA_Indexes
+                ),
+     Tab_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Column_Name, Avg_Col_Len
+                     FROM   DBA_Tab_Columns
+                    ),
+     Segments AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Segment_Name, SUM(Bytes)/(1024*1024) Size_MB
+                  FROM   DBA_Segments
+                  GROUP BY Owner, Segment_Name
+                 )
+SELECT c.Owner, c.Table_Name, cc.Column_Name PKey_Column, c.Constraint_Name, t.Num_Rows,
+       si.Size_MB Size_MB_PK_Index, (t.Num_Rows * tc.Avg_Col_Len)/(1024*1024) Size_MB_PK_Column,
+       uc.Constraint_Name Alternative_Unique_Constraint, ui.Index_Name Alternative_Unique_Index
+FROM   (
+        SELECT /*+ NO_MERGE */ Owner, Constraint_Name, Table_Name, MIN(Column_Name) Column_Name
+        FROM   DBA_Cons_Columns
+        GROUP BY Owner, Constraint_Name, Table_Name
+        HAVING COUNT(*) = 1  /* exactly one column in PK-Constraint */
+       ) cc
+JOIN   Constraints c  ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name AND c.Table_Name = cc.Table_Name AND c.Constraint_Type = 'P'
+JOIN   DBA_Tables t   ON t.Owner = c.Owner AND t.Table_Name = c.Table_Name
+JOIN   Indexes pi     ON pi.Owner = c.Index_Owner AND pi.Index_Name = c.Index_Name
+JOIN   Tab_Columns tc ON tc.Owner = c.Owner AND tc.Table_Name = c.Table_Name AND tc.Column_Name = cc.Column_Name
+LEFT OUTER JOIN Segments si    ON si.Owner = pi.Owner AND si.Segment_Name = pi.Index_Name
+LEFT OUTER JOIN Constraints uc ON uc.Owner = c.Owner AND uc.Table_Name = c.Table_Name AND c.Constraint_Type = 'U'
+LEFT OUTER JOIN Indexes ui     ON ui.Table_Owner = c.Owner AND ui.Table_Name = c.Table_Name AND ui.Uniqueness = 'UNIQUE' AND ui.Index_Type NOT IN ('LOB') AND ui.Index_Name != pi.Index_Name
+AND    (c.Owner, c.Constraint_Name) NOT IN (SELECT r_Owner, r_Constraint_Name FROM Constraints WHERE Constraint_Type = 'R')
+ORDER BY t.Num_Rows DESC NULLS LAST
+",
+        },
+        {
+            :name  => t(:dragnet_helper_147_name, :default=> 'Detection of unused indexes by DBA_INDEX_USAGE (starting with Release 12.2)'),
+            :desc  => t(:dragnet_helper_147_desc, :default=>"Starting with Release 12.2 information about index usage is gathered in DBA_Index_Usage.
+This selection shows indexes without usage resp. with last usage time older than x days based on DBA_Index_Usage.
+
+Caution:
+- Per default this selection is based on cyclic sampling. That means, without 100% guarantee for recording each index usage (can be changed by \"_iut_stat_collection_type\"=ALL instead of SAMPLED).
+- Recursive index-lookup by foreign key validation does not count as usage in DBA_Index_Usage.
+- So please be careful if index is only needed for foreign key protection (to prevent lock propagation and full scans on detail-table at deletes on master-table).
+"),
+            :sql=> "
+                    WITH Constraints AS        (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Constraint_Type, Table_Name, R_Owner, R_Constraint_Name FROM DBA_Constraints),
+                         Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Num_Rows, Last_Analyzed, Uniqueness, Index_Type, Tablespace_Name, Prefix_Length, Compression, Distinct_Keys
+                                     FROM   DBA_Indexes
+                                    ),
+                         Ind_Columns AS        (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Table_Owner, Table_Name, Column_name, Column_Position FROM DBA_Ind_Columns),
+                         Cons_Columns AS       (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Column_name, Position, Constraint_Name FROM DBA_Cons_Columns),
+                         Tables AS             (SELECT /*+ NO_MERGE MATERIALIZE */  Owner, Table_Name, Num_Rows, Last_analyzed FROM DBA_Tables),
+                         Tab_Modifications AS  (SELECT /*+ NO_MERGE MATERIALIZE */  Table_Owner, Table_Name, Inserts, Updates, Deletes FROM DBA_Tab_Modifications WHERE Partition_Name IS NULL /* Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen */)
+                    SELECT /*+ USE_HASH(i ic cc c rc rt) */ i.Owner, i.Table_Name, i.Index_Name,
+                           ic.Column_Name                                                             \"First Column name\",
+                           ROUND(SYSDATE - NVL(iu.Last_Used, o.Created), 1)                           \"Days without usage\",
+                           iu.Last_Used,
+                           i.Num_Rows \"Num. rows\", i.Distinct_Keys \"Distinct keys\",
+                           CASE WHEN i.Distinct_Keys IS NULL OR  i.Distinct_Keys = 0 THEN NULL ELSE ROUND(i.Num_Rows/i.Distinct_Keys) END \"Avg. rows per key\",
+                           i.Compression||CASE WHEN i.Compression = 'ENABLED' THEN ' ('||i.Prefix_Length||')' END Compression,
+                           seg.MBytes,
+                           i.Uniqueness||CASE WHEN i.Uniqueness != 'UNIQUE' AND uc.Constraint_Name IS NOT NULL THEN ' enforcing '||uc.Constraint_Name END Uniqueness,
+                           cc.Constraint_Name                                                         \"Foreign key protection\",
+                           CASE WHEN cc.r_Table_Name IS NOT NULL THEN LOWER(cc.r_Owner)||'. '||cc.r_Table_Name END  \"Referenced table\",
+                           cc.r_Num_Rows                                                              \"Num rows of referenced table\",
+                           cc.r_Last_analyzed                                                         \"Last analyze referenced table\",
+                           cc.Inserts                                                                 \"Inserts on ref. since anal.\",
+                           cc.Updates                                                                 \"Updates on ref. since anal.\",
+                           cc.Deletes                                                                 \"Deletes on ref. since anal.\",
+                           i.Tablespace_Name                                                          \"Tablespace\",
+                           i.Index_Type,
+                           (SELECT IOT_Type FROM DBA_Tables t WHERE t.Owner = i.Table_Owner AND t.Table_Name = i.Table_Name) \"IOT Type\"
+                    FROM   Indexes i
+                    JOIN   All_Users u ON u.UserName = i.Owner AND u.Oracle_Maintained = 'N'
+                    JOIN   DBA_Objects o ON o.Owner = i.Owner AND o.Object_Name = i.Index_Name AND o.SubObject_Name IS NULL
+                    LEFT OUTER JOIN   DBA_Index_Usage iu ON iu.Owner = i.Owner AND iu.Name = i.Index_Name AND iu.Last_Used > SYSDATE - ?
+                    LEFT OUTER JOIN Ind_Columns ic        ON ic.Index_Owner = i.Owner AND ic.Index_Name = i.Index_Name AND ic.Column_Position = 1
+                    /* Indexes used for protection of FOREIGN KEY constraints */
+                    LEFT OUTER JOIN (SELECT cc.Owner, cc.Table_Name, cc.Column_name, c.Constraint_Name, rc.Owner r_Owner, rt.Table_Name r_Table_Name, rt.Num_rows r_Num_rows, rt.Last_Analyzed r_Last_analyzed, m.Inserts, m.Updates, m.Deletes
+                                     FROM   Cons_Columns cc
+                                     JOIN   Constraints c     ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'R'
+                                     JOIN   Constraints rc    ON rc.Owner = c.R_Owner AND rc.Constraint_Name = c.R_Constraint_Name
+                                     JOIN   Tables rt     ON rt.Owner = rc.Owner AND rt.Table_Name = rc.Table_Name
+                                     LEFT OUTER JOIN Tab_Modifications m ON m.Table_Owner = rc.Owner AND m.Table_Name = rc.Table_Name
+                                     WHERE  cc.Position = 1
+                                    ) cc ON cc.Owner = ic.Table_Owner AND cc.Table_Name = ic.Table_Name AND cc.Column_Name = ic.Column_Name
+                    /* Indexes used for enforcement of UNIQUE or PRIMARY KEY constraints */
+                    LEFT OUTER JOIN (SELECT ic.Index_Owner, ic.Index_Name, c.Constraint_Name
+                                     FROM   Cons_Columns cc
+                                     JOIN   Constraints c   ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type IN ('U', 'P')
+                                     LEFT OUTER JOIN Ind_Columns ic ON ic.Table_Owner = cc.Owner AND ic.Table_Name = cc.Table_Name  AND ic.Column_Name = cc.Column_Name AND ic.Column_Position = cc.Position
+                                     GROUP BY ic.Index_Owner, ic.Index_Name, c.Constraint_Name
+                                     HAVING COUNT(DISTINCT cc.Column_Name) = COUNT(DISTINCT ic.Column_Name)
+                                    ) uc ON uc.Index_Owner = i.Owner AND uc.Index_Name = i.Index_Name
+                    JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes
+                          FROM   DBA_Segments
+                          GROUP BY Owner, Segment_Name
+                          HAVING SUM(bytes)/(1024*1024) > ?
+                         ) seg ON seg.Owner = i.Owner AND seg.Segment_Name = i.Index_Name
+                    CROSS JOIN (SELECT ? value FROM DUAL) Max_DML
+                    WHERE (? = 'YES' OR i.Uniqueness != 'UNIQUE')
+                    AND   (Max_DML.Value IS NULL OR NVL(cc.Inserts + cc.Updates + cc.Deletes, 0) < Max_DML.Value)
+                    ORDER BY seg.MBytes DESC NULLS LAST
+                   ",
+            :parameter=>[{:name=>t(:dragnet_helper_9_param_1_name, :default=>'Number of days backwards without usage'),    :size=>8, :default=>7,   :title=>t(:dragnet_helper_9_param_1_hint, :default=>'Minumin age in days of Start-Monitoring timestamp of unused index')},
+                         {:name=>t(:dragnet_helper_139_param_1_name, :default=>'Minimum size of index in MB'),    :size=>8, :default=>1,   :title=>t(:dragnet_helper_139_param_1_hint, :default=>'Minumin size of index in MB to be considered in selection')},
+                         {:name=>t(:dragnet_helper_9_param_4_name, :default=>'Maximum DML-operations on referenced table'), :size=>8, :default=>'',   :title=>t(:dragnet_helper_9_param_4_hint, :default=>'Maximum number of DML-operations (Inserts + Updates + Deletes) on referenced table since last analyze (optional)')},
+                         {:name=>t(:dragnet_helper_9_param_2_name, :default=>'Show unique indexes also (YES/NO)'), :size=>4, :default=>'NO',   :title=>t(:dragnet_helper_9_param_2_hint, :default=>'Unique indexes are needed for uniqueness even if they are not used')},
             ]
         },
 

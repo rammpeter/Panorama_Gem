@@ -941,6 +941,17 @@ class DbaSchemaController < ApplicationController
     render_partial
   end
 
+  def list_index_usage
+    @owner      = prepare_param(:owner)
+    @index_name = prepare_param(:index_name)
+    @usage = sql_select_all ["SELECT *
+                              FROM   DBA_Index_Usage
+                              WHERE  Owner= ?
+                              AND    Name = ?
+                             ", @owner, @index_name]
+    render_partial
+  end
+
   private
   def get_session_consistent_gets
     sql_select_one "SELECT Value FROM v$SesStat WHERE SID = USERENV('SID') AND Statistic# = 72"

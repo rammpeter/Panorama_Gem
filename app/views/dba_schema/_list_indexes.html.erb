@@ -204,6 +204,21 @@
     "%t\n\nCorrelating unused space in MB = #{fn(calc_free_space_mb_index(rec.avg_row_len, rec.num_rows, rec.pct_free, rec.ini_trans, blocksize, rec.size_mb, rec.leaf_blocks), 3)}\nCalculated on base of avg. row len in index = #{fn(rec.avg_row_len)}"
   end
 
+  link_used = proc do |rec|
+    if get_db_version >= '12.2'
+      ajax_link(rec.used,
+                 {controller:   :dba_schema,
+                  action:       :list_index_usage,
+                  owner:        rec.owner,
+                  index_name:   rec.index_name,
+                  update_area:  @update_area,
+                 },
+                 title: 'Show usage info from DBA_INDEX_USAGE'
+      )
+    else
+      rec.used
+    end
+  end
 
    column_options =
            [
@@ -231,7 +246,7 @@
                    { caption: 'Spec. TS',          data: proc{|rec| localeDateTime(rec.spec_ts)},                         title: "Timestamp for the last specification change of the index" },
                    {:caption=> 'Last analyzed',    :data=>proc{|rec| localeDateTime(rec.last_analyzed)},                  :title=> 'The date of the most recent time this table was analyzed'},
                    {:caption=> 'FK',               data: link_fk,                                                         title: 'Is index used for protection of foreign key constraint?', data_title: proc{|rec| "%t#{"\nConstraint = '#{rec.constraint_name}'" if rec.constraint_name}"}},
-                   {:caption=> 'Use',              :data=>proc{|rec| rec.used},                                           :title=> 'Usage of index detected? From sys.Object_Usage', data_title: data_title_use, data_style: proc{|rec| 'background-color:coral;' if rec.used=='NO'} },
+                   {:caption=> 'Use',              data: link_used,                                                       :title=> 'Usage of index detected? From sys.Object_Usage', data_title: data_title_use, data_style: proc{|rec| 'background-color:coral;' if rec.used=='NO'} },
                    {:caption=> 'Several States',   :data=>list_states,                                                    :title=> title_states},
                    {:caption=> 'Action',           :data=>render_action_buttons,                                          :title=> 'Call action for this index'},
            ]
