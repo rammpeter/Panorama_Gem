@@ -793,8 +793,7 @@ class DbaSchemaController < ApplicationController
                         TO_DATE(ou.start_monitoring, 'MM/DD/YYYY HH24:MI:SS') Start_Monitoring,
                         TO_DATE(ou.end_monitoring,   'MM/DD/YYYY HH24:MI:SS') End_Monitoring,
                         do.Created, do.Last_DDL_Time, TO_DATE(do.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
-                        CASE WHEN c.Constraint_Name IS NOT NULL THEN 'Y' END Used_For_FK,
-                        c.Constraint_Name,
+                        CASE WHEN c.Constraint_Exists IS NOT NULL THEN 'Y' END Used_For_FK,
                         CASE WHEN i.Index_Type = 'IOT - TOP' THEN
                           (SELECT SUM(tc.Avg_Col_Len) FROM DBA_Tab_Columns tc WHERE tc.Owner = i.Table_Owner AND tc.Table_Name = i.Table_Name)
                         ELSE
@@ -822,7 +821,7 @@ class DbaSchemaController < ApplicationController
                  JOIN   sys.Obj$    o  ON o.Owner# = u.User_ID AND o.Name = i.Index_Name
                  JOIN   sys.Ind$    io ON io.Obj# = o.Obj#
                  LEFT OUTER JOIN DBA_Objects do ON do.Owner = i.Owner AND do.Object_Name = i.Index_Name AND do.Object_Type = 'INDEX'
-                 LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ii.Index_Name, MIN(c.Constraint_Name) Constraint_Name
+                 LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ii.Index_Name, MIN(cc.Constraint_Name) Constraint_Exists
                                   FROM   Indexes ii
                                   LEFT OUTER JOIN DBA_Ind_Columns ic ON ic.Index_Owner = ii.Owner AND ic.Index_Name = ii.Index_Name AND ic.Column_Position = 1 /* Columns for test of FK */
                                   LEFT OUTER JOIN DBA_Cons_Columns cc ON cc.Owner = ii.Table_Owner AND cc.Table_Name = ii.Table_Name AND cc.Column_Name = ic.Column_Name AND cc.Position = 1 /* First columns of constraint */
@@ -1015,6 +1014,8 @@ class DbaSchemaController < ApplicationController
     @owner            = params[:owner]
     @table_name       = params[:table_name]
     @constraint_name  = prepare_param(:constraint_name)
+    @index_owner      = prepare_param(:index_owner)
+    @index_name       = prepare_param(:index_name)
 
     where_string = ''
     where_values = []
@@ -1022,6 +1023,17 @@ class DbaSchemaController < ApplicationController
     if @constraint_name
       where_string << "AND c.Constraint_Name = ?"
       where_values << @constraint_name
+    end
+
+    if @index_owner && @index_name
+      where_string << "AND c.Constraint_Name IN (SELECT cc.Constraint_Name
+                                                 FROM   DBA_Ind_Columns ic
+                                                 JOIN   DBA_Cons_Columns cc ON cc.Owner = ic.Table_Owner AND cc.Table_Name = ic.Table_Name AND cc.Column_Name = ic.Column_Name AND cc.Position = 1 AND ic.Column_Position = 1
+                                                 WHERE  ic.Index_Owner = ?
+                                                 AND    ic.Index_Name  = ?
+                                                )"
+      where_values << @index_owner
+      where_values << @index_name
     end
 
     @references = sql_select_all ["\

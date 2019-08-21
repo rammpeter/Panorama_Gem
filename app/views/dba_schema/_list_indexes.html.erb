@@ -141,10 +141,11 @@
                 :action        => :list_references_from,
                 :owner         => @owner,
                 :table_name    => @table_name,
-                constraint_name:  rec.constraint_name,
+                index_owner:  rec.owner,
+                index_name:   rec.index_name,
                 :update_area   => @update_area,
                },
-               :title=>"Show details of foreign key constraint that is protected by thos index"
+               :title=>"Show details of foreign key constraints that may be protected by this index"
    )
   end
 
@@ -245,7 +246,7 @@
                    {:caption=> 'Last DDL',         :data=>proc{|rec| localeDateTime(rec.last_ddl_time)},                  :title=> 'Timestamp of last DDL operation on index'},
                    { caption: 'Spec. TS',          data: proc{|rec| localeDateTime(rec.spec_ts)},                         title: "Timestamp for the last specification change of the index" },
                    {:caption=> 'Last analyzed',    :data=>proc{|rec| localeDateTime(rec.last_analyzed)},                  :title=> 'The date of the most recent time this table was analyzed'},
-                   {:caption=> 'FK',               data: link_fk,                                                         title: 'Is index used for protection of foreign key constraint?', data_title: proc{|rec| "%t#{"\nConstraint = '#{rec.constraint_name}'" if rec.constraint_name}"}},
+                   {:caption=> 'FK',               data: link_fk,                                                         title: 'Is index used for protection of foreign key constraints?' },
                    {:caption=> 'Use',              data: link_used,                                                       :title=> 'Usage of index detected? From sys.Object_Usage', data_title: data_title_use, data_style: proc{|rec| 'background-color:coral;' if rec.used=='NO'} },
                    {:caption=> 'Several States',   :data=>list_states,                                                    :title=> title_states},
                    {:caption=> 'Action',           :data=>render_action_buttons,                                          :title=> 'Call action for this index'},

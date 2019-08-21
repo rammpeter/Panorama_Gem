@@ -43,9 +43,11 @@ class DbaSchemaControllerTest < ActionController::TestCase
       @subpart_table_subpartition_name  = nil
     end
 
-    index = sql_select_first_row "SELECT Owner, Index_Name FROM DBA_Indexes WHERE Segment_Created = 'YES' AND RowNum < 2"
-    @index_owner = index.owner
-    @index_name  = index.index_name
+    index = sql_select_first_row "SELECT Owner, Index_Name, Table_Owner, Table_Name FROM DBA_Indexes WHERE Segment_Created = 'YES' AND RowNum < 2"
+    @index_owner        = index.owner
+    @index_name         = index.index_name
+    @index_table_owner  = index.table_owner
+    @index_table_name   = index.table_name
 
     subpart_index = sql_select_first_row "SELECT Index_Owner, Index_Name, Partition_Name, SubPartition_Name FROM DBA_Ind_SubPartitions WHERE Segment_Created = 'YES' AND RowNum < 2"
     if subpart_index
@@ -125,6 +127,12 @@ class DbaSchemaControllerTest < ActionController::TestCase
     assert_response :success
 
     post :list_check_constraints, :params => {:format=>:html, :owner=>"SYS", :table_name=>"HS$_INST_DD", :update_area=>:hugo }
+    assert_response :success
+
+    post :list_references_from, :params => {:format=>:html, :owner=>"SYS", :table_name=>"HS$_INST_DD", :update_area=>:hugo }
+    assert_response :success
+
+    post :list_references_from, :params => {:format=>:html, :owner=>@index_table_owner, :table_name=>@index_table_name, index_owner: @index_owner, index_name: @index_name, :update_area=>:hugo }
     assert_response :success
 
     post :list_references_from, :params => {:format=>:html, :owner=>"SYS", :table_name=>"HS$_INST_DD", :update_area=>:hugo }
