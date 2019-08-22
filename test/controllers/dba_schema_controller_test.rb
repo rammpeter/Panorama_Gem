@@ -115,6 +115,9 @@ class DbaSchemaControllerTest < ActionController::TestCase
     post :list_indexes, :params => {:format=>:html, :owner=>"SYS", :table_name=>"AUD$", :update_area=>:hugo }
     assert_response :success
 
+    post :list_indexes, params: {format: :html, owner: @index_table_owner, table_name: @index_table_name, index_name: @index_name, :update_area=>:hugo }
+    assert_response :success
+
     if get_db_version >= '12.2'
       post :list_index_usage, :params => {:format=>:html, owner: @index_owner, index_name: @index_name, :update_area=>:hugo }
       assert_response :success

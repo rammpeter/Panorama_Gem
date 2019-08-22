@@ -382,6 +382,10 @@ class DbaSchemaController < ApplicationController
             list_cluster(@owner, @table_name)
             return
           when 'TABLE'
+            params[:table_name] = @table_name
+            params[:index_name] = @object_name
+            list_indexes
+            return
           else
             raise PopupMessageException.new("Segment #{@owner}.#{@object_name} is of unsupported type #{res.table_type}")
         end
@@ -780,11 +784,20 @@ class DbaSchemaController < ApplicationController
   def list_indexes
     @owner      = params[:owner]
     @table_name = params[:table_name]
+    @index_name = prepare_param(:index_name)
+
+    where_string = ''
+    where_values = []
+
+    if @index_name
+      where_string << " AND Index_Name = ?"
+      where_values << @index_name
+    end
 
     @indexes = sql_select_all ["\
                  WITH Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ *
                                   FROM   DBA_Indexes
-                                  WHERE  Table_Owner = ? AND Table_Name = ?
+                                  WHERE  Table_Owner = ? AND Table_Name = ? #{where_string}
                                  )
                  SELECT /*+ Panorama Ramm */ i.*, p.Partition_Number, sp.SubPartition_Number,
                         NULL Size_MB, NULL Extents, NULL Blocks, /* this columns are selected separately */
@@ -860,7 +873,7 @@ class DbaSchemaController < ApplicationController
                                   JOIN   V$GCSPFMASTER_INFO i ON i.Data_Object_ID = o.Data_Object_ID
                                   GROUP BY ii.Index_Name
                                  ) mi ON mi.Index_Name = i.Index_Name" if PanoramaConnection.rac?}
-                ",  @owner, @table_name].concat(PanoramaConnection.rac? ? [@owner, @table_name] : [])
+                ",  @owner, @table_name].concat(where_values).concat(PanoramaConnection.rac? ? [@owner, @table_name] : [])
 
     # Selected separately because of long runtime if executed within complex SQL
     index_sizes = sql_select_all ["\
@@ -937,7 +950,7 @@ class DbaSchemaController < ApplicationController
 
     end
 
-    render_partial
+    render_partial :list_indexes
   end
 
   def list_index_usage
@@ -1037,7 +1050,9 @@ class DbaSchemaController < ApplicationController
     end
 
     @references = sql_select_all ["\
-      SELECT c.*, r.Table_Name R_Table_Name, rt.Num_Rows r_Num_Rows, ci.Index_Name, ci.Index_Number,
+      WITH Cons_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Constraint_Name, Column_Name, Position FROM DBA_Cons_Columns WHERE Owner = ? AND Table_Name = ?),
+           Cons_Column_Count AS (SELECT /*+ NO_MERGE MATERIALIZE */ Constraint_Name, COUNT(*) Column_Count FROM DBA_Cons_Columns GROUP BY Constraint_Name)
+      SELECT c.*, r.Table_Name R_Table_Name, rt.Num_Rows r_Num_Rows, ci.Index_Name, ci.Index_Number, rt.Last_Analyzed, m.Inserts, m.Updates, m.Deletes,
              #{get_db_version >= "11.2" ?
                                       "(SELECT LISTAGG(column_name, ', ') WITHIN GROUP (ORDER BY Position) FROM DBA_Cons_Columns cc WHERE cc.Owner = c.Owner AND cc.Constraint_Name = c.Constraint_Name) Columns,
                                        (SELECT LISTAGG(column_name, ', ') WITHIN GROUP (ORDER BY Position) FROM DBA_Cons_Columns cc WHERE cc.Owner = r.Owner AND cc.Constraint_Name = r.Constraint_Name) R_Columns
@@ -1047,16 +1062,19 @@ class DbaSchemaController < ApplicationController
                                       "
                                   }
       FROM   DBA_Constraints c
-      JOIN   DBA_Constraints r ON r.Owner = c.R_Owner AND r.Constraint_Name = c.R_Constraint_Name
-      JOIN   DBA_Tables rt ON rt.Owner = r.Owner AND rt.Table_Name = r.Table_Name
-      JOIN   DBA_Cons_Columns cc1 ON cc1.Owner = c.Owner AND cc1.Constraint_Name = c.Constraint_Name AND cc1.Position = 1
-      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ic.Column_Name, MIN(ic.Index_Name) Index_Name, COUNT(*) Index_Number
-                       FROM   DBA_Ind_Columns ic
-                       WHERE  ic.Table_Owner = ?
-                       AND    ic.table_Name  = ?
-                       AND    ic.Column_Position = 1
-                       GROUP BY ic.Column_Name
-                      ) ci ON ci.Column_Name = cc1.Column_Name
+      JOIN   DBA_Constraints r    ON r.Owner = c.R_Owner AND r.Constraint_Name = c.R_Constraint_Name
+      JOIN   DBA_Tables rt        ON rt.Owner = r.Owner AND rt.Table_Name = r.Table_Name
+      LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = rt.Owner AND m.Table_Name = rt.Table_Name AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
+      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ icc.Constraint_Name, MIN(Index_Name) Index_Name, COUNT(*) Index_Number
+                       FROM   (SELECT /*+ NO_MERGE */ cc.Constraint_Name, ic.Index_Name, COUNT(*) Column_Count
+                               FROM   Cons_Columns cc
+                               JOIN DBA_Ind_Columns ic ON ic.Table_Owner = cc.Owner AND ic.Table_Name = cc.Table_Name AND ic.Column_Name = cc.Column_Name AND ic.Column_Position = cc.Position
+                               GROUP BY cc.Constraint_Name, ic.Index_Name
+                              ) icc
+                       JOIN   Cons_Column_Count ccc ON ccc.Constraint_Name = icc.Constraint_Name
+                       WHERE  ccc.Column_Count = icc.Column_Count /* All constraint columns are in index */
+                       GROUP BY icc.Constraint_Name
+                      ) ci ON ci.Constraint_Name = c.Constraint_Name
       WHERE  c.Constraint_Type = 'R'
       AND    c.Owner      = ?
       AND    c.Table_Name = ?

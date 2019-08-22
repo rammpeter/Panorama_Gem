@@ -255,8 +255,11 @@
 
 %>
 
-<%= gen_slickgrid(@indexes, column_options, {
-                                  :caption => "Indexes of #{@table_type} #{@owner}.#{@table_name}",
+<%=
+  caption = "Indexes of #{link_object_description(@update_area, @owner, @table_name)}#{" (limited to index #{@index_name})" if @index_name}"
+
+  gen_slickgrid(@indexes, column_options, {
+                                  :caption => caption,
                                   :max_height => 450, show_pin_icon: 1
                           })
 %>
