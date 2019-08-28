@@ -540,7 +540,8 @@ Caution:
                          {:name=>t(:dragnet_helper_139_param_1_name, :default=>'Minimum size of index in MB'),    :size=>8, :default=>1,   :title=>t(:dragnet_helper_139_param_1_hint, :default=>'Minumin size of index in MB to be considered in selection')},
                          {:name=>t(:dragnet_helper_9_param_4_name, :default=>'Maximum DML-operations on referenced table'), :size=>8, :default=>'',   :title=>t(:dragnet_helper_9_param_4_hint, :default=>'Maximum number of DML-operations (Inserts + Updates + Deletes) on referenced table since last analyze (optional)')},
                          {:name=>t(:dragnet_helper_9_param_2_name, :default=>'Show unique indexes also (YES/NO)'), :size=>4, :default=>'NO',   :title=>t(:dragnet_helper_9_param_2_hint, :default=>'Unique indexes are needed for uniqueness even if they are not used')},
-            ]
+            ],
+            min_db_version: '12.2'
         },
 
     ]

@@ -46,7 +46,7 @@ class DragnetControllerTest < ActionController::TestCase
           end
 
           expected_result = :success                                            # May switch to error if license violation on DBA_Hist_xxx
-          if !full_entry[:not_executable]
+          if !full_entry[:not_executable] && (dragnet_sql[:min_db_version].nil? || dragnet_sql[:min_db_version] <= get_db_version)
             # Check if result should by error or success, Without management pack license execution should result in error if SQL contains DBA_HIST etc.
             begin
               prepare_panorama_sampler_thread_db_config                         # Ensure that PanoramaConnection has valid config even outside controller action

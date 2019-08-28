@@ -116,6 +116,11 @@ Rails.logger.info "get_selection_list: called render" if  Rails.env.test?
       return
     end
 
+    if dragnet_sql[:min_db_version] && dragnet_sql[:min_db_version] > get_db_version
+      show_popup_message("This selection needs DB version #{dragnet_sql[:min_db_version]} or above for executiuon.\nYour database has version #{get_db_version}")
+      return
+    end
+
     # Headerzeile des Report erstellen, Parameter ermitteln
     @caption = "#{dragnet_sql[:name]}"
     command_array = [dragnet_sql[:sql]]
