@@ -1569,6 +1569,8 @@ Solution: Execute as user 'SYS':
 
   def list_trace_files
 
+    # GV_$DIAG_TRACE_FILE
+    # GV_$DIAG_TRACE_FILE_CONTENTS
     render_partial
   end
 

@@ -3,7 +3,7 @@ require 'test_helper'
 include ActionView::Helpers::TranslationHelper
 #include ActionDispatch::Http::URL
 
-class DbaControllerTest < ActionController::TestCase
+class DbaControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
@@ -22,101 +22,102 @@ class DbaControllerTest < ActionController::TestCase
 
   test "redologs with xhr: true"       do
 
-    post  :show_redologs, :params => {:format=>:html, :update_area=>:hugo, instance: 1 }
+    post  '/dba/show_redologs', :params => {:format=>:html, :update_area=>:hugo, instance: 1 }
     assert_response :success
 
-    post  :list_redolog_members, :params => {:format=>:html, :update_area=>:hugo, instance: 1, group: 1 }
+    post  '/dba/list_redolog_members', :params => {:format=>:html, :update_area=>:hugo, instance: 1, group: 1 }
     assert_response :success
 
     [:single, :second, :second_10, :minute, :minute_10, :hour, :day, :week].each do |time_groupby|
-      post :list_redologs_log_history, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, time_groupby: time_groupby, :update_area=>:hugo }
+      post '/dba/list_redologs_log_history', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, time_groupby: time_groupby, :update_area=>:hugo }
       assert_response :success
     end
-    post :list_redologs_log_history, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, time_groupby: :single, instance: 1, :update_area=>:hugo }
+    post '/dba/list_redologs_log_history', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, time_groupby: :single, instance: 1, :update_area=>:hugo }
     assert_response :success
 
-    post :list_redologs_log_history, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, time_groupby: :single, instance: 1, :update_area=>:hugo }
+    post '/dba/list_redologs_log_history', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, time_groupby: :single, instance: 1, :update_area=>:hugo }
     assert_response :success
 
-    post :list_redologs_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
+    post '/dba/list_redologs_historic', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
     assert_response management_pack_license == :none ? :error : :success
-    post :list_redologs_historic, :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :update_area=>:hugo }
+    post '/dba/list_redologs_historic', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :update_area=>:hugo }
     assert_response management_pack_license == :none ? :error : :success
   end
 
   test "locks with xhr: true"       do
-    post :list_dml_locks, :params => {:format=>:html }
+    post '/dba/list_dml_locks', :params => {:format=>:html }
     assert_response :success
 
     if @DBA_KGLLOCK_exists > 0      # Nur Testen wenn View auch existiert
-      post :list_ddl_locks, :format=>:html;  assert_response :success
+      post '/dba/list_ddl_locks', params: {format: :html}
+      assert_response :success
     end
 
-    post :list_blocking_dml_locks, :params => {:format=>:html, :update_area=>:hugo }
+    post '/dba/list_blocking_dml_locks', :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
 
-    post :list_pending_two_phase_commits, :params => {:format=>:html, :update_area=>:hugo }
+    post '/dba/list_pending_two_phase_commits', :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
 
-    post :list_2pc_neighbors, :params => {:format=>:html, local_tran_id: '100', :update_area=>:hugo }
+    post '/dba/list_2pc_neighbors', :params => {:format=>:html, local_tran_id: '100', :update_area=>:hugo }
     assert_response :success
 
   end
 
   test "list_sessions with xhr: true" do
-    post :list_sessions, :params => {:format=>:html, :update_area=>:hugo }
+    post '/dba/list_sessions', :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
 
-    post :list_sessions, :params => {:format=>:html, :onlyActive=>1, :showOnlyUser=>1, :instance=>1, :filter=>'hugo', :object_owner=>'SYS', :object_name=>'HUGO', :update_area=>:hugo }
+    post '/dba/list_sessions', :params => {:format=>:html, :onlyActive=>1, :showOnlyUser=>1, :instance=>1, :filter=>'hugo', :object_owner=>'SYS', :object_name=>'HUGO', :update_area=>:hugo }
     assert_response :success
 
-    post :list_sessions, :params => {:format=>:html, :onlyActive=>1, :showOnlyUser=>1, :instance=>1, :filter=>'hugo', :object_owner=>'SYS', :object_name=>'HUGO', object_type: 'TABLE', :update_area=>:hugo }
+    post '/dba/list_sessions', :params => {:format=>:html, :onlyActive=>1, :showOnlyUser=>1, :instance=>1, :filter=>'hugo', :object_owner=>'SYS', :object_name=>'HUGO', object_type: 'TABLE', :update_area=>:hugo }
     assert_response :success
   end
 
   test "show_session_detail with xhr: true" do
-    get  :show_session_detail, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
+    get  '/dba/show_session_detail', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
     assert_response :success
 
-    post :show_session_details_waits, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
+    post '/dba/show_session_details_waits', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
     assert_response :success
 
-    post :show_session_details_locks, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
+    post '/dba/show_session_details_locks', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
     assert_response :success
 
-    post :show_session_details_temp, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :saddr=>@saddr, :update_area=>:hugo }
+    post '/dba/show_session_details_temp', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :saddr=>@saddr, :update_area=>:hugo }
     assert_response :success
 
-    post :list_open_cursor_per_session, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
+    post '/dba/list_open_cursor_per_session', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
     assert_response :success
 
-    post :list_accessed_objects, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :update_area=>:hugo }
+    post '/dba/list_accessed_objects', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :update_area=>:hugo }
     assert_response :success
 
-    post :list_session_statistic, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :update_area=>:hugo }
+    post '/dba/list_session_statistic', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :update_area=>:hugo }
     assert_response :success
 
-    post :list_session_optimizer_environment, :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :update_area=>:hugo }
+    post '/dba/list_session_optimizer_environment', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :update_area=>:hugo }
     assert_response :success
 
-    post :show_session_details_waits_object, :params => {:format=>:html, :event=>"db file sequential read", :update_area=>:hugo }
+    post '/dba/show_session_details_waits_object', :params => {:format=>:html, :event=>"db file sequential read", :update_area=>:hugo }
     assert_response :success
   end
 
   test "show_session_waits with xhr: true" do
-    get  :show_session_waits, :params => {:format=>:html, :update_area=>:hugo }
+    get  '/dba/show_session_waits', :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
     #test "show_application" do get  :show_application, :applexec_id => "0";  assert_response :success; end
     #test "show_segment_statistics" do get  :show_segment_statistics;  assert_response :success; end
   end
 
     test "list_waits_per_event with xhr: true" do
-    get :list_waits_per_event, :params => {:format=>:html, :event=>"db file sequential read", :instance=>"1", :update_area=>"hugo" }
+    get '/dba/list_waits_per_event', :params => {:format=>:html, :event=>"db file sequential read", :instance=>"1", :update_area=>"hugo" }
     assert_response :success
   end
 
   test "segment_stat with xhr: true"       do
-    get  :segment_stat, :params => {:format=>:html, :update_area=>:hugo }
+    get  '/dba/segment_stat', :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
   end
 
@@ -126,7 +127,7 @@ class DbaControllerTest < ActionController::TestCase
         [:group, :detail].each do |button|
           [nil, 'hugo'].each do |incl_filter|
             [nil, 'hugo'].each do |excl_filter|
-              post :list_server_logs, :params => {format:               :html,
+              post '/dba/list_server_logs', :params => {format:               :html,
                                                   time_selection_start: @time_selection_start,
                                                   time_selection_end:   @time_selection_end,
                                                   log_type:             log_type,
@@ -163,7 +164,7 @@ class DbaControllerTest < ActionController::TestCase
 
     waitingforrowid = sql_select_one "SELECT RowIDTOChar(RowID) FROM #{data_object.owner}.#{data_object.table_name} WHERE RowNum < 2"
 
-    post :show_rowid_details, :params => {format: :html, data_object_id: data_object.data_object_id, waitingforrowid: waitingforrowid, update_area: :hugo }
+    post '/dba/show_rowid_details', :params => {format: :html, data_object_id: data_object.data_object_id, waitingforrowid: waitingforrowid, update_area: :hugo }
     assert_response :success
 
   end
