@@ -1,0 +1,50 @@
+<%
+  @update_area = get_unique_area_id
+
+  show_payload = proc do |rec|
+    rec.payload.delete("\n") if !rec.payload.nil?
+  end
+
+  link_session = proc do |rec|
+    if rec.session_id == 0
+      "#{rec.session_id},#{rec.serialno}"
+    else
+        ajax_link("#{rec.session_id},#{rec.serialno}", {
+                   controller:  :active_session_history,
+                   action:      :show_prepared_active_session_history,
+                   instance:    rec.inst_id,
+                   sid:         rec.session_id,
+                   serialno:    rec.serialno,
+                   update_area: @update_area,
+        }, title: 'Show wait history of session from Active Session History'
+        )
+    end
+  end
+
+  column_options =
+      [
+          {caption: 'L.',               data: proc{|rec| rec.record_level},                   title: 'Level of the trace record', align: :right},
+          {caption: 'P.',               data: proc{|rec| rec.parent_level},                   title: 'Top parent level of trace record', align: :right},
+          {caption: 'T.',               data: proc{|rec| rec.record_type},                    title: "Type of the trace record. Possible values include:\n1: Regular trace record\n2: Freeform trace record\n3: Begin Section trace record\n4: Begin Dump trace record\n5: Bucket Dump Begin trace record\n6: Section End trace record\n7: Dump End trace record\n8: Bucket Dump End trace record", align: :right},
+          {caption: 'Timestamp',        data: proc{|rec| localeDateTime(rec.timestamp)},      title: 'Timestamp when the trace record was produced in client time zone'},
+          {caption: 'Payload',          data: show_payload,                                   title: 'Trace record payload (contents)'},
+          {caption: 'S',                data: proc{|rec| rec.section_id},                     title: 'Section ID / dump ID of the trace record', data_title: proc{|rec| "%t\n#{rec.section_name}"}, align: :right},
+          {caption: 'Component',        data: proc{|rec| rec.component_name},                 title: 'Component name which produced the trace record'},
+          {caption: 'Operation',        data: proc{|rec| rec.operation_name},                 title: 'Operation name which produced the trace record'},
+          {caption: 'File',             data: proc{|rec| rec.file_name},                      title: 'Name of the code file where this trace record is produced'},
+          {caption: 'Function',         data: proc{|rec| rec.function_name},                  title: 'Function which produced the trace record'},
+          {caption: 'Line',             data: proc{|rec| rec.line_number},                    title: 'Line number in the code file which produced this trace record', align: :right},
+          {caption: 'Thread',           data: proc{|rec| rec.thread_id},                      title: 'Operating system thread ID of the process which produced the trace record'},
+          {caption: 'Session',          data: link_session,                                   title: 'User session ID and serial number which generated the trace record'},
+      ]
+
+%>
+<%= gen_slickgrid(@content, column_options, {
+    :caption => "Trace file content for #{@adr_home}/#{@trace_filename}, Con-ID = #{@con_id} (from GV$Diag_Trace_File_Contents)",
+    :max_height=>450,
+    show_pin_icon: 1
+})
+%>
+
+<div id="<%= @update_area %>"></div>
+

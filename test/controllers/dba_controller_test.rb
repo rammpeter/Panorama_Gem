@@ -12,6 +12,9 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
     initialize_min_max_snap_id_and_times
 
     @DBA_KGLLOCK_exists = sql_select_one("select COUNT(*) from dba_views where view_name='DBA_KGLLOCK' ")
+
+    @trace_file = sql_select_first_row "SELECT Inst_ID, ADR_Home, Trace_Filename, Con_ID FROM gv$Diag_Trace_File" if get_db_version >= '12.2'
+
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
@@ -125,20 +128,18 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
     ['SS', 'MI', 'HH24', 'DD'].each do |tag|
       ['all', 'tnslsnr', 'rdbms', 'asm'].each do |log_type|
         [:group, :detail].each do |button|
-          [nil, 'hugo'].each do |incl_filter|
-            [nil, 'hugo'].each do |excl_filter|
-              post '/dba/list_server_logs', :params => {format:               :html,
-                                                  time_selection_start: @time_selection_start,
-                                                  time_selection_end:   @time_selection_end,
-                                                  log_type:             log_type,
-                                                  verdichtung:          {tag: tag},
-                                                  button                => 'hugo',
-                                                  incl_filter:          incl_filter,
-                                                  excl_filter:          excl_filter,
-                                                  :update_area          => :hugo
-              }
-              assert_response :success
-            end
+          [nil, 'hugo', 'erster|zweiter'].each do |filter|
+            post '/dba/list_server_logs', :params => {format:               :html,
+                                                time_selection_start: @time_selection_start,
+                                                time_selection_end:   @time_selection_end,
+                                                log_type:             log_type,
+                                                verdichtung:          {tag: tag},
+                                                button                => 'hugo',
+                                                incl_filter:          filter,
+                                                excl_filter:          filter,
+                                                :update_area          => :hugo
+            }
+            assert_response :success
           end
         end
       end
@@ -168,5 +169,33 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
   end
+
+  test 'trace_files with xhr: true' do
+    if get_db_version >= '12.2'
+      [nil, 'hugo', 'erster|zweiter'].each do |filter|
+        post '/dba/list_trace_files', :params => {format:               :html,
+                                                  time_selection_start: @time_selection_start,
+                                                  time_selection_end:   @time_selection_end,
+                                                  filename_incl_filter: filter,
+                                                  filename_excl_filter: filter,
+                                                  content_incl_filter:  filter,
+                                                  content_excl_filter:  filter,
+                                                  update_area:          :hugo
+        }
+        assert_response :success
+      end
+
+      if !@trace_file.nil?
+        post '/dba/list_trace_file_content', params: {format: :html, instance: @trace_file.inst_id, adr_home: @trace_file.adr_home, trace_filename: @trace_file.trace_filename, con_id: @trace_file.con_id, update_area: :hugo }
+        assert_response :success
+      end
+
+      post '/dba/list_trace_file_content', params: {format: :html, instance: 1, adr_home: 'hugo', trace_filename: 'hugo', con_id: 1, update_area: :hugo }
+      assert_response :success
+
+    end
+
+  end
+
 
 end

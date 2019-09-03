@@ -1479,7 +1479,7 @@ Solution: Execute as user 'SYS':
       incl_filters = @incl_filter.split('|')
       incl_filters.each_index do |i|
         where_filter << " Message_Text LIKE '%'||?||'%'"
-        where_values << " OR " if i < incl_filters.count-1
+        where_filter << " OR " if i < incl_filters.count-1
         where_values << incl_filters[i]
       end
       where_filter << " )"
@@ -1568,9 +1568,64 @@ Solution: Execute as user 'SYS':
   end
 
   def list_trace_files
+    save_session_time_selection
+    @filename_incl_filter = prepare_param(:filename_incl_filter)
+    @filename_excl_filter = prepare_param(:filename_excl_filter)
+    @content_incl_filter  = prepare_param(:content_incl_filter)
+    @content_excl_filter  = prepare_param(:content_excl_filter)
+
+    where_string = ''
+    where_values = []
+
+    if @filename_incl_filter
+      where_string << " AND ("
+      incl_filters = @filename_incl_filter.split('|')
+      incl_filters.each_index do |i|
+        where_string << " f.Trace_Filename LIKE '%'||?||'%'"
+        where_string << " OR " if i < incl_filters.count-1
+        where_values << incl_filters[i]
+      end
+      where_string << " )"
+    end
+
+    if @filename_excl_filter
+      @filename_excl_filter.split('|').each do |f|
+        where_string << " AND f.Trace_Filename NOT LIKE '%'||?||'%'"
+        where_values << f
+      end
+    end
+
+
+
+
+    @files = sql_select_iterator ["SELECT f.*
+                                   FROM   gv$Diag_Trace_File f
+                                   WHERE  f.Change_Time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                                   AND    f.Change_Time <  TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                                   #{where_string}
+                                   ORDER BY f.Change_Time
+                                  ", @time_selection_start, @time_selection_end].concat(where_values)
 
     # GV_$DIAG_TRACE_FILE
     # GV_$DIAG_TRACE_FILE_CONTENTS
+    render_partial
+  end
+
+  def list_trace_file_content
+    @instance       = prepare_param_instance
+    @adr_home       = prepare_param(:adr_home)
+    @trace_filename = prepare_param(:trace_filename)
+    @con_id         = prepare_param(:con_id)
+
+    @content = sql_select_iterator ["SELECT c.*, c.Serial# SerialNo
+                                   FROM   gv$Diag_Trace_File_Contents c
+                                   WHERE  c.Inst_ID        = ?
+                                   AND    c.ADR_Home       = ?
+                                   AND    c.Trace_FileName = ?
+                                   AND    c.Con_ID         = ?
+                                   ORDER BY c.Line_Number
+                                  ", @instance, @adr_home, @trace_filename, @con_id]
+
     render_partial
   end
 
