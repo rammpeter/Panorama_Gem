@@ -99,7 +99,6 @@ class DbaSchemaController < ApplicationController
               Segment_Name||' ('||(SELECT Object_Name FROM DBA_Objects WHERE Object_ID=TO_NUMBER(SUBSTR(Segment_Name, 14, 10)) )||')'
         ELSE Segment_Name
         END Segment_Name_Qual,
-        Segment_Name,
         x.*
       FROM (
       SELECT
@@ -248,7 +247,6 @@ class DbaSchemaController < ApplicationController
                  'INDEX SUBPARTITION', isp.Leaf_Blocks,
                NULL) Leaf_Blocks
         FROM Segments s
---        LEFT OUTER JOIN Objects o                 ON o.Owner         = s.Owner       AND o.Object_Name          = s.Segment_name   AND (s.Partition_Name IS NULL OR o.SubObject_Name = s.Partition_Name)
         LEFT OUTER JOIN Objects o                 ON o.Owner         = s.Owner       AND o.Object_Name          = s.Segment_name   AND NVL(s.Partition_Name, '-1') = NVL(o.SubObject_Name, '-1')
         LEFT OUTER JOIN Tables t                  ON t.Owner         = s.Owner       AND t.Table_Name           = s.segment_name
         LEFT OUTER JOIN Tab_Partitions tp         ON tp.Table_Owner  = s.Owner       AND tp.Table_Name          = s.segment_name   AND tp.Partition_Name        = s.Partition_Name

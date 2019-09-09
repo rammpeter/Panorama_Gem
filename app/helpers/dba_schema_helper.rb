@@ -65,11 +65,7 @@ For exact values click for calculation with DBMS_SPACE.SPACE_USAGE."
     return nil if avg_row_len.nil? || num_rows.nil? || pct_free.nil? || ini_trans.nil? || size_mb.nil?
     data_size_per_block_without_row_dir =  ((blocksize - block_header_size(ini_trans)) * (1 - pct_free/100.0) - table_directory_entry_size).to_i
 
-    data_size_per_block =
-        data_size_per_block_without_row_dir -
-            2 * (data_size_per_block_without_row_dir / avg_row_len).to_i        # row directory
-
-    rows_per_block = (data_size_per_block / (avg_row_len + 3)).to_i             # Avg_Row_Len + 3 bytes row header. Assuming the last partial row does not fit into the block
+    rows_per_block = (data_size_per_block_without_row_dir / (avg_row_len + 5)).to_i             # Avg_Row_Len + 2 bytes row directory + 3 bytes row header. Assuming the last partial row does not fit into the block
 
     needed_blocks     = (num_rows / rows_per_block).to_i + 1
 

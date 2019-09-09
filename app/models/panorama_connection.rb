@@ -154,7 +154,6 @@ class PanoramaConnection
     @last_used_query_timeout  = 600                                             # initial value, should be overwritten in check_for_open_connection
     @last_used_time           = Time.now
     @password_hash            = PanoramaConnection.get_decrypted_password.hash
-
   end
 
   def read_initial_attributes
@@ -274,7 +273,6 @@ class PanoramaConnection
 
     @@connection_pool_mutex.synchronize do
       @@connection_pool.clone.each do |conn|                                    # clone to ensure eqch connection is checked even if Array-nodes are removed between
-
         if !conn.used_in_thread && conn.last_used_time < Time.now - min_age_for_disconnect
           config = conn.jdbc_connection.instance_variable_get(:@config)
           Rails.logger.info "Disconnect DB connection because last used is older than #{min_age_for_disconnect} seconds: URL='#{config[:url]}' user='#{config[:username]}' last used=#{conn.last_used_time} last action='#{conn.last_used_action_name}'"

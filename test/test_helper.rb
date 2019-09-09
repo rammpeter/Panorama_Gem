@@ -64,7 +64,8 @@ class ActiveSupport::TestCase
   include EnvHelper
   include ActionView::Helpers::TranslationHelper
 
-  parallelize(workers: 3, with: :threads) # :processes or :threads
+  # parallelize(workers: 3, with: :threads) # :processes or :threads
+  # suspended 09.09.2019
 
   # Verbindungsparameter der für Test konfigurierten DB als Session-Parameter hinterlegen
   # damit wird bei Connect auf diese DB zurückgegriffen
