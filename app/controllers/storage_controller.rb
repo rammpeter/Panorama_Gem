@@ -167,6 +167,7 @@ class StorageController < ApplicationController
                       'INDEX'          , 'Index',
                       'TABLE'          , 'Table',
                       'NESTED TABLE'   , 'Table',
+                      'CLUSTER'        , 'Table',
                       'TABLE PARTITION', 'Table',
                       'TABLE SUBPARTITION', 'Table',
                       'LOBSEGMENT'     , 'Table',

@@ -389,6 +389,7 @@ class DbaSchemaController < ApplicationController
         end
       when "LOB"
         res = sql_select_first_row ["SELECT Owner Table_Owner, Object_Name Table_Name FROM DBA_Objects WHERE Object_ID=TO_NUMBER(?)", @object_name[7,10]]
+        show_popup_message("No corresponding table found for LOB segment '#{@object_name}'.\nPossibly dropped object from recycle bin?") if res.nil?
         @owner      = res.table_owner
         @table_name = res.table_name
       when "SEQUENCE"
