@@ -5,9 +5,8 @@ module Dragnet::SqlsCursorRedundanciesHelper
 
   def sqls_cursor_redundancies
     [
-        # TODO: Show last SQL_ID with known SQL_Text instead of last SQL-ID
         {
-            :name  => t(:dragnet_helper_133_name, :default=>'Missing usage of bind variables: Detection by identical plan-hash-value from SGA and Active Session History'),
+            :name  => t(:dragnet_helper_133_name, :default=>'Missing usage of bind variables: Detection by identical plan-hash-value from Active Session History (SGA and AWR)'),
             :desc  => t(:dragnet_helper_133_desc, :default=>"Usage of literals instead of bind variables with high number of different literals leads to high parse counts and flooding of SQL-Area in SGA.
 You may reduce the problem by setting cursor_sharing != EXACT, but you still need large amount of SGA-memory to match your SQL with the corresponding SQL with replaced bind variables.
 So strong suggestion is: Use bind variables!
@@ -18,7 +17,7 @@ Using force-matching-signature instead of plan-hash-value for detection is risky
                       FROM   (
                               SELECT h.SQL_Plan_Hash_Value,
                                      COUNT(DISTINCT h.SQL_ID) Different_SQL_IDs,
-                                     MAX(h.SQL_ID) KEEP (DENSE_RANK LAST ORDER BY h.Sample_Time) Last_Used_SQL_ID,
+                                     MAX(h.SQL_ID) KEEP (DENSE_RANK LAST ORDER BY CASE WHEN text_exists.SQL_ID IS NULL THEN 0 ELSE 1 END, h.Sample_Time) Last_Used_SQL_ID,
                                      User_ID,
                                      MIN(h.Sample_Time) First_Occurrence,
                                      MAX(h.Sample_Time) Last_Occurrence,
@@ -38,6 +37,10 @@ Using force-matching-signature instead of plan-hash-value for detection is risky
                                                FROM   gv$Active_Session_History
                                                GROUP BY  Inst_ID, SQL_Plan_Hash_Value
                                               ) d ON d.Instance_Number = h.Instance_Number AND d.SQL_Plan_Hash_Value = h.SQL_Plan_Hash_Value
+                              LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ DISTINCT SQL_ID FROM gv$SQL
+                                               UNION
+                                               SELECT SQL_ID FROM Panorama_SQLText
+                                              ) text_exists ON text_exists.SQL_ID = h.SQL_ID
                               WHERE  h.SQL_Plan_Hash_Value != 0
                               GROUP BY h.SQL_Plan_Hash_Value, h.User_ID
                              ) x
@@ -47,6 +50,27 @@ Using force-matching-signature instead of plan-hash-value for detection is risky
             :parameter=>[
                 {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
                 {:name=> t(:dragnet_helper_133_param_1_name, :default=>'Minimum number of different SQL-IDs'), :size=>8, :default=>10, :title=>t(:dragnet_helper_133_param_1_hint, :default=>'Minimum number of different SQL-IDs per plan-hash-value for consideration in selection') }
+            ]
+        },
+        {
+            :name  => t(:dragnet_helper_148_name, :default=>'Missing usage of bind variables: Detection by identical plan-hash-value from SQL Area in SGA'),
+            :desc  => t(:dragnet_helper_148_desc, :default=>"Usage of literals instead of bind variables with high number of different literals leads to high parse counts and flooding of SQL-Area in SGA.
+You may reduce the problem by setting cursor_sharing != EXACT, but you still need large amount of SGA-memory to match your SQL with the corresponding SQL with replaced bind variables.
+So strong suggestion is: Use bind variables!
+This selection looks for statements with identical execution plans by plan-hash-value from gv$SQL.
+"),
+            :sql=>  "\
+SELECT s.Inst_ID, s.Parsing_Schema_Name, s.Plan_Hash_Value, COUNT(*) Child_Cursors, COUNT(DISTINCT SQL_ID) Different_SQLs, MAX(Last_Active_Time) Max_Last_Active_Time,
+       ROUND(SUM(Elapsed_Time)/1000000, 2) Elapsed_Time_Secs,
+       MAX(SQL_ID) KEEP (DENSE_RANK LAST ORDER BY Last_Active_Time) Last_Used_SQL_ID,
+       COUNT(DISTINCT force_matching_signature) Different_Force_Matching_Signs
+FROM   gv$SQL s
+WHERE  Plan_Hash_Value > 0
+GROUP BY s.Inst_ID, s.Parsing_Schema_Name, s.Plan_Hash_Value
+HAVING COUNT(*) > 10
+ORDER BY Child_Cursors DESC",
+            :parameter=>[
+                {:name=> t(:dragnet_helper_148_param_1_name, :default=>'Minimum number of different SQL-IDs'), :size=>8, :default=>10, :title=>t(:dragnet_helper_148_param_1_hint, :default=>'Minimum number of different SQL-IDs per plan-hash-value for consideration in selection') }
             ]
         },
         {
