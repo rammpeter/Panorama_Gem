@@ -38,7 +38,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   #driven_by :selenium, using: :chrome, screen_size: [2560, 1440]
   driven_by :headless_chrome
 
-  def wait_for_ajax(timeout_secs = 60)
+  def wait_for_ajax(timeout_secs = 300)
     loop_count = 0
     while page.evaluate_script('indicator_call_stack_depth') > 0 && loop_count < timeout_secs
       sleep(0.1)
