@@ -66,7 +66,7 @@
           {:caption=>"Buffer/Ex.",  :data=>proc{|rec| formattedNumber(rec.buffer_gets_per_exec,2) },                        :title=>"Buffer Gets per execute", :align=>"right" },
           {:caption=>"Rows proc.",  :data=>proc{|rec| formattedNumber(rec.rows_processed) },                                :title=>"Number of rows processed", :align=>"right" },
           {:caption=>"Rows/Ex.",    :data=>proc{|rec| formattedNumber(rec.rows_processed_per_execute,2) },                  :title=>"Number of rows processed per execute", :align=>"right" },
-          {:caption=>"Parses",      :data=>proc{|rec| formattedNumber(rec.parse_calls) },                                   :title=>"Number of parse calls", :align=>"right" },
+          {:caption=>"Parses",      :data=>proc{|rec| formattedNumber(rec.parse_calls) },                                   :title=>strings(:parse_calls_title), :align=>"right" },
   ]
 
 %>

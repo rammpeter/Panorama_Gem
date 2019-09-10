@@ -18,7 +18,7 @@ def show_both_values(name, param, decimals, title="", show_per_result_row=false)
   execs     = @sql.executions.to_i     == 0 ? 1 : @sql.executions.to_i;         # Suppress division by 0
 
   if show_per_result_row && @sql.rows_processed.to_i > 0                        # Suppress division by 0
-    per_res_row = "\n#{formattedNumber(param/@sql.rows_processed.to_i, decimals+2)} per result row"
+    per_res_row = "\n\n#{formattedNumber(param/@sql.rows_processed.to_i, decimals+2)} per result row"
   else
     per_res_row = ''
   end
@@ -26,7 +26,7 @@ def show_both_values(name, param, decimals, title="", show_per_result_row=false)
   "<tr>
      <td title='#{title}'>#{name}</td>
      <td align='right' title='#{title}#{per_res_row}\n#{@metrics_start_hint_suffix}'>#{formattedNumber(param,decimals)}</td>
-     <td align='right' title='#{title} #{t(:per_execution, :default=>'per execution')}#{per_res_row}'>#{formattedNumber( (param/execs),(decimals+2))}</td>
+     <td align='right' title='#{title}\n#{t(:per_execution, :default=>'Value per execution')}#{per_res_row}'>#{formattedNumber( (param/execs),(decimals+2))}</td>
    </tr>".html_safe
 end
 
@@ -109,7 +109,7 @@ end
        <table id="<%= "#{@table_id_prefix}_right_table" %>" border="1" width="100%" style="font-size:small;">
          <tr  title="<%= metrics_start_hint %>"><th>Metric-Name</th><th>Total</th><th>Per Exec.</th></tr>
          <%= show_single_value("Executions", @sql.executions,0, "Number of executions") %>
-         <%= show_both_values("Parse calls", @sql.parse_calls,0, "Number of parse calls\nIncludes soft and hard parses at opening of new cursor.\nRegardless wether parsed SQL can be reused or not", true) %>
+         <%= show_both_values("Parse calls", @sql.parse_calls,0, strings(:parse_calls_title), true) %>
          <%= show_both_values("Fetches ", @sql.fetches, 0, "Number of fetches (Avg. #{@sql.rows_processed/@sql.fetches rescue nil} rows per fetch)")%>
          <%= show_both_values("Sorts", @sql.sorts,0, "Number of sort operations") %>
          <%= show_both_values("Rows processed", @sql.rows_processed,0, "Number of rows processed") %>

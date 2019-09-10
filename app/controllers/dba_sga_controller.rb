@@ -718,22 +718,18 @@ class DbaSgaController < ApplicationController
 
     @open_cursors = sql_select_all ["\
        SELECT /* Panorama-Tool Ramm */
+              o.*,
               s.SID,
-              s.Inst_ID,
               s.Serial# SerialNo,
-              s.UserName,
               s.OSUser,
               s.Process,
               s.Machine,
               s.Program,
               s.Module,
               DECODE(o.SQL_ID, s.SQL_ID, 'Y', 'N') Stmt_Active
-       FROM   gv$Open_Cursor o,
-              gv$Session s
-       WHERE  s.Inst_ID = o.Inst_ID
-       AND    s.SAddr   = o.SAddr
-       AND    s.SID     = o.SID
-       AND    o.Inst_ID = ?
+       FROM   gv$Open_Cursor o
+       JOIN   gv$Session s ON s.Inst_ID = o.Inst_ID AND s.SAddr = o.SAddr AND s.SID = o.SID
+       WHERE  o.Inst_ID = ?
        AND    o.SQL_ID  = ?
        ", @instance, @sql_id]
 

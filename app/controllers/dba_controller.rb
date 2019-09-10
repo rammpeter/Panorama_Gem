@@ -961,7 +961,10 @@ Solution: Execute as user 'SYS':
     @serialno = params[:serialno].to_i
 
     @opencursors = sql_select_iterator ["
-      SELECT /*+ ORDERED USE_HASH(s wa) */ oc.SQL_ID oc_SQL_ID, oc.SQL_Text, wa.*,
+      SELECT /*+ ORDERED USE_HASH(s wa) */
+             oc.*,
+             -- oc.SQL_ID oc_SQL_ID, oc.SQL_Text,
+             wa.*,
              CASE WHEN se.SAddr = oc.SAddr THEN 'YES' ELSE 'NO' END Own_SAddr,
              sse.SID SAddr_SID, sse.Serial# SAddr_SerialNo
       FROM   GV$Session se

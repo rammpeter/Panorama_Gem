@@ -8,7 +8,7 @@
                 :action            => "list_cursor_memory",
                 :update_area       => @update_area,
                 :instance          => @instance,
-                :sql_id            => rec.oc_sql_id
+                :sql_id            => rec.sql_id
               },
         :title => "Show details of PGA-Workarea"
         )
@@ -33,7 +33,7 @@
 
   column_options =
   [
-    {:caption=>"SQL-ID",        :data=>proc{|rec| link_sql_id(@update_area, @instance, rec.oc_sql_id)},                                     :title=>"SQL-ID of statement"},
+    {:caption=>"SQL-ID",        :data=>proc{|rec| link_sql_id(@update_area, @instance, rec.sql_id)},                                     :title=>"SQL-ID of statement"},
     {:caption=>"Est.Opt.Size",  :data=>proc{|rec| link_column_workarea(rec, formattedNumber(rec.estimated_optimal_size))}, :align=>"right", :title=>"Estimated size required by this work area to execute the operation completely in memory (optimal execution). Derived from either optimizer statistics or previous executions in bytes."},
     {:caption=>"Est.Onep.Size", :data=>proc{|rec| link_column_workarea(rec, formattedNumber(rec.estimated_onepass_size))}, :align=>"right", :title=>"Estimated size required by this work area to execute the operation in a single pass. Derived from either optimizer statistics or previous executions in bytes."},
     {:caption=>"Last Mem.Used", :data=>proc{|rec| link_column_workarea(rec, formattedNumber(rec.last_memory_used))},       :align=>"right", :title=>"Memory used by this work area during the last execution of the cursor in bytes"},
@@ -43,6 +43,9 @@
     {:caption=>"SQL-Text",      :data=>proc{|rec| my_html_escape(rec.sql_text)},                                                                            :title=>"First characters of SQL-text"},
     {:caption=>"Own SAddr",     :data=>proc{|rec| link_saddr_session(rec)},                                                                 :title=>"Does gv$Open_Cursor.SAddr reference same session like gv$Open_Cursor.SID? If not, session referenced by SAddr is shown"},
   ]
+  column_options << {caption: 'Last active',    data: proc{|rec| localeDateTime(rec.last_sql_active_time)},     title: "Time when this cursor was last executed"} if get_db_version >= '11.1'
+  column_options << {caption: 'SQL exec ID',    data: proc{|rec| fn(rec.sql_exec_id)}, align: :right,           title: "If the open cursor is executing, then the SQL execution identifier for that execution"} if get_db_version >= '11.1'
+  column_options << {caption: 'Cursor_Type',    data: proc{|rec| rec.cursor_type},                              title: "Type of cursor:\nOPEN PL/SQL - Open PL/SQL cursors\nOPEN - Other open cursors\nSESSION CURSOR CACHED - Cursors cached in the generic session cursor cache\nOPEN RECURSIVE - Open recursive cursors\nDICTIONARY LOOKUP CURSOR CACHED - Cursors cached in the dictionary lookup cursor cache\nBUNDLE DICTIONARY LOOKUP CACHED - Cursors cached in the bundled dictionary lookup cursor cache\nJAVA NAME TRANSLATION CURSOR CACHED - Cursors cached in the Java name translation cursor cache\nREPLICATION TRIGGER CURSOR CACHED - Cursors cached in the replication trigger cursor cache\nCONSTRAINTS CURSOR CACHED - Cursors cached in the constraints cursor cache\nPL/SQL CURSOR CACHED - Cursors cached in the PL/SQL cursor cache"} if get_db_version >= '12.1'
 
 %>
 <%= gen_slickgrid(@opencursors, column_options, {
