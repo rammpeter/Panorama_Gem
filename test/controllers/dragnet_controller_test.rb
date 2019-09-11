@@ -35,7 +35,7 @@ class DragnetControllerTest < ActionController::TestCase
         execute_tree(entry['children'])        # Test subnode's entries
       else
         # _1_1_4 excluded because ORA600 on Oracle12.1
-        if !['_3_7', '_7_1'].include?(entry['id'])            # Exclude selections from test which are not executable, start with 0 instead of 1
+        if !['_3_8', '_7_1'].include?(entry['id'])            # Exclude selections from test which are not executable, start with 0 instead of 1
           full_entry = extract_entry_by_entry_id(entry['id'])                 # Get SQL from id
           params = {:format=>:html, :dragnet_hidden_entry_id=>entry['id'], :update_area=>:hugo}
 
