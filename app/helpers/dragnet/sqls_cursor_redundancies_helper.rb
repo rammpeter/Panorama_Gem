@@ -39,7 +39,7 @@ Using force-matching-signature instead of plan-hash-value for detection is risky
                                               ) d ON d.Instance_Number = h.Instance_Number AND d.SQL_Plan_Hash_Value = h.SQL_Plan_Hash_Value
                               LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ DISTINCT SQL_ID FROM gv$SQL
                                                UNION
-                                               SELECT SQL_ID FROM Panorama_SQLText
+                                               SELECT SQL_ID FROM DBA_Hist_SQLText
                                               ) text_exists ON text_exists.SQL_ID = h.SQL_ID
                               WHERE  h.SQL_Plan_Hash_Value != 0
                               GROUP BY h.SQL_Plan_Hash_Value, h.User_ID
