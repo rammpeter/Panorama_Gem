@@ -1088,7 +1088,7 @@ class DbaSchemaController < ApplicationController
     @table_name = params[:table_name]
 
     @referencing = sql_select_all ["\
-      SELECT c.*, ct.Num_Rows,  ci.Index_Name, ci.Index_Number,
+      SELECT c.*, ct.Num_Rows,  ci.Min_Index_Owner, ci.Min_Index_Name, ci.Index_Number,
              #{get_db_version >= "11.2" ?
                                       "(SELECT  LISTAGG(column_name, ', ') WITHIN GROUP (ORDER BY Position) FROM DBA_Cons_Columns cc WHERE cc.Owner = r.Owner AND cc.Constraint_Name = r.Constraint_Name) R_Columns,
                                        (SELECT  LISTAGG(column_name, ', ') WITHIN GROUP (ORDER BY Position) FROM DBA_Cons_Columns cc WHERE cc.Owner = c.Owner AND cc.Constraint_Name = c.Constraint_Name) Columns
@@ -1101,7 +1101,10 @@ class DbaSchemaController < ApplicationController
       JOIN   DBA_Constraints c ON c.R_Owner = r.Owner AND c.R_Constraint_Name = r.Constraint_Name
       JOIN   DBA_Tables ct ON ct.Owner = c.Owner AND ct.Table_Name = c.Table_Name
       JOIN   DBA_Cons_Columns cc1 ON cc1.Owner = c.Owner AND cc1.Constraint_Name = c.Constraint_Name AND cc1.Position = 1
-      LEFT OUTER JOIN (SELECT ic.Table_Owner, ic.Table_Name, ic.Column_Name, MIN(ic.Index_Name) Index_Name, COUNT(*) Index_Number
+      LEFT OUTER JOIN (SELECT ic.Table_Owner, ic.Table_Name, ic.Column_Name,
+                              MIN(ic.Index_Owner) KEEP (DENSE_RANK FIRST ORDER BY ic.Index_Name) Min_Index_Owner,
+                              MIN(ic.Index_Name) Min_Index_Name,
+                              COUNT(*) Index_Number
                        FROM   DBA_Ind_Columns ic
                        WHERE  ic.Column_Position = 1
                        GROUP BY ic.Table_Owner, ic.Table_Name, ic.Column_Name

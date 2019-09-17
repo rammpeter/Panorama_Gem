@@ -1,24 +1,25 @@
 # encoding: utf-8
 
 # Liste der Rasterfahndungs-SQL
-include Dragnet::OptimalIndexStorageHelper
-include Dragnet::UnnecessaryIndexesHelper
-include Dragnet::PartitioningHelper
+include Dragnet::CascadingViewsHelper
+include Dragnet::DragnetSqlsLogwriterRedoHelper
+include Dragnet::DragnetSqlsTuningSgaPgaHelper
 include Dragnet::InstanceSetupTuning
-include Dragnet::UnusedTablesHelper
-include Dragnet::SqlsPotentialDbStructuresHelper
+include Dragnet::MaterializedViewsHelper
+include Dragnet::OptimalIndexStorageHelper
 include Dragnet::OptimizableFullScansHelper
+include Dragnet::PartitioningHelper
+include Dragnet::PlSqlUsageHelper
 include Dragnet::ProblemsWithParallelQueryHelper
+include Dragnet::SqlsConclusionApplicationHelper
+include Dragnet::SqlsCursorRedundanciesHelper
+include Dragnet::SqlsPotentialDbStructuresHelper
+include Dragnet::SqlsWrongExecutionPlanHelper
+include Dragnet::SuboptimalIndexUsageHelper
 include Dragnet::UnnecessaryExecutionsHelper
 include Dragnet::UnnecessaryHighExecutionFrequencyHelper
-include Dragnet::SuboptimalIndexUsageHelper
-include Dragnet::SqlsWrongExecutionPlanHelper
-include Dragnet::DragnetSqlsTuningSgaPgaHelper
-include Dragnet::SqlsCursorRedundanciesHelper
-include Dragnet::DragnetSqlsLogwriterRedoHelper
-include Dragnet::CascadingViewsHelper
-include Dragnet::SqlsConclusionApplicationHelper
-include Dragnet::PlSqlUsageHelper
+include Dragnet::UnnecessaryIndexesHelper
+include Dragnet::UnusedTablesHelper
 include Dragnet::ViewIssuesHelper
 
 module DragnetHelper
@@ -64,6 +65,9 @@ module DragnetHelper
                             },
                             {  :name    => t(:dragnet_helper_group_unused_tables, :default => 'Detection of unused tables or columns'),
                                :entries => unused_tables
+                            },
+                            {  :name    => t(:dragnet_helper_group_materialized_views, :default => 'Materialized_views'),
+                               :entries => materialized_views
                             },
 
               ].concat(sqls_potential_db_structures)

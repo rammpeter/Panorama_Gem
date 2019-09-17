@@ -583,6 +583,7 @@
   dragnet_helper_group_cursor_redundancies:                 Redundante Cursoren / Nutzung Bindevariablen
   dragnet_helper_group_instance_setup_tuning:               Instance-Setup und Instance-Tuning
   dragnet_helper_group_logwriter_redo:                      LogWriter-Belastung / Redolog-Aufkommen
+  dragnet_helper_group_materialized_views:                  Materialized Views
   dragnet_helper_group_optimizable_full_scans:              Optimierbare Full-Scan Operationen
   dragnet_helper_group_optimal_index_storage:               Sicherstellen optimaler Storage-Parameter für Indizes
   dragnet_helper_group_partitioning:                        Empfehlungen für Partitionierung
@@ -1532,6 +1533,29 @@
     Fehlende Nutzung von Bindevariablen: Ermittlung über identische Plan-Hash-Values aus SQL-Area in SGA
   dragnet_helper_148_param_1_hint:                          Minimale Anzahl unterschiedlicher SQL-IDs je Plan-Hash-Value für Aufnahme in Selektion
   dragnet_helper_148_param_1_name:                          Minimale Anzahl unterschiedlicher SQL-IDs
+
+  dragnet_helper_149_desc: |-
+    Materialized View Logs können unter verschiedene Bedingungen unbegrenzt wachsen:
+    1. Es ist kein Materialized View registriert der die aufgezeichneten Änderungen konsumiert
+    2. Es sind ein oder mehrere Materialzed Views registriert, die die aufgezeichneten Änderungen nicht konsumieren per MV-refresh
+    3. Es sind nur Fragmente einer MV-Registrierung vorhanden in DBA_Snapshot_Logs (sys.slog$), jedoch keine registrierten MV in DBA_Registered_MViews (sys.reg_snap$)
+
+    Abhängig vom Grund existieren unterschiedliche Lösungen zur Klärung:
+    1. Drop des ungenutzten MV-Logs durch Ausführung von DROP MATERIALIZED VIEW LOG ON <master table>
+    2. Deregistrieren des nicht refreshten MVs durch Aufruf von DMBS_MVIEW.UNREGISTER_MVIEW
+    3. Entfernen des verwaisten Snaphot Log durch Ausführung von DELETE FROM sys.slog$ WHERE SnapID = x
+  dragnet_helper_149_name: |-
+    Verwaiste Materialized View Logs
+  dragnet_helper_149_param_1_hint:                          Minimale Anzahl Tage seit dem letzten MV-Refresh (falls ein registrierter MV existiert)
+  dragnet_helper_149_param_1_name:                          Minimale Anzahl Tage seit letztem Refresh
+
+  dragnet_helper_150_desc: |-
+    Registrierte Materialized Views mit Can_Use_Log != 'NO' sollten einen Bezug zu einem oder mehreren MV-Logs haben über DBA_Snapshot_Logs, besonders für Fast Refreshable MVs.
+    Wenn dieser Bezug nicht existiert kann dies ein Hinweis auf verwaiste Registrierungen von MVs sein.
+
+    Mögliche Lösungen zur Klärung ist Deregistrieren des MVs durch Aufruf von DMBS_MVIEW.UNREGISTER_MVIEW
+  dragnet_helper_150_name: |-
+    Registrierte Materialized Views ohne Beziehung zu MV-Log
 
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
