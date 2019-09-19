@@ -204,7 +204,7 @@ module EnvHelper
       sid_tag_length = 4
       sid_usage = :SID
       start_pos_sid = fullstring.index('SID=')                                  # i.d.R. folgt unmittelbar ein "="
-      start_pos_sid = fullstring.index('SID ') if start_pos_sid.nil?            # evtl. " " zwischen SID und "="
+      start_pos_sid = fullstring.index('SID ') if start_pos_sid.nil? || fullstring.index('DESCRIPTION')<start_pos_sid    # evtl. " " zwischen SID und "=" and "SID=" of next entry found
       if start_pos_sid.nil? || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos_sid) # Alle weiteren Treffer muessen vor der naechsten Description liegen
         sid_tag_length = 12
         sid_usage = :SERVICE_NAME
