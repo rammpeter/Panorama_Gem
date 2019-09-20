@@ -142,11 +142,26 @@ module EnvHelper
     {}
   end
 
+  # extract host or port from file buffer
+  def extract_attr(searchstring, fullstring)
+    # ermitteln Hostname
+    start_pos = fullstring.index(searchstring)
+    # Naechster Block mit Description beginnen wenn kein Host enthalten oder in naechster Description gefunden
+    return nil, nil if start_pos==nil || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos)    # Alle weiteren Treffer muessen vor der naechsten Description liegen
+    #fullstring = fullstring[start_pos_host + 5, 1000000]
+    start_pos_value = start_pos + searchstring.length
+    next_parenthesis = fullstring[start_pos_value, 1000000].index(')')                # Next closing parenthesis after searched object
+    retval = fullstring[start_pos_value, next_parenthesis]
+    retval = retval.delete(' ').delete('=') # Entfernen Blank u.s.w
+    return retval, start_pos
+  end
+
   def read_tnsnames_internal(file_name)
     tnsnames = {}
 
     fullstring = IO.read(file_name)
     fullstring.encode!(fullstring.encoding, :universal_newline => true)         # Ensure that Windows-Linefeeds 0D0A are replaced by 0A
+    fullstring.upcase!
 
     # Test for IFILE insertions
     fullstring_ifile = fullstring.clone                                         # local copy
@@ -172,33 +187,33 @@ module EnvHelper
     while true
       # Ermitteln TNSName
       start_pos_description = fullstring.index('DESCRIPTION')
-      break unless start_pos_description                               # Abbruch, wenn kein weitere DESCRIPTION im String
+      break unless start_pos_description                                        # Abbruch, wenn kein weitere DESCRIPTION im String
       tns_name = fullstring[0..start_pos_description-1]
-      while tns_name[tns_name.length-1,1].match '[=,\(, ,\n,\r]'            # Zeichen nach dem TNSName entfernen
-        tns_name = tns_name[0, tns_name.length-1]                         # Letztes Zeichen des Strings entfernen
+      while tns_name[tns_name.length-1,1].match '[=,\(, ,\n,\r]'                # Zeichen nach dem TNSName entfernen
+        tns_name = tns_name[0, tns_name.length-1]                               # Letztes Zeichen des Strings entfernen
       end
-      while tns_name.index("\n")                                        # Alle Zeilen vor der mit DESCRIPTION entfernen
-        tns_name = tns_name[tns_name.index("\n")+1, 10000]                # Wert akzeptieren nach Linefeed wenn enthalten
+      while tns_name.index("\n")                                                # Alle Zeilen vor der mit DESCRIPTION entfernen
+        tns_name = tns_name[tns_name.index("\n")+1, 10000]                      # Wert akzeptieren nach Linefeed wenn enthalten
       end
-      fullstring = fullstring[start_pos_description + 10, 1000000]     # Rest des Strings fuer weitere Verarbeitung
+      fullstring = fullstring[start_pos_description + 10, 1000000]              # Rest des Strings fuer weitere Verarbeitung
 
       next if tns_name[0,1] == "#"                                              # Auskommentierte Zeile
 
-      # ermitteln Hostname
-      start_pos_host = fullstring.index('HOST')
-      # Naechster Block mit Description beginnen wenn kein Host enthalten oder in naechster Description gefunden
-      next if start_pos_host==nil || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos_host)    # Alle weiteren Treffer muessen vor der naechsten Description liegen
-      fullstring = fullstring[start_pos_host + 5, 1000000]
-      hostName = fullstring[0..fullstring.index(')')-1]
-      hostName = hostName.delete(' ').delete('=') # Entfernen Blank u.s.w
+      hostName, start_pos_host = extract_attr('HOST', fullstring)
+      port,     start_pos_port = extract_attr('PORT', fullstring)
 
-      # ermitteln Port
-      start_pos_port = fullstring.index('PORT')
-      # Naechster Block mit Description beginnen wenn kein Port enthalten oder in naechster Description gefunden
-      next if start_pos_port==nil || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos_port) # Alle weiteren Treffer muessen vor der naechsten Description liegen
-      fullstring = fullstring[start_pos_port + 5, 1000000]
-      port = fullstring[0..fullstring.index(')')-1]
-      port = port.delete(' ').delete('=')      # Entfernen Blank u.s.w.
+      if hostName.nil? || port.nil?
+        Rails.logger.error "tnsnames.ora: cannot determine host and port for '#{tns_name}'"
+        next
+      end
+
+      hostName.downcase!
+
+      if start_pos_host < start_pos_port
+        fullstring = fullstring[start_pos_port + 5 + port.length, 1000000]
+      else
+        fullstring = fullstring[start_pos_host + 5 + hostName.length, 1000000]
+      end
 
       # ermitteln SID oder alternativ Instance_Name oder Service_Name
       sid_tag_length = 4
@@ -211,7 +226,10 @@ module EnvHelper
         start_pos_sid = fullstring.index('SERVICE_NAME')
       end
       # Naechster Block mit Description beginnen wenn kein SID enthalten oder in naechster Description gefunden
-      next if start_pos_sid==nil || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos_sid) # Alle weiteren Treffer muessen vor der naechsten Description liegen
+      if start_pos_sid==nil || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos_sid) # Alle weiteren Treffer muessen vor der naechsten Description liegen
+        Rails.logger.error "tnsnames.ora: cannot determine sid or service_name for '#{tns_name}'"
+        next
+      end
       fullstring = fullstring[start_pos_sid + sid_tag_length, 1000000]               # Rest des Strings fuer weitere Verarbeitung
 
       sidName = fullstring[0..fullstring.index(')')-1]
