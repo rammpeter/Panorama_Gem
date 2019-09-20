@@ -13,16 +13,28 @@
 <div>
   <input id="error_dialog_show_backtrace" value="Show stack trace" type="submit" style="margin-bottom: 5px; margin-top: 5px"
          onclick="
-            jQuery('#error_dialog_backtrace').css('display', 'inline').css('max_height', '300px').css('overflow', 'scroll');
-            jQuery('#error_dialog_show_backtrace').css('display', 'none');
-            jQuery('#error_dialog_hide_backtrace').css('display', 'inline');
+            document.getElementById('error_dialog_backtrace').style.display    = 'inline';
+            document.getElementById('error_dialog_backtrace').style.max_height = '300px';
+            document.getElementById('error_dialog_backtrace').style.overflow   = 'scroll';
+
+            document.getElementById('error_dialog_show_backtrace').style.display   = 'none';
+            document.getElementById('error_dialog_hide_backtrace').style.display   = 'inline';
+
+            //jQuery('#error_dialog_backtrace').css('display', 'inline').css('max_height', '300px').css('overflow', 'scroll');
+            //jQuery('#error_dialog_show_backtrace').css('display', 'none');
+            //jQuery('#error_dialog_hide_backtrace').css('display', 'inline');
          "
   />
   <input id="error_dialog_hide_backtrace" value="Hide stack trace" type="submit" style="display: none; margin-bottom: 5px; margin-top: 5px"
          onclick="
-         jQuery('#error_dialog_backtrace').css('display', 'none');
-                 jQuery('#error_dialog_show_backtrace').css('display', 'inline');
-                 jQuery('#error_dialog_hide_backtrace').css('display', 'none');
+            document.getElementById('error_dialog_backtrace').style.display   = 'none';
+            document.getElementById('error_dialog_show_backtrace').style.display   = 'inline';
+            document.getElementById('error_dialog_hide_backtrace').style.display   = 'none';
+
+
+            // jQuery('#error_dialog_backtrace').css('display', 'none');
+            // jQuery('#error_dialog_show_backtrace').css('display', 'inline');
+            // jQuery('#error_dialog_hide_backtrace').css('display', 'none');
          "
   />
 </div>
