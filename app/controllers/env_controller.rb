@@ -198,7 +198,8 @@ class EnvController < ApplicationController
     rescue Exception => e
       Rails.logger.error "Exception: #{e.message}"
       log_exception_backtrace(e, 20)
-      raise PopupMessageException.new("Your user is missing SELECT-right on gv$Instance, gv$Database.<br/>Please ensure that your user has granted SELECT ANY DICTIONARY.<br/>Panorama is not usable with this user account!\n\n".html_safe, e)
+      PanoramaConnection.destroy_connection                                     # Remove connection from pool. Ensure using new connection with next retry
+      raise PopupMessageException.new("Your user is missing SELECT-right on gv$Instance, gv$Database.<br/>Please ensure that your user has granted SELECT ANY DICTIONARY or SELECT_CATALOG_ROLE.<br/>Panorama is not usable with this user account!\n\n".html_safe, e)
     end
 
     @panorama_sampler_data = PanoramaSamplerStructureCheck.panorama_sampler_schemas(:full)
