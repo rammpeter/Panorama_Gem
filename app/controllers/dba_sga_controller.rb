@@ -1642,15 +1642,20 @@ class DbaSgaController < ApplicationController
       where_values << @exact_signature
     end
 
-    @sql_patches = sql_select_all ["SELECT p.*, TO_CHAR(p.Signature) Char_Signature, sod.comp_data
-                                    FROM DBA_SQL_Patches p
-                                    JOIN sys.sqlobj$ so ON so.Name = p.Name AND so.Signature = p.Signature AND so.Category = p.Category AND so.Obj_Type = 3 /* SQL patch */
-                                    JOIN sys.sqlobj$data sod ON sod.signature = so.signature
-                                                    and     sod.category = so.category
-                                                    and     sod.obj_type = so.obj_type
-                                                    and     sod.plan_id = so.plan_id
-                                    #{where_stmt}"].concat(where_values)
-
+    begin
+      @sql_patches = sql_select_all ["SELECT p.*, TO_CHAR(p.Signature) Char_Signature, sod.comp_data
+                                      FROM DBA_SQL_Patches p
+                                      JOIN sys.sqlobj$ so ON so.Name = p.Name AND so.Signature = p.Signature AND so.Category = p.Category AND so.Obj_Type = 3 /* SQL patch */
+                                      JOIN sys.sqlobj$data sod ON sod.signature = so.signature
+                                                      and     sod.category = so.category
+                                                      and     sod.obj_type = so.obj_type
+                                                      and     sod.plan_id = so.plan_id
+                                      #{where_stmt}"].concat(where_values)
+    rescue Exception                                                            # workaround for autonomous cloud service without access on sys-tables
+      @sql_patches = sql_select_all ["SELECT p.*, TO_CHAR(p.Signature) Char_Signature, 'No access allowed on sys.sqlobj$ and sys.sqlobj$data !' comp_data
+                                      FROM DBA_SQL_Patches p
+                                      #{where_stmt}"].concat(where_values)
+    end
     render_partial
   end
 

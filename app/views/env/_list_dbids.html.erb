@@ -25,6 +25,7 @@
         {:caption=> 'AWR interval',     :data=>proc{|rec| fn(rec.snap_interval_minutes)}, :title=> 'AWR snapshot interval in minutes', :align=>:right},
         {:caption=> 'AWR retention',    :data=>proc{|rec| fn(rec.snap_retention_days)},   :title=> 'AWR retention time for snapshots in days', :align=>:right},
     ]
+  column_options << {:caption=> 'Con-ID',    :data=>proc{|rec| fn(rec.con_id)},   :title=> "Container ID to which the data pertains. Possible values include:\n0: The entire CDB. This value is also used for rows in non-CDBs.\n1: Data that pertain to only the root-CDB\nn: Application PDB", :align=>:right} if get_db_version >= '12.1'
 
 %>
 

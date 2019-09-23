@@ -461,6 +461,7 @@ public
       @dbids = sql_select_all ["SELECT s.DBID, MIN(Begin_Interval_Time) Min_TS, MAX(End_Interval_Time) Max_TS,
                                          (SELECT MIN(DB_Name) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) DB_Name,
                                          (SELECT COUNT(DISTINCT Instance_Number) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) Instances,
+                                         #{"(SELECT MIN(i.Con_ID) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) Con_ID," if get_db_version >= '12.1'}
                                          MIN(EXTRACT(MINUTE FROM w.Snap_Interval)) Snap_Interval_Minutes,
                                          MIN(EXTRACT(DAY FROM w.Retention))        Snap_Retention_Days
                                   FROM   DBA_Hist_Snapshot s

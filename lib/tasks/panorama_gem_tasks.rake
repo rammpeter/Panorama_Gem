@@ -35,6 +35,7 @@ Rake::TaskManager.class_eval do
   puts "TEST_HOST                 = #{ENV['TEST_HOST']                || 'not set, defaults to localhost'}"
   puts "TEST_PORT                 = #{ENV['TEST_PORT']                || 'not set, defaults to 1521'}"
   puts "TEST_SERVICENAME          = #{ENV['TEST_SERVICENAME']         || 'not set, defaults to ORCLPDB1'}"
+  puts "TEST_TNS                  = #{ENV['TEST_TNS']                 || 'not set, defaults to nil'}"
   puts "TEST_USERNAME             = #{ENV['TEST_USERNAME']            || 'not set, defaults to panorama_test'}"
   puts "TEST_PASSWORD             = #{ENV['TEST_PASSWORD']            || 'not set, defaults to panorama_test'}"
   puts "TEST_SYSPASSWORD          = #{ENV['TEST_SYSPASSWORD']         || 'not set, defaults to oracle'}"

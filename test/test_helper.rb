@@ -246,8 +246,9 @@ class PanoramaTestConfig
     test_username     = ENV['TEST_USERNAME']    || 'panorama_test'
     test_password     = ENV['TEST_PASSWORD']    || 'panorama_test'
     test_syspassword  = ENV['TEST_SYSPASSWORD'] || 'oracle'
+    test_tns          = ENV['TEST_TNS']         || "#{test_host}:#{test_port}/#{test_servicename}"
 
-    config = {
+        config = {
         adapter:                  'nulldb',
         host:                     test_host,
         management_pack_license:  ENV['MANAGEMENT_PACK_LICENSE'] ? ENV['MANAGEMENT_PACK_LICENSE'].to_sym : :diagnostics_and_tuning_pack,
@@ -260,7 +261,7 @@ class PanoramaTestConfig
         sid_usage:                :SERVICE_NAME,
         syspassword_decrypted:    test_syspassword,
         user:                     test_username,
-        tns:                      "#{test_host}:#{test_port}/#{test_servicename}",
+        tns:                      test_tns,
     }
 
     config
