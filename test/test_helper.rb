@@ -248,11 +248,11 @@ class PanoramaTestConfig
     test_syspassword  = ENV['TEST_SYSPASSWORD'] || 'oracle'
     test_tns          = ENV['TEST_TNS']         || "#{test_host}:#{test_port}/#{test_servicename}"
 
-        config = {
+    config = {
         adapter:                  'nulldb',
         host:                     test_host,
         management_pack_license:  ENV['MANAGEMENT_PACK_LICENSE'] ? ENV['MANAGEMENT_PACK_LICENSE'].to_sym : :diagnostics_and_tuning_pack,
-        modus:                    'host',
+        modus:                    ENV['TEST_TNS'].nil? ? 'host' : 'tns',
         panorama_sampler_schema:  test_username,                     # Use test user for panorama-sampler if not specified
         password_decrypted:       test_password,
         port:                     test_port,

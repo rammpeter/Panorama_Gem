@@ -27,22 +27,25 @@ Rake::TaskManager.class_eval do
     @tasks.delete(task_name.to_s)
   end
 
-  Rake.application.delete_task("db:test:load")
-  Rake.application.delete_task("db:test:purge")
-  Rake.application.delete_task("db:abort_if_pending_migrations")
+  if Rails.env.test?
+    Rake.application.delete_task("db:test:load")
+    Rake.application.delete_task("db:test:purge")
+    Rake.application.delete_task("db:abort_if_pending_migrations")
 
-  puts "Test-Environment:"
-  puts "TEST_HOST                 = #{ENV['TEST_HOST']                || 'not set, defaults to localhost'}"
-  puts "TEST_PORT                 = #{ENV['TEST_PORT']                || 'not set, defaults to 1521'}"
-  puts "TEST_SERVICENAME          = #{ENV['TEST_SERVICENAME']         || 'not set, defaults to ORCLPDB1'}"
-  puts "TEST_TNS                  = #{ENV['TEST_TNS']                 || 'not set, defaults to nil'}"
-  puts "TEST_USERNAME             = #{ENV['TEST_USERNAME']            || 'not set, defaults to panorama_test'}"
-  puts "TEST_PASSWORD             = #{ENV['TEST_PASSWORD']            || 'not set, defaults to panorama_test'}"
-  puts "TEST_SYSPASSWORD          = #{ENV['TEST_SYSPASSWORD']         || 'not set, defaults to oracle'}"
-  puts "MANAGEMENT_PACK_LICENSE   = #{ENV['MANAGEMENT_PACK_LICENSE']  || 'not set, defaults to :diagnostics_and_tuning_pack'}"
-  puts "JAVA_OPTS                 = #{ENV['JAVA_OPTS']}"
-  puts "JRUBY_OPTS                = #{ENV['JRUBY_OPTS']}"
-  puts ''
+    msg = "Test-Environment:
+TEST_HOST               = #{ENV['TEST_HOST']                || 'not set, defaults to localhost'}
+TEST_PORT                 = #{ENV['TEST_PORT']                || 'not set, defaults to 1521'}
+TEST_SERVICENAME          = #{ENV['TEST_SERVICENAME']         || 'not set, defaults to ORCLPDB1'}
+TEST_TNS                  = #{ENV['TEST_TNS']                 || 'not set, defaults to nil'}
+TEST_USERNAME             = #{ENV['TEST_USERNAME']            || 'not set, defaults to panorama_test'}
+TEST_PASSWORD             = #{ENV['TEST_PASSWORD']            || 'not set, defaults to panorama_test'}
+TEST_SYSPASSWORD          = #{ENV['TEST_SYSPASSWORD']         || 'not set, defaults to oracle'}
+MANAGEMENT_PACK_LICENSE   = #{ENV['MANAGEMENT_PACK_LICENSE']  || 'not set, defaults to :diagnostics_and_tuning_pack'}
+JAVA_OPTS                 = #{ENV['JAVA_OPTS']}
+JRUBY_OPTS                = #{ENV['JRUBY_OPTS']}
+"
+    puts msg
+  end
 end
 
 namespace :db do

@@ -645,7 +645,6 @@ class PanoramaConnection
     raise "PanoramaConnection.do_login: username missing"       if  username.nil?
     raise "PanoramaConnection.do_login: password missing"       if  password.nil?
     privilege = 'normal'                                        if  privilege.nil?
-
     jdbc_connection = ActiveRecord::ConnectionAdapters::OracleEnhanced::JDBCConnection.new(
         :adapter    => "oracle_enhanced",
         :driver     => "oracle.jdbc.driver.OracleDriver",
