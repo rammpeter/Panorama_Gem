@@ -1543,7 +1543,11 @@
     Abhängig vom Grund existieren unterschiedliche Lösungen zur Klärung:
     1. Drop des ungenutzten MV-Logs durch Ausführung von DROP MATERIALIZED VIEW LOG ON <master table>
     2. Deregistrieren des nicht refreshten MVs durch Aufruf von DMBS_MVIEW.UNREGISTER_MVIEW
-    3. Entfernen des verwaisten Snaphot Log durch Ausführung von DELETE FROM sys.slog$ WHERE SnapID = x
+    3. Entfernen des verwaisten Snaphot Log durch Ausführung von DBMS_MVIEW.Purge_Log oder DELETE FROM sys.slog$ WHERE SnapID = x
+
+    DBMS_MVIEW.Purge_Log entfernt die MV Log-Records der ältesten (bzgl. last refresh) registrierten MViews und entkoppelt den registrierten MView vom MV-Log.
+    Das MV Log hält danach keine Records mehr vor für diesen MView bis der nächste Complete Refresh die Registrierung des MView am MV-Log wieder herstellt.
+
   dragnet_helper_149_name: |-
     Verwaiste Materialized View Logs
   dragnet_helper_149_param_1_hint:                          Minimale Anzahl Tage seit dem letzten MV-Refresh (falls ein registrierter MV existiert)

@@ -16,7 +16,10 @@ Materialized view logs may grow unlimited under several conditions:
 Depending on the reason there are several solutions to fix this issue:
 1. Drop the useless MV-log by issuing DROP MATERIALIZED VIEW LOG ON <master table>
 2. Unregister the not responding MV by calling DMBS_MVIEW.UNREGISTER_MVIEW
-3. Remove the orphaned snaphot log by issuing DELETE FROM sys.slog$ WHERE SnapID = x
+3. Remove the orphaned snaphot log by issuing DBMS_MVIEW.Purge_Log or DELETE FROM sys.slog$ WHERE SnapID = x
+
+DBMS_MVIEW.Purge_Log removes the MV Log-Records of the oldest (regarding last refresh) registered MViews und decouples the registered MView from the MV-Log.
+So no MV Log records are kept for this MView in the future until next complete refresh restores complete registration at MV log.
 "),
             :sql=> "\
 SELECT l.Log_Owner, l.Master Master_Table, l.Log_Table, t.Tablespace_Name, t.Num_Rows, s.MBytes, l.Snapshot_ID, l.Current_Snapshots Last_Refresh,
