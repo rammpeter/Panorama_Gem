@@ -298,7 +298,7 @@ class EnvController < ApplicationController
 
     if current_database[:modus] == 'tns'                                        # TNS-Alias auswerten
       tns_records = read_tnsnames                                               # Hash mit Attributen aus tnsnames.ora für gesuchte DB
-      tns_record = tns_records[current_database[:tns]]
+      tns_record = tns_records[current_database[:tns].upcase]                   # TNS aliases from tnsnames.ora are stored in upcase now
       unless tns_record
         respond_to do |format|
           format.js {render :js => "show_status_bar_message('Entry for DB \"#{current_database[:tns]}\" not found in tnsnames.ora');

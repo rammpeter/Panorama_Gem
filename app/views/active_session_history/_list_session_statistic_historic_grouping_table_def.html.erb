@@ -97,6 +97,25 @@
                                                         @update_area,
                                                         rec.username_cnt == 1 ? rec.username : nil
         )
+        when 'Blocking Session' then ajax_link(rec.group_value, {
+                                                                  action: :list_session_statistic_historic_grouping,
+                                                                  groupfilter: {
+                                                                                  Instance:             rec.group_value.split(':')[0],
+                                                                                  Session_ID:           rec.group_value.split(':')[1].split(',')[0],
+                                                                                  SerialNo:             rec.group_value.split(':')[1].split(',')[1],
+                                                                                  Idle_Wait1:           'PX Deq Credit: send blkd',
+                                                                                  DBID:                 get_dbid,
+                                                                                  time_selection_start: @groupfilter[:time_selection_start],
+                                                                                  time_selection_end:   @groupfilter[:time_selection_end],
+                                                                                  Min_Snap_ID:          rec.min_snap_id,
+                                                                                  Max_Snap_ID:          rec.max_snap_id,
+                                                                            },
+                                                                  :groupby      => 'Session/Sn.',
+                                                                  :update_area  => @update_area
+                                                                },
+                                               title: 'Show history of blocking session in Active Session History'
+      )
+
       else rec.group_value
       end
     end
