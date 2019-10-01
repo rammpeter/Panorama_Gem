@@ -110,31 +110,32 @@ MAX_CONNECTION_POOL_SIZE = ENV['MAX_CONNECTION_POOL_SIZE'] || 100               
 
 # noinspection RubyClassVariableUsageInspection
 class PanoramaConnection
-  attr_reader :jdbc_connection
   attr_accessor :used_in_thread
   attr_accessor :last_used_time
   attr_accessor :last_used_query_timeout
-  attr_reader :instance_number
-  attr_reader :db_version
-  attr_reader :dbid
+  attr_reader :autonomous_database                                              # nil if no autonomous DB
+  attr_reader :block_common_header_size
+  attr_reader :control_management_pack_access
   attr_reader :con_id
+  attr_reader :database_name
+  attr_reader :data_header_size
+  attr_reader :dbid
   attr_reader :db_blocksize
   attr_reader :db_wordsize
-  attr_reader :database_name
-  attr_reader :sid
+  attr_reader :db_version
   attr_reader :edition
   attr_reader :instance_count
-  attr_reader :password_hash
-  attr_reader :sql_stmt_in_execution
+  attr_reader :instance_number
+  attr_reader :jdbc_connection
   attr_reader :last_used_action_name
-  attr_reader :control_management_pack_access
-  attr_reader :block_common_header_size
-  attr_reader :unsigned_byte_4_size
+  attr_reader :password_hash
+  attr_reader :rowid_size
+  attr_reader :sid
+  attr_reader :sql_stmt_in_execution
+  attr_reader :table_directory_entry_size
   attr_reader :transaction_fixed_header_size
   attr_reader :transaction_variable_header_size
-  attr_reader :data_header_size
-  attr_reader :table_directory_entry_size
-  attr_reader :rowid_size
+  attr_reader :unsigned_byte_4_size
 
 
   # Array of PanoramaConnection instances, elements consists of:
@@ -198,6 +199,13 @@ class PanoramaConnection
       @con_id        = con_id_data['con_id']
     else
       @con_id        = 0
+    end
+
+    @autonomous_database = nil
+    begin
+      PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT ts# FROM sys.TS? WHERE RowNum < 2")
+    rescue Exception => e
+      @autonomous_database = true
     end
   end
 
@@ -268,39 +276,23 @@ class PanoramaConnection
   end
 
   # disconnect connections that are not used for x seconds
-  def self.disconnect_aged_connections(min_age_for_disconnect)
-    active_connections_to_disconnect = []                                       # Buffer JDBC connections and do logoff outside mutex, because it may block
-
+  # Active connections are observed by socket timeout set during connect by setNetworkTimeout
+  # There's no way to logoff a working connection because logoff blocks until end of statement execution
+  def self.disconnect_aged_connections(min_age_for_disconnect_idle)
     @@connection_pool_mutex.synchronize do
       @@connection_pool.clone.each do |conn|                                    # clone to ensure eqch connection is checked even if Array-nodes are removed between
-        if !conn.used_in_thread && conn.last_used_time < Time.now - min_age_for_disconnect
+        if !conn.used_in_thread && conn.last_used_time < Time.now - min_age_for_disconnect_idle
           config = conn.jdbc_connection.instance_variable_get(:@config)
-          Rails.logger.info "Disconnect DB connection because last used is older than #{min_age_for_disconnect} seconds: URL='#{config[:url]}' user='#{config[:username]}' last used=#{conn.last_used_time} last action='#{conn.last_used_action_name}'"
+          Rails.logger.info "Disconnect DB connection because last used is older than #{min_age_for_disconnect_idle} seconds: URL='#{config[:url]}' user='#{config[:username]}' last used=#{conn.last_used_time} last action='#{conn.last_used_action_name}'"
           destroy_connection_in_mutexed_pool(conn)
         end
 
-        # Ensure that cancelled network connections do not lead to overflow of connection pool
-        # Kill connections only after query timeout should have cancel execution
-        min_age_for_active_disconnect = min_age_for_disconnect
-        min_age_query_timeout = conn.last_used_query_timeout * 2                # Max seconds since last used according to query timeout
-        min_age_for_active_disconnect = min_age_query_timeout if min_age_query_timeout > min_age_for_active_disconnect  # Use min age for query timeout only if greater than min_age_for_disconnect
-
+        # Ensure that cancelled network connections are removed from connection pool
+        # Cancelling should be done by setNetworkTimeout, Exception handling due to socket read error should remove connection from pool
+        min_age_for_active_disconnect = conn.last_used_query_timeout * 2
         if conn.used_in_thread && conn.last_used_time < Time.now - min_age_for_active_disconnect
-          config = conn.jdbc_connection.instance_variable_get(:@config)
-          Rails.logger.info "Mark active DB connection for disconnect because last used is older than #{min_age_for_active_disconnect} seconds: URL='#{config[:url]}' User='#{config[:username]}', last used=#{conn.last_used_time}, last action='#{conn.last_used_action_name}', last query timeout=#{conn.last_used_query_timeout}"
-          active_connections_to_disconnect << conn.jdbc_connection              # Mark for logoff outside mutex
+          Rails.logger.error "Long running active DB connection should have been cancelled yet by socket read timeout after #{min_age_for_active_disconnect} seconds: URL='#{config[:url]}' User='#{config[:username]}', last used=#{conn.last_used_time}, last action='#{conn.last_used_action_name}', last query timeout=#{conn.last_used_query_timeout}"
         end
-      end
-    end
-
-    active_connections_to_disconnect.each do|jdbc_conn|                         # do logoff outside mutex, because it may block
-      begin
-        config = jdbc_conn.instance_variable_get(:@config)
-        Rails.logger.info "Do logoff JDBC connection: URL='#{config[:url]}' User='#{config[:username]}'"
-        jdbc_conn.logoff
-        Rails.logger.info "Finished logoff JDBC connection: URL='#{config[:url]}' User='#{config[:username]}'"
-      rescue Exception => e
-        Rails.logger.error "logoff JDBC connection: Exception #{e.message} during logoff. URL='#{config[:url]}' User='#{config[:username]}'"
       end
     end
   rescue Exception => e
@@ -314,6 +306,7 @@ class PanoramaConnection
     @@connection_pool
   end
 
+  def self.autonomous_database;             check_for_open_connection;        Thread.current[:panorama_connection_connection_object].autonomous_database;               end
   def self.instance_number;                 check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_number;                   end
   def self.db_version;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_version;                        end
   def self.dbid;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].dbid;                              end
@@ -636,10 +629,11 @@ class PanoramaConnection
       end
     end
 
-    url       = jdbc_thin_url
-    username  = get_threadlocal_config[:user]
-    password  = get_decrypted_password
-    privilege = get_threadlocal_config[:privilege]
+    url           = jdbc_thin_url
+    username      = get_threadlocal_config[:user]
+    password      = get_decrypted_password
+    privilege     = get_threadlocal_config[:privilege]
+    query_timeout = get_threadlocal_config[:query_timeout]
 
     raise "PanoramaConnection.do_login: url missing"            if  url.nil?
     raise "PanoramaConnection.do_login: username missing"       if  username.nil?
@@ -656,6 +650,7 @@ class PanoramaConnection
     )
     Rails.logger.info "New database connection created: URL='#{jdbc_thin_url}' User='#{get_threadlocal_config[:user]}' Pool size=#{@@connection_pool.count+1}"
 
+    jdbc_connection.raw_connection.setNetworkTimeout(java.util.concurrent.Executors.newSingleThreadExecutor, query_timeout*2*1000);   # Schedule socket timeout to cancel connection in case of network stuck after twice of query timeout
     jdbc_connection
   end
 

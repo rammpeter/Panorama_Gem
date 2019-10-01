@@ -12,7 +12,7 @@ This includes tables that were written, but never read.
 This selections scans SGA as well as AWR history.
 '),
             :sql=> "WITH Days AS (SELECT ? backward FROM DUAL)
-                    SELECT /* DB-Tools Ramm Nicht genutzte Tabellen */ o.*, sz.MBytes, ob.Created, ob.Last_DDL_Time, tm.Timestamp Last_DML_Timestamp, tm.Inserts, tm.Updates, tm.Deletes
+                    SELECT /* DB-Tools Ramm not used tables */ o.*, sz.MBytes, ob.Created, ob.Last_DDL_Time, tm.Timestamp Last_DML_Timestamp, tm.Inserts, tm.Updates, tm.Deletes
                     FROM ( SELECT /*+ NO_MERGE */ 'TABLE' Object_Type, Owner, Table_Name Object_Name, Last_Analyzed, Num_Rows
                            FROM   DBA_Tables
                            WHERE  IOT_TYPE IS NULL AND Temporary='N'
@@ -82,8 +82,10 @@ Stated here are inserts and updates since last GATHER_TABLE_STATS for tables wit
                       WHERE m.Deletes = 0 AND m.Truncated = 'NO'
                       AND   t.Last_Analyzed < SYSDATE    /* avoid division by zero */
                       AND   t.Num_Rows > ?
+                      AND   SYSDATE - t.Last_Analyzed > ?
                       ORDER BY (m.Inserts+m.Updates)/(SYSDATE - t.Last_Analyzed) * s.Size_MB DESC NULLS LAST",
             :parameter=>[{:name=> t(:dragnet_helper_65_param_1_name, :default=>'Minimum number of records of table'), :size=>12, :default=>100000, :title=> t(:dragnet_helper_65_param_1_hint, :default=>'Number of records of table for consideration in selection')},
+                         {:name=> t(:dragnet_helper_65_param_2_name, :default=>'Minimum days since last analysis'), :size=>12, :default=>20, :title=> t(:dragnet_helper_65_param_2_hint, :default=>'Minimum number of days since last analysis to ensure suitable values in DBA_Tab_Modifications for inserts, updates and deletes')},
             ]
         },
         {

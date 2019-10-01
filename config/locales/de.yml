@@ -884,6 +884,8 @@
   dragnet_helper_65_name:                                   Fehlendes Housekeeping bei Massendaten
   dragnet_helper_65_param_1_hint:                           Minimale Anzahl Records einer Tabelle für Berücksichtigung in der Selektion
   dragnet_helper_65_param_1_name:                           Minimale Anzahl Records einer Tabelle
+  dragnet_helper_65_param_2_hint:                           Minimale Anzahl Tage seit letzter Analyse zur Sicherstellung brauchbarer Werte in DBA_Tab_Modifications für Inserts, Updates, Deletes
+  dragnet_helper_65_param_2_name:                           Minimale Anzahl Tage seit letzter Analyse
 
   dragnet_helper_66_desc: |-
     Ungenutzte Spalten, die nur NULL-Werte enthalten, können möglicherweise entfernt werden.
