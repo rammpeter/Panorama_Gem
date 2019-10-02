@@ -14,7 +14,7 @@
     </div>
     <div class="flex-row-element">
       <%= t(:dba_show_sessions_only_user_caption, :default=>"User only") %>
-      <%= check_box_tag(:showOnlyUser, 1, true, :title=>t(:dba_show_sessions_only_user_hint, :default=>"Show user sessions only")) %>
+      <%= check_box_tag(:showOnlyUser, 1, true, :title=>t(:dba_show_sessions_only_user_hint, :default=>"Show foreground sessions only (suppress listing of Oracle server's background sessions)")) %>
     </div>
     <div class="flex-row-element">
       <%= t(:dba_show_sessions_only_db_link_caption, :default=>"DB links only") %>

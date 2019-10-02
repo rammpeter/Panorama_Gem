@@ -128,6 +128,7 @@ class PanoramaConnection
   attr_reader :instance_number
   attr_reader :jdbc_connection
   attr_reader :last_used_action_name
+  attr_reader :logon_time
   attr_reader :password_hash
   attr_reader :rowid_size
   attr_reader :sid
@@ -171,28 +172,30 @@ class PanoramaConnection
                           (SELECT Type_Size FROM v$Type_Size WHERE Type = 'KDBH')                                                                           Data_Header_Size,
                           (SELECT Type_Size FROM v$Type_Size WHERE Type = 'KDBT')                                                                           Table_Directory_Entry_Size,
                           (SELECT VSIZE(rowid) FROM Dual)                                                                                                   RowID_Size,
-                          NVL((SELECT /*+ NO_MERGE */ Value    FROM V$Parameter WHERE name='control_management_pack_access'), 'NONE')                       control_management_pack_access
+                          NVL((SELECT /*+ NO_MERGE */ Value    FROM V$Parameter WHERE name='control_management_pack_access'), 'NONE')                       control_management_pack_access,
+                          SYSDATE                                                                                                                           Logon_time
                    FROM   v$Instance i
                    CROSS JOIN v$Database d
                   ")
-    @instance_number                  = db_config['instance_number']
+    @block_common_header_size         = db_config['block_common_header_size']
+    @control_management_pack_access   = db_config['control_management_pack_access']
+    @data_header_size                 = db_config['data_header_size']
     @db_version                       = db_config['version']
     @dbid                             = db_config['dbid']
     @database_name                    = db_config['database_name']
     @db_blocksize                     = db_config['db_blocksize']
     @db_wordsize                      = db_config['db_wordsize']
-    @sid                              = db_config['sid']                          # Session-ID on DB-Server
     @edition                          = (db_config['enterprise_edition_count'] > 0  ? :enterprise : :standard)
     @instance_count                   = db_config['instance_count']
-    @control_management_pack_access   = db_config['control_management_pack_access']
-    @block_common_header_size         = db_config['block_common_header_size']
-    @unsigned_byte_4_size             = db_config['unsigned_byte_4_size']
-    @transaction_fixed_header_size    = db_config['transaction_fixed_header_size']
-    @transaction_variable_header_size = db_config['transaction_var_header_size']
-    @data_header_size                 = db_config['data_header_size']
+    @instance_number                  = db_config['instance_number']
+    @logon_time                       = db_config['logon_time']
+    @rowid_size                       = db_config['rowid_size']
+    @sid                              = db_config['sid']                          # Session-ID on DB-Server
     @table_directory_entry_size       = db_config['table_directory_entry_size']
     @table_directory_entry_size       = @unsigned_byte_4_size if @table_directory_entry_size.nil? # not set in any releases
-    @rowid_size                       = db_config['rowid_size']
+    @transaction_fixed_header_size    = db_config['transaction_fixed_header_size']
+    @transaction_variable_header_size = db_config['transaction_var_header_size']
+    @unsigned_byte_4_size             = db_config['unsigned_byte_4_size']
 
     if db_version >= '12.1'
       con_id_data   = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT Con_ID FROM v$Session WHERE audsid = userenv('sessionid')") # Con_ID of connected session
@@ -283,7 +286,7 @@ class PanoramaConnection
       @@connection_pool.clone.each do |conn|                                    # clone to ensure eqch connection is checked even if Array-nodes are removed between
         if !conn.used_in_thread && conn.last_used_time < Time.now - min_age_for_disconnect_idle
           config = conn.jdbc_connection.instance_variable_get(:@config)
-          Rails.logger.info "Disconnect DB connection because last used is older than #{min_age_for_disconnect_idle} seconds: URL='#{config[:url]}' user='#{config[:username]}' last used=#{conn.last_used_time} last action='#{conn.last_used_action_name}'"
+          Rails.logger.info "Disconnect DB connection because last used is older than #{min_age_for_disconnect_idle} seconds: URL='#{config[:url]}' user='#{config[:username]}' last used=#{conn.last_used_time} last action='#{conn.last_used_action_name}' SID=#{conn.sid}"
           destroy_connection_in_mutexed_pool(conn)
         end
 
@@ -307,6 +310,8 @@ class PanoramaConnection
   end
 
   def self.autonomous_database;             check_for_open_connection;        Thread.current[:panorama_connection_connection_object].autonomous_database;               end
+  def self.con_id;                          check_for_open_connection;        Thread.current[:panorama_connection_connection_object].con_id;                            end  # Container-ID for PDBs or 0
+  def self.control_management_pack_access;  check_for_open_connection(false); Thread.current[:panorama_connection_connection_object].control_management_pack_access;    end
   def self.instance_number;                 check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_number;                   end
   def self.db_version;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_version;                        end
   def self.dbid;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].dbid;                              end
@@ -314,9 +319,7 @@ class PanoramaConnection
   def self.db_blocksize;                    check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_blocksize;                      end
   def self.db_wordsize;                     check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_wordsize;                       end
   def self.edition;                         check_for_open_connection;        Thread.current[:panorama_connection_connection_object].edition;                           end
-  def self.con_id;                          check_for_open_connection;        Thread.current[:panorama_connection_connection_object].con_id;                            end  # Container-ID for PDBs or 0
   def self.rac?;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_count > 1;                end
-  def self.control_management_pack_access;  check_for_open_connection(false); Thread.current[:panorama_connection_connection_object].control_management_pack_access;    end
   def self.rac?;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_count > 1;                end
   def self.block_common_header_size;        check_for_open_connection;        Thread.current[:panorama_connection_connection_object].block_common_header_size;          end
   def self.unsigned_byte_4_size;            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].unsigned_byte_4_size;              end
@@ -329,15 +332,20 @@ class PanoramaConnection
 
   private
 
+  # should be called from within synchronized mutex
   def self.destroy_connection_in_mutexed_pool(destroy_conn)
     config = destroy_conn.jdbc_connection.instance_variable_get(:@config)
-    begin
-      destroy_conn.jdbc_connection.logoff
-    rescue Exception => e
-      Rails.logger.info "destroy_connection_in_mutexed_pool: Exception #{e.message} during logoff. URL='#{config[:url]}' User='#{config[:username]}' Last used=#{destroy_conn.last_used_time}"
-    end
+    Thread.new{PanoramaConnection.destroy_jdbc_connection_in_thread(destroy_conn, config)}  # Schedule disconnect of connection in separate thread because it may block
     @@connection_pool.delete(destroy_conn)
-    Rails.logger.info "Database connection destroyed: URL='#{config[:url]}' User='#{config[:username]}' Last used=#{destroy_conn.last_used_time} Remaining pool size=#{@@connection_pool.count}"
+    Rails.logger.info "Database connection scheduled in thread to destroy: URL='#{config[:url]}' User='#{config[:username]}' Last used=#{destroy_conn.last_used_time} SID=#{destroy_conn.sid} Remaining pool size=#{@@connection_pool.count}"
+  end
+
+  # Should be called in separate thread because it may block until TCP read timeout
+  def self.destroy_jdbc_connection_in_thread(destroy_conn, config)
+    destroy_conn.jdbc_connection.logoff
+    Rails.logger.info "destroy_jdbc_connection_in_thread: Database connection destroyed: URL='#{config[:url]}' User='#{config[:username]}' Last used=#{destroy_conn.last_used_time} SID=#{destroy_conn.sid} Remaining pool size=#{@@connection_pool.count}"
+  rescue Exception => e
+    Rails.logger.info "destroy_jdbc_connection_in_thread: Exception #{e.message} during logoff. URL='#{config[:url]}' User='#{config[:username]}' Last used=#{destroy_conn.last_used_time} SID=#{destroy_conn.sid}"
   end
 
   def self.get_host_tns(current_database)                                            # JDBC-URL for host/port/sid

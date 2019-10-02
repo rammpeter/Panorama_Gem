@@ -538,7 +538,7 @@
   dba_show_sessions_only_db_link_caption:                   Nur DB-Link
   dba_show_sessions_only_db_link_hint:                      Nur Sessions anzeigen, die über DB-Link angemeldet sind
   dba_show_sessions_only_user_caption:                      Nur User
-  dba_show_sessions_only_user_hint:                         Nur User-Sessions anzeigen
+  dba_show_sessions_only_user_hint:                         Nur Vordergrund-Sessions anzeigen (unterdrücken der Hintergrund-Sessions des Oracle-Servers)
   dba_show_sessions_pq_hint:                                Parallel-Query Sessions anzeigen
   dba_show_sessions_submit_caption:                         Sessions anzeigen
   dba_show_sessions_submit_hint:                            Anzeige der DB-Sessions nach gegebenen Filtern

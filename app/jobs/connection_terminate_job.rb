@@ -2,8 +2,8 @@ class ConnectionTerminateJob < ApplicationJob
   include ExceptionHelper
 
   queue_as :default
-
-  CHECK_CYCLE_SECONDS = 3600                                                    # Terminate idle sessions with last active older than 60 minutes
+  CHECK_CYCLE_SECONDS = 20
+#  CHECK_CYCLE_SECONDS = 3600                                                    # Terminate idle sessions with last active older than 60 minutes
 
   def perform(*args)
     ConnectionTerminateJob.set(wait_until: Time.now.round + CHECK_CYCLE_SECONDS).perform_later  # Schedule next start
