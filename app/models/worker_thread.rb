@@ -171,7 +171,7 @@ class WorkerThread
     end
 
     begin                                                                       # Start observation for already closed semaphore here, previous return should not reset semaphore
-      Rails.logger.info "#{Time.now}: Create new #{domain} snapshot for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}'"
+      Rails.logger.info "#{Time.now}: Create new #{domain} snapshot for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}' SID=#{PanoramaConnection.sid}"
 
       @@active_snapshots[snapshot_semaphore_key] = true                         # Create semaphore for thread, begin processing
 

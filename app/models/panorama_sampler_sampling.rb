@@ -156,7 +156,7 @@ class PanoramaSamplerSampling
         "
     end
 
-    Rails.logger.info "#{Time.now}: Create new ASH daemon for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}', Instance=#{PanoramaConnection.instance_number}, next_snapshot_start_seconds=#{next_snapshot_start_seconds}"
+    Rails.logger.info "#{Time.now}: Create new ASH daemon for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}', Instance=#{PanoramaConnection.instance_number}, next_snapshot_start_seconds=#{next_snapshot_start_seconds}  SID=#{PanoramaConnection.sid}"
     PanoramaConnection.sql_execute [sql, PanoramaConnection.instance_number, PanoramaConnection.con_id, next_snapshot_start_seconds]
   end
 

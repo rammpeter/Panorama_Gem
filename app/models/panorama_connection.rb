@@ -310,25 +310,26 @@ class PanoramaConnection
   end
 
   def self.autonomous_database;             check_for_open_connection;        Thread.current[:panorama_connection_connection_object].autonomous_database;               end
+  def self.block_common_header_size;        check_for_open_connection;        Thread.current[:panorama_connection_connection_object].block_common_header_size;          end
   def self.con_id;                          check_for_open_connection;        Thread.current[:panorama_connection_connection_object].con_id;                            end  # Container-ID for PDBs or 0
   def self.control_management_pack_access;  check_for_open_connection(false); Thread.current[:panorama_connection_connection_object].control_management_pack_access;    end
-  def self.instance_number;                 check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_number;                   end
+  def self.data_header_size;                check_for_open_connection;        Thread.current[:panorama_connection_connection_object].data_header_size;                  end
   def self.db_version;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_version;                        end
   def self.dbid;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].dbid;                              end
   def self.database_name;                   check_for_open_connection;        Thread.current[:panorama_connection_connection_object].database_name;                     end
   def self.db_blocksize;                    check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_blocksize;                      end
   def self.db_wordsize;                     check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_wordsize;                       end
   def self.edition;                         check_for_open_connection;        Thread.current[:panorama_connection_connection_object].edition;                           end
+  def self.instance_number;                 check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_number;                   end
   def self.rac?;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_count > 1;                end
   def self.rac?;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_count > 1;                end
-  def self.block_common_header_size;        check_for_open_connection;        Thread.current[:panorama_connection_connection_object].block_common_header_size;          end
-  def self.unsigned_byte_4_size;            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].unsigned_byte_4_size;              end
+  def self.rowid_size;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].rowid_size;                        end
+  def self.sid;                             check_for_open_connection;        Thread.current[:panorama_connection_connection_object].sid;                               end
+  def self.table_directory_entry_size;      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].table_directory_entry_size;        end
+  def self.table_directory_entry_size;      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].table_directory_entry_size;        end
   def self.transaction_fixed_header_size;   check_for_open_connection;        Thread.current[:panorama_connection_connection_object].transaction_fixed_header_size;     end
   def self.transaction_variable_header_size;check_for_open_connection;        Thread.current[:panorama_connection_connection_object].transaction_variable_header_size;  end
-  def self.data_header_size;                check_for_open_connection;        Thread.current[:panorama_connection_connection_object].data_header_size;                  end
-  def self.table_directory_entry_size;      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].table_directory_entry_size;        end
-  def self.table_directory_entry_size;      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].table_directory_entry_size;        end
-  def self.rowid_size;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].rowid_size;                        end
+  def self.unsigned_byte_4_size;            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].unsigned_byte_4_size;              end
 
   private
 
