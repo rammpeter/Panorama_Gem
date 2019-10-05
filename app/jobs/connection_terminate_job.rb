@@ -6,7 +6,8 @@ class ConnectionTerminateJob < ApplicationJob
 
   def perform(*args)
     ConnectionTerminateJob.set(wait_until: Time.now.round + CHECK_CYCLE_SECONDS).perform_later  # Schedule next start
-    Thread.new{PanoramaConnection.disconnect_aged_connections(CHECK_CYCLE_SECONDS)}
+    thread = Thread.new{PanoramaConnection.disconnect_aged_connections(CHECK_CYCLE_SECONDS)}
+    thread.name = 'ConnectionTerminateJob'
   rescue Exception => e
     Rails.logger.error "Exception in ConnectionTerminateJob.perform:\n#{e.message}"
     log_exception_backtrace(e, 40)

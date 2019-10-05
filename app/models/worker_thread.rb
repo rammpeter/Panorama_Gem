@@ -8,6 +8,7 @@ class WorkerThread
   # raise_exeption_on_error allows to proceeed without exception
   def self.check_connection(sampler_config, controller, raise_exeption_on_error = true)
     thread = Thread.new{WorkerThread.new(sampler_config, 'check_connection').check_connection_internal(controller)}
+    thread.name = 'WorkerThread: check_connection'
     result = thread.value
     result
   rescue Exception => e
@@ -22,7 +23,9 @@ class WorkerThread
       WorkerThread.run_ash_sampler_daemon(sampler_config, snapshot_time)
       create_snapshot(sampler_config, snapshot_time, :AWR)                      # recall method with changed domain
     else
-      Thread.new{WorkerThread.new(sampler_config, "create #{domain} snapshot").create_snapshot_internal(snapshot_time, domain)}  # Excute the snapshot and terminate
+      name = "create #{domain} snapshot"
+      thread = Thread.new{WorkerThread.new(sampler_config, name).create_snapshot_internal(snapshot_time, domain)}  # Excute the snapshot and terminate
+      thread.name = "WorkerThread :#{name}"
     end
   rescue Exception => e
     Rails.logger.error "Exception #{e.message} raised in WorkerThread.create_snapshot for config-ID=#{sampler_config.get_id} and domain=#{domain}"
@@ -32,11 +35,13 @@ class WorkerThread
   # Used also for running ash daemon at Panorama-startup, snapshot_time must be time according to regular snapshot cycle
   def self.run_ash_sampler_daemon(sampler_config, snapshot_time)
     WorkerThread.new(sampler_config, 'check_structure_synchron').check_structure_synchron # Ensure existence of objects necessary for both Threads, synchron with job's thread
-    Thread.new{WorkerThread.new(sampler_config, 'ash_sampler_daemon').create_ash_sampler_daemon(snapshot_time)} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
+    thread = Thread.new{WorkerThread.new(sampler_config, 'ash_sampler_daemon').create_ash_sampler_daemon(snapshot_time)} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
+    thread.name = 'WorkerThread: ash_sampler_daemon'
   end
 
   def self.check_analyze(sampler_config)
-    Thread.new{WorkerThread.new(sampler_config, 'check_analyze').check_analyze_internal}
+    thread = Thread.new{WorkerThread.new(sampler_config, 'check_analyze').check_analyze_internal}
+    thread.name = 'WorkerThread: check_analyze'
   rescue Exception => e
     Rails.logger.error "Exception #{e.message} raised in WorkerThread.check_analyze for config-ID=#{sampler_config.get_id}"
   end

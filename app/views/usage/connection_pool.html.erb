@@ -35,3 +35,28 @@
         jQuery('#connection_pool_detail_area').html('<pre class="yellow-panel">' + sql_text + '</pre>');
     }
 </script>
+
+<%
+
+
+  column_options =
+      [
+          {caption: 'Object-ID',      data: proc{|rec| fn(rec.object_id)},                              title: "Object-ID of thread", align: :right},
+          {caption: 'Name',           data: proc{|rec| rec.name},                                       title: "Name of thread"},
+          {caption: 'Status',         data: proc{|rec| rec.status.dup},                                 title: "Status of thread"},
+          {caption: 'SID',            data: proc{|rec| rec[:panorama_connection_connection_object].sid if rec[:panorama_connection_connection_object]}, title: "Oracle session ID", align: :right},
+          {caption: 'Last used time', data: proc{|rec| localeDateTime(rec[:panorama_connection_connection_object].last_used_time) if rec[:panorama_connection_connection_object]}, title: "Last used Time for Oracle DB connection.\nActs as indicator for thread creation time"},
+
+
+
+      ]
+%>
+<%=
+  gen_slickgrid(Thread.list, column_options, {
+      :caption=>"Current server threads ( #{fn(Thread.list.count)} )",
+      :max_height=>450
+  }
+  )
+
+%>
+

@@ -336,7 +336,8 @@ class PanoramaConnection
   # should be called from within synchronized mutex
   def self.destroy_connection_in_mutexed_pool(destroy_conn)
     config = destroy_conn.jdbc_connection.instance_variable_get(:@config)
-    Thread.new{PanoramaConnection.destroy_jdbc_connection_in_thread(destroy_conn, config)}  # Schedule disconnect of connection in separate thread because it may block
+    thread = Thread.new{PanoramaConnection.destroy_jdbc_connection_in_thread(destroy_conn, config)}  # Schedule disconnect of connection in separate thread because it may block
+    thread.name = 'PanoramaConnection.destroy_jdbc_connection_in_thread'
     @@connection_pool.delete(destroy_conn)
     Rails.logger.info "Database connection scheduled in thread to destroy: URL='#{config[:url]}' User='#{config[:username]}' Last used=#{destroy_conn.last_used_time} SID=#{destroy_conn.sid} Remaining pool size=#{@@connection_pool.count}"
   end
