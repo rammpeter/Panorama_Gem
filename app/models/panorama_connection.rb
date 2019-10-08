@@ -284,8 +284,8 @@ class PanoramaConnection
   def self.disconnect_aged_connections(min_age_for_disconnect_idle)
     @@connection_pool_mutex.synchronize do
       @@connection_pool.clone.each do |conn|                                    # clone to ensure eqch connection is checked even if Array-nodes are removed between
+        config = conn.jdbc_connection.instance_variable_get(:@config)
         if !conn.used_in_thread && conn.last_used_time < Time.now - min_age_for_disconnect_idle
-          config = conn.jdbc_connection.instance_variable_get(:@config)
           Rails.logger.info "Disconnect DB connection because last used is older than #{min_age_for_disconnect_idle} seconds: URL='#{config[:url]}' user='#{config[:username]}' last used=#{conn.last_used_time} last action='#{conn.last_used_action_name}' SID=#{conn.sid}"
           destroy_connection_in_mutexed_pool(conn)
         end
@@ -644,6 +644,10 @@ class PanoramaConnection
     password      = get_decrypted_password
     privilege     = get_threadlocal_config[:privilege]
     query_timeout = get_threadlocal_config[:query_timeout]
+    if query_timeout.nil?
+      Rails.logger.info "PanoramaConenction.do_login: query_timeout not set in thread, assuming default value = 300"
+      query_timeout = 300
+    end
 
     raise "PanoramaConnection.do_login: url missing"            if  url.nil?
     raise "PanoramaConnection.do_login: username missing"       if  username.nil?
