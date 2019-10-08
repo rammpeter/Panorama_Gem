@@ -21,9 +21,10 @@ class PanoramaSamplerSampling
 
   def self.run_ash_daemon(sampler_config, snapshot_time)
     PanoramaSamplerSampling.new(sampler_config).run_ash_daemon_internal(snapshot_time)
-  rescue Exception => e
-    # try second time to fix error ORA-04068 existing state of package has changed ...
-    PanoramaSamplerSampling.new(sampler_config).run_ash_daemon_internal(snapshot_time)
+# Commented out because second calculation with snapshot_time may get wrong result for next snapshot time if current snapshot time is already stored
+#  rescue Exception => e
+#    # try second time to fix error ORA-04068 existing state of package has changed ...
+#    PanoramaSamplerSampling.new(sampler_config).run_ash_daemon_internal(snapshot_time)
   end
 
   def initialize(sampler_config)
