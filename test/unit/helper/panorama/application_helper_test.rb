@@ -2,11 +2,7 @@ require 'test_helper'
 
 class ApplicationHelperTest < ActionView::TestCase
   setup do
-
-
-
     set_session_test_db_context{}
-    #connect_oracle_db
   end
 
 #  teardown do
