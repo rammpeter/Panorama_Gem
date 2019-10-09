@@ -1646,8 +1646,20 @@ class DbaSgaController < ApplicationController
     end
 
     begin
-      @sql_patches = sql_select_all ["SELECT p.*, TO_CHAR(p.Signature) Char_Signature, sod.comp_data
+      sql_column_list = "s.Min_Inst_ID, s.Instance_Count, s.Min_SQL_ID, s.SQL_ID_Count"
+      sql_join        = "LEFT OUTER JOIN (SELECT /*+ NO_MERGE */          SQL_Patch,
+                                                 MIN(Inst_ID)             Min_Inst_ID,
+                                                 COUNT(DISTINCT Inst_ID)  Instance_Count,
+                                                 MIN(SQL_ID)              Min_SQL_ID,
+                                                 COUNT(DISTINCT SQL_ID)   SQL_ID_Count
+                                          FROM   gv$SQL
+                                          WHERE  SQL_Patch IS NOT NULL
+                                          GROUP BY SQL_Patch
+                                         ) s ON s.SQL_Patch = p.Name"
+
+      @sql_patches = sql_select_all ["SELECT p.*, TO_CHAR(p.Signature) Char_Signature, sod.comp_data, #{sql_column_list}
                                       FROM DBA_SQL_Patches p
+                                      #{sql_join}
                                       JOIN sys.sqlobj$ so ON so.Name = p.Name AND so.Signature = p.Signature AND so.Category = p.Category AND so.Obj_Type = 3 /* SQL patch */
                                       JOIN sys.sqlobj$data sod ON sod.signature = so.signature
                                                       and     sod.category = so.category
@@ -1655,8 +1667,9 @@ class DbaSgaController < ApplicationController
                                                       and     sod.plan_id = so.plan_id
                                       #{where_stmt}"].concat(where_values)
     rescue Exception                                                            # workaround for autonomous cloud service without access on sys-tables
-      @sql_patches = sql_select_all ["SELECT p.*, TO_CHAR(p.Signature) Char_Signature, 'No access allowed on sys.sqlobj$ and sys.sqlobj$data !' comp_data
+      @sql_patches = sql_select_all ["SELECT p.*, TO_CHAR(p.Signature) Char_Signature, 'No access allowed on sys.sqlobj$ and sys.sqlobj$data !' comp_data, #{sql_column_list}
                                       FROM DBA_SQL_Patches p
+                                      #{sql_join}
                                       #{where_stmt}"].concat(where_values)
     end
     render_partial

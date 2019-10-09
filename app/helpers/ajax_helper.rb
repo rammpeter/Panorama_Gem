@@ -205,8 +205,8 @@ module AjaxHelper
   # Aktualisieren des title(hint) erst, wenn das erste mal mit Maus darüber gefahren wird
   def link_sql_id(update_area, instance, sql_id, childno=nil, parsing_schema_name=nil, object_status=nil, child_address=nil, con_id=nil)
     unique_id = get_unique_area_id
-    prefix = "#{t(:ajax_helper_link_sql_id_title_prefix, :default=>"Show details in SGA for")} SQL-ID=#{sql_id} : "
-    prefix << "ChildNo=#{childno} : " if childno
+    prefix = "#{t(:ajax_helper_link_sql_id_title_prefix, :default=>"Show details in SGA for")} SQL-ID = '#{sql_id}', Instance = #{instance}"
+    prefix << ", ChildNo=#{childno} : " if childno
     ajax_link(sql_id, {
               :controller     => :dba_sga,
               :action         => childno ||child_address ? :list_sql_detail_sql_id_childno : :list_sql_detail_sql_id,
