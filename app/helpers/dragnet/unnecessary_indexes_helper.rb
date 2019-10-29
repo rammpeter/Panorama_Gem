@@ -187,9 +187,9 @@ Additional information about index usage can be requested from DBA_Hist_Seg_Stat
                             AND    (schema.name IS NULL OR schema.Name = u.UserName)
                            )u
                     JOIN Indexes i                    ON i.Owner = u.Owner AND i.Index_Name = u.Index_Name AND i.Table_Name=u.Table_Name
-                    LEFT OUTER JOIN Ind_Columns ic        ON ic.Index_Owner = u.Owner AND ic.Index_Name = u.Index_Name AND ic.Column_Position = 1
+                    LEFT OUTER JOIN Ind_Columns ic    ON ic.Index_Owner = u.Owner AND ic.Index_Name = u.Index_Name AND ic.Column_Position = 1
                     /* Indexes used for protection of FOREIGN KEY constraints */
-                    LEFT OUTER JOIN (SELECT cc.Owner, cc.Table_Name, cc.Column_name, c.Constraint_Name, rc.Owner r_Owner, rt.Table_Name r_Table_Name, rt.Num_rows r_Num_rows, rt.Last_Analyzed r_Last_analyzed, m.Inserts, m.Updates, m.Deletes
+                    LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ cc.Owner, cc.Table_Name, cc.Column_name, c.Constraint_Name, rc.Owner r_Owner, rt.Table_Name r_Table_Name, rt.Num_rows r_Num_rows, rt.Last_Analyzed r_Last_analyzed, m.Inserts, m.Updates, m.Deletes
                                      FROM   Cons_Columns cc
                                      JOIN   Constraints c     ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'R'
                                      JOIN   Constraints rc    ON rc.Owner = c.R_Owner AND rc.Constraint_Name = c.R_Constraint_Name
@@ -198,7 +198,7 @@ Additional information about index usage can be requested from DBA_Hist_Seg_Stat
                                      WHERE  cc.Position = 1
                                     ) cc ON cc.Owner = ic.Table_Owner AND cc.Table_Name = ic.Table_Name AND cc.Column_Name = ic.Column_Name
                     /* Indexes used for enforcement of UNIQUE or PRIMARY KEY constraints */
-                    LEFT OUTER JOIN (SELECT ic.Index_Owner, ic.Index_Name, c.Constraint_Name
+                    LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ic.Index_Owner, ic.Index_Name, c.Constraint_Name
                                      FROM   Cons_Columns cc
                                      JOIN   Constraints c   ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type IN ('U', 'P')
                                      LEFT OUTER JOIN Ind_Columns ic ON ic.Table_Owner = cc.Owner AND ic.Table_Name = cc.Table_Name  AND ic.Column_Name = cc.Column_Name AND ic.Column_Position = cc.Position
