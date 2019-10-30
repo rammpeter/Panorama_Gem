@@ -3,6 +3,7 @@
 # Liste der Rasterfahndungs-SQL
 include Dragnet::CascadingViewsHelper
 include Dragnet::DragnetSqlsLogwriterRedoHelper
+include Dragnet::DragnetSqlsLongRunningHelper
 include Dragnet::DragnetSqlsTuningSgaPgaHelper
 include Dragnet::InstanceSetupTuning
 include Dragnet::MaterializedViewsHelper
@@ -90,6 +91,10 @@ module DragnetHelper
                                 :entries => suboptimal_index_usage
                             },
               ].concat(sqls_wrong_execution_plan)
+          },
+          {
+              :name     => t(:dragnet_helper_group_long_running_sqls,  :default=> 'Detection of long running SQLs'),
+              :entries  => dragnet_sqls_long_running
           },
           {
               :name     => t(:dragnet_helper_group_tuning_sga_pga,           :default=> 'Tuning of / load rejection from SGA, PGA'),

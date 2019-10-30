@@ -583,6 +583,7 @@
   dragnet_helper_group_cursor_redundancies:                 Redundante Cursoren / Nutzung Bindevariablen
   dragnet_helper_group_instance_setup_tuning:               Instance-Setup und Instance-Tuning
   dragnet_helper_group_logwriter_redo:                      LogWriter-Belastung / Redolog-Aufkommen
+  dragnet_helper_group_long_running_sqls:                   Ermittlung von langlaufenden SQLs
   dragnet_helper_group_materialized_views:                  Materialized Views
   dragnet_helper_group_optimizable_full_scans:              Optimierbare Full-Scan Operationen
   dragnet_helper_group_optimal_index_storage:               Sicherstellen optimaler Storage-Parameter für Indizes
@@ -1563,6 +1564,13 @@
   dragnet_helper_150_name: |-
     Registrierte Materialized Views ohne Beziehung zu MV-Log
 
+  dragnet_helper_151_desc: |-
+    Diese Selektion ermittelt lange laufende Ausführungen von SQL-Statements.
+    Oftmals existiert hier weiteres Potential zur Reduktion der Laufzeit.
+  dragnet_helper_151_name: |-
+    Lange laufende einzelne Ausführungen von SQL-Statements
+  dragnet_helper_151_param_1_hint:                          Minimale Anzahl von Sekunden, in denen eine Ausführung in der Active Session History aktiv sein muss, um bei der Auswahl berücksichtigt zu werden.
+  dragnet_helper_151_param_1_name:                          Minimale Anzahl Sekunden aktiv in ASH
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 
