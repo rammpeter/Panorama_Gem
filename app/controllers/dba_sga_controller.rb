@@ -1646,7 +1646,7 @@ class DbaSgaController < ApplicationController
     end
 
     begin
-      sql_column_list = "s.Min_Inst_ID, s.Instance_Count, s.Min_SQL_ID, s.SQL_ID_Count"
+      sql_column_list = "s.Min_Inst_ID, NVL(s.Instance_Count, 0) Instance_Count, s.Min_SQL_ID, NVL(s.SQL_ID_Count, 0) SQL_ID_Count"
       sql_join        = "LEFT OUTER JOIN (SELECT /*+ NO_MERGE */          SQL_Patch,
                                                  MIN(Inst_ID)             Min_Inst_ID,
                                                  COUNT(DISTINCT Inst_ID)  Instance_Count,
