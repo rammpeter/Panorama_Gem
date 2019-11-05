@@ -148,11 +148,15 @@ Additional information about index usage can be requested from DBA_Hist_Seg_Stat
                                      FROM   DBA_Indexes
                                     ),
                          Ind_Columns AS        (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Table_Owner, Table_Name, Column_name, Column_Position FROM DBA_Ind_Columns),
+                         Ind_Columns_Group AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name,
+                                                       LISTAGG(Column_name, ', ') WITHIN GROUP (ORDER BY Column_Position) Columns
+                                                FROM   DBA_Ind_Columns
+                                                GROUP BY Index_Owner, Index_Name),
                          Cons_Columns AS       (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Column_name, Position, Constraint_Name FROM DBA_Cons_Columns),
                          Tables AS             (SELECT /*+ NO_MERGE MATERIALIZE */  Owner, Table_Name, Num_Rows, Last_analyzed FROM DBA_Tables),
                          Tab_Modifications AS  (SELECT /*+ NO_MERGE MATERIALIZE */  Table_Owner, Table_Name, Inserts, Updates, Deletes FROM DBA_Tab_Modifications WHERE Partition_Name IS NULL /* Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen */)
                     SELECT /*+ USE_HASH(i ic cc c rc rt) */ u.Owner, u.Table_Name, u.Index_Name,
-                           ic.Column_Name                                                             \"First Column name\",
+                           icg.Columns                                                                \"Index Columns\",
                            u.\"Start monitoring\",
                            ROUND(NVL(u.\"End monitoring\", SYSDATE)-u.\"Start monitoring\", 1) \"Days without usage\",
                            i.Num_Rows \"Num. rows\", i.Distinct_Keys \"Distinct keys\",
@@ -186,8 +190,9 @@ Additional information about index usage can be requested from DBA_Hist_Seg_Stat
                             WHERE  TO_DATE(ou.Start_Monitoring, 'MM/DD/YYYY HH24:MI:SS') < SYSDATE-?
                             AND    (schema.name IS NULL OR schema.Name = u.UserName)
                            )u
-                    JOIN Indexes i                    ON i.Owner = u.Owner AND i.Index_Name = u.Index_Name AND i.Table_Name=u.Table_Name
-                    LEFT OUTER JOIN Ind_Columns ic    ON ic.Index_Owner = u.Owner AND ic.Index_Name = u.Index_Name AND ic.Column_Position = 1
+                    JOIN Indexes i                        ON i.Owner = u.Owner AND i.Index_Name = u.Index_Name AND i.Table_Name=u.Table_Name
+                    LEFT OUTER JOIN Ind_Columns ic        ON ic.Index_Owner = u.Owner AND ic.Index_Name = u.Index_Name AND ic.Column_Position = 1
+                    LEFT OUTER JOIN Ind_Columns_Group icg ON icg.Index_Owner = u.Owner AND icg.Index_Name = u.Index_Name
                     /* Indexes used for protection of FOREIGN KEY constraints */
                     LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ cc.Owner, cc.Table_Name, cc.Column_name, c.Constraint_Name, rc.Owner r_Owner, rt.Table_Name r_Table_Name, rt.Num_rows r_Num_rows, rt.Last_Analyzed r_Last_analyzed, m.Inserts, m.Updates, m.Deletes
                                      FROM   Cons_Columns cc
