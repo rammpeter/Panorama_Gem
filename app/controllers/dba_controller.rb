@@ -967,6 +967,7 @@ Solution: Execute as user 'SYS':
              wa.*,
              CASE WHEN se.SAddr = oc.SAddr THEN 'YES' ELSE 'NO' END Own_SAddr,
              sse.SID SAddr_SID, sse.Serial# SAddr_SerialNo
+             #{", s.Child_Number" if get_db_version >= '12.1'}
       FROM   GV$Session se
       JOIN   gv$Open_Cursor oc ON oc.Inst_ID = se.Inst_ID
                               AND oc.SID     = se.SID
@@ -983,6 +984,7 @@ Solution: Execute as user 'SYS':
                           AND wa.Address    = oc.Address
                           AND wa.Hash_Value = oc.Hash_Value
       LEFT OUTER JOIN gv$Session sse ON sse.Inst_ID = oc.Inst_ID AND sse.SAddr = oc.SAddr
+      #{"LEFT OUTER JOIN gv$SQL s ON s.Inst_ID = oc.Inst_ID AND s.Child_Address = oc.Child_Address" if get_db_version >= '12.1'}
       WHERE  se.Inst_ID=? AND se.SID=? AND se.Serial#=?
       ", @instance, @sid, @serialno]
 
