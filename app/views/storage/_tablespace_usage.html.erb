@@ -20,20 +20,22 @@ column_options =
 
 %>
 <div class="flex-row-element">
-  <%= gen_slickgrid(@totals, column_options, {:caption=>t(:storage_tablespace_usage_total_caption, :default=>'Sums total'), :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
+  <%= gen_slickgrid(@totals, column_options, {:caption=>t(:storage_tablespace_usage_total_caption, :default=>'Sums total'), :width=>:auto, :max_height=>450, :no_wrap=>true, caption_title: 'Based on DBA_Tablespaces, DBA_Free_Space ...'}) %>
 </div>
 
 <%
 column_options =
 [
-  {:caption=>"Segment-Type",   :data=>proc{|rec| rec.segment_type},                   :title=>t(:storage_tablespace_usage_segment_type_hint, :default=>'Segment type of sum')},
+  {:caption=>"Segment-Type",   :data=>proc{|rec| rec.segment_type},                   :title=>"Segment type of sum\nTABLE PARTITION, TABLE SUBPARTITION, NESTED TABLE and IOT PK-indexes are subsumed under TABLE\nINDEX PARTITION, INDEX SUBPARTITION are subsumed under INDEX\nLOB PARTITION, LOB_SUBPARTITION are subsumed under LOBSEGMENT"},
   {:caption=>"MBytes",       :data=>proc{|rec| formattedNumber(rec.mbytes)},          :title=>t(:storage_tablespace_usage_segment_mbytes_hint, :default=>'Size of segment type (used space net) in MBytes'),        :align=>:right, show_pct_hint: true},
 ]
 
 %>
 
 <div class="flex-row-element">
-  <%= gen_slickgrid(@segments, column_options, {:caption =>t(:storage_tablespace_usage_segment_caption, :default=>'Net sums in TS by segment types'), :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
+  <%= gen_slickgrid(@segments, column_options, {:caption =>t(:storage_tablespace_usage_segment_caption, :default=>'Net sums in TS by segment types'), :width=>:auto, :max_height=>450, :no_wrap=>true,
+                                                caption_title: "Based on DBA_Segments"
+  }) %>
 </div>
 
 

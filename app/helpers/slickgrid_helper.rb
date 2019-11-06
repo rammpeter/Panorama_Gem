@@ -165,6 +165,7 @@ module SlickgridHelper
   #   global_options: Hash mit globalen Optionen
   #     :caption              => Titel vor Anzeige der Tabelle, darf keine "'" enthalten
   #     :caption_style        => Style-Attribute für caption der Tabelle
+  #     :caption_title        => MouseOver-Hint for table caption
   #     :command_menu_entries => Array with hashes or single hash for actions available in caption bar: :name, :caption, :hint, :icon_class=>"cui-xxx", :show_icon_in_caption=>true|false|:only\:right ,  :action=>javascript
   #     :context_menu_entries => Array mit Hashes bzw. einzelner Hash mit weiterem Eintrag für Context-Menu: :label, :icon, :action
   #     :div_style            => Einpacken der Tabelle in Div mit diesem Style
@@ -195,11 +196,8 @@ module SlickgridHelper
     # Defaults für global_options
     global_options[:caption]            = escape_js_chars(global_options[:caption])    # Sonderzeichen in caption escapen
     if global_options[:caption]
-      if global_options[:caption_style]
-        global_options[:caption]            = "<span style=\"#{global_options[:caption_style]}\">#{global_options[:caption]}</span>"
-      else
-        global_options[:caption]            = "<span style=\"font-weight: bold;\">#{global_options[:caption]}</span>"
-      end
+      global_options[:caption_style]    = 'font-weight: bold;' unless global_options[:caption_style]
+      global_options[:caption]          = "<span style=\"#{global_options[:caption_style]}\" title=\"#{global_options[:caption_title]}\">#{global_options[:caption]}</span>"
     end
 
     global_options[:command_menu_entries] = [global_options[:command_menu_entries]] if global_options[:command_menu_entries] && global_options[:command_menu_entries].class == Hash

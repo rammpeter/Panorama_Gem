@@ -212,10 +212,23 @@ class StorageController < ApplicationController
     end
     @schemas.sort_by! {|obj| -obj.total_mbytes}
 
-    @segments = sql_select_all "SELECT /* Panorama-Tool Ramm */ Segment_Type,
+    @segments = sql_select_all "SELECT /* Panorama-Tool Ramm */
+                                       Segment_Type,
                                        SUM(Bytes)/1048576   MBytes
                                 FROM  (SELECT s.Bytes,
-                                              s.Segment_Type || DECODE(i.Index_Type, 'IOT - TOP', ' IOT-PKey', '') Segment_Type
+                                       DECODE(i.Index_Type, 'IOT - TOP', 'TABLE',  /* treat IOTs as TABLE */
+                                         CASE Segment_Type
+                                           WHEN 'TABLE PARTITION'           THEN 'TABLE'
+                                           WHEN 'TABLE SUBPARTITION'        THEN 'TABLE'
+                                           WHEN 'NESTED TABLE'              THEN 'TABLE'
+                                           WHEN 'INDEX PARTITION'           THEN 'INDEX'
+                                           WHEN 'INDEX SUBPARTITION'        THEN 'INDEX'
+                                           WHEN 'LOB PARTITION'             THEN 'LOBSEGMENT'
+                                           WHEN 'LOB SUBPARTITION'          THEN 'LOBSEGMENT'
+                                         ELSE Segment_Type
+                                         END
+                                       ) Segment_Type ,
+                                       i.Index_Type
                                        FROM   DBA_Segments s
                                        LEFT OUTER JOIN DBA_Indexes i ON i.Owner = s.Owner AND i.Index_Name=s.Segment_Name
                                       )
