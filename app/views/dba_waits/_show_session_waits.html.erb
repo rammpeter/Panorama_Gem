@@ -9,7 +9,7 @@ column_options =
   [
     {:caption=>"I",                 :data=>proc{|rec| rec.inst_id },               :title=>"RAC-Instance"},
     {:caption=>"SID / Serialno",    :data=>proc{|rec| link_session_details(@update_area, rec.inst_id, rec.sid, rec.serialno)},                   :title=>"Session-Identifier"},
-    {:caption=>"Wait time (ms)",    :data=>proc{|rec| fn(rec.wait_time_ms, 2) },   :title=>'Wait time in current event im ms', :align=>:right},
+    {:caption=>"Wait time (ms)",    :data=>proc{|rec| fn(rec.wait_time_ms, 2) },   :title=>'Wait time in current event im ms', data_title: proc{|rec| "%t\n#{seconds_explain(rec.wait_time_ms.to_f/1000)}"}, :align=>:right},
     {:caption=>"State",             :data=>proc{|rec| rec.state },                 :title=>"Status"},
     {:caption=>'Parameter',         :data=>proc{|rec| link_column_object(rec) },   :title=>'Parameter for current wait event'},
   ]

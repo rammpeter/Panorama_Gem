@@ -758,6 +758,7 @@ module ApplicationHelper
   # explain seconds to minutes, hours and days
   def seconds_explain(seconds)
     return nil if seconds.nil?
+    return nil if seconds == ''
     seconds = seconds.to_f
     retval = ''
     retval << "\n#{fn(seconds,2)} #{t(:seconds, default: 'seconds')}"

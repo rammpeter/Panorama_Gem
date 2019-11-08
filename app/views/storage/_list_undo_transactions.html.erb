@@ -22,6 +22,7 @@
                    {:caption=>"Module",                 :data=>proc{|rec| rec.module},                      :title=>"Module-Info"},
                    {:caption=>"Action",                 :data=>proc{|rec| rec.action},                      :title=>"Action-Info"},
                    {:caption=>"Start time",             :data=>proc{|rec| localeDateTime(rec.start_date)},  :title=>"Start time of transaction"},
+                   {:caption=>"Age (sec.)",             :data=>proc{|rec| fn(rec.age_secs)},                :title=>"Seconds since start of transaction", data_title: proc{|rec| "%t\n#{seconds_explain(rec.age_secs)}"}, align: :right},
                    {:caption=>"Rec.",                   :data=>proc{|rec| rec.recursive},                   :title=>"Recursive transaction?"},
                    {:caption=>'Used undo blocks',       :data=>proc{|rec| fn rec.used_undo_blocks},         :title=>'Number of undo blocks used', :align=>:right},
                    {:caption=>"Used undo (MB)",         :data=>proc{|rec| fn(PanoramaConnection.db_blocksize.to_f * rec.used_undo_blocks/(1024*1024),2)},  :title=>'Amount of undo space used in megabytes', :align=>:right},

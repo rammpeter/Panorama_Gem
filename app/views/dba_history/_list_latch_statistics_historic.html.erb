@@ -32,7 +32,7 @@ column_options =
     {:caption=>"Sleep 2",           :data=>proc{|rec| fn(rec.sleep2)},                          :title=>"Waits that slept 2 time", :align=>"right"},
     {:caption=>"Sleep 3",           :data=>proc{|rec| fn(rec.sleep3)},                          :title=>"Waits that slept 3 time", :align=>"right"},
     {:caption=>"Sleep 4",           :data=>proc{|rec| fn(rec.sleep4)},                          :title=>"Waits that slept 4 time", :align=>"right"},
-    {:caption=>"Wait-Time",         :data=>proc{|rec| fn(rec.wait_time, 3)},                    :title=>"Elapsed time spent waiting for the latch (in seconds)", :align=>"right"},
+    {:caption=>"Wait-Time",         :data=>proc{|rec| fn(rec.wait_time, 3)},                    :title=>"Elapsed time spent waiting for the latch (in seconds)", data_title: proc{|rec| "%t\n#{seconds_explain(rec.wait_time)}"}, :align=>"right"},
   ]
 
 %>
