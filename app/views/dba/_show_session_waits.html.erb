@@ -25,8 +25,8 @@
   column_options << {:caption=>"Event",            :data=>proc{|rec| rec.event},                          :title=>"Wait-Event", :data_title=>proc{|rec| "%t: #{explain_wait_event(rec.event)}"} }
   column_options << {:caption=>"Wait-Class",       :data=>proc{|rec| rec.wait_class},                     :title=>"Wait-Class"}
   column_options << {:caption=>"State",            :data=>proc{|rec| rec.state},                          :title=>"State: All values exept \"WAITING\" mean \"ON CPU\". Event is the last event in this case", :data_title=>proc{|rec| explain_wait_state(rec.state)} }
-  column_options << {:caption=>"Sum. Seconds",     :data=>proc{|rec| fn(rec.sum_wait_time_seconds, 3)},   :title=>"Seconds in Wait (Sum)", :align=>"right"}
-  column_options << {:caption=>"Max. Seconds",     :data=>proc{|rec| fn(rec.max_wait_time_seconds, 3)},   :title=>"Seconds in Wait (Maximum of one session)", :align=>"right"}
+  column_options << {:caption=>"Sum. Seconds",     :data=>proc{|rec| fn(rec.sum_wait_time_seconds, 3)},   :title=>"Seconds in Wait (Sum)", data_title: proc{|rec| "%t\n#{seconds_explain(rec.sum_wait_time_seconds)}"}, :align=>"right"}
+  column_options << {:caption=>"Max. Seconds",     :data=>proc{|rec| fn(rec.max_wait_time_seconds, 3)},   :title=>"Seconds in Wait (Maximum of one session)", data_title: proc{|rec| "%t\n#{seconds_explain(rec.max_wait_time_seconds)}"}, :align=>"right"}
   column_options << {:caption=>"Module",           :data=>show_module,                                    :title=>t(:dba_show_session_waits_modules_hint, :default=>'Number of different modules in gv$Session (or name if only on module)'), :align=>"right"}
   column_options << {:caption=>'Action',           :data=>show_action,                                    :title=>"Number of different actions in gv$Session (or name if only on module)", :align=>"right"}
 
@@ -85,7 +85,7 @@ column_options =
     {:caption=>"W. Client-Info / Module / Action", :data=>proc{|rec| "#{rec.client_info} #{rec.module} #{rec.action}"},       :title=>t(:dba_show_session_waits_waiting_client_info_hint, :default=>'Client-info, module and action of waiting session'), :data_title=>proc{|rec| "%t, #{rec.waiting_app_desc}"} },
     {:caption=>"W. User",               :data=>proc{|rec| rec.username},                                                      :title=>t(:dba_show_session_waits_waiting_user_hint, :default=>'User of waiting session'),             :data_title=>proc{|rec| "%t, Machine=#{rec.machine}, OSUser=#{rec.osuser}, Process=#{rec.process}"} },
     {:caption=>"W. Program",            :data=>proc{|rec| rec.program},                                                       :title=>t(:dba_show_session_waits_waiting_program_hint, :default=>'Program of waiting session'),         :data_title=>proc{|rec| "%t, Machine=#{rec.machine}, OSUser=#{rec.osuser}, Process=#{rec.process}"} },
-    {:caption=>"Wait time (sec.)",      :data=>proc{|rec| formattedNumber(rec.seconds_waiting, 1)},                           :title=>t(:dba_show_session_waits_seconds_hint, :default=>'Seconds in wait for waiting session'), :align=>"right"},
+    {:caption=>"Wait time (sec.)",      :data=>proc{|rec| formattedNumber(rec.seconds_waiting, 1)},                           :title=>t(:dba_show_session_waits_seconds_hint, :default=>'Seconds in wait for waiting session'), data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_waiting)}"}, :align=>"right"},
     {:caption=>"W. SQL-ID",             :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.sql_id, rec.sql_child_number, rec.username)}, :title=>t(:dba_show_session_waits_waiting_sql_id_hint, :default=>'current SQL-ID of waiting session')},
   ]
 %>

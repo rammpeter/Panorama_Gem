@@ -39,9 +39,9 @@
             {caption: 'First Time',             data: proc{|rec| localeDateTime(rec.min_first_time) }, title: "Time of the lowest system change number (SCN) in considered period", :plot_master_time=>true },
             {caption: 'Instances',              data: proc{|rec| fn(rec.instances)},                   title: "Number of different RAC-instances in period",        align: :right},
             {caption: 'Log switches',           data: link_switches,                                   title: "Number of log switches in this period",              align: :right},
-            {caption: 'Avg. duration (Sec.)',   data: proc{|rec| fn(rec.avg_current_duration_secs) },  title: "Average duration of current state for a log sequence in this period",        align: :right},
-            {caption: 'Min. duration (Sec.)',   data: proc{|rec| fn(rec.min_current_duration_secs) },  title: "Minimum duration of current state for a log sequence in this period",        align: :right},
-            {caption: 'Max. duration (Sec.)',   data: proc{|rec| fn(rec.max_current_duration_secs) },  title: "Maximum duration of current state for a log sequence in this period",        align: :right},
+            {caption: 'Avg. duration (Sec.)',   data: proc{|rec| fn(rec.avg_current_duration_secs) },  title: "Average duration of current state for a log sequence in this period", data_title: proc{|rec| "%t\n#{seconds_explain(rec.avg_current_duration_secs)}" },        align: :right},
+            {caption: 'Min. duration (Sec.)',   data: proc{|rec| fn(rec.min_current_duration_secs) },  title: "Minimum duration of current state for a log sequence in this period", data_title: proc{|rec| "%t\n#{seconds_explain(rec.min_current_duration_secs)}" },        align: :right},
+            {caption: 'Max. duration (Sec.)',   data: proc{|rec| fn(rec.max_current_duration_secs) },  title: "Maximum duration of current state for a log sequence in this period", data_title: proc{|rec| "%t\n#{seconds_explain(rec.max_current_duration_secs)}" },        align: :right},
             {caption: 'SCN increments',         data: proc{|rec| fn(rec.scn_increments) },             title: "Number of SCN increments (commits, checkpoints etc.) in this period",        align: :right},
         ]
   end

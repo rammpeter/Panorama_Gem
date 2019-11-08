@@ -20,8 +20,8 @@ column_options =
     {:caption=>"Event",         :data=>proc{|rec| link_column(rec, rec[:event]) },            :title=>"Event-Name",  :data_title=>proc{|rec| explain_wait_event(rec[:event])} },
     {:caption=>"Total",         :data=>proc{|rec| fn(rec[:total_waits]) },    :align=>:right, :title=>"Total no. of wait-events"},
     {:caption=>"Timeouts",      :data=>proc{|rec| fn(rec[:total_timeouts]) }, :align=>:right, :title=>"Total no. of timeouts"},
-    {:caption=>"Time waited",   :data=>proc{|rec| fn(rec[:time_waited],2) },    :align=>:right, :title=>"Total amount of time waited (seconds)"},
-    {:caption=>"Average wait",  :data=>proc{|rec| fn(rec[:average_wait],2) },   :align=>:right, :title=>"Average wait time (milliseconds)"},
+    {:caption=>"Time waited",   :data=>proc{|rec| fn(rec[:time_waited],2) },    :align=>:right, :title=>"Total amount of time waited (seconds)", data_title: proc{|rec| "%t\n#{seconds_explain(rec[:time_waited])}"}},
+    {:caption=>"Average wait",  :data=>proc{|rec| fn(rec[:average_wait],2) },   :align=>:right, :title=>"Average wait time (milliseconds)", data_title: proc{|rec| "%t\n#{seconds_explain(rec[:average_wait].to_f/1000)}"}},
     {:caption=>"Wait class",    :data=>proc{|rec| rec[:wait_class] },                         :title=>'Wait class of event'},
     {:caption=>"Sessions",      :data=>proc{|rec| fn(rec[:anzahl_sessions]) },:align=>:right, :title=>'Number of sessions in this event at the end of sample period'},
   ]

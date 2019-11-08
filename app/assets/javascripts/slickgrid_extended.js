@@ -1639,7 +1639,7 @@ function HTMLFormatter(row, cell, value, columnDef, dataContext){
     }
     if (columnDef['show_pct_hint'] && columnDef['column_sum'] > 0 ){
         var pct_value = slickGrid.parseFloatLocale(value) * 100 / columnDef['column_sum'];
-        title += ".\n= "+ slickGrid.printFloatLocale(pct_value, 2) + ' % ' + slickGrid.ext_locale_translate('slickgrid_pct_hint') + ' ' + slickGrid.printFloatLocale(columnDef['column_sum'], 0);
+        title += "\n\n= "+ slickGrid.printFloatLocale(pct_value, 2) + ' % ' + slickGrid.ext_locale_translate('slickgrid_pct_hint') + ' ' + slickGrid.printFloatLocale(columnDef['column_sum'], 0);
     }
     if (title.length > 0){
         output += " title='"+title+"'";

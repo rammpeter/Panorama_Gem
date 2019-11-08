@@ -37,7 +37,7 @@
       {:caption=>"Blocking SID",   :data=>link_blocking_sid,                                                            :title=>"Blocking SID"},
       {:caption=>"Blocking Object",:data=>proc{|rec| rec.waitingforobject },                                            :title=>"Blocking object"},
       {:caption=>"Blocking RowID", :data=>link_blocking_rowid,                                                          :title=>"Blocking RowID"},
-      {:caption=>"Lock Sec.",      :data=>proc{|rec| fn(rec.seconds_in_lock) },                                         :title=>"Seconds since lock was granted", :align=>:right},
+      {:caption=>"Lock Sec.",      :data=>proc{|rec| fn(rec.seconds_in_lock) },                                         :title=>"Seconds since lock was granted", data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_in_lock)}"}, :align=>:right},
     ]
 
 %>

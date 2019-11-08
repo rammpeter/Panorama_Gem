@@ -103,15 +103,16 @@ class DbaWaitsController < ApplicationController
     @event   = params[:event]
     @session_waits = sql_select_all ["\
         SELECT /* Panorama-Tool Ramm */
-          Event, Inst_ID, Sid, State,
-          #{get_db_version >= '11.2' ? 'Wait_Time_Micro/1000' : 'Seconds_in_Wait*1000'} Wait_Time_ms,
-          p1text, p1, RawToHex(p1raw) P1Raw, 
-          p2text, p2, RawToHex(p2raw) P2Raw, 
-          p3text, p3, RawToHex(p3raw) P3Raw,
+          sw.Event, sw.Inst_ID, sw.Sid, s.Serial# SerialNo, sw.State,
+          #{get_db_version >= '11.2' ? 'sw.Wait_Time_Micro/1000' : 'sw.Seconds_in_Wait*1000'} Wait_Time_ms,
+          sw.p1text, sw.p1, RawToHex(sw.p1raw) P1Raw,
+          sw.p2text, sw.p2, RawToHex(sw.p2raw) P2Raw,
+          sw.p3text, sw.p3, RawToHex(sw.p3raw) P3Raw,
           RowNum Row_Num
-        FROM  GV$Session_Wait                                   
-        WHERE Inst_ID=?                                          
-        AND   Event = ?",
+        FROM  GV$Session_Wait sw
+        JOIN  gv$Session s ON s.Inst_ID = sw.Inst_ID AND s.SID = sw.SID
+        WHERE sw.Inst_ID=?
+        AND   sw.Event = ?",
     @inst_id, @event 
     ]
 

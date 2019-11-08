@@ -25,7 +25,7 @@ column_options =
   {:caption=>"Archived",            :data=>proc{|rec| rec.archived},                       :title=>"Archived"},
 ]
 
-column_options << {:caption=>'Log switch interval', :data=>proc{|rec| fn(rec.log_switch_interval_secs)}, :title=>"Interval in seconds this file has been written by log writer in current mode", :align=>:right} if get_db_version >= '11.1'
+column_options << {:caption=>'Log switch interval', :data=>proc{|rec| fn(rec.log_switch_interval_secs)}, :title=>"Interval in seconds this file has been written by log writer in current mode", data_title: proc{|rec| "%t\n#{seconds_explain(rec.log_switch_interval_secs)}" }, :align=>:right} if get_db_version >= '11.1'
 
 
 %>

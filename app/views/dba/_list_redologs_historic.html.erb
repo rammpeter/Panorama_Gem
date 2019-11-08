@@ -11,7 +11,7 @@ column_options =
     {:caption=>'Avg. size (MB)',   :data=>proc{|rec| fn(rec.avg_size_mb,3) },                       :title=>'Average size of redo log file',                                :align=>:right},
     {:caption=>'Max. sequence#',   :data=>proc{|rec| fn(rec.maxsequenceno) },                       :title=>'Maximum sequence number of redo log group in time slice',      :align=>:right},
     {:caption=>'Log switches',     :data=>proc{|rec| fn(rec.logswitches) },                         :title=>'Number of log sitches in time slice',                          :align=>:right},
-    {:caption=>'Avg. log switch interval', :data=>proc{|rec| fn(rec.avg_secs_between_logswitches) },:title=>'Average time in seconds between log switches for this time period', :align=>:right},
+    {:caption=>'Avg. log switch interval', :data=>proc{|rec| fn(rec.avg_secs_between_logswitches) },:title=>'Average time in seconds between log switches for this time period', data_title: proc{|rec| "%t\n#{seconds_explain(rec.avg_secs_between_logswitches)}" }, :align=>:right},
     {:caption=>'Log writes (MB)',  :data=>proc{|rec| fn(rec.logwrites_mb,3) },                      :title=>'Redo logs written (MB), Avg. size * members * log switches',   :align=>:right},
   ]
 

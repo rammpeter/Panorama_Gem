@@ -4,19 +4,10 @@
 <%
   @update_area = get_unique_area_id
 
-  @total_time_waited_data_title = proc do |rec|
-    retval = '%t'
-    retval << "\n= #{fn(rec.seconds_active)} seconds"
-    retval << "\n= #{fn(rec.seconds_active.to_f/60, 1)} minutes" if rec.seconds_active > 60
-    retval << "\n= #{fn(rec.seconds_active.to_f/3600, 1)} hours" if rec.seconds_active > 3600
-    retval
-  end
-
-
   column_options = [
       {caption: 'Snapshot timestamp',           data: proc{|rec| localeDateTime(rec.snapshot_timestamp) },        title: "Start timestamp of considered snapshot period" },
       {caption: 'Snapshot duration (hours)',    data: proc{|rec| fn(rec.snapshot_cycle_hours) },                  align: :right, title: "Duration of considered snapshot period in hours" },
-      {caption: 'Total time waited (minutes)',  data: proc{|rec| fn(rec.seconds_active.to_f/60, 1)},              align: :right, title: "Total time waited in minutes within period",  data_title: @total_time_waited_data_title },
+      {caption: 'Total time waited (minutes)',  data: proc{|rec| fn(rec.seconds_active.to_f/60, 1)},              align: :right, title: "Total time waited in minutes within period", data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_active)}"} },
       {caption: 'Instance',                     data: proc{|rec| rec.instance_number },                           align: :right, title: "Instance number" },
       {caption: 'Wait event',                   data: proc{|rec| rec.wait_event },                                title: "Wait event of sessions within this sampled active time" },
       {caption: 'Wait class',                   data: proc{|rec| rec.wait_class },                                title: "Wait class of sessions within this sampled active time" },

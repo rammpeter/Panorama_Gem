@@ -45,7 +45,7 @@ column_options =
         {:caption=>'Sessio-ID / Serialno.',       :data=>link_session,                                      :title=>'Session-ID and serial number of the session corresponding to the captured report (currently used only for SQL Monitor reports)'},
         {:caption=>'Start time',                  :data=>proc{|rec| localeDateTime(rec.period_start_time)}, :title=>'Start of recorded activity'},
         {:caption=>'End time',                    :data=>proc{|rec| localeDateTime(rec.period_end_time)},   :title=>"End of recorded activity.\nLasts until the last fetch call of this statement execution"},
-        {:caption=>'Duration (Sec.)',             :data=>proc{|rec| fn(rec.duration)},                      :title=>"Duration between start and end of recorded statement execution in seconds\nIncludes also fetch phase after execute", align: :right},
+        {:caption=>'Duration (Sec.)',             :data=>proc{|rec| fn(rec.duration)},                      :title=>"Duration between start and end of recorded statement execution in seconds\nIncludes also fetch phase after execute", data_title: proc{|rec| "%t\n#{seconds_explain(rec.duration)}"}, align: :right},
         {:caption=>'SQL exec ID',                 :data=>proc{|rec| fn(rec.sql_exec_id)},                   :title=>'SQL execution ID', align: :right},
         {:caption=>'SQL exec start',              :data=>proc{|rec| localeDateTime(rec.sql_exec_start)},    :title=>'Start time of execution for this SQL execution ID'},
         {:caption=>'Elapsed time (Sec.)',         :data=>proc{|rec| fn(rec.elapsed_time_secs, 1)},          :title=>"Elapsed execution time in seconds", align: :right},
