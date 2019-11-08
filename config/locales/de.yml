@@ -8,6 +8,7 @@
   created:                                                  angelegt
   content:                                                  Inhalt
   day:                                                      Tag
+  days:                                                     Tage
   error:                                                    Fehler
   first_occurrence_caption:                                 Erstes Auftreten
   first_occurrence_hint:                                    Erstes Auftreten im betrachteten Zeitraum
@@ -18,18 +19,23 @@
   grouping_hint:                                            Gruppierung der Anzeige nach Attribut
   help:                                                     Hilfe
   hour:                                                     Stunde
+  hours:                                                    Stunden
   instance_filter_hint:                                     Einschränkung/Filterung auf RAC-Instance
   last_occurrence_caption:                                  Letztes Auftreten
   last_occurrence_hint:                                     Letztes Auftreten im betrachteten Zeitraum
   link_historic_sql_id_coming_soon:                         Hier erscheint gleich der Text des SQL, bitte Maus erneut über Objekt führen
   link_historic_sql_id_hint_prefix:                         Anzeige der Details des
   mandatory:                                                Erforderlich
+  microseconds:                                             Mikrosekunden
+  milliseconds:                                             Millisekunden
   minute:                                                   Minute
+  minutes:                                                  Minuten
   moeglicher:                                               möglicher
   month:                                                    Monat
   of:                                                       des
   per_execution:                                            Wert je Execution
   second:                                                   Sekunde
+  seconds:                                                  Sekunden
   show:                                                     Anzeigen
   sorted_by:                                                Sortiert nach
   sqlid_optional_filter_hint:                               Einschränkung/Filterung auf konkrete SQL-ID (optional,  Wildcards (%,_) sind erlaubt)
@@ -712,6 +718,10 @@
   dragnet_helper_9_param_3_hint:                            Nur Indizes dieses Schemas anlisten (optional)
   dragnet_helper_9_param_4_hint:                            Maximale Anzahl DML-Operationen (Inserts + Updates + Deletes) auf der referenzierten Tabelle seit der letzten Analyse (optional)
   dragnet_helper_9_param_4_name:                            Maximale Anzahl DML-Operationen auf der referenzierten Tabelle
+  dragnet_helper_9_param_5_hint: |-
+    Maximale Anzahl Rows der referenzierten Tabelle für Berücksichtigung in Selektion
+    (Um vor langlaufenden Deletes zu schützen fall Housekeeping auf der referenzierten Tabelle durchgeführt wird)
+  dragnet_helper_9_param_5_name:                            Maximale Anzahl Rows der referenzierten Tabelle
 
   dragnet_helper_10_name:                                   Identifikation von Indizes mit unnötigen Spalten mit geringer Selektivität
   dragnet_helper_10_desc: |-

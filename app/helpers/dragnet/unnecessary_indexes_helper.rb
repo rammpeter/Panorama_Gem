@@ -217,6 +217,7 @@ Additional information about index usage can be requested from DBA_Hist_Seg_Stat
                          ) seg ON seg.Owner = u.Owner AND seg.Segment_Name = u.Index_Name
                     CROSS JOIN (SELECT ? value FROM DUAL) Max_DML
                     WHERE u.Used='NO' AND u.Monitoring='YES'
+                    AND   cc.r_Num_Rows < ?
                     AND   (? = 'YES' OR i.Uniqueness != 'UNIQUE')
                     AND   (Max_DML.Value IS NULL OR NVL(cc.Inserts + cc.Updates + cc.Deletes, 0) < Max_DML.Value)
                     ORDER BY seg.MBytes DESC NULLS LAST
@@ -224,7 +225,8 @@ Additional information about index usage can be requested from DBA_Hist_Seg_Stat
           :parameter=>[{:name=>'Schema-Name (optional)',    :size=>20, :default=>'',   :title=>t(:dragnet_helper_9_param_3_hint, :default=>'List only indexes for this schema (optional)')},
                        {:name=>t(:dragnet_helper_9_param_1_name, :default=>'Number of days backwards without usage'),    :size=>8, :default=>7,   :title=>t(:dragnet_helper_9_param_1_hint, :default=>'Minumin age in days of Start-Monitoring timestamp of unused index')},
                        {:name=>t(:dragnet_helper_139_param_1_name, :default=>'Minimum size of index in MB'),    :size=>8, :default=>1,   :title=>t(:dragnet_helper_139_param_1_hint, :default=>'Minumin size of index in MB to be considered in selection')},
-                       {:name=>t(:dragnet_helper_9_param_4_name, :default=>'Maximum DML-operations on referenced table'), :size=>8, :default=>'',   :title=>t(:dragnet_helper_9_param_4_hint, :default=>'Maximum number of DML-operations (Inserts + Updates + Deletes) on referenced table since last analyze (optional)')},
+                       {:name=>t(:dragnet_helper_9_param_4_name, :default=>'Maximum DML-operations on referenced table'), :size=>8, :default=>100,   :title=>t(:dragnet_helper_9_param_4_hint, :default=>'Maximum number of DML-operations (Inserts + Updates + Deletes) on referenced table since last analyze (optional, may be empty)')},
+                       {:name=>t(:dragnet_helper_9_param_5_name, :default=>'Maximum number of rows in referenced table'), :size=>8, :default=>10000,   :title=>t(:dragnet_helper_9_param_5_hint, :default=>"Maximum number rows in referenced table for consideration in selection.\n(to prevent from long running deletes if housekeeping of referenced table occurs)")},
                        {:name=>t(:dragnet_helper_9_param_2_name, :default=>'Show unique indexes also (YES/NO)'), :size=>4, :default=>'NO',   :title=>t(:dragnet_helper_9_param_2_hint, :default=>'Unique indexes are needed for uniqueness even if they are not used')},
             ]
         },

@@ -13,7 +13,7 @@
 
 
 # Anzeige sowohl des konkreten Wertes als auch je Execution in zwei TD-Abschnitten
-def show_both_values(name, param, decimals, title="", show_per_result_row=false)
+def show_both_values(name, param, decimals, title="", show_per_result_row=false, show_seconds_explain=false)
   param     = param.to_f   # Sicherstellen Typ
   execs     = @sql.executions.to_i     == 0 ? 1 : @sql.executions.to_i;         # Suppress division by 0
 
@@ -23,10 +23,12 @@ def show_both_values(name, param, decimals, title="", show_per_result_row=false)
     per_res_row = ''
   end
 
+  seconds_explain = proc{|value| show_seconds_explain ? "\n#{seconds_explain(value)}" : ''}
+
   "<tr>
      <td title='#{title}'>#{name}</td>
-     <td align='right' title='#{title}#{per_res_row}\n#{@metrics_start_hint_suffix}'>#{formattedNumber(param,decimals)}</td>
-     <td align='right' title='#{title}\n#{t(:per_execution, :default=>'Value per execution')}#{per_res_row}'>#{formattedNumber( (param/execs),(decimals+2))}</td>
+     <td align='right' title='#{title}#{per_res_row}\n#{@metrics_start_hint_suffix}#{seconds_explain.call(param)}'>#{formattedNumber(param,decimals)}</td>
+     <td align='right' title='#{title}\n#{t(:per_execution, :default=>'Value per execution')}#{per_res_row}#{seconds_explain.call(param/execs)}'>#{formattedNumber( (param/execs),(decimals+2))}</td>
    </tr>".html_safe
 end
 
@@ -115,13 +117,13 @@ end
          <%= show_both_values("Rows processed", @sql.rows_processed,0, "Number of rows processed") %>
          <%= show_both_values("Buffer gets", @sql.buffer_gets,0, t(:dba_sga_list_sql_sga_stat_buffer_gets_hint, :default=>'Number of DB blocks read total'), true) %>
          <%= show_both_values("Disk reads", @sql.disk_reads,0, "Number of db blocks read from disk\nAvg. time per db block read from disk = #{fn((@sql.disk_reads>0 ? @sql.user_io_wait_time_secs*1000.0/@sql.disk_reads : 0),2)} ms\nAvg. disk transfer speed = #{fn((@sql.user_io_wait_time_secs>0 ? @sql.disk_reads * PanoramaConnection.db_blocksize / (1024*1024) / @sql.user_io_wait_time_secs : 0),2)} MB/sec. (per single session if using PQ) ", true) %>
-         <%= show_both_values("Elapsed Time (sec), incl. parallel Query Slaves", @sql.elapsed_time_secs,2, t(:dba_sga_list_sql_sga_stat_elapsed_hint, :default=>'Total elapsed time in seconds, sum over all PQ-slaves if executed in parallel'), true)%>
-         <%= show_both_values("CPU-Time (sec)", @sql.cpu_time_secs, 2, t(:dba_sga_list_sql_sga_stat_cpu_hint, :default=>'CPU time in seconds, sum over all PQ-slaves if executed in parallel'), true) %>
-         <%= show_both_values("Application Wait Time (sec)", @sql.application_wait_time_secs, 2, "Application wait time total, includes row lock waits", true) %>
-         <%= show_both_values("Concurrency Wait Time (sec)", @sql.concurrency_wait_time_secs, 2, "Concurrency wait time", true) %>
-         <%= show_both_values("Cluster Wait Time (sec)", @sql.cluster_wait_time_secs, 2, 'Wait time caused by RAC cluster issues', true) %>
-         <%= show_both_values("User-IO Wait Time (sec)", @sql.user_io_wait_time_secs, 2, 'Wait time caused by I/O operations', true) %>
-         <%= show_both_values("PL/SQL Exec Time (sec)", @sql.plsql_exec_time_secs, 2, t(:dba_sga_list_sql_sga_stat_plsql_time_hint, :default=>'PL/SQL execution time in seconds, part of CPU-time'), true) %>
+         <%= show_both_values("Elapsed Time (sec), incl. parallel Query Slaves", @sql.elapsed_time_secs, 0, t(:dba_sga_list_sql_sga_stat_elapsed_hint, :default=>'Total elapsed time in seconds, sum over all PQ-slaves if executed in parallel'), true, true)%>
+         <%= show_both_values("CPU-Time (sec)", @sql.cpu_time_secs, 0, t(:dba_sga_list_sql_sga_stat_cpu_hint, :default=>'CPU time in seconds, sum over all PQ-slaves if executed in parallel'), true, true) %>
+         <%= show_both_values("Application Wait Time (sec)", @sql.application_wait_time_secs, 0, "Application wait time total, includes row lock waits", true, true) %>
+         <%= show_both_values("Concurrency Wait Time (sec)", @sql.concurrency_wait_time_secs, 0, "Concurrency wait time", true, true) %>
+         <%= show_both_values("Cluster Wait Time (sec)", @sql.cluster_wait_time_secs, 0, 'Wait time caused by RAC cluster issues', true, true) %>
+         <%= show_both_values("User-IO Wait Time (sec)", @sql.user_io_wait_time_secs, 0, 'Wait time caused by I/O operations', true, true) %>
+         <%= show_both_values("PL/SQL Exec Time (sec)", @sql.plsql_exec_time_secs, 0, t(:dba_sga_list_sql_sga_stat_plsql_time_hint, :default=>'PL/SQL execution time in seconds, part of CPU-time'), true, true) %>
        </table>
      </td>
    </tr>

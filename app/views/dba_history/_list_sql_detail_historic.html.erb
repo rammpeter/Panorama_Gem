@@ -4,7 +4,7 @@
   @table_id_prefix = get_unique_area_id
 
 # Anzeige sowohl des konkreten Wertes als auch je Execution in zwei TD-Abschnitten
-def show_both_values(name, param, decimals, title="", show_per_result_row=false)
+def show_both_values(name, param, decimals, title="", show_per_result_row=false, show_seconds_explain=false)
   param = param.to_f   # Sicherstellen Typ
   execs = @sql.executions.to_i==0 ? 1 : @sql.executions.to_i;
 
@@ -14,10 +14,12 @@ def show_both_values(name, param, decimals, title="", show_per_result_row=false)
       per_res_row = ''
     end
 
+  seconds_explain = proc{|value| show_seconds_explain ? "\n#{seconds_explain(value)}" : ''}
+
   "<tr>
      <td title='#{title}'>#{name}</td>
-     <td align='right' title='#{title}#{per_res_row}'>#{formattedNumber(param,decimals)}</td>
-     <td align='right' title='#{title}\n#{t(:per_execution, :default=>'Value per execution')}#{per_res_row}'>#{formattedNumber( (param/execs),(decimals+2))}</td>
+     <td align='right' title='#{title}#{per_res_row}#{seconds_explain.call(param)}'>#{formattedNumber(param,decimals)}</td>
+     <td align='right' title='#{title}\n#{t(:per_execution, :default=>'Value per execution')}#{per_res_row}#{seconds_explain.call(param/execs)}'>#{formattedNumber( (param/execs),(decimals+2))}</td>
    </tr>".html_safe
 end
 
@@ -86,13 +88,13 @@ end
         </tr>
         <%= show_both_values('Buffer gets', @sql.buffer_gets,0, 'Number of total DB-blocks read', true) %>
         <%= show_both_values("Disk reads", @sql.disk_reads,0, "Number of db blocks read from disk\nAvg. time per db block read from disk = #{fn((@sql.disk_reads && @sql.disk_reads>0 ? @sql.user_io_wait_time_secs*1000/@sql.disk_reads : 0),2)} ms\nAvg. disk transfer speed = #{fn((@sql.user_io_wait_time_secs && @sql.user_io_wait_time_secs>0 ? @sql.disk_reads * PanoramaConnection.db_blocksize / (1024*1024) / @sql.user_io_wait_time_secs : 0),2)} MB/sec. (per single session if using PQ) ", true) %>
-        <%= show_both_values("Elapsed time (sec), incl. parallel query slaves", @sql.elapsed_time_secs,2, "Runtime total in Seconds, sum over all PQ-processes", true)%>
-        <%= show_both_values("CPU-time (sec)", @sql.cpu_time_secs, 2, "CPU-time total in seconds, sum over all PQ-processes", true) %>
-        <%= show_both_values("Application wait time (sec)", @sql.application_wait_time_secs, 2, "Application wait-time total in seconds, incl. row lock waits", true) %>
-        <%= show_both_values("Concurrency wait time (sec)", @sql.concurrency_wait_time_secs, 2, "Concurrency wait-time total in seconds", true) %>
-        <%= show_both_values("Cluster wait time (sec)", @sql.cluster_wait_time_secs, 2, 'Wait time caused by RAC cluster issues', true) %>
-        <%= show_both_values("User-IO wait time (sec)", @sql.user_io_wait_time_secs, 2, 'Wait time caused by I/O operations', true) %>
-        <%= show_both_values("PL/SQL execution time (sec)", @sql.plsql_exec_time_secs, 2, "PL/SQL Execution-Time (Sec.) anteilig von CPU-Time", true) %>
+        <%= show_both_values("Elapsed time (sec), incl. parallel query slaves", @sql.elapsed_time_secs,0, "Runtime total in Seconds, sum over all PQ-processes", true, true)%>
+        <%= show_both_values("CPU-time (sec)", @sql.cpu_time_secs, 0, "CPU-time total in seconds, sum over all PQ-processes", true, true) %>
+        <%= show_both_values("Application wait time (sec)", @sql.application_wait_time_secs, 0, "Application wait-time total in seconds, incl. row lock waits", true, true) %>
+        <%= show_both_values("Concurrency wait time (sec)", @sql.concurrency_wait_time_secs, 0, "Concurrency wait-time total in seconds", true, true) %>
+        <%= show_both_values("Cluster wait time (sec)", @sql.cluster_wait_time_secs, 0, 'Wait time caused by RAC cluster issues', true, true) %>
+        <%= show_both_values("User-IO wait time (sec)", @sql.user_io_wait_time_secs, 0, 'Wait time caused by I/O operations', true, true) %>
+        <%= show_both_values("PL/SQL execution time (sec)", @sql.plsql_exec_time_secs, 0, "PL/SQL Execution-Time (Sec.) anteilig von CPU-Time", true, true) %>
       </table>
     </td>
   </tr>

@@ -14,12 +14,10 @@
   fix_data_title = proc do |rec|
     result = "%t\n"
     result << "To fix this pending transaction execute as SYSDBA\n"
-    result << "COMMIT FORCE '#{rec.global_tran_id}';                           -- if Status != 'committed'"
-    result << "EXEC DBMS_TRANSACTION.PURGE_LOST_DB_ENTRY('#{local_tran_id}');  -- if Status == 'committed'"
+    result << "COMMIT FORCE '#{rec.global_tran_id}';                           -- if Status != 'committed'\n"
+    result << "EXEC DBMS_TRANSACTION.PURGE_LOST_DB_ENTRY('#{rec.local_tran_id}');  -- if Status == 'committed'\n"
     result
   end
-
-
 
   column_options =
       [
