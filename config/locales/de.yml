@@ -702,15 +702,20 @@
 
   dragnet_helper_9_name:                                    Erkennung nicht genutzter Indizes durch MONITORING USAGE
   dragnet_helper_9_desc: |-
-    Die DB protokolliert die Nutzung (Zugriff) von Indizes die vorab durch 'ALTER INDEX ... MONITORING USAGE' deklariert wurden.
-    Das Ergebnis der Nutzungsprotokollierung ist je Schema in Tabelle v$Object_Usage einsehbar.
-    Schemaübergreifend ist die Nutzung mit diese Selektion sichtbar.
-    Achtung:
-    - Rekursiver Index-Lookup während Foreign Key-Prüfung zählt nicht als Nutzung in v$Object_Usage.
-    - Bitte Vorsicht falls Index nur benötigt wird zur Absicherung der Foreign Key-Beziehung (verhindern Lock-Propagierung und Full-Scan auf Detail-Table bei Delete auf Master-Table).
-    - Auch die Ausführung von GATHER_INDEX_STATS zählt als Nutzung, selbst wenn der Index nie durch andere Selects genutzt wurde. (nicht mehr festgestellt ab DB-Version >= 12)
+    Die Selektion zeigt durch MONITORING USAGE überwachte Indizes, die seit x Tagen nicht durch SQLs genutzt wurden.
+    Ein rekursiver Index-Lookup während Foreign Key-Prüfung zählt dabei bzgl.  MONITORING USAGE nicht als Nutzung.
+    Daher enthält die Liste auch Indizes die ausschliesslich zur Absicherung von Foreign Key Constraints genutzt werden.
 
-    Weitere Informationen zur Nutzung bringt Anzeige 'Segment statistics historisch' und Analyse der ActiveSessionHistory über Spalte 'Time waited'.
+    Die Abfrage erlaubt die Bewertung der vier Gründe für die Existenzberechtigung eines Index:
+    1. Nutzung durch SQL-Statements: Dann ist Index nicht in der Liste enthalten.
+    2. Nutzung für Absicherung Eindeutigkeit durch Unique Index, Unique oder Primary Key Constraints ( Spalte „uniqueness“ ).
+    3. Nutzung für Absicherung eines Foreign Key Constraints (Verhindern Lock-Propagierung und Full-Scan auf Detail-Table bei Delete auf Master-Table).
+       Die zusätzlichen Informationen der Liste erlauben die Bewertung der Notwendigkeit eines Index für die Absicherung eines Foreign Key Constraints:
+       Eventuell existierende Foreign Key Constraints sowie Anzahl Rows und DML-Operationen seit letzter Analyse der referenzierten Tabelle.
+    4. Identität der Index-Strukturen der beteiligten Tabellen für Partition Exchange (Spalte „Partition exchange possible“).
+      Zeigt die Existenz weiterer strukturidentischer Tabellen, mit denen theoretisch Partition Exchange stattfinden könnte.
+
+    Wenn keiner der vier Gründe die Existenz wirklich erfordert, kann der Index risikofrei entfernt werden.
   dragnet_helper_9_param_1_hint:                            Anzahl Tage, die der Start_Monitoring-Zeitstempel ungenutzter Indizes alt sein muss
   dragnet_helper_9_param_1_name:                            Tage rückwärts ohne Nutzung
   dragnet_helper_9_param_2_hint:                            Unique Indizes werden benötigt für Absicheurng der Eindeutigkeit, auch wenn sie nicht genutzt werden
