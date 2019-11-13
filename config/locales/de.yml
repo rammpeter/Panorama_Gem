@@ -1610,6 +1610,8 @@
   env_handling_hint_1:                                      Sortieren der Tabellenanzeige durch Klick auf Spalten-Header
   env_handling_hint_2:                                      Sortieren nach mehreren Spalten durch aufeinanderfolgende Sortierung nach einzelnen Spalten
   env_handling_hint_3:                                      Such-Filter, optionale Diagramm-Darstellung sowie Excel-Export sind verfügbar über Kontext-Menü (rechter Mouse-Button)
+  env_handling_hint_4: |-
+    Anzeige des kompletten Feldinhaltes / Kopieren des Feldinhaltes: Doppel-Klick auf Feld zum Öffnen einer Popup-Anzeige
   env_licensing_diagnostics_pack_violated: |-
     Die Einstellung 'control_management_pack_access' der aktuellen Datenbank sagt, %{pack} is nicht lizensiert!
     Panorama wird das %{pack} nutzen mit dieser Einstellung
