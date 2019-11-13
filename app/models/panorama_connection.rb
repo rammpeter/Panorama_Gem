@@ -626,8 +626,9 @@ class PanoramaConnection
     raise "PanoramaConenction.get_decrypted_password: Result = nil after decryption" if decrypted_password.nil?
     decrypted_password
   rescue Exception => e
-    Rails.logger.warn "Error in PanoramaConnection.get_decrypted_password decrypting pasword: #{e.class} #{e.message}"
-    raise "One part of encryption key for stored password has changed at server side! Please connect giving username and password."
+    msg = "Error in PanoramaConnection.get_decrypted_password decrypting pasword: #{e.class} #{e.message}"
+    Rails.logger.warn msg
+    raise "One part of encryption key for stored password has changed at server side!\nPlease connect again with full connection info including username and password.\n\n#{msg}"
   end
 
   def self.do_login

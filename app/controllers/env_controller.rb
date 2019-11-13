@@ -213,6 +213,7 @@ class EnvController < ApplicationController
 
   # Aufgerufen aus dem Anmelde-Dialog für gemerkte DB-Connections
   def set_database_by_id
+    check_for_valid_cookie
     if params[:login]                                                           # Button Login gedrückt
       params[:database] = read_last_logins[params[:saved_logins_id].to_i]   # Position des aktuell ausgewählten in Array
 
@@ -237,6 +238,7 @@ class EnvController < ApplicationController
 
   # Aufgerufen aus dem Anmelde-Dialog für DB mit Angabe der Login-Info
   def set_database_by_params
+    check_for_valid_cookie
     # Passwort sofort verschlüsseln als erstes und nur in verschlüsselter Form in session-Hash speichern
     params[:database][:password]  =  Encryption.encrypt_value(params[:database][:password], cookies['client_salt'])
 
@@ -247,6 +249,13 @@ class EnvController < ApplicationController
 
 
   private
+
+  def check_for_valid_cookie
+    hint = "Please ensure that the cookie stored in browser is transferred to server."
+    raise "Empty HHTP cookie recognized!\n#{hint}" if cookies.count == 0
+    raise "Missing value for 'client_salt' in browser cookie!\n#{hint}" if cookies[:client_salt].nil? || cookies[:client_salt] == ''
+    raise "Missing value for 'client_key' in browser cookie!\n#{hint}"  if cookies[:client_key].nil?  || cookies[:client_key]  == ''
+  end
 
   # Test auf Lesbarkeit von X$-Tabellen
   def x_memory_table_accessible?(table_name_suffix, msg)

@@ -291,6 +291,12 @@
         console.log('Please use modern browser with support for ES 6');
         document.getElementById("missing_browser_support_msg").style.display = "inline";
     }
+    if (!navigator.cookieEnabled){
+        var msg = "Your browser currently does not allow usage of cookies!\nStoring cookies is a precondition for using Panorama.\nPlease enable usage of cookies for your browser and try again.";
+        console.log(msg);
+        alert(msg);
+    }
+
 </script>
 
 </body>
