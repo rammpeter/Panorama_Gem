@@ -90,7 +90,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
 %>
 
 <div class="flex-row-element">
-  <%= gen_slickgrid(@schemas, column_options, {:caption=> "Schema-Usage ( if > 1 MB)", :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
+  <%= gen_slickgrid(@schemas, column_options, {:caption=> "Schema-Usage", :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
 </div>
 
   <%

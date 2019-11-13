@@ -44,7 +44,7 @@ module DragnetHelper
   #   :desc           Beschreibung
   #   :entries        Array von Hashes mit selber Struktur (rekursiv), wenn belegt, dann gilt Element als Menü-Knoten
   #   :sql            SQL-Statement zur Ausführung
-  #   :parameter      Array von Hshes mit folgender Struktur
+  #   :parameter      Array von Hashes mit folgender Struktur
   #       :name       Name des Parameters
   #       :size       Darstellungsgröße
   #       :default    Default-Wert

@@ -116,16 +116,16 @@ class DragnetControllerTest < ActionController::TestCase
     # :dragnet_hidden_entry_id=>"_8_0" depends from number of submenus in list
 
     # drop 2nd entry
-    post :drop_personal_selection, :params => {:format=>:html, :dragnet_hidden_entry_id=>"_8_1", :update_area=>:content_for_layout }
-    assert_response :success, "Error drop_personal_selection _8_1"
+    post :drop_personal_selection, :params => {:format=>:html, :dragnet_hidden_entry_id=>"_9_1", :update_area=>:content_for_layout }
+    assert_response :success, "Error drop_personal_selection _9_1"
 
     # drop 1st entry
-    post :drop_personal_selection, :params => {:format=>:html, :dragnet_hidden_entry_id=>"_8_0", :update_area=>:content_for_layout }
-    assert_response :success, "Error drop_personal_selection _8_0 1"
+    post :drop_personal_selection, :params => {:format=>:html, :dragnet_hidden_entry_id=>"_9_0", :update_area=>:content_for_layout }
+    assert_response :success, "Error drop_personal_selection _9_0 1"
 
     # drop 3rd entry
-    post :drop_personal_selection, :params => {:format=>:html, :dragnet_hidden_entry_id=>"_8_0", :update_area=>:content_for_layout }
-    assert_response :success, "Error drop_personal_selection _8_0 2"
+    post :drop_personal_selection, :params => {:format=>:html, :dragnet_hidden_entry_id=>"_9_0", :update_area=>:content_for_layout }
+    assert_response :success, "Error drop_personal_selection _9_0 2"
   end
 
 end
