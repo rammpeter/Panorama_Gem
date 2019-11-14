@@ -271,6 +271,7 @@ Role DBA is required to execute this selection.
                   FROM   x$ksmlru
                   WHERE  ksmlrnum>0
                   ORDER BY KsmLrNum DESC NULLS LAST",
+            exclude_from_test: true,
         },
         {
             :name  => t(:dragnet_helper_124_name, :default=>'Problems with function based index if cursor_sharing != EXACT'),
