@@ -230,9 +230,10 @@ module ApplicationHelper
   alias fn formattedNumber
 
   # Sichere Division / 0 absichern
-  def secure_div(divident, divisor)
-    return nil if divisor == 0
-    divident.to_f/divisor
+  def secure_div(divident, divisor, factor = 1)
+    return nil if divisor == 0 || divisor.nil?
+    return nil if divident.nil?
+    divident.to_f/(divisor * factor)
   end
 
 
