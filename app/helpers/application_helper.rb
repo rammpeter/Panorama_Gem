@@ -188,13 +188,14 @@ module ApplicationHelper
                      )
     decimal_delimiter   = numeric_decimal_separator
     thousands_delimiter = numeric_thousands_separator
-    return '' if number.nil?   # Leere Ausgabe bei nil
+    return nil if number.nil?   # Leere Ausgabe bei nil
     number = number.to_f if number.instance_of?(String) || number.instance_of?(BigDecimal)   # Numerisches Format erzwingen
+
+    return nil if supress_0_value && number == 0  # Leere Ausgabe bei Wert 0 und Unterdrückung Ausgabe angefordert
+
+    return nil if number == Float::INFINITY || number.to_f.nan? # Division / 0 erlaubt in Float, bringt Infinity
+
     number = number.round(decimalCount) if number.instance_of?(Float) # Ueberlauf von Stellen kompensieren
-
-    return if supress_0_value && number == 0  # Leere Ausgabe bei Wert 0 und Unterdrückung Ausgabe angefordert
-
-    return if number == Float::INFINITY || number.to_f.nan? # Division / 0 erlaubt in Float, bringt Infinity
 
     if decimalCount > 0
       decimal = number.abs-number.abs.floor  # Dezimalanteil ermitteln
