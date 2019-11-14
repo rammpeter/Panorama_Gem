@@ -1503,8 +1503,8 @@ Solution: Execute as user 'SYS':
              Message_Type, Message_Level,
              Process_ID, Message_Text, FileName
       FROM   V$DIAG_ALERT_EXT
-      WHERE  Originating_Timestamp > TO_DATE(?, '#{sql_datetime_minute_mask}')
-      AND    Originating_Timestamp < TO_DATE(?, '#{sql_datetime_minute_mask}')
+      WHERE  Originating_Timestamp >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
+      AND    Originating_Timestamp < TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
       #{where_filter}
       ORDER BY Originating_Timestamp, Record_ID
    ", @time_selection_start, @time_selection_end].concat(where_values)
@@ -1520,10 +1520,10 @@ Solution: Execute as user 'SYS':
       end
 
       @result =  sql_select_iterator ["\
-      SELECT #{ts_expr} Originating_Timestamp, COUNT(*) Records
+      SELECT #{ts_expr} Originating_Timestamp, COUNT(*) Records, MAX(CAST(Originating_Timestamp AS DATE))+1/86400 Max_TS_add_1_sec
       FROM   V$DIAG_ALERT_EXT
-      WHERE  Originating_Timestamp > TO_DATE(?, '#{sql_datetime_minute_mask}')
-      AND    Originating_Timestamp < TO_DATE(?, '#{sql_datetime_minute_mask}')
+      WHERE  Originating_Timestamp >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
+      AND    Originating_Timestamp < TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
       #{where_filter}
       GROUP BY #{ts_expr}
       ORDER BY 1
