@@ -1049,12 +1049,13 @@ function SlickGridExtended(container_id, options){
 
     // Anzeige der Statistik aller Zeilen der Spalte (Summe etc.)
     function show_column_stats(column_name){
-        var column = thiz.grid.getColumns()[thiz.grid.getColumnIndex(column_name)];
-        var data   = thiz.grid.getData().getItems();
-        var sum   = 0;
-        var count = 0;
-        var distinct = {};
-        var distinct_count = 0;
+        var column          = thiz.grid.getColumns()[thiz.grid.getColumnIndex(column_name)];
+        var data            = thiz.grid.getData().getItems();
+        var sum             = 0;
+        var average         = null;
+        var count           = 0;
+        var distinct        = {};
+        var distinct_count  = 0;
         for (var row_index in data){
             sum += thiz.parseFloatLocale(data[row_index][column_name]);
             count ++;
@@ -1063,7 +1064,10 @@ function SlickGridExtended(container_id, options){
         for (var i in distinct) {
             distinct_count += 1;
         }
-        show_full_cell_content("Sum = "+sum+"<br/>Count = "+count+"<br/>Count distinct = "+distinct_count);
+
+        if (count > 0)
+            average = sum/count;
+        show_full_cell_content("Sum = "+sum+"<br/>Average = "+average+"<br/>Count = "+count+"<br/>Count distinct = "+distinct_count);
     }
 
     /**

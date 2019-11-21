@@ -252,7 +252,7 @@ class EnvController < ApplicationController
 
   def check_for_valid_cookie
     hint = "Please ensure that the cookie stored in browser is transferred to server."
-    raise "Empty HHTP cookie recognized!\n#{hint}" if cookies.count == 0
+    raise "Empty HTTP cookie recognized!\n#{hint}" if cookies.count == 0
     raise "Missing value for 'client_salt' in browser cookie!\n#{hint}" if cookies[:client_salt].nil? || cookies[:client_salt] == ''
     raise "Missing value for 'client_key' in browser cookie!\n#{hint}"  if cookies[:client_key].nil?  || cookies[:client_key]  == ''
   end
