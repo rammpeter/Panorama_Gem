@@ -86,6 +86,16 @@ module DbaHelper
         result = sql_select_one ["SELECT 'handle_address: Owner='''||kglnaown||''', Object='''||kglnaobj||'''' FROM x$kglob WHERE kglhdadr=HEXToRaw(TRIM(TO_char(?,'XXXXXXXXXXXXXXXX')))", p1]
         result = "Nothing found in x$kglob for p1" unless result
         result
+      when p1text == 'channel context' # reliable message
+        sql = "\
+SELECT name_ksrcdes
+FROM   x$ksrcdes
+WHERE  indx = (SELECT name_ksrcctx FROM x$ksrcctx WHERE addr like '%'||TRIM(TO_CHAR(?, 'XXXXXXXXXXXXXXXX'))||'%')"
+        begin
+          result = "Channel name = #{sql_select_one [sql, p1]}"
+        rescue Exception => e
+          result = "Unable to execute SQL! Please retry as SYSDBA. \n\n#{e.message}"
+        end
       else
         "[No object can be determined for parameters p1, p2]"
     end

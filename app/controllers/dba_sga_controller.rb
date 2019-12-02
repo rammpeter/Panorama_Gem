@@ -1126,7 +1126,7 @@ class DbaSgaController < ApplicationController
              (SELECT UserName FROM DBA_Users WHERE User_ID = o.Max_User_ID) Max_Creator,
              CASE WHEN Creator_Count > 1 THEN '< '||Creator_Count||' >' ELSE (SELECT UserName FROM DBA_Users WHERE User_ID = o.Max_User_ID) END Creator
       FROM   (SELECT
-                     o.Inst_ID, o.Status, o.Name, o.NameSpace,
+                     o.Inst_ID, o.Status, o.Name, RAWTOHEX(o.Name) Hex_Name, o.NameSpace,
                      COUNT(*)                     Result_Count,
                      SUM(Space_Overhead)/1024     Space_Overhead_KB,
                      SUM(Space_Unused)/1024       Space_Unused_KB,
@@ -1157,6 +1157,7 @@ class DbaSgaController < ApplicationController
     @instance   = params[:instance]
     @status     = params[:status]
     @name       = params[:name]
+    @hex_name   = params[:hex_name]                                             # Name may contain binary 0000..
     @namespace  = params[:namespace]
 
     @results = sql_select_all ["\
@@ -1165,12 +1166,12 @@ class DbaSgaController < ApplicationController
              u.UserName
       FROM   gv$Result_Cache_Objects o
       LEFT OUTER JOIN DBA_Users u ON u.User_ID = o.Creator_UID
-      WHERE  Inst_ID   = ?
-      AND    Status    = ?
-      AND    Name      = ?
-      AND    NameSpace = ?
-      AND    Type      = 'Result'
-      ", @instance, @status, @name,@namespace]
+      WHERE  Inst_ID        = ?
+      AND    Status         = ?
+      AND    RAWTOHEX(Name) = ?
+      AND    NameSpace      = ?
+      AND    Type           = 'Result'
+      ", @instance, @status, @hex_name,@namespace]
 
     render_partial
   end
@@ -1204,6 +1205,7 @@ class DbaSgaController < ApplicationController
     @id         = prepare_param(:id)
     @status     = params[:status]
     @name       = params[:name]
+    @hex_name   = params[:hex_name]                                             # Name may contain binary 0000..
     @namespace  = params[:namespace]
 
     @dependencies =  sql_select_all ["\
@@ -1214,17 +1216,17 @@ class DbaSgaController < ApplicationController
       FROM   (SELECT /*+ NO_MERGE */ d.Inst_ID, d.Depend_ID
               FROM  gv$Result_Cache_Objects r
               JOIN  gV$RESULT_CACHE_DEPENDENCY d ON d.Inst_ID = r.Inst_ID AND d.Result_ID = r.ID
-              WHERE r.Inst_ID   = ?
-              AND   r.Status    = ?
-              AND   r.Name      = ?
-              AND   r.NameSpace = ?
+              WHERE r.Inst_ID         = ?
+              AND   r.Status          = ?
+              AND   RAWTOHEX(r.Name)  = ?
+              AND   r.NameSpace       = ?
               GROUP BY d.Inst_ID, d.Depend_ID
              ) d
       JOIN   gv$Result_Cache_Objects o ON o.Inst_ID = d.Inst_ID AND o.ID = d.Depend_ID
       LEFT OUTER JOIN DBA_Users u ON u.User_ID = o.Creator_UID
       LEFT OUTER JOIN DBA_objects j ON j.Object_ID = o.Object_No
       WHERE  o.Type       = 'Dependency'
-      ", @instance, @status, @name, @namespace]
+      ", @instance, @status, @hex_name, @namespace]
 
 
     render_partial :list_result_cache_dependencies

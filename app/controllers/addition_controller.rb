@@ -710,18 +710,21 @@ class AdditionController < ApplicationController
     @update_area = get_unique_area_id
     groupby = params[:gruppierung][:tag]
 
+    sql_groupby = groupby
+    sql_groupby = compact_object_type_sql_case(groupby) if groupby == 'Segment_Type'
+
 
     sizes = sql_select_all ["
         SELECT /*+ PARALLEL(s,2) */
                Gather_Date,
-               #{groupby} GroupBy,
+               #{sql_groupby} GroupBy,
                SUM(Bytes)/(1024*1024) MBytes
         FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
         WHERE  Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')
         AND    Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')
         #{@wherestr}
-        GROUP BY Gather_Date, #{groupby}
-        ORDER BY Gather_Date, #{groupby}",
+        GROUP BY Gather_Date, #{sql_groupby}
+        ORDER BY Gather_Date, #{sql_groupby}",
                             @time_selection_start, @time_selection_end
                            ].concat(@whereval)
 
@@ -810,7 +813,7 @@ class AdditionController < ApplicationController
     where_values = []
 
     if @segment_type
-      where_string << " AND Segment_Type = ?"
+      where_string << " AND #{compact_object_type_sql_case('Segment_Type')} = ?"
       where_values << @segment_type
     end
 

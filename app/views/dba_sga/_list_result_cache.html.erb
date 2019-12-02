@@ -24,6 +24,7 @@ column_options =
                              :instance      => rec.inst_id,
                              :status        => rec.status,
                              :name          => rec.name,
+                             :hex_name      => rec.hex_name,
                              :namespace     => rec.namespace,
                              :update_area => @update_area
                      },
@@ -38,6 +39,7 @@ column_options =
                              :instance      => rec.inst_id,
                              :status        => rec.status,
                              :name          => rec.name,
+                             :hex_name      => rec.hex_name,
                              :namespace     => rec.namespace,
                              :update_area => @update_area
                      },
@@ -72,7 +74,7 @@ column_options =
 
 %>
 <%= gen_slickgrid(@usage, column_options, {
-        :caption => "Result cache usage by objects",
+        :caption => "Result cache usage by objects from gv$Result_Cache_Objects",
         :max_height => 450, show_pin_icon: 1
 }) %>
 
