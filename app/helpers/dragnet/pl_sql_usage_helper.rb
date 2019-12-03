@@ -62,7 +62,7 @@ Therefor additional selection is useful, e.g. by filter based on name convention
                     CROSS JOIN (SELECT UPPER(?) Filter FROM DUAL) name_filter_incl
                     CROSS JOIN (SELECT UPPER(?) Filter FROM DUAL) name_filter_excl
                     WHERE  o.Object_Type IN ('PROCEDURE', 'PACKAGE', 'TYPE', 'FUNCTION', 'SYNONYM')
-                    AND    o.Owner NOT IN ('SYS', 'OUTLN', 'SYSTEM', 'DBSNMP', 'WMSYS', 'CTXSYS', 'XDB', 'APPQOSSYS')
+                    AND    o.Owner NOT IN (#{system_schema_subselect})
                     AND    (schema.name IS NULL OR schema.Name = o.Owner)
                     AND    (name_filter_incl.Filter IS NULL OR o.Object_name LIKE '%'||name_filter_incl.Filter||'%')
                     AND    (name_filter_excl.Filter IS NULL OR o.Object_name NOT LIKE '%'||name_filter_excl.Filter||'%')
@@ -98,7 +98,7 @@ In addition SQLs from SGA are shown which uses this function name in their SQL s
 WITH Procs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ p.Owner, p.Object_Name
                 FROM   DBA_Procedures p
                 WHERE  p.Object_Type = 'FUNCTION'
-                AND    p.Owner NOT IN ('SYS', 'SYSTEM', 'CTXSYS', 'XDB')
+                AND    p.Owner NOT IN (#{system_schema_subselect})
                 AND    (p.Owner, p.Object_Name, p.Object_Type) NOT IN (SELECT /*+ NO_MERGE */ DISTINCT d.Referenced_Owner, d.Referenced_Name, d.Referenced_Type /* all objects with PL/SQL dependency */
                                                                        FROM   DBA_Dependencies d
                                                                        JOIN   DBA_Procedures pl ON pl.Owner       = d.Owner /* Filters dependencies to PL/SQL only */
@@ -134,7 +134,7 @@ In addition SQLs from SGA are shown which uses this function name in their SQL s
 WITH Procs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ p.Owner, p.Object_Name
                 FROM   DBA_Procedures p
                 WHERE  Object_Type = 'FUNCTION'
-                AND    Owner NOT IN ('SYS', 'SYSTEM', 'CTXSYS', 'XDB')
+                AND    Owner NOT IN (#{system_schema_subselect})
                 AND    Deterministic = 'NO'
                 AND    (Owner, Object_Name, Object_Type) NOT IN (SELECT /*+ NO_MERGE */ DISTINCT d.Owner, d.Name, d.Type
                                                                  FROM   DBA_Dependencies d

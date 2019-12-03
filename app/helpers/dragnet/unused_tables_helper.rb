@@ -52,7 +52,7 @@ This selections scans SGA as well as AWR history.
                     LEFT OUTER JOIN DBA_Tab_Modifications tm ON tm.Table_Owner = o.Owner AND tm.Table_Name = o.Object_Name AND tm.Partition_Name IS NULL AND tm.SubPartition_Name IS NULL
                     WHERE  used.Object_Owner IS NULL
                     AND    used.Object_Name IS NULL
-                    AND    o.Owner NOT IN ('SYS', 'SYSTEM', 'WMSYS', 'OUTLN', 'MDSYS', 'OLAPSYS', 'EXFSYS', 'DBSNMP', 'SYSMAN', 'XDB', 'CTXSYS', 'DMSYS')
+                    AND    o.Owner NOT IN (#{system_schema_subselect})
                     ORDER BY sz.MBytes DESC NULLS LAST",
             :parameter=>[{:name=> t(:dragnet_helper_64_param_1_name, :default=>'Number of days backward in AWR-Historie for SQL'), :size=>8, :default=>8, :title=> t(:dragnet_helper_64_param_1_hint, :default=>'Number of days backward for evaluation of AWR-history regarding usage of table in execution plans of SQL-statements')},
             ]
@@ -76,7 +76,7 @@ Stated here are inserts and updates since last GATHER_TABLE_STATS for tables wit
                       JOIN   DBA_Tables t ON t.Owner = m.Table_Owner AND t.Table_Name = m.Table_Name
                       LEFT OUTER JOIN (SELECT Owner, Segment_Name, ROUND(SUM(Bytes)/(1024*1024),1) Size_MB
                                        FROM DBA_Segments s
-                                       WHERE Owner NOT IN ('SYS', 'OUTLN', 'SYSTEM', 'DBSNMP', 'WMSYS', 'CTXSYS', 'XDB', 'APPQOSSYS')
+                                       WHERE Owner NOT IN (#{system_schema_subselect})
                                        GROUP BY Owner, Segment_Name
                                       ) s ON s.Owner = t.Owner AND s.Segment_Name = t.Table_Name
                       WHERE m.Deletes = 0 AND m.Truncated = 'NO'
@@ -109,7 +109,7 @@ For valid function of this selection table analysis should only be done if there
                                             ) m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name
                             LEFT OUTER JOIN (SELECT Owner, Segment_Name, ROUND(SUM(Bytes)/(1024*1024),1) Size_MB
                                              FROM DBA_Segments s
-                                             WHERE Owner NOT IN ('SYS', 'OUTLN', 'SYSTEM', 'DBSNMP', 'WMSYS', 'CTXSYS', 'XDB', 'APPQOSSYS')
+                                             WHERE Owner NOT IN (#{system_schema_subselect})
                                              GROUP BY Owner, Segment_Name
                                             ) s ON s.Owner = t.Owner AND s.Segment_Name = t.Table_Name
                             LEFT OUTER JOIN (SELECT Owner, Object_Name, MAX(Created) Max_Created, MAX(Last_DDL_Time) Max_Last_DDL_Time
@@ -119,7 +119,7 @@ For valid function of this selection table analysis should only be done if there
                                             ) o ON o.Owner = t.Owner AND o.Object_Name = t.Table_Name
                             CROSS JOIN (SELECT UPPER(?) Name FROM DUAL) schema
                             WHERE  m.Table_Owner IS NULL AND m.Table_Name IS NULL
-                            AND    t.Owner NOT IN ('SYS', 'OUTLN', 'SYSTEM', 'DBSNMP', 'WMSYS', 'CTXSYS', 'XDB', 'APPQOSSYS')
+                            AND    t.Owner NOT IN (#{system_schema_subselect})
                             AND    (schema.name IS NULL OR schema.Name = t.Owner)
                            )
                     WHERE  Days_After_Analyze > ?
@@ -146,7 +146,7 @@ Starting from 11g you can use virtual columns instead if this table structure is
                       JOIN   DBA_Tables t ON t.Owner = c.Owner AND t.Table_Name = c.Table_Name
                       WHERE  c.Num_Nulls = t.Num_Rows
                       AND    t.Num_Rows  > 0   -- Tabelle enthaelt auch Daten
-                      AND    c.Owner NOT IN ('SYS', 'SYSTEM', 'WMSYS', 'SYSMAN', 'MDSYS')
+                      AND    c.Owner NOT IN (#{system_schema_subselect})
                       ORDER BY t.Num_Rows DESC NULLS LAST",
         },
         {
@@ -163,7 +163,7 @@ May be it their value is redundant to other columns of that table. In this case 
                       AND    NVL(c.Num_Distinct,0) <= ?
                       AND    (c.Num_Nulls = 0 OR UPPER(?) = 'YES')
                       AND    NVL(t.Num_Rows,0) > ?
-                      AND    c.Owner NOT IN ('SYS', 'SYSTEM', 'WMSYS')
+                      AND    c.Owner NOT IN (#{system_schema_subselect})
                       ORDER BY c.Num_Distinct, t.Num_Rows DESC NULLS LAST",
             :parameter=>[{:name=>t(:dragnet_helper_67_param_1_name, :default=>'Maximum number of distinct values of column'), :size=>8, :default=>10, :title=>t(:dragnet_helper_67_param_1_name, :default=>'Maximum number of distinct values of column for consideration in selection')},
                          {:name=>t(:dragnet_helper_67_param_2_name, :default=>'Include columns with NULL-values? (YES/NO)'), :size=>8, :default=>'YES', :title=>t(:dragnet_helper_67_param_2_name, :default=>'Also consider columns with NULL-values for this selection? (YES/NO)')},
@@ -204,7 +204,7 @@ The selection is based on two sample values per column (the lowest and the highe
                                     FROM   DBA_Tab_Columns c
                                     JOIN   DBA_Tables t ON t.Owner = c.Owner AND t.Table_Name = c.Table_Name
                                     WHERE  c.Data_Type = 'CHAR'
-                                    AND    c.Owner NOT IN ('SYS', 'SYSTEM', 'DBSNMP', 'XDB', 'WMSYS')
+                                    AND    c.Owner NOT IN (#{system_schema_subselect})
                                     AND    c.Data_Length > 1
                                    )
                             WHERE (LENGTH(Low_Value_Char)+LENGTH(High_Value_Char))/2 < CHAR_LENGTH

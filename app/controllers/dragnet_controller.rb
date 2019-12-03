@@ -200,7 +200,6 @@ Rails.logger.info "get_selection_list: called render" if  Rails.env.test?
 
     write_to_client_info_store(:dragnet_personal_selection_list, dragnet_personal_selection_list)
 
-    @@dragnet_internal_list = nil                                               # require new build of list with next request
     show_selection                                                              # Show edited selection list again
   end
 
@@ -228,7 +227,6 @@ Rails.logger.info "get_selection_list: called render" if  Rails.env.test?
 
     write_to_client_info_store(:dragnet_personal_selection_list, dragnet_personal_selection_list)
 
-    @@dragnet_internal_list = nil                                               # require new build of list with next request
     show_selection                                                              # Show edited selection list again
   end
 

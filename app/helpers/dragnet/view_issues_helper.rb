@@ -19,7 +19,7 @@ DECLARE
 BEGIN
   DBMS_OUTPUT.ENABLE(10000000);
   DBMS_OUTPUT.PUT_LINE('Check Views for ORDER BY');
-  FOR REC IN (SELECT Owner, View_Name FROM DBA_Views WHERE  Owner NOT IN ('SYS', 'SYSTEM', 'DBSNMP', 'WMSYS', 'CTXSYS', 'XDB', 'PUBLIC', 'OUTLN')) LOOP
+  FOR REC IN (SELECT Owner, View_Name FROM DBA_Views WHERE  Owner NOT IN (#{system_schema_subselect})) LOOP
     BEGIN
       Res := DBMS_METADATA.GET_DDL(object_type => 'VIEW', name => Rec.view_name, schema => Rec.owner);
       IF DBMS_LOB.Instr(UPPER(Res), 'ORDER BY') > 0 THEN

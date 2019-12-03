@@ -55,7 +55,7 @@ Additional info about usage of index can be gained by querying DBA_Hist_Seg_Stat
                                             ) hp ON hp.Object_Owner=i.Owner AND hp.Object_Name=i.Index_Name
                             WHERE   p.OBJECT_OWNER IS NULL AND p.Object_Name IS NULL  -- keine Treffer im Outer Join
                             AND     hp.OBJECT_OWNER IS NULL AND hp.Object_Name IS NULL  -- keine Treffer im Outer Join
-                            AND     i.Owner NOT IN ('SYS', 'OUTLN', 'SYSTEM', 'WMSYS', 'SYSMAN', 'XDB')
+                            AND     i.Owner NOT IN (#{system_schema_subselect})
                             AND     i.UNiqueness != 'UNIQUE'
                            ) i
                     ) ORDER BY MBytes DESC NULLS LAST, Num_Rows",
@@ -167,13 +167,13 @@ If none of the four reasons really requires the existence, the index can be remo
                                               NVL(tc.Data_Precision,1) * NVL(DECODE(tc.Data_Scale, 0, -1, tc.Data_Scale),1)) Structure_Hash
                                        FROM   DBA_Tab_Columns tc
                                        JOIN   DBA_Tables t ON t.Owner = tc.Owner AND t.Table_Name = tc.Table_Name /* exclude views */
-                                       WHERE  tc.Owner NOT IN ('SYS', 'SYSTEM')
+                                       WHERE  tc.Owner NOT IN (#{system_schema_subselect})
                                        GROUP BY tc.Owner, tc.Table_Name
                                       ),
                          PE_Part_Tables AS (SELECT /*+ NO_MERGE MATERIALIZE */ t.Owner, t.Table_Name, t.Partitioned
                                             FROM   DBA_Tables t
                                             WHERE  t.Partitioned = 'YES'
-                                            AND    t.Owner NOT IN ('SYS', 'SYSTEM')
+                                            AND    t.Owner NOT IN (#{system_schema_subselect})
                                             AND NOT EXISTS (SELECT 1 FROM DBA_Indexes i WHERE i.Table_Owner = t.Owner AND i.Table_Name = t.Table_Name AND i.Partitioned = 'NO')
                                            ),
                          PE_Indexes as (SELECT /*+ NO_MERGE MATERIALIZE */ ic.Table_Owner, ic.Table_Name, COUNT(DISTINCT ic.Index_Name) Indexes, COUNT(*) Ind_Columns,
@@ -309,7 +309,7 @@ Index usage can be evaluated than via v$Object_Usage or with previous selection.
                     LEFT OUTER JOIN DBA_Objects o ON o.Owner = i.Owner AND o.Object_Name = i.Index_Name AND o.Object_Type = 'INDEX'
                     CROSS JOIN (SELECT ? Schema FROM DUAL) s
                     WHERE u.Owner IS NULL AND u.Index_Name IS NULL
-                    AND   i.Owner NOT IN ('SYS', 'SYSTEM', 'XDB', 'ORDDATA', 'MDSYS', 'OLAPSYS')
+                    AND   i.Owner NOT IN (#{system_schema_subselect})
                     AND   seg.MBytes > ?
                     AND   (s.Schema IS NULL OR i.Owner = UPPER(s.Schema))
                     ORDER BY seg.MBytes DESC NULLS LAST
@@ -381,7 +381,7 @@ Due to the poor selectivity such indexes are mostly not useful for access optimi
             :sql=> "WITH Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name , Constraint_Name, Constraint_Type, R_Owner, R_Constraint_Name, Index_Name
                      FROM   DBA_Constraints
                      WHERE  Constraint_Type IN ('R', 'P', 'U')
-                     AND    Owner NOT IN ('CTXSYS', 'DBSNMP', 'SYS', 'SYSTEM', 'XDB')
+                     AND    Owner NOT IN (#{system_schema_subselect})
                     )
                     SELECT /* DB-Tools Ramm Unnecessary index on Ref-Constraint*/
                            ri.Owner, ri.Table_Name, ri.Index_Name, ri.Rows_Origin \"No. of rows origin\", s.Size_MB \"Size of Index in MB\", p.Constraint_Name, ri.Column_Name,
@@ -444,7 +444,7 @@ than this index can be removed"),
                             FROM   DBA_Indexes i
                             JOIN   DBA_Part_Key_Columns pc ON pc.Owner = i.Table_Owner AND pc.Name = i.Table_Name AND pc.Object_Type = 'TABLE'
                             LEFT OUTER JOIN DBA_Ind_Columns ic ON  ic.Index_Owner = i.Owner AND ic.Index_Name = i.Index_Name AND ic.Column_Name = pc.Column_Name AND ic.Column_Position = pc.Column_Position
-                            WHERE  i.Owner NOT IN ('SYSTEM', 'SYS')
+                            WHERE  i.Owner NOT IN (#{system_schema_subselect})
                             AND    i.Uniqueness != 'UNIQUE'
                             GROUP BY i.Owner, i.Index_Name, i.Table_Owner, i.Table_Name, i.Uniqueness, i.Partitioned,  i.Num_Rows, i.Distinct_Keys
                            ) x

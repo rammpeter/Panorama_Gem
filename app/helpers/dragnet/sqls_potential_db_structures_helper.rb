@@ -48,7 +48,7 @@ OLTP-compression requires licensing of Advanced Compression Option.
                                      ) x
                              ) x
                       LEFT OUTER JOIN DBA_Segments s ON s.Owner = x.Owner AND s.Segment_Name = x.Table_Name AND NVL(s.Partition_Name, '-1') = NVL(x.Partition_Name, '-1')
-                      WHERE  x.Owner NOT IN ('SYS', 'SYSTEM')
+                      WHERE  x.Owner NOT IN (#{system_schema_subselect})
                       AND    x.Compression = 'DISABLED'
                       AND    s.Bytes/(1024*1024) > ?
                       AND    (   x.Updates IS NULL                              -- no DML since last analyze
@@ -90,7 +90,7 @@ OLTP-compression requires licensing of Advanced Compression Option.
                                        AND    i.Column_Name     = refcol.Column_Name
                                        AND    i.Column_Position = refcol.Position
                                        )
-                    AND Ref.Owner NOT IN ('SYS', 'SYSTEM', 'PERFSTAT', 'MDSYS', 'SYSMAN', 'OLAPSYS')
+                    AND Ref.Owner NOT IN (#{system_schema_subselect})
                     AND targett.Num_rows > ?
                     ORDER BY targett.Num_rows DESC NULLS LAST, refcol.Position",
             :parameter=>[{:name=>t(:dragnet_helper_5_param_1_name, :default=> 'Min. no. of rows of referenced table'), :size=>8, :default=>1000, :title=>t(:dragnet_helper_5_param_1_hint, :default=> 'Minimum number of rows of referenced table') },]
@@ -240,7 +240,7 @@ BEGIN
               FROM   DBA_Tables
               WHERE  IOT_Type IS NULL
               AND    Num_Rows > 10000   -- nur genügende große Tabellen testen
-              AND    Owner NOT IN ('SYS','SYSTEM')
+              AND    Owner NOT IN (#{system_schema_subselect})
              ) LOOP
     BEGIN
       EXECUTE IMMEDIATE 'SELECT RowID FROM '||Rec.Owner||'.'||Rec.Table_Name||' WHERE RowNum <= '||Sample_Size BULK COLLECT INTO RowID_Table;
@@ -283,7 +283,7 @@ Usable with Oracle 11g and above only.'),
                                    ) h ON h.Inst_ID=p.Inst_ID AND h.SQL_ID=p.SQL_ID AND h.SQL_Plan_Hash_Value=p.Plan_Hash_Value AND h.SQL_Plan_Line_ID=p.ID
                             LEFT OUTER JOIN DBA_Tables t ON t.Owner = p.Object_Owner AND t.Table_Name = p.Object_Name
                             WHERE  p.Operation = 'TABLE ACCESS' AND p.Options = 'BY INDEX ROWID'
-                            AND    p.Object_Owner NOT IN ('SYS', 'SYSTEM')
+                            AND    p.Object_Owner NOT IN (#{system_schema_subselect})
                             AND    NVL(t.Num_Rows, 0) < ?
                            ) x
                     WHERE  Seconds_Per_Object  > ?
@@ -313,7 +313,7 @@ Usable with Oracle 11g and above only.'),
                                    ) h ON h.DBID = p.DBID AND h.SQL_ID=p.SQL_ID AND h.SQL_Plan_Hash_Value=p.Plan_Hash_Value AND h.SQL_Plan_Line_ID=p.ID
                             LEFT OUTER JOIN DBA_Tables t ON t.Owner = p.Object_Owner AND t.Table_Name = p.Object_Name
                             WHERE  p.Operation = 'TABLE ACCESS' AND p.Options = 'BY INDEX ROWID'
-                            AND    p.Object_Owner NOT IN ('SYS', 'SYSTEM')
+                            AND    p.Object_Owner NOT IN (#{system_schema_subselect})
                             AND    NVL(t.Num_Rows, 0) < ?
                            )
                     WHERE  Seconds_Per_Object  > ?
@@ -424,7 +424,7 @@ JOIN   (SELECT /*+ NO_MERGE */ Owner, Segment_Name, Segment_Type, SUM(Bytes)/(10
         FROM   DBA_Segments
         GROUP BY Owner, Segment_Name, Segment_Type
        ) s ON s.Owner = l.Owner AND s.Segment_Name = l.Segment_Name
-WHERE  l.Owner NOT IN ('SYS', 'SYSTEM', 'OUTLN', 'WMSYS', 'CTXSYS', 'MDSYS', 'XDB', 'SYSMAN')
+WHERE  l.Owner NOT IN (#{system_schema_subselect})
 AND    l.Compression LIKE 'NO%'
 ORDER BY s.MBytes DESC
             ",

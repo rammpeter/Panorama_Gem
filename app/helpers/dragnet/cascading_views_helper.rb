@@ -17,7 +17,7 @@ Sensible architecture pattern is, to use views only in one dimension without fur
                                            *
                                     FROM dba_dependencies
                                     WHERE  Type='VIEW' AND Referenced_Type='VIEW'
-                                    AND    Owner NOT IN ('SYS', 'SYSTEM', 'CTXSYS', 'XDB', 'WMSYS', 'EXFSYS', 'DBSNMP')
+                                    AND    Owner NOT IN (#{system_schema_subselect})
                                     AND   Owner NOT LIKE 'APEX%'
                                     )
                     SELECT level Dependency_Depth, LOWER(CONNECT_BY_ROOT Owner)||'.'||CONNECT_BY_ROOT Name Considered_View,
@@ -40,7 +40,7 @@ Sensible architecture pattern is, to use views only in one dimension without fur
                                              *
                                       FROM dba_dependencies
                                       WHERE  Type='VIEW' AND Referenced_Type='VIEW'
-                                      AND    Owner NOT IN ('SYS', 'SYSTEM', 'CTXSYS', 'XDB', 'WMSYS', 'EXFSYS', 'DBSNMP')
+                                      AND    Owner NOT IN (#{system_schema_subselect})
                                       AND   Owner NOT LIKE 'APEX%'
                                       ),
                            Views AS ( SELECT /*+ NO_MERGE MATERIALIZE */ level Dependency_Depth, CONNECT_BY_ROOT Owner Root_Owner, CONNECT_BY_ROOT Name Root_View_Name,
@@ -82,7 +82,7 @@ Sensible architecture pattern is, to use views only in one dimension without fur
                                              *
                                       FROM dba_dependencies
                                       WHERE  Type='VIEW' AND Referenced_Type='VIEW'
-                                      AND    Owner NOT IN ('SYS', 'SYSTEM', 'CTXSYS', 'XDB', 'WMSYS', 'EXFSYS', 'DBSNMP')
+                                      AND    Owner NOT IN (#{system_schema_subselect})
                                       AND   Owner NOT LIKE 'APEX%'
                                       ),
                            Views AS ( SELECT /*+ NO_MERGE MATERIALIZE */ level Dependency_Depth, CONNECT_BY_ROOT Owner Root_Owner, CONNECT_BY_ROOT Name Root_View_Name,

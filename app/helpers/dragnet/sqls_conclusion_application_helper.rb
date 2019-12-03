@@ -60,7 +60,7 @@ Often problematic usage of business keys can be detetcted by existence of refere
              JOIN   DBA_Tables pr ON pr.Owner = p.Owner AND pr.Table_Name = p.Table_Name
              JOIN   DBA_Tables tr ON tr.Owner = r.Owner AND tr.Table_Name = r.Table_Name
              WHERE  r.Constraint_Type = 'R'
-             AND    c.Owner NOT IN ('SYS', 'SYSTEM')
+             AND    c.Owner NOT IN (#{system_schema_subselect})
              GROUP BY p.Owner, p.Table_Name, p.Constraint_Name, r.Owner, r.Table_Name, r.Constraint_Name
              HAVING COUNT(*) > 1
              ORDER BY MIN(tr.Num_Rows+pr.Num_Rows) * COUNT(*) DESC NULLS LAST
@@ -357,7 +357,7 @@ FROM   DBA_Tab_Columns tc
 JOIN   DBA_Tables t ON t.Owner = tc.Owner AND t.Table_Name = tc.Table_Name
 WHERE  tc.Num_Distinct + tc.Num_Nulls >= t.Num_Rows
 AND    tc.Num_Distinct > 1
-AND    tc.Owner NOT IN ('SYS', 'SYSTEM', 'CTXSYS', 'DBSNMP', 'XDB', 'WMSYS')
+AND    tc.Owner NOT IN (#{system_schema_subselect})
 AND    (tc.Owner, tc.Table_Name, tc.Column_Name) NOT IN (
             SELECT i.Table_Owner, i.Table_Name, ic.Column_Name
             FROM   DBA_Ind_Columns ic

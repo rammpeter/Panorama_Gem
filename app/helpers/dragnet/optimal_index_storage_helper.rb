@@ -21,7 +21,7 @@ module Dragnet::OptimalIndexStorageHelper
                           WHERE  PCT_FREE < ?
                           )
                       WHERE Num_Rows > ?
-                      AND   Owner NOT IN ('SYS', 'SYSTEM', 'SYSMAN')
+                      AND   Owner NOT IN (#{system_schema_subselect})
                       ORDER BY Num_Rows DESC NULLS LAST",
             :parameter=>[{:name=>t(:dragnet_helper_1_param_1_name, :default=> 'Threshold for pctfree of index'), :size=>8, :default=>10, :title=>t(:dragnet_helper_1_param_1_hint, :default=> 'Selection of indexes underrunning this value for PctFree')},
                          {:name=>t(:dragnet_helper_1_param_2_name, :default=> 'Threshold for pctfree of index partition'), :size=>8, :default=>10, :title=>t(:dragnet_helper_1_param_2_hint, :default=> 'Selection of index partitions underrunning this value for PctFree') },
@@ -101,7 +101,7 @@ This selections shows recommendations for compression of single columns of multi
                             JOIN   DBA_Tab_Columns tc ON tc.Owner = i.Table_Owner AND tc.Table_Name = i.Table_Name AND tc.Column_Name = ic.Column_Name
                             JOIN   (SELECT Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name
                                    ) seg ON seg.Owner = i.Owner AND seg.Segment_Name = i.Index_Name
-                            WHERE  i.Owner NOT IN ('SYS', 'SYSTEM', 'OUTLN', 'DBSNMP', 'WMSYS', 'CTXSYS', 'XDB')
+                            WHERE  i.Owner NOT IN (#{system_schema_subselect})
                             AND    i.Index_Type NOT IN ('BITMAP')
                             AND    i.Num_Rows > ?
                             AND    i.Num_Rows/DECODE(tc.Num_Distinct,0,1,tc.Num_Distinct) > ?

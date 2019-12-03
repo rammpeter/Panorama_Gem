@@ -183,9 +183,7 @@ Especially this is true for generated dynamic SQL statements (e.g. from OR-mappe
                                             ) s ON s.Owner = t.Table_Owner AND s.Segment_Name = t.Table_Name AND s.Partition_Name = t.SubPartition_Name
                             LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name AND m.SubPartition_Name = t.SubPartition_Name
                            ) x
-                    WHERE  x.Owner NOT IN ('SYS', 'SYSTEM', 'OUTLN', 'PERFSTAT', 'PATCH', 'EXFSYS', 'FLAGENT',
-                                         'DBSNMP', 'WMSYS', 'DBMSXSTATS', 'SYSMAN', 'AFARIA',
-                                         'XDB', 'MDSYS', 'ORDSYS', 'DMSYS', 'CTXSYS', 'TSMSYS')
+                    WHERE  x.Owner NOT IN (#{system_schema_subselect})
                     AND   (Last_Analyzed IS NULL OR Last_Analyzed < SYSDATE-?)
                     ORDER BY x.MBytes DESC NULLS LAST
                     ",
@@ -224,9 +222,7 @@ Especially this is true for generated dynamic SQL statements (e.g. from OR-mappe
                                              GROUP BY Owner, Segment_Name, Partition_Name
                                             ) s ON s.Owner = ip.Index_Owner AND s.Segment_Name = ip.Index_Name AND s.Partition_Name = ip.SubPartition_Name
                            ) x
-                    WHERE  x.Owner NOT IN ('SYS', 'SYSTEM', 'OUTLN', 'PERFSTAT', 'PATCH', 'EXFSYS', 'FLAGENT',
-                                         'DBSNMP', 'WMSYS', 'DBMSXSTATS', 'SYSMAN', 'AFARIA',
-                                         'XDB', 'MDSYS', 'ORDSYS', 'DMSYS', 'CTXSYS', 'TSMSYS')
+                    WHERE  x.Owner NOT IN (#{system_schema_subselect})
                     AND   (Last_Analyzed IS NULL OR Last_Analyzed < SYSDATE-?)
                     ORDER BY x.MBytes DESC NULLS LAST
                     ",
@@ -273,7 +269,7 @@ Especially this is true for generated dynamic SQL statements (e.g. from OR-mappe
                                     o.Created, o.Last_DDL_Time
                              FROM   DBA_Sequences s
                              LEFT OUTER JOIN   DBA_Objects o ON o.Owner = s.Sequence_Owner AND o.Object_Name = s.Sequence_Name AND o.Object_Type = 'SEQUENCE'
-                             WHERE  Sequence_Owner NOT IN ('SYS', 'SYSTEM')
+                             WHERE  Sequence_Owner NOT IN (#{system_schema_subselect})
                             ) x
                       WHERE \"Values per day\"/DECODE(Cache_Size,0,1,Cache_Size) > ?
                       ORDER  By \"Values per day\"/DECODE(Cache_Size,0,1,Cache_Size) DESC NULLS LAST",
