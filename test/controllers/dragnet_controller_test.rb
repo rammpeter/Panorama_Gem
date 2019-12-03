@@ -34,6 +34,7 @@ class DragnetControllerTest < ActionController::TestCase
       if entry['children']
         execute_tree(entry['children'])        # Test subnode's entries
       else
+        prepare_panorama_sampler_thread_db_config                         # Ensure that PanoramaConnection has valid config even outside controller action
         full_entry = extract_entry_by_entry_id(entry['id'])                 # Get SQL from id
         unless full_entry[:exclude_from_test]                                   # Exclude selections from test which are not executable
           params = {:format=>:html, :dragnet_hidden_entry_id=>entry['id'], :update_area=>:hugo}
