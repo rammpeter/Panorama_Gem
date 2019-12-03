@@ -28,6 +28,10 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
 
   end
 
+  def string2hex(s)
+    s.unpack('U'*s.length).map{|x| x.to_s 16}.join
+  end
+
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
   test "test_controllers_menu_entries_with_actions with xhr: true" do
     call_controllers_menu_entries_with_actions
@@ -159,14 +163,14 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     if get_db_version >= '11.2'
-      get '/dba_sga/list_result_cache_single_results', :params => {:format=>:html, :instance=>1, :status=>'Published', :name=>'Hugo', :namespace=>'PLSQL', :update_area=>:hugo }
+      get '/dba_sga/list_result_cache_single_results', :params => {:format=>:html, :instance=>1, :status=>'Published', :name=>'Hugo', hex_name: string2hex('Hugo'), :namespace=>'PLSQL', :update_area=>:hugo }
       assert_response :success
     end
 
     get '/dba_sga/list_result_cache_dependencies_by_id', :params => {:format=>:html, :instance=>1, :id=>100, :status=>'Published', :name=>'Hugo', :namespace=>'PLSQL', :update_area=>:hugo }
     assert_response :success
 
-    get '/dba_sga/list_result_cache_dependencies_by_name', :params => {:format=>:html, :instance=>1, :status=>'Published', :name=>'Hugo', :namespace=>'PLSQL', :update_area=>:hugo }
+    get '/dba_sga/list_result_cache_dependencies_by_name', :params => {:format=>:html, :instance=>1, :status=>'Published', :name=>'Hugo', hex_name: string2hex('Hugo'), :namespace=>'PLSQL', :update_area=>:hugo }
     assert_response :success
 
     get '/dba_sga/list_result_cache_dependents', :params => {:format=>:html, :instance=>1, :id=>100, :status=>'Published', :name=>'Hugo', :namespace=>'PLSQL', :update_area=>:hugo }
