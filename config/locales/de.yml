@@ -1587,6 +1587,21 @@
   dragnet_helper_151_param_1_hint:                          Minimale Anzahl von Sekunden, in denen eine Ausführung in der Active Session History aktiv sein muss, um bei der Auswahl berücksichtigt zu werden.
   dragnet_helper_151_param_1_name:                          Minimale Anzahl Sekunden aktiv in ASH
 
+  dragnet_helper_152_desc: |-
+    User-defined PL/SQL-Funktionen in SQL-Statements können besser performen ohne Kontextwechsel durch PRAGMA UDF.
+    Diese Selektion zeigt PL/SQL->Funktionen von denen kein weiterer PL/SQL-Code abhängig ist.
+    Zusätzlich werden SQLs aus der SGA angezeigt, die diesen Funktionsnamen in ihrer SQL-Syntax nutzen.
+  dragnet_helper_152_name: |-
+    Kandidaten für PRAGMA UDF in user-defined PL/SQL-Funktionen
+
+  dragnet_helper_153_desc: |-
+    User-defined PL/SQL-Funktionen können aufeinanderfolgende Aufrufe mit identischen Parametern in Session cachen wenn sie als deterministisch deklariert sind.
+    Für Funktionen ohne weitere Abhängigkeiten besteht eine hohe Wahrscheinlichkeit, dass sie auch determinstisch sind.
+    Diese Selektion zeigt nicht als DETERMINISTIC deklarierte PL/SQL-Funktionen ohne weitere Abhängigkeiten als von sys.STANDARD.
+    Zusätzlich werden SQLs aus der SGA angezeigt, die diesen Funktionsnamen in ihrer SQL-Syntax nutzen.
+  dragnet_helper_153_name: |-
+    Kandidaten für DETERMINISTIC in user-defined PL/SQL-Funktionen
+
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 
   dragnet_show_personal_selection_form_caption:             Erweitern der Rasterfahndungs-SQLs um persönliche Abfragen

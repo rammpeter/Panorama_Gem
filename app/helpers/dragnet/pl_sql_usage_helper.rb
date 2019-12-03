@@ -88,6 +88,75 @@ Therefor additional selection is useful, e.g. by filter based on name convention
                 {:name=>t(:dragnet_helper_129_param5_name, :default=>'Minimum days since last DDL'), :size=>8, :default=> 10, :title=> t(:dragnet_helper_128_param5_desc, :default=>'Minimum number of days since last DDL-operation on object')},
             ]
         },
+        {
+            :name  => t(:dragnet_helper_152_name, :default=>'Candidates for PRAGMA UDF in user-defined PL/SQL functions'),
+            :desc  => t(:dragnet_helper_152_desc, :default=>"User-defined PL/SQL in SQL-statements may perform better without context switching with PRAGMA UDF.
+This selection shows PL/SQL functions without PL/SQL code depending from.
+In addition SQLs from SGA are shown which uses this function name in their SQL syntax.
+"),
+            :sql=> "\
+WITH Procs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ p.Owner, p.Object_Name
+                FROM   DBA_Procedures p
+                WHERE  p.Object_Type = 'FUNCTION'
+                AND    p.Owner NOT IN ('SYS', 'SYSTEM', 'CTXSYS', 'XDB')
+                AND    (p.Owner, p.Object_Name, p.Object_Type) NOT IN (SELECT /*+ NO_MERGE */ DISTINCT d.Referenced_Owner, d.Referenced_Name, d.Referenced_Type /* all objects with PL/SQL dependency */
+                                                                       FROM   DBA_Dependencies d
+                                                                       JOIN   DBA_Procedures pl ON pl.Owner       = d.Owner /* Filters dependencies to PL/SQL only */
+                                                                                               AND pl.Object_Name = d.Name
+                                                                                               AND pl.Object_Type = d.Type
+                                                                      )
+                AND    (p.Owner, p.Object_Name, p.Object_Type) NOT IN (SELECT /*+ NO_MERGE */ Owner, Name, Type FROM DBA_Source WHERE UPPER(Text) LIKE '%PRAGMA%UDF%')
+               ),
+     SQLs as (SELECT /*+ NO_MERGE MATERIALIZE */ Inst_ID, SQL_ID, UPPER(SQL_Text) SQL_Text FROM GV$SQLTEXT_WITH_NEWLINES)
+SELECT p.Owner, p.Object_Name, p.Inst_ID,
+       ROUND(SUM(a.Elapsed_Time)/1000000) \"Elapsed time (secs) in SQL\",
+       SUM(a.Executions)                  \"No. of executions in SQL\",
+       COUNT(DISTINCT p.SQL_ID)           \"No. of different SQLs\",
+       MAX(a.SQL_ID) KEEP (DENSE_RANK LAST ORDER BY a.Elapsed_Time NULLS FIRST) \"SQL_ID with max. elapsed time\"
+FROM   (SELECT p.Owner, p.Object_Name, s.Inst_ID, s.SQL_ID
+        FROM   Procs p
+        LEFT OUTER JOIN   SQLs s ON s.SQL_Text LIKE '%'||p.Object_Name||'%'
+        GROUP BY p.Owner, p.Object_Name, s.Inst_ID, s.SQL_ID
+       ) p
+LEFT OUTER JOIN   gv$SQLArea a ON a.Inst_ID = p.Inst_ID AND a.SQL_ID = p.SQL_ID
+GROUP BY p.Owner, p.Object_Name, p.Inst_ID
+ORDER BY 4 DESC NULLS LAST
+           ",
+        },
+        {
+            :name  => t(:dragnet_helper_153_name, :default=>'Candidates for DETERMINISTIC in user-defined PL/SQL functions'),
+            :desc  => t(:dragnet_helper_153_desc, :default=>"User-defined PL/SQL functions may be cached in session for subsequent calls with same parameters if they are declared as deterministic.
+For functions without dependencies there is a high likelihood that they are deterministic.
+This selection shows PL/SQL functions not declared as DETERMINISTIC and without any dependency other than sys.STANDARD.
+In addition SQLs from SGA are shown which uses this function name in their SQL syntax.
+"),
+            :sql=> "\
+WITH Procs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ p.Owner, p.Object_Name
+                FROM   DBA_Procedures p
+                WHERE  Object_Type = 'FUNCTION'
+                AND    Owner NOT IN ('SYS', 'SYSTEM', 'CTXSYS', 'XDB')
+                AND    Deterministic = 'NO'
+                AND    (Owner, Object_Name, Object_Type) NOT IN (SELECT /*+ NO_MERGE */ DISTINCT d.Owner, d.Name, d.Type
+                                                                 FROM   DBA_Dependencies d
+                                                                 WHERE  (Referenced_Owner != 'SYS' OR Referenced_Name != 'STANDARD')
+                                                                )
+               ),
+     SQLs as (SELECT /*+ NO_MERGE MATERIALIZE */ Inst_ID, SQL_ID, UPPER(SQL_Text) SQL_Text FROM GV$SQLTEXT_WITH_NEWLINES)
+SELECT p.Owner, p.Object_Name, p.Inst_ID,
+       ROUND(SUM(a.Elapsed_Time)/1000000) \"Elapsed time (secs) in SQL\",
+       SUM(a.Executions)                  \"No. of executions in SQL\",
+       COUNT(DISTINCT p.SQL_ID)           \"No. of different SQLs\",
+       MAX(a.SQL_ID) KEEP (DENSE_RANK LAST ORDER BY a.Elapsed_Time NULLS FIRST) \"SQL_ID with max. elapsed time\"
+FROM   (SELECT p.Owner, p.Object_Name, s.Inst_ID, s.SQL_ID
+        FROM   Procs p
+        LEFT OUTER JOIN   SQLs s ON s.SQL_Text LIKE '%'||p.Object_Name||'%'
+        GROUP BY p.Owner, p.Object_Name, s.Inst_ID, s.SQL_ID
+       ) p
+LEFT OUTER JOIN   gv$SQLArea a ON a.Inst_ID = p.Inst_ID AND a.SQL_ID = p.SQL_ID
+GROUP BY p.Owner, p.Object_Name, p.Inst_ID
+ORDER BY 4 DESC NULLS LAST
+           ",
+        },
     ]
   end
 
