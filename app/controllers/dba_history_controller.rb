@@ -2413,6 +2413,12 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     osstats_pivot = {}
     stat_names = {}
 
+    # first entry is synthetic
+    stat_names['CPU Load'] = { stat_name: 'CPU Load',
+                               scale:     2,
+                               comments:  "Number of avg. active CPUs in time period.\nDerived from values of BUSY TIME and NUM CPUS"
+    }
+
     osstats.each do |o|
       unless osstats_pivot.has_key?(o.rounded_begin_interval_time)
         osstats_pivot[o.rounded_begin_interval_time] = {
@@ -2427,18 +2433,23 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
       stat_names[o.stat_name] = { stat_name: o.stat_name}                       # register stat_name as used
     end
 
-    if get_db_version >= '11.2'
+    if get_db_version >= '11.2'                                                 # get comments for statistics
       sql_select_all("SELECT REPLACE(Stat_Name, '_', ' ') Stat_Name, Comments, Cumulative FROM v$OSStat").each do |s|
         if stat_names.has_key?(s.stat_name)
           stat_names[s.stat_name][:comments]    = s.comments
           stat_names[s.stat_name][:cumulative]  = s.cumulative
+          stat_names[s.stat_name][:scale]       = 0
         end
       end
     end
 
-
-
     @osstats    = osstats_pivot.values
+
+    # calculate CPU load
+    @osstats.each do |s|
+      s['CPU Load'] = s['BUSY TIME']/(s[:max_end_interval_time] - s[:min_begin_interval_time])/s['NUM CPUS'] rescue nil
+    end
+
     @stat_names = stat_names.values
 
     render_partial
