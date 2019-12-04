@@ -277,7 +277,7 @@ public
     if get_db_version >= '12.1'
       "SELECT /*+ NO_MERGE */ UserName FROM All_Users WHERE Oracle_Maintained = 'Y'"
     else
-      " 'AFARIA', 'APPQOSSYS', 'AUDSYS', CTXSYS', 'DMSYS', 'DBMSXSTATS', 'DBSNMP', 'EXFSYS', 'FLAGENT',
+      " 'AFARIA', 'APPQOSSYS', 'AUDSYS', 'CTXSYS', 'DMSYS', 'DBMSXSTATS', 'DBSNMP', 'EXFSYS', 'FLAGENT',
 'MDSYS', 'OLAPSYS', 'ORDSYS', 'OUTLN', 'PATCH', 'PERFSTAT',
 'SYS', 'SYSBACKUP', 'SYSDG', 'SYSKM', 'SYSMAN', 'SYSTEM', 'TSMSYS', 'WMSYS', 'XDB' "
     end
