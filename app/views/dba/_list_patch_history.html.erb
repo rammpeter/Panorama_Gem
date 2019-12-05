@@ -13,8 +13,59 @@
 
 %>
 <%= gen_slickgrid(@patches, column_options, {
-    :caption =>  "Upgrades / Downgrades / Patches",
-    :max_height=>450,
+    :caption =>  "Upgrades / Downgrades / Patches from sys.Registry$History",
+    :max_height=>200,
     show_pin_icon: 1
 })
 %>
+
+<%
+  column_options =
+      [
+          {:caption=>'Comp.-ID',        :data=>proc{|rec| rec.comp_id },                    :title=>"Component identifier"},
+          {:caption=>'Component name',  :data=>proc{|rec| rec.comp_name },                  :title=>"Component name"},
+          {:caption=>'Version',         :data=>proc{|rec| rec.version },                    :title=>"Component version loaded"},
+          {:caption=>'Status',          :data=>proc{|rec| rec.status },                     :title=>"Component status"},
+          {:caption=>'Modification',    :data=>proc{|rec| localeDateTime(rec.date_modified) },   :title=>"Time when the component was last modified"},
+          {:caption=>'Namespace',       :data=>proc{|rec| rec.namespace },                  :title=>"The namespace of the components affected (for example, SERVER)"},
+          {:caption=>'Control',         :data=>proc{|rec| rec.control },                    :title=>"User that created the component entry"},
+          {:caption=>'Schema',          :data=>proc{|rec|rec.schema },                      :title=>"User that contains the objects for the component"},
+          {:caption=>'Procedure',       :data=>proc{|rec|rec.procedure },                   :title=>"Validation procedure"},
+      ]
+
+
+%>
+<%= gen_slickgrid(@registry, column_options, {
+    :caption =>  "Registry info from DBA_Registry",
+    :max_height=>200,
+    show_pin_icon: 1
+})
+%>
+
+<% if get_db_version >= '12.1' %>
+  <%
+    column_options =
+        [
+            {:caption=>'Patch ID',        :data=>proc{|rec| fn(rec.patch_id) },               :title=>"ID associated with the patch", align: :right},
+            {:caption=>'Patch UID',       :data=>proc{|rec| fn(rec.patch_uid) },              :title=>"UPI (Universal Patch ID) associated with the patch", align: :right},
+            {:caption=>'Version',         :data=>proc{|rec| rec.version },                    :title=>"4 digit version on which the patch was installed (for example, 12.1.0.2)"},
+            {:caption=>'Flags',           :data=>proc{|rec| rec.flags },                      :title=>"One or more of the following:\nU: Patch requires upgrade mode\nJ: Patch is a JVM patch\nF: Patch was installed using -force\nB: Patch is a bundle patch"},
+            {:caption=>'Action',          :data=>proc{|rec| rec.action },                     :title=>"APPLY or ROLLBACK"},
+            {:caption=>'Status',          :data=>proc{|rec| rec.status },                     :title=>"Possible values:\nSUCCESS: Patch application has completed with no errors\nWITH ERRORS: Patch application finished with errors"},
+            {:caption=>'Action time',     :data=>proc{|rec| localeDateTime(rec.action_time) }, :title=>"Timestamp when the install was performed"},
+            {:caption=>'Description',     :data=>proc{|rec| rec.description },                :title=>"Description of this patch from OPatch metadata"},
+            {:caption=>'Bundle series',   :data=>proc{|rec|rec.bundle_series },               :title=>"If a bundle patch, the series (for example, PSU or DBBP)"},
+            {:caption=>'Bundle ID',       :data=>proc{|rec|fn(rec.bundle_id) },               :title=>"If a bundle patch, ID in the series", align: :right},
+            {:caption=>'Bundle data',   :data=>proc{|rec|rec.bundle_data },               :title=>"If a bundle patch, the bundledata.xml associated with the patch"},
+            {:caption=>'Logfile',         :data=>proc{|rec|rec.logfile },                     :title=>"Location of the logfile for this apply or rollback attempt"},
+        ]
+
+
+  %>
+  <%= gen_slickgrid(@sql_patches, column_options, {
+      :caption =>  "SQL patches from DBA_Registry_SQLPatch",
+      :max_height=>200,
+      show_pin_icon: 1
+  })
+  %>
+<% end %>

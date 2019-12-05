@@ -1534,7 +1534,11 @@ Solution: Execute as user 'SYS':
   end
 
   def list_patch_history
-    @patches = sql_select_iterator "SELECT * FROM sys.Registry$History ORDER BY Action_Time"
+    @patches  = sql_select_iterator "SELECT * FROM sys.Registry$History ORDER BY Action_Time"
+    @registry = sql_select_iterator "SELECT r.*, TO_DATE(Modified, 'DD-MON-YYYY HH24:MI:SS') date_modified FROM DBA_Registry r ORDER BY Comp_ID"
+    if get_db_version >= '12.1'
+      @sql_patches = sql_select_all "SELECT * FROM DBA_REGISTRY_SQLPATCH"
+    end
     render_partial
   end
 
