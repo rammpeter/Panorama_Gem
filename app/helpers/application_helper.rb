@@ -758,12 +758,11 @@ module ApplicationHelper
   end
 
   # explain seconds to minutes, hours and days
-  def seconds_explain(seconds)
+  def seconds_explain(seconds, suppress_first_lf = false)
     return nil if seconds.nil?
     return nil if seconds == ''
     seconds = seconds.to_f
-    retval = ''
-    retval << "\n#{fn(seconds,2)} #{t(:seconds, default: 'seconds')}"
+    retval = "#{"\n" unless suppress_first_lf}#{fn(seconds,2)} #{t(:seconds, default: 'seconds')}"
     retval << "\n= #{fn(seconds*1000000,1)} #{t(:microseconds, default: 'microseconds')}" if seconds < 0.01
     retval << "\n= #{fn(seconds*1000,1)} #{t(:milliseconds, default: 'milliseconds')}"    if seconds < 10
     retval << "\n= #{fn(seconds/60,1)} #{t(:minutes, default: 'minutes')}"                if seconds > 60

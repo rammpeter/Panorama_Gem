@@ -332,7 +332,9 @@ class ActiveSessionHistoryController < ApplicationController
               } Info,
              '' Info_Hint,
              MIN(Snap_ID) Min_Snap_ID, MAX(Snap_ID) Max_Snap_ID,
-             AVG(Wait_Time+Time_Waited)/1000  Time_Waited_Avg_ms,
+             AVG(Time_Waited)/1000  Time_Waited_Avg_ms,
+             MIN(Time_Waited)/1000  Time_Waited_Min_ms,
+             MAX(Time_Waited)/1000  Time_Waited_Max_ms,
              SUM(s.Sample_Cycle)          Time_Waited_Secs,  -- Gewichtete Zeit in der Annahme, dass Wait aktiv für die Dauer des Samples war (und daher vom Snapshot gesehen wurde)
              MAX(s.Sample_Cycle)          Max_Sample_Cycle,  -- Max. Abstand der Samples als Korrekturgroesse fuer Berechnung LOAD
              #{'
