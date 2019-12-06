@@ -610,7 +610,7 @@ class PanoramaConnection
         jdbc_connection.logoff if !jdbc_connection.nil?                     # close/free wrong connection
         Rails.logger.error "#{e.class.name} #{e.message}"
         log_exception_backtrace(e, 20)
-        raise "Your user needs SELECT ANY DICTIONARY or equivalent rights to login to Panorama!"
+        raise "Your user needs SELECT ANY DICTIONARY or equivalent rights to login to Panorama!\n\n\n#{e.class.name} #{e.message}"
       end
 
       # All checks succeeded, put in connection pool now

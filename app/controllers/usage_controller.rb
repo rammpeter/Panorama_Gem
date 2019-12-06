@@ -1,5 +1,6 @@
 # encoding: utf-8
 require_relative '../../config/engine_config'
+require 'json'
 
 class UsageController < ApplicationController
   layout "usage_layout"
@@ -197,6 +198,11 @@ class UsageController < ApplicationController
 
     @result = get_client_info_store_elements(@locate_array)
     render_partial :client_info_detail
+  end
+
+  def browser_tab_ids
+    #initialize_browser_tab_id
+    render html: JSON.pretty_generate(read_from_client_info_store(:browser_tab_ids)).gsub(/\n/, "<br/>").gsub(/ /, '&nbsp;').html_safe
   end
 
   private
