@@ -9,6 +9,8 @@ jobs:
 
     env:
       JRUBY_VERSION: jruby-9.2.6.0
+      # Panorama dir after git clone
+      PANORAMA_DIR: ~/work/Panorama_Gem/Panorama_Gem
 
     steps:
     - uses: actions/checkout@v1
@@ -33,11 +35,7 @@ jobs:
         wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
         sudo dpkg -i google-chrome-stable_current_amd64.deb || apt-get -y -f install
 
-
-
-    - name: Run a one-line script
-      run: echo Hello, world!
-    - name: Run a multi-line script
+    - name: bundle install
       run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
+        cd ${PANORAMA_DIR} && bundle install
+
