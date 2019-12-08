@@ -46,7 +46,7 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
     hideIndicator('');                                                          // close indicator window
     indicator_call_stack_depth = 0;                                             // ensure start with 0 at next indicator open
 
-    alert('Error: '+msg+'\nURL: '+url+'\nLine-No.: '+lineNo+'\nColumn-No.: '+columnNo+'\n'+error.stack);
+    alert('Error: '+msg+'\nURL: '+url+'\nLine-No.: '+lineNo+'\nColumn-No.: '+columnNo+'\n'+ (error.stack ? error.stack : "" ) );
     return false;
 };
 
@@ -192,6 +192,27 @@ function expand_sql_id_hint(id, sql_id){
     }
 }
 
+/**
+ * Write detailed exception info to browser console.
+ * @param exception     Catched exception object.
+ * @param xhr           Complete request object.
+ */
+function log_exception_to_console(exception, xhr){
+    console.log(' ');
+    console.log('>>>>>>>>>>> Exception catched <<<<<<<<<<<');
+    console.log('Message: ' + exception.message);
+    console.log('Line: ' + exception.line + ' Column: '+ exception.column);
+    console.log('Source URL: '+ exception.sourceURL);
+    console.log(' ');
+    console.log('>>> Stack trace following:');
+    exception.stack.split("\n").forEach(function(item){console.log(item);});
+
+    console.log(' ');
+    console.log('>>> xhr.responseText with line numbers following:');
+    xhr.responseText.split("\n").forEach(function(item, index){console.log((index +1) + ':  ' + item);});
+    console.log('>>>>>>>>>> End of exception output <<<<<<<<<<<');
+}
+
 // Process ajax success event
 // Parameter:
 //   data:          response data string
@@ -216,7 +237,8 @@ function process_ajax_success(data, xhr, target, options){
     catch(err) {
         indicator_call_stack_depth = 0;                                         // reset indicator regardless of error
         hideIndicator();
-        throw(err);
+        log_exception_to_console(err, xhr);
+        throw("\nException: " + err.message + "\nSee browser console for details.\n");
     }
 }
 
