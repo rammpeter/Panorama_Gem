@@ -59,7 +59,7 @@ jobs:
         TNS_ADMIN: ${PANORAMA_DIR}/.github
         TEST_USERNAME: panorama_test
         TEST_PASSWORD: TryItOut2019
-        TEST_TNS: @panoramatest_tpurgent
+        TEST_TNS: "@panoramatest_tpurgent"
       run: |
         source $HOME/.rvm/scripts/rvm
         cd ${PANORAMA_DIR} && rake test
