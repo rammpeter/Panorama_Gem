@@ -19,8 +19,8 @@ jobs:
         java --version
 
     - name: Set up RVM
-        run: |
-          curl -sSL https://get.rvm.io | bash
+      run: |
+        curl -sSL https://get.rvm.io | bash
 
     - name: Install JRuby
       run: |
