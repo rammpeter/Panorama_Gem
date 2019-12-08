@@ -7,13 +7,27 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      JRUBY_VERSION: jruby-9.2.6.0
+
     steps:
     - uses: actions/checkout@v1
     - name: Check OS prerequisites
       run: |
         docker ps -a
         docker images
-        rvm list
+        java --version
+
+    - name: Set up RVM
+        run: |
+          curl -sSL https://get.rvm.io | bash
+
+    - name: Install JRuby
+      run: |
+        source $HOME/.rvm/scripts/rvm
+        rvm install ${JRUBY_VERSION}
+        rvm --default use ${JRUBY_VERSION}
+
 
 
     - name: Run a one-line script
