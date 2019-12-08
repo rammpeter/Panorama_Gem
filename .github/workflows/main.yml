@@ -29,6 +29,7 @@ jobs:
         source $HOME/.rvm/scripts/rvm
         rvm install ${JRUBY_VERSION}
         rvm --default use ${JRUBY_VERSION}
+        gem install bundler
 
     - name: Install Chrome
       run: |
@@ -38,4 +39,7 @@ jobs:
     - name: bundle install
       run: |
         cd ${PANORAMA_DIR} && bundle install
+
+    - name: run Test
+      run: cd ${PANORAMA_DIR} && rake test
 
