@@ -1,4 +1,4 @@
-name: CI
+name: Panorama_Gem CI
 
 on: [push]
 
