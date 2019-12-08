@@ -9,10 +9,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Check Docker existence
+    - name: Check OS prerequisites
       run: |
         docker ps -a
         docker images
+        rvm list
 
 
     - name: Run a one-line script
