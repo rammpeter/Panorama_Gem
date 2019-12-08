@@ -51,7 +51,7 @@ jobs:
       env:
         GPG_KEY_FOR_DB_WALLET_ENCRYPTION: ${{ secrets.GPG_KEY_FOR_DB_WALLET_ENCRYPTION }}
       run: |
-        cd ${PANORAMA_DIR}/.github && decrypt_DB_wallet.sh
+        cd ${PANORAMA_DIR}/.github && ./decrypt_DB_wallet.sh
         cd ${PANORAMA_DIR}/.github && unzip Wallet_PANORAMATEST.zip
 
     - name: run Test
