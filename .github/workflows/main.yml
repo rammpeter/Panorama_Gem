@@ -16,7 +16,7 @@ jobs:
       run: |
         docker ps -a
         docker images
-        java --version
+        java -version
 
     - name: Set up RVM
       run: |
