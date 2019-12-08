@@ -65,7 +65,7 @@ jobs:
         cd ${PANORAMA_DIR} && rake test
 
     - name: Archive test results
-        uses: actions/upload-artifact@v1
-        with:
-          name: test.log
-          path: test/dummy/logs/test.log
+      uses: actions/upload-artifact@v1
+      with:
+        name: test.log
+        path: test/dummy/logs/test.log
