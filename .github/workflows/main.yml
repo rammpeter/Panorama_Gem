@@ -10,7 +10,7 @@ jobs:
     env:
       JRUBY_VERSION: jruby-9.2.6.0
       # Panorama dir after git clone
-      PANORAMA_DIR: ~/work/Panorama_Gem/Panorama_Gem
+      PANORAMA_DIR: /home/runner/work/Panorama_Gem/Panorama_Gem
 
     steps:
     - uses: actions/checkout@v1
