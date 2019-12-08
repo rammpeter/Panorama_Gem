@@ -4,9 +4,11 @@ on: [push]
 
 jobs:
   test:
-
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node: [6, 8, 10]
     env:
       JRUBY_VERSION: jruby-9.2.6.0
       # Panorama dir after git clone
@@ -30,9 +32,11 @@ jobs:
         rvm install ${JRUBY_VERSION}
         rvm --default use ${JRUBY_VERSION}
         gem install bundler
+        bundle --version
 
     - name: Install Chrome
       run: |
+        bundle --version
         wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
         sudo dpkg -i google-chrome-stable_current_amd64.deb || apt-get -y -f install
 
