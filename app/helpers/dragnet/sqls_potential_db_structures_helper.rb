@@ -68,15 +68,19 @@ OLTP-compression requires licensing of Advanced Compression Option.
             :desc  => t(:dragnet_helper_5_desc, :default=> 'Protection of colums with foreign key references by index can be necessary for:
 - Ensure delete performance of referenced table (suppress FullTable-Scan)
 - Supress lock propagation (shared lock on index instead of table)'),
-            :sql=> "SELECT /* DB-Tools Ramm  Index fehlt fuer Foreign Key*/
+            :sql=> "WITH Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Constraint_name, Constraint_Type, r_Owner, r_Constraint_Name
+                                         FROM   DBA_Constraints
+                                         WHERE  Owner NOT IN (#{system_schema_subselect})
+                                        )
+                    SELECT /* DB-Tools Ramm  Index fehlt fuer Foreign Key*/
                            Ref.Owner, Ref.Table_Name \"Tablename\",
                            reft.Num_Rows Rows_Org,
                            refcol.Column_Name, refcol.Position,
                            Ref.R_Owner Target_Owner, target.Table_Name Target_Table, targett.Num_rows Rows_Target, Ref.R_Constraint_Name, targett.Last_Analyzed Last_Analyzed_Target,
                            target_mod.Deletes \"Target Deletes since analyze\"
-                    FROM   DBA_Constraints Ref
+                    FROM   Constraints Ref
                     JOIN   DBA_Cons_Columns refcol  ON refcol.Owner = Ref.Owner AND refcol.Constraint_Name = ref.Constraint_Name
-                    JOIN   DBA_Constraints target   ON target.Owner = ref.R_Owner AND target.Constraint_Name = ref.R_Constraint_Name
+                    JOIN   Constraints target       ON target.Owner = ref.R_Owner AND target.Constraint_Name = ref.R_Constraint_Name
                     JOIN   DBA_Tables reft          ON reft.Owner = ref.Owner AND reft.Table_Name = ref.Table_Name
                     JOIN   DBA_Tables targett       ON targett.Owner = target.Owner AND targett.Table_Name = target.Table_Name
                     LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Table_Owner, Table_Name, SUM(Deletes) Deletes
@@ -90,9 +94,8 @@ OLTP-compression requires licensing of Advanced Compression Option.
                                        AND    i.Column_Name     = refcol.Column_Name
                                        AND    i.Column_Position = refcol.Position
                                        )
-                    AND Ref.Owner NOT IN (#{system_schema_subselect})
                     AND targett.Num_rows > ?
-                    ORDER BY targett.Num_rows DESC NULLS LAST, refcol.Position",
+                    ORDER BY targett.Num_rows DESC NULLS LAST, ref.Table_Name, refcol.Position",
             :parameter=>[{:name=>t(:dragnet_helper_5_param_1_name, :default=> 'Min. no. of rows of referenced table'), :size=>8, :default=>1000, :title=>t(:dragnet_helper_5_param_1_hint, :default=> 'Minimum number of rows of referenced table') },]
         },
         {
