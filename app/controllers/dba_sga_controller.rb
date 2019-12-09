@@ -581,8 +581,6 @@ class DbaSgaController < ApplicationController
 
   # Details auf Ebene SQL_ID kumuliert über Child-Cursoren
   def list_sql_detail_sql_id
-    @status_message = ''                                                       # Initialization
-
     @dbid         = prepare_param_dbid
     @instance = prepare_param_instance
     @sql_id   = params[:sql_id].strip
@@ -640,10 +638,10 @@ class DbaSgaController < ApplicationController
     #@plans = get_sga_execution_plan('GV$SQLArea', @sql_id, @instance, sql_child_info.min_child_number, sql_child_info.min_child_address, false) if @sql_child_info.plan_count == 1 # Nur anzeigen wenn eindeutig immer der selbe plan
 
     if @sql_child_info.plan_count > 1
-      @status_message = "Multiple different execution plans exist for this SQL-ID!\nPlease select one SQL child number for exact execution plan of this child cursor."
+      add_statusbar_message("Multiple different execution plans exist for this SQL-ID!\nPlease select one SQL child number for exact execution plan of this child cursor.")
     end
 
-    render_partial :list_sql_detail_sql_id, (@status_message.length > 0 ? {:status_bar_message => my_html_escape(@status_message)} : {})
+    render_partial :list_sql_detail_sql_id
   end
 
   def list_sql_child_cursors

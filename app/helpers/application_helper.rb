@@ -487,7 +487,6 @@ module ApplicationHelper
   # Rendern des Templates für Action, optionale mit Angabe des Partial-Namens wenn von Action abweicht
   # options support:
   #    :additional_javascript_string  = js-text
-  #    :status_bar_message            = html-text
   #    :hide_status_bar               = true
   #    :controller                    = controller for partial
 
@@ -502,17 +501,9 @@ module ApplicationHelper
   def render_internal(update_area, controller, partial, options = {})
     raise "render_internal: options should of class Hash, not #{options.class}" unless options.class == Hash
 
-    if defined?(@statusbar_message) && !@statusbar_message.nil? && @statusbar_message.length > 0
-      if options[:status_bar_message]
-        options[:status_bar_message] = "#{options[:status_bar_message]}\n#{my_html_escape(@statusbar_message)}"
-      else
-        options[:status_bar_message] = my_html_escape(@statusbar_message)
-      end
-    end
-
     additional_javascript_string = options[:additional_javascript_string]
     additional_javascript_string = "hide_status_bar(); #{additional_javascript_string}" if options[:hide_status_bar]
-    additional_javascript_string = "show_status_bar_message('#{options[:status_bar_message]}'); #{additional_javascript_string}" if options[:status_bar_message]
+    additional_javascript_string = "show_status_bar_message('#{my_html_escape(@statusbar_message)}'); #{additional_javascript_string}" if defined?(@statusbar_message) && !@statusbar_message.nil? && @statusbar_message.length > 0
 
     respond_to do |format|
       format.js {
