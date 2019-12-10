@@ -19,7 +19,7 @@ class StorageController < ApplicationController
              t.Status, t.Logging, t.Force_Logging, t.Extent_Management,
              t.Allocation_Type, t.Plugged_In,
              t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
-             f.AutoExtensible, f.Max_Size_MB, f.File_Count
+             f.AutoExtensible, f.Max_Size_MB, f.File_Count, t.Retention
              #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
              #{ ", t.Def_InMemory" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
              #{", t.Con_ID" if is_cdb?}
@@ -54,7 +54,7 @@ class StorageController < ApplicationController
              t.Status, t.Logging, t.Force_Logging, t.Extent_Management,
              t.Allocation_Type, t.Plugged_In,
              t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
-             f.AutoExtensible, f.Max_Size_MB, f.File_Count
+             f.AutoExtensible, f.Max_Size_MB, f.File_Count, NULL Retention
              #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
              #{ ", t.Def_InMemory" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
              #{", t.Con_ID" if is_cdb?}
@@ -100,7 +100,8 @@ class StorageController < ApplicationController
              NULL                       Bigfile,
              NULL                       AutoExtensible,
              NULL                       Max_Size_MB,
-             COUNT(*)                   File_Count
+             COUNT(*)                   File_Count,
+             NULL                       Retention
              #{ ", NULL Encrypted, NULL Compress_For" if get_db_version >= '11.2'}
              #{ ", NULL Def_InMemory" if get_db_version >= '12.1.0.2'  && PanoramaConnection.edition == :enterprise}
              #{", l.Con_ID" if is_cdb?}

@@ -165,16 +165,24 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
     end
 
     link_ts_details = proc do |rec|
+      details = ''
       case rec.tablespace_name
         when 'SYSAUX' then
-          ajax_link('v$SYSAUX_Occupants',
-                           {:controller   => :storage,
-                            :action       => :list_sysaux_occupants,
-                            :update_area  => @update_area,
-                           },
-                   :title=>"Show detailed usage of SYSAUX storage from v$SYSAUX_Occupants"
-                   )
+          details << ajax_link('v$SYSAUX_Occupants',
+                                       {:controller   => :storage,
+                                        :action       => :list_sysaux_occupants,
+                                        :update_area  => @update_area,
+                                       },
+                               :title=>"Show detailed usage of SYSAUX storage from v$SYSAUX_Occupants"
+                               )
       end
+
+      if rec.retention && rec.retention != 'NOT APPLY'
+        details << "<br/>" if details.length > 0
+        details << "Retention=#{rec.retention}"
+      end
+
+      details
     end
 
     show_pct_used = proc do |rec|
