@@ -12,13 +12,14 @@ jobs:
     env:
       JRUBY_VERSION: jruby-9.2.6.0
       # Panorama dir after git clone
-      PANORAMA_DIR: /home/runner/work/Panorama_Gem/Panorama_Gem
+      PANORAMA_PATH: /home/runner/work/Panorama_Gem/Panorama_Gem
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
 
     steps:
     - uses: actions/checkout@v1
     - name: Check OS prerequisites
       run: |
+        env
         docker ps -a
         docker images
         java -version
@@ -43,7 +44,7 @@ jobs:
     - name: bundle install
       run: |
         source $HOME/.rvm/scripts/rvm
-        cd ${PANORAMA_DIR} && bundle install
+        cd ${PANORAMA_PATH} && bundle install
 
     # create encypted wallet zip file to store in repository, add passphrase
     # gpg --symmetric --cipher-algo AES256 Wallet_PANORAMATEST.zip
@@ -51,12 +52,12 @@ jobs:
       env:
         GPG_KEY_FOR_DB_WALLET_ENCRYPTION: ${{ secrets.GPG_KEY_FOR_DB_WALLET_ENCRYPTION }}
       run: |
-        cd ${PANORAMA_DIR}/.github && ./decrypt_DB_wallet.sh
-        cd ${PANORAMA_DIR}/.github && unzip Wallet_PANORAMATEST.zip
+        cd ${PANORAMA_PATH}/.github && ./decrypt_DB_wallet.sh
+        cd ${PANORAMA_PATH}/.github && unzip Wallet_PANORAMATEST.zip
 
     - name: run Test
       env:
-        TNS_ADMIN: ${PANORAMA_DIR}/.github
+        TNS_ADMIN: ${PANORAMA_PATH}/.github
         TEST_USERNAME: panorama_test
         TEST_PASSWORD: TryItOut2019
         TEST_TNS: panoramatest_tpurgent
@@ -65,7 +66,7 @@ jobs:
         echo "TNS_ADMIN=$TNS_ADMIN"
         echo "tnsnames.ora="
         cat $TNS_ADMIN/tnsnames.ora
-        cd ${PANORAMA_DIR} && rake test
+        cd ${PANORAMA_PATH} && rake test
 
     - name: Archive test results
       uses: actions/upload-artifact@v1
