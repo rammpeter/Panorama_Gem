@@ -835,7 +835,7 @@ class DbaSgaController < ApplicationController
               WHERE Inst_ID=?
               GROUP BY Inst_ID, Status, TS#
              ) x
-      #{PanoramaConnection.autonomous_database ?
+      #{PanoramaConnection.autonomous_database? ?
         "CROSS JOIN (SELECT #{PanoramaConnection.db_blocksize} Blocksize FROM DUAL) ts" : # No access on sys.TS$ for autonomous DB. Use default blocksize
         "LEFT OUTER JOIN   sys.TS$ ts ON ts.TS# = x.TS#"
       }

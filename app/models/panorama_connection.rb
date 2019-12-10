@@ -204,11 +204,11 @@ class PanoramaConnection
       @con_id        = 0
     end
 
-    @autonomous_database = nil
+    @autonomous_database = true                                                 # assume autonomous if next selection fails
     begin
       PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT ts# FROM sys.TS? WHERE RowNum < 2")
     rescue Exception => e
-      @autonomous_database = true
+      @autonomous_database = false                                              # not autonomous database because sys.TS$ is readable
     end
   end
 
@@ -309,7 +309,7 @@ class PanoramaConnection
     @@connection_pool
   end
 
-  def self.autonomous_database;             check_for_open_connection;        Thread.current[:panorama_connection_connection_object].autonomous_database;               end
+  def self.autonomous_database?;            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].autonomous_database;               end
   def self.block_common_header_size;        check_for_open_connection;        Thread.current[:panorama_connection_connection_object].block_common_header_size;          end
   def self.con_id;                          check_for_open_connection;        Thread.current[:panorama_connection_connection_object].con_id;                            end  # Container-ID for PDBs or 0
   def self.control_management_pack_access;  check_for_open_connection(false); Thread.current[:panorama_connection_connection_object].control_management_pack_access;    end
