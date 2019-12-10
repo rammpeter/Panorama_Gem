@@ -7,58 +7,62 @@ module Dragnet::UnnecessaryIndexesHelper
     [
         {
             :name  => t(:dragnet_helper_7_name, :default=> 'Detection of indexes not used for access or ensurance of uniqueness'),
-            :desc  => t(:dragnet_helper_7_desc, :default=>"Selection of non-unique indexes without usage in SQL statements.
+            :desc  => t(:dragnet_helper_7_desc, :default=>"Selection of non-unique indexes without usage in SQL statements (checked by execution plans in SGA and AWR history).
 Necessity of  existence of indexes may be put into question if these indexes are not used for uniqueness or access optimization.
 However the index may be useful for coverage of foreign key constraints, even if there had been no usage of index in considered time period.
 Ultimate knowledge about usage of index may be gained by tagging index with 'ALTER INDEX ... MONITORING USAGE' and monitoring usage via V$OBJECT_USAGE.
 Additional info about usage of index can be gained by querying DBA_Hist_Seg_Stat or DBA_Hist_Active_Sess_History."),
-            :sql=> "SELECT /* DB-Tools Ramm nicht genutzte Indizes */ * FROM (
-                    SELECT (SELECT SUM(bytes)/(1024*1024) MBytes FROM DBA_SEGMENTS s WHERE s.SEGMENT_NAME = i.Index_Name AND s.Owner = i.Owner) MBytes,
-                                i.Num_Rows, i.Owner, i.Index_Name, i.Index_Type, i.Tablespace_Name, i.Table_Owner, i.Table_Name, i.UniqueNess, i.Distinct_Keys,
-                                (SELECT Column_Name FROM DBA_Ind_Columns c WHERE c.Index_Owner=i.Owner AND c.Index_Name=i.Index_Name AND Column_Position=1) Column_1,
-                                (SELECT Column_Name FROM DBA_Ind_Columns c WHERE c.Index_Owner=i.Owner AND c.Index_Name=i.Index_Name AND Column_Position=2) Column_2,
-                                (SELECT Count(*) FROM DBA_Ind_Columns c WHERE c.Index_Owner=i.Owner AND c.Index_Name=i.Index_Name) Anzahl_Columns,
-                                (SELECT MIN(f.Constraint_Name||' Table='||rf.Table_Name)
-                                 FROM   DBA_Constraints f
-                                 JOIN   DBA_Cons_Columns fc ON fc.Owner = f.Owner AND fc.Constraint_Name = f.Constraint_Name AND fc.Position=1
-                                 JOIN   DBA_Ind_Columns ic ON ic.Column_Name=fc.Column_Name AND ic.Column_Position=1
-                                 JOIN   DBA_Constraints rf ON rf.Owner=f.r_Owner AND rf.Constraint_Name=f.r_Constraint_Name
-                                 WHERE  f.Owner = i.Table_Owner
-                                 AND    f.Table_Name = i.Table_Name
-                                 AND    f.Constraint_Type = 'R'
-                                 AND    ic.Index_Owner=i.Owner AND  ic.Index_Name=i.Index_Name
-                                ) Ref_Constraint
-                    FROM   (SELECT /*+ NO_MERGE */ i.*
-                            FROM   DBA_Indexes i
-                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ DISTINCT p.Object_Owner, p.Object_Name
-                                             FROM   gV$SQL_Plan p
-                                             JOIN   gv$SQL t ON t.Inst_ID=p.Inst_ID AND t.SQL_ID=p.SQL_ID
-                                             WHERE  t.SQL_Text NOT LIKE '%dbms_stats cursor_sharing_exact%' /* DBMS-Stats-Statement */
-                                            ) p ON p.Object_Owner=i.Owner AND p.Object_Name=i.Index_Name
-                            LEFT OUTER JOIN (SELECT /*+ NO_MERGE PARALLEL(p,2) PARALLEL(s,2) PARALLEL(ss,2) PARALLEL(t,2) */ DISTINCT p.Object_Owner, p.Object_Name
-                                             FROM   DBA_Hist_SQL_Plan p
-                                             JOIN   DBA_Hist_SQLStat s
-                                                    ON  s.DBID            = p.DBID
-                                                    AND s.SQL_ID          = p.SQL_ID
-                                                    AND s.Plan_Hash_Value = p.Plan_Hash_Value
-                                             JOIN   DBA_Hist_SnapShot ss
-                                                    ON  ss.DBID      = s.DBID
-                                                    AND ss.Snap_ID = s.Snap_ID
-                                                    AND ss.Instance_Number = s.Instance_Number
-                                             JOIN   (SELECT /*+ NO_MERGE PARALLEL(t,2) */ t.DBID, t.SQL_ID
-                                                     FROM   DBA_Hist_SQLText t
-                                                     WHERE  t.SQL_Text NOT LIKE '%dbms_stats cursor_sharing_exact%' /* DBMS-Stats-Statement */
-                                                    ) t
-                                                    ON  t.DBID   = p.DBID
-                                                    AND t.SQL_ID = p.SQL_ID
-                                             WHERE  ss.Begin_Interval_Time > SYSDATE-?
-                                            ) hp ON hp.Object_Owner=i.Owner AND hp.Object_Name=i.Index_Name
-                            WHERE   p.OBJECT_OWNER IS NULL AND p.Object_Name IS NULL  -- keine Treffer im Outer Join
-                            AND     hp.OBJECT_OWNER IS NULL AND hp.Object_Name IS NULL  -- keine Treffer im Outer Join
-                            AND     i.Owner NOT IN (#{system_schema_subselect})
-                            AND     i.UNiqueness != 'UNIQUE'
-                           ) i
-                    ) ORDER BY MBytes DESC NULLS LAST, Num_Rows",
+            :sql=> "\
+WITH Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Index_Type, Table_Owner, Table_Name, Tablespace_Name,
+                        Num_Rows, Distinct_Keys, Uniqueness
+                 FROM DBA_Indexes
+                 WHERE Owner NOT IN (#{system_schema_subselect}) AND UNiqueness != 'UNIQUE'
+                )
+SELECT /* DB-Tools Ramm nicht genutzte Indizes */ * FROM (
+        SELECT i.Owner Index_Owner, i.Index_Name, i.Index_Type, i.Table_Owner, i.Table_Name, sz.MBytes,
+               i.Num_Rows, i.Tablespace_Name, i.UniqueNess, i.Distinct_Keys,
+               (SELECT Column_Name FROM DBA_Ind_Columns c WHERE c.Index_Owner=i.Owner AND c.Index_Name=i.Index_Name AND Column_Position=1) Column_1,
+               (SELECT Column_Name FROM DBA_Ind_Columns c WHERE c.Index_Owner=i.Owner AND c.Index_Name=i.Index_Name AND Column_Position=2) Column_2,
+               (SELECT Count(*) FROM DBA_Ind_Columns c WHERE c.Index_Owner=i.Owner AND c.Index_Name=i.Index_Name) Anzahl_Columns,
+               (SELECT MIN(f.Constraint_Name||' Table='||rf.Table_Name)
+                FROM   DBA_Constraints f
+                JOIN   DBA_Cons_Columns fc ON fc.Owner = f.Owner AND fc.Constraint_Name = f.Constraint_Name AND fc.Position=1
+                JOIN   DBA_Ind_Columns ic ON ic.Column_Name=fc.Column_Name AND ic.Column_Position=1
+                JOIN   DBA_Constraints rf ON rf.Owner=f.r_Owner AND rf.Constraint_Name=f.r_Constraint_Name
+                WHERE  f.Owner = i.Table_Owner
+                AND    f.Table_Name = i.Table_Name
+                AND    f.Constraint_Type = 'R'
+                AND    ic.Index_Owner=i.Owner AND  ic.Index_Name=i.Index_Name
+               ) Ref_Constraint
+        FROM   (SELECT /*+ NO_MERGE USE_HASH(i p hp) */ i.*
+                FROM   Indexes i
+                LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ DISTINCT p.Object_Owner, p.Object_Name
+                                 FROM   gV$SQL_Plan p
+                                 JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, SQL_ID
+                                         FROM   gv$SQLArea
+                                         WHERE  SQL_Text NOT LIKE '%dbms_stats cursor_sharing_exact%' /* DBMS-Stats-Statement */
+                                        ) t ON t.Inst_ID=p.Inst_ID AND t.SQL_ID=p.SQL_ID
+                                ) p ON p.Object_Owner=i.Owner AND p.Object_Name=i.Index_Name
+                LEFT OUTER JOIN (SELECT /*+ NO_MERGE USE_HASH(p s t) */ DISTINCT p.Object_Owner, p.Object_Name
+                                 FROM   DBA_Hist_SQL_Plan p
+                                 JOIN   (SELECT /*+ NO_MERGE */ DISTINCT s.DBID, s.SQL_ID, s.Plan_Hash_Value
+                                         FROM   DBA_Hist_SQLStat s
+                                         JOIN   DBA_Hist_SnapShot ss ON ss.DBID = s.DBID AND ss.Snap_ID = s.Snap_ID AND ss.Instance_Number = s.Instance_Number
+                                         WHERE  ss.Begin_Interval_Time > SYSDATE - ?
+                                        ) s ON s.DBID = p.DBID AND s.SQL_ID = p.SQL_ID AND s.Plan_Hash_Value = p.Plan_Hash_Value
+                                 JOIN   (SELECT /*+ NO_MERGE */ t.DBID, t.SQL_ID
+                                         FROM   DBA_Hist_SQLText t
+                                         WHERE  t.SQL_Text NOT LIKE '%dbms_stats cursor_sharing_exact%' /* DBMS-Stats-Statement */
+                                        ) t ON  t.DBID = p.DBID AND t.SQL_ID = p.SQL_ID
+                                ) hp ON hp.Object_Owner=i.Owner AND hp.Object_Name=i.Index_Name
+                WHERE   p.OBJECT_OWNER IS NULL AND p.Object_Name IS NULL  -- keine Treffer im Outer Join
+                AND     hp.OBJECT_OWNER IS NULL AND hp.Object_Name IS NULL  -- keine Treffer im Outer Join
+               ) i
+         JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(bytes)/(1024*1024) MBytes
+               FROM   DBA_SEGMENTS s
+               GROUP BY Owner, Segment_Name
+              ) sz ON sz.SEGMENT_NAME = i.Index_Name AND sz.Owner = i.Owner
+        ) ORDER BY MBytes DESC NULLS LAST, Num_Rows",
             :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') }]
         },
         {

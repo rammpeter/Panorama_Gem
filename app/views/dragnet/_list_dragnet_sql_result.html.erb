@@ -80,15 +80,7 @@ if @res.count > 0
                                 )
 
                              }
-          when col[:caption].downcase == 'table_name'           ||
-                  col[:caption].downcase == 'table name'        ||
-                  col[:caption].downcase == 'tablename'         ||
-                  col[:caption].downcase == 'referenced table'  ||
-                  col[:caption].downcase == 'table-name'        ||
-                  col[:caption].downcase == 'log_table'         ||
-                  col[:caption].downcase == 'object_name'       ||
-                  col[:caption].downcase == 'master_table'      ||
-                  col[:caption].downcase == 'sequence_name'
+          when ['table_name', 'table name', 'tablename', 'referenced table', 'table-name', 'log_table', 'object_name', 'master_table', 'sequence_name'].include?(col[:caption].downcase)
           then
             col[:data] = proc{|rec|
                                 table_name = rec[col[:caption]]
@@ -109,6 +101,28 @@ if @res.count > 0
                                 owner = rec['log_owner']            if rec['log_owner']       && !owner
                                 if owner
                                   link_object_description(:exec_dragnet_sql_detail_area, owner, my_html_escape(table_name), my_html_escape(rec[col[:caption]]))
+                                else
+                                  my_html_escape(rec[col[:caption]])            # Ohne Link
+                                end
+                             }
+          # Check for link on index_name
+          when ['index_name'].include?(col[:caption].downcase)
+          then
+            col[:data] = proc{|rec|
+                                index_name = rec[col[:caption]]
+                                owner = nil                                     # Default
+
+                                if !index_name.nil? && index_name['.']          # extract schema and tablename from schema.tablename
+                                  owner = index_name[0, index_name.index('.')]
+                                  index_name = index_name[index_name.index('.'), index_name.length].delete('.').strip # extract tablename without leading . and whitespaces
+                                end
+
+                                owner = rec['index_owner']          if rec['index_owner']     && !owner
+                                owner = rec['owner']                if rec['owner']           && !owner
+                                owner = rec['Owner']                if rec['Owner']           && !owner
+                                owner = rec['Owner']                if rec['Owner']           && !owner
+                                if owner
+                                  link_object_description(:exec_dragnet_sql_detail_area, owner, my_html_escape(index_name), my_html_escape(rec[col[:caption]]))
                                 else
                                   my_html_escape(rec[col[:caption]])            # Ohne Link
                                 end
