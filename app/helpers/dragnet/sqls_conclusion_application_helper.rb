@@ -46,7 +46,11 @@ Units for time consideration are defined by date format picture of TRUNC-functio
             :name  => t(:dragnet_helper_51_name, :default=> 'Usage of multi-column primary keys as reference target (business keys instead of technical keys)'),
             :desc  => t(:dragnet_helper_51_desc, :default=>"For ensurance of referential integrity should technical id's be used instead of business expressions.
 Often problematic usage of business keys can be detetcted by existence of references on multi-column primary keys"),
-            :sql=>  "
+            :sql=>  "\
+             WITH Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Table_Name, r_Owner, r_Constraint_Name, Constraint_Type
+                                  FROM   DBA_Constraints
+                                  WHERE  Owner NOT IN (SELECT /*+ NO_MERGE */ UserName FROM All_Users WHERE Oracle_Maintained = 'Y')
+                                 )
              SELECT /* Panorama-Tool Ramm: Fachliche Schluessel*/ p.Owner||'.'||p.Table_Name \"Referenced Table\",
                     MIN(pr.Num_Rows) \"Rows in referenced table\",
                     p.Constraint_Name \"Primary Key\", r.Owner||'.'||r.Table_Name \"Referencing Table\",
@@ -54,8 +58,8 @@ Often problematic usage of business keys can be detetcted by existence of refere
                     COUNT(*) \"Number of PKey rows\",
                     MIN(c.Column_Name) \"One PKey-Column\",
                     MAX(c.Column_Name) \"Other PKey-Column\"
-             FROM   DBA_Constraints r
-             JOIN   DBA_Constraints p  ON p.Owner = r.R_Owner AND p.Constraint_Name = r.r_Constraint_Name
+             FROM   Constraints r
+             JOIN   Constraints p  ON p.Owner = r.R_Owner AND p.Constraint_Name = r.r_Constraint_Name
              JOIN   DBA_Cons_Columns c ON c.Owner = p.Owner   AND c.Constraint_Name = p.Constraint_Name
              JOIN   DBA_Tables pr ON pr.Owner = p.Owner AND pr.Table_Name = p.Table_Name
              JOIN   DBA_Tables tr ON tr.Owner = r.Owner AND tr.Table_Name = r.Table_Name
