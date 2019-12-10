@@ -20,7 +20,6 @@ jobs:
 
     - name: Check OS prerequisites
       run: |
-        export DUMMY=$PANORAMA_PATH/dummy
         env
         docker ps -a
         docker images
@@ -59,12 +58,12 @@ jobs:
 
     - name: run Test
       env:
-        TNS_ADMIN: ${PANORAMA_PATH}/.github
         TEST_USERNAME: panorama_test
         TEST_PASSWORD: TryItOut2019
         TEST_TNS: panoramatest_tpurgent
       run: |
         source $HOME/.rvm/scripts/rvm
+        export TNS_ADMIN=${PANORAMA_PATH}/.github
         echo "TNS_ADMIN=$TNS_ADMIN"
         echo "tnsnames.ora="
         cat $TNS_ADMIN/tnsnames.ora
