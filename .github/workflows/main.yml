@@ -14,10 +14,13 @@ jobs:
       # Panorama dir after git clone
       PANORAMA_PATH: /home/runner/work/Panorama_Gem/Panorama_Gem
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
-      DUMMY: ${{ env.PANORAMA_PATH }}/dummy
 
     steps:
     - uses: actions/checkout@v1
+
+    - name: Set env
+        run: echo ::set-env name=DUMMY::$(echo "$PANORAMA_PATH/dummy" )
+
     - name: Check OS prerequisites
       run: |
         env
