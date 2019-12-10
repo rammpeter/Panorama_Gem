@@ -18,11 +18,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Set env
-      run: echo ::set-env name=DUMMY::$(echo "$PANORAMA_PATH/dummy" )
-
     - name: Check OS prerequisites
       run: |
+        export DUMMY=$PANORAMA_PATH/dummy
         env
         docker ps -a
         docker images
