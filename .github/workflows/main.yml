@@ -62,6 +62,9 @@ jobs:
         TEST_TNS: panoramatest_tpurgent
       run: |
         source $HOME/.rvm/scripts/rvm
+        echo "TNS_ADMIN=$TNS_ADMIN"
+        echo "tnsnames.ora="
+        cat $TNS_ADMIN/tnsnames.ora
         cd ${PANORAMA_DIR} && rake test
 
     - name: Archive test results

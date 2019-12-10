@@ -49,7 +49,7 @@ Often problematic usage of business keys can be detetcted by existence of refere
             :sql=>  "\
              WITH Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Table_Name, r_Owner, r_Constraint_Name, Constraint_Type
                                   FROM   DBA_Constraints
-                                  WHERE  Owner NOT IN (SELECT /*+ NO_MERGE */ UserName FROM All_Users WHERE Oracle_Maintained = 'Y')
+                                  WHERE  Owner NOT IN (#{system_schema_subselect})
                                  )
              SELECT /* Panorama-Tool Ramm: Fachliche Schluessel*/ p.Owner||'.'||p.Table_Name \"Referenced Table\",
                     MIN(pr.Num_Rows) \"Rows in referenced table\",
@@ -64,7 +64,6 @@ Often problematic usage of business keys can be detetcted by existence of refere
              JOIN   DBA_Tables pr ON pr.Owner = p.Owner AND pr.Table_Name = p.Table_Name
              JOIN   DBA_Tables tr ON tr.Owner = r.Owner AND tr.Table_Name = r.Table_Name
              WHERE  r.Constraint_Type = 'R'
-             AND    c.Owner NOT IN (#{system_schema_subselect})
              GROUP BY p.Owner, p.Table_Name, p.Constraint_Name, r.Owner, r.Table_Name, r.Constraint_Name
              HAVING COUNT(*) > 1
              ORDER BY MIN(tr.Num_Rows+pr.Num_Rows) * COUNT(*) DESC NULLS LAST
