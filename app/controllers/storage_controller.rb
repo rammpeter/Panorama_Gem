@@ -696,9 +696,8 @@ class StorageController < ApplicationController
   def list_transaction_history
     @xid = prepare_param(:xid)
 
-    record_count = sql_select_one ["SELECT COUNT(*) FROM Flashback_Transaction_Query WHERE XID = HEXTORAW(?)", @xid]
-
     history = sql_select_iterator ["SELECT f.*, f.Undo_Change# Undo_Change_No,
+                                           (Commit_Timestamp - Start_Timestamp) * 86400 Duration_Secs,
                                            0 Cumulated,
                                            f.Undo_Change# Last_Undo_Change_No
                                     FROM   Flashback_Transaction_Query f

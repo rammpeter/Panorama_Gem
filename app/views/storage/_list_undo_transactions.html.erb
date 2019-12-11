@@ -2,17 +2,28 @@
    @update_area = get_unique_area_id
 
 
-   def link_session(rec)
+   link_session = proc do |rec|
      link_session_details(@update_area, rec.inst_id, rec.sid, rec.serialno)
    end
+
+  link_transaction = proc do |rec|
+    ajax_link(rec.xid, {
+        controller:   :storage,
+        action:       :list_transaction_history,
+        xid:          rec.xid,
+        update_area:  @update_area
+    },
+              title: 'Show history of transaction from Flashback_Transaction_Query'
+    )
+  end
 
 
    column_options =
            [
                    {:caption=>'I',                      :data=>proc{|rec| rec.inst_id},                     :title=>'RAC-instance', :align=>:right},
-                   {:caption=>'Trans. ID',              :data=>proc{|rec| rec.xid},                         :title=>'Transaction-ID'},
+                   {:caption=>'Trans. ID',              :data=>link_transaction,                            :title=>'Transaction-ID'},
                    {:caption=>'Undo segment, slot, sequence', :data=>proc{|rec| "#{rec.segment}, #{rec.slot}, #{rec.sequence}"}, :title=>'Undo segment number, slot number and sequence number'},
-                   {:caption=>'SID, Serial#',           :data=>proc{|rec| link_session(rec)},               :title=>'SID, Serial# of session'},
+                   {:caption=>'SID, Serial#',           :data=>link_session,                                :title=>'SID, Serial# of session'},
                    {:caption=>'Status',                 :data=>proc{|rec| rec.status},                      :title=>'Session-Status'},
                    {:caption=>'User',                   :data=>proc{|rec| rec.username},                    :title=>'Database user name'},
                    {:caption=>'Program',                :data=>proc{|rec| rec.program},                     :title=>'Program'},

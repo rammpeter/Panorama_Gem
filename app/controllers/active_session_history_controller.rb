@@ -223,7 +223,7 @@ class ActiveSessionHistoryController < ApplicationController
              #{ single_record_distinct_sql('s.Current_Obj_No') },
              #{ single_record_distinct_sql('s.Current_File_No') },
              #{ single_record_distinct_sql('s.Current_Block_No') },
-             #{ single_record_distinct_sql('s.XID') },
+             #{ single_record_distinct_sql('s.Tx_ID') },
              #{ single_record_distinct_sql('s.QC_Session_ID') },
              #{ single_record_distinct_sql('s.QC_Instance_ID') },
              #{ single_record_distinct_sql('s.SQL_ID') },
@@ -791,7 +791,7 @@ class ActiveSessionHistoryController < ApplicationController
       Blocking_Session, Blocking_Session_Serial#, Blocking_Session_Status, Session_ID, Session_Serial#, Current_File#, Current_Block#, Sample_ID,
       #{'Blocking_Inst_ID, Current_Row#, Top_Level_SQL_ID, SQL_Exec_ID, SQL_Exec_Start, SQL_Plan_Line_ID, SQL_Plan_Operation, SQL_Plan_Options, ' if get_db_version >= '11.2'}
       p1, p1Text, p2, p2Text, p3, p3Text, Wait_Time, Time_Waited, Current_Obj#, SQL_ID, SQL_Child_Number, SQL_Plan_Hash_Value, SQL_OpCode, User_ID, Event, Event_ID, Wait_Class, Seq# Sequence, Module, Action, Program,
-      Current_Obj# Current_Obj_No, PLSQL_Entry_Object_ID, PLSQL_Entry_SubProgram_ID, PLSQL_Object_ID, PLSQL_SubProgram_ID, Service_Hash, Current_File# Current_File_No, Current_Block# Current_Block_No, XID
+      Current_Obj# Current_Obj_No, PLSQL_Entry_Object_ID, PLSQL_Entry_SubProgram_ID, PLSQL_Object_ID, PLSQL_SubProgram_ID, Service_Hash, Current_File# Current_File_No, Current_Block# Current_Block_No, Tx_ID
     "
 
     @thread = sql_select_all(["\
