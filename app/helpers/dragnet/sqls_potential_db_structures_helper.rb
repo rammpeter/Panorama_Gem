@@ -30,7 +30,7 @@ OLTP-compression requires licensing of Advanced Compression Option.
                      MAX(Last_DML) Last_DML
               FROM   (
                       SELECT x.*, ROUND(s.Bytes/(1024*1024),2) Size_MB
-                      FROM   (SELECT x.*, COUNT(*) OVER (PARTITION BY Owner, Table_Name) Partitions_Total
+                      FROM   (SELECT /*+ NO_MERGE */ x.*, COUNT(*) OVER (PARTITION BY Owner, Table_Name) Partitions_Total
                               FROM   (
                                       SELECT t.Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed, NULL Partition_Name, m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, t.Compression
                                       FROM   DBA_Tables t
