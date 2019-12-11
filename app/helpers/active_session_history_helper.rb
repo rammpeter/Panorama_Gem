@@ -25,7 +25,7 @@ module ActiveSessionHistoryHelper
         @session_statistics_key_rules_hash["Session/Sn."] = {:sql => "s.Session_ID||', '||s.Session_Serial_No",        :sql_alias => "session_sn",        :Name => 'Session / Sn.',    :Title => 'Session-ID, SerialNo.',  :info_sql  => "MIN(s.Session_Type)", :info_caption => "Session-Type" }
       end
       @session_statistics_key_rules_hash["Session-Type"]    = {:sql => "SUBSTR(s.Session_Type,1,1)", :sql_alias => "session_type",              :Name => 'S-T',          :Title      => "Session-type: (U)SER, (F)OREGROUND or (B)ACKGROUND" }
-      @session_statistics_key_rules_hash["Transaction"]     = {:sql => "RawToHex(s.XID)",     :sql_alias => "transaction",        :Name => 'Tx.',           :Title => 'Transaction-ID' } if get_db_version >= "11.2"
+      @session_statistics_key_rules_hash["Transaction"]     = {:sql => "s.Tx_ID",             :sql_alias => "transaction",        :Name => 'Tx.',           :Title => 'Transaction-ID' } if get_db_version >= "11.2"
       @session_statistics_key_rules_hash["User"]            = {:sql => "u.UserName",          :sql_alias => "username",           :Name => "User",          :Title => "User" }
       @session_statistics_key_rules_hash["SQL-ID"]          = {:sql => "s.SQL_ID",            :sql_alias => "sql_id",             :Name => 'SQL-ID',        :Title => 'SQL-ID', :info_sql  => sql_id_info_sql, :info_caption => "SQL-Text (first chars)" }
       @session_statistics_key_rules_hash["SQL Exec-ID"]     = {:sql => "s.SQL_Exec_ID",       :sql_alias => "sql_exec_id",        :Name => 'SQL Exec-ID',   :Title => 'SQL Execution ID', :info_sql  => "MIN(SQL_Exec_Start)", :info_caption => "Exec. start time"} if get_db_version >= "11.2"

@@ -115,7 +115,14 @@
                                                                 },
                                                title: 'Show history of blocking session in Active Session History'
       )
-
+      when 'Transaction' then ajax_link(rec.group_value, {
+                                                            controller:   :storage,
+                                                            action:       :list_transaction_history,
+                                                            xid:          rec.group_value,
+                                                            update_area:  @update_area
+                                                         },
+                                               title: 'Show history of transaction from Flashback_Transaction_Query'
+      )
       else rec.group_value
       end
     end

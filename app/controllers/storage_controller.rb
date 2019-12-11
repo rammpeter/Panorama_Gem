@@ -693,6 +693,33 @@ class StorageController < ApplicationController
     render_partial
   end
 
+  def list_transaction_history
+    @xid = prepare_param(:xid)
+
+    record_count = sql_select_one ["SELECT COUNT(*) FROM Flashback_Transaction_Query WHERE XID = HEXTORAW(?)", @xid]
+
+    history = sql_select_iterator ["SELECT f.*, f.Undo_Change# Undo_Change_No,
+                                           0 Cumulated,
+                                           f.Undo_Change# Last_Undo_Change_No
+                                    FROM   Flashback_Transaction_Query f
+                                    WHERE  XID = HEXTORAW(?) ORDER BY Undo_Change#", @xid]
+
+    @history = []
+    prev_rec = nil
+    history.each do |h|
+      if !prev_rec.nil? && h.operation == prev_rec.operation && h.table_name == prev_rec.table_name
+        prev_rec.cumulated = true                                               # mark record
+        prev_rec.last_undo_change_no = h.undo_change_no
+      else                                                                      # process single record
+        h.cumulated = false                                                     # mark record
+        @history << h
+        prev_rec = h
+      end
+    end
+
+    render_partial
+  end
+
   def temp_usage
     @sort_segs = sql_select_all "\
         SELECT /* Panorama-Tool Ramm */ s.*,
