@@ -27,9 +27,12 @@ class ActiveSupport::TestCase
     'Test'
   end
 
-  #def cookies
-  #  {:client_key => 100 }
-  #end
+  def cookies
+    {
+        client_salt: 100,
+        client_key: Encryption.encrypt_value(100, 100)
+    }
+  end
 
   def management_pack_license
     if ENV['MANAGEMENT_PACK_LICENSE']
@@ -70,6 +73,7 @@ class ActiveSupport::TestCase
 
   def set_session_test_db_context
     # 2017/07/26 cookies are reset in ActionDispatch::IntegrationTest if using initialize_client_key_cookie
+    # possibly redundant to def cookies above
     cookies['client_salt'] = 100
     cookies['client_key']  = Encryption.encrypt_value(100, cookies['client_salt'])
 
