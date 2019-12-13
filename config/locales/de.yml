@@ -789,8 +789,8 @@
 
     OLTP-Komprimierung erfordert die Lizensierung der Advanced Compression Option.
   dragnet_helper_50_name:                                    Empfehlungen für evtl. sinnvolle OLTP-Komprimierung von Tabellen
-  dragnet_helper_50_param_1_hint:                            Mindestgröße der Tabelle in MB für Aufnahme in Resultat der Selektion
-  dragnet_helper_50_param_1_name:                            Mindestgröße der Tabelle in MB
+  dragnet_helper_50_param_1_hint:                            Mindestgröße der Tabelle, Partition oder SubPartition in MB für Aufnahme in Resultat der Selektion
+  dragnet_helper_50_param_1_name:                            Mindestgröße der Tabelle order Partition in MB
   dragnet_helper_50_param_2_hint:                            Maximaler Prozenatnteil Update-Operationen seit der letzten Analyse verglichen zur Anzahl Inserts + Deletes
   dragnet_helper_50_param_2_name:                            Max. % Updates verglichen zu Inserts + Deletes
 
