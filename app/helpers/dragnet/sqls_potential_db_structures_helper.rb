@@ -18,10 +18,11 @@ OLTP-compression requires licensing of Advanced Compression Option.
             '),
 
             :sql=> "\
-WITH Segments AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Segment_Name, Partition_Name, ROUND(Bytes/(1024*1024),2) Size_MB
+WITH Segments AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Segment_Name, Partition_Name, ROUND(SUM(Bytes/(1024*1024)),2) Size_MB
                   FROM   DBA_Segments
                   WHERE  Owner NOT IN (#{system_schema_subselect})
                   AND    Bytes/(1024*1024) > ?
+                  GROUP BY Owner, Segment_Name, Partition_Name
                  ),
      Tables AS   (SELECT /*+ NO_MERGE MATERIALIZE */ t.Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed, NULL Partition_Name,
                          m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, t.Compression
