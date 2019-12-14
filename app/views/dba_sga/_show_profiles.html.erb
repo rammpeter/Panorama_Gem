@@ -24,6 +24,17 @@
      )
    end
 
+  link_usage_in_sga = proc do |rec|
+    ajax_link(fn(rec.sga_usages), {
+                      :controller    => :dba_sga,
+                      :action        => :list_sql_area_sql_id,
+                      :sql_profile   => rec.name,
+                      :update_area   => @update_area,
+                      },
+                :title          => 'Show SQLs in SGA using this SQL profile'
+    )
+  end
+
    column_options = [
     {:caption=>"Name",                  :data=>proc{|rec| link_profile_name(rec)},              :title=>"Name of profile"},
     {:caption=>"Category",              :data=>proc{|rec| rec.category},                        :title=>"Category of profile" },
@@ -33,8 +44,8 @@
     {:caption=>"Type",                  :data=>proc{|rec| rec.type},                            :title=>"Type of the SQL profile (how it was created)" },
     {:caption=>"Status",                :data=>proc{|rec| rec.status},                          :title=>"Status of the SQL profile" },
     {:caption=>"Force matching",        :data=>proc{|rec| rec.force_matching},                  :title=>"If TRUE this causes SQL Profiles to target all SQL statements which have the same text after normalizing all literal values to bind variables. (Note that if a combination of literal values and bind variables is used in the same SQL text, no transformation occurs). This is analogous to the matching algorithm use by the FORCE option of the CURSOR_SHARING parameter.\nIf FALSE, literals are not transformed. This is analogous to the matching algorithm used by the EXACT option of the CURSOR_SHARING parameter." },
-    {:caption=>'Usages in SGA',         :data=>proc{|rec| fn(rec.sga_usages)},                  :title=>'Number of current usage of this profile in SGA (from gv$SQLArea.SQL_Profile)', :align=>:right },
-    {:caption=>'Usages in history',     :data=>proc{|rec| fn(rec.awr_usages)},                  :title=>"Number of historic usage of this profile in AWR history (Number of distinct SQL-ID from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat')}.SQL_Profile)", :align=>:right },
+    {:caption=>'Usages in SGA',         :data=>link_usage_in_sga,                               :title=>'Number of current usage of this profile in SGA (from gv$SQLArea.SQL_Profile)', :align=>:right },
+    {:caption=>'Usages in history',     :data=>proc{|rec| fn(rec.awr_usages)},                  :title=>"Number of historic usage of this profile in AWR history (Number of distinct SQL-ID from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat')}.SQL_Profile)", data_title: proc{|rec| "%t\nOne of SQL-IDs = '#{rec.min_history_sql_id}'"}, :align=>:right },
     {:caption=>"SQL",                   :data=>proc{|rec| link_sql_text(rec)},                  :title=>"Un-normalized SQL text (first 30 characters)" },
   ]
 

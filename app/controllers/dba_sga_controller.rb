@@ -46,10 +46,11 @@ class DbaSgaController < ApplicationController
     instance = prepare_param_instance
 
     @filters = {}
-    @filters[:instance] = instance            if instance
-    @filters[:username] = params[:username]   if params[:username]  && params[:username]  != ''
-    @filters[:sql_id]   = params[:sql_id]     if params[:sql_id]    && params[:sql_id]    != ''
-    @filters[:filter]   = params[:filter]     if params[:filter]    && params[:filter]    != ''
+    @filters[:instance]     = instance              if instance
+    @filters[:username]     = params[:username]     if params[:username]    && params[:username]    != ''
+    @filters[:sql_id]       = params[:sql_id]       if params[:sql_id]      && params[:sql_id]      != ''
+    @filters[:filter]       = params[:filter]       if params[:filter]      && params[:filter]      != ''
+    @filters[:sql_profile]  = params[:sql_profile]  if params[:sql_profile] && params[:sql_profile] != ''
 
     @sqls = fill_sql_area_list(modus, @filters,
                           params[:maxResultCount],
@@ -83,6 +84,11 @@ class DbaSgaController < ApplicationController
     if filters[:sql_id]
       where_string << " AND s.SQL_ID LIKE '%'||?||'%'"
       where_values << filters[:sql_id]
+    end
+
+    if filters[:sql_profile]
+      where_string << " AND s.SQL_Profile = ?"
+      where_values << filters[:sql_profile]
     end
 
     where_values << max_result_count
@@ -1473,14 +1479,14 @@ class DbaSgaController < ApplicationController
 
   # Existierende SQL-Profiles
   def show_profiles
-    @profiles = sql_select_iterator "SELECT p.*, em.SGA_Usages, awr.AWR_Usages
+    @profiles = sql_select_iterator "SELECT p.*, em.SGA_Usages, awr.AWR_Usages, awr.Min_History_SQL_ID
                                      FROM   DBA_SQL_Profiles p
                                      LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ SQL_Profile, COUNT(*) SGA_Usages
                                                         FROM   gv$SQLArea
                                                         WHERE  SQL_profile IS NOT NULL
                                                         GROUP BY SQL_Profile
                                                        ) em ON em.SQL_Profile = p.Name
-                                     LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ SQL_Profile, COUNT(DISTINCT SQL_ID) AWR_Usages
+                                     LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ SQL_Profile, COUNT(DISTINCT SQL_ID) AWR_Usages, MIN(SQL_ID) Min_History_SQL_ID
                                                         FROM   DBA_Hist_SQLStat
                                                         WHERE  SQL_profile IS NOT NULL
                                                         GROUP BY SQL_Profile
@@ -1499,11 +1505,8 @@ class DbaSgaController < ApplicationController
 
   # Existierende SQL-Plan Baselines
   def show_plan_baselines
-    @force_matching_signature = params[:force_matching_signature]
-    @force_matching_signature = nil if params[:force_matching_signature] == ''
-
-    @exact_matching_signature = params[:exact_matching_signature]
-    @exact_matching_signature = nil if params[:exact_matching_signature] == ''
+    @force_matching_signature = prepare_param(:force_matching_signature)
+    @exact_matching_signature = prepare_param(:exact_matching_signature)
 
     where_string = ''
     where_values = []

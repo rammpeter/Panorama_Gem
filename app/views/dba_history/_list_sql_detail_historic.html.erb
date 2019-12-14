@@ -102,7 +102,7 @@ end
 
 <%= render :partial=>"dba_sga/list_sql_profiles" %>
 
-<% if get_db_version >= '11.1' %>
+<% if get_db_version >= '11.1' &&  (@sql.force_matching_signature || @exact_matching_signature) %>
   <% @update_area_sql_plan_baseline = get_unique_area_id %>
   <script type="text/javascript">
       ajax_html(
@@ -125,7 +125,7 @@ end
     <div id="<%= @update_area_sql_translation %>"></div>
 <% end %>
 
-<% if get_db_version >= '11.1' %>
+<% if get_db_version >= '11.1' &&  (@sql.force_matching_signature || @exact_matching_signature) %>
     <% @update_area_sql_patches = get_unique_area_id %>
 
     <script type="text/javascript">

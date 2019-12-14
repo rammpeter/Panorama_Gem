@@ -56,6 +56,9 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
 
       post '/dba_sga/list_sql_area_sql_id', :params => {:format=>:html, :maxResultCount=>"100", :instance=>"1", :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
       assert_response :success
+
+      post '/dba_sga/list_sql_area_sql_id', :params => {:format=>:html, sql_profile: 'hugo', :update_area=>:hugo }
+      assert_response :success
     end
   end
 
