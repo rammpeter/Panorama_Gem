@@ -857,58 +857,60 @@ class DbaSgaController < ApplicationController
     # Konkrete Objekte im Cache
     @objects = sql_select_all ["
       SELECT /*+ RULE */ /* Panorama-Tool Ramm */
-        NVL(o.Owner,'[UNKNOWN]') Owner,                       
-        NVL(o.Object_Name,'TS='||ts.Name) Object_Name,
-        #{@show_partitions=="1" ? "o.SubObject_Name" : "''"} SubObject_Name,
-        MIN(o.Object_Type) Object_Type,  -- MIN statt Aufnahme in GROUP BY
-        MIN(CASE WHEN o.Object_Type LIKE 'INDEX%' THEN
-                  (SELECT Table_Owner||'.'||Table_Name FROM DBA_Indexes i WHERE i.Owner = o.Owner AND i.Index_Name = o.Object_Name)
-        ELSE NULL END) Table_Name, -- MIN statt Aufnahme in GROUP BY
-        NVL(SUM(sqls.SQL_ID_Count),0)  SQL_ID_Count,
-        SUM(bh.Blocks * ts.BlockSize) / (1024*1024) Size_MB,
-        SUM(bh.Blocks)      Blocks,
-        SUM(bh.DirtyBlocks) DirtyBlocks,
-        SUM(bh.TempBlocks)  TempBlocks,
-        SUM(bh.Ping)        Ping,
-        SUM(bh.Stale)       Stale,
-        SUM(bh.Direct)      Direct,
-        SUM(Forced_Reads)   Forced_Reads,
-        SUM(Forced_Writes)  Forced_Writes,
-        SUM(Status_cr)      Status_cr,
-        SUM(Status_pi)      Status_pi,
-        SUM(Status_read)    Status_read,
-        SUM(Status_scur)    Status_scur,
-        SUM(Status_xcur)    Status_xcur
-      FROM                                                    
-        (SELECT /*+ NO_MERGE */
-                ObjD, TS#,
-                Count(*) Blocks,
-                SUM(DECODE(Dirty,'Y',1,0))  DirtyBlocks,
-                SUM(DECODE(Temp,'Y',1,0))   TempBlocks,
-                SUM(DECODE(Ping,'Y',1,0))   Ping,
-                SUM(DECODE(Stale,'Y',1,0))  Stale,
-                SUM(DECODE(Direct,'Y',1,0)) Direct,
-                SUM(Forced_Reads)           Forced_Reads,
-                SUM(Forced_Writes)          Forced_Writes,
-                SUM(DECODE(Status, 'cr', 1, 0))    Status_cr,
-                SUM(DECODE(Status, 'pi', 1, 0))    Status_pi,
-                SUM(DECODE(Status, 'read', 1, 0))    Status_read,
-                SUM(DECODE(Status, 'scur', 1, 0))    Status_scur,
-                SUM(DECODE(Status, 'xcur', 1, 0))    Status_xcur
-        FROM GV$BH                                            
-        WHERE Status != 'free'  /* dont show blocks of truncated tables */
-        AND   Inst_ID = ?
-        GROUP BY ObjD, TS#
-        ) BH
-        LEFT OUTER JOIN DBA_Objects o ON o.Data_Object_ID = bh.ObjD
-        LEFT OUTER JOIN sys.TS$ ts ON ts.TS# = bh.TS#
-        LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ o.Owner, o.Object_Name, COUNT(DISTINCT p.SQL_ID) SQL_ID_Count
-                         FROM   gv$SQL_Plan p
-                         JOIN   DBA_Objects o ON o.Object_ID = p.Object#
-                         WHERE  p.Object# IS NOT NULL
-                         AND    p.Inst_ID = ?
-                         GROUP BY o.Owner, o.Object_Name
-                        ) sqls ON sqls.Owner = o.Owner AND sqls.Object_Name = o.Object_Name
+             NVL(o.Owner,'[UNKNOWN]') Owner,
+             NVL(o.Object_Name,'TS='||ts.Name) Object_Name,
+             #{@show_partitions=="1" ? "o.SubObject_Name" : "''"} SubObject_Name,
+             MIN(o.Object_Type) Object_Type,  -- MIN statt Aufnahme in GROUP BY
+             MIN(CASE WHEN o.Object_Type LIKE 'INDEX%' THEN
+                       (SELECT Table_Owner||'.'||Table_Name FROM DBA_Indexes i WHERE i.Owner = o.Owner AND i.Index_Name = o.Object_Name)
+             ELSE NULL END) Table_Name, -- MIN statt Aufnahme in GROUP BY
+             NVL(SUM(sqls.SQL_ID_Count),0)  SQL_ID_Count,
+             SUM(bh.Blocks * ts.BlockSize) / (1024*1024) Size_MB,
+             SUM(bh.Blocks)      Blocks,
+             SUM(bh.DirtyBlocks) DirtyBlocks,
+             SUM(bh.TempBlocks)  TempBlocks,
+             SUM(bh.Ping)        Ping,
+             SUM(bh.Stale)       Stale,
+             SUM(bh.Direct)      Direct,
+             SUM(Forced_Reads)   Forced_Reads,
+             SUM(Forced_Writes)  Forced_Writes,
+             SUM(Status_cr)      Status_cr,
+             SUM(Status_pi)      Status_pi,
+             SUM(Status_read)    Status_read,
+             SUM(Status_scur)    Status_scur,
+             SUM(Status_xcur)    Status_xcur
+      FROM   (SELECT /*+ NO_MERGE */
+                     ObjD, TS#,
+                     Count(*) Blocks,
+                     SUM(DECODE(Dirty,'Y',1,0))  DirtyBlocks,
+                     SUM(DECODE(Temp,'Y',1,0))   TempBlocks,
+                     SUM(DECODE(Ping,'Y',1,0))   Ping,
+                     SUM(DECODE(Stale,'Y',1,0))  Stale,
+                     SUM(DECODE(Direct,'Y',1,0)) Direct,
+                     SUM(Forced_Reads)           Forced_Reads,
+                     SUM(Forced_Writes)          Forced_Writes,
+                     SUM(DECODE(Status, 'cr', 1, 0))    Status_cr,
+                     SUM(DECODE(Status, 'pi', 1, 0))    Status_pi,
+                     SUM(DECODE(Status, 'read', 1, 0))    Status_read,
+                     SUM(DECODE(Status, 'scur', 1, 0))    Status_scur,
+                     SUM(DECODE(Status, 'xcur', 1, 0))    Status_xcur
+              FROM   GV$BH
+              WHERE  Status != 'free'  /* dont show blocks of truncated tables */
+              AND   Inst_ID = ?
+              GROUP BY ObjD, TS#
+             ) BH
+      LEFT OUTER JOIN DBA_Objects o ON o.Data_Object_ID = bh.ObjD
+      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ t.ts#, t.Name, d.Block_Size BlockSize
+                       FROM   v$Tablespace t
+                       JOIN   DBA_Tablespaces d ON d.Tablespace_Name = t.Name
+                      ) ts ON ts.TS# = bh.TS#
+      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ o.Owner, o.Object_Name, COUNT(DISTINCT p.SQL_ID) SQL_ID_Count
+                       FROM   gv$SQL_Plan p
+                       JOIN   DBA_Objects o ON o.Object_ID = p.Object#
+                       WHERE  p.Object# IS NOT NULL
+                       AND    p.Inst_ID = ?
+                       GROUP BY o.Owner, o.Object_Name
+                      ) sqls ON sqls.Owner = o.Owner AND sqls.Object_Name = o.Object_Name
       GROUP BY NVL(o.Owner,'[UNKNOWN]'), NVL(o.Object_Name,'TS='||ts.Name)#{@show_partitions=="1" ? ", o.SubObject_Name" : ""}
       ORDER BY 7 DESC", @instance, @instance]
     @total_blocks = 0                  # Summation der Blockanzahl des Caches
