@@ -483,9 +483,9 @@ class StorageController < ApplicationController
 
     case
     when object_type == 'TABLE' || object_type == 'TABLE PARTITION' then
-        sql = "SELECT /*+ PARALLEL_INDEX(l,2) */ COUNT(*) FROM   #{object_owner}.\"#{object_name}\""
-        sql << " PARTITION (\"#{partition_name}\")"         if partition_name
-        sql << " SUBPARTITION (\"#{subpartition_name}\")"   if subpartition_name
+        sql = "SELECT /*+ PARALLEL_INDEX(l,2) */ COUNT(*) FROM   #{object_owner}.\"#{object_name.upcase}\""
+        sql << " PARTITION (\"#{partition_name.upcase}\")"         if partition_name
+        sql << " SUBPARTITION (\"#{subpartition_name.upcase}\")"   if subpartition_name
         sql << " l"
         num_rows = sql_select_one sql
     when object_type == 'INDEX' then

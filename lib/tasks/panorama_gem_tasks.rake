@@ -32,7 +32,7 @@ Rake::TaskManager.class_eval do
     Rake.application.delete_task("db:test:purge")
     Rake.application.delete_task("db:abort_if_pending_migrations")
 
-    msg = "Test-Environment:
+    msg = "Test-Environment at #{Time.now}:
 TEST_HOST               = #{ENV['TEST_HOST']                || 'not set, defaults to localhost'}
 TEST_PORT                 = #{ENV['TEST_PORT']                || 'not set, defaults to 1521'}
 TEST_SERVICENAME          = #{ENV['TEST_SERVICENAME']         || 'not set, defaults to ORCLPDB1'}
