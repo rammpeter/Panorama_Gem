@@ -481,7 +481,7 @@ class DbaSchemaController < ApplicationController
                 LEFT OUTER JOIN DBA_Lobs l               ON l.Owner = c.Owner AND l.Table_Name = c.Table_Name AND l.Column_Name = c.Column_Name
                 LEFT OUTER JOIN DBA_Objects o            ON o.Owner = c.Owner AND o.Object_Name = c.Table_Name AND o.Object_Type = 'TABLE'
                 LEFT OUTER JOIN DBA_Tab_Col_Statistics s ON s.Owner = c.Owner AND s.Table_Name = c.Table_Name AND s.Column_Name = c.Column_Name
-                #{'LEFT OUTER JOIN sys.Col_Usage$ u         ON u.Obj# = o.Object_ID AND u.IntCol# = c.Column_ID' if get_db_version >= '11.2'}  -- fuer normale User nicht sichtbar in 10g
+                #{'LEFT OUTER JOIN sys.Col_Usage$ u         ON u.Obj# = o.Object_ID AND u.IntCol# = c.Column_ID' if get_db_version >= '11.2' && !PanoramaConnection.autonomous_database?}  -- fuer normale User nicht sichtbar in 10g
                 WHERE  c.Owner = ? AND c.Table_Name = ?
                 ORDER BY c.Column_ID
                ", @owner, @table_name]
