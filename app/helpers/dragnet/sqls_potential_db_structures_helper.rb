@@ -430,7 +430,7 @@ ORDER BY DECODE(ic.Index_Name, NULL, 1, 0), t.Num_Rows DESC
 Activation requires recreation of table a'la CREATE TABLE NewTab LOB(ColName) STORE AS SECUREFILE (COMPRESS HIGH) AS SELECT * FROM OrgTab;
 Licensing of Advanced Compression Option is required for usage of LOB-Compression."),
             :sql=> "
-SELECT l.Owner, l.Table_name, l.Column_Name, tc.Data_Type, l.Segment_Name, l.Tablespace_Name, s.MBytes,
+SELECT /*+ ORDERED */ l.Owner, l.Table_name, l.Column_Name, tc.Data_Type, l.Segment_Name, l.Tablespace_Name, s.MBytes,
        l.Encrypt, l.Compression, l.Deduplication, l.In_Row, l.Partitioned, l.Securefile, t.Num_Rows, tc.Num_Nulls, tc.Avg_Col_Len Avg_Col_Len_In_Row
 FROM   DBA_Lobs l
 LEFT OUTER JOIN DBA_Tables t       ON t.Owner = l.Owner AND t.Table_Name = l.Table_Name
