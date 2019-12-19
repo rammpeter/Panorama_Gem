@@ -934,15 +934,12 @@
     Wenn der Optimizer die entscheidung nicht eigenständig trifft, sind hierzu die Hints /*+ PARALLEL_INDEX(Alias, Degree) INDEX_FFS(Alias) */ zu verwenden.
   dragnet_helper_70_name:                                   Optimierbare Index Full-Scan Operationen
 
-  dragnet_helper_71_desc: |-
-    FullTableScan-Zugriffe sind dann kritisch, wenn nur kleine Anteile einer Tabelle für die Selektion relevant sind, andererseits sinnvoll bei Verarbeitung kompletter Tabelleninhalte.
-    Fehl am Platze sind FullTableScans i.d.R. in OLTP-artigen Zugriffen (kleine Zugriffszeit, häufige Zugriffe).
-  dragnet_helper_71_name:                                   Optimierbare FullTableScan-Operationen nach Executions
-
   dragnet_helper_72_desc: |-
     FullTableScan-Zugriffe sind dann kritisch, wenn nur kleine Anteile einer Tabelle für die Selektion relevant sind, andererseits sinnvoll bei Verarbeitung kompletter Tabelleninhalte.
     Fehl am Platze sind FullTableScans i.d.R. in OLTP-artigen Zugriffen (kleine Zugriffszeit, häufige Zugriffe).
-  dragnet_helper_72_name:                                   Optimierbare FullTableScan-Operationen nach Executions und Rows_Processed
+    Durch Etablieren eines Index kann Laufzeit evtl. deutlich verringert werden.
+  dragnet_helper_72_name: |-
+    Optimierbare FullTableScan-Operationen: evtl. fehlende Indizes
 
   dragnet_helper_73_desc: |-
     Lang laufende Foreign Key-Prüfungen bei Delete werden oftmals durch fehlende Indizierung der referenzierenden Tabelle verursacht.

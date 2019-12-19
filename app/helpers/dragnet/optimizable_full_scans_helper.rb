@@ -47,80 +47,68 @@ If optimizer does not decide to do so himself, you can use hints /*+ PARALLEL_IN
             :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') }]
         },
         {
-            :name  => t(:dragnet_helper_71_name, :default=>'Optimizable full table scan operations by executions'),
-            :desc  => t(:dragnet_helper_71_desc, :default=>'Access by full table scan is critical if only small parts of table are relevant for selection, otherwise are adequate for processing of whole table data.
-They are out of place for OLTP-like access (small access time, many executions).
-'),
-            :sql=> "WITH Backward AS (SELECT ? Days FROM Dual)
-                     SELECT /* DB-Tools Ramm FullTableScan */ p.SQL_ID, p.Object_Owner, p.Object_Name,
-                              (SELECT Num_Rows FROM DBA_Tables t WHERE t.Owner = p.Object_Owner AND t.Table_Name = p.Object_Name) Num_Rows,
-                              s.Elapsed_Secs, s.Executions, s.Disk_Reads, s.Buffer_Gets, s.Rows_Processed,
-                             (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=p.DBID AND t.SQL_ID=p.SQL_ID AND RowNum < 2) SQLText
-                      FROM  (
-                              SELECT /*+ NO_MERGE */ DISTINCT p.DBID, p.Plan_Hash_Value, p.SQL_ID, p.Object_Owner, p.Object_Name /*, p.Access_Predicates, p.Filter_Predicates */
-                              FROM  DBA_Hist_SQL_Plan p
-                              WHERE Operation = 'TABLE ACCESS'
-                              AND   Options LIKE '%FULL'            /* Auch STORAGE FULL der Exadata mit inkludieren */
-                              AND   Object_Owner NOT IN ('SYS')
-                              AND   Timestamp > SYSDATE-(SELECT Days FROM Backward)
-                            ) p
-                      JOIN  (SELECT s.DBID, s.SQL_ID, s.Plan_Hash_Value,
-                                    ROUND(SUM(Elapsed_Time_Delta)/1000000,2) Elapsed_Secs,
-                                    SUM(Executions_Delta)           Executions,
-                                    SUM(Disk_Reads_Delta)           Disk_Reads,
-                                    SUM(Buffer_Gets_Delta)          Buffer_Gets,
-                                    SUM(Rows_Processed_Delta)       Rows_Processed
-                             FROM   DBA_Hist_SQLStat s
-                             JOIN   (SELECT /*+ NO_MERGE */ DBID, Instance_Number, MIN(Snap_ID) Snap_ID
-                                     FROM   DBA_Hist_SnapShot ss
-                                     WHERE  Begin_Interval_Time > SYSDATE-(SELECT Days FROM Backward)
-                                     GROUP BY DBID, Instance_Number
-                                    ) MaxSnap ON MaxSnap.DBID            = s.DBID
-                                             AND   MaxSnap.Instance_Number = s.Instance_Number
-                                             AND   s.Snap_ID               > MaxSnap.Snap_ID
-                             GROUP BY s.DBID, s.SQL_ID, s.Plan_Hash_Value
-                             HAVING SUM(Executions_Delta) > ?  -- Nur vielfache Ausfuehrung mit Full Scan stellt Problem dar
-                            ) s ON s.DBID=p.DBID AND s.SQL_ID=p.SQL_ID AND s.Plan_Hash_Value=p.Plan_Hash_Value
-                      ORDER BY Executions*Num_Rows DESC NULLS LAST",
-            :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
-                         {:name=> t(:dragnet_helper_param_executions_name, :default=>'Minimum number of executions'), :size=>8, :default=>100, :title=> t(:dragnet_helper_param_executions_hint, :default=>'Minimum number of executions within time period for consideration in result')},
-            ]
-        },
-        {
-            :name  => t(:dragnet_helper_72_name, :default=>'Optimizable full table scans operations by executions and rows processed'),
+            :name  => t(:dragnet_helper_72_name, :default=>'Optimizable full table scans operations: possibly missing indexes '),
             :desc  => t(:dragnet_helper_72_desc, :default=>'Access by full table scan is critical if only small parts of table are relevant for selection, otherwise are adequate for processing of whole table data.
 They are out of place for OLTP-like access (small access time, many executions).
+Placing an index may reduce runtime significant.
 '),
-            :sql=> "SELECT /* DB-Tools Ramm FullTableScans */ * FROM (
-                            SELECT i.SQL_ID, i.Object_Owner, i.Object_Name, ROUND(i.Rows_Processed/i.Executions,2) Rows_per_Exec,
-                                   i.Num_Rows, i.Elapsed_Time_Secs, i.Executions, i.Disk_Reads, i.Buffer_Gets, i.Rows_Processed,
-                                   (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=i.DBID AND t.SQL_ID=i.SQL_ID AND RowNum < 2) SQL_Text
-                            FROM
-                                   (
-                                    SELECT /*+ PARALLEL(p,4) PARALLEL(s,4) PARALLEL(ss.4) */
-                                           s.DBID, s.SQL_ID, p.Object_Owner, p.Object_Name,
-                                           SUM(Executions_Delta)     Executions,
-                                           SUM(Disk_Reads_Delta)     Disk_Reads,
-                                           SUM(Buffer_Gets_Delta)    Buffer_Gets,
-                                           SUM(Rows_Processed_Delta) Rows_Processed,
-                                           MIN(t.Num_Rows) Num_Rows,
-                                           ROUND(SUM(s.Elapsed_Time_Delta)/1000000,2) Elapsed_Time_Secs
-                                    FROM   DBA_Hist_SQL_Plan p
-                                    JOIN   DBA_Hist_SQLStat s   ON s.DBID=p.DBID AND s.SQL_ID=p.SQL_ID AND s.Plan_Hash_Value=p.Plan_Hash_Value
-                                    JOIN   DBA_Hist_Snapshot ss ON ss.DBID=s.DBID AND ss.Instance_Number=s.Instance_Number AND ss.Snap_ID=s.Snap_ID
-                                    JOIN   DBA_Tables t         ON t.Owner=p.Object_Owner AND t.Table_Name=p.Object_Name
-                                    WHERE  p.Operation = 'TABLE ACCESS'
-                                    AND    p.Options LIKE '%FULL'           /* Auch STORAGE FULL der Exadata mit inkludieren */
-                                    AND    ss.Begin_Interval_Time > SYSDATE - ?
-                                    AND    p.Object_Owner NOT IN ('SYS')
-                                    AND    t.Num_Rows > ?
-                                    GROUP BY s.DBID, s.SQL_ID, p.Object_Owner, p.Object_Name
-                                   ) i
-                            WHERE  Rows_Processed > 0
-                            AND    Executions > ?
-                     )
-                     WHERE  SQL_Text NOT LIKE '%dbms_stats%'
-                     ORDER BY Rows_per_Exec/Num_Rows/Executions",
+            :sql=> "\
+WITH Backward AS (SELECT ? Days FROM Dual)
+SELECT /* DB-Tools Ramm FullTableScans */
+       SQL_ID, Object_Owner, Object_Name, Num_Rows,
+       Executions,
+       ROUND(Elapsed_Time_Secs)                   \"Elapsed secs for SQL total\",
+       Seconds_Active                             \"ASH secs for table total\",
+       ROUND(Rows_per_Exec, 1)                    \"Rows per Exec\",
+       ROUND(Elapsed_Time_Secs/Executions,2)      \"Elapsed Secs per Exec\",
+       ROUND(Seconds_Active/Executions, 2)        \"ASH secs for table per Exec\",
+       ROUND(Disk_Reads/Executions,1)             \"Disk reads per Exec\",
+       ROUND(Buffer_Gets/Executions)              \"Buffer gets per Exec\",
+       SQL_Text
+FROM   (
+        SELECT i.*, h.Seconds_Active, i.Rows_Processed/i.Executions Rows_per_Exec,
+               (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=i.DBID AND t.SQL_ID=i.SQL_ID AND RowNum < 2) SQL_Text
+        FROM   (
+                SELECT /*+ PARALLEL(p,4) PARALLEL(s,4) PARALLEL(ss.4) */
+                       s.DBID, s.SQL_ID, p.Object_Owner, p.Object_Name,
+                       SUM(Executions_Delta)     Executions,
+                       SUM(Disk_Reads_Delta)     Disk_Reads,
+                       SUM(Buffer_Gets_Delta)    Buffer_Gets,
+                       SUM(Rows_Processed_Delta) Rows_Processed,
+                       MIN(t.Num_Rows) Num_Rows,
+                       ROUND(SUM(s.Elapsed_Time_Delta)/1000000,2) Elapsed_Time_Secs
+                FROM   DBA_Hist_SQL_Plan p
+                JOIN   DBA_Hist_SQLStat s   ON s.DBID=p.DBID AND s.SQL_ID=p.SQL_ID AND s.Plan_Hash_Value=p.Plan_Hash_Value
+                JOIN   DBA_Hist_Snapshot ss ON ss.DBID=s.DBID AND ss.Instance_Number=s.Instance_Number AND ss.Snap_ID=s.Snap_ID
+                JOIN   DBA_Tables t         ON t.Owner=p.Object_Owner AND t.Table_Name=p.Object_Name
+                WHERE  p.Operation = 'TABLE ACCESS'
+                AND    p.Options LIKE '%FULL'           /* Auch STORAGE FULL der Exadata mit inkludieren */
+                AND    ss.Begin_Interval_Time > SYSDATE - (SELECT Days FROM Backward)
+                AND    p.Object_Owner NOT IN (#{system_schema_subselect})
+                AND    t.Num_Rows > ?
+                GROUP BY s.DBID, s.SQL_ID, p.Object_Owner, p.Object_Name
+               ) i
+        LEFT OUTER JOIN  (SELECT /*+ NO_MERGE */ h.DBID, h.SQL_ID, o.Owner, o.Object_Name, SUM(Seconds_Active) Seconds_Active
+                          FROM   (SELECT /*+ PARALLEL(2) NO_MERGE */ h.DBID, h.SQL_ID, h.Current_Obj#, COUNT(*) * 10 Seconds_Active
+                                  FROM   DBA_Hist_Active_Sess_History h
+                                  JOIN   DBA_Hist_Snapshot ss ON ss.DBID = h.DBID AND ss.Instance_Number = h.Instance_Number AND ss.Snap_ID = h.Snap_ID
+                                  WHERE  ss.Begin_Interval_Time > SYSDATE - (SELECT Days FROM Backward)
+                                  AND    h.SQL_Plan_Operation = 'TABLE ACCESS'
+                                  AND    h.SQL_Plan_Options LIKE '%FULL'  /* also include Exadata variants */
+                                  AND    h.User_ID NOT IN (#{system_userid_subselect})
+                                  AND    h.Current_Obj# != -1
+                                  GROUP BY h.DBID, h.SQL_ID, h.Current_Obj#
+                                 ) h
+                          JOIN   DBA_Objects o ON o.Object_ID = h.Current_Obj#
+                          GROUP BY h.DBID, h.SQL_ID, o.Owner, o.Object_Name
+                         ) h ON h.DBID = i.DBID AND h.SQL_ID = i.SQL_ID AND h.Owner = i.Object_Owner AND h.Object_Name = i.Object_Name
+        WHERE  i.Rows_Processed > 0
+        AND    i.Executions > ?
+       )
+WHERE  SQL_Text NOT LIKE '%dbms_stats%'
+--ORDER BY Rows_per_Exec/Num_Rows/Executions/Elapsed_Time_Secs
+ORDER BY Elapsed_Time_Secs * Num_Rows * NVL(Seconds_Active, 1)/DECODE(Rows_per_Exec, 0, 1, Rows_per_Exec)  DESC
+              ",
             :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
                          {:name=>t(:dragnet_helper_param_minimal_rows_name, :default=>'Minimum number of rows in table'), :size=>8, :default=>100000, :title=>t(:dragnet_helper_param_minimal_rows_hint, :default=>'Minimum number of rows in table for consideration in selection')},
                          {:name=> t(:dragnet_helper_param_executions_name, :default=>'Minimum number of executions'), :size=>8, :default=>100, :title=> t(:dragnet_helper_param_executions_hint, :default=>'Minimum number of executions within time period for consideration in result')},
