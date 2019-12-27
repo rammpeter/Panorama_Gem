@@ -1,6 +1,9 @@
 require "test_helper"
 
 class SpecAdditionsTest < ApplicationSystemTestCase
+  setup do
+    set_session_test_db_context                                                 # Ensure existence of Panorama-Sampler tables at least
+  end
 
   test "Dragnet investigation" do
     # Call menu entry
