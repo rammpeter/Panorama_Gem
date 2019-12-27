@@ -1,4 +1,5 @@
 .idea/
+coverage/*
 Panorama.war
 client_info.store/*
 Gemfile.lock
