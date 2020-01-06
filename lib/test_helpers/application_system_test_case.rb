@@ -40,7 +40,11 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   using   = (RbConfig::CONFIG['host_os'] != 'darwin' ? :headless_chrome : :chrome) # run headless if not Mac-OS
   options = {driver_opts: '--whitelisted-ips'}  # command line options for chromedriver
 
-  driven_by :selenium, using: using, screen_size: [1400, 1000], options: options
+  driven_by :selenium, using: using, screen_size: [1400, 1000], options: options do |driver_options|
+    driver_options.add_argument('--no-sandbox')
+    driver_options.add_argument('--disable-gpu')
+    driver_options.add_argument('--disable-dev-shm-usage')
+  end
 
   def wait_for_ajax(timeout_secs = 300)
     loop_count = 0
