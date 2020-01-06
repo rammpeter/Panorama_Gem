@@ -36,7 +36,7 @@ end
 =end
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
-  # $DEBUG = true # Activate logging for Webdriver also
+  $DEBUG = true # Activate logging for Webdriver also
   using   = (RbConfig::CONFIG['host_os'] != 'darwin' ? :headless_chrome : :chrome) # run headless if not Mac-OS
   options = {driver_opts: '--whitelisted-ips'}  # command line options for chromedriver
 
