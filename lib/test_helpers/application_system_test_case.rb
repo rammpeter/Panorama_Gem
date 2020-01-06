@@ -2,7 +2,11 @@
 
 #TODO: test/dummy/public/assets entsorgen incl. .sprockets* vor Tests
 
+# Remark 2020-01-06
+# You also don’t need to use Capybara’s save_and_open_screenshot, because Rails provides a take_screenshot method, that saves a screenshot in /tmp, and provides a link in the test output for easy access.
 
+
+=begin
 Capybara.register_driver :headless_chrome do |app|
   args = ['window-size=1400,1000']                                              # window must be large enough in Y-dimension to paint full menu
   args.concat %w[headless disable-gpu] if RbConfig::CONFIG['host_os'] != 'darwin' # run headless if not Mac-OS
@@ -22,21 +26,19 @@ Capybara.register_driver :headless_chrome do |app|
   driver = Capybara::Selenium::Driver.new(
       app,
       browser: :chrome,
-      desired_capabilities: capabilities,
-#      driver_opts: {
-#          # verbose: true,                                                      # list chromedriver debug output
-#          whitelisted_ips: '',                                                  # Allow usage of port 9515 without EXPOSE in Dockerfile
-#      }
+      desired_capabilities: capabilities
   )
 
   # Selenium::WebDriver.logger.level = :debug                                     # Enable Selenium logging to console
 
   driver
 end
+=end
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
-  #driven_by :selenium, using: :chrome, screen_size: [2560, 1440]
-  driven_by :headless_chrome
+  # run headless if not Mac-OS
+  driven_by :selenium, using: (RbConfig::CONFIG['host_os'] != 'darwin' ? :headless_chrome : :chrome), screen_size: [1400, 1000]
+#  driven_by :headless_chrome
 
   def wait_for_ajax(timeout_secs = 300)
     loop_count = 0
