@@ -36,9 +36,11 @@ end
 =end
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
-  # run headless if not Mac-OS
-  driven_by :selenium, using: (RbConfig::CONFIG['host_os'] != 'darwin' ? :headless_chrome : :chrome), screen_size: [1400, 1000]
-#  driven_by :headless_chrome
+  # $DEBUG = true # Activate logging for Webdriver also
+  using   = (RbConfig::CONFIG['host_os'] != 'darwin' ? :headless_chrome : :chrome) # run headless if not Mac-OS
+  options = {driver_opts: '--whitelisted-ips'}  # command line options for chromedriver
+
+  driven_by :selenium, using: using, screen_size: [1400, 1000], options: options
 
   def wait_for_ajax(timeout_secs = 300)
     loop_count = 0
