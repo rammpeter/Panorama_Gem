@@ -41,9 +41,9 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   options = {driver_opts: '--whitelisted-ips'}  # command line options for chromedriver
 
   driven_by :selenium, using: using, screen_size: [1400, 1000], options: options do |driver_options|
-    driver_options.add_argument('--no-sandbox')
-    driver_options.add_argument('--disable-gpu')
-    driver_options.add_argument('--disable-dev-shm-usage')
+    driver_options.add_argument('--no-sandbox')                                 # allow running chrome as root in docker
+    driver_options.add_argument('--disable-gpu')                                # run headless in docker if not Mac-OS
+    driver_options.add_argument('--disable-dev-shm-usage')                      # try to prevent Selenium::WebDriver::Error::NoSuchDriverError: invalid session id
   end
 
   def wait_for_ajax(timeout_secs = 300)
