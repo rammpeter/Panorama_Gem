@@ -397,12 +397,18 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
 
   test "list_awr_sql_monitor_report_html with xhr: true" do
     if get_db_version >= '11.1' && management_pack_license == :diagnostics_and_tuning_pack
+      origins = ['GV$SQL_MONITOR']
+      report_id_sga  = sql_select_one "SELECT  MAX(report_ID) FROM GV$SQL_MONITOR WHERE Inst_ID = 1"
+
       # DBA_Hist_Reports available beginning with 12.1
-      origins = get_db_version >= '12.1' ? ['DBA_Hist_Reports', 'GV$SQL_MONITOR'] : ['GV$SQL_MONITOR']
+      if get_db_version >= '12.1'
+        origins << 'DBA_Hist_Reports'
+        report_id_hist = sql_select_one "SELECT MAX(report_ID) FROM DBA_HIST_REPORTS"
+      end
 
       origins.each do |origin|
         post '/dba_history/list_awr_sql_monitor_report_html', params: {format: :html,
-                                                                       report_id:             1,
+                                                                       report_id:             origin == 'GV$SQL_MONITOR' ? report_id_sga : report_id_hist,
                                                                        instance:              1,
                                                                        sid:                   1,
                                                                        serialno:              1,
