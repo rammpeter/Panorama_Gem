@@ -2325,12 +2325,12 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
   end
 
   def list_awr_sql_monitor_report_html
-    report_id   = params[:report_id]
-    instance    = params[:instance]
-    sid         = params[:sid]
-    serialno    = params[:serialno]
-    sql_id      = params[:sql_id]
-    sql_exec_id = params[:sql_exec_id]
+    report_id   = prepare_param_int(:report_id)
+    instance    = prepare_param_int(:instance)
+    sid         = prepare_param_int(:sid)
+    serialno    = prepare_param_int(:serialno)
+    sql_id      = prepare_param(:sql_id)
+    sql_exec_id = prepare_param_int(:sql_exec_id)
     origin      = params[:origin]
     download_oracle_com_reachable = params[:download_oracle_com_reachable] == 'true'
 

@@ -291,6 +291,12 @@ module ApplicationHelper
     retval
   end
 
+  def prepare_param_int(param_sym)
+    retval = prepare_param(param_sym)
+    return nil if retval.nil?
+    retval.to_i
+  end
+
   # Aufbereiten des Parameters "instance" aus Request, return nil wenn kein plausibler Wert
   def prepare_param_instance
     retval = params[:instance].to_i
