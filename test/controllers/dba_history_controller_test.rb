@@ -64,6 +64,19 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "sql_area_historic with xhr: true" do
+    def do_test(topSort, filter, sql_id, instance)
+      post '/dba_history/list_sql_area_historic', :params => {:format=>:html,
+                                                              :time_selection_start => @time_selection_start,
+                                                              :time_selection_end   => @time_selection_end,
+                                                              :maxResultCount       => 100,
+                                                              :topSort              => topSort,
+                                                              :filter               => filter,
+                                                              :sql_id               => sql_id,
+                                                              :instance             => instance,
+                                                              :update_area          => :hugo }
+      assert_response management_pack_license == :none ? :error : :success
+    end
+
     ['ElapsedTimePerExecute',
      'ElapsedTimeTotal',
      'ExecutionCount',
@@ -74,22 +87,19 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
      'BufferGets',
      'ClusterWaits'
     ].each do |topSort|
-      [nil, 1].each do |instance|
-        [nil, '14147ß1471'].each do |sql_id|
-          [nil, 'hugo<>%&'].each do |filter|
-            post '/dba_history/list_sql_area_historic', :params => {:format=>:html,
-                                                      :time_selection_start => @time_selection_start,
-                                                      :time_selection_end   => @time_selection_end,
-                                                      :maxResultCount       => 100,
-                                                      :topSort              => topSort,
-                                                      :filter               => filter,
-                                                      :sql_id               => sql_id,
-                                                      :instance             => instance,
-                                                      :update_area          => :hugo }
-            assert_response management_pack_license == :none ? :error : :success
-          end
-        end
-      end
+      do_test(topSort, nil, nil, nil)
+    end
+
+    [nil, 'hugo<>%&'].each do |filter|
+      do_test('ElapsedTimePerExecute', filter, nil, nil)
+    end
+
+    [nil, '14147ß1471'].each do |sql_id|
+      do_test('ElapsedTimePerExecute', nil, sql_id, nil)
+    end
+
+    [nil, 1].each do |instance|
+      do_test('ElapsedTimePerExecute', nil, nil, instance)
     end
   end
 
@@ -104,55 +114,75 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'list_sql_history_snapshots with xhr: true' do
+    def do_test(ts, instance, groupby, parsing_schema_name)
+      post '/dba_history/list_sql_history_snapshots', :params => {:format=>:html,
+                                                                  :sql_id               => @hist_sql_id,
+                                                                  :instance             => instance,
+                                                                  :parsing_schema_name  => parsing_schema_name,
+                                                                  :groupby              => groupby,
+                                                                  :time_selection_start => ts[:time_selection_start],
+                                                                  :time_selection_end   => ts[:time_selection_end],
+                                                                  :update_area          => :hugo }
+      assert_response management_pack_license == :none ? :error : :success
+    end
+
     if @hist_sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
       Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
     else
+      default_ts = {:time_selection_start => @time_selection_start, :time_selection_end =>@time_selection_end}
+
       [nil, 1].each do |instance|
-        [{:time_selection_start => @time_selection_start, :time_selection_end =>@time_selection_end}, {:time_selection_start => nil, :time_selection_end => nil} ].each do |ts|
-          [nil, 'snap', 'hour', 'day', 'week', 'month'].each do |groupby|
-            [nil, @hist_parsing_schema_name].each do |parsing_schema_name|
-              post '/dba_history/list_sql_history_snapshots', :params => {:format=>:html,
-                                                                          :sql_id               => @hist_sql_id,
-                                                                          :instance             => instance,
-                                                                          :parsing_schema_name  => parsing_schema_name,
-                                                                          :groupby              => groupby,
-                                                                          :time_selection_start => ts[:time_selection_start],
-                                                                          :time_selection_end   => ts[:time_selection_end],
-                                                                          :update_area          => :hugo }
-              assert_response management_pack_license == :none ? :error : :success
-            end
-          end
-        end
+        do_test(default_ts, instance, 'snap', nil)
+      end
+
+      [default_ts, {:time_selection_start => nil, :time_selection_end => nil} ].each do |ts|
+        do_test(ts, nil, 'snap', nil)
+      end
+
+      [nil, 'snap', 'hour', 'day', 'week', 'month'].each do |groupby|
+        do_test(default_ts, nil, groupby, nil)
+      end
+
+      [nil, @hist_parsing_schema_name].each do |parsing_schema_name|
+        do_test(default_ts, nil, 'snap', parsing_schema_name)
       end
     end
   end
 
   test 'sql_detail_historic with xhr: true' do
-    [nil, 1].each do |instance|
-      [@hist_sql_id, @sga_sql_id_without_history, '1234567890123'].each do |sql_id|
-        [nil, @hist_parsing_schema_name].each do |parsing_schema_name|
-          if sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
-            Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
-          else
-            Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@sga_sql_id_without_history} parsing_schema_name=#{parsing_schema_name}"
-            post '/dba_history/list_sql_detail_historic', :params => {:format               => :html,
-                                                                      :time_selection_start => @time_selection_start,
-                                                                      :time_selection_end   => @time_selection_end,
-                                                                      :sql_id               => sql_id,
-                                                                      :instance             => instance,
-                                                                      :parsing_schema_name  => parsing_schema_name,
-                                                                      :update_area          => :hugo }
+    def do_test(instance, sql_id, parsing_schema_name)
+      if sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
+        Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
+      else
+        Rails.logger.info "####################### SQL-ID=#{sql_id} #{@hist_sql_id} #{@sga_sql_id_without_history} parsing_schema_name=#{parsing_schema_name}"
+        post '/dba_history/list_sql_detail_historic', :params => {:format               => :html,
+                                                                  :time_selection_start => @time_selection_start,
+                                                                  :time_selection_end   => @time_selection_end,
+                                                                  :sql_id               => sql_id,
+                                                                  :instance             => instance,
+                                                                  :parsing_schema_name  => parsing_schema_name,
+                                                                  :update_area          => :hugo }
 
-            if management_pack_license == :none
-              assert_response :error
-            else
-              if @response.response_code != 302                                   # Redirect is o.k., because fired if not foung SQL exists in SGA
-                assert_response :success
-              end
-            end
+        if management_pack_license == :none
+          assert_response :error
+        else
+          if @response.response_code != 302                                   # Redirect is o.k., because fired if not foung SQL exists in SGA
+            assert_response :success
           end
         end
       end
+    end
+
+    [nil, 1].each do |instance|
+      do_test(instance, @hist_sql_id, nil)
+    end
+
+    [@hist_sql_id, @sga_sql_id_without_history, '1234567890123'].each do |sql_id|
+      do_test(nil, sql_id, nil)
+    end
+
+    [nil, @hist_parsing_schema_name].each do |parsing_schema_name|
+      do_test(nil, @hist_sql_id, parsing_schema_name)
     end
   end
 
