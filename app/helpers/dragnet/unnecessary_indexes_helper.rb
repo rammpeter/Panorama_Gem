@@ -17,13 +17,16 @@ WITH Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Index_Typ
                         Num_Rows, Distinct_Keys, Uniqueness
                  FROM DBA_Indexes
                  WHERE Owner NOT IN (#{system_schema_subselect}) AND UNiqueness != 'UNIQUE'
-                )
+                ),
+     Ind_Columns_Group AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name,
+                                   LISTAGG(Column_name, ', ') WITHIN GROUP (ORDER BY Column_Position) Columns
+                            FROM   DBA_Ind_Columns
+                            GROUP BY Index_Owner, Index_Name
+                           )
 SELECT /* DB-Tools Ramm nicht genutzte Indizes */ * FROM (
         SELECT i.Owner Index_Owner, i.Index_Name, i.Index_Type, i.Table_Owner, i.Table_Name, sz.MBytes,
                i.Num_Rows, i.Tablespace_Name, i.UniqueNess, i.Distinct_Keys,
-               (SELECT Column_Name FROM DBA_Ind_Columns c WHERE c.Index_Owner=i.Owner AND c.Index_Name=i.Index_Name AND Column_Position=1) Column_1,
-               (SELECT Column_Name FROM DBA_Ind_Columns c WHERE c.Index_Owner=i.Owner AND c.Index_Name=i.Index_Name AND Column_Position=2) Column_2,
-               (SELECT Count(*) FROM DBA_Ind_Columns c WHERE c.Index_Owner=i.Owner AND c.Index_Name=i.Index_Name) Anzahl_Columns,
+               icg.Columns Index_Columns,
                (SELECT MIN(f.Constraint_Name||' Table='||rf.Table_Name)
                 FROM   DBA_Constraints f
                 JOIN   DBA_Cons_Columns fc ON fc.Owner = f.Owner AND fc.Constraint_Name = f.Constraint_Name AND fc.Position=1
@@ -58,6 +61,7 @@ SELECT /* DB-Tools Ramm nicht genutzte Indizes */ * FROM (
                 WHERE   p.OBJECT_OWNER IS NULL AND p.Object_Name IS NULL  -- keine Treffer im Outer Join
                 AND     hp.OBJECT_OWNER IS NULL AND hp.Object_Name IS NULL  -- keine Treffer im Outer Join
                ) i
+         LEFT OUTER JOIN Ind_Columns_Group icg ON icg.Index_Owner = i.Owner AND icg.Index_Name = i.Index_Name
          JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(bytes)/(1024*1024) MBytes
                FROM   DBA_SEGMENTS s
                GROUP BY Owner, Segment_Name
@@ -274,7 +278,7 @@ If none of the four reasons really requires the existence, the index can be remo
                     LEFT OUTER JOIN PE_Candidates pec ON pec.Owner = i.Table_Owner AND pec.Table_Name = i.Table_Name
                     CROSS JOIN (SELECT ? value FROM DUAL) Max_DML
                     WHERE u.Used='NO' AND u.Monitoring='YES'
-                    AND   cc.r_Num_Rows < ?
+                    AND   (cc.r_Num_Rows IS NULL OR cc.r_Num_Rows < ?)
                     AND   (? = 'YES' OR i.Uniqueness != 'UNIQUE')
                     AND   (Max_DML.Value IS NULL OR NVL(cc.Inserts + cc.Updates + cc.Deletes, 0) < Max_DML.Value)
                     ORDER BY seg.MBytes DESC NULLS LAST
