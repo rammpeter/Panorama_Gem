@@ -2325,7 +2325,7 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
   end
 
   def list_awr_sql_monitor_report_html
-    report_id   = prepare_param_int(:report_id)
+    report_id   = prepare_param_int(:report_id)                                 # only for 'DBA_HIST_REPORTS'
     instance    = prepare_param_int(:instance)
     sid         = prepare_param_int(:sid)
     serialno    = prepare_param_int(:serialno)
