@@ -167,7 +167,7 @@ If none of the four reasons really requires the existence, the index can be remo
                                                        LISTAGG(Column_name, ', ') WITHIN GROUP (ORDER BY Column_Position) Columns
                                                 FROM   DBA_Ind_Columns
                                                 GROUP BY Index_Owner, Index_Name),
-                         Cons_Columns AS       (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Column_name, Position, Constraint_Name FROM DBA_Cons_Columns),
+                         Cons_Columns AS       (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Column_name, Position, Constraint_Name, COUNT(*) OVER (PARTITION BY Owner, Table_Name, Constraint_Name) Column_Count FROM DBA_Cons_Columns),
                          Tables AS             (SELECT /*+ NO_MERGE MATERIALIZE */  Owner, Table_Name, Num_Rows, Last_analyzed, IOT_Type FROM DBA_Tables),
                          Tab_Modifications AS  (SELECT /*+ NO_MERGE MATERIALIZE */  Table_Owner, Table_Name, Inserts, Updates, Deletes FROM DBA_Tab_Modifications WHERE Partition_Name IS NULL /* Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen */),
                          PE_Tables AS (SELECT /*+ NO_MERGE MATERIALIZE */ tc.Owner, tc.Table_Name, COUNT(*) Columns,
@@ -266,9 +266,10 @@ If none of the four reasons really requires the existence, the index can be remo
                     LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ic.Index_Owner, ic.Index_Name, c.Constraint_Name
                                      FROM   Cons_Columns cc
                                      JOIN   Constraints c   ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type IN ('U', 'P')
-                                     LEFT OUTER JOIN Ind_Columns ic ON ic.Table_Owner = cc.Owner AND ic.Table_Name = cc.Table_Name  AND ic.Column_Name = cc.Column_Name AND ic.Column_Position = cc.Position
+                                     JOIN Ind_Columns ic ON ic.Table_Owner = cc.Owner AND ic.Table_Name = cc.Table_Name  AND ic.Column_Name = cc.Column_Name /* Position of column in index does not matter for constraint */
                                      GROUP BY ic.Index_Owner, ic.Index_Name, c.Constraint_Name
-                                     HAVING COUNT(DISTINCT cc.Column_Name) = COUNT(DISTINCT ic.Column_Name)
+                                     HAVING COUNT(DISTINCT ic.Column_Name) = MAX(cc.Column_Count) /* All constraint columns are covered by index columns, index may have additional columns */
+                                     AND    MAX(ic.Column_Position) = MAX(cc.Column_Count)               /* All additional columns of index are right from contraint columns */
                                     ) uc ON uc.Index_Owner = u.Owner AND uc.Index_Name = u.Index_Name
                     JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes
                           FROM   DBA_Segments
