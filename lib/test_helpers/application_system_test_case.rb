@@ -38,7 +38,10 @@ end
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # $DEBUG = true # Activate logging for Webdriver also
   using   = (RbConfig::CONFIG['host_os'] != 'darwin' ? :headless_chrome : :chrome) # run headless if not Mac-OS
-  options = {driver_opts: '--whitelisted-ips'}  # command line options for chromedriver
+  service = ::Selenium::WebDriver::Service.chrome(args: { whitelisted_ips: true, verbose: true, log_path: '/tmp/chromedriver.log' })
+#  options = {service: service}
+  options = {}
+#options = {driver_opts: '--whitelisted-ips'}  # command line options for chromedriver
 
   driven_by :selenium, using: using, screen_size: [1400, 1000], options: options do |driver_options|
     driver_options.add_argument('--no-sandbox')                                 # allow running chrome as root in docker
