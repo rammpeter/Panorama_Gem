@@ -147,7 +147,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
     post :list_lobs, :params => {:format=>:html, :owner=>"SYS", :table_name=>"AUD$", :update_area=>:hugo }
     assert_response :success
 
-    if @lob_part_owner                                                          # if lob partitions exists in this database
+    if defined? @lob_part_owner                                                          # if lob partitions exists in this database
       get :list_lob_partitions, :params => {:format=>:html, :owner=>@lob_part_owner, :table_name=>@lob_part_table_name, :lob_name=>@lob_part_lob_name, :update_area=>:hugo }
       assert_response :success
     end
@@ -166,7 +166,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
     get :list_index_partitions, :params => {:format=>:html, :owner=>"SYS", :index_name=>"WRH$_SQLSTAT_PK", :update_area=>:hugo }
     assert_response :success
 
-    if @subpart_index_owner
+    if defined? @subpart_index_owner
       get :list_index_subpartitions, :params => {:format=>:html, :owner=>@subpart_index_owner, :index_name=>@subpart_index_index_name, :update_area=>:hugo }
       assert_response :success
 
