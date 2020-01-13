@@ -262,15 +262,15 @@ private
     end
     @menu_node_id += 1
     output = ''
-    output << '<li>'
+    output << "<li id='menu_node_li_#{@menu_node_id}' >"
     output << "<a id='menu_node_#{@menu_node_id}' class='sf-with-ul' href='#a'>#{menu_entry[:caption]}<span class='sf-sub-indicator'> »</span></a>"
-    output << '<ul>
-    '
+    output << "<ul id='menu_node_ul_#{@menu_node_id}'>
+    "
     menu_entry[:content].each do |m|
       if (!m.has_key?(:min_db_version) || get_db_version >=  m[:min_db_version]) &&  # Prüfung auf unterstützte DB-Version
          (!m.has_key?(:condition)      || m[:condition])                         # Check on condition
         output << build_menu_entry(m, "#{prev_menu_caption} / '#{m[:caption]}'") if m[:class] == 'menu'
-        output << "<li>#{ menu_link_remote(m[:caption], m[:controller], m[:action], m[:hint], prev_menu_caption) }</li>" if m[:class] == 'item'
+        output << "<li id='menu_li_#{m[:controller]}_#{m[:action]}'>#{ menu_link_remote(m[:caption], m[:controller], m[:action], m[:hint], prev_menu_caption) }</li>" if m[:class] == 'item'
       end
     end
     output << '</ul>
@@ -284,8 +284,8 @@ public
   def build_menu_html
     return '' if get_current_database.nil? || get_db_version.nil?       # Abbrechen des Menüaufbaus, wenn die Versions-Strukturen gar nicht gefüllt sind
 
-    output = "<ul class='sf-menu sf-js-enabled sf-shadow'>"
     @menu_node_id = 0                                                           # Each menu gets own ID
+    output = "<ul id='menu_node_ul_#{@menu_node_id}' class='sf-menu sf-js-enabled sf-shadow'>"
     menu_content.each do |m|      # Aufruf Methode application_helper.menu_content
       output << build_menu_entry(m, "'#{m[:caption]}'")
     end
@@ -293,11 +293,11 @@ public
     output << "
       <li>
           <a id='menu_node_#{@menu_node_id}' class='sf-with-ul' href='#a'>#{ t :help, :default=> 'Help' }<span class='sf-sub-indicator'> »</span></a>
-        <ul>
-          <li>#{ link_to t(:menu_help_overview_caption, :default=> 'Overview'), { :controller => 'help', :action=> 'overview', browser_tab_id: @browser_tab_id }, id: "menu_help_overview" ,:title=>t(:menu_help_overview_hint, :default=>'Help-overview'), :target=> '_blank'  }</li>
-          <li><a href='mailto:#{contact_mail_addr}'  id='menu_help_mailto' title='#{t :menu_help_contact_title, :default=> 'Contact to producer'}'>#{t :menu_help_contact_caption, :default=> 'Contact'}</a></li>
-          <li><a href='https://rammpeter.blogspot.de/search/label/Panorama%20How-To' id='menu_help_blog' title='#{t :menu_help_wiki_title, :default=> 'Panorama-Blog with news and usage hints'}' target='_blank'>#{t :menu_help_wiki_caption, :default=> 'Blog'}</a></li>
-          <li>#{ link_to t(:menu_help_version_history_caption, :default=> 'Version history'), { :controller => 'help', :action=> 'version_history', browser_tab_id: @browser_tab_id}, id: "menu_help_version_history", :title=>t(:menu_help_version_history_hint, :default=>'Development history of features and versions'), :target=> '_blank'  }</li>
+        <ul id='menu_node_ul_#{@menu_node_id}'>
+          <li id='menu_li_help_overview'>#{ link_to t(:menu_help_overview_caption, :default=> 'Overview'), { :controller => 'help', :action=> 'overview', browser_tab_id: @browser_tab_id }, id: "menu_help_overview" ,:title=>t(:menu_help_overview_hint, :default=>'Help-overview'), :target=> '_blank'  }</li>
+          <li id='menu_li_help_mailto'><a href='mailto:#{contact_mail_addr}'  id='menu_help_mailto' title='#{t :menu_help_contact_title, :default=> 'Contact to producer'}'>#{t :menu_help_contact_caption, :default=> 'Contact'}</a></li>
+          <li id='menu_li_help_blog'><a href='https://rammpeter.blogspot.de/search/label/Panorama%20How-To' id='menu_help_blog' title='#{t :menu_help_wiki_title, :default=> 'Panorama-Blog with news and usage hints'}' target='_blank'>#{t :menu_help_wiki_caption, :default=> 'Blog'}</a></li>
+          <li id='menu_li_help_version_history'>#{ link_to t(:menu_help_version_history_caption, :default=> 'Version history'), { :controller => 'help', :action=> 'version_history', browser_tab_id: @browser_tab_id}, id: "menu_help_version_history", :title=>t(:menu_help_version_history_hint, :default=>'Development history of features and versions'), :target=> '_blank'  }</li>
         </ul>
       </li>
     </ul>

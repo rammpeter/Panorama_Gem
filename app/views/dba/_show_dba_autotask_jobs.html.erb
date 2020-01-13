@@ -1,22 +1,20 @@
 <%
   @update_area = get_unique_area_id
 
-  column_options =
-      [
-          {:caption=>'Window name',                   :data=>proc{|rec| rec.window_name},                           :title=>'Name of Automated Maintenance Tasks Client'},
-          {:caption=>'Window next time',              :data=>proc{|rec| localeDateTime(rec.window_next_time)},      :title=>'Next scheduled window open time unless the window is disabled'},
-          {:caption=>'Active',                        :data=>proc{|rec| rec.window_active},                         :title=>'Indicates whether the window is currently active (open) (TRUE) or not (FALSE)'},
-          {:caption=>'Autotask status',               :data=>proc{|rec| rec.autotask_status},                       :title=>'Status of the automated maintenance task subsystem'},
-          {:caption=>'Optimizer statistics',          :data=>proc{|rec| rec.optimizer_stats},                       :title=>'Status of optimizer statistics gathering'},
-          {:caption=>'Segment advisor',               :data=>proc{|rec| rec.segment_advisor},                       :title=>'Status of Segment Advisor'},
-          {:caption=>'SQL tuning advisor',            :data=>proc{|rec| rec.sql_tune_advisor},                      :title=>'Status of SQL Tuning Advisor'},
-          {:caption=>'Health monitor',                :data=>proc{|rec| rec.health_monitor},                        :title=>'Status of Health Monitor'},
-          {:caption=>'Resource plan',                 :data=>proc{|rec| rec.resource_plan},                         :title=>'Resource plan associated with the window'},
-          {:caption=>'Schedule type',                 :data=>proc{|rec| rec.schedule_type},                         :title=>'Type of the schedule of the window'},
-          {:caption=>'Repeat interval',               :data=>proc{|rec| rec.repeat_interval},                       :title=>'Calendar string for the window (for an inline schedule)'},
-          {:caption=>'Window priority',               :data=>proc{|rec| rec.window_priority},                       :title=>'Priority of the job relative to other windows'},
-          {:caption=>'Comment',                       :data=>proc{|rec| rec.comments},                              :title=>'Comments on the window'},
-      ]
+  column_options = []
+  column_options << {:caption=>'Window name',                   :data=>proc{|rec| rec.window_name},                           :title=>'Name of Automated Maintenance Tasks Client'}
+  column_options << {:caption=>'Window next time',              :data=>proc{|rec| localeDateTime(rec.window_next_time)},      :title=>'Next scheduled window open time unless the window is disabled'}
+  column_options << {:caption=>'Active',                        :data=>proc{|rec| rec.window_active},                         :title=>'Indicates whether the window is currently active (open) (TRUE) or not (FALSE)'}
+  column_options << {:caption=>'Autotask status',               :data=>proc{|rec| rec.autotask_status},                       :title=>'Status of the automated maintenance task subsystem'}
+  column_options << {:caption=>'Optimizer statistics',          :data=>proc{|rec| rec.optimizer_stats},                       :title=>'Status of optimizer statistics gathering'}
+  column_options << {:caption=>'Segment advisor',               :data=>proc{|rec| rec.segment_advisor},                       :title=>'Status of Segment Advisor'}
+  column_options << {:caption=>'SQL tuning advisor',            :data=>proc{|rec| rec.sql_tune_advisor},                      :title=>'Status of SQL Tuning Advisor'}
+  column_options << {:caption=>'Health monitor',                :data=>proc{|rec| rec.health_monitor},                        :title=>'Status of Health Monitor'} if get_db_version < '19'
+  column_options << {:caption=>'Resource plan',                 :data=>proc{|rec| rec.resource_plan},                         :title=>'Resource plan associated with the window'}
+  column_options << {:caption=>'Schedule type',                 :data=>proc{|rec| rec.schedule_type},                         :title=>'Type of the schedule of the window'}
+  column_options << {:caption=>'Repeat interval',               :data=>proc{|rec| rec.repeat_interval},                       :title=>'Calendar string for the window (for an inline schedule)'}
+  column_options << {:caption=>'Window priority',               :data=>proc{|rec| rec.window_priority},                       :title=>'Priority of the job relative to other windows'}
+  column_options << {:caption=>'Comment',                       :data=>proc{|rec| rec.comments},                              :title=>'Comments on the window'}
 
 %>
 <div>

@@ -64,10 +64,10 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
     # Wait until indicator dialog becomes really unvisible
     loop_count = 0
-    sleep(0.1)                                                                  # Allow browser to update DOM after setting ajax_indicator invisible
+    #    sleep(0.1)                                                                  # Allow browser to update DOM after setting ajax_indicator invisible
     while page.has_css?('#ajax_indicator') && loop_count < timeout_secs   # only visible elements evaluate to true in has_css?
       Rails.logger.info "wait_for_ajax: ajax_indicator is still visible, retrying..."
-      sleep(0.1)
+      sleep(0.1)                                                                # Allow browser to update DOM after setting ajax_indicator invisible
       loop_count += 0.1
     end
     if loop_count >= timeout_secs
@@ -75,6 +75,20 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
       Rails.logger.error "############ #{message}"
       raise message
     end
+  end
+
+  # Wait unti css node becomes visible
+  # return node or nil after timeout
+  def wait_for_css_visibility(css_selector, visibility_needed = true)
+    css_node = page.find(:css, css_selector, visible: visibility_needed)
+    loop_count = 0
+    while !css_node.visible? do
+      loop_count += 1
+      puts "Sleeping #{loop_count/10.0} seconds waiting for menu node '#{css_selector}' to become visible"
+      sleep(0.1)
+      return nil if loop_count > 100
+    end
+    css_node
   end
 
   def click_button_with_retry(caption)
