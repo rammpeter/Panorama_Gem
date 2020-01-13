@@ -63,7 +63,8 @@ module Dragnet::ProblemsWithParallelQueryHelper
             :desc  => t(:dragnet_helper_79_desc, :default=>'If using parallelel query accidentally not parallelized accesses on large structures may dramatically increase runtime of statement.
 Leading INDEX-RANGE-SCAN for cascading nested loop joins should be transferred to WITH … /*+ MATERIALIZE */ and selected in main statement in parallel.
 Selection considers current SGA.'),
-            :sql=>  "SELECT /*+ \"DBTools Ramm Nichtparallel Anteile bei PQ\" */ p.*,
+            :sql=>  "WITH SQL_Plan AS (SELECT /*+ NO_MERGE MATERIALIZE */ Inst_ID, SQL_ID, Operation, Options, Object_Owner, Object_Name, Other_Tag FROM gv$SQL_Plan)
+                     SELECT /*+ \"DBTools Ramm Nichtparallel Anteile bei PQ\" */ p.*,
                              s.Last_active_Time,
                              s.Executions,
                              s.Elapsed_Time/1000000 Elapsed_Secs,
@@ -78,14 +79,14 @@ Selection considers current SGA.'),
                                      ps.*
                               FROM   (
                                       SELECT Inst_ID, SQL_ID
-                                      FROM   gv$SQL_PLan
+                                      FROM   SQL_PLan
                                       WHERE  Other_Tag LIKE 'PARALLEL%'
                                       AND    Object_Owner != 'SYS'
                                       GROUP BY Inst_ID, SQL_ID
                                      ) pp,
                                      (
                                       SELECT Inst_ID, SQL_ID, Operation, Options, Object_Owner, Object_Name
-                                      FROM   gv$SQL_PLan
+                                      FROM   SQL_PLan
                                       WHERE  (Other_Tag IS NULL OR Other_Tag NOT LIKE 'PARALLEL%')
                                       AND    Operation NOT IN ('PX COORDINATOR', 'SORT', 'VIEW', 'MERGE JOIN')
                                       AND    Operation NOT LIKE 'UPDATE%'

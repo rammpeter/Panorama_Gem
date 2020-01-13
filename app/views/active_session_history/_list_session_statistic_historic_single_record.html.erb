@@ -104,9 +104,12 @@
   end
 
   link_blocking_sid = proc do |rec|
-     value = "#{rec["blocking_inst_id"] ? "#{rec.blocking_inst_id}:" : ""}#{rec.blocking_session ? rec.blocking_session : (rec.blocking_session_status=="NO HOLDER" ? "" : rec.blocking_session_status )}"
-     if rec["blocking_inst_id"] && rec.blocking_session
-         ajax_link("#{rec["blocking_inst_id"] ? "#{rec.blocking_inst_id}:" : ""}#{rec.blocking_session ? rec.blocking_session : (rec.blocking_session_status=="NO HOLDER" ? "" : rec.blocking_session_status )}",
+    if rec.blocking_session_cnt > 1
+      "<&nbsp;#{rec.blocking_session_cnt}&nbsp;>".html_safe
+    else
+      value = "#{rec["blocking_inst_id"] ? "#{rec.blocking_inst_id}:" : ""}#{rec.blocking_session ? rec.blocking_session : (rec.blocking_session_status=="NO HOLDER" ? "" : rec.blocking_session_status )}"
+      if rec["blocking_inst_id"] && rec.blocking_session
+        retval = ajax_link(value,
                                  {:action       => :list_session_statistic_historic_grouping,
                                   :groupfilter  => {:DBID                   => @groupfilter[:DBID],
                                                     :time_selection_start   => @groupfilter[:time_selection_start],
@@ -119,22 +122,27 @@
                                   :update_area  => @update_area,
                                  },
                          :title=>t(:active_session_history_list_session_statistic_single_record_link_sid_hint, :default=>"Show active session history for blocking session-ID")
-         ) + ' ' +
-         ajax_submit('Thread', {
+         )
+        # Start thread with blocked session if unique, else start thtread with blocking session
+        blocked_session_unqiue = rec.instance_number_cnt == 1 && rec.session_id_cnt == 1 && rec.session_serial_no_cnt == 1    # Single record or all records grouped for one session
+        retval << ' '
+        retval << ajax_submit('Thread', {
           action:                     :list_ash_dependecy_thread,
-          blocked_inst_id:            rec.instance_number,
-          blocked_session:            rec.session_id,
-          blocked_session_serial_no:  rec.session_serial_no,
+          blocked_inst_id:            blocked_session_unqiue ? rec.instance_number    : rec.blocking_inst_id,
+          blocked_session:            blocked_session_unqiue ? rec.session_id         : rec.blocking_session,
+          blocked_session_serial_no:  blocked_session_unqiue ? rec.session_serial_no  : rec.blocking_session_serial_no,
           sample_time:                localeDateTime(rec.start_sample_time),
           min_snap_id:                @groupfilter[:Min_Snap_ID],
           max_snap_id:                @groupfilter[:Max_Snap_ID],
           update_area:                @update_area,
           }, :title => "List full blocking session dependency thread (if blocking session is blocked itself by other session)"
          )
-     else
-       rec.blocking_session_cnt > 1 ? "<&nbsp;#{rec.blocking_session_cnt}&nbsp;>".html_safe : value
-     end
-   end
+        retval
+      else
+        value
+      end
+    end
+  end
 
    local_link_wait_params = proc do |rec|
      if rec.p1_cnt <= 1 && rec.p2_cnt<=1 && rec.p3_cnt<=1 && rec.p1text_cnt<=1 && rec.p2text_cnt<=1 && rec.p3text_cnt<=1
