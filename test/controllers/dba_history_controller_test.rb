@@ -403,6 +403,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       if get_db_version >= '12.1'
         origins << 'DBA_Hist_Reports'
         report_id_hist = sql_select_one "SELECT MAX(report_ID) FROM DBA_HIST_REPORTS"
+        report_id_hist = 1 if report_id_hist.nil?                               # Use fake ID if no real hit exists
       end
 
       origins.each do |origin|
