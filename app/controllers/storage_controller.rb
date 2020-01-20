@@ -697,11 +697,11 @@ class StorageController < ApplicationController
     @xid = prepare_param(:xid)
 
     history = sql_select_iterator ["SELECT f.*, f.Undo_Change# Undo_Change_No,
-                                           (Commit_Timestamp - Start_Timestamp) * 86400 Duration_Secs,
+                                           (NVL(Commit_Timestamp, SYSDATE) - Start_Timestamp) * 86400 Duration_Secs,
                                            0 Cumulated,
                                            f.Undo_Change# Last_Undo_Change_No
                                     FROM   Flashback_Transaction_Query f
-                                    WHERE  XID = HEXTORAW(?) ORDER BY Undo_Change#", @xid]
+                                    WHERE  XID = HEXTORAW(?) ORDER BY Undo_Change# DESC", @xid]
 
     @history = []
     prev_rec = nil

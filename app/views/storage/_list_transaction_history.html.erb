@@ -29,7 +29,7 @@
 <%
   link_change_no = proc do |rec|
     if rec.cumulated
-      "#{fn(rec.undo_change_no)} .. #{fn(rec.last_undo_change_no)} (#{fn(rec.last_undo_change_no-rec.undo_change_no+1)} records)"
+      "#{fn(rec.undo_change_no)} .. #{fn(rec.last_undo_change_no)} (#{fn(rec.undo_change_no-rec.last_undo_change_no+1)} records)"
     else
       fn(rec.undo_change_no)
     end
@@ -37,7 +37,7 @@
 
   column_options =
       [
-          {caption: 'Undo change no.',            data: link_change_no,                                        title: "Undo system change number (1 or higher).\nOr range of similar subsequent change records", align: :right },
+          {caption: 'Undo change no.',            data: link_change_no,                                        title: "Undo system change number (1 or higher).\nDescribes execution order with descending values.\nIdentical subsequent operations are compressed to one record.", align: :right },
           {caption: 'Operation',                  data: proc{|rec| rec.operation },                            title: "Forward-going DML operation performed by the transaction:\nD - Delete\nI - Insert\nU - Update\n- B\n- UNKNOWN" },
           {caption: 'Table name',                 data: proc{|rec| rec.table_name },                           title: 'Name of the table to which the DML applies' },
           {caption: 'Table owner',                data: proc{|rec| rec.table_owner },                          title: 'Owner of the table to which the DML applies' },

@@ -17,29 +17,43 @@ class DbaPgaController < ApplicationController
       JOIN gv$Process p ON p.Inst_ID=s.Inst_ID AND p.Addr = s.pAddr
       GROUP BY s.Inst_ID
     "
-    column_options =
-      [
-        {:caption=>"I",                                   :data=>proc{|rec| rec.inst_id},                   :title=>"RAC-Instance", :align=>:right},
-        {:caption=>"Sessions",                            :data=>proc{|rec| fn(rec.sessions)},              :title=>"Number of sessions", :align=>:right},
-        {:caption=>"Total PGA in use (MB)",               :data=>proc{|rec| fn(rec.sum_used_mem_mb)},       :title=>"Indicates how much PGA memory is currently consumed by work areas. This number can be used to determine how much memory is consumed by other consumers of the PGA memory (for example, PL/SQL or Java).", :align=>:right},
-        {:caption=>"Avg. PGA in use per session (MB)",    :data=>proc{|rec| fn(rec.avg_used_mem_mb,2)},     :title=>"Indicates how much PGA memory is currently consumed by work areas per session. This number can be used to determine how much memory is consumed by other consumers of the PGA memory (for example, PL/SQL or Java).", :align=>:right},
-        {:caption=>"Total PGA allocated (MB)",            :data=>proc{|rec| fn(rec.sum_alloc_mem_mb)},      :title=>"Current amount of PGA memory allocated by the instance. The Oracle Database attempts to keep this number below the value of the PGA_AGGREGATE_TARGET initialization parameter. However, it is possible for the PGA allocated to exceed that value by a small percentage and for a short period of time when the work area workload is increasing very rapidly or when PGA_AGGREGATE_TARGET is set to a small value.", :align=>:right},
-        {:caption=>"Avg. PGA allocated per session (MB)", :data=>proc{|rec| fn(rec.avg_alloc_mem_mb,2)},    :title=>"Current amount of PGA memory allocated by the instance per session. The Oracle Database attempts to keep this number below the value of the PGA_AGGREGATE_TARGET initialization parameter. However, it is possible for the PGA allocated to exceed that value by a small percentage and for a short period of time when the work area workload is increasing very rapidly or when PGA_AGGREGATE_TARGET is set to a small value.", :align=>:right},
-        {:caption=>"Freeable PGA (MB)",                   :data=>proc{|rec| fn(rec.sum_freeable_mem_mb)},   :title=>"Number of bytes of PGA memory in all processes that could be freed back to the operating system.", :align=>:right},
-        {:caption=>"Avg. freeable PGA per session (MB)",  :data=>proc{|rec| fn(rec.avg_freeable_mem_mb,2)}, :title=>"Number of bytes of PGA memory per session that could be freed back to the operating system.", :align=>:right},
-        {:caption=>"Max. PGA in use (MB)",                :data=>proc{|rec| fn(rec.sum_max_mem_mb)},        :title=>"Maximum amount of PGA memory consumed at one time by work areas since instance startup.", :align=>:right},
-        {:caption=>"Avg. max. PGA per session (MB)",      :data=>proc{|rec| fn(rec.avg_max_mem_mb,2)},      :title=>"Maximum amount of PGA memory per session consumed at one time by work areas since instance startup.", :align=>:right},
-      ]
 
-    output = gen_slickgrid(@stats, column_options, {
-        :caption => "Current PGA at #{localeDateTime(Time.now)}",
-        :max_height => 450
-    })
-    respond_to do |format|
-      format.html {render :html => output }
-    end
+    @process_memory = sql_select_all "\
+      SELECT Inst_ID, Category,
+             SUM(Allocated)     / (1024*1024) Allocated_MB,
+      SUM(Used)          / (1024*1024) Used_MB,
+      SUM(Max_Allocated) / (1024*1024) Max_Allocated_MB
+      FROM GV$Process_Memory
+      GROUP BY Inst_ID, Category
+      ORDER BY 3 DESC
+    "
 
+    render_partial
+  end
 
+  def list_process_memory_sessions
+    prepare_param_instance
+    @category = prepare_param :category
+    order_by  = prepare_param :order_by
+
+    @sessions = sql_select_iterator ["\
+      SELECT m.Inst_ID, m.Category, s.SID, p.SPID, p.Program p_Program, s.Serial# SerialNo, s.OSUser, s.UserName DB_User, s.Machine, s.Program, s.Status, s.Logon_Time,
+             p.PGA_Used_Mem       / (1024*1024) PGA_Used_MB,
+             p.PGA_Alloc_Mem      / (1024*1024) PGA_Alloc_MB,
+             p.PGA_Freeable_Mem   / (1024*1024) PGA_Freeable_MB,
+             p.PGA_Max_Mem        / (1024*1024) PGA_Max_MB,
+             m.Allocated          / (1024*1024) Allocated_MB,
+             m.Used               / (1024*1024) Used_MB,
+             m.Max_Allocated      / (1024*1024) Max_Allocated_MB
+      FROM   gV$Process_Memory m
+      LEFT OUTER JOIN   gv$Process p ON p.PID = m.PID AND p.Serial# = m.Serial#
+      LEFT OUTER JOIN   gv$Session s ON s.PAddr = p.Addr
+      WHERE  m.Category = ?
+      AND    NVL(m.#{order_by}, 0) != 0
+      ORDER BY m.#{order_by} DESC
+    ", @category]
+
+    render_partial
   end
 
   def list_pga_stat_historic
