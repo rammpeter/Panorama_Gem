@@ -797,7 +797,21 @@ class DbaSchemaController < ApplicationController
                  WITH Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ *
                                   FROM   DBA_Indexes
                                   WHERE  Table_Owner = ? AND Table_Name = ? #{where_string}
-                                 )
+                                 ),
+                 Tab_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Column_Name, Avg_Col_Len FROM DBA_Tab_Columns WHERE Owner = ? AND Table_Name = ?),
+                 Ind_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Column_Name, Column_Position
+                                 FROM   DBA_Ind_Columns
+                                 WHERE  (Index_Owner, Index_Name) IN (SELECT Owner, Index_Name FROM Indexes)
+                                ),
+                 Cons_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Constraint_Name, Column_Name, Position
+                                  FROM   DBA_Cons_Columns
+                                  WHERE  Owner = ? AND Table_Name = ?
+                                 ),
+                 Ref_Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Constraint_Name
+                                     FROM   DBA_Constraints
+                                     WHERE  Owner = ? AND Table_Name = ?
+                                     AND    Constraint_Type = 'R'
+                                    )
                  SELECT /*+ Panorama Ramm */ i.*, p.Partition_Number, sp.SubPartition_Number,
                         NULL Size_MB, NULL Extents, NULL Blocks, /* this columns are selected separately */
                         DECODE(bitand(io.flags, 65536), 0, 'NO', 'YES') Monitoring,
@@ -807,13 +821,9 @@ class DbaSchemaController < ApplicationController
                         do.Created, do.Last_DDL_Time, TO_DATE(do.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
                         CASE WHEN c.Constraint_Exists IS NOT NULL THEN 'Y' END Used_For_FK,
                         CASE WHEN i.Index_Type = 'IOT - TOP' THEN
-                          (SELECT SUM(tc.Avg_Col_Len) FROM DBA_Tab_Columns tc WHERE tc.Owner = i.Table_Owner AND tc.Table_Name = i.Table_Name)
+                          (SELECT SUM(Avg_Col_Len) FROM Tab_Columns)
                         ELSE
-                          (SELECT SUM(tc.Avg_Col_Len)
-                           FROM   DBA_Ind_Columns ic
-                           JOIN    DBA_Tab_Columns tc ON tc.Owner = ic.Table_Owner AND tc.Table_Name = ic.Table_Name AND tc.Column_Name = ic.Column_Name
-                           WHERE   ic.Index_Owner = i.Owner AND ic.Index_Name = i.Index_Name
-                          )
+                          col_len.Sum_Col_Len
                         END Avg_Row_Len,
                         p.P_Status_Count,         p.P_Status,
                         p.P_Compression_Count,    p.P_Compression,
@@ -833,11 +843,16 @@ class DbaSchemaController < ApplicationController
                  JOIN   sys.Obj$    o  ON o.Owner# = u.User_ID AND o.Name = i.Index_Name
                  JOIN   sys.Ind$    io ON io.Obj# = o.Obj#
                  LEFT OUTER JOIN DBA_Objects do ON do.Owner = i.Owner AND do.Object_Name = i.Index_Name AND do.Object_Type = 'INDEX'
+                 LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ic.Index_Owner, ic.Index_Name, SUM(tc.Avg_Col_Len) Sum_Col_Len
+                                  FROM Ind_Columns ic
+                                  JOIN Tab_Columns tc ON tc.Column_Name = ic.Column_Name
+                                  GROUP BY Index_Owner, Index_Name
+                                 ) col_len ON col_len.Index_Owner = i.Owner AND col_len.Index_Name = i.Index_Name
                  LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ii.Index_Name, MIN(c.Constraint_Name) Constraint_Exists
                                   FROM   Indexes ii
-                                  LEFT OUTER JOIN DBA_Ind_Columns ic ON ic.Index_Owner = ii.Owner AND ic.Index_Name = ii.Index_Name AND ic.Column_Position = 1 /* Columns for test of FK */
-                                  LEFT OUTER JOIN DBA_Cons_Columns cc ON cc.Owner = ii.Table_Owner AND cc.Table_Name = ii.Table_Name AND cc.Column_Name = ic.Column_Name AND cc.Position = 1 /* First columns of constraint */
-                                  LEFT OUTER JOIN DBA_Constraints c ON c.Owner = ii.Table_Owner AND c.Table_Name = ii.Table_Name AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'R'
+                                  LEFT OUTER JOIN Ind_Columns ic ON ic.Index_Owner = ii.Owner AND ic.Index_Name = ii.Index_Name AND ic.Column_Position = 1 /* Columns for test of FK */
+                                  LEFT OUTER JOIN Cons_Columns cc ON cc.Column_Name = ic.Column_Name AND cc.Position = 1 /* First columns of constraint */
+                                  LEFT OUTER JOIN Ref_Constraints c ON c.Constraint_Name = cc.Constraint_Name
                                   GROUP BY ii.Index_Name
                                  ) c ON c.Index_Name = i.Index_Name
                  LEFT OUTER JOIN sys.object_usage ou ON ou.Obj# = o.Obj#
@@ -872,7 +887,11 @@ class DbaSchemaController < ApplicationController
                                   JOIN   V$GCSPFMASTER_INFO i ON i.Data_Object_ID = o.Data_Object_ID
                                   GROUP BY ii.Index_Name
                                  ) mi ON mi.Index_Name = i.Index_Name" if PanoramaConnection.rac?}
-                ",  @owner, @table_name].concat(where_values).concat(PanoramaConnection.rac? ? [@owner, @table_name] : [])
+                  ORDER BY i.Index_Name
+                ",  @owner, @table_name]
+                                  .concat(where_values)
+                                  .concat([@owner, @table_name, @owner, @table_name, @owner, @table_name])
+                                  .concat(PanoramaConnection.rac? ? [@owner, @table_name] : [])
 
     # Selected separately because of long runtime if executed within complex SQL
     index_sizes = sql_select_all ["\
