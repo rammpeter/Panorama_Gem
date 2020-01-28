@@ -18,25 +18,18 @@ WITH Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Index_Typ
                  FROM DBA_Indexes
                  WHERE Owner NOT IN (#{system_schema_subselect}) AND UNiqueness != 'UNIQUE'
                 ),
+     Ind_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Column_Name, Column_Position FROM DBA_Ind_Columns),
      Ind_Columns_Group AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name,
                                    LISTAGG(Column_name, ', ') WITHIN GROUP (ORDER BY Column_Position) Columns
-                            FROM   DBA_Ind_Columns
+                            FROM   Ind_Columns
                             GROUP BY Index_Owner, Index_Name
-                           )
+                           ),
+     Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Constraint_Name, R_Owner, R_Constraint_Name, Constraint_Type FROM DBA_Constraints ),
+     Cons_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Column_Name, Position FROM DBA_Cons_Columns)
 SELECT /* DB-Tools Ramm nicht genutzte Indizes */ * FROM (
         SELECT i.Owner Index_Owner, i.Index_Name, i.Index_Type, i.Table_Owner, i.Table_Name, sz.MBytes,
                i.Num_Rows, i.Tablespace_Name, i.UniqueNess, i.Distinct_Keys,
-               icg.Columns Index_Columns,
-               (SELECT MIN(f.Constraint_Name||' Table='||rf.Table_Name)
-                FROM   DBA_Constraints f
-                JOIN   DBA_Cons_Columns fc ON fc.Owner = f.Owner AND fc.Constraint_Name = f.Constraint_Name AND fc.Position=1
-                JOIN   DBA_Ind_Columns ic ON ic.Column_Name=fc.Column_Name AND ic.Column_Position=1
-                JOIN   DBA_Constraints rf ON rf.Owner=f.r_Owner AND rf.Constraint_Name=f.r_Constraint_Name
-                WHERE  f.Owner = i.Table_Owner
-                AND    f.Table_Name = i.Table_Name
-                AND    f.Constraint_Type = 'R'
-                AND    ic.Index_Owner=i.Owner AND  ic.Index_Name=i.Index_Name
-               ) Ref_Constraint
+               icg.Columns Index_Columns, rc.Ref_Constraint
         FROM   (SELECT /*+ NO_MERGE USE_HASH(i p hp) */ i.*
                 FROM   Indexes i
                 LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ DISTINCT p.Object_Owner, p.Object_Name
@@ -62,11 +55,20 @@ SELECT /* DB-Tools Ramm nicht genutzte Indizes */ * FROM (
                 AND     hp.OBJECT_OWNER IS NULL AND hp.Object_Name IS NULL  -- keine Treffer im Outer Join
                ) i
          LEFT OUTER JOIN Ind_Columns_Group icg ON icg.Index_Owner = i.Owner AND icg.Index_Name = i.Index_Name
+         LEFT OUTER JOIN (SELECT /*+ NO_MERGE ORDERED */ f.Owner, f.Table_Name, ic.Index_Owner, ic.Index_Name, MIN(f.Constraint_Name||' Table='||rf.Table_Name) Ref_Constraint
+                          FROM   Constraints f
+                          JOIN   Cons_Columns fc ON fc.Owner = f.Owner AND fc.Constraint_Name = f.Constraint_Name AND fc.Position=1
+                          JOIN   Ind_Columns ic ON ic.Column_Name=fc.Column_Name AND ic.Column_Position=1
+                          JOIN   Constraints rf ON rf.Owner=f.r_Owner AND rf.Constraint_Name=f.r_Constraint_Name
+                          WHERE  f.Constraint_Type = 'R'
+                          GROUP BY f.Owner, f.Table_Name, ic.Index_Owner, ic.Index_Name
+                         ) rc ON rc.Owner = i.Table_Owner AND rc.Table_Name = i.Table_Name AND rc.Index_owner = i.Owner AND rc.Index_Name = i.Index_name
          JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(bytes)/(1024*1024) MBytes
                FROM   DBA_SEGMENTS s
                GROUP BY Owner, Segment_Name
               ) sz ON sz.SEGMENT_NAME = i.Index_Name AND sz.Owner = i.Owner
-        ) ORDER BY MBytes DESC NULLS LAST, Num_Rows",
+        ) ORDER BY MBytes DESC NULLS LAST, Num_Rows
+            ",
             :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') }]
         },
         {
