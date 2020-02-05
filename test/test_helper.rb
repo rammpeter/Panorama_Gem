@@ -91,7 +91,7 @@ class ActiveSupport::TestCase
 
   def set_panorama_sampler_config_defaults!(sampler_config)
 
-    sampler_config[:query_timeout]                  = 20                        # single test should not last longer
+    sampler_config[:query_timeout]                  = 600                       # single test should not last longer, previous value = 20
     sampler_config[:awr_ash_active]                 = true
     sampler_config[:object_size_active]             = true
     sampler_config[:cache_objects_active]           = true
