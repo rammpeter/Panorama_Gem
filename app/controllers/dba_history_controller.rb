@@ -2369,13 +2369,13 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
                              FROM Dual", sql_id, sid, serialno, sql_exec_id, instance, type]
     end
 
-    if request.original_url['https://']                                         # Request kommt mit https, dann müssen <script>-Includes auch per https abgerufen werden, sonst wird page geblockt wegen insecure content
-      report.gsub!(/http:/, 'https:')
-    end
 
     if report.nil?
       render :html => "No SQL-Monitor report found for ID=#{report_id}"
     else
+      if request.original_url['https://']                                         # Request kommt mit https, dann müssen <script>-Includes auch per https abgerufen werden, sonst wird page geblockt wegen insecure content
+        report.gsub!(/http:/, 'https:')
+      end
       render :html => report.html_safe
     end
   end

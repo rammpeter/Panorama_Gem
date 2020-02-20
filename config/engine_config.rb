@@ -29,15 +29,19 @@ class EngineConfig < Rails::Application
         if !defined?($login_client_store) || $login_client_store.nil?
           $login_client_store = ActiveSupport::Cache::FileStore.new(EngineConfig.config.client_info_filename)
           Rails.logger.info("Local directory for client-info store is #{EngineConfig.config.client_info_filename}")
-          @@client_store_mutex = nil                                            # Free mutex that will never be used
         end
       end
+      @@client_store_mutex = nil                                                # Free mutex that will never be used again
     end
     $login_client_store
   rescue Exception =>e
     raise "Exception '#{e.message}' while creating file store at '#{EngineConfig.config.client_info_filename}'"
   end
 
+  # Remove expired entries
+  def self.cleanup_client_info_store
+    EngineConfig.get_client_info_store.cleanup
+  end
 
   # -- begin rails3 relikt
   # Configure the default encoding used in templates for Ruby 1.9.

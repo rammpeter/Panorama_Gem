@@ -49,7 +49,7 @@ module ApplicationHelper
 
     @buffered_client_info_store[key] = value                                      # Wert in Hash verankern
     begin
-      EngineConfig.get_client_info_store.write(cached_client_key, @buffered_client_info_store)  # Überschreiben des kompletten Hashes im Cache
+      EngineConfig.get_client_info_store.write(cached_client_key, @buffered_client_info_store, expires_in: 3.months )  # Überschreiben des kompletten Hashes im Cache
     rescue Exception =>e
       Rails.logger.error("Exception '#{e.message}' raised while writing file store at '#{EngineConfig.config.client_info_filename}'")
       raise "Exception '#{e.message}' while writing file store at '#{EngineConfig.config.client_info_filename}'"
