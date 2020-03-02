@@ -32,7 +32,8 @@
    {:caption=>"Action",         :data=>proc{|rec| rec.action},          :title=>"Action"},
    {:caption=>"Username",       :data=>proc{|rec| rec.username},        :title=>"Database Username"},
    {:caption=>"Audit-SID",      :data=>proc{|rec| rec.audsid},          :title=>"Session-ID for auditing (gv$Session.AUDSID). Corresponds with DBA_Audit_Trail.Session_ID or gv$XML_Audit_Trail.Session_ID"},
-   {:caption=>"Sh.Proc.",       :data=>proc{|rec| rec.spid},            :title=>"Process ID of database shadow process"},
+   {:caption=>"Sh. Proc.",      :data=>proc{|rec| rec.spid},            :title=>"Process ID of database shadow process"},
+   {:caption=>"PID",            :data=>proc{|rec| rec.pid},             :title=>"Oracle process identifier"},
    {:caption=>"Machine",        :data=>proc{|rec| link_machine_ip_info(@update_area, rec.machine)}, :title=>"Client machine"},
    {:caption=>"OSUser",         :data=>proc{|rec| rec.osuser},          :title=>"Client OS user"},
    {:caption=>"Process",        :data=>proc{|rec| rec.process},         :title=>"Client process ID"},
@@ -104,9 +105,21 @@ column_options << {:caption=>'Client driver',       :data=>proc{|rec| rec.client
 <%= gen_slickgrid(@sql_data, column_options) %>
 
 <%
+  link_category = proc do |rec|
+    ajax_link(rec.category, {
+              controller:   :dba_pga,
+              action:       :list_process_memory_detail,
+              instance:     @instance,
+              pid:          @dbsession&.pid,
+              category:     rec.category,
+              update_area:  @update_area
+             },
+      :title=> "Show process memory details for this category")
+  end
+
 column_options =
  [
-   {:caption=>"Category",       :data=>proc{|rec| rec.category},            :title=>"Kategorie"},
+   {:caption=>"Category",       :data=>link_category,            :title=>"Category"},
    {:caption=>"Allocated",      :data=>proc{|rec| fn(rec.allocated)},       :align=>:right,    :title=>"Bytes of PGA memory allocated by the process for the category. For the 'Freeable' category, it is the amount of free PGA memory eligible to be released to the operating system."},
    {:caption=>"Used",           :data=>proc{|rec| fn(rec.used)},            :align=>:right,    :title=>"Bytes of PGA memory used by the process for the category. For 'Freeable', the value is zero. For 'Other', the value is NULL for performance reasons."},
    {:caption=>"Max Allocated",  :data=>proc{|rec| fn(rec.max_allocated)},   :align=>:right,    :title=>"Maximum bytes of PGA memory ever allocated by the process for the category."},

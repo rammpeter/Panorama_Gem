@@ -26,7 +26,7 @@
     {:caption=>"Wait event",       :data=>proc{|rec| rec.wait_event},                 :title=>'Wait-Event', :data_title=>proc{|rec| explain_wait_event(rec.wait_event)} },
     {:caption=>"Wait time",        :data=>proc{|rec| fn(rec.seconds_waiting, 1)},     :title=>'Wait time in current event in seconds', data_title: proc{|rec| "%t\nWait_time = #{fn((rec.seconds_waiting*1000 rescue 0), 3)} ms"}, :align=>:right},
     {:caption=>"User",             :data=>proc{|rec| rec.username},                   :title=>"Oracle-Username"},
-    {:caption=>"Proc",             :data=>proc{|rec| rec.spid},                       :title=>t(:dba_list_sessions_proc_hint, :default=>'Process-ID of Oracle shadow process on DB-server')},
+    {:caption=>"Proc",             :data=>proc{|rec| rec.spid},                       :title=>t(:dba_list_sessions_proc_hint, :default=>'Process-ID of Oracle shadow process on DB-server'), data_title: proc{|rec| "%t\nOracle process identifier (PID) = #{rec.pid} "}},
     {:caption=>"Machine",          :data=>proc{|rec| link_machine_ip_info(@update_area, rec.machine)}, :title=>t(:dba_list_sessions_machine_hint, :default=>'Name of client machine')},
     {:caption=>"C-User",           :data=>proc{|rec| rec.osuser},                     :title=>t(:dba_list_sessions_client_user_hint, :default=>'OS-user on client machine') },
     {:caption=>"C-Proc",           :data=>proc{|rec| rec.process},                    :title=>t(:dba_list_sessions_process_hint, :default=>'Process-ID of client process on client machine (1234 is dummy-process-ID of JDBC-driver, CONNECTION_PROPERTY_THIN_VSESSION_PROCESS_DEFAULT=1234)') },

@@ -190,4 +190,21 @@ class DbaPgaController < ApplicationController
     end
   end
 
+  def list_process_memory_detail
+    @instance = prepare_param_instance
+    @pid      = prepare_param :pid
+    @category = prepare_param :category
+
+    @details = sql_select_iterator ["\
+SELECT m.*, m.Serial# SerialNo,
+       RawToHex(m.Heap_Descriptor) Hex_Heap_Descriptor,
+       RawToHex(m.Parent_Heap_Descriptor) Hex_Parent_Heap_Descriptor
+FROM   gv$Process_Memory_Detail m
+WHERE  m.Inst_ID  = ?
+AND    m.PID      = ?
+AND    m.Category = ?
+      ", @instance, @pid, @category]
+    render_partial
+  end
+
 end

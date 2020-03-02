@@ -752,7 +752,8 @@ Solution: Execute as user 'SYS':
         s.UserName,                 
         s.Client_Info,
         s.Module, s.Action,
-        p.spID,                                                                                                                           
+        p.spID,
+        p.PID,
         s.machine,                                                                                                                        
         s.OSUser,                                                                                                                         
         s.Process,                                                                                                                        
@@ -856,7 +857,7 @@ Solution: Execute as user 'SYS':
                   s.Status, s.Client_Info, s.Module, s.Action, s.AudSID,
                   s.UserName, s.Machine, s.OSUser, s.Process, s.Program,
                   SYSDATE - (s.Last_Call_Et/86400) Last_Call,
-                  s.Logon_Time, p.spID,
+                  s.Logon_Time, p.spID, p.PID,
                   RawToHex(tx.XID) Tx_ID,
                   tx.Start_Time,
                   c.AUTHENTICATION_TYPE

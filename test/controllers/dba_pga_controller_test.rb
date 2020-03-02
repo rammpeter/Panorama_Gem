@@ -20,4 +20,10 @@ class DbaPgaControllerTest < ActionDispatch::IntegrationTest
     assert_response management_pack_license == :none ? :error : :success
   end
 
+  test "list_process_memory_detail with xhr: true" do
+    post '/dba_pga/list_process_memory_detail', params: { format: :html, instance: 1, pid: 1, category: 'Others' }
+    assert_response :success
+  end
+
+
 end
