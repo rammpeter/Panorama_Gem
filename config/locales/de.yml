@@ -394,7 +394,7 @@
   dba_list_sessions_pga_free_hint:                          Aktuell von Prozess alloziierter PGA-Memory der freigegeben werden kann in MB
   dba_list_sessions_pga_used_hint:                          Aktuell von Prozess genutzter PGA-Memory in MB
   dba_list_sessions_pq_hint:                                Anzahl ParallelQuery-Slave-Prozesse
-  dba_list_sessions_proc_hint:                              Prozess-ID Oracle Shadow-Prozess auf DB-Server
+  dba_list_sessions_proc_hint:                              Prozess-ID Oracle Shadow-Prozess auf DB-Server (gv$Process.SPID)
   dba_list_sessions_process_hint:                           Prozess-ID des Client-Prozesses auf der Client-Maschine (1234 ist Dummy-Prozess-ID von JDBC-Treibern, CONNECTION_PROPERTY_THIN_VSESSION_PROCESS_DEFAULT=1234)
   dba_list_sessions_program_hint:                           Ausgeführtes Programm des Client-Prozesses auf der Client-Maschine
   dba_list_sessions_service_hint:                           Name des TNS-Service über den die Session connected ist

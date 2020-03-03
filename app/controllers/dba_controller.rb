@@ -909,7 +909,7 @@ Solution: Execute as user 'SYS':
                                               s.SQL_ID, s.SQL_Child_Number, s.Status, s.Client_Info, s.Module, s.Action,
                                               s.UserName, s.Machine, s.OSUser, s.Process, s.Program,
                                               SYSDATE - (s.Last_Call_Et/86400) Last_Call,
-                                              s.Logon_Time, p.spID
+                                              s.Logon_Time, p.spID, p.PID
                                        FROM   gv$PX_Session ps
                                        JOIN   gv$Session s ON s.Inst_ID = ps.QCInst_ID AND s.SID = ps.QCSID AND s.Serial# = ps.QCSerial#
                                        JOIN   GV$process p ON p.Addr = s.pAddr AND p.Inst_ID = s.Inst_ID

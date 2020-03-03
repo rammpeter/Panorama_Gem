@@ -27,16 +27,16 @@
     For RAC: this commands must be executed at the same RAC-node as the target session resides on!
   </b><br/>
   <ul>
-    <li>ALTER SESSION SET EVENTS 'immediate trace name PGA_DETAIL_GET level &lt;PID&gt;'; or</li>
-    <li>SQL> ORADEBUG SETMYPID;<br>SQL> ORADEBUG DUMP PGA_DETAIL_GET &lt;PID&gt;;</li>
+    <li>ALTER SESSION SET EVENTS 'immediate trace name PGA_DETAIL_GET level <%= @pid %>'; or</li>
+    <li>SQL> ORADEBUG SETMYPID;<br>SQL> ORADEBUG DUMP PGA_DETAIL_GET <%= @pid %>;</li>
   </ul>
-  where &lt;PID&gt; is the Oracle process identifier (V$Process.PID) of the target process.<br/><br/>
+  where <%= @pid %> is the Oracle process identifier (V$Process.PID) of the target process.<br/><br/>
   The next action of the target session will then populate this view.<br/><br/>
 
   <b>To remove all rows in the view run one of the following commands:</b>
   <ul>
-    <li>ALTER SESSION SET EVENTS 'immediate trace name PGA_DETAIL_CANCEL level &lt;PID&gt;'; or</li>
-    <li>SQL> ORADEBUG DUMP PGA_DETAIL_CANCEL &lt;PID&gt;;</li>
+    <li>ALTER SESSION SET EVENTS 'immediate trace name PGA_DETAIL_CANCEL level <%= @pid %>'; or</li>
+    <li>SQL> ORADEBUG DUMP PGA_DETAIL_CANCEL <%= @pid %>;</li>
   </ul>
 </div>
 
