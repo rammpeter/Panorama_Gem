@@ -145,7 +145,7 @@ If you can exclude the need for allowing concurrent transactions in ITL-list abo
                     WHERE  PCT_Free > 0
                     AND    Updates = 0
                     AND    Last_Analyzed < SYSDATE - ?
-                    AND    Owner NOT IN ('SYS', 'XDB')
+                    AND    Owner NOT IN (#{system_schema_subselect})
                     ORDER BY Num_Rows*Avg_Row_Len*PCT_Free DESC ",
             :parameter=>[{:name=>t(:dragnet_helper_140_param_1_name, :default=> 'Min. no. days since last analyze'), :size=>8, :default=>8, :title=>t(:dragnet_helper_140_param_1_hint, :default=> 'Minimum number of days since last analyze timestamp for object') },]
         },
@@ -376,7 +376,7 @@ This selection considers current SGA'),
                               FROM   gv$SQL_Plan
                               WHERE  Access_Predicates IS NOT NULL
                               AND    Operation LIKE 'INDEX%'
-                              AND    Object_Owner NOT IN ('SYS')
+                              AND    Object_Owner NOT IN (#{system_schema_subselect})
                              ) ind
                       JOIN   DBA_Indexes i ON i.Owner = ind.Index_Owner AND i.Index_Name = ind.Index_Name
                       JOIN   (
@@ -385,7 +385,7 @@ This selection considers current SGA'),
                               WHERE  Filter_Predicates IS NOT NULL
                               AND    Operation LIKE 'TABLE ACCESS%'
                               AND    Options LIKE 'BY INDEX ROWID%'
-                              AND    Object_Owner NOT IN ('SYS')
+                              AND    Object_Owner NOT IN (#{system_schema_subselect})
                              ) tab ON tab.Inst_ID = ind.Inst_ID AND tab.SQL_ID = ind.SQL_ID AND tab.Plan_Hash_Value = ind.Plan_Hash_Value AND tab.Child_Number = ind.Child_Number AND
                                       tab.Table_Owner = i.Table_Owner AND tab.Table_Name = i.Table_Name AND tab.ID < ind.ID -- Index kommt unter table beim index-Zugriff
                       JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, SQL_ID, Plan_Hash_Value, Child_Number, Elapsed_Time

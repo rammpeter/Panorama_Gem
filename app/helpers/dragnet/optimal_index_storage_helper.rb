@@ -49,7 +49,7 @@ module Dragnet::OptimalIndexStorageHelper
                                          ) seg ON seg.Owner = i.Owner AND seg.Segment_Name = i.Index_Name
                                   WHERE  i.Compression='DISABLED'
                                   AND    i.Distinct_Keys > 0
-                                  AND    i.Table_Owner NOT IN ('SYS')
+                                  AND    i.Table_Owner NOT IN (#{system_schema_subselect})
                                   AND i.Num_Rows/DECODE(i.Distinct_Keys,0,1,i.Distinct_Keys) > ?
                                 ) i
                       WHERE MBytes > ?
@@ -143,7 +143,7 @@ This selections shows recommendations for compression of single columns of multi
                              )
                       WHERE Anzahl_Unique_Indizes > 0
                       AND   Num_Rows > ?
-                      AND   Owner NOT IN ('SYS')
+                      AND   Owner NOT IN (#{system_schema_subselect})
                       --AND   Anzahl_PKey_Columns>0 /* Wenn Fehlen des PKeys nicht in Frage gestellt werden darf */
                       ORDER BY 1/Num_Rows*(Anzahl_Columns-Anzahl_PKey_Columns+1)*Anzahl_Indizes",
             :parameter=>[{:name=> 'Min. number of rows', :size=>8, :default=>100000, :title=>t(:dragnet_helper_4_param_1_hint, :default=> 'Minimum number of rows of index') },]

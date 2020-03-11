@@ -164,7 +164,7 @@ Listed functions should be checked if they can be expanded by pragma PARALLEL_EN
                                     JOIN   DBA_Arguments a ON a.Owner = p.Owner AND a.Package_Name = p.Object_Name AND a.Object_Name = p.Procedure_Name AND a.Position = 0
                                     WHERE  p.Object_Type = 'PACKAGE'
                                    )
-                            WHERE  Owner NOT IN ('SYS', 'WMSYS', 'PERFSTAT', 'CTXSYS', 'XDB', 'EXFSYS')
+                            WHERE  Owner NOT IN (#{system_schema_subselect})
                             AND    Parallel = 'NO'
                        )
                       SELECT /*+ ORDERED */

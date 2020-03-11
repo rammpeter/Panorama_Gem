@@ -286,7 +286,7 @@ This view selects potential hits for function based indexes no more used for SQL
                   FROM   DBA_Indexes i
                   JOIN   DBA_Ind_Expressions e ON e.Index_Owner = i.Owner AND e.Index_Name = i.Index_Name
                   WHERE  Index_Type LIKE 'FUNCTION-BASED%'
-                  AND    Owner NOT IN ('SYS', 'XDB', 'SYSMAN')",
+                  AND    Owner NOT IN (#{system_schema_subselect})",
             :filter_proc => proc{|rec|
               rec['column_expression'].match(/['0123456789]/)
             },

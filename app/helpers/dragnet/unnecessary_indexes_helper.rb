@@ -374,7 +374,7 @@ This selection already suppresses indexes used for elimination of 'table access 
                                 AND    i.UniqueNess = 'NONUNIQUE'
                                 AND    io.Owner IS NULL AND io.Index_Name IS NULL -- keine Zugriffe, bei denen alle Felder aus Index kommen und kein TableAccess nˆtig wird
                                ) o
-                        WHERE  o.Owner NOT IN ('SYS', 'OLAPSYS', 'SYSMAN', 'WMSYS', 'CTXSYS')
+                        WHERE  o.Owner NOT IN (#{system_schema_subselect})
                         AND    Num_Rows > ?
                         ORDER BY Max_Num_Distinct / Num_Rows DESC NULLS LAST",
             :parameter=>[{:name=>t(:dragnet_helper_10_param_1_name, :default=>'Largest selectivity of a column of index > 1/x to the number of rows'), :size=>8, :default=>4, :title=>t(:dragnet_helper_10_param_1_hint, :default=>'Number of DISTINCT-values of index column with largest selectivity is > 1/x to the number of rows on index')},

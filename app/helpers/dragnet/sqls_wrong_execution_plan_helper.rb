@@ -143,7 +143,7 @@ Statement executes only for current connected RAC-Instance (due to runtime prble
                                       AND s.SQL_ID          = p.SQL_ID
                                       AND s.Child_Number    = p.Child_Number
                                       AND s.Plan_Hash_Value = p.Plan_Hash_Value
-                      WHERE  p.Object_Owner NOT IN ('SYS')
+                      WHERE  p.Object_Owner NOT IN (#{system_schema_subselect})
                       ORDER BY Elapsed_Time DESC NULLS LAST",
         },
         {

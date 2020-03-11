@@ -104,7 +104,7 @@ Beginning with 11g stored functions with function result caching or selects/subs
                                     SELECT Owner, Index_Name Name, Num_Rows FROM DBA_Indexes WHERE Num_Rows < 100000
                                    ) obj ON (obj.Owner = p.Object_Owner AND obj.Name = p.Object_Name)
                             JOIN   DBA_Hist_SQLText t  ON (t.DBID=s.DBID AND t.SQL_ID=s.SQL_ID)
-                      WHERE Owner NOT IN ('SYS')
+                      WHERE Owner NOT IN (#{system_schema_subselect})
                       ORDER BY s.\"Executions\"/DECODE(obj.Num_Rows, 0, 1, obj.Num_Rows) DESC NULLS LAST",
             :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
                          {:name=>t(:dragnet_helper_88_param_1_name, :default=>'Minimum number of executions'), :size=>8, :default=>100, :title=>t(:dragnet_helper_88_param_1_hint, :default=>'Minimum number of executions for consideration in selection')}]
