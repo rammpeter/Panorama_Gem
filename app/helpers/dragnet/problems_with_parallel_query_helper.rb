@@ -198,12 +198,12 @@ Listed functions should be checked if they can be expanded by pragma PARALLEL_EN
                       -- INSTR-Test vorab, da schneller als RegExp_Like
                       -- Match auf ProcName vorangestellt und gefolgt von keinem Buchstaben
                       WHERE  INSTR(s.FullText, p.SuchText) > 0
-                      -- AND REGEXP_LIKE(s.FullText,'[^A-Z_]'||p.SuchText||'[^A-Z_]')
+                      AND REGEXP_LIKE(s.FullText,'[^A-Z_]'||p.SuchText||'[^A-Z_]')
                       ORDER BY Elapsed_Secs DESC NULLS LAST
                       ",
             :parameter=>[
-                {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
-                {:name=>'Minimum sum of elapsed time in seconds', :size=>8, :default=>100, :title=>'Minimum sum of elapsed time in second for considered SQL' },
+                {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>2, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
+                {:name=>'Minimum sum of elapsed time in seconds', :size=>8, :default=>10000, :title=>'Minimum sum of elapsed time in second for considered SQL' },
             ]
         },
         {
