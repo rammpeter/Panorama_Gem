@@ -759,6 +759,7 @@ module ApplicationHelper
     return nil if seconds.nil?
     return nil if seconds == ''
     seconds = seconds.to_f
+    return nil if seconds == 0
     retval = "#{"\n" unless suppress_first_lf}#{fn(seconds,2)} #{t(:seconds, default: 'seconds')}"
     retval << "\n= #{fn(seconds*1000000,1)} #{t(:microseconds, default: 'microseconds')}" if seconds < 0.01
     retval << "\n= #{fn(seconds*1000,1)} #{t(:milliseconds, default: 'milliseconds')}"    if seconds < 10
@@ -768,4 +769,16 @@ module ApplicationHelper
     retval
   end
 
+  def size_explain(mbytes)
+    return nil if mbytes.nil? || mbytes == ''
+    fmbytes = mbytes.to_f
+    return nil if fmbytes == 0
+    retval = ''
+    retval << "\n= #{fn(fmbytes * 1024 * 1024)} Bytes"      if fmbytes < 0.01
+    retval << "\n= #{fn(fmbytes * 1024, 1)    } Kilobytes"  if fmbytes < 10     && fmbytes > 0.0001
+    retval << "\n= #{fn(fmbytes, 1 )          } Megabytes"  if fmbytes < 10000  && fmbytes > 0.1
+    retval << "\n= #{fn(fmbytes / 1024, 1 ) } Gigabytes"  if fmbytes > 1000
+    retval << "\n= #{fn(fmbytes / (1024 * 1024), 1 ) } Terabytes"  if fmbytes > 1000000
+    retval
+  end
 end

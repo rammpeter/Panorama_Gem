@@ -673,7 +673,7 @@ class DbaSchemaController < ApplicationController
     @partition_expression = get_table_partition_expression(@owner, @table_name)
 
     @partitions = sql_select_all ["\
-      WITH Storage AS (SELECT /*+ NO_MERGE */   NVL(sp.Partition_Name, s.Partition_Name) Partition_Name, SUM(Bytes)/(1024*1024) MB
+      WITH Storage AS (SELECT /*+ NO_MERGE MATERIALIZE */   NVL(sp.Partition_Name, s.Partition_Name) Partition_Name, SUM(Bytes)/(1024*1024) MB
                       FROM DBA_Segments s
                       LEFT OUTER JOIN DBA_Tab_SubPartitions sp ON sp.Table_Owner = s.Owner AND sp.Table_Name = s.Segment_Name AND sp.SubPartition_Name = s.Partition_Name
                       WHERE s.Owner = ? AND s.Segment_Name = ?
@@ -709,6 +709,7 @@ class DbaSchemaController < ApplicationController
       #{"LEFT OUTER JOIN V$GCSPFMASTER_INFO mi ON mi.Data_Object_ID = o.Data_Object_ID" if PanoramaConnection.rac?}
       WHERE p.Table_Owner = ? AND p.Table_Name = ?
       ", @owner, @table_name, @owner, @table_name, @owner, @table_name]
+    @partitions.sort! {|a, b| b.high_value <=> a.high_value }
 
     @partitions.each do |p|
       if !p.subpartition_count.nil? && p.subpartition_count > 0
@@ -749,6 +750,7 @@ class DbaSchemaController < ApplicationController
       #{" AND p.Partition_Name = ?" if @partition_name}
       ", @owner, @table_name, @partition_name]
 
+    @subpartitions.sort! {|a, b| b.high_value <=> a.high_value }
     render_partial
   end
 
@@ -1389,7 +1391,7 @@ class DbaSchemaController < ApplicationController
     @partition_expression = get_index_partition_expression(@owner, @index_name)
 
     @partitions = sql_select_all ["\
-      WITH Storage AS (SELECT /*+ NO_MERGE */   NVL(sp.Partition_Name, s.Partition_Name) Partition_Name, SUM(Bytes)/(1024*1024) MB
+      WITH Storage AS (SELECT /*+ NO_MERGE MATERIALIZE */   NVL(sp.Partition_Name, s.Partition_Name) Partition_Name, SUM(Bytes)/(1024*1024) MB
                       FROM DBA_Segments s
                       LEFT OUTER JOIN DBA_Ind_SubPartitions sp ON sp.Index_Owner = s.Owner AND sp.Index_Name = s.Segment_Name AND sp.SubPartition_Name = s.Partition_Name
                       WHERE s.Owner = ? AND s.Segment_Name = ?
@@ -1421,6 +1423,7 @@ class DbaSchemaController < ApplicationController
    #{"LEFT OUTER JOIN V$GCSPFMASTER_INFO mi ON mi.Data_Object_ID = o.Data_Object_ID" if PanoramaConnection.rac?}
       WHERE p.Index_Owner = ? AND p.Index_Name = ?
       ", @owner, @index_name, @owner, @index_name, @owner, @index_name]
+    @partitions.sort! {|a, b| b.high_value <=> a.high_value }
 
     @partitions.each do |p|
       if !p.subpartition_count.nil? && p.subpartition_count > 0
@@ -1457,6 +1460,7 @@ class DbaSchemaController < ApplicationController
       WHERE p.Index_Owner = ? AND p.Index_Name = ?
       #{" AND p.Partition_Name = ?" if @partition_name}
       ", @owner, @index_name, @partition_name]
+    @subpartitions.sort! {|a, b| b.high_value <=> a.high_value }
 
     render_partial
   end

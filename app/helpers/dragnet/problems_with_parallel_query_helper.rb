@@ -197,7 +197,7 @@ Listed functions should be checked if they can be expanded by pragma PARALLEL_EN
                              ProcLines p
                       -- INSTR-Test vorab, da schneller als RegExp_Like
                       -- Match auf ProcName vorangestellt und gefolgt von keinem Buchstaben
-                      WHERE  INSTR(s.FullText, p.SuchText) > 0
+                      WHERE /*+ ORDERED_PREDICATES */ INSTR(s.FullText, p.SuchText) > 0
                       AND REGEXP_LIKE(s.FullText,'[^A-Z_]'||p.SuchText||'[^A-Z_]')
                       ORDER BY Elapsed_Secs DESC NULLS LAST
                       ",
