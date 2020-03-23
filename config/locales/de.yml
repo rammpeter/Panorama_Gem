@@ -983,6 +983,8 @@
     Steuernde INDEX-RANGE-SCAN für NestedLoop-Kaskaden auslagern in WITH … /*+ MATERIALIZE */ und parallelisieren.
     Selektion beleuchtet die aktuelle SGA.
   dragnet_helper_79_name:                                   Parallelisierte Statements mit nicht parallelisierten Anteilen (Auswertung SGA)
+  dragnet_helper_79_param_1_hint:                           Minimale Anzahl Sekunden in Ausführung seit erstem Erscheinen in SGA für Aufnahme in Selektion
+  dragnet_helper_79_param_1_name:                           Minimale Anzahl Sekunden in Ausführung
 
   dragnet_helper_80_desc: |-
     Bei Nutzung Parallel Query können versehentlich nicht parallelisierte Zugriffe auf größere Strukturen die Laufzeit des Statements drastisch verlängern.

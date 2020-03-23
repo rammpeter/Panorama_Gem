@@ -98,7 +98,9 @@ Selection considers current SGA.'),
                             ) p
                       JOIN  GV$SQLArea s ON s.Inst_ID=p.Inst_ID AND s.SQL_ID=p.SQL_ID
                       WHERE s.SQL_Text NOT LIKE '%dbms_stats cursor_sharing_exact%'
+                      AND   s.Elapsed_Time/1000000 > ?
                       ORDER BY Num_Rows DESC NULLS LAST",
+            parameter: [{name: t(:dragnet_helper_79_param1_name, default: 'Minimum elapsed seconds'), size: 8, default: 30, title: t(:dragnet_helper_param_history_backward_hint, default: 'Minimum number of elapsed seconds since first occurrence in SGA for consideration in selection') }]
         },
         {
             :name  => t(:dragnet_helper_80_name, :default=>'Statements with parallel query but with not parallelized contents (evaluation of AWR history)'),
