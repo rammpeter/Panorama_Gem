@@ -68,7 +68,7 @@ module DbaHelper
           p1raw ]
           result = "Nothing found in DB-Cache (X$BH) for HLAddr = #{p1raw}" unless result
         rescue Exception=>e
-          result = "You don't have the right to access view X$BH ! Function not available."
+          alert_exception(ex, x_dollar_bh_solution_text, :html)
         end
         result
       when p1text == "idn" && p2text == "value" && p3text == "where"
@@ -172,6 +172,18 @@ WHERE  indx = (SELECT name_ksrcctx FROM x$ksrcctx WHERE addr like '%'||TRIM(TO_C
     end
   end
 
+  def x_dollar_bh_solution_text
+    "
+Possibly missing access rights on table X$BH!
+Possible solutions:
+Alternative 1: Connect with role SYSDABA
+Alternative 2: Execute as user SYS
+> create view x_$bh as select * from x$bh;
+> grant select on x_$bh to public;
+> create public synonym x$bh for sys.x_$bh;
+This way X$BH becomes available with role SELECT ANY DICTIONARY
+"
+  end
 
 
 end

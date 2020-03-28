@@ -47,10 +47,11 @@ If optimizer does not decide to do so himself, you can use hints /*+ PARALLEL_IN
             :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') }]
         },
         {
-            :name  => t(:dragnet_helper_72_name, :default=>'Optimizable full table scans operations: possibly missing indexes '),
+            :name  => t(:dragnet_helper_72_name, :default=>'Full table scans  with less result records: possibly missing indexes '),
             :desc  => t(:dragnet_helper_72_desc, :default=>'Access by full table scan is critical if only small parts of table are relevant for selection, otherwise are adequate for processing of whole table data.
 They are out of place for OLTP-like access (small access time, many executions).
 Placing an index may reduce runtime significant.
+Calculated by high runtime and less result records.
 '),
             :sql=> "\
 WITH Backward AS (SELECT ? Days FROM Dual)
@@ -85,7 +86,7 @@ FROM   (
                 AND    p.Options LIKE '%FULL'           /* Auch STORAGE FULL der Exadata mit inkludieren */
                 AND    ss.Begin_Interval_Time > SYSDATE - (SELECT Days FROM Backward)
                 AND    p.Object_Owner NOT IN (#{system_schema_subselect})
-                AND    t.Num_Rows > ?
+                AND    t.Num_Rows >= ?
                 GROUP BY s.DBID, s.SQL_ID, p.Object_Owner, p.Object_Name
                ) i
         LEFT OUTER JOIN  (SELECT /*+ NO_MERGE */ h.DBID, h.SQL_ID, o.Owner, o.Object_Name, SUM(Seconds_Active) Seconds_Active
@@ -103,15 +104,55 @@ FROM   (
                           GROUP BY h.DBID, h.SQL_ID, o.Owner, o.Object_Name
                          ) h ON h.DBID = i.DBID AND h.SQL_ID = i.SQL_ID AND h.Owner = i.Object_Owner AND h.Object_Name = i.Object_Name
         WHERE  i.Rows_Processed > 0
-        AND    i.Executions > ?
+        AND    i.Executions >= ?
        )
 WHERE  SQL_Text NOT LIKE '%dbms_stats%'
 --ORDER BY Rows_per_Exec/Num_Rows/Executions/Elapsed_Time_Secs
 ORDER BY Elapsed_Time_Secs * Num_Rows * NVL(Seconds_Active, 1)/DECODE(Rows_per_Exec, 0, 1, Rows_per_Exec)  DESC
               ",
-            :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
-                         {:name=>t(:dragnet_helper_param_minimal_rows_name, :default=>'Minimum number of rows in table'), :size=>8, :default=>100000, :title=>t(:dragnet_helper_param_minimal_rows_hint, :default=>'Minimum number of rows in table for consideration in selection')},
-                         {:name=> t(:dragnet_helper_param_executions_name, :default=>'Minimum number of executions'), :size=>8, :default=>100, :title=> t(:dragnet_helper_param_executions_hint, :default=>'Minimum number of executions within time period for consideration in result')},
+            :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>2, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
+                         {:name=>t(:dragnet_helper_param_minimal_rows_name, :default=>'Minimum number of rows in table'), :size=>8, :default=>1000, :title=>t(:dragnet_helper_param_minimal_rows_hint, :default=>'Minimum number of rows in table for consideration in selection')},
+                         {:name=> t(:dragnet_helper_param_executions_name, :default=>'Minimum number of executions'), :size=>8, :default=>1, :title=> t(:dragnet_helper_param_executions_hint, :default=>'Minimum number of executions within time period for consideration in result')},
+            ]
+        },
+        {
+            :name  => t(:dragnet_helper_154_name, :default=>'Full table scans  with small cardinality: possibly missing indexes '),
+            :desc  => t(:dragnet_helper_154_desc, :default=>"Access by full table scan is critical if only small parts of table are relevant for selection, otherwise are adequate for processing of whole table data.
+They are out of place for OLTP-like access (small access time, many executions).
+Placing an index may reduce runtime significant.
+Calculated by high runtime of full scan and small expected number of records from full scan (by optimizer's cardinality).
+Thie selection requires usage of AWR history with Diagnostics Pack.
+"),
+            :sql=> "\
+SELECT h.Instance_Number \"Inst.\", u.UserName \"SQL User\", h.SQL_ID, p.Object_Owner Owner, p.Object_Name, p.Object_Type \"Object Type\", h.SQL_Plan_Line_ID \"Plan Line ID\",
+       p.Operation, p.Options, h.Elapsed_Secs \"Elapsed Secs.\", p.Cardinality, t.Num_Rows \"Num Rows Table\", t.Partitioned,
+       NVL(gp.Access_Predicates, '< no plan in SGA >') Access_Predicates,
+       NVL(gp.Filter_Predicates, '< no plan in SGA >') Filter_Predicates
+FROM   (SELECT /*+ NO_MERGE */ ss.DBID, ss.Instance_Number, h.User_ID, h.SQL_ID, h.SQL_Plan_Hash_Value, h.SQL_Plan_Line_ID, COUNT(*) * 10 Elapsed_Secs
+        FROM   DBA_Hist_Snapshot ss
+        JOIN   DBA_Hist_Active_Sess_History h ON h.DBID = ss.DBID AND h.Instance_Number = ss.Instance_Number AND h.Snap_ID = ss.Snap_ID
+        WHERE  ss.Begin_Interval_Time > SYSDATE - ?
+        AND    h.SQL_Plan_Operation = 'TABLE ACCESS'
+        AND    h.SQL_Plan_Options LIKE '%FULL'  /* also include Exadata variants */
+        AND    h.User_ID NOT IN (#{system_userid_subselect})
+        GROUP BY ss.DBID, ss.Instance_Number, h.User_ID, h.SQL_ID, h.SQL_Plan_Hash_Value, h.SQL_Plan_Line_ID
+       ) h
+JOIN   DBA_Hist_SQL_Plan p ON p.DBID = h.DBID AND p.SQL_ID = h.SQL_ID AND p.Plan_Hash_Value = h.SQL_Plan_Hash_Value AND p.ID = h.SQL_Plan_Line_ID
+LEFT OUTER JOIN DBA_Tables t ON t.Owner = p.Object_Owner AND t.Table_Name = p.Object_Name
+LEFT OUTER JOIN (SELECT SQL_ID, Plan_Hash_Value, ID, MIN(Access_Predicates) Access_Predicates, MIN(Filter_Predicates) Filter_Predicates
+                 FROM   gv$SQL_Plan gp
+                 WHERE  Operation = 'TABLE ACCESS'
+                 AND    Options LIKE '%FULL'  /* also include Exadata variants */
+                 AND    (Access_Predicates IS NOT NULL OR Filter_Predicates IS NOT NULL)
+                 GROUP BY SQL_ID, Plan_Hash_Value, ID
+                ) gp ON gp.SQL_ID = h.SQL_ID AND gp.Plan_Hash_Value = p.Plan_Hash_Value AND gp.ID = p.ID
+LEFT OUTER JOIN All_Users u ON u.User_ID = h.User_ID
+WHERE  h.Elapsed_Secs > ?
+AND    p.Operation = 'TABLE ACCESS'
+AND    p.Options LIKE '%FULL'  /* also include Exadata variants */
+ORDER BY h.Elapsed_Secs/p.Cardinality DESC              ",
+            :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>2, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
+                         {:name=>t(:dragnet_helper_154_param_1_name, :default=>'Min. elapsed seconds for full table scan'), :size=>8, :default=>100, :title=>t(:dragnet_helper_154_param_1_hint, :default=>'Minimum number of total elapsed seconds in considered period for full table scans on object')},
             ]
         },
         {

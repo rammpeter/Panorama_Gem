@@ -543,6 +543,41 @@ class DbaSgaController < ApplicationController
 
 
   # Anzeige Einzeldetails des SQL
+  def list_sql_detail_sql_id_or_history
+    instance            = prepare_param_instance
+    sql_id              = prepare_param(:sql_id)
+    parsing_schema_name = prepare_param(:parsing_schema_name)
+    con_id              = prepare_param(:con_id)
+
+    where_string = ''
+    where_values = []
+
+    if instance
+      where_string << " AND Inst_ID = ?"
+      where_values << instance
+    end
+
+    if parsing_schema_name
+      where_string << " AND Parsing_Schema_Name = ?"
+      where_values << parsing_schema_name
+    end
+
+    if con_id
+      where_string << " AND Con_ID = ?"
+      where_values << con_id
+    end
+
+    sql_count = sql_select_one ["SELECT COUNT(*) FROM gv$SQLArea WHERE SQL_ID = ? #{where_string}", sql_id].concat(where_values)
+    if sql_count > 0
+      add_statusbar_message("SQL not found in SGA! Showing history from AWR.")
+      list_sql_detail_sql_id
+    else
+      params[:statusbar_message] = "SQL found in SGA! Showing content from SGA instead of AWR history."
+      redirect_to url_for(controller: :dba_history, action: :list_sql_detail_historic, params: params.permit! , method: :post)
+    end
+
+  end
+
   def list_sql_detail_sql_id_childno
     @modus = "GV$SQL"   # Detaillierung SQL-ID, ChildNo
     @dbid         = prepare_param_dbid

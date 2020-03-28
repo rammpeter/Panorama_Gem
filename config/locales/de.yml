@@ -24,7 +24,7 @@
   last_occurrence_caption:                                  Letztes Auftreten
   last_occurrence_hint:                                     Letztes Auftreten im betrachteten Zeitraum
   link_historic_sql_id_coming_soon:                         Hier erscheint gleich der Text des SQL, bitte Maus erneut über Objekt führen
-  link_historic_sql_id_hint_prefix:                         Anzeige der Details des
+  link_historic_sql_id_hint_prefix:                         Anzeige der Details aus AWR-Historie des
   mandatory:                                                Erforderlich
   microseconds:                                             Mikrosekunden
   milliseconds:                                             Millisekunden
@@ -938,8 +938,9 @@
     FullTableScan-Zugriffe sind dann kritisch, wenn nur kleine Anteile einer Tabelle für die Selektion relevant sind, andererseits sinnvoll bei Verarbeitung kompletter Tabelleninhalte.
     Fehl am Platze sind FullTableScans i.d.R. in OLTP-artigen Zugriffen (kleine Zugriffszeit, häufige Zugriffe).
     Durch Etablieren eines Index kann Laufzeit evtl. deutlich verringert werden.
+    Ermittelt über hohe Laufzeit des SQL und wenige Result-Records.
   dragnet_helper_72_name: |-
-    Optimierbare FullTableScan-Operationen: evtl. fehlende Indizes
+    Full Table Scans mit wenig Result-Records: evtl. fehlende Indizes
 
   dragnet_helper_73_desc: |-
     Lang laufende Foreign Key-Prüfungen bei Delete werden oftmals durch fehlende Indizierung der referenzierenden Tabelle verursacht.
@@ -1600,6 +1601,17 @@
     Zusätzlich werden SQLs aus der SGA angezeigt, die diesen Funktionsnamen in ihrer SQL-Syntax nutzen.
   dragnet_helper_153_name: |-
     Kandidaten für DETERMINISTIC in user-defined PL/SQL-Funktionen
+
+  dragnet_helper_154_desc: |-
+    FullTableScan-Zugriffe sind dann kritisch, wenn nur kleine Anteile einer Tabelle für die Selektion relevant sind, andererseits sinnvoll bei Verarbeitung kompletter Tabelleninhalte.
+    Fehl am Platze sind FullTableScans i.d.R. in OLTP-artigen Zugriffen (kleine Zugriffszeit, häufige Zugriffe).
+    Durch Etablieren eines Index kann Laufzeit evtl. deutlich verringert werden.
+    Ermittelt über hohe Laufzeit für den Full Scan und geringe erwartete Anzahl Records des Full Scans (über Kardinalität des Optimizers).
+    Diese Selektion erfordert Nutzung der AWR-Historie über Diagnostics Pack.
+  dragnet_helper_154_name: |-
+    Full Table Scans mit geringer Kardinalität: evtl. fehlende Indizes
+  dragnet_helper_154_param_1_name:                          Min. Zeit in Sekunden für Full Table Scan
+  dragnet_helper_154_param_1_hint:                          Minimale Zeit in Sekunden im betrachteten Zeitraum für Full Table Scans auf dem Objekt
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 

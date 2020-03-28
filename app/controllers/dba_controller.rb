@@ -666,14 +666,7 @@ class DbaController < ApplicationController
     render_partial
   rescue Exception => ex
     # render as html because format=>:html was requested, otherwhise test will fail
-    alert_exception(ex, "
-Possibly missing access rights on table X$BH!
-Solution: Execute as user 'SYS':
-> create view x_$bh as select * from x$bh;
-> grant select on x_$bh to public;
-> create public synonym x$bh for sys.x_$bh;
-
-                                ", :html)
+    alert_exception(ex, x_dollar_bh_solution_text, :html)
   end
 
   # Waits wegen db_file_sequential_read

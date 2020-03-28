@@ -182,7 +182,7 @@ module AjaxHelper
   def link_historic_sql_id(instance, sql_id, time_selection_start, time_selection_end, update_area, parsing_schema_name=nil, value=nil)
     parsing_schema_name="[UNKNOWN]" if parsing_schema_name.nil?                 # Zweiter pass findet dann Treffer, wenn SQL-ID unter anderem User existiert
     unique_id = get_unique_area_id
-    prefix = "#{t(:link_historic_sql_id_hint_prefix, :default=>"Show details of")} SQL-ID=#{sql_id} : "
+    prefix = "#{t(:link_historic_sql_id_hint_prefix, :default=>"Show details from AWR history of")} SQL-ID=#{sql_id} : "
     ajax_link(value ? value : sql_id, {
               :controller => :dba_history,
               :action     => :list_sql_detail_historic,
@@ -227,6 +227,27 @@ module AjaxHelper
     )
   end
 
+  def link_current_or_historic_sql_id(update_area, instance, sql_id, time_selection_start, time_selection_end, parsing_schema_name=nil, con_id=nil)
+    unique_id = get_unique_area_id
+    prefix = "Show details in SGA or AWR history for SQL-ID = '#{sql_id}'#{", Instance = #{instance}" if instance}"
+    ajax_link(sql_id, {
+        controller:           :dba_sga,
+        action:               :list_sql_detail_sql_id_or_history,
+        update_area:          update_area,
+        instance:             instance,
+        sql_id:               sql_id,
+        time_selection_start: time_selection_start,
+        time_selection_end:   time_selection_end,
+        parsing_schema_name:  parsing_schema_name,   # Sichern der Eindeutigkeit bei mehrfachem Vorkommen identischer SQL in verschiedenen Schemata
+        con_id:               con_id
+    },
+              {:title       => "#{prefix} <#{t :link_historic_sql_id_coming_soon, :default=>"Text of SQL is loading, please hold mouse over object again"}>",
+               :id          =>  unique_id,
+               :prefix      => prefix,
+               :onmouseover => "expand_sql_id_hint('#{unique_id}', '#{sql_id}');"
+              }
+    )
+  end
 
   def link_session_details(update_area, instance, sid, serialno, print_val=nil)
     if instance.nil? || sid.nil? || serialno.nil?

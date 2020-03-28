@@ -205,7 +205,6 @@ class EnvController < ApplicationController
     @panorama_sampler_data = PanoramaSamplerStructureCheck.panorama_sampler_schemas(:full)
 
     @dictionary_access_problem = true unless select_any_dictionary?(@dictionary_access_msg)
-    @dictionary_access_problem = true unless x_memory_table_accessible?("BH", @dictionary_access_msg )
 
     render_partial :start_page, {:additional_javascript_string => "$('#main_menu').html('#{j render_to_string :partial =>"build_main_menu" }');" }  # Wait until all loogon jobs are processed before showing menu
 
@@ -255,26 +254,6 @@ class EnvController < ApplicationController
     raise "Empty HTTP cookie recognized!\n#{hint}" if cookies.count == 0
     raise "Missing value for 'client_salt' in browser cookie!\n#{hint}" if cookies[:client_salt].nil? || cookies[:client_salt] == ''
     raise "Missing value for 'client_key' in browser cookie!\n#{hint}"  if cookies[:client_key].nil?  || cookies[:client_key]  == ''
-  end
-
-  # Test auf Lesbarkeit von X$-Tabellen
-  def x_memory_table_accessible?(table_name_suffix, msg)
-    begin
-      sql_select_all "SELECT /* Panorama Tool Ramm */ * FROM X$#{table_name_suffix} WHERE RowNum < 1"
-      return true
-    rescue Exception => e
-      msg << "<div>#{t(:env_set_database_xmem_line1, :user=>get_current_database[:user], :table_name_suffix=>table_name_suffix, :default=>'DB-User %{user} has no right to read on X$%{table_name_suffix} ! Therefore a very small number of functions of Panorama is not usable!')}<br/>"
-      msg << "<a href='#' onclick=\"jQuery('#xbh_workaround').show(); return false;\">#{t(:moeglicher, :default=>'possible')} workaround:</a><br/>"
-      msg << "<div id='xbh_workaround' style='display:none; background-color: lightyellow; padding: 20px;'>"
-      msg << "#{t(:env_set_database_xmem_line2, :default=>'Alternative 1: Connect with role SYSDABA')}<br/>"
-      msg << "#{t(:env_set_database_xmem_line3, :default=>'Alternative 2: Execute as user SYS')}<br/>"
-      msg << "> create view X_$#{table_name_suffix} as select * from X$#{table_name_suffix};<br/>"
-      msg << "> create public synonym X$#{table_name_suffix} for sys.X_$#{table_name_suffix};<br/>"
-      msg << t(:env_set_database_xmem_line4, :table_name_suffix=>table_name_suffix, :default=>'This way X$%{table_name_suffix} becomes available with role SELECT ANY DICTIONARY')
-      msg << "</div>"
-      msg << "</div>"
-      return false
-    end
   end
 
   def select_any_dictionary?(msg)

@@ -71,13 +71,22 @@ if @res.count > 0
                                 time_selection_end   = localeDateTime(rec['last occurrence'], :minutes) if rec['last occurrence']       # Überschrieben mit Wert aus Record wenn belegt
                                 time_selection_end   = localeDateTime(rec['Last Occurrence'], :minutes) if rec['Last Occurrence']       # Überschrieben mit Wert aus Record wenn belegt
 
+                                parsing_schema_name = nil
+                                parsing_schema_name = rec['parsing_schema_name'] if rec['parsing_schema_name']
+
+                                con_id = nil
+                                con_id = rec['con_id'] if rec['con_id']
+
                                 #link_sql_id('exec_dragnet_sql_detail_area', inst_id, my_html_escape(rec[col[:caption]]))
-                                link_historic_sql_id(inst_id,
-                                                     my_html_escape(rec[col[:caption]]) ,
-                                                     time_selection_start,
-                                                     time_selection_end,
-                                                     :exec_dragnet_sql_detail_area
-                                )
+
+                                link_current_or_historic_sql_id(:exec_dragnet_sql_detail_area, inst_id, my_html_escape(rec[col[:caption]]), time_selection_start, time_selection_end, parsing_schema_name, con_id)
+
+                                #link_historic_sql_id(inst_id,
+                                #                     my_html_escape(rec[col[:caption]]) ,
+                                #                     time_selection_start,
+                                 #                    time_selection_end,
+                                 #                    :exec_dragnet_sql_detail_area
+                                #)
 
                              }
           when ['table_name', 'table name', 'tablename', 'referenced table', 'table-name', 'log_table', 'object_name', 'master_table', 'sequence_name'].include?(col[:caption].downcase)
