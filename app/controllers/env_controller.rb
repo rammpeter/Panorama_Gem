@@ -458,12 +458,19 @@ public
                                   ORDER BY MIN(Begin_Interval_Time)"]
 
       @dbids.each do |d|
-        set_new_dbid = false if get_dbid == d.dbid                                # Reuse alread set dbid because it is valid
+        set_new_dbid = false if get_dbid == d.dbid                              # Reuse alread set dbid because it is valid
       end
     else
       @dbids = nil
     end
-    set_cached_dbid(PanoramaConnection.dbid) if set_new_dbid # dbid has not been set before or is not valid, necessary to retain the already choosen DBID at new login
+    if set_new_dbid # dbid has not been set before or is not valid, necessary to retain the already choosen DBID at new login
+      if is_cdb?
+        dbid = sql_select_one "SELECT DBID FROM v$Containers WHERE Con_ID = (SELECT Con_ID FROM v$Session WHERE SID = SYS_CONTEXT('userenv', 'sid'))"
+        set_cached_dbid(dbid)                                                   # Use containers DBID as default
+      else
+        set_cached_dbid(PanoramaConnection.dbid)                                # Use connections DBID
+      end
+    end
 
     render_partial :list_dbids
   end

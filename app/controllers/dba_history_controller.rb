@@ -665,13 +665,14 @@ class DbaHistoryController < ApplicationController
                                     FROM   DBA_Hist_SQLStat s
                                     JOIN   DBA_Hist_Snapshot ss ON ss.DBID=s.DBID AND ss.Instance_Number=s.Instance_Number AND ss.Snap_ID=s.Snap_ID
                                     JOIN   DBA_Hist_SQL_Plan p ON p.DBID = s.DBID AND p.SQL_ID = s.SQL_ID AND p.Plan_Hash_Value = s.Plan_Hash_Value AND p.ID = 1   /* first record of plan,  count only real execution plans */
-                                    WHERE  s.SQL_ID = ?
+                                    WHERE  s.DBID = ?
+                                    AND    s.SQL_ID = ?
                                     AND    ss.End_Interval_time   > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
                                     AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
                                     #{where_stmt}
                                     GROUP BY s.Plan_Hash_Value, s.DBID, s.Parsing_Schema_Name
                                     ORDER BY MIN(ss.Begin_Interval_Time)
-                                   ", @sql_id, @time_selection_start, @time_selection_end].concat(where_values)
+                                   ", get_dbid, @sql_id, @time_selection_start, @time_selection_end].concat(where_values)
 
     if get_db_version >= '12.1'
       display_maps = sql_select_all ["\
@@ -720,7 +721,8 @@ class DbaHistoryController < ApplicationController
                                         s.SQL_ID, s.Plan_Hash_Value, s.DBID, s.Parsing_Schema_Name
                                  FROM   DBA_Hist_SQLStat s
                                  JOIN   DBA_Hist_Snapshot ss ON ss.DBID=s.DBID AND ss.Instance_Number=s.Instance_Number AND ss.Snap_ID=s.Snap_ID
-                                 WHERE  s.SQL_ID = ?
+                                 WHERE  s.DBID = ?
+                                 AND    s.SQL_ID = ?
                                  AND    ss.End_Interval_time   > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
                                  AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
                                  #{where_stmt}
@@ -730,7 +732,7 @@ class DbaHistoryController < ApplicationController
                          LEFT OUTER JOIN DBA_Tables t  ON t.Owner=p.Object_Owner AND t.Table_Name=p.Object_Name -- evtl. weiter zu filtern per  NVL(p.Object_Type, 'TABLE') LIKE 'TABLE%'
                          LEFT OUTER JOIN DBA_Indexes i ON i.Owner=p.Object_Owner AND i.Index_Name=p.Object_Name -- evtl. weiter zu filtern per  p.Object_Type LIKE 'INDEX%'
                          ORDER BY p.ID
-                       ", @sql_id, @time_selection_start, @time_selection_end].concat(where_values)
+                       ", get_dbid, @sql_id, @time_selection_start, @time_selection_end].concat(where_values)
 
     # Iteration über unterschiedliche Ausführungspläne
     @multiplans.each do |mp|
