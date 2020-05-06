@@ -28,8 +28,10 @@ module HtmlHelper
   end
 
   def instance_tag(required = false)
-    instance = read_from_client_info_store(:instance)
-    instance = 1 if instance.nil? && required
+    if required
+      instance = read_from_client_info_store(:instance)
+      instance = 1 if instance.nil?
+    end
 
     "<div class='flex-row-element' title='#{t(:instance_filter_hint, default: 'Filter on specific RAC instance')} (#{required ? "#{t(:mandatory, default: 'mandatory')}" : 'Optional'})'>
        Instance

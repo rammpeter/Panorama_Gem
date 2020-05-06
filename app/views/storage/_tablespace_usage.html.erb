@@ -150,7 +150,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
     end
 
     link_mb_free = proc do |rec|
-      if rec.contents == 'PERMANENT'
+      if ['PERMANENT', 'UNDO'].include? rec.contents
         ajax_link(fn(rec.mbfree),
                            {:controller   => :storage,
                             :action       => :list_free_extents,
