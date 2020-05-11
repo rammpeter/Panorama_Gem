@@ -838,10 +838,16 @@ class ActiveSessionHistoryController < ApplicationController
     render_partial
   end
 
+  def show_temp_usage_historic
+    @temp_tablespaces = sql_select_all "SELECT Tablespace_Name FROM DBA_Tablespaces WHERE Contents = 'TEMPORARY'"
+    render_partial
+  end
+
   # Einstieg aus show_temp_usage_historic
   def first_list_temp_usage_historic
     save_session_time_selection
     @instance = prepare_param_instance
+    @temp_ts = prepare_param :temp_ts
     params[:groupfilter] = {}
 
     params[:groupfilter][:DBID]                  = prepare_param_dbid
@@ -849,6 +855,7 @@ class ActiveSessionHistoryController < ApplicationController
     # params[:groupfilter][:Idle_Wait1]            = 'PX Deq Credit: send blkd'    # Sessions in idle wait should be considered for TEMP usage
     params[:groupfilter][:time_selection_start]  = @time_selection_start
     params[:groupfilter][:time_selection_end]    = @time_selection_end
+    params[:groupfilter][:Temp_TS]               = @temp_ts if @temp_ts
 
     list_temp_usage_historic    # weiterleitung Event
   end

@@ -8,6 +8,18 @@
     <%= include_start_end_timepicker %>
     <%= instance_tag %>
 
+    <div class="flex-row-element" title="Limit evaluation to particular temporary tablespace.
+    Only sessions from users with default temporary tablespace = selected tablespace are considered.
+    ">
+      Temp-TS
+      <select name="temp_ts">
+        <option value='' selected='selected'>[All]</option>
+        <% @temp_tablespaces.each do |ts| %>
+          <%=  "<option value='#{ts.tablespace_name}'>#{ts.tablespace_name}</option>".html_safe %>
+        <% end %>
+      </select>
+    </div>
+
     <div class="flex-row-element" title="Number of seconds for fuzzy determination of max. values per session and timestamp.
     Maximum values per session plus/minus x seconds are considered to bypass the inaccuracy due to resource claiming by inactive sessions
     (that are not recorded by active session history).
@@ -19,7 +31,6 @@
       <%= text_field_tag(:fuzzy_seconds, '0', :size=>3, :style=>'text-align: right') %>
     </div>
 
-
     <div class="flex-row-element" title="<%= t(:grouping_hint, :default=>'Group listing by attribute') %>">
       <%= t(:grouping, :default=>'Grouping')%>
       <select name="time_groupby">
@@ -28,7 +39,6 @@
         <% end %>
       </select>
     </div>
-
 
     <div class="flex-row-element">
       <%= submit_tag('Show', :title => 'Show historic TEMP usage') %>

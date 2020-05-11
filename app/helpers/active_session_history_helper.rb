@@ -110,6 +110,7 @@ module ActiveSessionHistoryHelper
       when :User_ID                     then {:name => 'User-ID',                     :sql => "s.User_ID"}
       when :Additional_Filter           then {:name => 'Additional Filter',           :sql => "UPPER(u.UserName||s.Session_ID||s.SQL_ID||s.Module||s.Action||o.Object_Name||s.Program#{get_db_version >= '11.2' ? '|| s.Machine' : ''}||s.SQL_Plan_Hash_Value) LIKE UPPER('%'||?||'%')", :already_bound => true }  # Such-Filter
       when :Temp_Usage_MB_greater       then {:name => 'TEMP-usage (MB) > x',         :sql => "s.Temp_Space_Allocated > ?*(1024*1024)", :already_bound => true}
+      when :Temp_TS                     then {:name => 'TEMP-TS',                     :sql => "u.Temporary_Tablespace"}
       else                              { :name => session_statistics_key_rule(key.to_s)[:Name], :sql => session_statistics_key_rule(key.to_s)[:sql] }                              # 2. Versuch aus Liste der Gruppierungskriterien
     end
     
