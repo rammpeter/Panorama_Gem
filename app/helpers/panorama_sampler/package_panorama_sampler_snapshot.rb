@@ -348,7 +348,7 @@ END Panorama_Sampler_Snapshot;
             FROM   (SELECT /*+ NO_MERGE */ TS#, Obj#, DataObj#,
                            SUM(CASE WHEN Statistic_Name = 'logical reads'               THEN Value END) LOGICAL_READS_TOTAL,
                            SUM(CASE WHEN Statistic_Name = 'buffer busy waits'           THEN Value END) BUFFER_BUSY_WAITS_TOTAL,
-                           SUM(CASE WHEN Statistic_Name = 'db_block_changes'            THEN Value END) DB_BLOCK_CHANGES_TOTAL,
+                           SUM(CASE WHEN Statistic_Name = 'db block changes'            THEN Value END) DB_BLOCK_CHANGES_TOTAL,
                            SUM(CASE WHEN Statistic_Name = 'physical reads'              THEN Value END) PHYSICAL_READS_TOTAL,
                            SUM(CASE WHEN Statistic_Name = 'physical writes'             THEN Value END) PHYSICAL_WRITES_TOTAL,
                            SUM(CASE WHEN Statistic_Name = 'physical reads direct'       THEN Value END) PHYSICAL_READS_DIRECT_TOTAL,
