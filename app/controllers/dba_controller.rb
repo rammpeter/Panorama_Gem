@@ -781,6 +781,7 @@ class DbaController < ApplicationController
         wa.Expected_Size_MB, wa.Actual_Mem_Used_MB, wa.Max_Mem_Used_MB, wa.Number_Passes,
         wa.WA_TempSeg_Size_MB,
         CASE WHEN w.State = 'WAITING' THEN w.Event ELSE 'ON CPU' END Wait_Event,
+        RawToHex(tx.XID) XID,
         #{get_db_version < '11.1' ? "w.Seconds_In_Wait" : "DECODE(w.State, 'WAITING', w.Wait_Time_Micro, w.Time_Since_Last_Wait_Micro)/1000000"} Seconds_Waiting
       FROM    GV$session s
       LEFT OUTER JOIN (SELECT Inst_ID, SID, count(*) Open_Cursor, count(distinct sql_id) Open_Cursor_SQL
@@ -831,6 +832,7 @@ class DbaController < ApplicationController
              ) temp ON temp.Inst_ID = s.Inst_ID AND temp.Session_Addr = s.sAddr
       #{"LEFT OUTER JOIN gv$Containers con ON con.Inst_ID=s.Inst_ID AND con.Con_ID=s.Con_ID" if get_current_database[:cdb]}
       LEFT OUTER JOIN gv$Session_Wait w ON w.Inst_ID = s.Inst_ID AND w.SID = s.SID
+      LEFT OUTER JOIN gv$Transaction tx ON tx.Inst_ID = s.Inst_ID AND tx.Addr = s.TAddr
       WHERE 1=1 #{where_string}
       ORDER BY 1 ASC"].concat(where_values)
 

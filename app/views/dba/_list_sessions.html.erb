@@ -13,6 +13,18 @@
       :title=> "Show details for query coordinator session")
   end
 
+   link_transaction = proc do |rec|
+     ajax_link(rec.xid, {
+         controller:   :storage,
+         action:       :list_transaction_history,
+         xid:          rec.xid,
+         update_area:  @update_area
+     },
+               title: 'Show history of transaction from Flashback_Transaction_Query'
+     )
+   end
+
+
   column_options = []
 
   column_options << {:caption=>"I",                :data=>proc{|rec| rec.inst_id},                    :title=>'RAC instance ID'}
@@ -38,6 +50,7 @@
     {:caption=>"Logon Time",       :data=>proc{|rec| localeDateTime(rec.logon_time)}, :title=>'Logon time of session'},
     {:caption=>"Last Active Start",:data=>proc{|rec| localeDateTime(rec.last_call)},  :title=>t(:dba_list_sessions_last_active_start_hint, :default=>'Start of last active phase of session')},
     {:caption=>"I/O-Index",        :data=>proc{|rec| fn(rec.ioindex)},                :title=>t(:dba_list_sessions_io_hint, :default=>'Weighted value of logical and physical I/O of session'), :align=>"right"},
+    {:caption=>"Tx.",              :data=>link_transaction,                           :title=>'Active transaction of session', max_wrap_width: 15},
     {:caption=>"Temp",             :data=>proc{|rec| fn(rec.temp_mb,3)},              :data_title=>proc{|rec| "Temp (MB), #{rec.temp_extents} Extents, #{rec.temp_blocks} Blocks"}, :title=>t(:dba_list_sessions_temp_hint, :default=>'Used TEMP-tablespace in MBytes'), :align=>"right"},
     {:caption=>"Long SQL",         :data=>proc{|rec| rec.longsql},                    :title=>t(:dba_list_sessions_long_hint, :default=>'long running SQL statement')},
     {:caption=>"Open Cursor",      :data=>proc{|rec| fn(rec.open_cursor)},            :title=>t(:dba_list_sessions_open_cursor_hint, :default=>'Number of open cursor for session'), :align=>"right"},
