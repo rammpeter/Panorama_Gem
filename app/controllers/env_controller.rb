@@ -466,7 +466,11 @@ public
     if set_new_dbid # dbid has not been set before or is not valid, necessary to retain the already choosen DBID at new login
       if is_cdb?
         dbid = sql_select_one "SELECT DBID FROM v$Containers WHERE Con_ID = (SELECT Con_ID FROM v$Session WHERE SID = SYS_CONTEXT('userenv', 'sid'))"
-        set_cached_dbid(dbid)                                                   # Use containers DBID as default
+        if sql_select_one(["SELECT COUNT(*) FROM DBA_Hist_Snapshot WHERE DBID = ?", dbid]) == 0 # Check if AWR for container is really sampled
+          set_cached_dbid(PanoramaConnection.dbid)                              # Use connections DBID if container has no AWR data
+        else
+          set_cached_dbid(dbid)                                                 # Use containers DBID if container has AWR data
+        end
       else
         set_cached_dbid(PanoramaConnection.dbid)                                # Use connections DBID
       end

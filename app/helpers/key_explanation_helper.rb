@@ -32,6 +32,7 @@ module KeyExplanationHelper
   def explain_data_access(operation_options)
     unless @@data_access
       @@data_access = {
+        'EXTENDED DATA LINK FULL'             => "Execution through data link on another container of this instance with it's own container-specific process",
         'JOIN FILTER CREATE'                  => "Create bloom filter based on data from previous operation.\nBloom filter allows to exactly state that a value does not exist in an result.\nThis created filter is used at an operation JOIN FILTER USE with same object name to filter out (not all) rows that will not match the join condition.\n\nUsage of bloom filters in SQL can be controlled by optimizer hint \"NO_PX_JOIN_FILTER\" or \"OPT_PARAM('_bloom_filter_enabled' 'false')\"",
         'JOIN FILTER USE'                     => "Usage of bloom filter to filter out (not all) rows that will not match the join condition. Used bloom filter data was created by operation JOIN FILTER CREATE with same object name.\nBloom filter allows to exactly state that a value does not exist in an result.\n\nUsage of bloom filters in SQL can be controlled by optimizer hint \"NO_PX_JOIN_FILTER\" or \"OPT_PARAM('_bloom_filter_enabled' 'false')\"",
         'LOAD AS SELECT (HYBRID TSM/HWMB)'    => "This is a hybrid solution that combines the beneficial characteristics of temp segment merge and high water mark brokering.",

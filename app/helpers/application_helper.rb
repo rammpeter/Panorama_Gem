@@ -752,6 +752,8 @@ module ApplicationHelper
                                      ', dbid
                                     ]
     end
+    raise "No snapshot found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')} for DBID=#{dbid}!" if @min_snap_id.nil?
+    raise "No snapshot found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')} for DBID=#{dbid}!" if @max_snap_id.nil?
   end
 
   # explain seconds to minutes, hours and days

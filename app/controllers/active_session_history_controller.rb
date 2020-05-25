@@ -446,7 +446,7 @@ class ActiveSessionHistoryController < ApplicationController
 
     @locks = sql_select_iterator [
       "WITH /* Panorama-Tool Ramm */
-                   TSSel AS (SELECT h.*, h.Time_Waited/1000000 Seconds_in_Wait
+                   TSSel AS (SELECT /*+ NO_MERGE MATERIALIZE */ h.*, h.Time_Waited/1000000 Seconds_in_Wait
                              FROM   (
                                       SELECT 10 Sample_Cycle,
                                              /* auf 10 Sekunden genau gerundete Zeit */
@@ -474,8 +474,8 @@ class ActiveSessionHistoryController < ApplicationController
                              WHERE  Blocking_Session_Status IN ('VALID', 'GLOBAL') /* Session wartend auf Blocking-Session */
                             ),
        -- Komplette Menge an Samples erweitert um die Attribute des Root-Blockers
-       root_sel as (
-                    SELECT CONNECT_BY_ROOT Rounded_Sample_Time      Root_Rounded_Sample_Time,
+       root_sel as (SELECT  /*+ NO_MERGE MATERIALIZE */
+                           CONNECT_BY_ROOT Rounded_Sample_Time      Root_Rounded_Sample_Time,
                            CONNECT_BY_ROOT Blocking_Session         Root_Blocking_Session,
                            CONNECT_BY_ROOT Blocking_Session_Serial# Root_Blocking_Session_Serial#,
                            CONNECT_BY_ROOT Blocking_Session_Status  Root_Blocking_Session_Status,
@@ -499,7 +499,8 @@ class ActiveSessionHistoryController < ApplicationController
                             #{'AND PRIOR Instance_number   = Blocking_Inst_ID' if get_db_version >= '11.2'}
                    ),
        -- Samples verdichtet nach Root-Blocker für Statistische Aussagen
-       root_sel_compr AS (SELECT Root_Blocking_Session, Root_Blocking_Session_Serial#, Root_Blocking_Session_Status #{', Root_Blocking_Inst_ID' if get_db_version >= '11.2'},
+       root_sel_compr AS (SELECT /*+ NO_MERGE MATERIALIZE */
+                                 Root_Blocking_Session, Root_Blocking_Session_Serial#, Root_Blocking_Session_Status #{', Root_Blocking_Inst_ID' if get_db_version >= '11.2'},
                                  MIN(l.Root_Rounded_Sample_Time)-(MAX(Sample_Cycle)/86400)  Min_Sample_Time,            /* wegen Nachfolgendem BETWEEN-Vergleich der gerundeten Zeiten auf vorherigen Sample_Cycle abgrenzen */
                                  MAX(l.Root_Rounded_Sample_Time)+(MIN(Sample_Cycle)/86400)  Max_Sample_Time,            /* wegen Nachfolgendem BETWEEN-Vergleich der gerundeten Zeiten auf nächsten Sample_Cycle abgrenzen */
                                  MIN(l.Snap_ID)                                             Min_Snap_ID,
@@ -553,8 +554,7 @@ class ActiveSessionHistoryController < ApplicationController
               c.Blocked_Sessions_Total, c.Waiting_Instance, c.Blocked_Sessions_Direct, c.Seconds_in_Wait_Sample, c.Root_Blocking_Object_Type, c.Root_Blocking_Object_Owner, c.Root_Blocking_Object, c.Root_Blocking_SubObject, Root_Blocking_Object_Addition, c.Root_Instance_Number,
               c.Root_SQL_ID, c.Root_UserName, c.Root_Event, c.Root_Module, c.Root_Action, c.Root_Program, c.MaxLevel, c.Sample_Count_Direct
        FROM   (
-              SELECT /*+ USE_NL(gr rhh) */
-                     Decode(SUM(gr.Is_Cycle_Sum), 0, NULL, 'Y') Deadlock,
+              SELECT Decode(SUM(gr.Is_Cycle_Sum), 0, NULL, 'Y') Deadlock,
                      gr.Root_Blocking_Session, gr.Root_Blocking_Session_Serial#, gr.Root_Blocking_Session_Status #{', gr.Root_Blocking_Inst_ID' if get_db_version >= '11.2'},
                      MAX(Seconds_in_Wait_Total) Max_Seconds_in_Wait_Total
                      #{if get_db_version >= '11.2'
@@ -568,7 +568,7 @@ class ActiveSessionHistoryController < ApplicationController
                        end
                      }
               FROM   (
-                      SELECT Root_Snap_ID, Root_Rounded_Sample_Time, Root_Blocking_Session, Root_Blocking_Session_Serial#,
+                      SELECT  /*+ NO_MERGE */ Root_Snap_ID, Root_Rounded_Sample_Time, Root_Blocking_Session, Root_Blocking_Session_Serial#,
                              Root_Blocking_Session_Status#{', Root_Blocking_Inst_ID' if get_db_version >= '11.2'}, SUM(Is_Cycle) Is_Cycle_Sum,
                              SUM(Seconds_in_Wait)             Seconds_in_Wait_Total   /* Wartezeit aller geblockten Sessions eines Samples */
                       FROM   root_sel l
