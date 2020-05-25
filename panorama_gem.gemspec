@@ -23,14 +23,14 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   #s.add_dependency "rails", "5.2.3"
 
   # Alternative instead of complete rails including actioncable etc., prev. version was 5.2.3
-  s.add_dependency  "activerecord",   "6.0.2.2"
-  s.add_dependency  "activemodel",    "6.0.2.2"
-  s.add_dependency  "actionpack",     "6.0.2.2"
-  s.add_dependency  "actionview",     "6.0.2.2"
-  s.add_dependency  "actionmailer",   "6.0.2.2"
-  s.add_dependency  "activejob",      "6.0.2.2"
-  s.add_dependency  "activesupport",  "6.0.2.2"
-  s.add_dependency  "railties",       "6.0.2.2"
+  s.add_dependency  "activerecord",   "6.0.3.1"
+  s.add_dependency  "activemodel",    "6.0.3.1"
+  s.add_dependency  "actionpack",     "6.0.3.1"
+  s.add_dependency  "actionview",     "6.0.3.1"
+  s.add_dependency  "actionmailer",   "6.0.3.1"
+  s.add_dependency  "activejob",      "6.0.3.1"
+  s.add_dependency  "activesupport",  "6.0.3.1"
+  s.add_dependency  "railties",       "6.0.3.1"
 
   s.add_dependency 'activerecord-nulldb-adapter'
   s.add_dependency 'activerecord-oracle_enhanced-adapter'     # lokal in Gemfile überschreiben mit : gem 'activerecord-oracle_enhanced-adapter', github: 'rsim/oracle-enhanced', branch: 'rails42'
