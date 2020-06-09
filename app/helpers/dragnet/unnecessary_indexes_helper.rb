@@ -215,7 +215,7 @@ If none of the four reasons really requires the existence, the index can be remo
                                                                      AND t.Indexes               = p.Indexes
                                                                      AND t.Ind_Columns           = p.Ind_Columns
                                            )
-                    SELECT /*+ USE_HASH(i ic cc c rc rt) */ u.Owner, u.Table_Name, u.Index_Name,
+                    SELECT /*+ USE_HASH(u i t ic icg cc uc c seg pec) */ u.Owner, u.Table_Name, u.Index_Name,
                            icg.Columns                                                                \"Index Columns\",
                            u.\"Start monitoring\",
                            ROUND(NVL(u.\"End monitoring\", SYSDATE)-u.\"Start monitoring\", 1) \"Days without usage\",
@@ -256,7 +256,7 @@ If none of the four reasons really requires the existence, the index can be remo
                     LEFT OUTER JOIN Ind_Columns ic        ON ic.Index_Owner = u.Owner AND ic.Index_Name = u.Index_Name AND ic.Column_Position = 1
                     LEFT OUTER JOIN Ind_Columns_Group icg ON icg.Index_Owner = u.Owner AND icg.Index_Name = u.Index_Name
                     /* Indexes used for protection of FOREIGN KEY constraints */
-                    LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ cc.Owner, cc.Table_Name, cc.Column_name, c.Constraint_Name, rc.Owner r_Owner, rt.Table_Name r_Table_Name, rt.Num_rows r_Num_rows, rt.Last_Analyzed r_Last_analyzed, m.Inserts, m.Updates, m.Deletes
+                    LEFT OUTER JOIN (SELECT /*+ NO_MERGE ORDERED USE_HASH(cc c rc rt m) */ cc.Owner, cc.Table_Name, cc.Column_name, c.Constraint_Name, rc.Owner r_Owner, rt.Table_Name r_Table_Name, rt.Num_rows r_Num_rows, rt.Last_Analyzed r_Last_analyzed, m.Inserts, m.Updates, m.Deletes
                                      FROM   Cons_Columns cc
                                      JOIN   Constraints c     ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type = 'R'
                                      JOIN   Constraints rc    ON rc.Owner = c.R_Owner AND rc.Constraint_Name = c.R_Constraint_Name
@@ -265,7 +265,7 @@ If none of the four reasons really requires the existence, the index can be remo
                                      WHERE  cc.Position = 1
                                     ) cc ON cc.Owner = ic.Table_Owner AND cc.Table_Name = ic.Table_Name AND cc.Column_Name = ic.Column_Name
                     /* Indexes used for enforcement of UNIQUE or PRIMARY KEY constraints */
-                    LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ic.Index_Owner, ic.Index_Name, c.Constraint_Name
+                    LEFT OUTER JOIN (SELECT /*+ NO_MERGE USE_HASH(cc c ic) */ ic.Index_Owner, ic.Index_Name, c.Constraint_Name
                                      FROM   Cons_Columns cc
                                      JOIN   Constraints c   ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name AND c.Constraint_Type IN ('U', 'P')
                                      JOIN Ind_Columns ic ON ic.Table_Owner = cc.Owner AND ic.Table_Name = cc.Table_Name  AND ic.Column_Name = cc.Column_Name /* Position of column in index does not matter for constraint */
