@@ -85,7 +85,8 @@
         :controller  => :active_session_history,
         :action      => :show_prepared_active_session_history,
         :instance    => @sql.inst_id,
-        :sql_id      => @sql.sql_id
+        :sql_id      => @sql.sql_id,
+        child_number: @sql['child_number'] ? @sql.child_number : nil,
     }, :title => t(:list_sql_detail_sql_id_childno_active_session_history_title, :default=>"Show active session history data for SQL-ID")
         )
     %>

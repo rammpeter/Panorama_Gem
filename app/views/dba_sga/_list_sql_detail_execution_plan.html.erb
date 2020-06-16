@@ -151,7 +151,14 @@
 
      @caption = "Explain Plan"
      if mp[:plans].length > 0
-       @caption << " of Child=#{mp.min_child_number} parsed at #{localeDateTime(mp[:plans][0].timestamp)}, Optimizer-Mode=#{mp[:plans][0].optimizer}, Executions=#{fn(mp[:plans][0].executions)}#{", first ASH-Sample in SGA from #{localeDateTime(@min_sample_time)}" if @min_sample_time}"
+        if mp.child_count == 1
+          @caption << " of Child=#{mp.min_child_number} "
+        else
+          @caption << " used by #{mp.child_count} childs, " 
+        end
+       @caption << " parsed at #{localeDateTime(mp[:plans][0].timestamp)}, Plan_Hash_Value = #{mp.plan_hash_value}, Optimizer-Mode=#{mp[:plans][0].optimizer}"
+       @caption << "\n#{fn(mp[:plans][0].executions)} executions, #{fn(mp.elapsed_secs_per_exec, 6)} seconds elapsed / execution" if @multiplans.length > 1
+       @caption << "\nFirst ASH-Sample in SGA is from #{localeDateTime(@min_sample_time)}" if @min_sample_time
        @caption << "\n#{@additional_ash_message}" if @additional_ash_message
      end
 

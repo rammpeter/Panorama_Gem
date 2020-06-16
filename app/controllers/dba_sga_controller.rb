@@ -351,7 +351,7 @@ class DbaSgaController < ApplicationController
     @include_ash_in_sql = get_db_version >= "11.2" && (PackLicense.diagnostics_pack_licensed? || PackLicense.panorama_sampler_active?)
 
     @multiplans = sql_select_all ["\
-      SELECT Plan_Hash_Value, COUNT(DISTINCT Child_Number) Child_Count, MIN(Child_Number) Min_Child_Number
+      SELECT p.Plan_Hash_Value, COUNT(DISTINCT p.Child_Number) Child_Count, MIN(p.Child_Number) Min_Child_Number
       FROM   gv$SQL_Plan p
       WHERE  SQL_ID  = ?
       AND    Inst_ID = ?
@@ -461,6 +461,15 @@ class DbaSgaController < ApplicationController
 
 
     @multiplans.each do |mp|
+      mp['elapsed_secs_per_exec'] = sql_select_one ["\
+        SELECT SUM(Elapsed_Time)/1000000 / SUM(Executions)
+        FROM   gv$SQL
+        WHERE  SQL_ID           = ?
+        AND    Inst_ID          = ?
+        AND    Plan_Hash_Value  = ?
+        #{where_string}
+        ", @sql_id, @instance, mp.plan_hash_value].concat(where_values)
+
       display_skip_map = {}
       if get_db_version >= '12.1'
         # Calculate rows to skip due to adaptive plan

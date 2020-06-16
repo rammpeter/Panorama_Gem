@@ -97,6 +97,7 @@ module ActiveSessionHistoryHelper
       when :Min_Snap_ID                 then {:name => 'Min_Snap_ID',                 :sql => "s.snap_id >= ?",                  :hide_content => true, :already_bound => true  }
       when :Max_Snap_ID                 then {:name => 'Max_Snap_ID',                 :sql => "s.snap_id <= ?",                  :hide_content => true, :already_bound => true  }
       when :Plan_Line_ID                then {:name => 'Plan-Line-ID',                :sql => "s.SQL_Plan_Line_ID" }
+      when :SQL_Child_Number            then {:name => 'Child number',                :sql => "s.SQL_Child_Number"}
       when :Plan_Hash_Value             then {:name => 'Plan-Hash-Value',             :sql => "s.SQL_Plan_Hash_Value"}
       when :Session_ID                  then {:name => 'Session-ID',                  :sql => "s.Session_ID"}
       when :SerialNo                    then {:name => 'SerialNo',                    :sql => "s.Session_Serial_No"}
