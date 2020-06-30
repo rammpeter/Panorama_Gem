@@ -1494,8 +1494,9 @@ class DbaController < ApplicationController
     end
 
     if params[:detail]
+      # adr_home, Inst_ID removed because not yet existing in 19c
       @result =  sql_select_iterator ["\
-      SELECT Inst_ID, Adr_Home, Originating_Timestamp, Component_ID,
+      SELECT Originating_Timestamp, Component_ID,
              Message_Type, Message_Level,
              Process_ID, Message_Text, FileName
       FROM   V$DIAG_ALERT_EXT
