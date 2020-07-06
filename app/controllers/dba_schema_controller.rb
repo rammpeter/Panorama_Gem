@@ -441,7 +441,6 @@ class DbaSchemaController < ApplicationController
                                 WHERE t.Owner = ? AND t.Table_Name = ?
                                ", @owner, @table_name, @owner, @table_name]
 
-
     if sql_select_one("SELECT COUNT(1) FROM All_Views WHERE View_Name = 'DBA_XML_TABLES'") > 0 # View exists and is readable (only if XMLDB is installed)
       @xml_attribs = sql_select_all ["\
         SELECT t.*
@@ -549,11 +548,11 @@ class DbaSchemaController < ApplicationController
     @size_mb_table = sql_select_one ["SELECT /*+ Panorama Ramm */ SUM(Bytes)/(1024*1024) FROM DBA_Segments WHERE Owner = ? AND Segment_Name = ?", @owner, @table_name]
 
 
-    @stat_prefs = ''
+    @stat_prefs = []
     if get_db_version >= "11.2"
       stat_prefs=sql_select_all ['SELECT * FROM Dba_Tab_Stat_Prefs WHERE Owner=? AND Table_Name=?', @owner, @table_name]
       stat_prefs.each do |s|
-        @stat_prefs << "#{s.preference_name}=#{s.preference_value} "
+        @stat_prefs << "#{s.preference_name}=#{s.preference_value}"
       end
     end
 

@@ -167,6 +167,7 @@ column_options =
     result << "#{'<br/>' if result.length > 0}Clustering On DataMovement = #{rec.ct_on_datamovement}"                                     if get_db_version >= '12.1.0.2' && rec.ct_on_datamovement == 'YES'
     result << "#{'<br/>' if result.length > 0}Clustering With Zonemap = #{rec.ct_with_zonemap}"                                           if get_db_version >= '12.1.0.2' && rec.ct_with_zonemap == 'YES'
     result << "#{'<br/>' if result.length > 0}Clustering Valid = #{rec.ct_valid}"                                                         if get_db_version >= '12.1.0.2' && !rec.ct_valid.nil? && rec.ct_valid != 'YES'
+    @stat_prefs.each {|p| result << "#{'<br/>' if result.length > 0}#{p}" }
     result.html_safe
   end
 
@@ -180,6 +181,7 @@ column_options =
 - Smart flash cache
 - Cell flash cache
 - Clustering
+- Statistic preferences (dbms_stats.set_table_prefs)
 "
 
    link_space_usage = proc do |rec, value|
@@ -264,7 +266,7 @@ column_options =
    column_options << {:caption=> 'Created',          :data=>proc{|rec| localeDateTime(rec.created)},          :title=> 'Timestamp of table creation', data_title: create_data_title}
    column_options << {:caption=> 'Last DDL',         :data=>proc{|rec| localeDateTime(rec.last_ddl_time)},    :title=> 'Timestamp of last DDL operation on table', data_title: last_ddl_data_title}
    column_options << { caption: 'Spec. TS',          data: proc{|rec| localeDateTime(rec.spec_ts)},           title: "Timestamp for the last specification change of the table", data_title: spec_ts_data_title }
-   column_options << {:caption=> 'Last analyzed',    :data=>proc{|rec| link_last_analyzed(rec)},              :title=> "The date of the most recent time this table was analyzed, Prefs: #{@stat_prefs}" }
+   column_options << {:caption=> 'Last analyzed',    :data=>proc{|rec| link_last_analyzed(rec)},              :title=> "The date of the most recent time this table was analyzed, Prefs: #{@stat_prefs.join(' ')}" }
    column_options << {:caption=> 'Log.',             :data=>proc{|rec| rec.logging},                          :title=> "Indicates whether or not changes to the table are logged in Redo-Log.\nNULL for partitioned tables" }
    column_options << {:caption=> 'Mon.',             :data=>proc{|rec| rec.monitoring},                       :title=> "Indicates whether the table has the MONITORING attribute set (YES) or not (NO)" }
    column_options << {:caption=> 'Inserts',          :data=>proc{|rec| fn rec.inserts},                       :title=> "Number of insert-operations since last table analysis if table has MONITORING-flag.\nStatistics are populated in memory by database. Run the DBMS_STATS.FLUSH_DATABASE_MONITORING_INFO to see the latest information here.\nThis values are gathered only if STATISTICS_LEVEL > BASIC.", :align=>:right, :data_title=>proc{|rec| "%t\nMonitoring=#{rec.monitoring}" } }

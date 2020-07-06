@@ -221,6 +221,21 @@
     end
   end
 
+   cluster_title = "Clustering factor:
+A measurement of the amount of (dis)order of the table this index is for.
+
+If the value is near the number of blocks,
+then the table is very well ordered.
+In this case, the index entries in a single leaf block tend to point to rows in the same data blocks.
+
+If the value is near the number of rows,
+then the table is very randomly ordered.
+In this case, it is unlikely that index entries in the same leaf block point to rows in the same data blocks.
+
+Starting with 12.1 the table preference (dbms_stats.set_table_prefs) 'TABLE_CACHED_BLOCKS' defines the number of blocks that are treated as one at analysis.
+See also: https://richardfoote.wordpress.com/2020/06/30/oracle-19c-automatic-indexing-common-index-creation-trap-rat-trap/
+"
+
    column_options =
            [
                    {:caption=> 'Name',             :data=>proc{|rec| rec.index_name},                                     :title=> 'Name of index'},
@@ -239,7 +254,7 @@
                    {:caption=> 'Distinct',         :data=>proc{|rec| fn(rec.distinct_keys)},                              :title=> 'Number of distinct keys in the index calculated by last analyze run', :align=>:right, :data_title=>proc{|rec| "%t, #{fn(rec.num_rows.to_f/rec.distinct_keys, 1) rescue nil} rows per key" }},
                    {:caption=> 'Avg. leaf blocks / key', :data=>proc{|rec| fn(rec.avg_leaf_blocks_per_key)},              :title=> "Average number of leaf blocks (calculated by last analyze run) in which each distinct value in the index appears,\nrounded to the nearest integer.\nFor indexes that enforce UNIQUE and PRIMARY KEY constraints, this value is always 1.", :align=>:right},
                    {:caption=> 'Avg. data blocks / key', :data=>proc{|rec| fn(rec.avg_data_blocks_per_key)},              :title=> "Average number of data blocks in the table (calculated by last analyze run) that are pointed to by a distinct value in the index rounded to the nearest integer.\nThis statistic is the average number of data blocks that contain rows that contain a given value for the indexed columns.", :align=>:right},
-                   {:caption=> 'Cluster.',         :data=>proc{|rec| fn(rec.clustering_factor)},                          :title=> "A measurement of the amount of (dis)order of the table this index is for.\n\nIf the value is near the number of blocks,\nthen the table is very well ordered.\nIn this case, the index entries in a single leaf block tend to point to rows in the same data blocks.\n\nIf the value is near the number of rows,\nthen the table is very randomly ordered.\nIn this case, it is unlikely that index entries in the same leaf block point to rows in the same data blocks.", :align=>:right},
+                   {:caption=> 'Cluster.',         :data=>proc{|rec| fn(rec.clustering_factor)},                          :title=> cluster_title, :align=>:right},
                    {:caption=> 'Part.',            :data=>proc{|rec| link_ind_partitions(rec)},                           :title=> 'Number of index partitions ', :align=>:right},
                    {:caption=> 'Sub-<wbr>Part.',        :data=>proc{|rec| link_ind_subpartitions(rec)},                   :title=> 'Number of index sub-partitions ', :align=>:right},
                    {:caption=> 'Created',          :data=>proc{|rec| localeDateTime(rec.created)},                        :title=> 'Timestamp of index creation'},
