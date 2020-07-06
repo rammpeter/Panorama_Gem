@@ -1,6 +1,6 @@
 <div id="edit_config_global_area">
 
-  <%= render_page_caption("#{@modus==:new ? 'Add new' : 'Edit'} Panorama-Sampler configuration") %>
+  <%= render_page_caption("#{@modus==:new ? 'Add new' : 'Edit'} Panorama-Sampler configuration#{" '#{@config[:name]}'" if @modus!=:new}") %>
 
 <%= ajax_form(
         :controller   => :panorama_sampler,
