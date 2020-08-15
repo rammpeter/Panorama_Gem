@@ -296,7 +296,13 @@ public
         <ul id='menu_node_ul_#{@menu_node_id}'>
           <li id='menu_li_help_overview'>#{ link_to t(:menu_help_overview_caption, :default=> 'Overview'), { :controller => 'help', :action=> 'overview', browser_tab_id: @browser_tab_id }, id: "menu_help_overview" ,:title=>t(:menu_help_overview_hint, :default=>'Help-overview'), :target=> '_blank'  }</li>
           <li id='menu_li_help_mailto'><a href='mailto:#{contact_mail_addr}'  id='menu_help_mailto' title='#{t :menu_help_contact_title, :default=> 'Contact to producer'}'>#{t :menu_help_contact_caption, :default=> 'Contact'}</a></li>
-          <li id='menu_li_help_blog'><a href='https://rammpeter.blogspot.de/search/label/Panorama%20How-To' id='menu_help_blog' title='#{t :menu_help_wiki_title, :default=> 'Panorama-Blog with news and usage hints'}' target='_blank'>#{t :menu_help_wiki_caption, :default=> 'Blog'}</a></li>
+"
+    unless Rails.env.test?                                                      # don't flood blog with requests at test
+      output << "          <li id='menu_li_help_blog'><a href='https://rammpeter.blogspot.com/search/label/Panorama%20How-To' id='menu_help_blog' title='#{t :menu_help_wiki_title, :default=> 'Panorama-Blog with news and usage hints'}' target='_blank'>#{t :menu_help_wiki_caption, :default=> 'Blog'}</a></li>
+"
+    end
+
+    output << "\
           <li id='menu_li_help_version_history'>#{ link_to t(:menu_help_version_history_caption, :default=> 'Version history'), { :controller => 'help', :action=> 'version_history', browser_tab_id: @browser_tab_id}, id: "menu_help_version_history", :title=>t(:menu_help_version_history_hint, :default=>'Development history of features and versions'), :target=> '_blank'  }</li>
         </ul>
       </li>
