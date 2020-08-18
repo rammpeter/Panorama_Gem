@@ -252,7 +252,8 @@ module SlickgridHelper
         begin
           celldata.encode!(Encoding::UTF_8) if celldata.encoding != Encoding::UTF_8 # Ensure that other content is translated to UTF-8
         rescue Exception => e
-          raise "Error #{e.class}: '#{e.message}' converting result for column '#{col[:caption]}' from #{celldata.encoding} to #{Encoding::UTF_8}"
+          celldata = "Error #{e.class}: #{e.message} converting result for column '#{col[:caption]}'".gsub(/\\x/, '0x')
+          # raise "Error #{e.class}: '#{e.message}' converting result for column '#{col[:caption]}' from #{celldata.encoding} to #{Encoding::UTF_8}"
         end
         stripped_celldata = strip_inner_html(celldata)                          # Inhalt des Feldes befreit von html-tags, Ressourcen-Intensiv
 
