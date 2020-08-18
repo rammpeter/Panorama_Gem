@@ -30,7 +30,7 @@ end
 %>
 
 
-<%= render_page_caption("#{t(:dba_history_list_sql_detail_historic_caption, :default=>'Statement details from')} #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat')} #{@sql.first_occurrence ? localeDateTime(@sql.first_occurrence) : @time_selection_start} #{t(:until, :default=>'until')} #{@sql.last_occurrence ? localeDateTime(@sql.last_occurrence) : @time_selection_end} : Instance = #{@instance.nil? ? 'All' : @instance}, SQL-ID = '#{@sql_id}'", get_recall_params_info_for_render_page_caption) %>
+<%= render_page_caption("#{t(:dba_history_list_sql_detail_historic_caption, :default=>'Statement details from')} #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat')} #{@time_selection_start} #{t(:until, :default=>'until')} #{@time_selection_end} : Instance = #{@instance.nil? ? 'All' : @instance}, SQL-ID = '#{@sql_id}'", get_recall_params_info_for_render_page_caption) %>
 
 <table id="<%= "#{@table_id_prefix}_main" %>" border="0" >
   <tr>
@@ -66,8 +66,8 @@ end
           %>
           <div id='<%= @update_area_action %>'></div>
         </td>        </tr>
-        <tr title="Begin of AWR-snapshot with first occurrence of SQL"> <td>First AWR-snapshot</td><td align="center"><%= localeDateTime(@sql.first_occurrence) %></td>        </tr>
-        <tr title="End of AWR-snapshot with last occurrence of SQL"> <td>Last AWR-snapshot</td><td align="center"><%= localeDateTime(@sql.last_occurrence) %></td>        </tr>
+        <tr title="Begin of AWR-snapshot with first occurrence of SQL in AWR"> <td>First AWR-snapshot</td><td align="center"><%= localeDateTime(@sql.first_occurrence) %></td>        </tr>
+        <tr title="End of AWR-snapshot with last occurrence of SQL in AWR"> <td>Last AWR-snapshot</td><td align="center"><%= localeDateTime(@sql.last_occurrence) %></td>        </tr>
         <tr title="Earliest sample of SQL in active session history"> <td>First ASH-sample</td><td align="center"><%= localeDateTime(@sql.min_sample_time) %></td>        </tr>
         <tr title="Latest sample of SQL in active session history"> <td>Last ASH-sample</td><td align="center"><%= localeDateTime(@sql.max_sample_time) %></td>        </tr>
         <tr title="<%= t(:dba_sga_list_sql_sga_stat_hit_ration_hint, :default=>'Ratio cache hits to buffer gets') %>">            <td>Buffer cache hit ratio</td><td align="center"><%= fn(@sql.hit_ratio, 2) %></td>        </tr>

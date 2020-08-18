@@ -108,7 +108,7 @@
    column_options << {:caption=>'P.',          :data=>proc{|rec| my_html_escape expand_compare_spaces(rec.projection) }, :title=>"Projection: table- and index-columns gotten by this operation", :max_wrap_width=>80, :style=>"word-wrap: break-word;", data_title: proc{|rec| "%t\n#{my_html_escape expand_compare_spaces(rec.projection)}"}}
    column_options << {:caption=>'Temp est.',   :data=>proc{|rec| fn(rec.temp_space_mb) },                      :title=>"Temp-space in MB estimated by optimizer during parse", :align=>:right }
    column_options << {:caption=>'Temp max.',   :data=>proc{|rec| fn(rec.max_temp_ash_mb) },                      :title=>'Maximum amount of Temp-space in MB allocated by one session (incl. PQ-server) during execution of this plan line', :align=>:right }  if get_db_version >= '11.2'
-   column_options << {:caption=>'DB time',     :data=>proc{|rec| fn(nn_pct(rec.db_time_seconds, @sum_db_time_seconds), 1) }, :align=>:right, :data_title=>proc{|rec| "%t\nDB-time: #{fn(rec.db_time_seconds)} seconds" }, :title=>"Percentage of total DB-time in % (from active session history / #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Active_Sess_History')})", :show_pct_background=>true } if get_db_version >= "11.2"
+   column_options << {:caption=>'DB time',     :data=>proc{|rec| fn(nn_pct(rec.ash_time_seconds, @sum_ash_time_seconds), 1) }, :align=>:right, :data_title=>proc{|rec| "%t\nDB-time: #{fn(rec.ash_time_seconds)} seconds" }, :title=>"Percentage of total DB-time in % (from active session history / #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Active_Sess_History')})", :show_pct_background=>true } if get_db_version >= "11.2"
    column_options << {:caption=>'CPU',         :data=>proc{|rec| link_column_wait.call(rec, fn(nn_pct(rec.cpu_seconds, @sum_cpu_seconds), 1))  },        :align=>:right, :data_title=>proc{|rec| "%t\nCPU: #{fn(rec.cpu_seconds)} seconds" }, :title=>"Percentage of CPU usage in % (from active session history / #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Active_Sess_History')}). Part of DB-time.", :show_pct_background=>true } if get_db_version >= "11.2"
    column_options << {:caption=>'Waits',       :data=>proc{|rec| link_column_wait.call(rec, fn(nn_pct(rec.waiting_seconds, @sum_waiting_seconds), 1))  },:align=>:right, :data_title=>proc{|rec| "%t\nWaiting: #{fn(rec.waiting_seconds)} seconds" }, :title=>"Percentage of wait events % (from active session history / #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Active_Sess_History')}). Part of DB-time.", :show_pct_background=>true } if get_db_version >= "11.2"
    column_options << {:caption=>'I/O',         :data=>proc{|rec| fn(nn_pct(rec.io_requests, @sum_io_requests), 1)},          :align=>:right, :data_title=>proc{|rec| "%t\nIO-Requests: #{fn(rec.read_io_requests)} reads, #{fn(rec.write_io_requests)} writes, avg.read=#{avg_read_bytes(rec)} bytes, avg.write=#{avg_write_bytes(rec)} bytes"}, :title=>"Percentage of  I/O-Requests in % (from active session history / #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Active_Sess_History')})", :show_pct_background=>true } if get_db_version >= "11.2"
@@ -135,14 +135,14 @@
     @sum_interconnect_io_bytes = 0
     @sum_cpu_seconds = 0                             # Anzahl der Samples
     @sum_waiting_seconds = 0                         # Anzahl der Samples
-    @sum_db_time_seconds = 0
+    @sum_ash_time_seconds = 0
     @min_sample_time     = nil
     @plans.each do |p|
       @sum_io_requests           += p.io_requests             if p.io_requests
       @sum_interconnect_io_bytes += p.interconnect_io_bytes   if p.interconnect_io_bytes
       @sum_cpu_seconds           += p.cpu_seconds             if p.cpu_seconds
       @sum_waiting_seconds       += p.waiting_seconds         if p.waiting_seconds
-      @sum_db_time_seconds       += p.db_time_seconds         if p.db_time_seconds
+      @sum_ash_time_seconds       += p.ash_time_seconds         if p.ash_time_seconds
       @min_sample_time           =  p.min_sample_time         if @min_sample_time.nil? || p.min_sample_time && p.min_sample_time < @min_sample_time  # Kleinste Aufzeichnung eines Samples
     end
   end
@@ -153,8 +153,16 @@
     @caption << "#{@mp.executions} executions, #{formattedNumber(@mp.secs_per_execution,6)} seconds elapsed / execution"
   end
 
+  @caption_title = ''
+   if get_db_version >= '11.2'
+     @caption_title << "First considered ASH sample is from #{localeDateTime(@min_sample_time)}\\n"
+     @caption_title << "Last considered ASH sample is from #{localeDateTime(@max_sample_time)}\\n"
+     puts @caption_title
+   end
 
-   params_string = '{ '
+
+
+     params_string = '{ '
    params.each do |key, value|
      params_string << "#{key}: '#{value}', "
    end
@@ -177,6 +185,7 @@
 
     <%= gen_slickgrid(@plans, column_options, {
             :caption            => @caption.html_safe,
+            caption_title:      @caption_title,
             :width              => :auto,
             :line_height_single => true,
             :data_filter        => 'explain_plan_filter_collapsed_item_rows',

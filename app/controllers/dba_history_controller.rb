@@ -412,7 +412,6 @@ class DbaHistoryController < ApplicationController
 
          WITH Snaps AS (SELECT /*+ NO_MERGE MATERIALIZE ORDERED USE_NL(s start_s end_s) INDEX(start_s) INDEX(end_s) */
                                s.DBID, s.Instance_Number, s.Start_Snap_ID, s.End_Snap_ID,
-                               start_s.Begin_Interval_Time Start_Time, end_s.End_Interval_Time End_Time,
                                (SELECT /* NO_MERGE FIRST_ROWS(10) */ MIN(h.Sample_Time) FROM DBA_Hist_Active_Sess_History h
                                 WHERE  h.DBID = s.DBID AND h.Instance_Number = s.Instance_Number AND h.SQL_ID = ? AND h.Snap_ID BETWEEN s.Start_Snap_ID AND s.End_Snap_ID
                                ) Min_Sample_Time,
@@ -429,8 +428,6 @@ class DbaHistoryController < ApplicationController
                                 WHERE  DBID=? #{'AND Instance_Number=?' if @instance}
                                 GROUP BY Instance_Number, DBID
                                ) s
-                        JOIN   DBA_Hist_Snapshot start_s ON start_s.DBID=s.DBID AND start_s.Instance_Number=s.Instance_Number AND start_s.Snap_ID = s.Start_Snap_ID
-                        JOIN   DBA_Hist_Snapshot end_s   ON end_s.DBID=s.DBID   AND end_s.Instance_Number=s.Instance_Number   AND end_s.Snap_ID = s.End_Snap_ID
                        )
          SELECT /*+ NO_MERGE ORDERED Panorama-Tool Ramm */
                  NVL(MIN(Parsing_Schema_Name), '[UNKNOWN]')  Parsing_Schema_Name,
@@ -460,8 +457,8 @@ class DbaHistoryController < ApplicationController
                  SUM(CCWait_Delta)/1000000          Concurrency_Wait_Time_secs,
                  SUM(IOWait_Delta)/1000000          User_IO_Wait_Time_secs,
                  SUM(PLSExec_Time_Delta)/1000000    PLSQL_Exec_Time_secs,
-                 MIN(snaps.Start_Time)              First_Occurrence,
-                 MAX(snaps.End_Time)                Last_Occurrence,
+                 MIN(ss.Begin_Interval_Time)        First_Occurrence,
+                 MAX(ss.End_Interval_Time)          Last_Occurrence,
                  MIN(snaps.Min_Sample_Time)         Min_Sample_Time,
                  MAX(snaps.Max_Sample_Time)         Max_Sample_Time,
                  MAX(s.Module) KEEP (DENSE_RANK LAST ORDER BY s.Snap_ID) Last_Module,
@@ -475,6 +472,7 @@ class DbaHistoryController < ApplicationController
                  MAX(s.Force_Matching_Signature)    Force_Matching_Signature
          FROM   Snaps
           JOIN   DBA_Hist_SQLStat s ON s.DBID = Snaps.DBID AND s.Instance_Number = Snaps.Instance_Number AND s.Snap_ID BETWEEN Snaps.Start_Snap_ID AND Snaps.End_Snap_ID
+          JOIN   DBA_Hist_Snapshot ss ON ss.DBID = s.DBID AND ss.Instance_Number = s.Instance_Number AND ss.Snap_ID = s.Snap_ID
           LEFT OUTER JOIN DBA_Hist_SQL_Plan p ON p.DBID = s.DBID AND p.SQL_ID = s.SQL_ID AND p.Plan_Hash_Value = s.Plan_Hash_Value AND p.ID = 1   /* first record of plan */
           WHERE  s.SQL_ID = ?
           #{'AND s.Parsing_Schema_Name = ?' if @parsing_schema_name}
@@ -642,7 +640,7 @@ class DbaHistoryController < ApplicationController
     ash_where_values = []
     if @instance
       where_stmt     << " AND s.Instance_Number = ?"
-      ash_where_stmt << " AND Instance_Number = ?"
+      ash_where_stmt << " AND ss.Instance_Number = ?"
       where_values     << @instance
       ash_where_values << @instance
     end
@@ -760,20 +758,23 @@ class DbaHistoryController < ApplicationController
 
       if get_db_version >= "11.2"     # Ab 11.2 sind ASH-Records mit Verweis auf Zeile des Ausführungsplans versehen
         ash = sql_select_all ["\SELECT SQL_PLan_Line_ID,
-                                       SUM(DB_Time_Seconds)       DB_Time_Seconds,
+                                       MIN(Min_Sample_Time)       Min_Sample_Time,
+                                       MAX(Max_Sample_Time)       Max_Sample_Time,
+                                       SUM(ASH_Time_Seconds)      Ash_Time_Seconds,
                                        SUM(CPU_Seconds)           CPU_Seconds,
                                        SUM(Waiting_Seconds)       Waiting_Seconds,
                                        SUM(Read_IO_Requests)      Read_IO_Requests,
                                        SUM(Write_IO_Requests)     Write_IO_Requests,
                                        SUM(Interconnect_IO_Bytes) Interconnect_IO_Bytes,
-                                       MIN(Min_Sample_Time)       Min_Sample_Time,
                                        MAX(Temp)/(1024*1024)      Max_Temp_ASH_MB,
                                        MAX(PGA)/(1024*1024)       Max_PGA_ASH_MB,
                                        MAX(PQ_Sessions)           Max_PQ_Sessions     -- max. Anzahl PQ-Slaves + Koordinator für eine konkrete Koordinator-Session
                                 FROM   (
                                         SELECT /*+ PARALLEL(h,2) #{"FULL(h.ash)" if mp.max_snap_id-mp.min_snap_id > 10}*/
-                                                NVL(SQL_PLan_Line_ID, 0)                                   SQL_PLan_Line_ID,   -- NULL auf den Knoten 0 des Plans zurückführen (0 wird in 11.2.0.3 nicht mit nach DBA_HAS übernommen
-                                                COUNT(*) * 10                                              DB_Time_Seconds,
+                                                MIN(Sample_Time)                  Min_Sample_Time,
+                                                MAX(Sample_Time)                  Max_Sample_Time,
+                                                NVL(SQL_PLan_Line_ID, 0)          SQL_PLan_Line_ID,   -- NULL auf den Knoten 0 des Plans zurückführen (0 wird in 11.2.0.3 nicht mit nach DBA_HAS übernommen
+                                                COUNT(*) * 10                     Ash_Time_Seconds,
                                                 SUM(CASE WHEN Session_State = 'ON CPU'  THEN 10 ELSE 0 END) CPU_Seconds,
                                                 SUM(CASE WHEN Session_State = 'WAITING' THEN 10 ELSE 0 END) Waiting_Seconds,
                                                 SUM(Delta_Read_IO_Requests)       Read_IO_Requests,
@@ -782,22 +783,28 @@ class DbaHistoryController < ApplicationController
                                                 SUM(Delta_Read_IO_Bytes)          Read_IO_Bytes,
                                                 SUM(Delta_Write_IO_Bytes)         Write_IO_Bytes,
                                                 SUM(Delta_Interconnect_IO_Bytes)  Interconnect_IO_Bytes,
-                                                MIN(Sample_Time)                  Min_Sample_Time,
                                                 SUM(Temp_Space_Allocated)         Temp,
                                                 SUM(PGA_Allocated)                PGA,
                                                 COUNT(DISTINCT CASE WHEN QC_Session_ID IS NULL OR QC_Session_ID = Session_ID THEN NULL ELSE Session_ID END) PQ_Sessions   -- Anzahl unterschiedliche PQ-Slaves + Koordinator für diese Koordiantor-Session
-                                         FROM   DBA_Hist_Active_Sess_History h
-                                         WHERE  DBID = ?
-                                         AND    Snap_ID BETWEEN ? AND ?
-                                         AND    SQL_ID  = ?
-                                         AND    SQL_Plan_Hash_Value = ? #{ash_where_stmt}
-                                         GROUP BY SQL_Plan_Line_ID, NVL(QC_Session_ID, Session_ID), Sample_ID   -- Alle PQ-Werte mit auf Session kumulieren
+                                         FROM   DBA_Hist_Snapshot ss
+                                         JOIN   DBA_Hist_Active_Sess_History h ON h.DBID = ss.DBID AND h.Instance_Number = ss.Instance_Number AND h.Snap_ID = ss.Snap_ID
+                                         WHERE  ss.DBID = ?
+                                         AND    ss.End_Interval_time   > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                                         AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                                         AND    h.SQL_ID  = ?
+                                         AND    h.SQL_Plan_Hash_Value = ? #{ash_where_stmt}
+                                         GROUP BY h.SQL_Plan_Line_ID, NVL(h.QC_Session_ID, h.Session_ID), Sample_ID   -- Alle PQ-Werte mit auf Session kumulieren
                                         )
                                 GROUP BY SQL_Plan_Line_ID
-                              ", mp.dbid, mp.min_snap_id, mp.max_snap_id, @sql_id, mp.plan_hash_value].concat(ash_where_values)
+                              ", mp.dbid, @time_selection_start, @time_selection_end, @sql_id, mp.plan_hash_value].concat(ash_where_values)
+
+        @min_sample_time = nil
+        @max_sample_time = nil
         ash_hash = {} # Umkopieren in Hash um eindeutige Zugriffe zu landen
         ash.each do |a|
           ash_hash[a.sql_plan_line_id] = a
+          @min_sample_time = a.min_sample_time if @min_sample_time.nil? || a.min_sample_time < @min_sample_time
+          @max_sample_time = a.max_sample_time if @max_sample_time.nil? || a.max_sample_time > @max_sample_time
         end
 
         # Zuordnen der ASH-Zeilen zu den korrespondierenden Plan-Zeilen

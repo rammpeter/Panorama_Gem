@@ -148,70 +148,71 @@ Statement executes only for current connected RAC-Instance (due to runtime prble
         },
         {
             :name  => t(:dragnet_helper_95_name, :default=>'Implicit conversion by TO_NUMBER or INTERNAL_FUNCTION (prevented usage of indexes)'),
-            :desc  => t(:dragnet_helper_95_desc, :default=>'Implicit type conversions are often accidentially due to wrong type of bind variable.
+            :desc  => t(:dragnet_helper_95_desc, :default=>'Implicit type conversions are some times accidentially due to wrong type of bind variable.
 This conversion may lead to missing usage of existing indizes and cause unnecessary I/O and CPU load.
 Especially implicit conversion by TO_NUMBER while accessing VARCHAR2-columns with number bind type prevents usage of existing indizes.
-For this cases data type according to column type should be used for bind variable.'),
-            :sql=>  "SELECT /*+ ORDERED USE_HASH(p s) */
-                              p.Inst_ID                     \"Inst.\",
-                              s.SQL_ID                      \"SQL-ID\",
-                              p.Child_Number                \"Child number\",
-                              s.Parsing_Schema_Name         \"Parsing schema name\",
-                              s.Plan_Hash_Value             \"Plan hash value\",
-                              ROUND(s.Elapsed_Time/1000000) \"Elapsed secs.\",
-                              ROUND(CPU_Time/1000000)       \"CPU secs.\",
-                              Executions                    \"Execs.\",
-                              Rows_Processed                \"Rows processed\",
-                              p.ID                          \"SQL plan line ID\",
-                              p.Reason                      \"Reason for selection\",
-                              p.Operation                   \"Operation\",
-                              p.Options                     \"Options\",
-                              p.Object_Type                 \"Object type\",
-                              p.Object_Owner                \"Owner\",
-                              p.Object_Name                 \"Object name\",
-                              p.Object_Alias                \"Alias in SQL\",
-                              t.Num_Rows                    \"Num rows of table\",
-                              p.Column_Name                 \"Affected column name\",
-                              ic.Index_Name                 \"Existing index for aff. column\",
-                              ic.Column_Position            \"Position of column in index\",
-                              CASE WHEN tc.Num_Distinct > 0 THEN ROUND((t.Num_Rows-tc.Num_Nulls) / tc.Num_Distinct,1) ELSE NULL END \"Rows per key of column\",
-                              p.Access_Predicates,
-                              p.Filter_Predicates,
-                              s.SQL_Text
-                       FROM   (SELECT /*+ NO_MERGE */ pi.*,
-                                              SUBSTR(Hit_Fragment,
-                                                      INSTR(Hit_Fragment, '.')+2,
-                                                      INSTR(Hit_Fragment, ')')-INSTR(Hit_Fragment, '.')-3
-                                             )  Column_Name
-                               FROM   (SELECT Inst_ID, SQL_ID, Child_Number, Plan_Hash_Value, ID, Access_Predicates, Filter_Predicates,
-                                              Object_Owner, Object_Name, object_Alias, Object_Type, Operation, Options,
-                                              CASE WHEN Filter_Predicates LIKE '%TO_NUMBER(\"%\".\"%\")=%' THEN 'TO_NUMBER' ELSE 'INTERNAL_FUNCTION' END Reason,
-                                              CASE WHEN Filter_Predicates LIKE '%TO_NUMBER(\"%\".\"%\")=%' THEN
-                                                SUBSTR(Filter_Predicates, INSTR(Filter_Predicates, 'TO_NUMBER(\"')+11)
-                                              ELSE
-                                                SUBSTR(Filter_Predicates, INSTR(Filter_Predicates, 'INTERNAL_FUNCTION(\"')+11)
-                                              END Hit_Fragment
-                                       FROM   gv$SQL_PLan pi
-                                       WHERE  (    Filter_Predicates like '%TO_NUMBER(\"%\".\"%\")=%'
-                                               OR  Filter_Predicates LIKE '%INTERNAL_FUNCTION%'
-                                              )
-                                       AND    Object_Owner IS NOT NULL AND Object_Name IS NOT NULL  /* Dont show conditions on filter or view */
-                                      ) pi
-                              ) p
-                       JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, SQL_ID, Child_Number, Plan_Hash_Value, Executions, Elapsed_Time, Rows_Processed, CPU_Time,
-                                      Parsing_Schema_Name, SQL_Text
-                               FROM   gv$SQL
-                               WHERE  Parsing_Schema_Name NOT IN ('SYS')
-                               AND    Elapsed_Time/1000000 > ?
-                              ) s ON s.Inst_ID = p.Inst_ID AND s.SQL_ID = p.SQL_ID AND s.Child_Number = p.Child_Number AND s.Plan_Hash_Value = p.Plan_Hash_Value
-                       LEFT OUTER JOIN DBA_Ind_Columns ic ON ((p.Object_Type = 'INDEX' AND ic.Index_Owner = p.Object_Owner AND ic.Index_Name = p.Object_Name) OR (p.Object_Type = 'TABLE' AND ic.Table_Owner = p.Object_Owner AND ic.Table_Name = p.Object_Name))
-                                                          AND ic.Column_Name = p.Column_Name
-                       LEFT OUTER JOIN DBA_Tables t ON t.Owner = ic.Table_Owner AND t.Table_Name = ic.Table_Name
-                       LEFT OUTER JOIN DBA_Tab_Columns tc ON tc.Owner = ic.Table_Owner AND tc.Table_Name = ic.Table_Name AND tc.Column_Name = p.Column_Name
-                       ORDER BY ic.Column_Position NULLS LAST, Elapsed_Time DESC NULLS LAST
-             ",
+For this cases data type according to column type should be used for bind variable.
+Conversion by INTERNAL_FUNCTION may be suboptimal e.g. for IN-lists if efficient usage of existing index with inlist iteration is not choosen.'),
+            :sql=>  "\
+SELECT p.Inst_ID, p.SQL_ID,
+       p.Plan_Hash_Value             \"Plan hash value\",
+       h.SQL_Plan_Line_ID            \"Plan line ID\",
+       h.UserName,
+       LOWER(p.Object_Owner)||'.'||p.Object_Name Object_name,
+       p.Object_alias, p.Operation, p.Options,
+       p.Column_Name                 \"Affected column name\",
+       p.Reason                      \"Reason For Selection\",
+       t.Num_Rows                    \"Num rows of table\",
+       ic.Index_Name                 \"Existing index for aff. column\",
+       ic.Column_Position            \"Position of column in index\",
+       CASE WHEN tc.Num_Distinct > 0 THEN ROUND((t.Num_Rows-tc.Num_Nulls) / tc.Num_Distinct,1) ELSE NULL END \"Rows per key of column\",
+       p.Filter_Predicates, p.Access_Predicates,
+       h.Seconds                      \"Seconds in Plan Line\",
+       h.Seconds_SQL_Total            \"Seconds SQL total\"
+FROM   (SELECT /*+ NO_MERGE */ DISTINCT pi.*,
+               SUBSTR(Hit_Fragment,
+                      INSTR(Hit_Fragment, '.')+2,
+                      INSTR(Hit_Fragment, ')')-INSTR(Hit_Fragment, '.')-3
+               )  Column_Name
+        FROM   (SELECT Inst_ID, SQL_ID, Plan_Hash_Value, ID, Access_Predicates, Filter_Predicates,
+                       Object_Owner, Object_Name, object_Alias, Object_Type, Operation, Options,
+                       CASE WHEN Filter_Predicates LIKE '%TO_NUMBER(\"%\")=%' THEN 'TO_NUMBER' ELSE 'INTERNAL_FUNCTION' END Reason,
+                       CASE WHEN Filter_Predicates LIKE '%TO_NUMBER(\"%\")=%' THEN
+                         SUBSTR(Filter_Predicates, INSTR(Filter_Predicates, 'TO_NUMBER(\"')+10)
+                       ELSE
+                         SUBSTR(Filter_Predicates, INSTR(Filter_Predicates, 'INTERNAL_FUNCTION(\"')+18)
+                       END Hit_Fragment
+                FROM   gv$SQL_PLan pi
+                WHERE  (Filter_Predicates like '%TO_NUMBER(\"%\")=%'
+                        OR  Filter_Predicates LIKE '%INTERNAL_FUNCTION%'
+                       )
+                AND    Filter_Predicates NOT LIKE '%''%%TO_NUMBER(\"%%\")=%%''%' /* don't catch yourself */
+                AND    Object_Owner IS NOT NULL AND Object_Name IS NOT NULL  /* Dont show conditions on filter or view */
+               ) pi
+       ) p
+JOIN   (SELECT h.*, SUM(Seconds) OVER (PARTITION BY SQL_ID, UserName, SQL_Plan_Hash_Value) Seconds_SQL_Total
+        FROM   (SELECT h.SQL_ID, u.UserName, h.SQL_Plan_Hash_Value, h.SQL_Plan_Line_ID, COUNT(*)*10 Seconds
+                FROM   DBA_Hist_Snapshot ss
+                JOIN   DBA_Hist_Active_Sess_History h ON h.DBID = ss.DBID AND h.Instance_Number = ss.Instance_Number AND h.Snap_ID = ss.Snap_ID
+                JOIN   All_Users u ON u.User_ID = h.User_ID
+                WHERE  ss.Begin_Interval_Time > SYSDATE - ?
+                AND    u.UserName NOT IN ('SYS')
+                GROUP BY h.SQL_ID, u.UserName, h.SQL_Plan_Hash_Value, h.SQL_Plan_Line_ID
+               ) h
+        WHERE  h.Seconds > ?
+       ) h ON h.SQL_ID = p.SQL_ID AND h.SQL_Plan_Hash_Value = P.Plan_Hash_Value AND h.SQL_Plan_Line_ID = p.ID
+LEFT OUTER JOIN DBA_Ind_Columns ic ON (   (p.Object_Type LIKE 'INDEX%' AND ic.Index_Owner = p.Object_Owner AND ic.Index_Name = p.Object_Name)
+                                       OR (p.Object_Type LIKE 'TABLE%' AND ic.Table_Owner = p.Object_Owner AND ic.Table_Name = p.Object_Name) /* IOT */
+                                      )
+                                      AND ic.Column_Name = p.Column_Name
+LEFT OUTER JOIN DBA_Tables t ON t.Owner = ic.Table_Owner AND t.Table_Name = ic.Table_Name
+LEFT OUTER JOIN DBA_Tab_Columns tc ON tc.Owner = ic.Table_Owner AND tc.Table_Name = ic.Table_Name AND tc.Column_Name = p.Column_Name
+WHERE  (p.Reason = 'TO_NUMBER' OR ic.Index_Name IS NOT NULL) /* Show internal_function only if alternative index exists for column */
+ORDER BY h.Seconds DESC
+",
             :parameter=>[
-                {:name=>t(:dragnet_helper_95_param1_name, :default=>'Min. elapsed time of SQL in sec.'), :size=>30, :default=>100, :title=>t(:dragnet_helper_95_param1_desc, :default=>'Minimum elapsed time of SQL in gv$SQLArea for consideration in result') },
+                {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
+                {:name=>t(:dragnet_helper_95_param1_name, :default=>'Min. time spent on plan line of SQL in sec.'), :size=>30, :default=>100, :title=>t(:dragnet_helper_95_param1_desc, :default=>'Minimum ASH time in seconds spent on plan line of SQL within considered days') },
             ]
         },
         {
