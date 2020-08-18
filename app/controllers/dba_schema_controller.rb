@@ -1781,6 +1781,7 @@ WHERE RowNum < 100
     interpreted_endpoint_value = "TO_CHAR(TO_DATE(TRUNC(endpoint_value),'J')+(ENDPOINT_VALUE-TRUNC(ENDPOINT_VALUE)), '#{sql_datetime_second_mask}')" if @data_type['TIMESTAMP']
     # Interpret low and high value if there is no histogram for char
     interpreted_endpoint_value = "(SELECT  DECODE(h.Endpoint_Number, 0, UTL_I18N.RAW_TO_CHAR(c.Low_Value), UTL_I18N.RAW_TO_CHAR(c.High_Value)) FROM DBA_Tab_Columns c WHERE c.Owner = h.Owner AND c.Table_Name = h.Table_Name AND c.Column_Name = h.Column_Name)" if @histogram == 'NONE' && ['CHAR', 'VARCHAR2'].include?(@data_type)
+    interpreted_endpoint_value = "utl_raw.cast_to_varchar2(substr(lpad(to_char(endpoint_value,'fmxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),30,'0'),1,14))" if @histogram != 'NONE' && @data_type == ['CHAR']
 
     @histograms = sql_select_all ["SELECT h.*,
                                           NVL(Endpoint_Number - LAG(Endpoint_Number) OVER (ORDER BY Endpoint_Number), Endpoint_Number) * #{@num_rows} / MAX(Endpoint_Number) OVER () Num_Rows,
