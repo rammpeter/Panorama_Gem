@@ -240,7 +240,7 @@ SQLs with multiple open cursors withon one session my flood session cursor cache
                               FROM gv$SQL
                               GROUP BY Inst_ID, SQL_ID
                              )sq ON sq.Inst_ID = cu.Inst_ID AND sq.SQL_ID = cu.SQL_ID
-                      WHERE sq.Parsing_Schema_Name NOT IN ('SYS')
+                      WHERE sq.Parsing_Schema_Name NOT IN (#{system_schema_subselect})
                       ORDER BY cu.Anz_Open_Cursor-cu.Anz_Sql DESC NULLS LAST"
         },
         {

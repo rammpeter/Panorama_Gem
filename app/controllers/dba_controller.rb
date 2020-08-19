@@ -354,7 +354,7 @@ class DbaController < ApplicationController
                      AND    Constraint_Type = 'P'                            
                     )", object_rec.owner, object_rec.owner, table_name]
     if pstmt.length == 0
-      show_popup_message "Kein Primary Key gefunden für Object '#{object_rec.owner}.#{object_rec.object_name} / Tabelle #{table_name}"
+      show_popup_message "No primary key found for object '#{object_rec.owner}.#{object_rec.object_name} / table #{table_name}"
       return
     end
 
@@ -1035,45 +1035,55 @@ class DbaController < ApplicationController
 
   def show_session_details_locks
     @instance = prepare_param_instance
-    @sid      = params[:sid]
-    @serialno = params[:serialno]
+    @sid      = params[:sid]&.to_i
+    @serialno = params[:serialno]&.to_i
 
     @locks =  sql_select_all ["\
       WITH RawLock AS (SELECT /*+ MATERIALIZE NO_MERGE */ * FROM gv$Lock)
       SELECT /*+ ORDERED */ /* Panorama-Tool Ramm */
-        RowNum,
-        CASE                                                                                    
-          WHEN l.Type='TM' THEN         /* Locked Object for TM */                              
-            (SELECT LOWER(o.Owner)||'.'||o.object_name FROM sys.dba_objects o WHERE l.id1=o.object_id)
-          WHEN l.Type='TX' THEN         /* Used Rollback Segment for TX */                      
-            (SELECT DECODE(Count(*),1,'','Multi:')||MIN(SUBSTR('RBS:'||x.XIDUSN,1,18)) FROM GV\$Transaction x WHERE x.Addr=s.TAddr)  
-        END                                                         Object,                     
-        l.Type                                                      LockType,                   
-        CASE WHEN s.LockWait IS NOT NULL AND l.Request != 0  THEN   /* Waiting for Lock */      
-            LOWER(o.Owner)||'.'||o.Object_Name
-        END                                                         WaitingForObject,           
-        CASE WHEN s.LockWait IS NOT NULL AND l.Request != 0 AND s.Row_Wait_Obj# != -1  THEN     
-          RowIDTOChar(DBMS_RowID.RowID_Create(1, o.Data_Object_ID, s.Row_Wait_File#, s.Row_Wait_Block#, s.Row_Wait_Row#))
-        END                                                         WaitingForRowID,
-        o.Data_Object_ID                                            WaitingForData_Object_ID,
-        l.ctime Seconds_In_Lock,
-        l.ID1, l.ID2,
-        /* Request!=0 indicates waiting for resource determinded by ID1, ID2 */                 
-        TO_CHAR(l.Request)                                          Request,                    
-        TO_CHAR(l.lmode)                                            LockMode,
-        bs.Inst_ID             Blocking_Instance_Number,
-        bs.SID                 Blocking_SID,
-        bs.Serial#             Blocking_SerialNo
-      FROM    RawLock l
-      JOIN    gv$session s ON s.Inst_ID = l.Inst_ID AND s.SID = l.SID
-      LEFT OUTER JOIN gv$Session bs ON bs.Inst_ID = s.Blocking_Instance AND bs.SID = s.Blocking_Session
-      -- Join über der session bekanntes Objekt auf das gewartet wird, alternativ über dem Wait bekanntes Objekt
-      LEFT OUTER JOIN DBA_Objects o ON o.Object_ID = DECODE(s.Row_Wait_Obj#, -1, DECODE(s.P2Text, 'object #', s.P2, NULL), s.Row_Wait_Obj#)  -- Objekt, auf das gewartet wird wenn existiert
-      WHERE  l.Inst_ID    = ?
-      AND    l.SID        = ?
-      AND    s.Serial#    = ?   
-      ORDER BY 1                                                                          
-      ", @instance, @sid, @serialno]
+             RowNum,
+             CASE
+               WHEN l.Type='TM' THEN         /* Locked Object for TM */
+                 (SELECT LOWER(o.Owner)||'.'||o.object_name FROM sys.dba_objects o WHERE l.id1=o.object_id)
+               WHEN l.Type='TX' THEN         /* Used Rollback Segment for TX */
+                 (SELECT DECODE(Count(*),1,'','Multi:')||MIN(SUBSTR('RBS:'||x.XIDUSN,1,18)) FROM GV\$Transaction x WHERE x.Addr=s.TAddr)
+             END                                                         Object,
+             l.Type                                                      LockType,
+             CASE WHEN s.LockWait IS NOT NULL AND l.Request != 0  THEN o.Owner END                  Blocking_Owner,        /* Waiting for Lock */
+             CASE WHEN s.LockWait IS NOT NULL AND l.Request != 0  THEN o.Object_Name END            Blocking_Object_Name,  /* Waiting for Lock */
+             CASE WHEN s.LockWait IS NOT NULL AND l.Request != 0 AND s.Row_Wait_Obj# != -1  THEN
+               RowIDTOChar(DBMS_RowID.RowID_Create(1, o.Data_Object_ID, s.Row_Wait_File#, s.Row_Wait_Block#, s.Row_Wait_Row#))
+             END                                                         WaitingForRowID,
+             o.Data_Object_ID                                            WaitingForData_Object_ID,
+             l.ctime Seconds_In_Lock,
+             l.ID1, l.ID2,
+             /* Request!=0 indicates waiting for resource determinded by ID1, ID2 */
+             TO_CHAR(l.Request)                                          Request,
+             TO_CHAR(l.lmode)                                            LockMode,
+             bs.Inst_ID                                                  Blocking_Instance_Number,
+             bs.SID                                                      Blocking_SID,
+             bs.Serial#                                                  Blocking_SerialNo,
+             sblocked.Inst_ID                                            Blocked_Instance_Number,
+             sblocked.SID                                                Blocked_SID,
+             sblocked.Serial#                                            Blocked_SerialNo,
+             oblocked.Owner                                              Blocked_Owner,
+             oblocked.Object_Name                                        Blocked_Object_Name,
+             oblocked.Data_Object_ID                                     Blocked_Data_Object_ID,
+             CASE WHEN sblocked.LockWait IS NOT NULL AND sblocked.Row_Wait_Obj# != -1  THEN
+               RowIDTOChar(DBMS_RowID.RowID_Create(1, oblocked.Data_Object_ID, sblocked.Row_Wait_File#, sblocked.Row_Wait_Block#, sblocked.Row_Wait_Row#))
+             END                                                         Blocked_RowID
+     FROM    RawLock l
+     JOIN    gv$session s ON s.Inst_ID = l.Inst_ID AND s.SID = l.SID
+     LEFT OUTER JOIN gv$Session bs ON bs.Inst_ID = s.Blocking_Instance AND bs.SID = s.Blocking_Session
+     -- Join über der session bekanntes Objekt auf das gewartet wird, alternativ über dem Wait bekanntes Objekt
+     LEFT OUTER JOIN DBA_Objects o ON o.Object_ID = DECODE(s.Row_Wait_Obj#, -1, DECODE(s.P2Text, 'object #', s.P2, NULL), s.Row_Wait_Obj#)  -- Objekt, auf das gewartet wird wenn existiert
+     LEFT OUTER JOIN gv$Session  sblocked ON l.Type = 'TX' AND sblocked.Blocking_Instance = l.Inst_ID AND sblocked.Blocking_Session = l.SID
+     LEFT OUTER JOIN DBA_Objects oblocked ON oblocked.Object_ID = DECODE(sblocked.Row_Wait_Obj#, -1, DECODE(sblocked.P2Text, 'object #', sblocked.P2, NULL), sblocked.Row_Wait_Obj#)
+     WHERE  l.Inst_ID    = ?
+     AND    l.SID        = ?
+     AND    s.Serial#    = ?
+     ORDER BY 1
+     ", @instance, @sid, @serialno]
 
     render_partial :list_session_details_locks
   end

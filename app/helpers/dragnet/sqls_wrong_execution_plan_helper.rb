@@ -196,7 +196,7 @@ JOIN   (SELECT h.*, SUM(Seconds) OVER (PARTITION BY SQL_ID, UserName, SQL_Plan_H
                 JOIN   DBA_Hist_Active_Sess_History h ON h.DBID = ss.DBID AND h.Instance_Number = ss.Instance_Number AND h.Snap_ID = ss.Snap_ID
                 JOIN   All_Users u ON u.User_ID = h.User_ID
                 WHERE  ss.Begin_Interval_Time > SYSDATE - ?
-                AND    u.UserName NOT IN ('SYS')
+                AND    u.UserName NOT IN (#{system_schema_subselect})
                 GROUP BY h.SQL_ID, u.UserName, h.SQL_Plan_Hash_Value, h.SQL_Plan_Line_ID
                ) h
         WHERE  h.Seconds > ?

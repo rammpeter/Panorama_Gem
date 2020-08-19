@@ -81,7 +81,7 @@ Selection considers current SGA.'),
                                       SELECT Inst_ID, SQL_ID
                                       FROM   SQL_PLan
                                       WHERE  Other_Tag LIKE 'PARALLEL%'
-                                      AND    Object_Owner != 'SYS'
+                                      AND    Object_Owner NOT IN (#{system_schema_subselect})
                                       GROUP BY Inst_ID, SQL_ID
                                      ) pp,
                                      (
@@ -91,7 +91,7 @@ Selection considers current SGA.'),
                                       AND    Operation NOT IN ('PX COORDINATOR', 'SORT', 'VIEW', 'MERGE JOIN')
                                       AND    Operation NOT LIKE 'UPDATE%'
                                       AND    Operation NOT LIKE 'SELECT%'
-                                      AND    Object_Owner != 'SYS'
+                                      AND    Object_Owner NOT IN (#{system_schema_subselect})
                                      ) ps
                               WHERE  ps.Inst_ID = pp.Inst_ID
                               AND    ps.SQL_ID  = pp.SQL_ID
@@ -126,7 +126,7 @@ Selection considers AWR history.'),
                               FROM   (
                                       SELECT /*+ PARALLEL(DBA_Hist_SQL_Plan,2) */ DBID, SQL_ID, Plan_Hash_Value
                                       FROM   DBA_Hist_SQL_Plan
-                                      WHERE  Object_Owner != 'SYS'
+                                      WHERE  Object_Owner NOT IN (#{system_schema_subselect})
                                       GROUP BY DBID, SQL_ID, Plan_Hash_Value
                                       HAVING SUM(CASE WHEN Other_Tag LIKE 'PARALLEL%' THEN 1 ELSE 0 END) > 0  -- enthält parallele Anteile
                                       AND    SUM(CASE WHEN (Other_Tag IS NULL OR Other_Tag NOT LIKE 'PARALLEL%')
@@ -326,7 +326,7 @@ This selection considers SQLs in the current SGA'),
                     WHERE  PX_Servers_Executions > 0
                     AND    Elapsed_Time / 1000000 / CASE WHEN Executions > 0 THEN Executions ELSE 1 END < ?
                     AND    UPPER(SQL_FullText) NOT LIKE '%GV$%'
-                    AND    Parsing_Schema_Name NOT IN ('SYS')
+                    AND    Parsing_Schema_Name NOT IN (#{system_schema_subselect})
                     ORDER BY PX_Servers_Executions DESC",
             :parameter=>[{:name=>t(:dragnet_helper_134_param_1_name, :default=>'Maximum runtime per execution in seconds'), :size=>8, :default=>5, :title=>t(:dragnet_helper_134_param_1_hint, :default=>'Maximum runtime per execution in seconds for consideration in result') }]
         },

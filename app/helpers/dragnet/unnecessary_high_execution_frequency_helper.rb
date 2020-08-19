@@ -183,7 +183,7 @@ This reduces CPU-contention and runtime.'),
                       JOIN   DBA_Hist_SnapShot ss ON ss.DBID=s.DBID AND ss.Instance_Number=s.Instance_Number AND ss.Snap_ID=s.Snap_ID
                       JOIN   DBA_Hist_SQLText t ON t.DBID=s.DBID AND t.SQL_ID=s.SQL_ID AND t.Command_Type IN (2,6,7) /* Insert, Update, Delete */
                       WHERE  ss.Begin_Interval_Time > SYSDATE - ?
-                      AND    Parsing_Schema_Name NOT IN ('SYS')
+                      AND    Parsing_Schema_Name NOT IN (#{system_schema_subselect})
                       GROUP BY s.SQL_ID, s.Instance_Number, Parsing_Schema_Name
                       HAVING SUM(s.Executions_Delta) > ?
                       AND    SUM(s.Rows_Processed_Delta) > 0

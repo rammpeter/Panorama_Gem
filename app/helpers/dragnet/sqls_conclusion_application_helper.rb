@@ -281,11 +281,16 @@ Therefore primary key columns should not occur in SET-clause of UPDATE statement
                    s.Logon_Time,
                    s.Last_Call_ET \"Seconds since last activity\",
                    l.Type         \"Lock type\",
-                   l.Request, l.LMode, lo.Owner, lo.Object_Name, l.ID1, l.ID2
+                   l.Request, l.LMode, lo.Owner, lo.Object_Name, l.ID1, l.ID2, bs.Blocked_Sessions
             FROM   Sessions s
             JOIN   Locks l ON l.Inst_ID = s.Inst_ID AND l.SID = s.SID
             LEFT OUTER JOIN DBA_Objects lo ON lo.Object_ID = l.ID1
-            WHERE  s.UserName NOT IN ('SYS')
+            LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Blocking_Instance, Blocking_Session, COUNT(*) Blocked_Sessions
+                             FROM   gv$Session
+                             WHERE  Blocking_Session IS NOT NULL
+                             GROUP BY Blocking_Instance, Blocking_Session
+                            ) bs ON bs.Blocking_Instance = s.Inst_ID AND bs.Blocking_Session = s.SID
+            WHERE  s.UserName NOT IN (#{system_schema_subselect})
             AND    l.Type NOT IN ('AE', 'PS', 'TO')
            ",
             :parameter=>[
