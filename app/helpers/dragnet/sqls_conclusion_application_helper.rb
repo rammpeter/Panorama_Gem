@@ -292,6 +292,7 @@ Therefore primary key columns should not occur in SET-clause of UPDATE statement
                             ) bs ON bs.Blocking_Instance = s.Inst_ID AND bs.Blocking_Session = s.SID
             WHERE  s.UserName NOT IN (#{system_schema_subselect})
             AND    l.Type NOT IN ('AE', 'PS', 'TO')
+            ORDER BY s.Last_Call_ET DESC
            ",
             :parameter=>[
                 {:name=> t(:dragnet_helper_62_param_1_name, :default=>'Minimum duration (seconds) since last activity of session'), :size=>8, :default=>60, :title=> t(:dragnet_helper_62_param_1_hint, :default=>'Minimum duration (seconds) since end of last activity of session')},

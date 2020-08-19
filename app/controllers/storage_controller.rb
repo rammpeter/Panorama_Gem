@@ -696,24 +696,28 @@ class StorageController < ApplicationController
   def list_transaction_history
     @xid = prepare_param(:xid)
 
-    history = sql_select_iterator ["SELECT f.*, f.Undo_Change# Undo_Change_No,
+    begin
+      history = sql_select_iterator ["SELECT f.*, f.Undo_Change# Undo_Change_No,
                                            (NVL(Commit_Timestamp, SYSDATE) - Start_Timestamp) * 86400 Duration_Secs,
                                            0 Cumulated,
                                            f.Undo_Change# Last_Undo_Change_No
                                     FROM   Flashback_Transaction_Query f
                                     WHERE  XID = HEXTORAW(?) ORDER BY Undo_Change# DESC", @xid]
-
-    @history = []
-    prev_rec = nil
-    history.each do |h|
-      if !prev_rec.nil? && h.operation == prev_rec.operation && h.table_name == prev_rec.table_name
-        prev_rec.cumulated = true                                               # mark record
-        prev_rec.last_undo_change_no = h.undo_change_no
-      else                                                                      # process single record
-        h.cumulated = false                                                     # mark record
-        @history << h
-        prev_rec = h
+      @history = []
+      prev_rec = nil
+      history.each do |h|
+        if !prev_rec.nil? && h.operation == prev_rec.operation && h.table_name == prev_rec.table_name
+          prev_rec.cumulated = true                                               # mark record
+          prev_rec.last_undo_change_no = h.undo_change_no
+        else                                                                      # process single record
+          h.cumulated = false                                                     # mark record
+          @history << h
+          prev_rec = h
+        end
       end
+
+    rescue Exception => e
+      raise "#{e.class}:\nYou possibly need the additional grant SELECT ANY TRANSACTION to execute this function!\n\n#{e.message}"
     end
 
     render_partial
