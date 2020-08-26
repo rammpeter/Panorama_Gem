@@ -462,7 +462,7 @@ class DbaSgaController < ApplicationController
 
     @multiplans.each do |mp|
       mp['elapsed_secs_per_exec'] = sql_select_one ["\
-        SELECT SUM(Elapsed_Time)/1000000 / SUM(Executions)
+        SELECT CASE WHEN SUM(Executions) = 0 THEN 0 ELSE SUM(Elapsed_Time)/1000000 / SUM(Executions) END
         FROM   gv$SQL
         WHERE  SQL_ID           = ?
         AND    Inst_ID          = ?
