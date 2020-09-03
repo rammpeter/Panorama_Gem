@@ -536,6 +536,8 @@ class DbaController < ApplicationController
     @caption = params[:caption]
     @caption = nil if @caption == ''
 
+    @reduced_columns = params[:reduced_columns]
+
     where_string = ''
     where_values = []
 
