@@ -17,7 +17,7 @@
 %>
 
 <%=
-    gen_slickgrid(@outlines, column_options, :caption => "Stored outlines from DBA_Outlines", :max_height=>450, show_pin_icon: 1)
+    gen_slickgrid(@outlines, column_options, :caption => @caption, :max_height=>450, show_pin_icon: 1) if !@single_sql || @outlines.count > 0
 %>
 
 <div id="<%= @update_area %>"></div>

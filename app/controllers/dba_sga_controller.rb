@@ -268,20 +268,6 @@ class DbaSgaController < ApplicationController
         instance, sql_id]
   end
 
-  # Existierende SQL-Profiles, Parameter: Result-Zeile eines selects
-  def get_sql_profiles(sql_row)
-    sql_select_all ["SELECT * FROM DBA_SQL_Profiles WHERE Signature = TO_NUMBER(?) OR  Signature = TO_NUMBER(?) #{'OR Name = ?' if sql_row.sql_profile}
-                    ",
-                    sql_row.exact_signature.to_s, sql_row.force_signature.to_s].concat(sql_row.sql_profile ? [sql_row.sql_profile] : []) if sql_row
-  end
-
-
-  # Existierende stored outlines, Parameter: Result-Zeile eines selects
-  def get_sql_outlines(sql_row)
-    sql_select_all ["SELECT * FROM DBA_Outlines WHERE Signature = sys.UTL_RAW.Cast_From_Number(TO_NUMBER(?)) OR  Signature = sys.UTL_RAW.Cast_From_Number(TO_NUMBER(?))",
-                    sql_row.exact_signature.to_s, sql_row.force_signature.to_s] if sql_row
-  end
-
   def get_sql_bind_count(instance, sql_id, child_number = nil, child_address = nil)
     sql_select_one ["\
       SELECT COUNT(*)
@@ -601,8 +587,6 @@ class DbaSgaController < ApplicationController
     @sql                  = fill_sql_sga_stat("GV$SQL", @instance, @sql_id, @object_status, @child_number, @parsing_schema_name, @child_address)
 
     @sql_statement        = get_sga_sql_statement(@instance, @sql_id)
-    @sql_profiles         = get_sql_profiles(@sql)
-    @sql_outlines         = get_sql_outlines(@sql)
     @sql_bind_count       = get_sql_bind_count(@instance, @sql_id, @child_number, @child_address)
     @execution_plan_count, @plan_object_count = get_execution_plan_count(@instance, @sql_id, @child_number, @child_address)
 
@@ -671,8 +655,6 @@ class DbaSgaController < ApplicationController
     @sql = fill_sql_sga_stat("GV$SQLArea", @instance, @sql_id, @object_status, nil, nil, nil, @con_id)
 
     @sql_statement        = get_sga_sql_statement(@instance, params[:sql_id])
-    @sql_profiles         = get_sql_profiles(@sql)
-    @sql_outlines         = get_sql_outlines(@sql)
     @sql_bind_count       = get_sql_bind_count(@instance, @sql_id)
     @execution_plan_count, @plan_object_count = get_execution_plan_count(@instance, @sql_id)
 
@@ -1525,19 +1507,42 @@ class DbaSgaController < ApplicationController
 
   # Existierende SQL-Profiles
   def show_profiles
-    @profiles = sql_select_iterator "SELECT p.*, em.SGA_Usages, awr.AWR_Usages, awr.Min_History_SQL_ID
-                                     FROM   DBA_SQL_Profiles p
-                                     LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ SQL_Profile, COUNT(*) SGA_Usages
-                                                        FROM   gv$SQLArea
-                                                        WHERE  SQL_profile IS NOT NULL
-                                                        GROUP BY SQL_Profile
-                                                       ) em ON em.SQL_Profile = p.Name
-                                     LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ SQL_Profile, COUNT(DISTINCT SQL_ID) AWR_Usages, MIN(SQL_ID) Min_History_SQL_ID
-                                                        FROM   DBA_Hist_SQLStat
-                                                        WHERE  SQL_profile IS NOT NULL
-                                                        GROUP BY SQL_Profile
-                                                       ) awr ON awr.SQL_Profile = p.Name
-                                    "
+    @force_matching_signature = prepare_param(:force_matching_signature)
+    @exact_matching_signature = prepare_param(:exact_matching_signature)
+    @sql_profile              = prepare_param(:sql_profile)
+    @update_area              = prepare_param(:update_area)
+
+    where_string = ''
+    where_values = []
+    @caption = "SQL profiles from DBA_SQL_Profiles"
+    @single_sql = false                                                         # look for whole DB
+
+    if @force_matching_signature && @exact_matching_signature
+      where_string << "WHERE  p.Signature = TO_NUMBER(?) OR  p.Signature = TO_NUMBER(?) "
+      where_values << @exact_matching_signature.to_s                            # dont show real numeriv value, not xEy
+      where_values << @force_matching_signature.to_s                            # dont show real numeriv value, not xEy
+      @single_sql = true
+      if @sql_profile
+        where_string << " OR p.Name = ?"
+        where_values << @sql_profile
+      end
+      @caption = "<div style=\"background-color: coral;\">SQL-Profiles exists for SQL (from DBA_SQL_Profiles)</div>".html_safe
+    end
+
+    @profiles = sql_select_all ["SELECT p.*#{", em.SGA_Usages, awr.AWR_Usages, awr.Min_History_SQL_ID" unless @single_sql}
+                                 FROM   DBA_SQL_Profiles p
+                                 #{"LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ SQL_Profile, COUNT(*) SGA_Usages
+                                                     FROM   gv$SQLArea
+                                                     WHERE  SQL_profile IS NOT NULL
+                                                     GROUP BY SQL_Profile
+                                                    ) em ON em.SQL_Profile = p.Name
+                                 LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ SQL_Profile, COUNT(DISTINCT SQL_ID) AWR_Usages, MIN(SQL_ID) Min_History_SQL_ID
+                                                    FROM   DBA_Hist_SQLStat
+                                                    WHERE  SQL_profile IS NOT NULL
+                                                    GROUP BY SQL_Profile
+                                                   ) awr ON awr.SQL_Profile = p.Name" unless @single_sql}
+                                  #{where_string}
+                                 "].concat(where_values)
     render_partial
   end
 
@@ -1629,7 +1634,27 @@ class DbaSgaController < ApplicationController
 
   # Existierende stored outlines
   def show_stored_outlines
-    @outlines = sql_select_iterator "SELECT * FROM DBA_Outlines"
+    @force_matching_signature = prepare_param(:force_matching_signature)
+    @exact_matching_signature = prepare_param(:exact_matching_signature)
+
+    where_string = ''
+    where_values = []
+    @caption = "Stored outlines from DBA_Outlines"
+    @single_sql = false
+
+    if @force_matching_signature && @exact_matching_signature
+      where_string << "WHERE  Signature = sys.UTL_RAW.Cast_From_Number(TO_NUMBER(?)) OR     Signature = sys.UTL_RAW.Cast_From_Number(TO_NUMBER(?))"
+      where_values << @exact_matching_signature.to_s                            # dont show real numeriv value, not xEy
+      where_values << @force_matching_signature.to_s                            # dont show real numeriv value, not xEy
+
+      @caption = "<div style=\"background-color: coral;\">Stored outlines exists for SQL (from DBA_Outlines)</div>".html_safe
+      @single_sql = true
+    end
+
+    @outlines = sql_select_all ["SELECT *
+                                 FROM   DBA_Outlines
+                                 #{where_string}"].concat(where_values)
+
     render_partial
   end
 

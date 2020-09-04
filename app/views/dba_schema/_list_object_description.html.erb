@@ -309,35 +309,29 @@ column_options =
 
 
 <% if @mv_attribs %>
-
-  <% @update_area_mv_data = get_unique_area_id %>
-  <script type="text/javascript">
-      ajax_html('<%= @update_area_mv_data %>', 'storage', 'list_materialized_view_action', {
-          update_area: "<%= @update_area_mv_data %>",
-          all_mviews:  "All local materialized views",
-          owner:       "<%= @owner %>",
-          name:        "<%= @table_name %>",
-          called_from_object_description: true
-      }, {retain_status_message: true});
-  </script>
-  <div id="<%= @update_area_mv_data %>"></div>
-
+  <%=
+    render_async(:storage, :list_materialized_view_action, {
+        all_mviews:  "All local materialized views",
+        owner:                          @owner,
+        name:                           @table_name,
+        called_from_object_description: true,
+        update_area:                    @update_area
+    })
+  %>
 
   <h4>Viewtext of <%= @table_type %> <%= @owner %>.<%= @table_name %></h4>
   <%= render_yellow_pre(@mv_attribs.query, 450) %>
 <% end %>
 
 <% if @mv_log_count > 0 %>
-  <% @update_area_mv_log = get_unique_area_id %>
-  <script type="text/javascript">
-      ajax_html('<%= @update_area_mv_log %>', 'storage', 'list_materialized_view_action', {
-          update_area: "<%= @update_area_mv_log %>",
-          mview_logs:  'Materialized view logs',
-          log_owner:   "<%= @owner %>",
-          master:      "<%= @table_name %>"
-      }, {retain_status_message: true});
-  </script>
-  <div id="<%= @update_area_mv_log %>"></div>
+  <%=
+    render_async(:storage, :list_materialized_view_action, {
+        mview_logs:  'Materialized view logs',
+        log_owner:   @owner,
+        master:      @table_name,
+        update_area: @update_area
+    })
+  %>
 <% end %>
 
 

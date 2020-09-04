@@ -146,7 +146,23 @@ end
   });
 </script>
 
-<%= render :partial=>"dba_sga/list_sql_profiles" %>
+<%=
+  render_async(:dba_sga, :show_stored_outlines, {
+      force_matching_signature: @sql.force_signature,
+      exact_matching_signature: @sql.exact_signature,
+      update_area:              @update_area
+  })
+%>
+
+<%=
+  render_async(:dba_sga, :show_profiles, {
+      force_matching_signature: @sql.force_signature,
+      exact_matching_signature: @sql.exact_signature,
+      sql_profile:              @sql.sql_profile,
+      update_area:              @update_area
+  })
+%>
+
 
 <% if get_db_version >= '11.1' %>
   <%=

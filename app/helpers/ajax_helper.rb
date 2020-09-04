@@ -6,7 +6,7 @@ require 'resolv'
 module AjaxHelper
   include ExceptionHelper
 
-  def render_async(controller, action, params)
+  def render_async(controller, action, params={})
     update_area = get_unique_area_id                                            # DIV where result of async call should be rendered in
     result = "
     <div id=\"#{update_area}\">

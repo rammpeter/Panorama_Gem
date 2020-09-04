@@ -531,13 +531,9 @@ class DbaHistoryController < ApplicationController
       @sql_statement      = sql_statement.sql_text
       @exact_matching_signature = sql_statement.exact_signature   # Not available in DBA_Hist_SQLStat
       @sql.force_matching_signature = sql_statement.force_signature if @sql.force_matching_signature.nil?   # Use calculated signature if history did not hit values
-      @sql_profiles       = sql_select_all ["SELECT * FROM DBA_SQL_Profiles       WHERE Signature = TO_NUMBER(?) OR Signature = TO_NUMBER(?)", sql_statement.exact_signature.to_s, sql_statement.force_signature.to_s]
-      @sql_outlines       = sql_select_all ["SELECT * FROM DBA_Outlines           WHERE Signature = sys.UTL_RAW.Cast_From_Number(TO_NUMBER(?)) OR Signature = sys.UTL_RAW.Cast_From_Number(TO_NUMBER(?))", sql_statement.exact_signature.to_s, sql_statement.force_signature.to_s]
     else
       @exact_matching_signature = nil
       @sql_statement      = "[No statement found in DBA_Hist_SQLText]"
-      @sql_profiles       = []
-      @sql_outlines       = []
     end
 
     unless sql_statement                                                           # No SQL text found in history ?

@@ -1,9 +1,7 @@
 <div><%= t(:env_licensing_panorama_statement, :default=>'Panorama can be used free of charge under the terms and conditions of') %> <a href="http://www.gnu.org/licenses/gpl-3.0" target="_blank">GNU General Public License</a>.</div>
 
 <% if @show_management_pack_choice %>
-  <% @update_area_management_pack_license = get_unique_area_id %>
-  <script type="text/javascript">
-      ajax_html('<%= @update_area_management_pack_license %>', 'env', 'list_management_pack_license', {update_area: "<%= @update_area_management_pack_license %>"},  {retain_status_message: true});
-  </script>
-  <div id="<%= @update_area_management_pack_license %>"></div>
+  <%=
+    render_async(:env, :list_management_pack_license)
+  %>
 <% end %>

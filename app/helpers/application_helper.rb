@@ -539,15 +539,12 @@ module ApplicationHelper
 #  end
 
   # Eindeutigen Bezeichner fuer DIV-ID in html-Struktur
-  @@unique_area_id_mutex = Mutex.new                                            # Ensure that parallel requests get unique identifier
-
+  $unique_area_id_mutex = Mutex.new   if !defined? $unique_area_id_mutex        # Ensure that parallel requests get unique identifier
+  $unique_area_id_request_counter = 0 if !defined? $unique_area_id_request_counter
   def get_unique_area_id
-    @@unique_area_id_mutex.synchronize do
-      request_counter = read_from_client_info_store(:request_counter)
-      request_counter = 0 if request_counter.nil? || request_counter > 1000000  # Sicherstellen, das keine Kumulation ohne Ende
-      request_counter += 1                                                      # Eindeutigkeit sicherstellen durch Weiterzählen auch innerhalb eines Requests
-      write_to_client_info_store(:request_counter, request_counter)
-      "a#{request_counter}"
+    $unique_area_id_mutex.synchronize do
+      $unique_area_id_request_counter += 1
+      "a#{$unique_area_id_request_counter}"
     end
   end
 
