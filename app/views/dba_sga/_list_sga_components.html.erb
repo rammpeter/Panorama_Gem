@@ -9,7 +9,6 @@
 
   <script type="text/javascript">
       ajax_html('<%= @update_area_init_params %>', 'dba', 'oracle_parameter', {
-          update_area: "<%= @update_area_init_params %>",
           caption:     "Memory-related init-parameter",
           name_array:  ['memory_target', 'memory_max_target', 'pga_aggregate_target', 'sga_max_size', 'sga_target'],
           reduced_columns: true

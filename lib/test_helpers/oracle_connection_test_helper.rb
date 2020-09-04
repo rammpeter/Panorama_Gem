@@ -79,11 +79,15 @@ class ActiveSupport::TestCase
 
     connect_oracle_db
 
-    db_session = sql_select_first_row "select Inst_ID, SID, Serial# SerialNo, RawToHex(Saddr)Saddr FROM gV$Session s WHERE SID=UserEnv('SID')  AND Inst_ID = USERENV('INSTANCE')"
+    db_session = sql_select_first_row "SELECT s.Inst_ID, s.SID, s.Serial# SerialNo, RawToHex(s.Saddr)Saddr, p.PID
+                                       FROM   gV$Session s
+                                       JOIN   gv$Process p ON p.Inst_ID=s.Inst_ID AND p.Addr = s.pAddr
+                                       WHERE  s.SID=UserEnv('SID')  AND s.Inst_ID = USERENV('INSTANCE')"
     @instance = db_session.inst_id
     @sid      = db_session.sid
     @serialno = db_session.serialno
     @saddr    = db_session.saddr
+    @pid      = db_session.pid
 
     ensure_panorama_sampler_tables_exist_with_content if management_pack_license == :panorama_sampler
 

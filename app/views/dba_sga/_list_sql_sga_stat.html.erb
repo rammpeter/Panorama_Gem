@@ -149,32 +149,33 @@ end
 <%= render :partial=>"dba_sga/list_sql_profiles" %>
 
 <% if get_db_version >= '11.1' %>
-  <% @update_area_sql_baseline = get_unique_area_id %>
-  <script type="text/javascript">
-      ajax_html('<%= @update_area_sql_baseline %>', 'dba_sga', 'show_plan_baselines', {
-          update_area: "<%= @update_area_sql_baseline %>",
-          force_matching_signature: "<%= @sql.force_signature %>",
-          exact_matching_signature: "<%= @sql.exact_signature %>"
-      }, {retain_status_message: true});
-  </script>
-  <div id="<%= @update_area_sql_baseline %>"></div>
+  <%=
+    render_async(:dba_sga, :show_plan_baselines, {
+        force_matching_signature: @sql.force_signature,
+        exact_matching_signature: @sql.exact_signature,
+        update_area:              @update_area
+    })
+  %>
 <% end %>
 
 
 <% if get_db_version >= '12.1' %>
-    <% @update_area_sql_translation = get_unique_area_id %>
-    <script type="text/javascript">
-        ajax_html('<%= @update_area_sql_translation %>', 'dba_sga', 'show_sql_translations', {update_area: "<%= @update_area_sql_translation %>", translated_sql_id: "<%= @sql_id%>"}, {retain_status_message: true});
-    </script>
-    <div id="<%= @update_area_sql_translation %>"></div>
+  <%=
+    render_async(:dba_sga, :show_sql_translations, {
+        translated_sql_id:  @sql_id,
+        update_area:        @update_area
+    })
+  %>
 <% end %>
 
 <% if get_db_version >= '11.1' %>
-  <% @update_area_sql_patches = get_unique_area_id %>
-  <script type="text/javascript">
-      ajax_html('<%= @update_area_sql_patches %>', 'dba_sga', 'show_sql_patches', {update_area: "<%= @update_area_sql_patches %>", exact_signature: "<%= @sql.exact_signature%>", force_signature: "<%= @sql.force_signature%>"}, {retain_status_message: true});
-  </script>
-  <div id="<%= @update_area_sql_patches %>"></div>
+  <%=
+    render_async(:dba_sga, :show_sql_patches, {
+        exact_signature:    @sql.exact_signature,
+        force_signature:    @sql.force_signature,
+        update_area:        @update_area
+    })
+  %>
 <% end %>
 
 

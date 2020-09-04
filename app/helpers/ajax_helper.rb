@@ -6,6 +6,22 @@ require 'resolv'
 module AjaxHelper
   include ExceptionHelper
 
+  def render_async(controller, action, params)
+    update_area = get_unique_area_id                                            # DIV where result of async call should be rendered in
+    result = "
+    <div id=\"#{update_area}\">
+    </div>
+    <script type=\"text/javascript\">
+      ajax_html('#{update_area}', '#{controller}', '#{action}', {
+    "
+    result << params.to_a.map {|x| "#{x[0]}: \"#{x[1]}\""}.join(", ")
+
+    result << "}, {retain_status_message: true});
+    </script>
+"
+    result.html_safe
+  end
+
   # render menu button with submenu
   def render_command_array_menu(command_array)
     output = ''

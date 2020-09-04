@@ -83,6 +83,12 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
     get  '/dba/show_session_detail', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
     assert_response :success
 
+    post  '/dba/render_session_detail_tracefile_button', :params => {:format=>:html, :instance=>@instance, :pid=>@pid, :update_area=>:hugo }
+    assert_response :success
+
+    post  '/dba/render_session_detail_sql_monitor', params: {format: :html, dbid: PanoramaConnection.dbid, instance: @instance, sid: @sid, serialno: @serialno, time_selection_start: localeDateTime(Time.now-200, :minutes), time_selection_end: localeDateTime(Time.now, :minutes), :update_area=>:hugo }
+    assert_response :success
+
     post '/dba/show_session_details_waits', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
     assert_response :success
 

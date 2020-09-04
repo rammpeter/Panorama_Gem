@@ -945,12 +945,57 @@ class DbaController < ApplicationController
 
 
     if @dbsession
-      @sql_monitor_reports_count = get_sql_monitor_count(@dbid, @instance, nil, localeDateTime(@dbsession.logon_time, :minutes), localeDateTime(Time.now, :minutes), @sid, @serialno)
-
       render_partial :list_session_details
     else
       show_popup_message "Session #{@sid}/#{@serialno} does not exist anymore at instance #{@instance}!"
     end
+  end
+
+  def render_session_detail_tracefile_button
+    @instance     = prepare_param_instance
+    @pid          = prepare_param :pid
+    @update_area  = prepare_param :update_area
+    result = sql_select_first_row ["SELECT f.Inst_ID, f.Adr_Home, f.Trace_FileName, f.Con_ID
+                                    FROM   gv$Process p
+                                    JOIN   gv$Diag_Trace_File f ON f.Inst_ID = p.Inst_ID AND p.tracefile LIKE '%'||f.trace_filename
+                                    WHERE  p.Inst_ID = ?
+                                    AND    p.PID = ?", @instance, @pid]
+    if result
+      render_button("Show trace file", {
+          action:           :list_trace_file_content,
+          instance:         @instance,
+          adr_home:         result.adr_home,
+          trace_filename:   result.trace_filename,
+          con_id:           result.con_id,
+          update_area:      @update_area
+      }, title: 'Show content of existing trace file for this session'
+      )
+    else
+      render html: ''
+    end
+  end
+
+  def render_session_detail_sql_monitor
+    @dbid        = prepare_param_dbid
+    @instance     = prepare_param_instance
+    @sid          = prepare_param :sid
+    @serialno     = prepare_param :serialno
+    save_session_time_selection
+    @update_area  = prepare_param :update_area
+
+    @sql_monitor_reports_count = get_sql_monitor_count(@dbid, @instance, nil, @time_selection_start, @time_selection_end, @sid, @serialno)
+
+    render_button("SQL-Monitor (#{@sql_monitor_reports_count})", {
+        controller:           :dba_history,
+        action:               :list_sql_monitor_reports,
+        instance:             @instance,
+        sid:                  @sid,
+        serialno:             @serialno,
+        time_selection_start: @time_selection_start,
+        time_selection_end:   @time_selection_end,
+        update_area:      @update_area
+    }, title: strings(:sql_monitor_list_title)
+    )
   end
 
   def list_open_cursor_per_session

@@ -4,7 +4,7 @@
 
 #require 'application_helper' # Erweiterung der Controller um Helper-Methoden
 
-include ActionView::Helpers::JavaScriptHelper      # u.a. zur Nutzung von escape_javascript(j) im Controllern
+include ActionView::Helpers::JavaScriptHelper                                   # u.a. zur Nutzung von escape_javascript(j) im Controllern
 
 class ApplicationController < ActionController::Base
   # Prevent CSRF attacks by raising an exception.
@@ -170,6 +170,13 @@ class ApplicationController < ActionController::Base
       else
         raise "show_popup_message: unsupported format #{response_format}"
     end
+  end
+
+  def render_button(caption, url, html_options)
+    @caption = caption
+    @url = url
+    @html_options = html_options
+    render_partial :render_button, controller: :application
   end
 
 end
