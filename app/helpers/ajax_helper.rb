@@ -14,7 +14,13 @@ module AjaxHelper
     <script type=\"text/javascript\">
       ajax_html('#{update_area}', '#{controller}', '#{action}', {
     "
-    result << params.to_a.map {|x| "#{x[0]}: \"#{x[1]}\""}.join(", ")
+    #result << params.to_a.map {|x| "#{x[0]}: #{surrounding}#{x[1]}#{surrounding}"}.join(", ")
+
+    result << params.to_a.map { |p|
+      surrounding = '"'                                                         # Default for Strings etc.
+      surrounding = '' if p[1].class == Array                                   # print Arrays native as JS array
+      "#{p[0]}: #{surrounding}#{p[1]}#{surrounding}"
+    }.join(", ")
 
     result << "}, {retain_status_message: true});
     </script>
