@@ -1724,7 +1724,7 @@ class DbaController < ApplicationController
       break if !recording && rec.line_number > @line_number
     end
 
-    prefix = result == '' ? "No SQL found for cursor ##{@cursor_id} in trace file" : "-- SQL for cursor ##{@cursor_id} found PARSING IN CURSOR after line #{sql_line_number}"
+    prefix = result == '' ? "No SQL found for cursor ##{@cursor_id} in trace file up to this line #{@line_number}" : "-- SQL for cursor ##{@cursor_id} found PARSING IN CURSOR after line #{sql_line_number}"
 
     respond_to do |format|
       format.html {render :html => render_yellow_pre("#{prefix}\n\n#{result}", 450) }
