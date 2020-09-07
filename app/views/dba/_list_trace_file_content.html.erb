@@ -2,7 +2,58 @@
   @update_area = get_unique_area_id
 
   show_payload = proc do |rec|
-    rec.payload.delete("\n") if !rec.payload.nil?
+    #payload = rec.payload.delete("\n") if !rec.payload.nil?
+
+    payload = rec.payload.gsub("\n", ' ') if !rec.payload.nil?
+
+    if payload['PARSING IN CURSOR #'] || payload['PARSE #'] || payload['EXEC #'] || payload['FETCH #'] || payload['STAT #'] || payload['CLOSE #']
+
+      hash_index = payload.index('#')
+      result = payload[0, hash_index]                                           # line Content before cursor ID
+
+      after_cursor_pos = rec.payload[hash_index, rec.payload.length].index(':')
+      after_cursor_pos = rec.payload[hash_index, rec.payload.length].index(' ') if after_cursor_pos.nil?    # check for blank if no colon after cursor ID
+
+      if after_cursor_pos.nil?                                                  # unknown character after cursor ID
+        payload
+      else
+        cursor = payload[hash_index, after_cursor_pos]
+
+        result << ajax_link(cursor, {
+            controller:     :dba,
+            action:         :list_trace_file_cursor_sql_text,
+            instance:       @instance,
+            adr_home:       @adr_home,
+            trace_filename: @trace_filename,
+            con_id:         @con_id,
+            line_number:    rec.line_number,
+            cursor_id:      cursor[1, cursor.length].to_i,
+            update_area:    @update_area
+        }, title: "Show SQL of cursor #{cursor}. Requires additional read of trace file.")
+
+        result << payload[hash_index + after_cursor_pos, payload.length]
+        result
+      end
+    else
+      payload
+    end
+  end
+
+  @last_tim = nil
+  show_tim = proc do |rec|
+    pattern = 'tim='
+    tim_index = rec.payload.index(pattern)
+    if tim_index
+      tim_end_index = rec.payload[tim_index + pattern.length, rec.payload.length].index(' ')
+      tim_end_index = rec.payload[tim_index + pattern.length, rec.payload.length].index(',') if tim_end_index.nil?    # check for , if no space at end
+      tim_end_index = rec.payload.length if tim_end_index.nil? # up to the end of payload
+      tim = rec.payload[tim_index + pattern.length, tim_end_index].to_i rescue nil   # ,tim= is the last element in payload
+      retval = @last_tim.nil? || tim.nil? ? nil : (tim - @last_tim) / 1000.0
+      @last_tim = tim
+      fn(retval, 3)
+    else
+      nil
+    end
   end
 
   link_session = proc do |rec|
@@ -21,19 +72,48 @@
     end
   end
 
+  payload_title = 'Trace record payload (contents)
+
+Used abbreviations:
+PARSING IN CURSOR:
+dep = recursive depth of cursor(0-parent,>0-child)
+uid = user id
+oct = oracle command type no OCI
+lid = user id owning the statement e.g. package(libary user id)
+tim = the time the parse began
+hv = hash value
+ad = sql address of cursor
+sqlid = sql id of cursor
+
+PARSE, EXEC, FETCH, CLOSE etc.:
+c = cpu time
+e = elapsed time,
+p = number of database blocks read
+cr = number of consistent mode blocks read
+cu = number of current mode blocks read
+mis = number of library cache misses
+r = number of rows
+dep = recursive depth of cursor (0 = user SQL, >0 = recursive SQL)
+og = optimizer goal (1=all_rows, 2=first_rows, 3=rule and 4=choose)
+plh = plan hash value
+
+Times are in microseconds
+'
+
   column_options =
       [
+          {caption: 'Line',             data: proc{|rec| rec.line_number},                    title: 'Line number in the code file which produced this trace record', align: :right},
           {caption: 'L.',               data: proc{|rec| rec.record_level},                   title: 'Level of the trace record', align: :right},
           {caption: 'P.',               data: proc{|rec| rec.parent_level},                   title: 'Top parent level of trace record', align: :right},
           {caption: 'T.',               data: proc{|rec| rec.record_type},                    title: "Type of the trace record. Possible values include:\n1: Regular trace record\n2: Freeform trace record\n3: Begin Section trace record\n4: Begin Dump trace record\n5: Bucket Dump Begin trace record\n6: Section End trace record\n7: Dump End trace record\n8: Bucket Dump End trace record", align: :right},
           {caption: 'Timestamp',        data: proc{|rec| localeDateTime(rec.timestamp)},      title: 'Timestamp when the trace record was produced in client time zone'},
-          {caption: 'Payload',          data: show_payload,                                   title: 'Trace record payload (contents)'},
+          {caption: 'Payload',          data: show_payload,                                   title: payload_title, max_wrap_width: 400 },
+          {caption: 'Delay (ms)',       data: show_tim,                                       title: "Time in milliseconds between end of last operation and end of current operation.\nDifference between previous record and this record if 'tim=x' provided", align: :right},
           {caption: 'S',                data: proc{|rec| rec.section_id},                     title: 'Section ID / dump ID of the trace record', data_title: proc{|rec| "%t\n#{rec.section_name}"}, align: :right},
           {caption: 'Component',        data: proc{|rec| rec.component_name},                 title: 'Component name which produced the trace record'},
           {caption: 'Operation',        data: proc{|rec| rec.operation_name},                 title: 'Operation name which produced the trace record'},
           {caption: 'File',             data: proc{|rec| rec.file_name},                      title: 'Name of the code file where this trace record is produced'},
           {caption: 'Function',         data: proc{|rec| rec.function_name},                  title: 'Function which produced the trace record'},
-          {caption: 'Line',             data: proc{|rec| rec.line_number},                    title: 'Line number in the code file which produced this trace record', align: :right},
           {caption: 'Thread',           data: proc{|rec| rec.thread_id},                      title: 'Operating system thread ID of the process which produced the trace record'},
           {caption: 'Session',          data: link_session,                                   title: 'User session ID and serial number which generated the trace record'},
       ]

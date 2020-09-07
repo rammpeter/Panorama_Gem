@@ -137,11 +137,18 @@ pre {
 
 }
 
-input {
+input[type=text], [type=password], [type=number] {
   font-size: 12px;
   font-family: sans-serif;
   padding: 2px;
-  border-width: 2px;
+  border-width: 1px;
+}
+
+input[type=submit], [type=button] {
+  font-size: 12px;
+  font-family: sans-serif;
+  padding: 2px;
+  //border-width: 2px;
 }
 
 

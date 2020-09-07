@@ -116,7 +116,7 @@
             <option <%= "selected=1" if index ==  0 %> value="<%= index %>"><%= "#{database[:user]} @ #{database[:tns]}" %></option>
           <% end %>
         </select>
-        <input id="saved_logins_id_filter" style="width: 10%;" title="<%= t(:combobox_filter_title, default: 'Filter for selection list') %>">
+        <input type="text" id="saved_logins_id_filter" style="width: 10%;" title="<%= t(:combobox_filter_title, default: 'Filter for selection list') %>">
         <script type="application/javascript">
             $(function(){ initialize_combobox_filter('saved_logins_id', 'saved_logins_id_filter'); })
         </script>

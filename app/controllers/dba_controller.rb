@@ -1692,6 +1692,45 @@ class DbaController < ApplicationController
     render_partial
   end
 
+  def list_trace_file_cursor_sql_text
+    @instance       = prepare_param_instance
+    @adr_home       = prepare_param(:adr_home)
+    @trace_filename = prepare_param(:trace_filename)
+    @con_id         = prepare_param(:con_id)
+    @line_number    = prepare_param_int :line_number
+    @cursor_id      = prepare_param :cursor_id
+
+    content = sql_select_iterator ["SELECT c.*, c.Serial# SerialNo
+                                   FROM   gv$Diag_Trace_File_Contents c
+                                   WHERE  c.Inst_ID        = ?
+                                   AND    c.ADR_Home       = ?
+                                   AND    c.Trace_FileName = ?
+                                   AND    c.Con_ID         = ?
+                                   AND    c.Line_Number    < ?  /* only look for SQL before ocurrence */
+                                   ORDER BY c.Line_Number
+                                  ", @instance, @adr_home, @trace_filename, @con_id, @line_number]
+    result = ''
+    recording = false
+    sql_line_number = 0
+    content.each do |rec|
+      recording = false if rec.payload['END OF STMT']
+      result << rec.payload if recording
+      if rec.payload["PARSING IN CURSOR ##{@cursor_id}"]
+        recording = true                                                        # Start recording with next line
+        result = ''                                                             # throw away previous results
+        sql_line_number = rec.line_number
+      end
+
+      break if !recording && rec.line_number > @line_number
+    end
+
+    prefix = result == '' ? "No SQL found for cursor ##{@cursor_id} in trace file" : "-- SQL for cursor ##{@cursor_id} found PARSING IN CURSOR after line #{sql_line_number}"
+
+    respond_to do |format|
+      format.html {render :html => render_yellow_pre("#{prefix}\n\n#{result}", 450) }
+    end
+  end
+
   def list_os_statistics
     @osstats = sql_select_iterator "SELECT * FROM gv$OSStat ORDER BY Stat_Name, Inst_ID"
     render_partial
