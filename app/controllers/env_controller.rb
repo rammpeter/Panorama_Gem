@@ -202,8 +202,6 @@ class EnvController < ApplicationController
       raise PopupMessageException.new("Your user is missing SELECT-right on gv$Instance, gv$Database.<br/>Please ensure that your user has granted SELECT ANY DICTIONARY or SELECT_CATALOG_ROLE.<br/>Panorama is not usable with this user account!\n\n".html_safe, e)
     end
 
-    @panorama_sampler_data = PanoramaSamplerStructureCheck.panorama_sampler_schemas(:full)
-
     @dictionary_access_problem = true unless select_any_dictionary?(@dictionary_access_msg)
 
     render_partial :start_page, {:additional_javascript_string => "$('#main_menu').html('#{j render_to_string :partial =>"build_main_menu" }');" }  # Wait until all loogon jobs are processed before showing menu
@@ -508,9 +506,15 @@ public
     list_management_pack_license
   end
 
+  def panorama_sampler_data
+    @update_area = params[:update_area]                                         # render next actions in same original DIV
+    @panorama_sampler_data = PanoramaSamplerStructureCheck.panorama_sampler_schemas(:full)
+    render_partial :panorama_sampler_data
+  end
+
   def set_panorama_sampler_schema
     set_current_database(get_current_database.merge( { :panorama_sampler_schema => params[:schema]}))
-    start_page
+    panorama_sampler_data
   end
 
   # repeat last called menu action
