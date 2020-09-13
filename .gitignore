@@ -2,7 +2,6 @@
 coverage/*
 Panorama.war
 client_info.store/*
-Gemfile.lock
 .bundle/
 log/*.log
 test/dummy/db/*.sqlite3
