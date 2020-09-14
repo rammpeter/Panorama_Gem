@@ -16,7 +16,7 @@ gemspec
 
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
-gem 'puma'
+gem 'puma', '>=4.3.6'
 
 group :test do
   gem 'selenium-webdriver'

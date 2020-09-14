@@ -33,14 +33,14 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   s.add_dependency  "railties",       "6.0.3.3"
 
   s.add_dependency 'activerecord-nulldb-adapter'
-  s.add_dependency 'activerecord-oracle_enhanced-adapter'     # lokal in Gemfile überschreiben mit : gem 'activerecord-oracle_enhanced-adapter', github: 'rsim/oracle-enhanced', branch: 'rails42'
+  s.add_dependency 'activerecord-oracle_enhanced-adapter'     
+
+  s.add_dependency 'nokogiri', '>=1.10.10'                                      # Vulnerability in 1.10.7
 
   # Use SCSS for stylesheets
   s.add_dependency  'sass-rails', '~> 5.0'                                      # still needed
 
-  #s.add_dependency 'i18n', '1.1.0'                                              # 1.3.0 leads to error NoMethodError: undefined method `symbolize_key' for #<Hash:0x5e9f73b>
   s.add_dependency 'i18n'
 
-  #s.add_dependency  'turbolinks'                                               # needed for redirect_to
 
 end
