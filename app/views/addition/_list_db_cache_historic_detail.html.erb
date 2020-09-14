@@ -23,9 +23,9 @@ column_options =
 
 <%= gen_slickgrid(@entries, column_options, {
         :max_height=>200,
-        :caption => "DB-cache usage #{@owner}.#{@name} #{"(#{@partitionname})" if @partitionname} between #{@time_selection_start} and #{@time_selection_end} Instance=#{@instance}"
+        :caption => "DB-cache usage #{@owner}.#{@name} #{"(#{@partitionname})" if @partitionname} between #{@time_selection_start} and #{@time_selection_end} Instance=#{@instance}",
+        show_pin_icon: 1,
+        update_area:   @update_area
 }) %>
 
-<div id="<%= @update_area %>" style="float:left; width:100%;">
-</div>
 

@@ -440,6 +440,11 @@ class ActiveSessionHistoryController < ApplicationController
     #send params[:repeat_action]    # Methode erneut aufrufen
   end
 
+  def fork_blocking_locks_historic_call
+    list_blocking_locks_historic                    if params[:commit] == 'Blocking locks session dependency tree'
+    list_blocking_locks_historic_event_dependency   if params[:commit] == 'Blocking locks event dependency'
+  end
+
   def list_blocking_locks_historic
     @dbid = prepare_param_dbid
     save_session_time_selection
@@ -604,7 +609,11 @@ class ActiveSessionHistoryController < ApplicationController
        ORDER BY x.Max_Seconds_in_Wait_Total + Seconds_in_Wait_Sample DESC /* May be that Max_Seconds_in_Wait_Total is 0 evene if waits occurred */
        ", @dbid, @min_snap_id, @max_snap_id, @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end, @dbid]
 
-    render_partial
+    render_partial :list_blocking_locks_historic
+  end
+
+  def list_blocking_locks_historic_event_dependency
+    render_partial :list_blocking_locks_historic_event_dependency
   end
 
   def list_blocking_locks_historic_detail

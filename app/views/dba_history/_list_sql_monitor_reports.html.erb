@@ -70,13 +70,10 @@ column_options =
   gen_slickgrid(@sql_monitor_reports, column_options, {
     caption:        "SQL executions recorded by SQL-Monitor for#{" Instance=#{@instance}" if @instance}#{" SQL-ID=#{@sql_id}" if @sql_id}#{" SID=#{@sid}" if @sid}#{" Serial#=#{@serialno}" if @serialno} from gv$SQL_Monitor and DBA_Hist_Reports",
     max_height:     450,
-    show_pin_icon: 1
+    show_pin_icon: 1,
+    update_area: @update_area
 })
 %>
-
-
-<div id="<%= @update_area%>"></div>
-
 
 <script text="javascript">
 

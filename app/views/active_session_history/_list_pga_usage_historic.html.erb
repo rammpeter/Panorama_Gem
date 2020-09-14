@@ -91,11 +91,8 @@
   gen_slickgrid(@result, column_options, {          :caption        => @caption,
                                                     :max_height     => 450,
                                                     show_pin_icon: 1,
-                                                    :multiple_y_axes  => false
+                                                    :multiple_y_axes  => false,
+                                                    update_area:   @update_area
   }
   )
 %>
-
-
-<div id="<%= @update_area %>" style="float:left; width:100%;">
-</div>

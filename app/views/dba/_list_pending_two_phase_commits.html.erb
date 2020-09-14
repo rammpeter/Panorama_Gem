@@ -41,8 +41,8 @@
 <%= gen_slickgrid(@dist_locks, column_options, {
     :caption =>  "Pending two-phase commits (DBA_2PC_Pending), see mouseover hint for columns local and global transaction",
     :max_height=>450,
-    show_pin_icon: 1
+    show_pin_icon: 1,
+    update_area: @update_area
 })
 %>
 
-<div id="<%= @update_area %>"></div>

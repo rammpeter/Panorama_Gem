@@ -30,7 +30,8 @@ column_options =
 
 <%= gen_slickgrid(@entries, column_options,  {
         :max_height => 450,
-        :caption    => "DB-cache usage at #{@snapshot_timestamp} Instance=#{@instance}"
+        :caption    => "DB-cache usage at #{@snapshot_timestamp} Instance=#{@instance}",
+        show_pin_icon: 1,
+        update_area:   @update_are
 }) %>
 
-<div id="<%= @update_area %>"></div>

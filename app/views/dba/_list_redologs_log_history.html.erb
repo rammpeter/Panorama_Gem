@@ -55,10 +55,10 @@
       :caption      => "Redologs historic from gv$Log_History from #{@time_selection_start} until #{@time_selection_end}#{" grouped by #{@time_groupby}" if @time_groupby != :single}",
       :max_height   => 450,
       :width        => :auto,
-      show_pin_icon: 1
+      show_pin_icon: 1,
+      update_area: @update_area
   }
   )
 %>
 
 
-<div id="<%= @update_area %>"></div>

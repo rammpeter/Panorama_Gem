@@ -13,9 +13,10 @@
     ]
 
 %>
-<%= gen_slickgrid(@temps, column_options, {:caption=>"Current Temp-usage for instance=#{@instance}, SID=#{@sid}", :width=>:auto, show_pin_icon: 1}) %>
+<%= gen_slickgrid(@temps, column_options, {:caption=>"Current Temp-usage for instance=#{@instance}, SID=#{@sid}", :width=>:auto, show_pin_icon: 1,
+                                           update_area: @update_area}) %>
 
-<div id="<%= @update_area%>"></div>
+
 
 
 

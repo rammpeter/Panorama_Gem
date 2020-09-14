@@ -31,9 +31,11 @@
     gen_slickgrid(@triggers, column_options, {
                                    :caption => "Triggers for Base_Object_Type='DATABASE' from DBA_Triggers",
                                    :max_height => 450,
-                                   show_pin_icon: 1
-                           })
+                                   show_pin_icon: 1,
+                                   update_area:   @update_area
+
+    })
 %>
 
-<div id="<%= @update_area %>"></div>
+
 

@@ -32,7 +32,8 @@
 <%=
   gen_slickgrid(@objects, column_options,
                 {:caption=>"Object sizes for gather date = #{@gather_date}#{", object type = '#{@segment_type}'" if @segment_type}#{", tablespace = '#{@tablespace_name}'" if @tablespace_name}#{", schema = '#{@owner}'" if @owner}",
-                 :max_height => 450
+                 :max_height => 450,
+                 show_pin_icon: 1,
+                 update_area:   @update_area
                 })
 %>
-<div id="<%= @update_area%>"></div>

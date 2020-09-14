@@ -29,9 +29,10 @@
 <%= gen_slickgrid(@files, column_options, {
     :caption => "Trace files from #{@time_selection_start} until #{@time_selection_end} (from GV$Diag_Trace_File)",
     :max_height=>450,
-    show_pin_icon: 1
+    show_pin_icon: 1,
+    update_area: @update_area
 })
 %>
 
-<div id="<%= @update_area %>"></div>
+
 

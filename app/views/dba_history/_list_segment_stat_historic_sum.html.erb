@@ -97,10 +97,9 @@ column_options =
 
 <%= gen_slickgrid(@segment_sums, column_options, {
         :max_height => 450,
-        :caption => "Segment statistics from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Seg_Stat')}#{", Inst_ID=#{@instance}" if @instance}, from #{@time_selection_start} until #{@time_selection_end}"
-
+        :caption => "Segment statistics from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Seg_Stat')}#{", Inst_ID=#{@instance}" if @instance}, from #{@time_selection_start} until #{@time_selection_end}",
+        show_pin_icon: 1,
+        update_area: @update_area
 }) %>
 
-<div id="<%= @update_area %>" style="clear: both;">
-</div>
 

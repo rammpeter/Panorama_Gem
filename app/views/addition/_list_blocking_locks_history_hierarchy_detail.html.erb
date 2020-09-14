@@ -85,8 +85,9 @@
 
 <%= gen_slickgrid(@locks, column_options, {
         :caption => "Sessions am #{@snapshot_timestamp} gelockt durch Instance=#{@blocking_instance}, SID=#{@blocking_sid}, SerialNo=#{@blocking_serialno}",
-        :max_height => 450
+        :max_height => 450,
+        show_pin_icon: 1,
+        update_area:   @update_area
+
 }) %>
 
-<div id="<%= @update_area %>" style="clear: both;">
-</div>

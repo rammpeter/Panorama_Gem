@@ -109,7 +109,9 @@ class DbaController < ApplicationController
     @result_size = @dml_locks.length       # Tatsaechliche anzahl Zeilen im Result
 
     # Entfernen der ueberzaehligen Zeilen des Results
-    @dml_locks.delete_at(@dml_locks.length-1) while @dml_locks.length > @max_result_size 
+    @dml_locks.delete_at(@dml_locks.length-1) while @dml_locks.length > @max_result_size
+
+    add_statusbar_message(t(:dba_list_dml_locks_cancelled, :default=>'Listing cancelled after %{max_result_size} rows, result has %{result_size} rows in total', :max_result_size=>@max_result_size, :result_size=>@result_size)) if @result_size > @max_result_size
 
     render_partial :list_dml_locks
   end # list_dml_locks

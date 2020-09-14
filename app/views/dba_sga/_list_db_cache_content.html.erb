@@ -72,6 +72,7 @@ column_options =
 
 %>
 
-<%= gen_slickgrid(@objects, column_options, {:caption => "Details", :max_height=>450, show_pin_icon: 1}) %>
+<%= gen_slickgrid(@objects, column_options, {:caption => "Details", :max_height=>450, show_pin_icon: 1,
+                                             update_area: @update_area}) %>
 
-<div id="<%= @update_area %>"></div>
+

@@ -1,7 +1,8 @@
 <%
+  @update_area = get_unique_area_id
 
    link_column_sql = proc do |rec|
-     link_historic_sql_id(rec.instance_number, rec.sql_id, @time_selection_start, @time_selection_end, 'list_segment_stat_hist_detail_sql_area', rec.parsing_schema_name)
+     link_historic_sql_id(rec.instance_number, rec.sql_id, @time_selection_start, @time_selection_end, @update_area, rec.parsing_schema_name)
    end
 
 column_options =
@@ -22,9 +23,11 @@ column_options =
 %>
 <%= gen_slickgrid(@sqls, column_options, {
     :caption => "SQL-Statements from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLPlan')} with access on '#{@owner}.#{@object_name}', Inst_ID=#{@instance}, from #{@time_selection_start} until #{@time_selection_end}",
-    :max_height=>450
+    :max_height=>450,
+    show_pin_icon: 1,
+    update_area: @update_area
 })
 %>
 
-<div id="list_segment_stat_hist_detail_sql_area"></div>
+
 

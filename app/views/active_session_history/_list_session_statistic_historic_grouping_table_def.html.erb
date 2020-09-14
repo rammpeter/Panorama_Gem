@@ -286,8 +286,9 @@
                        :max_height => 450,
                        :context_menu_entries => context_menu_entries,
                        :command_menu_entries => command_menu_entries,
-                       show_pin_icon: 1
-                   }
+                       show_pin_icon: 1,
+                       update_area:   @update_area
+                  }
                   )
 
  %>
@@ -314,7 +315,6 @@
 
 
 <div id="<%= @update_area %>_timeline" style="float:left; width:100%; "></div>
-<div id="<%= @update_area %>"          style="clear:both; width:100%; "></div>
 
 
 <script type="text/javascript">

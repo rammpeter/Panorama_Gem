@@ -50,8 +50,8 @@ column_options =
 
 <%= gen_slickgrid(@locks, column_options, {
         :caption => "Kaskade der auslösenden Blocker am #{@snapshot_timestamp} für SID=#{@sid}, SerialNo=#{@serialno}",
-        :max_height => 450
+        :max_height => 450,
+        show_pin_icon: 1,
+        update_area:   @update_area
 }) %>
 
-<div id="<%= @update_area %>" style="clear: both;">
-</div>

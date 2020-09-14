@@ -111,6 +111,7 @@ module SlickgridHelper
     output << "\n  show_pin_icon:           #{global_options[:show_pin_icon]},"    if global_options[:show_pin_icon]
     output << "\n  show_y_axes:             #{global_options[:show_y_axes]},"
     output << "\n  top_level_container_id:  'content_for_layout',"
+    output << "\n  update_area:             '#{global_options[:update_area]}',"    if global_options[:update_area]
     output << "\n  width:                   '#{global_options[:width].to_s}',"
     output << "\n}"
     output
@@ -179,6 +180,7 @@ module SlickgridHelper
   #     :plot_area_id         => div für Anzeige des Diagrammes (überschreibt Default hinter table)
   #     :show_pin_icon        => Show pin icon at right header box to prevent grid from being overwritten by parent refresh: 0..n for number of parents to step up in DOM until moving content to new div
   #     :show_y_axes          => Anzeige der y-Achsen links im Diagramm? (true|false)
+  #     :update_area          => Render target DIV for links within Slickgrid container. Ensures that pinned grids will preserve the link target
   #     :width                => Weite der Tabelle (Default="100%", :auto=nicht volle Breite)
 
   def gen_slickgrid(data, column_options, global_options={})

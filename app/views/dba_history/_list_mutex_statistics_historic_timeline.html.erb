@@ -26,9 +26,8 @@
 
 <%= gen_slickgrid(@mutexes, column_options, {
       :caption => "Mutex Timeline zwischen #{@time_selection_start} und #{@time_selection_end}#{" für Instance=#{@instance}" if @instance}",
-      :max_height => 450, show_pin_icon: 1
+      :max_height => 450, show_pin_icon: 1,
+      update_area: @update_area
 }) %>
 
 
-<div id="<%= @update_area %>">
-</div>

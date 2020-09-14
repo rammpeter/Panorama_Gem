@@ -12,8 +12,9 @@
                   {:caption=>"Session-statistics from gv$SessStat for Instance=#{@instance} , SID=#{@sid},<br/> 0-values are suppressed in listing",
                    max_height: 450,
                    :width=>:auto,
-                   show_pin_icon: 1
+                   show_pin_icon: 1,
+                   update_area: @update_area
                   }
 )%>
 
-<div id="<%= @update_area%>"></div>
+

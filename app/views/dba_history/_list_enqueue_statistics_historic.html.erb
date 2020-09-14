@@ -1,4 +1,6 @@
 <%
+  @update_area = get_unique_area_id
+
   def link_column(rec, value)
     ajax_link(value, {
                           :action          => :list_enqueue_statistics_historic_details,
@@ -8,7 +10,7 @@
                           :description     => rec.req_description,
                           :min_snap_id     => rec.min_snap_id,
                           :max_snap_id     => rec.max_snap_id,
-                          :update_area     => :list_enqueue_statistics_historic_detail_area
+                          :update_area     => @update_area
                          },
                   :title=>"List single samples of enqueue event")
   end
@@ -34,9 +36,6 @@
 
 <%= gen_slickgrid(@enqueues, column_options, {
         :caption => "Enqueue-History between #{@time_selection_start} and #{@time_selection_end}#{" for Instance=#{@instance}" if @instance}",
-        :max_height => 450, show_pin_icon: 1
+        :max_height => 450, show_pin_icon: 1,
+        update_area: @update_area
 }) %>
-
-
-<div id="list_enqueue_statistics_historic_detail_area" style="float:left; width:100%;">
-</div>

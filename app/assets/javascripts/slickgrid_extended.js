@@ -130,6 +130,10 @@ function SlickGridExtended(container_id, options){
             this.gridContainer.after('<div id="' + options['plot_area_id'] + '"></div>');
         }
 
+        if (options['update_area']){
+            this.gridContainer.after('<div id="' + options['update_area'] + '"></div>');
+        }
+
         this.grid = new Slick.Grid(this.gridContainer, dataView, viewable_columns, options);
 
         this.gridContainer
@@ -1432,6 +1436,10 @@ function SlickGridExtended(container_id, options){
     this.pin_grid = function(pin_at_toplevel){
         if (!options['top_level_container_id']){
             throw "Value for SlickGridExtended-option 'top_level_container_id' ist needed to process pin_grid"
+        }
+
+        if (options['update_area']){
+            jQuery('#'+ options['update_area']).html('');
         }
 
         var grid_parent = thiz.gridContainer.parent();

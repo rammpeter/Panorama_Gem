@@ -2,14 +2,18 @@
 
 
 <%= ajax_form(:controller  => :active_session_history,
-                             :action      => :list_blocking_locks_historic,
+                             :action      => :fork_blocking_locks_historic_call,
                              :update_area => :show_blocking_locks_detail_area
                      ) do %>
   <div class="flex-row-container">
     <%= include_start_end_timepicker %>
 
     <div class="flex-row-element">
-      <%= submit_tag(t(:active_session_history_show_blocking_locks_submit_caption, :default=>"Show blocking locks"), :title => t(:active_session_history_show_blocking_locks_submit_hint, :default=>"Show blocking locks history")) %>
+      <%= submit_tag('Blocking locks session dependency tree', title: "Show blocking locks history starting with root blocker", id: :session_dependency) %>
+    </div>
+
+    <div class="flex-row-element">
+      <%= submit_tag('Blocking locks event dependency', title: "Show blocking locks history aggregated by event dependency", id: :event_dependency ) %>
     </div>
   </div>
 <% end %>

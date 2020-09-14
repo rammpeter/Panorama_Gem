@@ -17,8 +17,9 @@
     :caption =>  "Pending two-phase commit neighbors (DBA_2PC_Neighbors) for local transaction id = '#{@local_tran_id}'",
     :max_height=>450,
     width: :auto,
-    show_pin_icon: 1
+    show_pin_icon: 1,
+    update_area:   @update_area
+
 })
 %>
 
-<div id="<%= @update_area %>"></div>

@@ -10,8 +10,8 @@
 
 <%= gen_slickgrid(@tables, column_options, {
     :caption => "Tables of cluster #{@owner}.#{@cluster_name}",
-    :height => :auto
+    :height => :auto,
+    update_area: @update_area
 })
 %>
 
-<div id="<%= @update_area %>"></div>

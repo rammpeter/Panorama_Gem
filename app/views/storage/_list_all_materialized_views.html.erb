@@ -107,7 +107,8 @@ column_options.concat [
 <%= gen_slickgrid(@mvs, column_options, {
         :max_height => 450,
         :caption => "Data from DBA_MViews#{" (without remote MViews via DB-link)" unless @called_from_object_description}#{" refresh group=#{@refresh_group}" if @refresh_group}",
-        show_pin_icon: 1
+        show_pin_icon: 1,
+        update_area: @update_area
 }) %>
 
-<div id="<%= @update_area %>"></div>
+

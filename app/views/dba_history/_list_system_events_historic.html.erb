@@ -1,4 +1,5 @@
 <%
+  @update_area = get_unique_area_id
 
    def link_column(result, value)
      ajax_link(value, {
@@ -10,7 +11,7 @@
                :time_selection_end   => @time_selection_end,
                :min_snap_id=> result.min_snap_id,
                :max_snap_id=> result.max_snap_id,
-               :update_area=> :list_system_events_historic_detail_area
+               :update_area=> @update_area
              },
       :title=>"Show single snapshots of event in considered period")
    end
@@ -36,11 +37,10 @@
 
 <%= gen_slickgrid(@events, column_options, {
         :caption => "System-Events from #{@time_selection_start} until #{@time_selection_end}#{" for instance #{@instance}" if @instance}",
-        :max_height => 450
-
+        :max_height => 450,
+        show_pin_icon: 1,
+        update_area: @update_area
 })
 %>
 
-<div id="list_system_events_historic_detail_area" style="float:left; width:100%; ">
-</div>
 

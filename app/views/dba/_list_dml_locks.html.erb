@@ -101,14 +101,7 @@
 <%= gen_slickgrid(@dml_locks, column_options, {
         :caption =>  "DML Database locks (from GV$Lock)",
         :max_height=>450,
-        show_pin_icon: 1
-    })
+        show_pin_icon: 1,
+        update_area:   @update_area
+})
 %>
-
-<br/>
-<b>
-<%= t(:dba_list_dml_locks_cancelled, :default=>'Listing cancelled after %{max_result_size} rows, result has %{result_size} rows in total', :max_result_size=>@max_result_size, :result_size=>@result_size) if @result_size > @max_result_size %>
-</b>
-
-<div id="<%= @update_area %>">
-</div>

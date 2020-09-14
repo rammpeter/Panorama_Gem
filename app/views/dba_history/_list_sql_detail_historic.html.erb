@@ -140,9 +140,9 @@ end
 <% if get_db_version >= '11.1' &&  (@sql.force_matching_signature || @exact_matching_signature) %>
   <%=
     render_async(:dba_sga, :show_sql_patches, {
-        force_matching_signature: @sql.force_matching_signature,
-        exact_matching_signature: @exact_matching_signature,
-        update_area:              @update_area
+        force_signature: @sql.force_matching_signature,
+        exact_signature: @exact_matching_signature,
+        update_area:     @update_area
     })
   %>
 <% end %>

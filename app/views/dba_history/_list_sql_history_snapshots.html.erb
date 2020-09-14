@@ -110,18 +110,11 @@ caption << (ajax_form(:controller => :dba_history, :action        => :list_sql_h
 end)
 caption << "</div>"
 
-
-gen_slickgrid(@hist, column_options, {  :plot_area_id => "#{@update_area}_plot_area",
-                                        :div_style   => "float:left; width:100%; max-height:450px; overflow:scroll;",
-                                        :caption     => caption.html_safe,
-                                        :max_height  => 450, show_pin_icon: 1
+gen_slickgrid(@hist, column_options, {  :caption     => caption.html_safe,
+                                        :max_height  => 450, show_pin_icon: 1,
+                                        update_area: @update_area
                                      })
 %>
-
-<div id="<%= @update_area %>_plot_area"></div>
-
-
-<div id="<%= @update_area %>"></div>
 
 <script type="text/javascript">
     $("#<%= @time_selection_start_id %>").datetimepicker();

@@ -33,7 +33,7 @@
   gen_slickgrid(@binds, column_options, {
       :caption => "#{t(:dba_history_list_sql_detail_historic_binds_caption, :default=>'Last captured bind variables')} SQL-ID='#{@sql_id}'",
       :max_height => 450,
-      :width => :auto, show_pin_icon: 1
+      :width => :auto, show_pin_icon: 1,
+      update_area: @update_area
   }) %>
 
-<div id="<%= @update_area %>"></div>
