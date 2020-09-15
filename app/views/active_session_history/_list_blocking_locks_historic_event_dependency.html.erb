@@ -25,7 +25,7 @@
           {caption: 'Max. ms per wait',       data: proc{|rec| fn(rec.max_seconds_in_wait*1000, 2) },   title: 'Maximum time in milliseconds a waiting session spent since start of last wait', align: :right },
       ]
 
-  caption = 'Event combinations for waiting and blocking sessions'
+  caption = "Event combinations for waiting and blocking sessions between #{@time_selection_start} and #{@time_selection_end}"
 %>
 
 

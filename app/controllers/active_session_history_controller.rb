@@ -441,8 +441,11 @@ class ActiveSessionHistoryController < ApplicationController
   end
 
   def fork_blocking_locks_historic_call
-    list_blocking_locks_historic                    if params[:commit] == 'Blocking locks session dependency tree'
-    list_blocking_locks_historic_event_dependency   if params[:commit] == 'Blocking locks event dependency'
+    case params[:commit]
+    when 'Blocking locks session dependency tree' then list_blocking_locks_historic
+    when 'Blocking locks event dependency' then list_blocking_locks_historic_event_dependency
+    else raise "fork_blocking_locks_historic_call: No action configured for button '#{params[:commit]}'"
+    end
   end
 
   def list_blocking_locks_historic
@@ -612,6 +615,7 @@ class ActiveSessionHistoryController < ApplicationController
     render_partial :list_blocking_locks_historic
   end
 
+  private
   def blocking_locks_historic_event_with_selection(dbid, start_time, end_time)
     min_snap_id, max_snap_id = get_min_max_snap_ids(start_time, end_time, dbid)
     sql = "WITH /* Panorama-Tool Ramm */
@@ -644,6 +648,7 @@ class ActiveSessionHistoryController < ApplicationController
     "
     return sql, [dbid, min_snap_id, max_snap_id, start_time, end_time, start_time, end_time]
   end
+  public
 
   def list_blocking_locks_historic_event_dependency
     @dbid = prepare_param_dbid

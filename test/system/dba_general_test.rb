@@ -69,9 +69,15 @@ class DbaGeneralTest < ApplicationSystemTestCase
 
     fill_in('time_selection_start_default', with: @time_selection_start)
     fill_in('time_selection_end_default',   with: @time_selection_end)
-    page.click_button 'Show blocking locks'
+
+    page.click_button 'Blocking locks session dependency tree'
     unless assert_ajax_success_and_test_for_access_denied(300)                  # May last a bit longer
       assert_text 'Blocking locks between'
+    end
+
+    page.click_button 'Blocking locks event dependency'
+    unless assert_ajax_success_and_test_for_access_denied(300)                  # May last a bit longer
+      assert_text 'Event combinations for waiting and blocking sessions'
     end
   end
 
