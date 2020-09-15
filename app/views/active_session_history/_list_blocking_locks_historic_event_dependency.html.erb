@@ -1,0 +1,33 @@
+<%
+  @update_area = get_unique_area_id
+
+  link_blocking_sessions = proc do |rec|
+    "<&nbsp;#{fn(rec.blocking_sessions)}&nbsp;>".html_safe
+  end
+
+  link_waiting_sessions = proc do |rec|
+    "<&nbsp;#{fn(rec.waiting_sessions)}&nbsp;>".html_safe
+  end
+
+  column_options =
+      [
+          {caption: 'Blocking event',         data: proc{|rec| rec.blocking_event },              title: 'Event of sessions that are blocking other sessions', data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.blocking_event)}"} },
+          {caption: 'Blocking sessions',      data: link_blocking_sessions,                       title: 'Number of distinct sessions (Instance, SID, Serial#) that are blocking other sessions', align: :right },
+          {caption: 'Blocking active (sec.)', data: proc{|rec| fn(rec.blocking_active_seconds) }, title: 'Number of seconds blocking sessions have been active (or blocked themself)', align: :right },
+          {caption: 'Waiting event',          data: proc{|rec| rec.waiting_event },               title: 'Event of sessions that are blocked by other sessions', data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.waiting_event)}"} },
+          {caption: 'Waiting sessions',       data: link_waiting_sessions,                        title: 'Number of distinct sessions (Instance, SID, Serial#) that are blocked by other sessions', align: :right },
+          {caption: 'Waiting active (sec.)',  data: proc{|rec| fn(rec.waiting_active_seconds) },  title: 'Number of seconds waiting sessions have been blocked by blocking sessions', align: :right, show_pct_hint: true, show_pct_background: true},
+      ]
+
+  caption = 'Event combinations for waiting and blocking sessions'
+%>
+
+
+
+<%= gen_slickgrid(@event_locks, column_options, {
+    :caption  => caption,
+    :max_height => 450,
+    show_pin_icon: 1,
+    update_area:   @update_area
+}) %>
+

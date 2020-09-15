@@ -612,7 +612,78 @@ class ActiveSessionHistoryController < ApplicationController
     render_partial :list_blocking_locks_historic
   end
 
+  def blocking_locks_historic_event_with_selection(dbid, start_time, end_time)
+    min_snap_id, max_snap_id = get_min_max_snap_ids(start_time, end_time, dbid)
+    sql = "WITH /* Panorama-Tool Ramm */
+           TSSel AS (SELECT /*+ NO_MERGE MATERIALIZE */ h.*, h.Time_Waited/1000000 Seconds_in_Wait
+                     FROM   (
+                              SELECT 10 Sample_Cycle,
+                                     /* auf 10 Sekunden genau gerundete Zeit */
+                                     TRUNC(h.Sample_Time+INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(h.Sample_Time+INTERVAL '5' SECOND, 'SS'))/10)/8640  Rounded_Sample_Time,
+                                     Snap_ID, h.Instance_Number, Session_ID, Session_Serial#,
+                                     Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, Current_File#, Current_Block#,
+                                     #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
+                                     p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Session_State, Module, Action, Program
+                              FROM   DBA_Hist_Active_Sess_History h
+                              LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = h.Instance_Number
+                              WHERE  (v.Min_Sample_Time IS NULL OR h.Sample_Time < v.Min_Sample_Time)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen  */
+                              AND    h.DBID = ?
+                              AND    h.Snap_ID BETWEEN ? AND ?
+                              AND    h.Sample_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+                              UNION ALL
+                              SELECT 1 Sample_Cycle,
+                                     CAST(Sample_Time + INTERVAL '0.5' SECOND AS DATE) Rounded_Sample_Time, /* auf eine Sekunde genau gerundete Zeit */
+                                     NULL Snap_ID, h.Inst_ID Instance_Number, Session_ID, Session_Serial#,
+                                     Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, Current_File#, Current_Block#,
+                                     #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
+                                     p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Session_State, Module, Action, Program
+                              FROM   gv$Active_Session_History h
+                              WHERE  Sample_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+                            ) h
+                    )
+    "
+    return sql, [dbid, min_snap_id, max_snap_id, start_time, end_time, start_time, end_time]
+  end
+
   def list_blocking_locks_historic_event_dependency
+    @dbid = prepare_param_dbid
+    save_session_time_selection
+    get_min_max_snap_ids(@time_selection_start, @time_selection_end, @dbid)
+
+    with_sql, with_bindings = blocking_locks_historic_event_with_selection(@dbid, @time_selection_start, @time_selection_end)
+
+    @event_locks = sql_select_iterator ["\
+        #{with_sql}
+        SELECT Blocking_Event,
+               Waiting_Event,
+               COUNT(DISTINCT Blocking_Instance||','||Blocking_Session_ID||','||Blocking_Session_Serial#)   Blocking_Sessions,
+               COUNT(DISTINCT Waiting_Instance||','||Waiting_Session_ID||','||Waiting_Session_Serial#)     Waiting_Sessions,
+               SUM(Blocking_Active_Seconds)                                         Blocking_Active_Seconds,
+               SUM(Waiting_Active_Seconds)                                          Waiting_Active_Seconds
+        FROM   (SELECT /*+ NO_MERGE */
+                       CASE WHEN waiters.Blocking_Session_Status = 'GLOBAL'
+                       THEN 'GLOBAL (other RAC instance)'
+                       ELSE NVL(NVL(blockers.Event, blockers.Session_State), 'IDLE')
+                       END                                                                  Blocking_Event,
+                       NVL(NVL(waiters.Event,  waiters.Session_State),  'UNKNOWN')          Waiting_Event,
+                       blockers.Sample_Cycle                                                Blocking_Active_Seconds,
+                       waiters.Sample_Cycle                                                 Waiting_Active_Seconds,
+                       waiters.Blocking_Inst_ID                                             Blocking_Instance,
+                       waiters.Instance_Number                                              Waiting_Instance,
+                       waiters.Blocking_Session                                             Blocking_Session_ID,
+                       waiters.Session_ID                                                   Waiting_Session_ID,
+                       waiters.Blocking_Session_Serial#                                     Blocking_Session_Serial#,
+                       waiters.Session_Serial#                                              Waiting_Session_Serial#
+                FROM   tsSel waiters
+                LEFT OUTER JOIN tsSel blockers ON blockers.Instance_Number = waiters.Blocking_Inst_ID AND blockers.Session_ID = waiters.Blocking_Session
+                                               AND blockers.Session_Serial# = waiters.Blocking_Session_Serial# AND blockers.Rounded_Sample_Time = waiters.Rounded_Sample_Time
+                WHERE  waiters.Blocking_Session_Status IN ('VALID', 'GLOBAL') /* Session wartend auf Blocking-Session */
+               )
+        GROUP BY Blocking_Event, Waiting_Event
+        ORDER BY Waiting_Active_Seconds DESC
+       "].concat(with_bindings)
+
+
     render_partial :list_blocking_locks_historic_event_dependency
   end
 
