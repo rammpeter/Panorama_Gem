@@ -11,12 +11,18 @@
 
   column_options =
       [
-          {caption: 'Blocking event',         data: proc{|rec| rec.blocking_event },              title: 'Event of sessions that are blocking other sessions', data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.blocking_event)}"} },
-          {caption: 'Blocking sessions',      data: link_blocking_sessions,                       title: 'Number of distinct sessions (Instance, SID, Serial#) that are blocking other sessions', align: :right },
-          {caption: 'Blocking active (sec.)', data: proc{|rec| fn(rec.blocking_active_seconds) }, title: 'Number of seconds blocking sessions have been active (or blocked themself)', align: :right },
-          {caption: 'Waiting event',          data: proc{|rec| rec.waiting_event },               title: 'Event of sessions that are blocked by other sessions', data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.waiting_event)}"} },
-          {caption: 'Waiting sessions',       data: link_waiting_sessions,                        title: 'Number of distinct sessions (Instance, SID, Serial#) that are blocked by other sessions', align: :right },
-          {caption: 'Waiting active (sec.)',  data: proc{|rec| fn(rec.waiting_active_seconds) },  title: 'Number of seconds waiting sessions have been blocked by blocking sessions', align: :right, show_pct_hint: true, show_pct_background: true},
+          {caption: 'Blocking event',         data: proc{|rec| rec.blocking_event },                    title: 'Event of sessions that are blocking other sessions', data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.blocking_event)}"} },
+          {caption: 'Blocking sessions',      data: link_blocking_sessions,                             title: 'Number of distinct sessions (Instance, SID, Serial#) that are blocking other sessions', align: :right },
+          {caption: 'Blocking active (sec.)', data: proc{|rec| fn(rec.blocking_active_seconds) },       title: 'Total number of seconds all blocking sessions have been active (or blocked themself)', align: :right },
+          {caption: 'Waiting event',          data: proc{|rec| rec.waiting_event },                     title: 'Event of sessions that are blocked by other sessions', data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.waiting_event)}"} },
+          {caption: 'Waiting sessions',       data: link_waiting_sessions,                              title: 'Number of distinct sessions (Instance, SID, Serial#) that are blocked by other sessions', align: :right },
+          {caption: 'Waiting active (sec.)',  data: proc{|rec| fn(rec.waiting_active_seconds) },        title: 'Total number of seconds all waiting sessions have been blocked by blocking sessions', align: :right, show_pct_hint: true, show_pct_background: true},
+          {caption: 'First ASH sample',       data: proc{|rec| localeDateTime(rec.first_occurrence) },  title: 'First occurrence of ASH sample for blocked waiting session'},
+          {caption: 'Last ASH sample',        data: proc{|rec| localeDateTime(rec.last_occurrence) },   title: 'Last occurrence of ASH sample for blocked waiting session'},
+          {caption: 'Avg. waiting sessions',  data: proc{|rec| fn(rec.avg_waiting_sessions, 1) },       title: 'Average number of waiting sessions between first and last occurrence of ASH sample', align: :right },
+          {caption: 'Avg. ms per wait',       data: proc{|rec| fn(rec.avg_seconds_in_wait*1000, 2) },   title: 'Average time in milliseconds the waiting sessions spent since start of last wait', align: :right },
+          {caption: 'Min. ms per wait',       data: proc{|rec| fn(rec.min_seconds_in_wait*1000, 2) },   title: 'Minimum time in milliseconds a waiting session spent since start of last wait', align: :right },
+          {caption: 'Max. ms per wait',       data: proc{|rec| fn(rec.max_seconds_in_wait*1000, 2) },   title: 'Maximum time in milliseconds a waiting session spent since start of last wait', align: :right },
       ]
 
   caption = 'Event combinations for waiting and blocking sessions'

@@ -654,32 +654,43 @@ class ActiveSessionHistoryController < ApplicationController
 
     @event_locks = sql_select_iterator ["\
         #{with_sql}
-        SELECT Blocking_Event,
-               Waiting_Event,
-               COUNT(DISTINCT Blocking_Instance||','||Blocking_Session_ID||','||Blocking_Session_Serial#)   Blocking_Sessions,
-               COUNT(DISTINCT Waiting_Instance||','||Waiting_Session_ID||','||Waiting_Session_Serial#)     Waiting_Sessions,
-               SUM(Blocking_Active_Seconds)                                         Blocking_Active_Seconds,
-               SUM(Waiting_Active_Seconds)                                          Waiting_Active_Seconds
-        FROM   (SELECT /*+ NO_MERGE */
-                       CASE WHEN waiters.Blocking_Session_Status = 'GLOBAL'
-                       THEN 'GLOBAL (other RAC instance)'
-                       ELSE NVL(NVL(blockers.Event, blockers.Session_State), 'IDLE')
-                       END                                                                  Blocking_Event,
-                       NVL(NVL(waiters.Event,  waiters.Session_State),  'UNKNOWN')          Waiting_Event,
-                       blockers.Sample_Cycle                                                Blocking_Active_Seconds,
-                       waiters.Sample_Cycle                                                 Waiting_Active_Seconds,
-                       waiters.Blocking_Inst_ID                                             Blocking_Instance,
-                       waiters.Instance_Number                                              Waiting_Instance,
-                       waiters.Blocking_Session                                             Blocking_Session_ID,
-                       waiters.Session_ID                                                   Waiting_Session_ID,
-                       waiters.Blocking_Session_Serial#                                     Blocking_Session_Serial#,
-                       waiters.Session_Serial#                                              Waiting_Session_Serial#
-                FROM   tsSel waiters
-                LEFT OUTER JOIN tsSel blockers ON blockers.Instance_Number = waiters.Blocking_Inst_ID AND blockers.Session_ID = waiters.Blocking_Session
-                                               AND blockers.Session_Serial# = waiters.Blocking_Session_Serial# AND blockers.Rounded_Sample_Time = waiters.Rounded_Sample_Time
-                WHERE  waiters.Blocking_Session_Status IN ('VALID', 'GLOBAL') /* Session wartend auf Blocking-Session */
-               )
-        GROUP BY Blocking_Event, Waiting_Event
+        SELECT b.*,
+               Waiting_Active_Seconds / ((Last_Occurrence - First_Occurrence) *86400 + 1 )   Avg_Waiting_Sessions
+        FROM   (
+                SELECT Blocking_Event,
+                       Waiting_Event,
+                       COUNT(DISTINCT Blocking_Instance||','||Blocking_Session_ID||','||Blocking_Session_Serial#)   Blocking_Sessions,
+                       COUNT(DISTINCT Waiting_Instance||','||Waiting_Session_ID||','||Waiting_Session_Serial#)     Waiting_Sessions,
+                       SUM(Blocking_Active_Seconds)                                         Blocking_Active_Seconds,
+                       SUM(Waiting_Active_Seconds)                                          Waiting_Active_Seconds,
+                       MIN(Waiting_Rounded_Sample_Time)                                     First_Occurrence,
+                       MAX(Waiting_Rounded_Sample_Time)                                     Last_Occurrence,
+                       MIN(Seconds_In_Wait)                                                 Min_Seconds_In_Wait,
+                       MAX(Seconds_In_Wait)                                                 Max_Seconds_In_Wait,
+                       AVG(Seconds_In_Wait)                                                 Avg_Seconds_In_Wait
+                FROM   (SELECT /*+ NO_MERGE */
+                               CASE WHEN waiters.Blocking_Session_Status = 'GLOBAL'
+                               THEN 'GLOBAL (other RAC instance)'
+                               ELSE NVL(NVL(blockers.Event, blockers.Session_State), 'IDLE')
+                               END                                                                  Blocking_Event,
+                               NVL(NVL(waiters.Event,  waiters.Session_State),  'UNKNOWN')          Waiting_Event,
+                               blockers.Sample_Cycle                                                Blocking_Active_Seconds,
+                               waiters.Sample_Cycle                                                 Waiting_Active_Seconds,
+                               waiters.Blocking_Inst_ID                                             Blocking_Instance,
+                               waiters.Instance_Number                                              Waiting_Instance,
+                               waiters.Blocking_Session                                             Blocking_Session_ID,
+                               waiters.Session_ID                                                   Waiting_Session_ID,
+                               waiters.Blocking_Session_Serial#                                     Blocking_Session_Serial#,
+                               waiters.Session_Serial#                                              Waiting_Session_Serial#,
+                               waiters.Rounded_Sample_Time                                          Waiting_Rounded_Sample_Time,
+                               waiters.Time_Waited/1000000                                          Seconds_in_Wait
+                        FROM   tsSel waiters
+                        LEFT OUTER JOIN tsSel blockers ON blockers.Instance_Number = waiters.Blocking_Inst_ID AND blockers.Session_ID = waiters.Blocking_Session
+                                                       AND blockers.Session_Serial# = waiters.Blocking_Session_Serial# AND blockers.Rounded_Sample_Time = waiters.Rounded_Sample_Time
+                        WHERE  waiters.Blocking_Session_Status IN ('VALID', 'GLOBAL') /* Session wartend auf Blocking-Session */
+                       )
+                GROUP BY Blocking_Event, Waiting_Event
+               ) b
         ORDER BY Waiting_Active_Seconds DESC
        "].concat(with_bindings)
 
