@@ -232,15 +232,15 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
       end
 
       if management_pack_license == :none
-        allowed_msg_content <<  'because of missing license for '       # Access denied on table
+        allowed_msg_content <<  'because of missing license for '               # Access denied on table
       end
 
       raise_error = true
       error_dialog = page.first(:css, '#error_dialog')
       allowed_msg_content.each do |amc|
-        if error_dialog.text[amc]                           # No error if dialog contains any of the strings
+        if error_dialog.text[amc]                                               # No error if dialog contains any of the strings
           raise_error = false
-          click_button('Close')                                                 # Close the error dialog to ensure next actions may see the target
+          click_button('#error_dialog_close_button')                            # Close the error dialog to ensure next actions may see the target
         end
       end
 
