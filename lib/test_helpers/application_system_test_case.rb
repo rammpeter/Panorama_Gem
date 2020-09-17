@@ -238,7 +238,10 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
       raise_error = true
       error_dialog = page.first(:css, '#error_dialog')
       allowed_msg_content.each do |amc|
-        raise_error = false if error_dialog.text[amc]                           # No error if dialog contains any of the strings
+        if error_dialog.text[amc]                           # No error if dialog contains any of the strings
+          raise_error = false
+          click_button('Close')                                                 # Close the error dialog to ensure next actions may see the target
+        end
       end
 
       assert(!raise_error, "ApplicationSystemTestCase.assert_ajax_success_or_access_denied: Error dialog raised but not because missing management pack license.\nmanagement_pack_license = #{management_pack_license} (#{management_pack_license.class})\nError dialog:\n#{error_dialog.text}")
