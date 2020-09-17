@@ -248,13 +248,14 @@
 
 <%=
     @hidden_link_timeline_id = get_unique_area_id
+    @timechart_area          = get_unique_area_id
 
     context_menu_entries = []
     command_menu_entries = [get_recall_params_info_for_render_page_caption]
 
     def create_context_menu_entry(seconds, context_menu_entries, command_menu_entries, icon_class)
-      label   = t(:active_session_history_show_top_ten, :sec=>seconds, :default=>"Show Top 10 in time line, condensed by %{sec} seconds")
-      hint    = t(:active_session_history_show_top_ten_hint, :sec=>seconds, :default=>"Show Top 10 ordered by total time waited in time line, each point in graph for sum over %{sec} seconds")
+      label   = t(:active_session_history_show_top_ten, :sec=>seconds, :default=>"Show Top 10 in time chart, condensed by %{sec} seconds")
+      hint    = t(:active_session_history_show_top_ten_hint, :sec=>seconds, :default=>"Show Top 10 ordered by total time waited in time chart, each point in graph for sum over %{sec} seconds")
       action  = "$('##{@hidden_link_timeline_id}_#{seconds}').click();"
 
       context_menu_entries << {
@@ -286,8 +287,9 @@
                        :max_height => 450,
                        :context_menu_entries => context_menu_entries,
                        :command_menu_entries => command_menu_entries,
-                       show_pin_icon: 1,
-                       update_area:   @update_area
+                       show_pin_icon:       1,
+                       direct_update_area:  @timechart_area,
+                       update_area:         @update_area
                   }
                   )
 
@@ -300,7 +302,7 @@
                              :groupfilter   => @groupfilter,
                              :groupby       => @groupby,
                              :group_seconds => group_seconds,
-                             :update_area   => "#{@update_area}_timeline"
+                             :update_area   => @timechart_area
                             },
                     :style=>"display:none",
                     :id=>"#{@hidden_link_timeline_id}_#{group_seconds}"
@@ -312,10 +314,6 @@
 <%= @link_timeline.call(60) %>
 <%= @link_timeline.call(10) %>
 <%= @link_timeline.call( 1) %>
-
-
-<div id="<%= @update_area %>_timeline" style="float:left; width:100%; "></div>
-
 
 <script type="text/javascript">
     $("#<%= @time_selection_start_id %>").datetimepicker();

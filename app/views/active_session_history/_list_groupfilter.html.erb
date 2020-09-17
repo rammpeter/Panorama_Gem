@@ -24,6 +24,7 @@
 
     @caption = ""
     @caption << (ajax_form(:controller => :active_session_history, :action        => :refresh_time_selection,
+                                additional_join: defined?(@additional_join) ? @additional_join : nil,   # Possibley defined additional join SQL
                                 :groupby       => @groupby,                     # Gruppierungskriterium für einen Dialog
                                 :groupfilter   => @strip_groupfilter.call,       # Groupfilter des letzten Aufrufes wiederverwenden, reduziert um Fehlerquellen
                                 :update_area   => params[:update_area],         # Update_area des letzten Aufrufes wiederverwenden

@@ -154,6 +154,24 @@ class ActiveSessionHistoryController < ApplicationController
 
   # Anlisten der Einzel-Records eines Gruppierungskriteriums
   def list_session_statistic_historic_single_record
+
+    # additional SQL needed for Joining
+    additional_join = ''                                                        # Default if not needed
+    if params[:groupfilter][:Blocking_Event]
+      if params[:groupfilter][:Blocking_Event] == 'IDLE'
+        left_outer_join = true
+        params[:groupfilter][:Blocking_Event] = ''
+      else
+        left_outer_join = false
+      end
+
+      additional_join = "\
+      #{left_outer_join ? 'LEFT OUTER' : ''} JOIN ash blocking
+      ON blocking.Instance_Number = s.Blocking_Inst_ID AND blocking.Session_ID = s.Blocking_Session
+         AND blocking.Session_Serial_No = s.Blocking_Session_Serial_No AND blocking.Rounded_Sample_Time = s.Rounded_Sample_Time
+    "
+    end
+
     where_from_groupfilter(params[:groupfilter], nil)
     @dbid = params[:groupfilter][:DBID]        # identische DBID verwenden wie im groupfilter bereits gesetzt
 
@@ -166,14 +184,14 @@ class ActiveSessionHistoryController < ApplicationController
       @time_groupby = :hour if record_count > 1000
     end
 
-    case @time_groupby.to_sym
-      when :single    then group_by_value = "s.Sample_ID, s.Instance_Number, s.Session_ID"         # Direkte Anzeige der Snapshots
-      when :second    then group_by_value = "TO_NUMBER(TO_CHAR(s.Sample_Time, 'DDD')) * 86400 + TO_NUMBER(TO_CHAR(s.Sample_Time, 'SSSSS'))"
-      when :second10  then group_by_value = "TO_NUMBER(TO_CHAR(s.Sample_Time, 'DDD')) * 8640 + TRUNC(TO_NUMBER(TO_CHAR(s.Sample_Time, 'SSSSS'))/10)"
-      when :minute    then group_by_value = "TRUNC(s.Sample_Time, 'MI')"
-      when :hour      then group_by_value = "TRUNC(s.Sample_Time, 'HH24')"
-      when :day       then group_by_value = "TRUNC(s.Sample_Time)"
-      when :week      then group_by_value = "TRUNC(s.Sample_Time) + INTERVAL '7' DAY"
+    group_by_value = case @time_groupby.to_sym
+      when :single    then "s.Sample_ID, s.Instance_Number, s.Session_ID"         # Direkte Anzeige der Snapshots
+      when :second    then "TO_NUMBER(TO_CHAR(s.Sample_Time, 'DDD')) * 86400 + TO_NUMBER(TO_CHAR(s.Sample_Time, 'SSSSS'))"
+      when :second10  then "TO_NUMBER(TO_CHAR(s.Sample_Time, 'DDD')) * 8640 + TRUNC(TO_NUMBER(TO_CHAR(s.Sample_Time, 'SSSSS'))/10)"
+      when :minute    then "TRUNC(s.Sample_Time, 'MI')"
+      when :hour      then "TRUNC(s.Sample_Time, 'HH24')"
+      when :day       then "TRUNC(s.Sample_Time)"
+      when :week      then "TRUNC(s.Sample_Time) + INTERVAL '7' DAY"
       else
         raise "Unsupported value for parameter :groupby (#{@time_groupby})"
     end
@@ -182,16 +200,25 @@ class ActiveSessionHistoryController < ApplicationController
       rec['sql_operation'] = translate_opcode(rec.sql_opcode)
     }
 
-
     # Mysteriös: LEFT OUTER JOIN per s.Current_Obj# funktioniert nicht gegen ALL_Objects, wenn s.PLSQL_Entry_Object_ID != NULL
     @sessions= sql_select_iterator(["\
-      WITH procs AS (SELECT /*+ NO_MERGE */ Object_ID, SubProgram_ID, Object_Type, Owner, Object_Name, Procedure_name FROM DBA_Procedures)
+      WITH procs AS (SELECT /*+ NO_MERGE */ Object_ID, SubProgram_ID, Object_Type, Owner, Object_Name, Procedure_name FROM DBA_Procedures),
+           ash AS  (SELECT /*+ NO_MERGE MATERIALIZE ORDERED */
+                           10 Sample_Cycle, Instance_Number, #{rounded_sample_time_sql(10, 's.Sample_Time')} Rounded_Sample_Time, #{get_ash_default_select_list}
+                    FROM   DBA_Hist_Active_Sess_History s
+                    LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
+                    WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen */
+                    #{@dba_hist_where_string}
+                    UNION ALL
+                    SELECT /*+ NO_MERGE */ 1 Sample_Cycle, Inst_ID Instance_Number, #{rounded_sample_time_sql(1)} Rounded_Sample_Time,#{get_ash_default_select_list}
+                    FROM   gv$Active_Session_History
+                   )
       SELECT /*+ ORDERED USE_HASH(u sv f) Panorama-Tool Ramm */
-             MIN(Sample_Time)       Start_Sample_Time,
-             MAX(Sample_Time)       End_Sample_Time,
-             COUNT(*)               Sample_Count,
-             AVG(s.Sample_Cycle)    Sample_Cycle,
-             SUM(Sample_Cycle)      Wait_Time_Seconds_Sample,
+             MIN(s.Sample_Time)       Start_Sample_Time,
+             MAX(s.Sample_Time)       End_Sample_Time,
+             COUNT(*)                 Sample_Count,
+             AVG(s.Sample_Cycle)      Sample_Cycle,
+             SUM(s.Sample_Cycle)      Wait_Time_Seconds_Sample,
              #{ single_record_distinct_sql('s.Instance_Number') },
              #{"#{ single_record_distinct_sql('s.Con_ID') }," if get_current_database[:cdb]}
              #{ single_record_distinct_sql('s.Sample_ID') },
@@ -268,25 +295,16 @@ class ActiveSessionHistoryController < ApplicationController
              #{ single_record_distinct_sql('po.Object_Type',      'PO_Object_Type') },
              #{ single_record_distinct_sql('sv.Service_Name') },
              #{" #{ single_record_distinct_sql('s.QC_Session_Serial#', 'QC_Session_SerialNo') },
-                 SUM(TM_Delta_CPU_Time_Secs * Sample_Cycle / TM_Delta_Time_Secs) TM_CPU_Time_Secs_Sample_Cycle,  /* CPU-Time innerhalb des Sample-Cycle */
-                 SUM(TM_Delta_DB_Time_Secs  * Sample_Cycle / TM_Delta_Time_Secs) TM_DB_Time_Secs_Sample_Cycle,
-                 SUM(Delta_Read_IO_Requests       * Sample_Cycle / Delta_Time_Secs)  Read_IO_Requests_Sample_Cycle,
-                 SUM(Delta_Write_IO_Requests      * Sample_Cycle / Delta_Time_Secs)  Write_IO_Requests_Sample_Cycle,
-                 SUM(Delta_Read_IO_kBytes         * Sample_Cycle / Delta_Time_Secs)  Read_IO_kBytes_Sample_Cycle,
-                 SUM(Delta_Write_IO_kBytes        * Sample_Cycle / Delta_Time_Secs)  Write_IO_kBytes_Sample_Cycle,
-                 SUM(Delta_Interconnect_IO_kBytes * Sample_Cycle / Delta_Time_Secs)  Interconn_kBytes_Sample_Cycle,
+                 SUM(s.TM_Delta_CPU_Time_Secs * s.Sample_Cycle / s.TM_Delta_Time_Secs) TM_CPU_Time_Secs_Sample_Cycle,  /* CPU-Time innerhalb des Sample-Cycle */
+                 SUM(s.TM_Delta_DB_Time_Secs  * s.Sample_Cycle / s.TM_Delta_Time_Secs) TM_DB_Time_Secs_Sample_Cycle,
+                 SUM(s.Delta_Read_IO_Requests       * s.Sample_Cycle / s.Delta_Time_Secs)  Read_IO_Requests_Sample_Cycle,
+                 SUM(s.Delta_Write_IO_Requests      * s.Sample_Cycle / s.Delta_Time_Secs)  Write_IO_Requests_Sample_Cycle,
+                 SUM(s.Delta_Read_IO_kBytes         * s.Sample_Cycle / s.Delta_Time_Secs)  Read_IO_kBytes_Sample_Cycle,
+                 SUM(s.Delta_Write_IO_kBytes        * s.Sample_Cycle / s.Delta_Time_Secs)  Write_IO_kBytes_Sample_Cycle,
+                 SUM(s.Delta_Interconnect_IO_kBytes * s.Sample_Cycle / s.Delta_Time_Secs)  Interconn_kBytes_Sample_Cycle,
              " if get_db_version >= '11.2'}
              MIN(RowNum) Row_Num
-      FROM   (SELECT /*+ NO_MERGE ORDERED */
-                     10 Sample_Cycle, Instance_Number, #{get_ash_default_select_list}
-              FROM   DBA_Hist_Active_Sess_History s
-              LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
-              WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen */
-              #{@dba_hist_where_string}
-              UNION ALL
-              SELECT 1 Sample_Cycle, Inst_ID Instance_Number,#{get_ash_default_select_list}
-              FROM   gv$Active_Session_History
-             )s
+      FROM   ash s #{additional_join}
       LEFT OUTER JOIN DBA_Users u     ON u.User_ID = s.User_ID
       -- erst p2 abfragen, da bei Request=3 in row_wait_obj# das als vorletztes gelockte Object stehen kann
       LEFT OUTER JOIN DBA_Objects o   ON o.Object_ID = CASE WHEN s.P2Text = 'object #' THEN /* Wait kennt Object */ s.P2 ELSE s.Current_Obj_No END
@@ -458,8 +476,7 @@ class ActiveSessionHistoryController < ApplicationController
                    TSSel AS (SELECT /*+ NO_MERGE MATERIALIZE */ h.*, h.Time_Waited/1000000 Seconds_in_Wait
                              FROM   (
                                       SELECT 10 Sample_Cycle,
-                                             /* auf 10 Sekunden genau gerundete Zeit */
-                                             TRUNC(h.Sample_Time+INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(h.Sample_Time+INTERVAL '5' SECOND, 'SS'))/10)/8640  Rounded_Sample_Time,
+                                             #{rounded_sample_time_sql(10, 'h.Sample_Time')} Rounded_Sample_Time,
                                              Snap_ID, h.Instance_Number, Session_ID, Session_Serial#,
                                              Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, Current_File#, Current_Block#,
                                              #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
@@ -472,7 +489,7 @@ class ActiveSessionHistoryController < ApplicationController
                                       AND    h.Sample_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                                       UNION ALL
                                       SELECT 1 Sample_Cycle,
-                                             CAST(Sample_Time + INTERVAL '0.5' SECOND AS DATE) Rounded_Sample_Time, /* auf eine Sekunde genau gerundete Zeit */
+                                             #{rounded_sample_time_sql(1)} Rounded_Sample_Time, /* auf eine Sekunde genau gerundete Zeit */
                                              NULL Snap_ID, h.Inst_ID Instance_Number, Session_ID, Session_Serial#,
                                              Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, Current_File#, Current_Block#,
                                              #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
@@ -589,10 +606,10 @@ class ActiveSessionHistoryController < ApplicationController
                    "LEFT OUTER JOIN DBA_Hist_Active_Sess_History rhh ON  rhh.DBID                       = db.DBID
                                                                       AND rhh.Snap_ID                   = gr.Root_Snap_ID  /* Snap-ID innerhalb von RAC-Instanzen ist identisch, diese koennet von anderer Instanz stammen */
                                                                       AND rhh.Instance_Number           = gr.Root_Blocking_Inst_ID
-                                                                      AND TRUNC(rhh.Sample_Time+INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(rhh.Sample_Time+INTERVAL '5' SECOND, 'SS'))/10)/8640 = gr.Root_Rounded_Sample_Time /* auf 10 Sekunden gerundete Zeit */
+                                                                      AND #{rounded_sample_time_sql(10, 'rhh')} = gr.Root_Rounded_Sample_Time /* auf 10 Sekunden gerundete Zeit */
                                                                       AND rhh.Session_ID                = gr.Root_Blocking_Session
                     LEFT OUTER JOIN gv$Active_Session_History rha     ON  rha.Inst_ID                   = gr.Root_Blocking_Inst_ID
-                                                                      AND CAST(rha.Sample_Time + INTERVAL '0.5' SECOND AS DATE) = gr.Root_Rounded_Sample_Time   /* auf eine Sekunde gerundete Zeot */
+                                                                      AND #{rounded_sample_time_sql(1, 'rha')} = gr.Root_Rounded_Sample_Time   /* auf eine Sekunde gerundete Zeit */
                                                                       AND rha.Session_ID                = gr.Root_Blocking_Session
                     WHERE (NOT EXISTS (SELECT /*+ HASH_AJ) */ 1 FROM TSSel i    /* Nur die Knoten ohne Parent-Blocker darstellen */
                                         WHERE  i.Rounded_Sample_Time  = gr.Root_Rounded_Sample_Time
@@ -615,52 +632,18 @@ class ActiveSessionHistoryController < ApplicationController
     render_partial :list_blocking_locks_historic
   end
 
-  private
-  def blocking_locks_historic_event_with_selection(dbid, start_time, end_time)
-    min_snap_id, max_snap_id = get_min_max_snap_ids(start_time, end_time, dbid)
-    sql = "WITH /* Panorama-Tool Ramm */
-           TSSel AS (SELECT /*+ NO_MERGE MATERIALIZE */ h.*, h.Time_Waited/1000000 Seconds_in_Wait
-                     FROM   (
-                              SELECT 10 Sample_Cycle,
-                                     /* auf 10 Sekunden genau gerundete Zeit */
-                                     TRUNC(h.Sample_Time+INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(h.Sample_Time+INTERVAL '5' SECOND, 'SS'))/10)/8640  Rounded_Sample_Time,
-                                     Snap_ID, h.Instance_Number, Session_ID, Session_Serial#,
-                                     Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, Current_File#, Current_Block#,
-                                     #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
-                                     p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Session_State, Module, Action, Program
-                              FROM   DBA_Hist_Active_Sess_History h
-                              LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = h.Instance_Number
-                              WHERE  (v.Min_Sample_Time IS NULL OR h.Sample_Time < v.Min_Sample_Time)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen  */
-                              AND    h.DBID = ?
-                              AND    h.Snap_ID BETWEEN ? AND ?
-                              AND    h.Sample_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
-                              UNION ALL
-                              SELECT 1 Sample_Cycle,
-                                     CAST(Sample_Time + INTERVAL '0.5' SECOND AS DATE) Rounded_Sample_Time, /* auf eine Sekunde genau gerundete Zeit */
-                                     NULL Snap_ID, h.Inst_ID Instance_Number, Session_ID, Session_Serial#,
-                                     Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, Current_File#, Current_Block#,
-                                     #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
-                                     p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Session_State, Module, Action, Program
-                              FROM   gv$Active_Session_History h
-                              WHERE  Sample_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
-                            ) h
-                    )
-    "
-    return sql, [dbid, min_snap_id, max_snap_id, start_time, end_time, start_time, end_time]
-  end
-  public
-
   def list_blocking_locks_historic_event_dependency
     @dbid = prepare_param_dbid
     save_session_time_selection
-    get_min_max_snap_ids(@time_selection_start, @time_selection_end, @dbid)
 
     with_sql, with_bindings = blocking_locks_historic_event_with_selection(@dbid, @time_selection_start, @time_selection_end)
 
     @event_locks = sql_select_iterator ["\
         #{with_sql}
         SELECT b.*,
-               Waiting_Active_Seconds / ((Last_Occurrence - First_Occurrence) *86400 + 1 )   Avg_Waiting_Sessions
+               Waiting_Active_Seconds / ((Last_Occurrence - First_Occurrence) *86400 +
+                                         CASE WHEN Last_Occurrence = First_Occurrence THEN Single_Sample_Cycle ELSE 0 END   /* Add one cycle to prevent div by zero */
+                                        )   Avg_Waiting_Sessions
         FROM   (
                 SELECT Blocking_Event,
                        Waiting_Event,
@@ -668,11 +651,13 @@ class ActiveSessionHistoryController < ApplicationController
                        COUNT(DISTINCT Waiting_Instance||','||Waiting_Session_ID||','||Waiting_Session_Serial#)     Waiting_Sessions,
                        SUM(Blocking_Active_Seconds)                                         Blocking_Active_Seconds,
                        SUM(Waiting_Active_Seconds)                                          Waiting_Active_Seconds,
+                       MIN(Waiting_Active_Seconds)                                          Single_Sample_Cycle,
                        MIN(Waiting_Rounded_Sample_Time)                                     First_Occurrence,
                        MAX(Waiting_Rounded_Sample_Time)                                     Last_Occurrence,
                        MIN(Seconds_In_Wait)                                                 Min_Seconds_In_Wait,
                        MAX(Seconds_In_Wait)                                                 Max_Seconds_In_Wait,
-                       AVG(Seconds_In_Wait)                                                 Avg_Seconds_In_Wait
+                       AVG(Seconds_In_Wait)                                                 Avg_Seconds_In_Wait,
+                       COUNT(*)                                                             Samples
                 FROM   (SELECT /*+ NO_MERGE */
                                CASE WHEN waiters.Blocking_Session_Status = 'GLOBAL'
                                THEN 'GLOBAL (other RAC instance)'
@@ -703,6 +688,48 @@ class ActiveSessionHistoryController < ApplicationController
     render_partial :list_blocking_locks_historic_event_dependency
   end
 
+  def blocking_locks_historic_event_dependency_timechart
+    dbid = prepare_param_dbid
+    save_session_time_selection
+    group_seconds = params[:group_seconds].to_i
+
+    with_sql, with_bindings = blocking_locks_historic_event_with_selection(dbid, @time_selection_start, @time_selection_end)
+
+    singles = sql_select_iterator ["\
+      #{with_sql}
+      SELECT Start_Sample, Criteria,
+             SUM(Sample_Cycle / CASE WHEN Sample_Cycle > #{group_seconds} THEN #{group_seconds}*Sample_Cycle ELSE #{group_seconds} END) Diagram_Value
+      FROM   (SELECT TRUNC(waiters.Rounded_Sample_Time) + TRUNC(TO_NUMBER(TO_CHAR(waiters.Rounded_Sample_Time, 'SSSSS'))/#{group_seconds})*#{group_seconds}/86400 Start_Sample,
+                     CASE WHEN waiters.Blocking_Session_Status = 'GLOBAL'
+                     THEN 'GLOBAL (other RAC instance)'
+                     ELSE NVL(NVL(blockers.Event, blockers.Session_State), 'IDLE')
+                     END || ' -> '||
+                     NVL(NVL(waiters.Event,  waiters.Session_State),  'UNKNOWN')  Criteria,
+                     waiters.Sample_Cycle
+              FROM   tsSel waiters
+              LEFT OUTER JOIN tsSel blockers ON blockers.Instance_Number = waiters.Blocking_Inst_ID AND blockers.Session_ID = waiters.Blocking_Session
+                                             AND blockers.Session_Serial# = waiters.Blocking_Session_Serial# AND blockers.Rounded_Sample_Time = waiters.Rounded_Sample_Time
+              WHERE  waiters.Blocking_Session_Status IN ('VALID', 'GLOBAL') /* Session wartend auf Blocking-Session */
+             )
+      GROUP BY Start_Sample, Criteria
+      ORDER BY Start_Sample
+    "].concat(with_bindings)
+
+    top_x = 15
+    diagram_caption = "Number of blocked waiting sessions condensed by #{group_seconds} seconds for top-#{top_x} grouped by combination of waiting and blocking events between #{@time_selection_start} and #{@time_selection_end}"
+
+    plot_top_x_diagramm(:data_array         => singles,
+                        :time_key_name      => 'start_sample',
+                        :curve_key_name     => 'criteria',
+                        :value_key_name     => 'diagram_value',
+                        :top_x              => top_x,
+                        :caption            => diagram_caption,
+                        :null_points_cycle  => group_seconds,
+                        :update_area        => params[:update_area]
+    )
+
+  end
+
   def list_blocking_locks_historic_detail
     @dbid = prepare_param_dbid
     save_session_time_selection
@@ -728,7 +755,7 @@ class ActiveSessionHistoryController < ApplicationController
     @locks = sql_select_iterator [
         "WITH /* Panorama-Tool Ramm */
                    TSel AS ( SELECT 10 Sample_Cycle,
-                                     TRUNC(h.Sample_Time+INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(h.Sample_Time+INTERVAL '5' SECOND, 'SS'))/10)/8640  Rounded_Sample_Time,
+                                     #{rounded_sample_time_sql(10, 'h.Sample_Time')}  Rounded_Sample_Time,
                                      h.Instance_Number, Session_ID, Session_Serial#, Current_File#, Current_Block#,
                                      Snap_ID, Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2'}
                                      p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, SQL_Child_Number, User_ID, Event, Module, Action, Program
@@ -737,18 +764,18 @@ class ActiveSessionHistoryController < ApplicationController
                               WHERE  (v.Min_Sample_Time IS NULL OR h.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
                               AND    h.DBID = ?
                               AND    h.Snap_ID BETWEEN ? AND ?
-                              AND    TRUNC(h.Sample_Time+INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(h.Sample_Time+INTERVAL '5' SECOND, 'SS'))/10)/8640  >= TO_DATE(?, '#{sql_datetime_second_mask}')
-                              AND    TRUNC(h.Sample_Time+INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(h.Sample_Time+INTERVAL '5' SECOND, 'SS'))/10)/8640  <= TO_DATE(?, '#{sql_datetime_second_mask}')
+                              AND    #{rounded_sample_time_sql(10, 'h.Sample_Time')}  >= TO_DATE(?, '#{sql_datetime_second_mask}')
+                              AND    #{rounded_sample_time_sql(10, 'h.Sample_Time')}  <= TO_DATE(?, '#{sql_datetime_second_mask}')
                               AND    h.Blocking_Session_Status IN ('VALID', 'GLOBAL') -- Session wartend auf Blocking-Session
                               UNION ALL
                               SELECT 1 Sample_Cycle,
-                                     CAST(Sample_Time + INTERVAL '0.5' SECOND AS DATE) Rounded_Sample_Time, /* auf eine Sekunde genau gerundete Zeit */
+                                     #{rounded_sample_time_sql(1)} Rounded_Sample_Time, /* auf eine Sekunde genau gerundete Zeit */
                                      h.Inst_ID, Session_ID, Session_Serial#, Current_File#, Current_Block#,
                                      NULL Snap_ID, Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2'}
                                      p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, SQL_Child_Number, User_ID, Event, Module, Action, Program
                               FROM   gv$Active_Session_History h
-                              WHERE  CAST(Sample_Time + INTERVAL '0.5' SECOND AS DATE) >= TO_DATE(?, '#{sql_datetime_second_mask}')      /* auf eine Sekunde genau gerundete Zeit */
-                              AND    CAST(Sample_Time + INTERVAL '0.5' SECOND AS DATE) <= TO_DATE(?, '#{sql_datetime_second_mask}')      /* auf eine Sekunde genau gerundete Zeit */
+                              WHERE  #{rounded_sample_time_sql(1)} >= TO_DATE(?, '#{sql_datetime_second_mask}')      /* auf eine Sekunde genau gerundete Zeit */
+                              AND    #{rounded_sample_time_sql(1)} <= TO_DATE(?, '#{sql_datetime_second_mask}')      /* auf eine Sekunde genau gerundete Zeit */
                               AND    h.Blocking_Session_Status IN ('VALID', 'GLOBAL') -- Session wartend auf Blocking-Session
                             ),
         -- Komplette Menge der Lock-Beziehungen dieser Blocking-Session
@@ -894,7 +921,7 @@ class ActiveSessionHistoryController < ApplicationController
     @thread = sql_select_all(["\
       WITH procs AS (SELECT /*+ NO_MERGE */ Object_ID, SubProgram_ID, Object_Type, Owner, Object_Name, Procedure_name FROM DBA_Procedures),
            TSel AS ( SELECT 10 Sample_Cycle,
-                            TRUNC(h.Sample_Time+INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(h.Sample_Time+INTERVAL '5' SECOND, 'SS'))/10)/8640  Rounded_Sample_Time,
+                            #{rounded_sample_time_sql(10, 'h.Sample_Time')}  Rounded_Sample_Time,
                             h.Instance_Number, Snap_ID,
                             #{get_ash_default_select_list}
                      FROM   DBA_Hist_Active_Sess_History h
@@ -902,15 +929,14 @@ class ActiveSessionHistoryController < ApplicationController
                      WHERE  (v.Min_Sample_Time IS NULL OR h.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
                      AND    h.DBID = ?
                      AND    h.Snap_ID BETWEEN ? AND ?
-                     AND    TRUNC(h.Sample_Time+INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(h.Sample_Time+INTERVAL '5' SECOND, 'SS'))/10)/8640  =
-                            TRUNC(TO_DATE(?, '#{sql_datetime_second_mask}') + INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(TO_DATE(?, '#{sql_datetime_second_mask}') + INTERVAL '5' SECOND, 'SS'))/10)/8640 /* compare rounded to 10 seconds */
+                     AND    #{rounded_sample_time_sql(10, 'h.Sample_Time')}  = #{rounded_sample_time_sql(10, "TO_DATE(?, '#{sql_datetime_second_mask}')")} /* compare rounded to 10 seconds */
                      UNION ALL
                      SELECT 1 Sample_Cycle,
-                            CAST(Sample_Time + INTERVAL '0.5' SECOND AS DATE) Rounded_Sample_Time /* auf eine Sekunde genau gerundete Zeit */,
+                            #{rounded_sample_time_sql(1)} Rounded_Sample_Time /* auf eine Sekunde genau gerundete Zeit */,
                             h.Inst_ID, NULL Snap_ID,
                             #{get_ash_default_select_list}
                     FROM    gv$Active_Session_History h
-                    WHERE   CAST(Sample_Time + INTERVAL '0.5' SECOND AS DATE) = TO_DATE(?, '#{sql_datetime_second_mask}')      /* auf eine Sekunde genau gerundete Zeit */
+                    WHERE   #{rounded_sample_time_sql(1)} = TO_DATE(?, '#{sql_datetime_second_mask}')      /* auf eine Sekunde genau gerundete Zeit */
                    )
       SELECT x.*, u.UserName, o.Owner, o.Object_Name, o.SubObject_Name, o.Data_Object_ID, f.File_Name, f.Tablespace_Name,
              peo.Owner peo_Owner, peo.Object_Type peo_Object_Type, peo.Object_Name peo_Object_Name, peo.Procedure_Name peo_Procedure_Name,
@@ -991,7 +1017,6 @@ class ActiveSessionHistoryController < ApplicationController
       #{"procs AS (SELECT /*+ NO_MERGE */ Object_ID, SubProgram_ID, Object_Type, Owner, Object_Name, Procedure_name FROM DBA_Procedures)," if  @global_where_string['peo.'] ||  @global_where_string['po.']}
       samples AS (
         SELECT
-               -- CAST (Sample_Time+INTERVAL '0.5' SECOND AS DATE) Sample_Time,
                CAST (Sample_Time AS DATE) Sample_Time,
                s.Instance_Number, s.Session_ID, s.Session_Serial_No,
                s.Sample_Cycle,                -- Gewichtete Zeit in der Annahme, dass Wait aktiv für die Dauer des Samples war (und daher vom Snapshot gesehen wurde)
@@ -1112,7 +1137,6 @@ class ActiveSessionHistoryController < ApplicationController
       #{"procs AS (SELECT /*+ NO_MERGE */ Object_ID, SubProgram_ID, Object_Type, Owner, Object_Name, Procedure_name FROM DBA_Procedures)," if  @global_where_string['peo.'] ||  @global_where_string['po.']}
       samples AS (
         SELECT
-               -- CAST (Sample_Time+INTERVAL '0.5' SECOND AS DATE) Sample_Time,
                CAST (Sample_Time AS DATE) Sample_Time,
                s.Instance_Number, s.Session_ID, s.Session_Serial_No,
                s.Sample_Cycle,                -- Gewichtete Zeit in der Annahme, dass Wait aktiv für die Dauer des Samples war (und daher vom Snapshot gesehen wurde)

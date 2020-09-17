@@ -171,8 +171,8 @@
     Durch vergrößern des Betrachtungsfensters (Eingabefeld "fuzzy seconds") kann auch für einen konkreten Zeitpunkt die TEMP-Nutzung von Sessions mit berücksichtigt werden,
     die im Zeitraum +/- x Sekunden aktiv waren.
 
-  active_session_history_show_top_ten:                      Zeige Top 10 in Zeitleiste, verdichtet nach %{sec} Sek.
-  active_session_history_show_top_ten_hint:                 Anzeige der Top 10 nach total time waited in Zeitleiste, jeweils ein Punkt im Graph für die Summe über %{sec} Sekunden
+  active_session_history_show_top_ten:                      Zeige Top 10 in Zeitdiagramm, verdichtet nach %{sec} Sek.
+  active_session_history_show_top_ten_hint:                 Anzeige der Top 10 nach total time waited in Zeitdiagramm, jeweils ein Punkt im Graph für die Summe über %{sec} Sekunden
   active_session_history_total_time_waited_hint:            Summe Time waited in Sekunden (Sample-Zyklus(1/10 Sekunden) * Samples)
 
   addition_copy_recall_params_caption:                      Kopieren der Request-Parameter in Zwischenablage

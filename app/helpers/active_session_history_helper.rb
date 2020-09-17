@@ -85,45 +85,51 @@ module ActiveSessionHistoryHelper
     end
   end
 
+  # additional filter conditions that are not listed as grouping criteria in session_statistics_key_rules
+  def additional_ash_filter_conditions
+    {
+        Blocking_Instance:            {:name => 'Blocking_Instance',           :sql => "s.Blocking_Inst_ID"},
+        Blocking_Session:             {:name => 'Blocking_Session',            :sql => "s.Blocking_Session"},
+        Blocking_Session_Serial_No:   {:name => 'Blocking_Session_Serial_No',  :sql => "s.Blocking_Session_Serial_No"}, 
+        Blocking_Session_Status:      {:name => 'Blocking_Session_Status',     :sql => "s.Blocking_Session_Status"},
+        Blocking_Event:               {:name => 'Blocking Event',              :sql => "blocking.Event"},        # needs additional join
+        DBID:                         {:name => 'DBID',                        :sql => "s.DBID",                          :hide_content => true},
+        Min_Snap_ID:                  {:name => 'Min_Snap_ID',                 :sql => "s.snap_id >= ?",                  :hide_content => true, :already_bound => true  },
+        Max_Snap_ID:                  {:name => 'Max_Snap_ID',                 :sql => "s.snap_id <= ?",                  :hide_content => true, :already_bound => true  },
+        Plan_Line_ID:                 {:name => 'Plan-Line-ID',                :sql => "s.SQL_Plan_Line_ID" },
+        SQL_Child_Number:             {:name => 'Child number',                :sql => "s.SQL_Child_Number"},
+        Plan_Hash_Value:              {:name => 'Plan-Hash-Value',             :sql => "s.SQL_Plan_Hash_Value"},
+        Session_ID:                   {:name => 'Session-ID',                  :sql => "s.Session_ID"},
+        SerialNo:                     {:name => 'SerialNo',                    :sql => "s.Session_Serial_No"},
+        Idle_Wait1:                   {:name => 'Idle_Wait1',                  :sql => "NVL(s.Event, s.Session_State) != ?", :hide_content =>true, :already_bound => true},
+        Owner:                        {:name => 'Owner',                       :sql => "UPPER(o.Owner)"},
+        Object_Name:                  {:name => 'Object_Name',                 :sql => "o.Object_Name"},
+        SubObject_Name:               {:name => 'SubObject_Name',              :sql => "o.SubObject_Name"},
+        Current_Obj_No:               {:name => 'Current_Obj_No',              :sql => "s.Current_Obj_No"},
+        User_ID:                      {:name => 'User-ID',                     :sql => "s.User_ID"},
+        Additional_Filter:            {:name => 'Additional Filter',           :sql => "UPPER(u.UserName||s.Session_ID||s.SQL_ID||s.Module||s.Action||o.Object_Name||s.Program#{get_db_version >= '11.2' ? '|| s.Machine' : ''}||s.SQL_Plan_Hash_Value) LIKE UPPER('%'||?||'%')", :already_bound => true }, # Such-Filter
+        Temp_Usage_MB_greater:        {:name => 'TEMP-usage (MB) > x',         :sql => "s.Temp_Space_Allocated > ?*(1024*1024)", :already_bound => true},
+        Temp_TS:                      {:name => 'TEMP-TS',                     :sql => "u.Temporary_Tablespace"},
+    }
+  end
 
   # Ermitteln des SQL für NOT NULL oder NULL
   def groupfilter_value(key, value=nil)
     retval = case key.to_sym
-      when :Blocking_Instance           then {:name => 'Blocking_Instance',           :sql => "s.Blocking_Inst_ID"}
-      when :Blocking_Session            then {:name => 'Blocking_Session',            :sql => "s.Blocking_Session"}
-      when :Blocking_Session_Serial_No  then {:name => 'Blocking_Session_Serial_No',  :sql => "s.Blocking_Session_Serial_No"}
-      when :Blocking_Session_Status     then {:name => 'Blocking_Session_Status',     :sql => "s.Blocking_Session_Status"}
-      when :DBID                        then {:name => 'DBID',                        :sql => "s.DBID",                          :hide_content => true}
-      when :Min_Snap_ID                 then {:name => 'Min_Snap_ID',                 :sql => "s.snap_id >= ?",                  :hide_content => true, :already_bound => true  }
-      when :Max_Snap_ID                 then {:name => 'Max_Snap_ID',                 :sql => "s.snap_id <= ?",                  :hide_content => true, :already_bound => true  }
-      when :Plan_Line_ID                then {:name => 'Plan-Line-ID',                :sql => "s.SQL_Plan_Line_ID" }
-      when :SQL_Child_Number            then {:name => 'Child number',                :sql => "s.SQL_Child_Number"}
-      when :Plan_Hash_Value             then {:name => 'Plan-Hash-Value',             :sql => "s.SQL_Plan_Hash_Value"}
-      when :Session_ID                  then {:name => 'Session-ID',                  :sql => "s.Session_ID"}
-      when :SerialNo                    then {:name => 'SerialNo',                    :sql => "s.Session_Serial_No"}
-      when :time_selection_start        then {:name => 'time_selection_start',        :sql => "s.Sample_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(value)}')", :already_bound => true }
-      when :time_selection_end          then {:name => 'time_selection_end',          :sql => "s.Sample_Time <  TO_TIMESTAMP(?, '#{sql_datetime_mask(value)}')", :already_bound => true }
-      when :Idle_Wait1                  then {:name => 'Idle_Wait1',                  :sql => "NVL(s.Event, s.Session_State) != ?", :hide_content =>true, :already_bound => true}
-      when :Owner                       then {:name => 'Owner',                       :sql => "UPPER(o.Owner)"}
-      when :Object_Name                 then {:name => 'Object_Name',                 :sql => "o.Object_Name"}
-      when :SubObject_Name              then {:name => 'SubObject_Name',              :sql => "o.SubObject_Name"}
-      when :Current_Obj_No              then {:name => 'Current_Obj_No',              :sql => "s.Current_Obj_No"}
-      when :User_ID                     then {:name => 'User-ID',                     :sql => "s.User_ID"}
-      when :Additional_Filter           then {:name => 'Additional Filter',           :sql => "UPPER(u.UserName||s.Session_ID||s.SQL_ID||s.Module||s.Action||o.Object_Name||s.Program#{get_db_version >= '11.2' ? '|| s.Machine' : ''}||s.SQL_Plan_Hash_Value) LIKE UPPER('%'||?||'%')", :already_bound => true }  # Such-Filter
-      when :Temp_Usage_MB_greater       then {:name => 'TEMP-usage (MB) > x',         :sql => "s.Temp_Space_Allocated > ?*(1024*1024)", :already_bound => true}
-      when :Temp_TS                     then {:name => 'TEMP-TS',                     :sql => "u.Temporary_Tablespace"}
-      else                              { :name => session_statistics_key_rule(key.to_s)[:Name], :sql => session_statistics_key_rule(key.to_s)[:sql] }                              # 2. Versuch aus Liste der Gruppierungskriterien
+             when :time_selection_start then {:name => 'time_selection_start',        :sql => "s.Sample_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(value)}')", :already_bound => true }
+             when :time_selection_end   then {:name => 'time_selection_end',          :sql => "s.Sample_Time <  TO_TIMESTAMP(?, '#{sql_datetime_mask(value)}')", :already_bound => true }
     end
-    
+
+    retval = additional_ash_filter_conditions[key.to_sym] if retval.nil? # 1. try to find rules
+
+    retval = { :name => session_statistics_key_rule(key.to_s)[:Name], :sql => session_statistics_key_rule(key.to_s)[:sql] } if retval.nil?  # 2. Versuch aus Liste der Gruppierungskriterien
+
     raise "groupfilter_value: unknown key '#{key}' of class #{key.class.name}" unless retval
     retval = retval.clone                                                       # Entkoppeln von Quelle so dass Änderungen lokal bleiben
     unless retval[:already_bound]                                               # Muss Bindung noch hinzukommen?
       if value && value != ''
         retval[:sql] = "#{retval[:sql]} = ?"
       else
-        #if retval[:sql]["?"]
-        #  puts retval.to_s
-        #end
         retval[:sql] = "#{retval[:sql]} IS NULL"
       end
     end
@@ -166,7 +172,7 @@ module ActiveSessionHistoryHelper
           @dba_hist_where_string << "/* Zugriff auf DBA_Hist_Active_Sess_History ausblenden, da kein Wert für #{key} gefunden wurde (alle Daten kommen aus gv$Active_Session_History)*/"
         end
       else                                # Werte für Hist- und gv$-Tabelle binden
-        @global_where_string << " AND #{sql}"
+        @global_where_string << " AND #{sql}" if sql
         @global_where_values << value if value && value != ''  # Wert nur binden wenn nicht im :sql auf NULL getestet wird
       end
     }
@@ -185,5 +191,45 @@ module ActiveSessionHistoryHelper
     @temp_historic_grouping_options_hash
   end
 
+  def blocking_locks_historic_event_with_selection(dbid, start_time, end_time)
+    min_snap_id, max_snap_id = get_min_max_snap_ids(start_time, end_time, dbid)
+    sql = "WITH /* Panorama-Tool Ramm */
+           TSSel AS (SELECT /*+ NO_MERGE MATERIALIZE */ h.*, h.Time_Waited/1000000 Seconds_in_Wait
+                     FROM   (
+                              SELECT 10 Sample_Cycle,
+                                     #{rounded_sample_time_sql(10, 'h.Sample_Time')}  Rounded_Sample_Time,
+                                     Snap_ID, h.Instance_Number, Session_ID, Session_Serial#,
+                                     Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, Current_File#, Current_Block#,
+                                     #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
+                                     p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Session_State, Module, Action, Program
+                              FROM   DBA_Hist_Active_Sess_History h
+                              LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = h.Instance_Number
+                              WHERE  (v.Min_Sample_Time IS NULL OR h.Sample_Time < v.Min_Sample_Time)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen  */
+                              AND    h.DBID = ?
+                              AND    h.Snap_ID BETWEEN ? AND ?
+                              AND    h.Sample_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+                              UNION ALL
+                              SELECT 1 Sample_Cycle,
+                                     #{rounded_sample_time_sql(1)} Rounded_Sample_Time, /* auf eine Sekunde genau gerundete Zeit */
+                                     NULL Snap_ID, h.Inst_ID Instance_Number, Session_ID, Session_Serial#,
+                                     Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, Current_File#, Current_Block#,
+                                     #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
+                                     p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Session_State, Module, Action, Program
+                              FROM   gv$Active_Session_History h
+                              WHERE  Sample_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+                            ) h
+                    )
+    "
+    return sql, [dbid, min_snap_id, max_snap_id, start_time, end_time, start_time, end_time]
+  end
+
+  # round sample time for ASH so that samples from different RAC instances are comparable/matchable
+  def rounded_sample_time_sql(sample_cycle, column='Sample_Time')
+    case sample_cycle
+    when 1 then  "CAST(#{column} + INTERVAL '0.5' SECOND AS DATE) "   # rounded to 1 second (gv$Active_Session_History)
+    when 10 then "TRUNC(#{column} + INTERVAL '5' SECOND, 'MI') + TRUNC(TO_NUMBER(TO_CHAR(#{column} + INTERVAL '5' SECOND, 'SS'))/10)/8640"  # rounded to 10 seconds (DBA_Hist_Active_Sess_History)
+    else raise "rounded_sample_time_sql: Unsupported sample_cycle #{sample_cycle}"
+    end
+  end
 
 end

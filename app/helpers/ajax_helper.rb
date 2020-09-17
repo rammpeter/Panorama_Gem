@@ -161,7 +161,6 @@ module AjaxHelper
     local_additional_onclick_js << ';' if local_additional_onclick_js[local_additional_onclick_js.length-1] != ';'
 
     json_data =  my_html_escape( data.to_json.gsub(/\\"/, '"+String.fromCharCode(34)+"') )    # Escape possible double quotes in strings to JS code
-
     "<a href=\"#\" onclick=\"ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{json_data}, { element: this}); #{local_additional_onclick_js} return false; \"  #{options}>#{my_html_escape(caption)}</a>".html_safe
   end # ajax_link
 

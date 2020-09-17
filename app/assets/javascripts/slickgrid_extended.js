@@ -125,13 +125,19 @@ function SlickGridExtended(container_id, options){
                 column['column_sum'] = column_sum;
             }
         }
+
+        // caution: next DIVs are created in reverse order after gridContainer: result order is: plot_area_id, direct_update_area, update_area
+        if (options['update_area']){
+            this.gridContainer.after('<div id="' + options['update_area'] + '"></div>');
+        }
+
+        if (options['direct_update_area']){
+            this.gridContainer.after('<div id="' + options['direct_update_area'] + '"></div>');
+        }
+
         if (options['plotting'] && !options['plot_area_id']){                   // DIV fuer Anzeige des Diagramms fehlt noch
             options['plot_area_id'] = 'plot_area_' + container_id;              // Generierte ID des DIVs fuer Diagramm-Anzeige
             this.gridContainer.after('<div id="' + options['plot_area_id'] + '"></div>');
-        }
-
-        if (options['update_area']){
-            this.gridContainer.after('<div id="' + options['update_area'] + '"></div>');
         }
 
         this.grid = new Slick.Grid(this.gridContainer, dataView, viewable_columns, options);

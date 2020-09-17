@@ -44,6 +44,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
       when 'Modus'        then 'SQL exec'
       when "Action"       then 'Action1<>%&'
       when "Event"        then 'db file sequential read'
+      when "Blocking_Event" then 'db file sequential read'
       when "Wait-Class"   then 'IO'
       when "DB-Object"    then 'DUAL'
       when "DB-Sub-Object"  then 'DUAL'
@@ -111,10 +112,21 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
   test "list_session_statistic_historic_single_record with xhr: true" do
+    if additional_ash_filter_conditions.size > session_statistics_key_rules.size
+      raise "Number of additional_ash_filter_conditions larger than session_statistics_key_rules! Not all content from additional_ash_filter_conditions is tested this way!"
+    end
+
+    additional_filters = additional_ash_filter_conditions.keys                  # Test all additional filter values that are not grouping criterias in session_statistics_key_rules
+    additional_filters_index = 0
     session_statistics_key_rules.each do |groupby, value|
-      add_filter = {groupby => bind_value_from_key_rule(groupby)}
-      post :list_session_statistic_historic_single_record, :params => {:format=>:html, :groupby=>groupby,
-           :groupfilter=>@groupfilter.merge(add_filter), :update_area=>:hugo }
+      add_filter = {groupby => bind_value_from_key_rule(groupby)}               # Filter from grouping criteria
+
+      additional_filters_index += 1
+      additional_filters_index = 0 if additional_filters_index >= additional_filters.count  # loop through values of additional_ash_filter_conditions
+      additional_filters_key = additional_filters[additional_filters_index]
+      add_filter[additional_filters_key] = bind_value_from_key_rule(additional_filters_key) # Filter from additional filter criteria
+      puts add_filter
+      post :list_session_statistic_historic_single_record, :params => {:format=>:html, :groupfilter=>@groupfilter.merge(add_filter), :update_area=>:hugo }
       assert_response_success_or_management_pack_violation('list_session_statistic_historic_single_record')
     end
   end
