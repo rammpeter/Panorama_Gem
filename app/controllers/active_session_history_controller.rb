@@ -158,11 +158,17 @@ class ActiveSessionHistoryController < ApplicationController
     # additional SQL needed for Joining
     additional_join = ''                                                        # Default if not needed
     if params[:groupfilter][:Blocking_Event]
+      left_outer_join = false                                                   # Default if special columns don't require left outer join
+
       if params[:groupfilter][:Blocking_Event] == 'IDLE'
         left_outer_join = true
         params[:groupfilter][:Blocking_Event] = ''
-      else
-        left_outer_join = false
+      end
+
+      if params[:groupfilter][:Blocking_Event]['GLOBAL']
+        left_outer_join = true
+        params[:groupfilter].delete :Blocking_Event
+        params[:groupfilter][:Blocking_Session_Status] = 'GLOBAL'
       end
 
       additional_join = "\
