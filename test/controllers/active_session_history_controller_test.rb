@@ -125,7 +125,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
       additional_filters_index = 0 if additional_filters_index >= additional_filters.count  # loop through values of additional_ash_filter_conditions
       additional_filters_key = additional_filters[additional_filters_index]
       add_filter[additional_filters_key] = bind_value_from_key_rule(additional_filters_key) # Filter from additional filter criteria
-      puts add_filter
+
       post :list_session_statistic_historic_single_record, :params => {:format=>:html, :groupfilter=>@groupfilter.merge(add_filter), :update_area=>:hugo }
       assert_response_success_or_management_pack_violation('list_session_statistic_historic_single_record')
     end
@@ -199,7 +199,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
   test "blocking_locks_historic with xhr: true" do
-    post :list_blocking_locks_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, commit: 'Blocking locks session dependency tree' }
+    post :fork_blocking_locks_historic_call, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, commit: 'Blocking locks session dependency tree' }
     assert_response_success_or_management_pack_violation('list_blocking_locks_historic')
 
     post :list_ash_dependecy_thread, :params => {format: :html, blocked_inst_id: 1, blocked_session: 7379, blocked_session_serial_no: 55500, max_snap_id: 45113, min_snap_id: 45113, sample_time: @time_selection_start, update_area: 'hugo'}
@@ -207,7 +207,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
   test "list_blocking_locks_historic_event_dependency with xhr: true" do
-    post :list_blocking_locks_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, commit: 'Blocking locks event dependency' }
+    post :fork_blocking_locks_historic_call, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, commit: 'Blocking locks event dependency' }
     assert_response_success_or_management_pack_violation('list_blocking_locks_historic_event_dependency')
   end
 

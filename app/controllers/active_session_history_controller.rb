@@ -606,10 +606,10 @@ class ActiveSessionHistoryController < ApplicationController
                    "LEFT OUTER JOIN DBA_Hist_Active_Sess_History rhh ON  rhh.DBID                       = db.DBID
                                                                       AND rhh.Snap_ID                   = gr.Root_Snap_ID  /* Snap-ID innerhalb von RAC-Instanzen ist identisch, diese koennet von anderer Instanz stammen */
                                                                       AND rhh.Instance_Number           = gr.Root_Blocking_Inst_ID
-                                                                      AND #{rounded_sample_time_sql(10, 'rhh')} = gr.Root_Rounded_Sample_Time /* auf 10 Sekunden gerundete Zeit */
+                                                                      AND #{rounded_sample_time_sql(10, 'rhh.Sample_Time')} = gr.Root_Rounded_Sample_Time /* auf 10 Sekunden gerundete Zeit */
                                                                       AND rhh.Session_ID                = gr.Root_Blocking_Session
                     LEFT OUTER JOIN gv$Active_Session_History rha     ON  rha.Inst_ID                   = gr.Root_Blocking_Inst_ID
-                                                                      AND #{rounded_sample_time_sql(1, 'rha')} = gr.Root_Rounded_Sample_Time   /* auf eine Sekunde gerundete Zeit */
+                                                                      AND #{rounded_sample_time_sql(1, 'rha.Sample_Time')} = gr.Root_Rounded_Sample_Time   /* auf eine Sekunde gerundete Zeit */
                                                                       AND rha.Session_ID                = gr.Root_Blocking_Session
                     WHERE (NOT EXISTS (SELECT /*+ HASH_AJ) */ 1 FROM TSSel i    /* Nur die Knoten ohne Parent-Blocker darstellen */
                                         WHERE  i.Rounded_Sample_Time  = gr.Root_Rounded_Sample_Time
