@@ -3,11 +3,31 @@
   @update_area_timechart  = get_unique_area_id
 
   link_blocking_sessions = proc do |rec|
-    "<&nbsp;#{fn(rec.blocking_sessions)}&nbsp;>".html_safe
+    ajax_link("<&nbsp;#{fn(rec.blocking_sessions)}&nbsp;>".html_safe, {
+        action:               :blocking_locks_historic_event_detail,
+        role:                 :blocking,
+        dbid:                 @dbid,
+        blocking_event:       rec.blocking_event,
+        waiting_event:        rec.waiting_event,
+        time_selection_start: @time_selection_start,
+        time_selection_end:   @time_selection_end,
+        update_area:          @update_area
+    }, title: "Show blocking sessions for this combination of blocking and waiting event"
+    )
   end
 
   link_waiting_sessions = proc do |rec|
-    "<&nbsp;#{fn(rec.waiting_sessions)}&nbsp;>".html_safe
+    ajax_link("<&nbsp;#{fn(rec.waiting_sessions)}&nbsp;>".html_safe, {
+        action:               :blocking_locks_historic_event_detail,
+        role:                 :waiting,
+        dbid:                 @dbid,
+        blocking_event:       rec.blocking_event,
+        waiting_event:        rec.waiting_event,
+        time_selection_start: @time_selection_start,
+        time_selection_end:   @time_selection_end,
+        update_area:          @update_area
+    }, title: "Show waiting sessions for this combination of blocking and waiting event"
+    )
   end
 
   link_column_samples = proc do |rec|
