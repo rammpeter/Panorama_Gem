@@ -240,7 +240,12 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
       allowed_msg_content.each do |amc|
         if error_dialog.text[amc]                                               # No error if dialog contains any of the strings
           raise_error = false
-          click_button('#error_dialog_close_button')                            # Close the error dialog to ensure next actions may see the target
+          begin
+            click_button('#error_dialog_close_button')                          # Close the error dialog to ensure next actions may see the target
+          rescue Exception
+            sleep(1)                                                            # retry after one second if exception raise
+            click_button('#error_dialog_close_button')                          # Close the error dialog to ensure next actions may see the target
+          end
         end
       end
 
