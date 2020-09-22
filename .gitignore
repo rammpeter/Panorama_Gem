@@ -1,6 +1,7 @@
 .idea/
 coverage/*
 Panorama.war
+Gemfile.lock
 client_info.store/*
 .bundle/
 log/*.log
