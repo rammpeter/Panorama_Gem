@@ -26,6 +26,7 @@
     ajax_link(fn(rec.samples), {
         :action           => :list_session_statistic_historic_single_record,
         :update_area      => @update_area,
+        record_count:     rec.samples,
         :groupfilter      => {
             Blocking_Event:           @blocking_event,
             Event:                    @waiting_event,

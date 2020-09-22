@@ -738,12 +738,12 @@ class ActiveSessionHistoryController < ApplicationController
 
   def blocking_locks_historic_event_detail
     save_session_time_selection
-    dbid           = prepare_param :dbid
+    @dbid           = prepare_param :dbid
     @blocking_event = prepare_param :blocking_event
     @waiting_event  = prepare_param :waiting_event
     @role           = prepare_param(:role).to_sym                               # :blocking or :waiting
 
-    with_sql, with_bindings = blocking_locks_historic_event_with_selection(dbid, @time_selection_start, @time_selection_end)
+    with_sql, with_bindings = blocking_locks_historic_event_with_selection(@dbid, @time_selection_start, @time_selection_end)
 
     session_select = case @role
                      when :blocking then "Blocking_Instance Instance, Blocking_Session_ID SID, Blocking_Session_Serial# SerialNo"
