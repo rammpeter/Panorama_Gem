@@ -16,7 +16,7 @@ module EnvHelper
 
     if File.exists?(DEFAULT_SECRET_KEY_BASE_FILE)                               # look for generated file at first
       retval = File.read(DEFAULT_SECRET_KEY_BASE_FILE)
-      Rails.logger.info "Secret key base read from file #{DEFAULT_SECRET_KEY_BASE_FILE}"
+      Rails.logger.info "Secret key base read from file #{DEFAULT_SECRET_KEY_BASE_FILE} (#{retval.length} chars)"
       Rails.logger.error "Secret key base file at default location #{DEFAULT_SECRET_KEY_BASE_FILE} is empty!" if retval.nil? || retval == ''
       Rails.logger.warn "Secret key base from file at default location #{DEFAULT_SECRET_KEY_BASE_FILE} is too short! Should have at least 128 chars!" if retval.length < 128
     end
@@ -24,7 +24,7 @@ module EnvHelper
     if ENV['SECRET_KEY_BASE_FILE']                                              # User-provided secrets file
       if File.exists?(ENV['SECRET_KEY_BASE_FILE'])
         retval = File.read(ENV['SECRET_KEY_BASE_FILE'])
-        Rails.logger.info "Secret key base read from file #{ENV['SECRET_KEY_BASE_FILE']}"
+        Rails.logger.info "Secret key base read from file #{ENV['SECRET_KEY_BASE_FILE']} (#{retval.length} chars)"
         Rails.logger.error "Secret key base file pointed to by SECRET_KEY_BASE_FILE environment variable is empty!" if retval.nil? || retval == ''
         Rails.logger.warn "Secret key base from file pointed to by SECRET_KEY_BASE_FILE environment variable is too short! Should have at least 128 chars!" if retval.length < 128
       else
@@ -34,7 +34,7 @@ module EnvHelper
 
     if ENV['SECRET_KEY_BASE']                                                   # Env rules over file
       retval = ENV['SECRET_KEY_BASE']
-      Rails.logger.info "Secret key base read from environment variable SECRET_KEY_BASE"
+      Rails.logger.info "Secret key base read from environment variable SECRET_KEY_BASE (#{retval.length} chars)"
       Rails.logger.warn "Secret key base from SECRET_KEY_BASE environment variable is too short! Should have at least 128 chars!" if retval.length < 128
     end
 
@@ -45,6 +45,7 @@ module EnvHelper
       retval = Random.rand 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
       File.write(DEFAULT_SECRET_KEY_BASE_FILE, retval)
     end
+    retval
   end
 
 
