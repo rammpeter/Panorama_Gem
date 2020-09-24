@@ -38,7 +38,7 @@ module EnvHelper
       Rails.logger.warn "Secret key base from SECRET_KEY_BASE environment variable is too short! Should have at least 128 chars!" if retval.length < 128
     end
 
-    if retval.nil? || retval = ''
+    if retval.nil? || retval == ''
       Rails.logger.warn "Neither SECRET_KEY_BASE nor SECRET_KEY_BASE_FILE provided!"
       Rails.logger.warn "Encryption key for SECRET_KEY_BASE is generated and stored in local filesystem!!!"
       retval = Random.rand 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
