@@ -57,12 +57,13 @@ Listed statements should be checked for use of hash join instead.
 This statement executes only for current (login) RAC-instance. Please execute separate for every RAC-instance (due to extremly large runtimes accessing GV$-tables).'),
             :sql=>  "SELECT /* DB-Tools Ramm Nested Loop auf grossen Tabellen */ * FROM (
                       SELECT /*+ PARALLEL(p,2) PARALLEL(s,2) */
-                             s.SQL_FullText, p.Inst_ID, p.SQL_ID, p.Plan_Hash_Value, p.operation, p.Object_Type,  p.options, p.Object_Name,
+                             p.Inst_ID, p.SQL_ID, p.Plan_Hash_Value, p.operation, p.Object_Type,  p.options, p.Object_Name,
                              ROUND(s.Elapsed_Time/1000000) Elapsed_Secs, s.Executions, s.Rows_Processed,
                              ROUND(s.Rows_Processed/DECODE(s.Executions,0,1,s.Executions),2) Rows_Per_Execution,
                              CASE WHEN p.Object_Type = 'TABLE' THEN (SELECT /*+ NO_MERGE */ Num_Rows FROM DBA_Tables t WHERE t.Owner=p.Object_Owner AND t.Table_Name=p.Object_Name)
                                   WHEN p.Object_Type LIKE 'INDEX%' THEN (SELECT /*+ NO_MERGE */ Num_Rows FROM DBA_Indexes i WHERE i.Owner=p.Object_Owner AND i.Index_Name=p.Object_Name)
-                             END Num_Rows
+                             END Num_Rows,
+                             SUBSTR(s.SQL_FullText, 1, 200) SQL_Text
                       FROM   (
                               WITH Plan AS (SELECT /*+ NO_MERGE MATERIALIZE  */
                                                    p.Inst_ID, p.SQL_ID, p.Plan_Hash_Value, p.Operation, p.Options, p.Object_Type, p.Object_Owner, p.Object_Name, p.ID, p.Parent_ID
@@ -110,15 +111,19 @@ It may also activate cache buffers chains latch-waits.
 This access my be acceptable, if controlling result for nested loop has only one or less records.
 Statement executes only for current connected RAC-Instance (due to runtime prblem otherwise), so it must be executed separately for every instance.'),
             :sql=>  "SELECT p.Inst_ID, p.SQL_ID, s.Executions, s.Elapsed_Time/1000000 Elapsed_time_Secs, p.Child_Number, p.Plan_Hash_Value,
-                             p.Operation, p.Options, p.Object_Owner, Object_Name, p.ID SQL_Plan_Line_ID
+                             p.pnl1_Cardinality \"Cardinality of leading op.\",
+                             p.Operation, p.Options, p.Object_Owner, Object_Name,
+                             NVL(t.Num_Rows, i.Num_Rows) \"Num. rows object\",
+                             p.ID SQL_Plan_Line_ID
                       FROM   (
                               WITH Plan AS (SELECT /*+ MATERIALIZE  */
                                                    p.Inst_ID, p.SQL_ID, p.Child_Number, p.Plan_Hash_Value,
                                                    p.Inst_ID||'|'||p.SQL_ID||'|'||p.Child_Number||'|'||p.Plan_Hash_Value SQL_Ident,
-                                                   p.Operation, p.Options, p.Object_Type, p.Object_Owner, p.Object_Name, p.ID, p.Parent_ID
+                                                   p.Operation, p.Options, p.Object_Type, p.Object_Owner, p.Object_Name, p.ID, p.Parent_ID, p.Cardinality
                                             FROM   gV$SQL_Plan p
                                            )
-                              SELECT pnl2.*    -- Daten der zweiten Zeile unter Nested Loop (ueber die iteriert wird)
+                              SELECT pnl2.*,   -- Daten der zweiten Zeile unter Nested Loop (ueber die iteriert wird)
+                                     pnl1.Cardinality pnl1_Cardinality
                               FROM   Plan pnl -- Nested Loop-Zeile
                               JOIN   Plan pnl1 ON  pnl1.SQL_Ident      = pnl.SQL_Ident      -- erste Zeile unter Nested Loop (Datenherkunft)
                                                AND pnl1.Parent_ID      = pnl.ID
@@ -143,6 +148,8 @@ Statement executes only for current connected RAC-Instance (due to runtime prble
                                       AND s.SQL_ID          = p.SQL_ID
                                       AND s.Child_Number    = p.Child_Number
                                       AND s.Plan_Hash_Value = p.Plan_Hash_Value
+                      LEFT OUTER JOIN DBA_Tables t ON t.Owner = p.Object_Owner AND t.Table_Name = p.Object_Name
+                      LEFT OUTER JOIN DBA_Indexes i ON i.Owner = p.Object_Owner AND i.Index_Name = p.Object_Name
                       WHERE  p.Object_Owner NOT IN (#{system_schema_subselect})
                       ORDER BY Elapsed_Time DESC NULLS LAST",
         },

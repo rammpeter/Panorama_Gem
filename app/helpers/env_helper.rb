@@ -8,6 +8,45 @@ module EnvHelper
   include DatabaseHelper
   include EnvExtensionHelper
 
+  DEFAULT_SECRET_KEY_BASE_FILE = File.join(Rails.root, 'config', 'secret_key_base')
+
+  # get master_key from file or environment
+  def self.secret_key_base
+    retval = nil
+
+    if File.exists?(DEFAULT_SECRET_KEY_BASE_FILE)                               # look for generated file at first
+      retval = File.read(DEFAULT_SECRET_KEY_BASE_FILE)
+      Rails.logger.info "Secret key base read from file #{DEFAULT_SECRET_KEY_BASE_FILE}"
+      Rails.logger.error "Secret key base file at default location #{DEFAULT_SECRET_KEY_BASE_FILE} is empty!" if retval.nil? || retval == ''
+      Rails.logger.warn "Secret key base from file at default location #{DEFAULT_SECRET_KEY_BASE_FILE} is too short! Should have at least 128 chars!" if retval.length < 128
+    end
+
+    if ENV['SECRET_KEY_BASE_FILE']                                              # User-provided secrets file
+      if File.exists?(ENV['SECRET_KEY_BASE_FILE'])
+        retval = File.read(ENV['SECRET_KEY_BASE_FILE'])
+        Rails.logger.info "Secret key base read from file #{ENV['SECRET_KEY_BASE_FILE']}"
+        Rails.logger.error "Secret key base file pointed to by SECRET_KEY_BASE_FILE environment variable is empty!" if retval.nil? || retval == ''
+        Rails.logger.warn "Secret key base from file pointed to by SECRET_KEY_BASE_FILE environment variable is too short! Should have at least 128 chars!" if retval.length < 128
+      else
+        Rails.logger.error "Secret key base file pointed to by SECRET_KEY_BASE_FILE environment variable does not exist!"
+      end
+    end
+
+    if ENV['SECRET_KEY_BASE']                                                   # Env rules over file
+      retval = ENV['SECRET_KEY_BASE']
+      Rails.logger.info "Secret key base read from environment variable SECRET_KEY_BASE"
+      Rails.logger.warn "Secret key base from SECRET_KEY_BASE environment variable is too short! Should have at least 128 chars!" if retval.length < 128
+    end
+
+    if retval.nil? || retval = ''
+      Rails.logger.warn "Neither SECRET_KEY_BASE nor SECRET_KEY_BASE_FILE provided!"
+      Rails.logger.warn "Encryption key for SECRET_KEY_BASE is generated and stored in local filesystem!!!"
+      retval = Random.rand 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
+      File.write(DEFAULT_SECRET_KEY_BASE_FILE, retval)
+    end
+  end
+
+
   def init_management_pack_license(current_database)
     if current_database[:management_pack_license].nil?                          # not already set, calculate initial value
       PanoramaConnection.get_management_pack_license_from_db_as_symbol
@@ -243,4 +282,5 @@ module EnvHelper
     Rails.logger.error "Error processing #{file_name}: #{e.message}"
     tnsnames
   end
+
 end
