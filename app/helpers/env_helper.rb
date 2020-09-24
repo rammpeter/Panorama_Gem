@@ -40,7 +40,8 @@ module EnvHelper
 
     if retval.nil? || retval == ''
       Rails.logger.warn "Neither SECRET_KEY_BASE nor SECRET_KEY_BASE_FILE provided!"
-      Rails.logger.warn "Encryption key for SECRET_KEY_BASE is generated and stored in local filesystem!!!"
+      Rails.logger.warn "Temporary encryption key for SECRET_KEY_BASE is generated and stored in local filesystem!"
+      Rails.logger.warn "This key is valid only for the lifetime of this running Panorama instance and is not persistent!!!"
       retval = Random.rand 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
       File.write(DEFAULT_SECRET_KEY_BASE_FILE, retval)
     end
