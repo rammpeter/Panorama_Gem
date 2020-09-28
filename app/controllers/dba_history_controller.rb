@@ -2,6 +2,8 @@
 
 class DbaHistoryController < ApplicationController
   include DbaHelper
+  include DbaHistoryHelper
+  include DbaHelper
   include ExplainPlanHelper
   include ActionView::Helpers::SanitizeHelper
 
@@ -360,36 +362,10 @@ class DbaHistoryController < ApplicationController
            ) s
       LEFT OUTER JOIN DBA_Hist_SQLText t ON t.DBID = s.DBID AND t.SQL_ID = s.SQL_ID
       #{where_string_aussen}
-      ORDER BY
-      #{case topSort
-              when "ElapsedTimePerExecute" then "ELAPSED_TIME_SECS_PER_EXECUTE DESC"
-              when "ElapsedTimeTotal"      then "ELAPSED_TIME_Secs DESC"
-              when "ExecutionCount"        then "Executions DESC"
-              when 'ParseCalls'            then 'Parse_Calls DESC'
-              when "RowsProcessed"         then "Rows_Processed DESC"
-              when "ExecsPerDisk"          then "Execs_Per_Disk DESC"
-              when "BufferGetsPerRow"      then "Buffer_Gets_Per_Row DESC"
-              when "CPUTime"               then "CPU_Time_Secs DESC"
-              when "BufferGets"            then "Buffer_gets DESC"
-              when "ClusterWaits"          then "Cluster_Wait_Time DESC"
-        else  "[Unknown]"
-        end } NULLS LAST
+      ORDER BY #{sql_area_sort_criteria_historic[topSort.to_sym][:sql]} NULLS LAST
       )
       #{'WHERE ROWNUM < ?' if maxResultCount}
-      ORDER BY
-      #{case topSort
-              when "ElapsedTimePerExecute" then "ELAPSED_TIME_SECS_PER_EXECUTE DESC"
-              when "ElapsedTimeTotal"      then "ELAPSED_TIME_Secs DESC"
-              when "ExecutionCount"        then "Executions DESC"
-              when "RowsProcessed"         then "Rows_Processed DESC"
-              when 'ParseCalls'            then 'Parse_Calls DESC'
-              when "ExecsPerDisk"          then "Execs_Per_Disk DESC"
-              when "BufferGetsPerRow"      then "Buffer_Gets_Per_Row DESC"
-              when "CPUTime"               then "CPU_Time_Secs DESC"
-              when "BufferGets"            then "Buffer_gets DESC"
-              when "ClusterWaits"          then "Cluster_Wait_Time DESC"
-        else  "[Unknown]"
-        end } NULLS LAST"
+      ORDER BY #{sql_area_sort_criteria_historic[topSort.to_sym][:sql]} NULLS LAST"
      ].concat(where_values)
 
     render_partial :list_sql_area_historic

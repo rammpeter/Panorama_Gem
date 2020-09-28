@@ -2,6 +2,7 @@
 require 'test_helper'
 
 class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
+  include DbaHistoryHelper
 
   setup do
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
@@ -77,17 +78,8 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       assert_response management_pack_license == :none ? :error : :success
     end
 
-    ['ElapsedTimePerExecute',
-     'ElapsedTimeTotal',
-     'ExecutionCount',
-     'RowsProcessed',
-     'ExecsPerDisk',
-     'BufferGetsPerRow',
-     'CPUTime',
-     'BufferGets',
-     'ClusterWaits'
-    ].each do |topSort|
-      do_test(topSort, nil, nil, nil)
+    sql_area_sort_criteria_historic.each do |key, value|
+      do_test(key, nil, nil, nil)
     end
 
     [nil, 'hugo<>%&'].each do |filter|

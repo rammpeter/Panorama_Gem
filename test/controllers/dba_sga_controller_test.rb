@@ -10,17 +10,6 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
 
     initialize_min_max_snap_id_and_times
 
-    @topSort = ["ElapsedTimePerExecute",
-               "ElapsedTimeTotal",
-               "ExecutionCount",
-               "RowsProcessed",
-               "ExecsPerDisk",
-               "BufferGetsPerRow",
-               "CPUTime",
-               "BufferGets",
-               "ClusterWaits"
-    ]
-
     sql_row = sql_select_first_row "SELECT SQL_ID, Child_Number, Parsing_Schema_Name FROM v$sql WHERE SQL_Text LIKE '%seg$%' AND Object_Status = 'VALID' ORDER BY Executions DESC, First_Load_Time"
     @hist_sql_id = sql_row.sql_id
     @sga_child_number = sql_row.child_number
@@ -44,7 +33,7 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_sql_area_sql_id with xhr: true" do
-    @topSort.each do |ts|
+    sql_area_sort_criteria.each do |ts, value|
       post '/dba_sga/list_sql_area_sql_id', :params => {:format=>:html, :maxResultCount=>"100", :topSort=>ts, :update_area=>:hugo }
       assert_response :success
 
@@ -63,7 +52,7 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_sql_area_sql_id_childno with xhr: true" do
-    @topSort.each do |ts|
+    sql_area_sort_criteria.each do |ts, value|
       post '/dba_sga/list_sql_area_sql_id_childno', :params => {:format=>:html, :maxResultCount=>"100", :topSort=>ts, :update_area=>:hugo }
       assert_response :success
 

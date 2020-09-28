@@ -96,70 +96,42 @@ class DbaSgaController < ApplicationController
     sql_select_all ["\
       SELECT /* Panorama-Tool Ramm */ *
       FROM (SELECT  SUBSTR(LTRIM(SQL_TEXT),1,40) SQL_Text,
-                s.SQL_Text Full_SQL_Text,
-                s.Inst_ID, #{"s.Con_ID, " if get_current_database[:cdb]} s.Parsing_Schema_Name,
-                u.USERNAME,
-                s.ELAPSED_TIME/1000000 ELAPSED_TIME_SECS,
-                (s.ELAPSED_TIME / 1000000) / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS) ELAPSED_TIME_SECS_PER_EXECUTE,
-                s.DISK_READS,
-                s.DISK_READS / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS) DISK_READS_PER_EXECUTE,
-                s.BUFFER_GETS,
-                (s.BUFFER_GETS / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS)) BUFFER_GETS_PER_EXEC,
-                s.EXECUTIONS,
-                s.PARSE_CALLS, s.SORTS, s.LOADS,
-                s.ROWS_PROCESSED,
-                s.Rows_Processed / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS) Rows_Processed_PER_EXECUTE,
-                100 * (s.Buffer_Gets - s.Disk_Reads) / GREATEST(s.Buffer_Gets, 1) Hit_Ratio,
-                TO_DATE(s.First_Load_Time, 'YYYY-MM-DD/HH24:MI:SS') First_Load_Time,
-                s.SHARABLE_MEM, s.PERSISTENT_MEM, s.RUNTIME_MEM,
-                ROUND(s.CPU_TIME / 1000000, 3) CPU_TIME_SECS,
-                ROUND(s.Cluster_Wait_Time / 1000000, 3) Cluster_Wait_Time_SECS,
-                ROUND((s.CPU_TIME / 1000000) / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS), 3) AS CPU_TIME_SECS_PER_EXECUTE,
-                s.SQL_ID, s.Plan_Hash_Value, s.Object_Status,
-                c.Child_Count, c.Plans
-                #{modus=="GV$SQL" ? ", s.Child_Number, RAWTOHEX(s.Child_Address) Child_Address, s.Last_Active_Time" : ", c.Child_Number, c.Child_Address, s.Version_Count, TO_DATE(s.Last_Active_Time, 'YYYY-MM-DD/HH24:MI:SS') Last_Active_Time" }
-           FROM #{modus} s
-           JOIN DBA_USERS u ON u.User_ID = s.Parsing_User_ID
-           JOIN (SELECT /*+ NO_MERGE */ Inst_ID, SQL_ID, COUNT(*) Child_Count, MIN(Child_Number) Child_Number, MIN(RAWTOHEX(Child_Address)) Child_Address,
-                        COUNT(DISTINCT Plan_Hash_Value) Plans
-                 FROM   GV$SQL GROUP BY Inst_ID, SQL_ID
-                ) c ON c.Inst_ID=s.Inst_ID AND c.SQL_ID=s.SQL_ID
-          WHERE 1 = 1 -- damit nachfolgende Klauseln mit AND beginnen können
-            #{where_string}
-            #{" AND Rows_Processed>0" if top_sort == 'BufferGetsPerRow'}
-          ORDER BY #{
-            case top_sort
-              when "ElapsedTimePerExecute"then "s.ELAPSED_TIME/DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS) DESC"
-              when "ElapsedTimeTotal"     then "s.ELAPSED_TIME DESC"
-              when "ExecutionCount"       then "s.Executions DESC"
-              when 'ParseCalls'           then 's.Parse_Calls DESC'
-              when "RowsProcessed"        then "s.Rows_Processed DESC"
-              when "ExecsPerDisk"         then "s.Executions/DECODE(s.Disk_Reads,0,1,s.Disk_Reads) DESC"
-              when "BufferGetsPerRow"     then "s.Buffer_Gets/DECODE(s.Rows_Processed,0,1,s.Rows_Processed) DESC"
-              when "CPUTime"              then "s.CPU_Time DESC"
-              when "BufferGets"           then "s.Buffer_gets DESC"
-              when "ClusterWaits"         then "s.Cluster_Wait_Time DESC"
-              when "LastActive"           then "s.Last_Active_Time DESC NULLS LAST"
-              when "Memory"               then "s.SHARABLE_MEM+s.PERSISTENT_MEM+s.RUNTIME_MEM DESC"
-              else raise "Unknwown value #{top_sort} for top_sort"
-            end} )
-  WHERE ROWNUM < ?
-  ORDER BY #{
-        case top_sort
-          when "ElapsedTimePerExecute"then "ELAPSED_TIME_SECS_PER_EXECUTE DESC"
-          when "ElapsedTimeTotal"     then "ELAPSED_TIME_SECS DESC"
-          when "ExecutionCount"       then "Executions DESC"
-          when 'ParseCalls'           then 'Parse_Calls DESC'
-          when "RowsProcessed"        then "Rows_Processed DESC"
-          when "ExecsPerDisk"         then "Executions/DECODE(Disk_Reads,0,1,Disk_Reads) DESC"
-          when "BufferGetsPerRow"     then "Buffer_Gets/DECODE(Rows_Processed,0,1,Rows_Processed) DESC"
-          when "CPUTime"              then "CPU_Time_Secs DESC"
-          when "BufferGets"           then "Buffer_gets DESC"
-          when "ClusterWaits"         then "Cluster_Wait_Time_Secs DESC"
-          when "LastActive"           then "Last_Active_Time DESC NULLS LAST"
-          when "Memory"               then "SHARABLE_MEM+PERSISTENT_MEM+RUNTIME_MEM DESC"
-          else raise "Unknwown value #{top_sort} for top_sort"
-        end}"
+                    s.SQL_Text Full_SQL_Text,
+                    s.Inst_ID, #{"s.Con_ID, " if get_current_database[:cdb]} s.Parsing_Schema_Name,
+                    u.USERNAME,
+                    s.ELAPSED_TIME/1000000 ELAPSED_TIME_SECS,
+                    (s.ELAPSED_TIME / 1000000) / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS) ELAPSED_TIME_SECS_PER_EXECUTE,
+                    s.DISK_READS,
+                    s.DISK_READS / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS) DISK_READS_PER_EXECUTE,
+                    s.BUFFER_GETS,
+                    (s.BUFFER_GETS / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS)) BUFFER_GETS_PER_EXEC,
+                    s.EXECUTIONS,
+                    s.PARSE_CALLS, s.SORTS, s.LOADS,
+                    s.ROWS_PROCESSED,
+                    s.Rows_Processed / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS) Rows_Processed_PER_EXECUTE,
+                    100 * (s.Buffer_Gets - s.Disk_Reads) / GREATEST(s.Buffer_Gets, 1) Hit_Ratio,
+                    TO_DATE(s.First_Load_Time, 'YYYY-MM-DD/HH24:MI:SS') First_Load_Time,
+                    s.SHARABLE_MEM, s.PERSISTENT_MEM, s.RUNTIME_MEM,
+                    ROUND(s.CPU_TIME / 1000000, 3) CPU_TIME_SECS,
+                    ROUND(s.Cluster_Wait_Time / 1000000, 3) Cluster_Wait_Time_SECS,
+                    ROUND((s.CPU_TIME / 1000000) / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS), 3) AS CPU_TIME_SECS_PER_EXECUTE,
+                    s.SQL_ID, s.Plan_Hash_Value, s.Object_Status,
+                    c.Child_Count, c.Plans
+                    #{modus=="GV$SQL" ? ", s.Child_Number, RAWTOHEX(s.Child_Address) Child_Address, s.Last_Active_Time" : ", c.Child_Number, c.Child_Address, s.Version_Count, TO_DATE(s.Last_Active_Time, 'YYYY-MM-DD/HH24:MI:SS') Last_Active_Time" }
+            FROM   #{modus} s
+            JOIN DBA_USERS u ON u.User_ID = s.Parsing_User_ID
+            JOIN (SELECT /*+ NO_MERGE */ Inst_ID, SQL_ID, COUNT(*) Child_Count, MIN(Child_Number) Child_Number, MIN(RAWTOHEX(Child_Address)) Child_Address,
+                         COUNT(DISTINCT Plan_Hash_Value) Plans
+                  FROM   GV$SQL GROUP BY Inst_ID, SQL_ID
+                 ) c ON c.Inst_ID=s.Inst_ID AND c.SQL_ID=s.SQL_ID
+            WHERE 1 = 1 -- damit nachfolgende Klauseln mit AND beginnen können
+                #{where_string}
+                #{" AND Rows_Processed>0" if top_sort == 'BufferGetsPerRow'}
+            ORDER BY #{sql_area_sort_criteria[top_sort.to_sym][:sql]}
+           )
+      WHERE ROWNUM < ?
+      ORDER BY #{sql_area_sort_criteria[top_sort.to_sym][:sql]}
+      "
     ].concat(where_values)
   end
 

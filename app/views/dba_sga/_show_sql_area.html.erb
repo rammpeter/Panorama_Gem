@@ -29,18 +29,9 @@
     <div class="flex-row-element" title="<%= t(:dba_history_show_sql_area_historic_sorted_by_hint, :default=>'Result sorted in ascending order by this criteria') %>">
       <%= t(:sorted_by, :default=>'Sorted by') %>
       <select name="topSort">
-        <option value="ElapsedTimePerExecute"     >Elapsed time per execute</option>
-        <option value="ElapsedTimeTotal" selected >Elapsed time total</option>
-        <option value="ExecutionCount"            >Total number of executions</option>
-        <option value="ParseCalls"                >Total number of parse calls</option>
-        <option value="RowsProcessed"             >Number of rows processed</option>
-        <option value="ExecsPerDisk"              >Number of executions per disk-read</option>
-        <option value="BufferGetsPerRow"          >Buffer gets per result-row</option>
-        <option value="CPUTime"                   >CPU-time total</option>
-        <option value="BufferGets"                >Buffer Gets total</option>
-        <option value="ClusterWaits"              >Cluster wait time total</option>
-        <option value="LastActive"                ><%= t(:dba_sga_show_sql_area_sort_last_active_hint, :default=>'Timestamp of last execution')%></option>
-        <option value="Memory"                    ><%= t(:dba_sga_show_sql_area_sort_memory_hint, :default=>'Amount of allocated memory in SGA')%></option>
+        <% sql_area_sort_criteria.each do |key, value| %>
+          <%= "<option value=\"#{key}\"#{" selected" if key == :ElapsedTimeTotal}>#{value[:title]}</option>".html_safe %>
+        <% end %>
       </select>
     </div>
 
