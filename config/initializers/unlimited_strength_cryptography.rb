@@ -8,7 +8,8 @@
 # http://stackoverflow.com/questions/14552303/opensslcipherciphererror-with-rails4-on-jruby
 
 
-if RUBY_PLATFORM == 'java' # Allows the application to work with other Rubies if not JRuby
+#if RUBY_PLATFORM == 'java' # Allows the application to work with other Rubies if not JRuby
+if false      # try to work without JCE fix, 2020-09-30
   require 'java'
   java_import 'java.lang.ClassNotFoundException'
 
