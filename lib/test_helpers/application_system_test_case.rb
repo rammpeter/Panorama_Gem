@@ -243,7 +243,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
           begin
             click_button('#error_dialog_close_button')                          # Close the error dialog to ensure next actions may see the target
           rescue Exception
-            sleep(1)                                                            # retry after one second if exception raise
+            sleep(5)                                                            # retry after x seconds if exception raised
             click_button('#error_dialog_close_button')                          # Close the error dialog to ensure next actions may see the target
           end
         end
