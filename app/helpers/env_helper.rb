@@ -45,7 +45,7 @@ module EnvHelper
       retval = Random.rand 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
       File.write(DEFAULT_SECRET_KEY_BASE_FILE, retval)
     end
-    retval.strip                                                                # remove witespaces incl. \n
+    retval.to_s.strip                                                           # remove witespaces incl. \n
   end
 
 
