@@ -28,7 +28,7 @@ module EnvHelper
         Rails.logger.error "Secret key base file pointed to by SECRET_KEY_BASE_FILE environment variable is empty!" if retval.nil? || retval == ''
         Rails.logger.warn "Secret key base from file pointed to by SECRET_KEY_BASE_FILE environment variable is too short! Should have at least 128 chars!" if retval.length < 128
       else
-        Rails.logger.error "Secret key base file pointed to by SECRET_KEY_BASE_FILE environment variable does not exist!"
+        Rails.logger.error "Secret key base file pointed to by SECRET_KEY_BASE_FILE environment variable does not exist (#{ENV['SECRET_KEY_BASE_FILE']})!"
       end
     end
 
