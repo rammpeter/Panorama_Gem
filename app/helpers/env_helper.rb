@@ -16,15 +16,15 @@ module EnvHelper
 
     if File.exists?(DEFAULT_SECRET_KEY_BASE_FILE)                               # look for generated file at first
       retval = File.read(DEFAULT_SECRET_KEY_BASE_FILE)
-      Rails.logger.info "Secret key base read from file #{DEFAULT_SECRET_KEY_BASE_FILE} (#{retval.length} chars)"
-      Rails.logger.error "Secret key base file at default location #{DEFAULT_SECRET_KEY_BASE_FILE} is empty!" if retval.nil? || retval == ''
-      Rails.logger.warn "Secret key base from file at default location #{DEFAULT_SECRET_KEY_BASE_FILE} is too short! Should have at least 128 chars!" if retval.length < 128
+      Rails.logger.info "Secret key base read from default file location '#{DEFAULT_SECRET_KEY_BASE_FILE}' (#{retval.length} chars)"
+      Rails.logger.error "Secret key base file at default location '#{DEFAULT_SECRET_KEY_BASE_FILE}' is empty!" if retval.nil? || retval == ''
+      Rails.logger.warn "Secret key base from file at default location '#{DEFAULT_SECRET_KEY_BASE_FILE}' is too short! Should have at least 128 chars!" if retval.length < 128
     end
 
     if ENV['SECRET_KEY_BASE_FILE']                                              # User-provided secrets file
       if File.exists?(ENV['SECRET_KEY_BASE_FILE'])
         retval = File.read(ENV['SECRET_KEY_BASE_FILE'])
-        Rails.logger.info "Secret key base read from file #{ENV['SECRET_KEY_BASE_FILE']} (#{retval.length} chars)"
+        Rails.logger.info "Secret key base read from file '#{ENV['SECRET_KEY_BASE_FILE']}' pointed to by SECRET_KEY_BASE_FILE environment variable (#{retval.length} chars)"
         Rails.logger.error "Secret key base file pointed to by SECRET_KEY_BASE_FILE environment variable is empty!" if retval.nil? || retval == ''
         Rails.logger.warn "Secret key base from file pointed to by SECRET_KEY_BASE_FILE environment variable is too short! Should have at least 128 chars!" if retval.length < 128
       else
