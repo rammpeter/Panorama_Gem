@@ -19,15 +19,34 @@
     "%t#{"\nPhysical free memory = #{fn(rec.free_mem_gb, 3)} GB" unless rec.free_mem_gb.nil?}#{"\nPhysical inactive memory = #{fn(rec.inactive_mem_gb, 3)} GB" unless rec.inactive_mem_gb.nil?}"
   end
 
+  show_compatible = proc do |rec|
+    if rec.compatible == rec.version[0, rec.compatible.length]
+      "<span class=\"cui-thumb-up\"></span>".html_safe
+    else
+      "<span style=\"background-color:lightyellow;\">#{rec.compatible}</span>".html_safe
+    end
+  end
+
+  data_title_compatible = proc do |rec|
+    retval = "%t\ncompatible = #{rec.compatible}"
+    if rec.compatible == rec.version[0, rec.compatible.length]
+      retval << "\n\nNo difference between instance version (#{rec.version}) and compatible value.\nInstance uses all optimizer features of DB version."
+    else
+      retval << "\n\nDifference between instance version (#{rec.version}) and compatible value!\nInstance restricts optimizer features of DB version to compatible version."
+    end
+    retval
+  end
+
   column_options =
        [
-           {:caption=>'DBID',          :data=>proc{|rec| rec.dbid },                           :title=>"Unique identifier for this database"},
-           {:caption=>"Instance",      :data=>proc{|rec| "#{rec.instance_number}#{" (*)" if rec.instance_connected && @instance_data.length >1}" },       :title=>"Instance number, (*) for connecting instance"},
-           {:caption=>"Name",          :data=>proc{|rec| rec.instance_name },                  :title=>"Instance name"},
+           {:caption=>'DBID',          :data=>proc{|rec| rec.dbid },                           :title=>"Unique identifier for this database", data_title: proc{|rec| "%t\nDB version = #{rec.version}"} },
+           {:caption=>"Inst.",         :data=>proc{|rec| "#{rec.instance_number}#{" (*)" if rec.instance_connected && @instance_data.length >1}" },       :title=>"Instance number, (*) for connecting instance", data_title: proc{|rec| "%t\nDB version = #{rec.version}"} },
+           {:caption=>"Name",          :data=>proc{|rec| rec.instance_name },                  :title=>"Instance name", data_title: proc{|rec| "%t\nDB version = #{rec.version}"} },
            {:caption=>"Hostname",      :data=>proc{|rec| rec.host_name },                      :title=>"Last startup time of instance"},
            {:caption=>"Startup",       :data=>proc{|rec| localeDateTime(rec.startup_time) },   :title=>"Startup der DB", :data_title=>proc{|rec| "%t, open mode = #{rec.open_mode}"}},
            {:caption=>"Archiver",      :data=>proc{|rec| rec.archiver },                       :title=>"Archiver mode of instance"},
            {:caption=>"Character-set", :data=>proc{|rec| rec.nls_characterset },               :title=>"Character set of database", :data_title=>proc{|rec| "%t: NChar_Character_Set=#{rec.nls_nchar_characterset}"}},
+           {:caption=>"Cp.",           :data=>show_compatible,                                 :title=>"Optimizer compatible mode of instance (from v$Parameter)", data_title: data_title_compatible},
            {:caption=>'Database role', :data=>proc{|rec| rec.database_role },                  :title=>"Database role for data guard\nCan be one of the following:\n- SNAPSHOT STANDBY\n- LOGICAL STANDBY\n- PHYSICAL STANDBY\n- PRIMARY\n- FAR SYNC"},
            {:caption=>"Instance role", :data=>proc{|rec| rec["instance_role"] },               :title=>"Instance role for data guard"},
            {:caption=>"CPU-Count",     :data=>proc{|rec| rec.cpu_count },                      :title=>"Number of CPUs counted for instance (from gv$Parameter)", data_title: cpu_count_data_title, align: :right},

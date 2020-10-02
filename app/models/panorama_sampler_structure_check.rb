@@ -23,7 +23,14 @@ class PanoramaSamplerStructureCheck
 
   # Schemas with valid Panorama-Sampler structures for start
   def self.panorama_sampler_schemas(option = nil)
-    sql = "SELECT Owner,
+    check_tables = ['PANORAMA_SNAPSHOT', 'PANORAMA_WR_CONTROL', 'PANORAMA_OBJECT_SIZES', 'PANORAMA_CACHE_OBJECTS', 'PANORAMA_BLOCKING_LOCKS']
+    sql = "\
+           WITH Tab_Columns AS (
+                                SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Column_Name
+                                FROM   All_Tab_Columns
+                                WHERE  Table_Name IN (#{check_tables.map{|t| "'#{t}'"}.join(',')})
+                               )
+           SELECT Owner,
                   NVL(SUM(CASE WHEN Table_Name = 'PANORAMA_SNAPSHOT'        THEN 1 END), 0) snapshot_count,
                   NVL(SUM(CASE WHEN Table_Name = 'PANORAMA_WR_CONTROL'      THEN 1 END), 0) wr_control_count,
                   NVL(SUM(CASE WHEN Table_Name = 'PANORAMA_OBJECT_SIZES'    THEN 1 END), 0) object_sizes_count,
@@ -32,10 +39,10 @@ class PanoramaSamplerStructureCheck
            FROM ("
 
     # check existence of table with full set of columns
-    ['PANORAMA_SNAPSHOT', 'PANORAMA_WR_CONTROL', 'PANORAMA_OBJECT_SIZES', 'PANORAMA_CACHE_OBJECTS', 'PANORAMA_BLOCKING_LOCKS'].each do |test_table|
+    check_tables.each do |test_table|
       sql << "\nUNION ALL\n" if test_table != 'PANORAMA_SNAPSHOT'                 # not the first table
       sql << "SELECT Owner, Table_Name
-              FROM   All_Tab_Columns
+              FROM   Tab_Columns
               WHERE  Table_Name = '#{test_table}'
               AND    Column_Name IN ("
       TABLES.each do |table|
