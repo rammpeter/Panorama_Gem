@@ -201,22 +201,22 @@ module ActiveSessionHistoryHelper
                                      Snap_ID, h.Instance_Number, Session_ID, Session_Serial#,
                                      Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, Current_File#, Current_Block#,
                                      #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
-                                     p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Session_State, Module, Action, Program
+                                     p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Session_State, Module, Action, Program, Machine, Service_Hash
                               FROM   DBA_Hist_Active_Sess_History h
                               LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = h.Instance_Number
                               WHERE  (v.Min_Sample_Time IS NULL OR h.Sample_Time < v.Min_Sample_Time)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen  */
                               AND    h.DBID = ?
                               AND    h.Snap_ID BETWEEN ? AND ?
-                              AND    h.Sample_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+                              AND    h.Sample_Time >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND h.Sample_Time < TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                               UNION ALL
                               SELECT 1 Sample_Cycle,
                                      #{rounded_sample_time_sql(1)} Rounded_Sample_Time, /* auf eine Sekunde genau gerundete Zeit */
                                      NULL Snap_ID, h.Inst_ID Instance_Number, Session_ID, Session_Serial#,
                                      Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, Current_File#, Current_Block#,
                                      #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
-                                     p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Session_State, Module, Action, Program
+                                     p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Session_State, Module, Action, Program, Machine, Service_Hash
                               FROM   gv$Active_Session_History h
-                              WHERE  Sample_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+                              WHERE  Sample_Time >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND Sample_Time < TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                             ) h
                     )
     "

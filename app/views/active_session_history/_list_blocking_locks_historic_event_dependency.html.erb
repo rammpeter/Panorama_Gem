@@ -12,7 +12,8 @@
         time_selection_start: @time_selection_start,
         time_selection_end:   @time_selection_end,
         update_area:          @update_area
-    }, title: "Show blocking sessions for this combination of blocking and waiting event"
+    }.merge(@show_instances ? {blocking_instance: rec.blocking_instance.nil? ? 'NULL': rec.blocking_instance, waiting_instance: rec.waiting_instance} : {} ),
+              title: "Show blocking sessions for this combination of blocking and waiting event"
     )
   end
 
@@ -26,7 +27,8 @@
         time_selection_start: @time_selection_start,
         time_selection_end:   @time_selection_end,
         update_area:          @update_area
-    }, title: "Show waiting sessions for this combination of blocking and waiting event"
+    }.merge(@show_instances ? {blocking_instance: rec.blocking_instance.nil? ? 'NULL': rec.blocking_instance, waiting_instance: rec.waiting_instance} : {}),
+              title: "Show waiting sessions for this combination of blocking and waiting event"
     )
   end
 
@@ -41,28 +43,53 @@
             DBID:                     @dbid,
             time_selection_start:     @time_selection_start,
             time_selection_end:       @time_selection_end,
-        }
+            Min_Snap_ID:               rec.min_snap_id,
+            Max_Snap_ID:               rec.max_snap_id,
+        }.merge(@show_instances ? {Blocking_Instance: rec.blocking_instance, Instance: rec.waiting_instance} : {})
     }, title: "Show ASH records for this combination of blocking and waiting event"
     )
   end
 
+  unique_blocking_property = proc do |rec|
+    retval = ''
+    retval << "User:#{rec.blocking_user} "        if rec.blocking_user
+    retval << "Module:#{rec.blocking_module} "    if rec.blocking_module
+    retval << "Action:#{rec.blocking_action} "    if rec.blocking_action
+    retval << "Machine:#{rec.blocking_machine} "  if rec.blocking_machine
+    retval << "Program:#{rec.blocking_program} "  if rec.blocking_program
+    retval << "Service:#{rec.blocking_service} "  if rec.blocking_service
+    retval
+  end
 
-  column_options =
-      [
-          {caption: 'Blocking event',         data: proc{|rec| rec.blocking_event },                    title: 'Event of sessions that are blocking other sessions', data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.blocking_event)}"} },
-          {caption: 'Blocking sessions',      data: link_blocking_sessions,                             title: 'Number of distinct sessions (Instance, SID, Serial#) that are blocking other sessions', align: :right },
-          {caption: 'Blocking active (sec.)', data: proc{|rec| fn(rec.blocking_active_seconds) },       title: 'Total number of seconds all blocking sessions have been active (or blocked themself)', data_title: proc{|rec| "%t\n#{seconds_explain(rec.blocking_active_seconds)}"}, align: :right },
-          {caption: 'Waiting event',          data: proc{|rec| rec.waiting_event },                     title: 'Event of sessions that are blocked by other sessions', data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.waiting_event)}"} },
-          {caption: 'Waiting sessions',       data: link_waiting_sessions,                              title: 'Number of distinct sessions (Instance, SID, Serial#) that are blocked by other sessions', align: :right },
-          {caption: 'Waiting active (sec.)',  data: proc{|rec| fn(rec.waiting_active_seconds) },        title: 'Total number of seconds all waiting sessions have been blocked by blocking sessions', data_title: proc{|rec| "%t\n#{seconds_explain(rec.waiting_active_seconds)}"}, align: :right, show_pct_hint: true, show_pct_background: true},
-          {caption: 'First ASH sample',       data: proc{|rec| localeDateTime(rec.first_occurrence) },  title: 'First occurrence of ASH sample for blocked waiting session'},
-          {caption: 'Last ASH sample',        data: proc{|rec| localeDateTime(rec.last_occurrence) },   title: 'Last occurrence of ASH sample for blocked waiting session'},
-          {caption: 'Samples',                data: link_column_samples,                                title: 'Number of ASH samples for waiting sessions between first and last occurrence of ASH sample', align: :right },
-          {caption: 'Avg. waiting sessions',  data: proc{|rec| fn(rec.avg_waiting_sessions, 1) },       title: 'Average number of waiting sessions between first and last occurrence of ASH sample', align: :right },
-          {caption: 'Avg. ms per wait',       data: proc{|rec| fn(rec.avg_seconds_in_wait*1000, 2) },   title: 'Average time in milliseconds the waiting sessions spent since start of last wait', align: :right },
-          {caption: 'Min. ms per wait',       data: proc{|rec| fn(rec.min_seconds_in_wait*1000, 2) },   title: 'Minimum time in milliseconds a waiting session spent since start of last wait', align: :right },
-          {caption: 'Max. ms per wait',       data: proc{|rec| fn(rec.max_seconds_in_wait*1000, 2) },   title: 'Maximum time in milliseconds a waiting session spent since start of last wait', align: :right },
-      ]
+  unique_waiting_property = proc do |rec|
+    retval = ''
+    retval << "User:#{rec.waiting_user} "         if rec.waiting_user
+    retval << "Module:#{rec.waiting_module} "     if rec.waiting_module
+    retval << "Action:#{rec.waiting_action} "     if rec.waiting_action
+    retval << "Machine:#{rec.waiting_machine} "   if rec.waiting_machine
+    retval << "Program:#{rec.waiting_program} "   if rec.waiting_program
+    retval << "Service:#{rec.waiting_service} "   if rec.waiting_service
+    retval
+  end
+
+  column_options = []
+  column_options << {caption: 'Blocking instance',      data: proc{|rec| rec.blocking_instance },                 title: 'RAC instance of sessions with blocking event' } if @show_instances
+  column_options << {caption: 'Blocking event',         data: proc{|rec| rec.blocking_event },                    title: 'Event of sessions that are blocking other sessions', data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.blocking_event)}"} }
+  column_options << {caption: 'Blocking sessions',      data: link_blocking_sessions,                             title: 'Number of distinct sessions (Instance, SID, Serial#) that are blocking other sessions', align: :right }
+  column_options << {caption: 'Unique blocking properties',  data: unique_blocking_property,                      title: 'Session properties that are unique over all blocking sessions' }
+  column_options << {caption: 'Blocking active (sec.)', data: proc{|rec| fn(rec.blocking_active_seconds) },       title: 'Total number of seconds all blocking sessions have been active (or blocked themself)', data_title: proc{|rec| "%t\n#{seconds_explain(rec.blocking_active_seconds)}"}, align: :right }
+  column_options << {caption: 'Waiting instance',       data: proc{|rec| rec.waiting_instance },                  title: 'RAC instance of sessions with waiting event' } if @show_instances
+  column_options << {caption: 'Waiting event',          data: proc{|rec| rec.waiting_event },                     title: 'Event of sessions that are blocked by other sessions', data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.waiting_event)}"} }
+  column_options << {caption: 'Waiting sessions',       data: link_waiting_sessions,                              title: 'Number of distinct sessions (Instance, SID, Serial#) that are blocked by other sessions', align: :right }
+  column_options << {caption: 'Unique waiting properties',  data: unique_waiting_property,                        title: 'Session properties that are unique over all waiting sessions' }
+  column_options << {caption: 'Waiting active (sec.)',  data: proc{|rec| fn(rec.waiting_active_seconds) },        title: 'Total number of seconds all waiting sessions have been blocked by blocking sessions', data_title: proc{|rec| "%t\n#{seconds_explain(rec.waiting_active_seconds)}"}, align: :right, show_pct_hint: true, show_pct_background: true}
+  column_options << {caption: 'First ASH sample',       data: proc{|rec| localeDateTime(rec.first_occurrence) },  title: 'First occurrence of ASH sample for blocked waiting session'}
+  column_options << {caption: 'Last ASH sample',        data: proc{|rec| localeDateTime(rec.last_occurrence) },   title: 'Last occurrence of ASH sample for blocked waiting session'}
+  column_options << {caption: 'Samples',                data: link_column_samples,                                title: 'Number of ASH samples for waiting sessions between first and last occurrence of ASH sample', align: :right }
+  column_options << {caption: 'Avg. waiting sessions',  data: proc{|rec| fn(rec.avg_waiting_sessions, 1) },       title: 'Average number of waiting sessions between first and last occurrence of ASH sample', align: :right }
+  column_options << {caption: 'Avg. ms per wait',       data: proc{|rec| fn(rec.avg_seconds_in_wait*1000, 2) },   title: 'Average time in milliseconds the waiting sessions spent since start of last wait', align: :right }
+  column_options << {caption: 'Min. ms per wait',       data: proc{|rec| fn(rec.min_seconds_in_wait*1000, 2) },   title: 'Minimum time in milliseconds a waiting session spent since start of last wait', align: :right }
+  column_options << {caption: 'Max. ms per wait',       data: proc{|rec| fn(rec.max_seconds_in_wait*1000, 2) },   title: 'Maximum time in milliseconds a waiting session spent since start of last wait', align: :right }
 
   caption = "Event combinations for waiting and blocking sessions between #{@time_selection_start} and #{@time_selection_end}"
 
@@ -101,6 +128,7 @@
     ajax_link("Hidden Auslöser für Timeline",
               {action:                :blocking_locks_historic_event_dependency_timechart,
                dbid:                  @dbid,
+               show_instances:        @show_instances,
                time_selection_start:  @time_selection_start,
                time_selection_end:    @time_selection_end,
                group_seconds:         group_seconds,

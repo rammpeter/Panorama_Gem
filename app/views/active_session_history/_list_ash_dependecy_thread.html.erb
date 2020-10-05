@@ -112,7 +112,7 @@
   column_options <<  {caption: 'Level',            data: proc{|rec| rec.level },                      title: "Level / depth of depedency thread ( 1 = direkt blocking session) " }
   column_options <<  {caption: 'I',                data: proc{|rec| rec.instance_number },            title: "Instance of blocking session", align: :right }
   column_options <<  {caption: "Con-ID",           data: proc{|rec| rec.con_id},                      title: "Container-ID for pluggable database" } if get_current_database[:cdb]
-  column_options <<  {caption: 'Sample-Time',      data: proc{|rec| localeDateTime(rec.rounded_sample_time)}, title: "Snapshot time of sample" }
+  column_options <<  {caption: 'Sample-Time',      data: proc{|rec| localeDateTime(rec.rounded_sample_time)}, title: "Snapshot time of sample\nRounded to 1 second if source is v$Active_Session_History\nRounded to 10 seconds if source is DBA_Hist_Active_Sess_History" }
   column_options <<  {caption: 'Session / Sn.',    data: link_column_sid,                             title: "Session-ID and serial number of blocking session" }
   column_options <<  {caption: 'User',             data: proc{|rec| rec.username},                    title: "User-Name"}
   column_options <<  {caption: 'SQL-ID',           data: link_column_sql_id,                          title: "SQL-ID of current statement + optional SQL-ID of top level SQL", :data_title=>proc{|rec| "%t:\nChild-No=#{rec.sql_child_number}\nPlan-Hash-Value=#{rec.sql_plan_hash_value}#{ "\nCurrent=#{rec.is_sqlid_current}" if rec["is_sqlid_current"]} " } }

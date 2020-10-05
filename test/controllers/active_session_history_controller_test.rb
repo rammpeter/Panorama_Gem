@@ -207,8 +207,35 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
   test "list_blocking_locks_historic_event_dependency with xhr: true" do
-    post :fork_blocking_locks_historic_call, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, commit: 'Blocking locks event dependency' }
-    assert_response_success_or_management_pack_violation('list_blocking_locks_historic_event_dependency')
+    [nil, '1'].each do |show_instances|
+      post :fork_blocking_locks_historic_call, :params => {:format=>:html,
+                                                           :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
+                                                           show_instances: show_instances,
+                                                           commit: 'Blocking locks event dependency' }
+      assert_response_success_or_management_pack_violation('list_blocking_locks_historic_event_dependency')
+    end
+
+    ['true', 'false'].each do |show_instances|
+      post :blocking_locks_historic_event_dependency_timechart, params: {format: :html, dbid: get_dbid,
+                                                                         time_selection_start: @time_selection_start, time_selection_end: @time_selection_end,
+                                                                         show_instances: show_instances }
+      assert_response_success_or_management_pack_violation('blocking_locks_historic_event_dependency_timechart')
+    end
+
+    [nil, 1, 'NULL'].each do |blocking_instance|
+      [:blocking, :waiting].each do |role|
+        post :blocking_locks_historic_event_detail, params: {format: :html, dbid: get_dbid, time_selection_start: @time_selection_start, time_selection_end: @time_selection_end,
+                                                             role: role, blocking_event: 'Hugo1', waiting_event: 'Hugo2', blocking_instance: blocking_instance
+        }.merge(
+            if role == :blocking
+              { waiting_instance:1, waiting_session: 1, waiting_serialno: 1}
+            else
+              {}
+            end
+        )
+        assert_response_success_or_management_pack_violation('blocking_locks_historic_event_dependency_timechart')
+      end
+    end
   end
 
 end

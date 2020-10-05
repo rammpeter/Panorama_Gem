@@ -640,6 +640,7 @@ class ActiveSessionHistoryController < ApplicationController
 
   def list_blocking_locks_historic_event_dependency
     @dbid = prepare_param_dbid
+    @show_instances = prepare_param(:show_instances) == '1'
     save_session_time_selection
 
     with_sql, with_bindings = blocking_locks_historic_event_with_selection(@dbid, @time_selection_start, @time_selection_end)
@@ -649,10 +650,16 @@ class ActiveSessionHistoryController < ApplicationController
         SELECT b.*,
                Waiting_Active_Seconds / ((Last_Occurrence - First_Occurrence) *86400 +
                                          CASE WHEN Last_Occurrence = First_Occurrence THEN Single_Sample_Cycle ELSE 0 END   /* Add one cycle to prevent div by zero */
-                                        )   Avg_Waiting_Sessions
+                                        )   Avg_Waiting_Sessions,
+               ub.UserName            Blocking_User,
+               uw.UserName            Waiting_User,
+               sb.Service_Name        Blocking_Service,
+               sw.Service_Name        Waiting_Service
         FROM   (
-                SELECT Blocking_Event,
+                SELECT /*+ NO_MERGE */
+                       Blocking_Event,
                        Waiting_Event,
+                       #{"Blocking_Instance, Waiting_Instance, " if @show_instances}
                        COUNT(DISTINCT Blocking_Instance||','||Blocking_Session_ID||','||Blocking_Session_Serial#)   Blocking_Sessions,
                        COUNT(DISTINCT Waiting_Instance||','||Waiting_Session_ID||','||Waiting_Session_Serial#)     Waiting_Sessions,
                        SUM(Blocking_Active_Seconds)                                         Blocking_Active_Seconds,
@@ -663,7 +670,21 @@ class ActiveSessionHistoryController < ApplicationController
                        MIN(Seconds_In_Wait)                                                 Min_Seconds_In_Wait,
                        MAX(Seconds_In_Wait)                                                 Max_Seconds_In_Wait,
                        AVG(Seconds_In_Wait)                                                 Avg_Seconds_In_Wait,
-                       COUNT(*)                                                             Samples
+                       COUNT(*)                                                             Samples,
+                       MIN(Snap_ID)                                                         Min_Snap_ID,
+                       MAX(Snap_ID)                                                         Max_Snap_ID,
+                       CASE WHEN COUNT(DISTINCT Blocking_User_ID)       = 1 THEN MIN(Blocking_User_ID)      END Blocking_User_ID,
+                       CASE WHEN COUNT(DISTINCT Waiting_User_ID)        = 1 THEN MIN(Waiting_User_ID)       END Waiting_User_ID,
+                       CASE WHEN COUNT(DISTINCT Blocking_Module)        = 1 THEN MIN(Blocking_Module)       END Blocking_Module,
+                       CASE WHEN COUNT(DISTINCT Waiting_Module)         = 1 THEN MIN(Waiting_Module)        END Waiting_Module,
+                       CASE WHEN COUNT(DISTINCT Blocking_Action)        = 1 THEN MIN(Blocking_Action)       END Blocking_Action,
+                       CASE WHEN COUNT(DISTINCT Waiting_Action)         = 1 THEN MIN(Waiting_Action)        END Waiting_Action,
+                       CASE WHEN COUNT(DISTINCT Blocking_Machine)       = 1 THEN MIN(Blocking_Machine)      END Blocking_Machine,
+                       CASE WHEN COUNT(DISTINCT Waiting_Machine)        = 1 THEN MIN(Waiting_Machine)       END Waiting_Machine,
+                       CASE WHEN COUNT(DISTINCT Blocking_Program)       = 1 THEN MIN(Blocking_Program)      END Blocking_Program,
+                       CASE WHEN COUNT(DISTINCT Waiting_Program)        = 1 THEN MIN(Waiting_Program)       END Waiting_Program,
+                       CASE WHEN COUNT(DISTINCT Blocking_Service_Hash)  = 1 THEN MIN(Blocking_Service_Hash) END Blocking_Service_Hash,
+                       CASE WHEN COUNT(DISTINCT Waiting_Service_Hash)   = 1 THEN MIN(Waiting_Service_Hash)  END Waiting_Service_Hash
                 FROM   (SELECT /*+ NO_MERGE */
                                CASE WHEN waiters.Blocking_Session_Status = 'GLOBAL'
                                THEN 'GLOBAL (other RAC instance)'
@@ -679,16 +700,33 @@ class ActiveSessionHistoryController < ApplicationController
                                waiters.Blocking_Session_Serial#                                     Blocking_Session_Serial#,
                                waiters.Session_Serial#                                              Waiting_Session_Serial#,
                                waiters.Rounded_Sample_Time                                          Waiting_Rounded_Sample_Time,
-                               waiters.Time_Waited/1000000                                          Seconds_in_Wait
+                               waiters.Time_Waited/1000000                                          Seconds_in_Wait,
+                               waiters.Snap_ID,
+                               blockers.User_ID                                                     Blocking_User_ID,
+                               waiters.User_ID                                                      Waiting_User_ID,
+                               blockers.Module                                                      Blocking_Module,
+                               waiters.Module                                                       Waiting_Module,
+                               blockers.Action                                                      Blocking_Action,
+                               waiters.Action                                                       Waiting_Action,
+                               blockers.Machine                                                     Blocking_Machine,
+                               waiters.Machine                                                      Waiting_Machine,
+                               blockers.Program                                                     Blocking_Program,
+                               waiters.Program                                                      Waiting_Program,
+                               blockers.Service_Hash                                                Blocking_Service_Hash,
+                               waiters.Service_Hash                                                 Waiting_Service_Hash
                         FROM   tsSel waiters
                         LEFT OUTER JOIN tsSel blockers ON blockers.Instance_Number = waiters.Blocking_Inst_ID AND blockers.Session_ID = waiters.Blocking_Session
                                                        AND blockers.Session_Serial# = waiters.Blocking_Session_Serial# AND blockers.Rounded_Sample_Time = waiters.Rounded_Sample_Time
                         WHERE  waiters.Blocking_Session_Status IN ('VALID', 'GLOBAL') /* Session wartend auf Blocking-Session */
                        )
-                GROUP BY Blocking_Event, Waiting_Event
+                GROUP BY Blocking_Event, Waiting_Event#{", Blocking_Instance, Waiting_Instance" if @show_instances}
                ) b
+        LEFT OUTER JOIN All_Users ub ON ub.User_ID = Blocking_User_ID
+        LEFT OUTER JOIN All_Users uw ON uw.User_ID = Waiting_User_ID
+        LEFT OUTER JOIN DBA_Hist_Service_Name sb  ON sb.DBID = ? AND sb.Service_Name_Hash = Blocking_Service_Hash
+        LEFT OUTER JOIN DBA_Hist_Service_Name sw  ON sw.DBID = ? AND sw.Service_Name_Hash = Blocking_Service_Hash
         ORDER BY Waiting_Active_Seconds DESC
-       "].concat(with_bindings)
+       "].concat(with_bindings).concat([@dbid, @dbid])
 
 
     render_partial :list_blocking_locks_historic_event_dependency
@@ -696,6 +734,7 @@ class ActiveSessionHistoryController < ApplicationController
 
   def blocking_locks_historic_event_dependency_timechart
     dbid = prepare_param_dbid
+    @show_instances = prepare_param(:show_instances) == 'true'
     save_session_time_selection
     group_seconds = params[:group_seconds].to_i
 
@@ -706,11 +745,14 @@ class ActiveSessionHistoryController < ApplicationController
       SELECT Start_Sample, Criteria,
              SUM(Sample_Cycle / CASE WHEN Sample_Cycle > #{group_seconds} THEN #{group_seconds}*Sample_Cycle ELSE #{group_seconds} END) Diagram_Value
       FROM   (SELECT TRUNC(waiters.Rounded_Sample_Time) + TRUNC(TO_NUMBER(TO_CHAR(waiters.Rounded_Sample_Time, 'SSSSS'))/#{group_seconds})*#{group_seconds}/86400 Start_Sample,
+                     #{"'('||waiters.Instance_Number||') '||" if @show_instances}
+                     NVL(NVL(waiters.Event,  waiters.Session_State),  'UNKNOWN') ||
+                     ' -> '||
+                     #{"'('||waiters.Blocking_Inst_ID||') '||" if @show_instances}
                      CASE WHEN waiters.Blocking_Session_Status = 'GLOBAL'
                      THEN 'GLOBAL (other RAC instance)'
                      ELSE NVL(NVL(blockers.Event, blockers.Session_State), 'IDLE')
-                     END || ' -> '||
-                     NVL(NVL(waiters.Event,  waiters.Session_State),  'UNKNOWN')  Criteria,
+                     END Criteria,
                      waiters.Sample_Cycle
               FROM   tsSel waiters
               LEFT OUTER JOIN tsSel blockers ON blockers.Instance_Number = waiters.Blocking_Inst_ID AND blockers.Session_ID = waiters.Blocking_Session
@@ -738,10 +780,14 @@ class ActiveSessionHistoryController < ApplicationController
 
   def blocking_locks_historic_event_detail
     save_session_time_selection
-    @dbid           = prepare_param :dbid
-    @blocking_event = prepare_param :blocking_event
-    @waiting_event  = prepare_param :waiting_event
-    @role           = prepare_param(:role).to_sym                               # :blocking or :waiting
+    @dbid               = prepare_param :dbid
+    @blocking_instance  = prepare_param :blocking_instance
+    @blocking_event     = prepare_param :blocking_event
+    @waiting_event      = prepare_param :waiting_event
+    @role               = prepare_param(:role).to_sym                               # :blocking or :waiting
+    @waiting_instance   = prepare_param :waiting_instance
+    @waiting_session    = prepare_param :waiting_session
+    @waiting_serialno   = prepare_param :waiting_serialno
 
     with_sql, with_bindings = blocking_locks_historic_event_with_selection(@dbid, @time_selection_start, @time_selection_end)
 
@@ -757,16 +803,58 @@ class ActiveSessionHistoryController < ApplicationController
               else raise "blocking_locks_historic_event_detail: unknown role '#{role}'"
               end
 
+    where_string = ''
+    where_values = []
+
+    global_where_string = ''
+    global_where_values = []
+
+    if @blocking_instance
+      if @blocking_instance == 'NULL'
+        where_string << " AND waiters.Blocking_Inst_ID IS NULL"
+      else
+        where_string << " AND waiters.Blocking_Inst_ID = ?"
+        where_values << @blocking_instance
+      end
+    end
+
+    if @waiting_instance
+      where_string << " AND waiters.Instance_Number = ?"
+      where_values << @waiting_instance
+    end
+
+    if @waiting_session
+      where_string << " AND waiters.Session_ID = ?"
+      where_values << @waiting_session
+    end
+
+    if @waiting_serialno
+      where_string << " AND waiters.Session_Serial# = ?"
+      where_values << @waiting_serialno
+    end
+
+    global_where_string << " Blocking_Event = ?"
+    global_where_values << @blocking_event
+
+    global_where_string << " AND Waiting_Event = ?"
+    global_where_values << @waiting_event
+
     @sessions = sql_select_iterator ["\
       #{with_sql}
       SELECT b.*,
              Waiting_Active_Seconds / ((Last_Occurrence - First_Occurrence) *86400 +
                                        CASE WHEN Last_Occurrence = First_Occurrence THEN Single_Sample_Cycle ELSE 0 END   /* Add one cycle to prevent div by zero */
-                                      )   Avg_Waiting_Sessions
+                                      )   Avg_Waiting_Sessions,
+             ub.UserName            Blocking_User,
+             uw.UserName            Waiting_User,
+             sb.Service_Name        Blocking_Service,
+             sw.Service_Name        Waiting_Service
       FROM   (
               SELECT #{session_select},
                      MIN(Waiting_Rounded_Sample_Time) First_Occurrence,
                      MAX(Waiting_Rounded_Sample_Time) Last_Occurrence,
+                     MIN(Snap_ID)                     Min_Snap_ID,
+                     MAX(Snap_ID)                     Max_Snap_ID,
                      COUNT(*)                         Samples,
                      COUNT(DISTINCT Blocking_Instance||','||Blocking_Session_ID||','||Blocking_Session_Serial#)   Blocking_Sessions,
                      COUNT(DISTINCT Waiting_Instance ||','||Waiting_Session_ID ||','||Waiting_Session_Serial# )   Waiting_Sessions,
@@ -775,7 +863,19 @@ class ActiveSessionHistoryController < ApplicationController
                      MIN(Waiting_Active_Seconds)                                          Single_Sample_Cycle,
                      MIN(Seconds_In_Wait)                                                 Min_Seconds_In_Wait,
                      MAX(Seconds_In_Wait)                                                 Max_Seconds_In_Wait,
-                     AVG(Seconds_In_Wait)                                                 Avg_Seconds_In_Wait
+                     AVG(Seconds_In_Wait)                                                 Avg_Seconds_In_Wait,
+                     CASE WHEN COUNT(DISTINCT Blocking_User_ID)       = 1 THEN MIN(Blocking_User_ID)      END Blocking_User_ID,
+                     CASE WHEN COUNT(DISTINCT Waiting_User_ID)        = 1 THEN MIN(Waiting_User_ID)       END Waiting_User_ID,
+                     CASE WHEN COUNT(DISTINCT Blocking_Module)        = 1 THEN MIN(Blocking_Module)       END Blocking_Module,
+                     CASE WHEN COUNT(DISTINCT Waiting_Module)         = 1 THEN MIN(Waiting_Module)        END Waiting_Module,
+                     CASE WHEN COUNT(DISTINCT Blocking_Action)        = 1 THEN MIN(Blocking_Action)       END Blocking_Action,
+                     CASE WHEN COUNT(DISTINCT Waiting_Action)         = 1 THEN MIN(Waiting_Action)        END Waiting_Action,
+                     CASE WHEN COUNT(DISTINCT Blocking_Machine)       = 1 THEN MIN(Blocking_Machine)      END Blocking_Machine,
+                     CASE WHEN COUNT(DISTINCT Waiting_Machine)        = 1 THEN MIN(Waiting_Machine)       END Waiting_Machine,
+                     CASE WHEN COUNT(DISTINCT Blocking_Program)       = 1 THEN MIN(Blocking_Program)      END Blocking_Program,
+                     CASE WHEN COUNT(DISTINCT Waiting_Program)        = 1 THEN MIN(Waiting_Program)       END Waiting_Program,
+                     CASE WHEN COUNT(DISTINCT Blocking_Service_Hash)  = 1 THEN MIN(Blocking_Service_Hash) END Blocking_Service_Hash,
+                     CASE WHEN COUNT(DISTINCT Waiting_Service_Hash)   = 1 THEN MIN(Waiting_Service_Hash)  END Waiting_Service_Hash
               FROM   (SELECT/*+ NO_MERGE */
                             CASE WHEN waiters.Blocking_Session_Status = 'GLOBAL'
                             THEN 'GLOBAL (other RAC instance)'
@@ -791,18 +891,35 @@ class ActiveSessionHistoryController < ApplicationController
                             waiters.Blocking_Session_Serial#                                     Blocking_Session_Serial#,
                             waiters.Session_Serial#                                              Waiting_Session_Serial#,
                             waiters.Rounded_Sample_Time                                          Waiting_Rounded_Sample_Time,
-                            waiters.Time_Waited/1000000                                          Seconds_in_Wait
+                            waiters.Time_Waited/1000000                                          Seconds_in_Wait,
+                            waiters.Snap_ID                                                      Snap_ID,
+                            blockers.User_ID                                                     Blocking_User_ID,
+                            waiters.User_ID                                                      Waiting_User_ID,
+                            blockers.Module                                                      Blocking_Module,
+                            waiters.Module                                                       Waiting_Module,
+                            blockers.Action                                                      Blocking_Action,
+                            waiters.Action                                                       Waiting_Action,
+                            blockers.Machine                                                     Blocking_Machine,
+                            waiters.Machine                                                      Waiting_Machine,
+                            blockers.Program                                                     Blocking_Program,
+                            waiters.Program                                                      Waiting_Program,
+                            blockers.Service_Hash                                                Blocking_Service_Hash,
+                            waiters.Service_Hash                                                 Waiting_Service_Hash
                       FROM   tsSel waiters
                       LEFT OUTER JOIN tsSel blockers ON blockers.Instance_Number = waiters.Blocking_Inst_ID AND blockers.Session_ID = waiters.Blocking_Session
                                                      AND blockers.Session_Serial# = waiters.Blocking_Session_Serial# AND blockers.Rounded_Sample_Time = waiters.Rounded_Sample_Time
                       WHERE  waiters.Blocking_Session_Status IN ('VALID', 'GLOBAL') /* Session wartend auf Blocking-Session */
+                      #{where_string}
                      )
-              WHERE  Blocking_Event = ?
-              AND    Waiting_Event  = ?
+              WHERE  #{global_where_string}
               GROUP BY #{groupby}
              ) b
-      ORDER BY Waiting_Active_Seconds DESC
-    "].concat(with_bindings).concat([@blocking_event, @waiting_event])
+     LEFT OUTER JOIN All_Users ub ON ub.User_ID = Blocking_User_ID
+     LEFT OUTER JOIN All_Users uw ON uw.User_ID = Waiting_User_ID
+     LEFT OUTER JOIN DBA_Hist_Service_Name sb  ON sb.DBID = ? AND sb.Service_Name_Hash = Blocking_Service_Hash
+     LEFT OUTER JOIN DBA_Hist_Service_Name sw  ON sw.DBID = ? AND sw.Service_Name_Hash = Blocking_Service_Hash
+     ORDER BY Waiting_Active_Seconds DESC
+    "].concat(with_bindings).concat(where_values).concat(global_where_values).concat([@dbid, @dbid])
 
     render_partial
   end
