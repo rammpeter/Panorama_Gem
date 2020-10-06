@@ -34,6 +34,15 @@ public
     end
   end
 
+  # Maske für Date/Time-Konvertierung per strftime bis auf sekunden-bruchteile
+  def strftime_format_with_fractions
+    case get_locale
+    when "de" then "%d.%m.%Y %H:%M:%S.%6N"
+    when "en" then "%Y-%m-%d %H:%M:%S.%6N"
+    else "%d.%m.%Y %H:%M:%S.%6N"
+    end
+  end
+
   # Maske für Date/Time-Konvertierung per strftime bis auf Minuten
   def strftime_format_with_minutes
     case get_locale

@@ -57,7 +57,7 @@
   link_blocking_sid = proc do |rec|
     value = "#{rec["blocking_inst_id"] ? "#{rec.blocking_inst_id}:" : ""}#{rec.blocking_session ? rec.blocking_session : (rec.blocking_session_status=="NO HOLDER" ? "" : rec.blocking_session_status )}"
     if rec["blocking_inst_id"] && rec.blocking_session
-        ajax_link("#{rec["blocking_inst_id"] ? "#{rec.blocking_inst_id}:" : ""}#{rec.blocking_session ? rec.blocking_session : (rec.blocking_session_status=="NO HOLDER" ? "" : rec.blocking_session_status )}",
+      retval = ajax_link(value,
                                 {:action       => :list_session_statistic_historic_grouping,
                                  :groupfilter  => {:DBID                   => get_dbid,
                                                    :time_selection_start   => localeDateTime(rec.rounded_sample_time),
@@ -72,8 +72,10 @@
                         :title=>t(:active_session_history_list_session_statistic_single_record_link_sid_hint, :default=>"Show active session history for blocking session-ID")
         )
     else
-      value
+      retval = value
     end
+    retval << " DEADLOCK" if rec.connect_by_iscycle == 1
+    retval
   end
 
   link_plsql_object = proc do |rec|

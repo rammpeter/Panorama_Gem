@@ -243,9 +243,10 @@ module ApplicationHelper
     return '' if timestamp.nil?                                                 # Leere Ausgabe, wenn nil
     timestamp = timestamp.to_datetime if timestamp.class == Time                # Sicherstellen, dass vom Typ DateTime and local timezone
     case format
-      when :days    then timestamp.strftime(strftime_format_with_days)
-      when :seconds then timestamp.strftime(strftime_format_with_seconds)
-      when :minutes then timestamp.strftime(strftime_format_with_minutes)
+    when :days    then timestamp.strftime(strftime_format_with_days)
+    when :seconds then timestamp.strftime(strftime_format_with_seconds)
+    when :minutes then timestamp.strftime(strftime_format_with_minutes)
+    when :fractions then timestamp.strftime(strftime_format_with_fractions)
     else
       raise "Unknown parameter format = #{format} in localeDateTime"
     end

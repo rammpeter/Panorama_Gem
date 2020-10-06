@@ -220,11 +220,13 @@ class ActiveSessionHistoryController < ApplicationController
                     FROM   gv$Active_Session_History
                    )
       SELECT /*+ ORDERED USE_HASH(u sv f) Panorama-Tool Ramm */
-             MIN(s.Sample_Time)       Start_Sample_Time,
-             MAX(s.Sample_Time)       End_Sample_Time,
-             COUNT(*)                 Sample_Count,
-             AVG(s.Sample_Cycle)      Sample_Cycle,
-             SUM(s.Sample_Cycle)      Wait_Time_Seconds_Sample,
+             MIN(s.Sample_Time)         Start_Sample_Time,
+             MAX(s.Sample_Time)         End_Sample_Time,
+             MIN(s.Rounded_Sample_Time) Start_Rounded_Sample_Time,
+             MAX(s.Rounded_Sample_Time) End_Rounded_Sample_Time,
+             COUNT(*)                   Sample_Count,
+             AVG(s.Sample_Cycle)        Sample_Cycle,
+             SUM(s.Sample_Cycle)        Wait_Time_Seconds_Sample,
              #{ single_record_distinct_sql('s.Instance_Number') },
              #{"#{ single_record_distinct_sql('s.Con_ID') }," if get_current_database[:cdb]}
              #{ single_record_distinct_sql('s.Sample_ID') },
@@ -1136,7 +1138,7 @@ class ActiveSessionHistoryController < ApplicationController
              peo.Owner peo_Owner, peo.Object_Type peo_Object_Type, peo.Object_Name peo_Object_Name, peo.Procedure_Name peo_Procedure_Name,
              po.Owner  po_Owner,  po.Object_Type  po_Object_Type,  po.Object_Name  po_Object_Name,  po.Procedure_Name  po_Procedure_Name,
              sv.Service_Name
-      FROM   (SELECT Level, tSel.*
+      FROM   (SELECT Level, CONNECT_BY_ISCYCLE, tSel.*
               FROM   tSel
               CONNECT BY NOCYCLE PRIOR Blocking_Session           = Session_ID
                              AND PRIOR Blocking_Session_Serial_No = Session_Serial_No

@@ -99,8 +99,8 @@
   command_menu_entries = [get_recall_params_info_for_render_page_caption]
 
   def create_context_menu_entry(seconds, context_menu_entries, command_menu_entries, icon_class)
-    label   = t(:active_session_history_show_top_ten, :sec=>seconds, :default=>"Show Top 10 in time chart, condensed by %{sec} seconds")
-    hint    = t(:active_session_history_show_top_ten_hint, :sec=>seconds, :default=>"Show Top 10 ordered by total time waited in time chart, each point in graph for sum over %{sec} seconds")
+    label   = "Show top event combinations in time chart, condensed by #{seconds} seconds"
+    hint    = "Show top event combinations ordered by total time waited in time chart, each point in graph for sum over #{seconds} seconds"
     action  = "$('##{@hidden_link_timeline_id}_#{seconds}').click();"
 
     context_menu_entries << {
