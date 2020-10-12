@@ -241,10 +241,10 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
         if error_dialog.text[amc]                                               # No error if dialog contains any of the strings
           raise_error = false
           begin
-            click_button('error_dialog_close_button')                          # Close the error dialog to ensure next actions may see the target
+            click_button('error_dialog_close_button')                          # Close the error dialog to ensure next actions may see the target, use ID for identification
           rescue Exception
             sleep(5)                                                            # retry after x seconds if exception raised
-            click_button('error_dialog_close_button')                          # Close the error dialog to ensure next actions may see the target
+            click_button('error_dialog_close_button')                          # Close the error dialog to ensure next actions may see the target, use ID for identification
           end
         end
       end
