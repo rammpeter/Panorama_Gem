@@ -65,7 +65,7 @@ class IoController < ApplicationController
   # Einstieg in Historie
   def list_io_file_history
     @instance  = prepare_param_instance
-    @dbid      = prepare_param_dbid
+    @dbid      = require_param_dbid
     @groupby    = params[:groupby]
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
 
@@ -246,7 +246,7 @@ class IoController < ApplicationController
   # Einstieg in Historie
   def list_iostat_detail_history
     @instance  = prepare_param_instance
-    @dbid      = prepare_param_dbid
+    @dbid      = require_param_dbid
     @groupby    = params[:groupby]
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
 
@@ -425,7 +425,7 @@ class IoController < ApplicationController
   # Einstieg in Historie
   def list_iostat_filetype_history
     @instance  = prepare_param_instance
-    @dbid      = prepare_param_dbid
+    @dbid      = require_param_dbid
     @groupby    = params[:groupby]
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
 

@@ -28,7 +28,7 @@ class ActiveSessionHistoryController < ApplicationController
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
     @instance = prepare_param_instance
     params[:groupfilter] = {}
-    params[:groupfilter][:DBID]                  = prepare_param_dbid
+    params[:groupfilter][:DBID]                  = require_param_dbid
     params[:groupfilter][:Instance]              =  @instance if @instance
     params[:groupfilter][:Idle_Wait1]            = 'PX Deq Credit: send blkd' unless params[:idle_waits] == '1'
     params[:groupfilter][:time_selection_start]  = @time_selection_start
@@ -417,7 +417,7 @@ class ActiveSessionHistoryController < ApplicationController
     set_cached_time_selection_start(params[:time_selection_start]) if params[:time_selection_start] && params[:time_selection_start] != ''
     set_cached_time_selection_end(  params[:time_selection_end])   if params[:time_selection_end]   && params[:time_selection_end]   != ''
 
-    @groupfilter = {:DBID       => prepare_param_dbid }
+    @groupfilter = {:DBID       => require_param_dbid }
 
     @groupfilter[:Instance]             =  params[:instance]                            if params[:instance]
     @groupfilter['SQL-ID'.to_sym]       =  params[:sql_id]                              if params[:sql_id]
@@ -475,7 +475,7 @@ class ActiveSessionHistoryController < ApplicationController
   end
 
   def list_blocking_locks_historic
-    @dbid = prepare_param_dbid
+    @dbid = require_param_dbid
     save_session_time_selection
     get_min_max_snap_ids(@time_selection_start, @time_selection_end, @dbid)
 
@@ -641,7 +641,7 @@ class ActiveSessionHistoryController < ApplicationController
   end
 
   def list_blocking_locks_historic_event_dependency
-    @dbid = prepare_param_dbid
+    @dbid = require_param_dbid
     @show_instances = prepare_param(:show_instances) == '1'
     save_session_time_selection
 
@@ -735,10 +735,10 @@ class ActiveSessionHistoryController < ApplicationController
   end
 
   def blocking_locks_historic_event_dependency_timechart
-    dbid = prepare_param_dbid
+    dbid = require_param_dbid
     @show_instances = prepare_param(:show_instances) == 'true'
     save_session_time_selection
-    group_seconds = params[:group_seconds].to_i
+    group_seconds = require_param(:group_seconds).to_i
 
     with_sql, with_bindings = blocking_locks_historic_event_with_selection(dbid, @time_selection_start, @time_selection_end)
 
@@ -927,7 +927,7 @@ class ActiveSessionHistoryController < ApplicationController
   end
 
   def list_blocking_locks_historic_detail
-    @dbid = prepare_param_dbid
+    @dbid = require_param_dbid
     save_session_time_selection
     @min_snap_id                = params[:min_snap_id]
     @max_snap_id                = params[:max_snap_id]
@@ -1169,7 +1169,7 @@ class ActiveSessionHistoryController < ApplicationController
     @temp_ts = prepare_param :temp_ts
     params[:groupfilter] = {}
 
-    params[:groupfilter][:DBID]                  = prepare_param_dbid
+    params[:groupfilter][:DBID]                  = require_param_dbid
     params[:groupfilter][:Instance]              =  @instance if @instance
     # params[:groupfilter][:Idle_Wait1]            = 'PX Deq Credit: send blkd'    # Sessions in idle wait should be considered for TEMP usage
     params[:groupfilter][:time_selection_start]  = @time_selection_start
@@ -1292,7 +1292,7 @@ class ActiveSessionHistoryController < ApplicationController
     @instance = prepare_param_instance
     params[:groupfilter] = {}
 
-    params[:groupfilter][:DBID]                  = prepare_param_dbid
+    params[:groupfilter][:DBID]                  = require_param_dbid
     params[:groupfilter][:Instance]              =  @instance if @instance
     # params[:groupfilter][:Idle_Wait1]            = 'PX Deq Credit: send blkd'    # Sessions in idle wait should be considered for TEMP usage
     params[:groupfilter][:time_selection_start]  = @time_selection_start

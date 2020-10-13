@@ -134,7 +134,7 @@ class DbaWaitsController < ApplicationController
 
   def list_gc_request_latency_history
     @instance    = prepare_param_instance
-    @dbid        = prepare_param_dbid
+    @dbid        = require_param_dbid
     save_session_time_selection   # werte in session puffern
 
     history = sql_select_iterator ["
@@ -198,7 +198,7 @@ class DbaWaitsController < ApplicationController
   # Details zu Zeitabschnitt der gc request latency
   def list_gc_request_latency_history_detail
     @instance    = prepare_param_instance
-    @dbid        = prepare_param_dbid
+    @dbid        = require_param_dbid
     @min_snap_id = params[:min_snap_id]
     @max_snap_id = params[:max_snap_id]
     @begin_interval_time = params[:begin_interval_time]

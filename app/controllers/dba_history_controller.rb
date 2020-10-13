@@ -9,7 +9,7 @@ class DbaHistoryController < ApplicationController
 
   def list_segment_stat_historic_sum
     @instance = prepare_param_instance
-    @dbid     = prepare_param_dbid
+    @dbid     = require_param_dbid
     @show_partitions = params[:show_partitions]
     @object_name     = params[:ObjectName]
     @object_name     = nil if @object_name == ""
@@ -275,7 +275,7 @@ class DbaHistoryController < ApplicationController
   def list_sql_area_historic
     filter   = params[:filter]  =="" ? nil : params[:filter]
     instance = prepare_param_instance
-    @dbid    = prepare_param_dbid
+    @dbid    = require_param_dbid
     sql_id   = case params[:sql_id]
                  when nil then nil
                  when "" then nil
@@ -381,7 +381,7 @@ class DbaHistoryController < ApplicationController
     params[:time_selection_end]   = params[:time_selection_end][0, sql_datetime_minute_mask.length-2]
 
     save_session_time_selection   # werte in session puffern
-    @dbid        = prepare_param_dbid
+    @dbid        = require_param_dbid
 
     @sql= sql_select_first_row ["\
 
@@ -536,7 +536,7 @@ class DbaHistoryController < ApplicationController
     @instance       = prepare_param_instance
     @min_snap_id    = params[:min_snap_id]
     @max_snap_id    = params[:max_snap_id]
-    @dbid           = prepare_param_dbid
+    @dbid           = require_param_dbid
 
     @binds = sql_select_all ["\
       SELECT /* Panorama-Tool Ramm */ Instance_Number, Name, Position, DataType_String, Last_Captured,
@@ -575,7 +575,7 @@ class DbaHistoryController < ApplicationController
     @position    = params[:position]
     @min_snap_id = params[:min_snap_id]
     @max_snap_id = params[:max_snap_id]
-    @dbid        = prepare_param_dbid
+    @dbid        = require_param_dbid
 
     @binds = sql_select_iterator ["\
         SELECT /* Panorama-Tool Ramm */ b.Name, b.DataType_String, b.Last_Captured,
@@ -830,7 +830,7 @@ class DbaHistoryController < ApplicationController
   def list_sql_history_snapshots
     @prev_update_area    = params[:update_area]
     @instance            = prepare_param_instance
-    @dbid                = prepare_param_dbid
+    @dbid                = require_param_dbid
     @sql_id              = params[:sql_id]
     @parsing_schema_name = params[:parsing_schema_name]
     @parsing_schema_name = nil if @parsing_schema_name == ''
@@ -946,7 +946,7 @@ class DbaHistoryController < ApplicationController
   def show_using_sqls_historic
     save_session_time_selection     # Werte puffern fuer spaetere Wiederverwendung
     @instance     = prepare_param_instance
-    @dbid         = prepare_param_dbid
+    @dbid         = require_param_dbid
     @object_owner = params[:ObjectOwner]
     @object_owner = nil if @object_owner == ""
     @object_name = params[:ObjectName]
@@ -1015,7 +1015,7 @@ FROM (
   # Anzeigen der gefundenen Events
   def list_system_events_historic
     @instance  = prepare_param_instance
-    @dbid      = prepare_param_dbid
+    @dbid      = require_param_dbid
     save_session_time_selection                  # Werte puffern fuer spaetere Wiederverwendung
 
     additional_where1 = ""
@@ -1079,7 +1079,7 @@ FROM (
   # Anzeigen der Snapshots zum Event
   def list_system_events_historic_detail
     @instance  = prepare_param_instance
-    @dbid      = prepare_param_dbid
+    @dbid      = require_param_dbid
     @event_id  = params[:event_id].to_i
     @event_name= params[:event_name]
     save_session_time_selection
@@ -1153,7 +1153,7 @@ FROM (
     trunc_tag = params[:verdichtung][:tag]
 
     additional_where = ""
-    binds = [prepare_param_dbid]  # 1. Bindevariablen
+    binds = [require_param_dbid]  # 1. Bindevariablen
     if @instance
       additional_where << " AND   Instance_Number = ? "
       binds << @instance
@@ -1188,7 +1188,7 @@ FROM (
               FROM   DBA_Hist_Stat_Name h
               LEFT OUTER JOIN v$Statname n ON n.Name=h.Stat_Name
               WHERE  h.DBID=?
-              ORDER BY n.Class, n.Statistic#", prepare_param_dbid ]
+              ORDER BY n.Class, n.Statistic#", require_param_dbid ]
 
 
     @stats = []      # Komplettes Result
@@ -1235,7 +1235,7 @@ FROM (
 
   def list_system_statistics_historic_sum
     additional_where = ""
-    binds = [prepare_param_dbid]  # 1. Bindevariable
+    binds = [require_param_dbid]  # 1. Bindevariable
     if @instance 
       additional_where << " AND   Instance_Number = ? "
       binds << @instance
@@ -1274,7 +1274,7 @@ FROM (
 
   def list_system_statistics_historic_detail
     @instance  = prepare_param_instance
-    @dbid      = prepare_param_dbid
+    @dbid      = require_param_dbid
     @stat_id   = params[:stat_id].to_i
     @stat_name = params[:stat_name]
     save_session_time_selection
@@ -1322,7 +1322,7 @@ FROM (
 
   def list_sysmetric_historic
     @instance  = prepare_param_instance
-    @dbid      = prepare_param_dbid
+    @dbid      = require_param_dbid
     trunc_tag = params[:grouping][:tag]
     save_session_time_selection                   # Werte puffern fuer spaetere Wiederverwendung
 
@@ -1445,7 +1445,7 @@ FROM (
 
   def list_latch_statistics_historic
     @instance  = prepare_param_instance
-    @dbid      = prepare_param_dbid
+    @dbid      = require_param_dbid
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
 
 
@@ -1508,7 +1508,7 @@ FROM (
 
   def list_latch_statistics_historic_details
     @instance   = prepare_param_instance
-    @dbid       = prepare_param_dbid
+    @dbid       = require_param_dbid
     latch_hash  = params[:latch_hash]
     @latch_name = params[:latch_name]
     min_snap_id = params[:min_snap_id].to_i
@@ -1644,7 +1644,7 @@ FROM (
 
   def list_enqueue_statistics_historic
     @instance  = prepare_param_instance
-    @dbid      = prepare_param_dbid
+    @dbid      = require_param_dbid
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
 
 
@@ -1701,7 +1701,7 @@ FROM (
 
   def list_enqueue_statistics_historic_details
     @instance   = prepare_param_instance
-    @dbid       = prepare_param_dbid
+    @dbid       = require_param_dbid
     @eventno    = params[:eventno]
     @reason     = params[:reason]
     @description= params[:description]
@@ -1870,7 +1870,7 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
 
   def list_resource_limits_historic
     @instance  = prepare_param_instance
-    @dbid      = prepare_param_dbid
+    @dbid      = require_param_dbid
     @resource_name = params[:resource][:name]
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
 
@@ -2201,7 +2201,7 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
   end
 
   def list_sql_monitor_reports
-    @dbid        = prepare_param_dbid
+    @dbid        = require_param_dbid
     @instance    = prepare_param_instance
     @sql_id      = params[:sql_id]    == '' ? nil : params[:sql_id]
     @sid         = params[:sid]       == '' ? nil : params[:sid]

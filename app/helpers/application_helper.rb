@@ -307,10 +307,22 @@ module ApplicationHelper
   end
 
   # Aufbereiten des Parameters "dbid" aus Request, return session-default wenn kein plausibler Wert
-  def prepare_param_dbid
+  def require_param_dbid
     retval = params[:dbid]
     retval = get_dbid unless retval
+    raise "Error: Parameter 'dbid' required but not given for '#{controller_name}/#{action_name}'!" if retval.nil?
     retval
+  end
+
+  # requires setting of param not nil
+  def require_param(param_sym)
+    retval = params[param_sym]
+    raise "Error: Parameter '#{param_sym}' required but not given for '#{controller_name}/#{action_name}'!" if retval.nil?
+    retval
+  end
+
+  def require_param_int(param_sym)
+    require_param(param_sym).to_i
   end
 
   # Ermitteln der minimalen und maximalen Snap-ID zu gebenen Zeiten einer Instance
@@ -331,7 +343,7 @@ module ApplicationHelper
       AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
       AND    DBID            = ?
       #{additional_where}",
-                            time_selection_start, time_selection_end, prepare_param_dbid].concat(additional_binds)
+                            time_selection_start, time_selection_end, require_param_dbid].concat(additional_binds)
     no_snaps_message = "No snapshot found between #{time_selection_start} and #{time_selection_end} for instance #{instance}"
 
     raise no_snaps_message if snaps.length == 0

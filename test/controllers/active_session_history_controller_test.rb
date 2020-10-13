@@ -218,7 +218,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
     ['true', 'false'].each do |show_instances|
       post :blocking_locks_historic_event_dependency_timechart, params: {format: :html, dbid: get_dbid,
                                                                          time_selection_start: @time_selection_start, time_selection_end: @time_selection_end,
-                                                                         show_instances: show_instances }
+                                                                         show_instances: show_instances, group_seconds: 60 }
       assert_response_success_or_management_pack_violation('blocking_locks_historic_event_dependency_timechart')
     end
 
