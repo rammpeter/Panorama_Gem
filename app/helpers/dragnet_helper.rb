@@ -5,6 +5,7 @@ include Dragnet::CascadingViewsHelper
 include Dragnet::DragnetSqlsLogwriterRedoHelper
 include Dragnet::DragnetSqlsLongRunningHelper
 include Dragnet::DragnetSqlsTuningSgaPgaHelper
+include Dragnet::ForeignKeyConstraintHelper
 include Dragnet::InstanceSetupTuning
 include Dragnet::MaterializedViewsHelper
 include Dragnet::OptimalIndexStorageHelper
@@ -66,7 +67,9 @@ module DragnetHelper
                           {  :name    => t(:dragnet_helper_group_materialized_views, :default => 'Materialized_views'),
                              :entries => materialized_views
                           },
-
+                          {  :name    => 'Foreign Key Constraints',
+                             :entries => dragnet_foreign_key_constraint
+                          },
             ].concat(sqls_potential_db_structures)
         },
         {

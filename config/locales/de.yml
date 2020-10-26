@@ -1612,6 +1612,16 @@
   dragnet_helper_154_param_1_name:                          Min. Zeit in Sekunden für Full Table Scan
   dragnet_helper_154_param_1_hint:                          Minimale Zeit in Sekunden im betrachteten Zeitraum für Full Table Scans auf dem Objekt
 
+  dragnet_helper_155_desc: |-
+    Nichtvalidierte Foreign Key Constraints verhindern die Nutzung von einigen Optimizer-Features wie JOIN ELIMINATION.
+    Für die volle Nutzbarkeit aller Optimizer-Features sollten Foreign Key Constraints normalerweise validiert sein.
+
+    Fehlende Validierung kann effektiv nachgeholt werden mit temporärem Setzen des parallel degree der Tabelle:
+    ALTER TABLE <tab> PARALLEL x;
+    ALTER TABLE <tab> MODIFY CONSTRAINT <constraint> VALIDATE;
+    ALTER TABLE <tab> NOPARALLEL;
+  dragnet_helper_155_name: Nichtvalidierte Foreign Key Constraints
+
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 
   dragnet_show_personal_selection_form_caption:             Erweitern der Rasterfahndungs-SQLs um persönliche Abfragen
