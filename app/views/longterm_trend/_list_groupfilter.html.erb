@@ -19,6 +19,7 @@
                          :groupby       => @groupby,                     # Gruppierungskriterium für einen Dialog
                          :groupfilter   => @groupfilter,
                          :update_area   => params[:update_area],         # Update_area des letzten Aufrufes wiederverwenden
+                         repeat_controller: controller_name,
                          :repeat_action => @repeat_action                # Zuletzt aufgerufene action wiederholen
   ) do
     form_content = ""

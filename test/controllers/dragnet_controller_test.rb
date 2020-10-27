@@ -82,22 +82,22 @@ class DragnetControllerTest < ActionController::TestCase
   def create_personal_selection
     post :add_personal_selection, :params => {:format=>:html, :update_area=>:hugo, :selection => "
 {
-  name: \"Name of selection in list#{Random.rand(1000000)}\",
-  desc: \"Explanation of selection in right dialog\",
-  sql:  \"SELECT * FROM DBA_Tables WHERE Owner = ? AND Table_Name = ?\",
-  parameter: [
+  \"name\": \"Name of selection in list#{Random.rand(1000000)}\",
+  \"desc\": \"Explanation of selection in right dialog\",
+  \"sql\":  \"SELECT * FROM DBA_Tables WHERE Owner = ? AND Table_Name = ?\",
+  \"parameter\": [
     {
-      name:     \"Name of parameter for \\\"owner\\\" in dialog\",
-      title:    \"Description of parameter \\\"owner\\\" for mouseover hint\",
-      size:     \"Size of input field for parameter \\\"owner\\\" in characters\",
-      default:  \"SYS\",
+      \"name\":     \"Name of parameter for \\\"owner\\\" in dialog\",
+      \"title\":    \"Description of parameter \\\"owner\\\" for mouseover hint\",
+      \"size\":     \"Size of input field for parameter \\\"owner\\\" in characters\",
+      \"default\":  \"SYS\"
     },
     {
-      name:     \"Name of parameter for \\\"table_name\\\" in dialog\",
-      title:    \"Description of parameter \\\"table_name\\\" for mouseover hint\",
-      size:     \"Size of input field for parameter \\\"table_name\\\" in characters\",
-      default:  \"AUD$\",
-    },
+      \"name\":     \"Name of parameter for \\\"table_name\\\" in dialog\",
+      \"title\":    \"Description of parameter \\\"table_name\\\" for mouseover hint\",
+      \"size\":     \"Size of input field for parameter \\\"table_name\\\" in characters\",
+      \"default\":  \"AUD$\"
+    }
   ]
 }
     " }

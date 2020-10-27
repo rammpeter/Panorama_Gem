@@ -6,22 +6,22 @@
     <%
        template = "
 {
-  name: \"Select table attributes for one table\",
-  desc: \"Select attributes from DBA_Tables for your selected table\",
-  sql:  \"SELECT * FROM DBA_Tables WHERE Owner = UPPER(?) AND Table_Name = UPPER(?)\",
-  parameter: [
+  \"name\": \"Select table attributes for one table\",
+  \"desc\": \"Select attributes from DBA_Tables for your selected table\",
+  \"sql\":  \"SELECT * FROM DBA_Tables WHERE Owner = UPPER(?) AND Table_Name = UPPER(?)\",
+  \"parameter\": [
     {
-      name:     \"Owner\",
-      title:    \"Name of table owner\",
-      size:     30,
-      default:  \"SYS\"
+      \"name\":     \"Owner\",
+      \"title\":    \"Name of table owner\",
+      \"size\":     30,
+      \"default\":  \"SYS\"
     },
     {
-      name:     \"Table name\",
-      title:    \"Name of table\",
-      size:     30,
-      default:  \"OBJ$\"
-    },
+      \"name\":     \"Table name\",
+      \"title\":    \"Name of table\",
+      \"size\":     30,
+      \"default\":  \"OBJ$\"
+    }
   ]
 }
     "

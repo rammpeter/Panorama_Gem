@@ -463,10 +463,9 @@ class ActiveSessionHistoryController < ApplicationController
       params[:groupfilter][key] = params[key] if params[key] && params[key]!=''
     end
 
-    send(params[:repeat_action])              # Ersetzt redirect_to, da dies in Kombination winstone + FireFox nicht sauber funktioniert (Get-Request wird über Post verarbeitet)
+    # send(params[:repeat_action])              # Ersetzt redirect_to, da dies in Kombination winstone + FireFox nicht sauber funktioniert (Get-Request wird über Post verarbeitet)
 
-    #redirect_to url_for(:controller => params[:repeat_controller],:action => params[:repeat_action], :params => params, :method=>:post)
-    #send params[:repeat_action]    # Methode erneut aufrufen
+    redirect_to url_for(controller: params[:repeat_controller], action: params[:repeat_action], params: params.permit!, method: :post)
   end
 
   def fork_blocking_locks_historic_call

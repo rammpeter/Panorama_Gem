@@ -184,12 +184,22 @@ Rails.logger.info "get_selection_list: called render" if  Rails.env.test?
     dragnet_personal_selection_list = [] if dragnet_personal_selection_list.nil?
 
     begin
-      new_selection = eval(params[:selection])
+      new_selection = JSON.parse(params[:selection])
     rescue Exception => e
       raise "Error \"#{e.message}\" during parse of your selection"
     end
 
     new_selection = [new_selection] if new_selection.class == Hash              # ab jetzt immer Array
+
+    new_selection.each do |hash|
+      hash.symbolize_keys!
+      if hash.has_key?(:parameter)
+        hash[:parameter].each do |param|
+          param.symbolize_keys!
+        end
+      end
+    end
+
     dragnet_personal_selection_list.concat(new_selection)                       # Add to possibly existing
 
     double_names = {}

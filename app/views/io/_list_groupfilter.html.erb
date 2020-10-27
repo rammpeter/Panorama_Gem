@@ -13,6 +13,7 @@
                                          :groupby       => @groupby,                     # Gruppierungskriterium für einen Dialog
                                          :groupfilter   => @groupfilter,            # Groupfilter des letzten Aufrufes wiederverwenden, reduziert um Fehlerquellen
                                          :update_area   => params[:update_area],         # Update_area des letzten Aufrufes wiederverwenden
+                                         repeat_controller: controller_name,
                                          :repeat_action => @repeat_action             # Zuletzt aufgerufene Action im selben Controller wiederholen
                                  ) do
      form_content = ""
