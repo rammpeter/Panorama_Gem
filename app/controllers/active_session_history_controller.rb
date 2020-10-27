@@ -1,11 +1,13 @@
 # encoding: utf-8
-#require 'jruby/profiler'
+
+# require 'jruby/profiler'
 
 class ActiveSessionHistoryController < ApplicationController
-  #include ApplicationHelper       # application_helper leider nicht automatisch inkludiert bei Nutzung als Engine in anderer App
+  # include ApplicationHelper       # application_helper leider nicht automatisch inkludiert bei Nutzung als Engine in anderer App
   include ActiveSessionHistoryHelper
 
   private
+
   # SQL-Fragment zur Mehrfachverwendung in diversen SQL
   def include_session_statistic_historic_default_select_list
     retval = " MIN(Sample_Time)             First_Occurrence,
@@ -14,7 +16,7 @@ class ActiveSessionHistoryController < ApplicationController
                (TO_DATE(TO_CHAR(MAX(Sample_Time), '#{sql_datetime_second_mask}'), '#{sql_datetime_second_mask}') -
                TO_DATE(TO_CHAR(MIN(Sample_Time), '#{sql_datetime_second_mask}'), '#{sql_datetime_second_mask}'))*(24*60*60) Sample_Dauer_Secs"
 
-    session_statistics_key_rules.each do |key, value|
+    session_statistics_key_rules.each do |_key, value|
       retval << ",
         COUNT(DISTINCT NVL(TO_CHAR(#{value[:sql]}), ' ')) #{value[:sql_alias]}_Cnt,
         MIN(#{value[:sql]}) #{value[:sql_alias]}"
@@ -23,13 +25,14 @@ class ActiveSessionHistoryController < ApplicationController
   end
 
   public
+
   # Anzeige DBA_Hist_Active_Sess_History
   def list_session_statistic_historic
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
     @instance = prepare_param_instance
     params[:groupfilter] = {}
     params[:groupfilter][:DBID]                  = require_param_dbid
-    params[:groupfilter][:Instance]              =  @instance if @instance
+    params[:groupfilter][:Instance]              = @instance if @instance
     params[:groupfilter][:Idle_Wait1]            = 'PX Deq Credit: send blkd' unless params[:idle_waits] == '1'
     params[:groupfilter][:time_selection_start]  = @time_selection_start
     params[:groupfilter][:time_selection_end]    = @time_selection_end
@@ -1106,13 +1109,6 @@ class ActiveSessionHistoryController < ApplicationController
     record_modifier = proc{|rec|
       rec['sql_operation'] = translate_opcode(rec.sql_opcode)
     }
-
-    union_column_list = "\
-      Blocking_Session, Blocking_Session_Serial#, Blocking_Session_Status, Session_ID, Session_Serial#, Current_File#, Current_Block#, Sample_ID,
-      #{'Blocking_Inst_ID, Current_Row#, Top_Level_SQL_ID, SQL_Exec_ID, SQL_Exec_Start, SQL_Plan_Line_ID, SQL_Plan_Operation, SQL_Plan_Options, ' if get_db_version >= '11.2'}
-      p1, p1Text, p2, p2Text, p3, p3Text, Wait_Time, Time_Waited, Current_Obj#, SQL_ID, SQL_Child_Number, SQL_Plan_Hash_Value, SQL_OpCode, User_ID, Event, Event_ID, Wait_Class, Seq# Sequence, Module, Action, Program,
-      Current_Obj# Current_Obj_No, PLSQL_Entry_Object_ID, PLSQL_Entry_SubProgram_ID, PLSQL_Object_ID, PLSQL_SubProgram_ID, Service_Hash, Current_File# Current_File_No, Current_Block# Current_Block_No, Tx_ID
-    "
 
     @thread = sql_select_all(["\
       WITH procs AS (SELECT /*+ NO_MERGE */ Object_ID, SubProgram_ID, Object_Type, Owner, Object_Name, Procedure_name FROM DBA_Procedures),

@@ -165,5 +165,11 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "exec_recall_params with xhr: true" do
+    post '/addition/exec_recall_params', params: {format: :html, parameter_info: "{\"action\":\"list_session_statistic_historic\",\"controller\":\"active_session_history\",\"filter\":\"\",\"groupby\":\"Event\",\"instance\":\"\",\"method\":\"post\",\"time_selection_end\":\"#{@time_selection_end}\",\"time_selection_start\":\"#{@time_selection_start}\"}"}
+    assert_response :redirect
+  end
+
+
 
 end

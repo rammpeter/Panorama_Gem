@@ -1,4 +1,6 @@
 # encoding: utf-8
+
+require 'json'
 # Zusatzfunktionen, die auf speziellen Tabellen und Prozessen aufsetzen, die nicht prinzipiell in DB vorhanden sind
 class AdditionController < ApplicationController
   include AdditionHelper
@@ -899,7 +901,7 @@ class AdditionController < ApplicationController
   # call action given by parameters
   def exec_recall_params
     begin
-      parameter_info = eval(params[:parameter_info])
+      parameter_info = JSON.parse(params[:parameter_info])
       raise "wrong ruby class '#{parameter_info.class}'! Expression must be of ruby class 'Hash' (comparable to JSON)." if parameter_info.class != Hash
     rescue Exception => e
       show_popup_message("Exception while evaluating expression:\n#{e.message}")

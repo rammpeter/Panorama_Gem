@@ -1,0 +1,8 @@
+Layout/LineLength:
+  Max: 300
+
+Layout/ExtraSpacing:
+  Enabled: false
+
+Metrics/ClassLength:
+  Max: 5000
