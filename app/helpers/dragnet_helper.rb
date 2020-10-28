@@ -144,6 +144,7 @@ module DragnetHelper
         rescue Exception => e
           raise "Error \"#{e.message}\" during parse of file #{predefined_filename}"
         end
+        deep_symbolize_keys!(dragnet_predefined_list)
         dragnet_internal_list << { :name    => t(:dragnet_helper_predefined_menu_name, :default=> 'Predefined extensions from local Panorama server instance'),
                                    :entries => dragnet_predefined_list
         }
@@ -181,5 +182,19 @@ module DragnetHelper
     entry
   end
 
+  def deep_symbolize_keys!(object)
+    if object.instance_of?(Hash)
+      object.symbolize_keys!
+      object.each do |_key, value|
+        deep_symbolize_keys!(value) if value.instance_of?(Array)
+      end
+    end
+
+    if object.instance_of?(Array)
+      object.each do |obj|
+        deep_symbolize_keys!(obj)
+      end
+    end
+  end
 
 end

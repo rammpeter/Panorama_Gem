@@ -191,14 +191,7 @@ Rails.logger.info "get_selection_list: called render" if  Rails.env.test?
 
     new_selection = [new_selection] if new_selection.class == Hash              # ab jetzt immer Array
 
-    new_selection.each do |hash|
-      hash.symbolize_keys!
-      if hash.has_key?(:parameter)
-        hash[:parameter].each do |param|
-          param.symbolize_keys!
-        end
-      end
-    end
+    deep_symbolize_keys!(new_selection)
 
     dragnet_personal_selection_list.concat(new_selection)                       # Add to possibly existing
 
