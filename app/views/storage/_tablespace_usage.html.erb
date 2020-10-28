@@ -44,15 +44,19 @@ column_options =
 <%
    column_options =
            [
-                   {:caption=>"File type",  :data=>proc{|rec| rec.file_type},                    :title=>'File type within fast recovery area'},
-                   {:caption=>"MBytes",     :data=>proc{|rec| fn(rec.percent_space_used*@fra_size_bytes/(1024*1024)/100,2)},     :title=>'Used space in FRA in MB', data_title: proc{|rec| "%t\n#{size_explain((rec.percent_space_used*@fra_size_bytes/(1024*1024)/100 rescue nil))}"}, :align=>:right, show_pct_hint: true},
-                   {:caption=>"% used",     :data=>proc{|rec| fn(rec.percent_space_used,2)},     :title=>'Percentage used from total',        :align=>:right},
+                   {:caption=>"File type",      :data=>proc{|rec| rec.file_type},                       :title=>'File type within fast recovery area'},
+                   {:caption=>"MB used",        :data=>proc{|rec| fn(rec.percent_space_used*@fra_size_bytes/(1024*1024)/100,2)},     :title=>'Used space in FRA in MBytes', data_title: proc{|rec| "%t\n#{size_explain((rec.percent_space_used*@fra_size_bytes/(1024*1024)/100 rescue nil))}"}, :align=>:right, show_pct_hint: true},
+                   {:caption=>"% used",         :data=>proc{|rec| fn(rec.percent_space_used,2)},        :title=>'Percentage used from total',        :align=>:right},
+                   {:caption=>"% recl.",     :data=>proc{|rec| fn(rec.percent_space_reclaimable,2)}, :title=>'Percentage reclaimable compared to total',        :align=>:right},
            ]
 
+   caption = "Usage of fast recovery area (FRA)
+total FRA size = #{fn(@fra_size_bytes/(1024*1024*1024),2) }&nbsp;GB
+not reclaimable usage = <span #{'style="background-color:coral;"' if @fra_not_reclaimable_usage > 80}>#{fn(@fra_not_reclaimable_usage,2)}&nbsp;%</span>"
 %>
 
 <div class="flex-row-element">
-  <%= gen_slickgrid(@fra_usage, column_options, {:caption=> "Usage of fast recovery area (FRA), total FRA size = #{fn(@fra_size_bytes/(1024*1024*1024),2) } GB", :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
+  <%= gen_slickgrid(@fra_usage, column_options, {:caption=> caption, :width=>:auto, :max_height=>450, :no_wrap=>true}) %>
 </div>
 
 <% end %>
