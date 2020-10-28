@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require 'json'
+
 # Liste der Rasterfahndungs-SQL
 include Dragnet::CascadingViewsHelper
 include Dragnet::DragnetSqlsLogwriterRedoHelper
@@ -136,7 +138,7 @@ module DragnetHelper
         begin
           dragnet_predefined_list = ""
           File.open(predefined_filename, 'r'){|file|
-            dragnet_predefined_list = eval(file.read)
+            dragnet_predefined_list = JSON.parse(file.read)
           }
           Rails.logger.info("Predefined dragnet selections read from #{predefined_filename}")
         rescue Exception => e
