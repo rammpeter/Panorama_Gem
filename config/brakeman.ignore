@@ -1,0 +1,86 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Mass Assignment",
+      "warning_code": 70,
+      "fingerprint": "20d35bc0e03a59a9b21d4f5181db4e54cd35f1619b6de472880dc3aba187fbbd",
+      "check_name": "MassAssignment",
+      "message": "Specify exact keys allowed for mass assignment instead of using `permit!` which allows any keys",
+      "file": "app/controllers/longterm_trend_controller.rb",
+      "line": 119,
+      "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
+      "code": "params.permit!",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "LongtermTrendController",
+        "method": "refresh_time_selection"
+      },
+      "user_input": null,
+      "confidence": "Medium",
+      "note": "Uses params for redirect only"
+    },
+    {
+      "warning_type": "Mass Assignment",
+      "warning_code": 70,
+      "fingerprint": "81bf6ebc381db4d75c3982b806798daf222631e144168b3529baae8a11cdb984",
+      "check_name": "MassAssignment",
+      "message": "Specify exact keys allowed for mass assignment instead of using `permit!` which allows any keys",
+      "file": "app/controllers/io_controller.rb",
+      "line": 14,
+      "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
+      "code": "params.permit!",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "IoController",
+        "method": "refresh_time_selection"
+      },
+      "user_input": null,
+      "confidence": "Medium",
+      "note": "Uses params for redirect only"
+    },
+    {
+      "warning_type": "Mass Assignment",
+      "warning_code": 70,
+      "fingerprint": "8b4c0f86c86ba0636bb5ec9e15eff14b514dbed4f9d95b14d2d1cbf5c419d3a7",
+      "check_name": "MassAssignment",
+      "message": "Specify exact keys allowed for mass assignment instead of using `permit!` which allows any keys",
+      "file": "app/controllers/active_session_history_controller.rb",
+      "line": 464,
+      "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
+      "code": "params.permit!",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "ActiveSessionHistoryController",
+        "method": "refresh_time_selection"
+      },
+      "user_input": null,
+      "confidence": "Medium",
+      "note": "Uses params for redirect only"
+    },
+    {
+      "warning_type": "Mass Assignment",
+      "warning_code": 70,
+      "fingerprint": "e84d729a42e6fcfec8c79ebecc034f0499c12453596fb9721c370d10033f327d",
+      "check_name": "MassAssignment",
+      "message": "Specify exact keys allowed for mass assignment instead of using `permit!` which allows any keys",
+      "file": "app/controllers/dba_sga_controller.rb",
+      "line": 535,
+      "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
+      "code": "params.permit!",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "DbaSgaController",
+        "method": "list_sql_detail_sql_id_or_history"
+      },
+      "user_input": null,
+      "confidence": "Medium",
+      "note": "Uses params for redirect only"
+    }
+  ],
+  "updated": "2020-10-29 13:59:12 +0100",
+  "brakeman_version": "4.10.0"
+}
