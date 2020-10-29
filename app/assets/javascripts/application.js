@@ -364,7 +364,8 @@ function check_menu_width() {
     if (!matches && !menu_shrinked) {     // menu einklappen
         menu_ul.data('unshrinked_menu_width', menu_width);                      // merken der ursprünglichen Breites des Menus
         menu_content = menu_ul.html();
-        var newMenu = jQuery('<li><a class="sf-with-ul" id="menu_node_0" href="#">Menu<span class="sf-sub-indicator"></span></a><ul class="sf-small-ul"></ul></li>');
+        // cuis-menu shows three horizontal stripes
+        var newMenu = jQuery('<li><a class="sf-with-ul" id="menu_node_0" href="#"><span class="cuis-menu"></span></a><ul class="sf-small-ul"></ul></li>');
         menu_ul.html(newMenu);
         jQuery('.sf-small-ul').html(menu_content);
     }

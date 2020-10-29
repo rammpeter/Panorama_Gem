@@ -115,3 +115,17 @@ Example for predefined_dragnet_selections.json:<br/>
   }
 ]
 </pre>
+<br/>
+Please remind that JSON requires strings in single line with line feeds escaped as "\n".<br/>
+A more comfortable way to describe the SQLs with native line feed is to define the structure as Ruby object in file 'predefined_dragnet_selections.rb' instead of JSON and convert this to JSON with this little Ruby snippet:
+<br/><br/>
+<pre>
+echo "
+require 'json'
+File.open('predefined_dragnet_selections.rb', 'r') do |file|
+  File.open('predefined_dragnet_selections.json', 'w') do |wfile|
+    wfile.write(JSON.pretty_generate(eval(file.read)))
+  end
+end
+" | grep ruby
+</pre>
