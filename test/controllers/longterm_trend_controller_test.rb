@@ -118,7 +118,7 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
       post  '/longterm_trend/refresh_time_selection', :params => {:format=>:html, :groupfilter=>@groupfilter, :groupby=>groupby,
                                                                   :repeat_action => :list_longterm_trend_grouping,
                                                                   :update_area=>:hugo }
-      assert_response(:success, "list_longterm_trend_grouping #{groupby}")
+      assert_response(:redirect, "list_longterm_trend_grouping #{groupby}")
     end
   end
 
