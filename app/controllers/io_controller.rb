@@ -4,6 +4,8 @@ class IoController < ApplicationController
 
   # Redudant zu Methode aus ActiveSessionHistoryController, da send nur innerhalb des gleichen Controllers praktikabel
   def refresh_time_selection
+    params.require [:repeat_controller, :repeat_action]
+
     params[:groupfilter][:time_selection_start] = params[:time_selection_start] if params[:time_selection_start]
     params[:groupfilter][:time_selection_end]   = params[:time_selection_end]   if params[:time_selection_end]
     params[:groupfilter].each do |key, value|

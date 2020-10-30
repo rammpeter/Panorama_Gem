@@ -106,7 +106,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
 
   test "refresh_time_selection with xhr: true" do
     session_statistics_key_rules.each do |groupby, value|
-      post :refresh_time_selection, :params => {:format=>:html, :groupfilter=>@groupfilter, :groupby=>groupby, :repeat_action => :list_session_statistic_historic_grouping, :update_area=>:hugo }
+      post :refresh_time_selection, :params => {:format=>:html, :groupfilter=>@groupfilter, :groupby=>groupby, repeat_controller: :active_session_history, :repeat_action => :list_session_statistic_historic_grouping, :update_area=>:hugo }
       assert_response :redirect, 'refresh_time_selection'
     end
   end

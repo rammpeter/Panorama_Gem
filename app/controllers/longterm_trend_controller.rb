@@ -104,6 +104,8 @@ class LongtermTrendController < ApplicationController
   end
 
   def refresh_time_selection
+    params.require [:repeat_controller, :repeat_action]
+
     if params[:time_selection_start]
       params[:groupfilter][:time_selection_start] = params[:time_selection_start]
     end
