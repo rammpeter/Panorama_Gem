@@ -23,10 +23,28 @@
           :action         => :list_sql_child_cursors,
           :instance       => @sql.inst_id,
           :sql_id         => @sql.sql_id,
+          object_status:  @object_status,
+          con_id:         @con_id
       }, :title =>t(:dba_sga_list_sql_sga_stat_footer_child_hint, :default=>"Show child cursors of SQL from gv$SQL"))
       %>
     </div>
   <% end %>
+
+  <% if @sql['child_number'] && @v_sql_sums.child_count > 1 %>
+    <div class="flex-row-element">
+      <%= ajax_submit("Child summary (#{@v_sql_sums.child_count})", {
+          :update_area    => @update_area,
+          :controller     => :dba_sga,
+          :action         => :list_sql_detail_sql_id,
+          :instance       => @sql.inst_id,
+          :sql_id         => @sql.sql_id,
+          object_status:  @object_status,
+          con_id:         @con_id
+      }, :title =>"Show summary over all #{@v_sql_sums.child_count} child cursors of this SQL-ID in gv$SQLArea")
+      %>
+    </div>
+  <% end %>
+
 
   <div class="flex-row-element">
     <%= ajax_submit("Bind variables (#{@sql_bind_count})", {

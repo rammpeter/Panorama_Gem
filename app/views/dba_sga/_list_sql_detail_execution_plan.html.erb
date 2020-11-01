@@ -70,9 +70,42 @@
      end
 
      parallel_title = proc do |rec|
-       output = "%t:\n#{rec.other_tag}"
-       output << "\n\nMaximum number of different active PQ slaves within one ASH sample = #{rec.max_pq_sessions}" if rec.max_pq_sessions && rec.max_pq_sessions > 0 if @include_ash_in_sql
+       output = "%t:\n#{rec.other_tag}\n"
+       output << "\nMaximum number of different active PQ slaves within one ASH sample = #{rec.max_pq_sessions}" if rec.max_pq_sessions && rec.max_pq_sessions > 0 if @include_ash_in_sql
+       output << "\nStrategy of PQ distribution = #{rec.distribution}" if rec.distribution
+       output << "\nPQ degree of last execution = #{rec.last_degree}"
        output
+     end
+
+     temp_data = proc do |rec|
+       if rec.max_temp_ash_mb
+         fn(rec.max_temp_ash_mb)
+       else
+         fn(rec.last_tempseg_size/(1024*1024)) if rec.last_tempseg_size && rec.last_tempseg_size > 0
+       end
+     end
+
+     temp_title = proc do |rec|
+       output = "%t\n"
+       output << "\nMaximum temp segment_size allocated by one session (incl. PQ-server) recorded by ASH = #{fn(rec.max_temp_ash_mb, 3)}" if rec.max_temp_ash_mb
+       output << "\nMaximum temp segment size recorded in gv$SQL_Plan_Statistics_All = #{fn(rec.max_tempseg_size.to_f/(1024*1024), 3)} MBytes" if rec.max_tempseg_size && rec.max_tempseg_size != 0
+       output << "\nTemp segment size at last execution in gv$SQL_Plan_Statistics_All = #{fn(rec.last_tempseg_size.to_f/(1024*1024), 3)} MBytes" if rec.last_tempseg_size && rec.last_tempseg_size != 0
+       output
+     end
+
+     memory_title = proc do |rec|
+       output = "%t\n"
+       output << "\nSizing policy for this work area = #{rec.policy}" if rec.policy
+       output << "\nEstimated optimal size = #{fn(rec.estimated_optimal_size)} KBytes" if rec.estimated_optimal_size
+       output << "\nEstimated onepass size = #{fn(rec.estimated_onepass_size)} KBytes" if rec.estimated_onepass_size
+       output << "\nMemory used by the last execution = #{fn(rec.last_memory_used)} KBytes" if rec.last_memory_used
+       output << "\nWork area mode of last execution = #{rec.last_execution}" if rec.last_execution
+       output << "\nWork area mode of last execution = #{rec.last_execution}" if rec.last_execution
+       output << "\nNumber of times this work area was active = #{fn rec.total_executions}" if rec.total_executions
+       output << "\nNumber of times this work area ran in optimal mode = #{fn rec.optimal_executions}" if rec.optimal_executions
+       output << "\nNumber of times this work area ran in one pass mode = #{fn rec.onepass_executions}" if rec.onepass_executions
+       output << "\nNumber of times this work area ran below the one pass memory requirement = #{fn rec.multipasses_executions}" if rec.multipasses_executions
+       output << "\nAverage time this work area is active = #{fn(rec.active_time/100.0)} seconds" if rec.active_time && rec.active_time != 0
      end
 
      link_real_num_rows = proc do |rec|
@@ -109,14 +142,13 @@
   column_options << {:caption=>"Access",      :data=>proc{|rec| my_html_escape expand_compare_spaces(rec.access_predicates) },   :title=>'Access criteria for data object', :max_wrap_width=>300, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{my_html_escape rec.access_predicates}\nNumber of index columns with matching predicates = #{rec.search_columns}"} }
   column_options << {:caption=>"Filter",      :data=>proc{|rec| my_html_escape expand_compare_spaces(rec.filter_predicates) },   :title=>'Filter criteria for data object (after access)',  :max_wrap_width=>300, :style=>"word-wrap: break-word;", :data_title=>proc{|rec| "%t:\n#{my_html_escape rec.filter_predicates}"} }
   column_options << {:caption=>'Temp est.',   :data=>proc{|rec| fn(rec.temp_space_mb) },                      :title=>"Temp-space in MB (estimated forecast by optimizer)", :align=>:right}
-  column_options << {:caption=>'Temp max.',   :data=>proc{|rec| fn(rec.max_temp_ash_mb) },                      :title=>'Maximum amount of Temp-space in MB allocated by one session (incl. PQ-server) during execution of this plan line', :align=>:right }  if @include_ash_in_sql
+  column_options << {:caption=>'Temp max.',   :data=>temp_data,                      :title=>'Maximum amount of Temp-space in MB allocated by one session during execution of this plan line', data_title: temp_title, :align=>:right }  if @include_ash_in_sql
   column_options << {:caption=>"DB time",     :data=>proc{|rec| fn(nn_pct(rec.db_time_seconds, @sum_db_time_seconds),1) }, :align=>:right, :data_title=>proc{|rec| "%t\nDB-time: #{fn(rec.db_time_seconds)} seconds" }, :title=>"Percentage of total DB-time in % (from active session history / ASH)", :show_pct_background=>true } if @include_ash_in_sql
   column_options << {:caption=>"CPU",         :data=>proc{|rec| fn(nn_pct(rec.cpu_seconds, @sum_cpu_seconds),1)  },        :align=>:right, :data_title=>proc{|rec| "%t\nCPU: #{fn(rec.cpu_seconds)} seconds" }, :title=>"Percentage of CPU usage in % (from active session history / ASH). Part of DB-time.", :show_pct_background=>true } if @include_ash_in_sql
   column_options << {:caption=>"Waits",       :data=>link_column_wait,                          :align=>:right, :data_title=>proc{|rec| "%t\nWaiting: #{fn(rec.waiting_seconds)} seconds" }, :title=>"Percentage of wait events % (from active session history / ASH). Part of DB-time.", :show_pct_background=>true } if @include_ash_in_sql
   column_options << {:caption=>"I/O",         :data=>proc{|rec| fn(nn_pct(rec.io_requests, @sum_io_requests),1)},          :align=>:right, :data_title=>proc{|rec| "%t\nIO-Requests: #{fn(rec.read_io_requests)} reads, #{fn(rec.write_io_requests)} writes, avg.read=#{avg_read_bytes(rec)} bytes, avg.write=#{avg_write_bytes(rec)} bytes" }, :title=>"Percentage of  I/O-Requests in % (from active session history / ASH)", :show_pct_background=>true } if @include_ash_in_sql
   column_options << {:caption=>"IC",          :data=>proc{|rec| fn(nn_pct(rec.interconnect_io_bytes, @sum_interconnect_io_bytes),1)}, :align=>:right, :data_title=>proc{|rec| "%t\nInterconnect IO (kBytes): #{fn(rec.interconnect_io_bytes ? rec.interconnect_io_bytes/1024 : nil)}" }, :title=>"Percentage of  Interconnect-I/O in % (from active session history / ASH)", :show_pct_background=>true } if @include_ash_in_sql
-  column_options << {:caption=>"Dist",        :data=>proc{|rec| rec.distribution },                           :title=>"Strategy of PQ-distribution" }
-  column_options << {:caption=>'PGA max.',    :data=>proc{|rec| fn(rec.max_pga_ash_mb) },                     :title=>'Maximum amount of PGA in MB allocated by one session (incl. PQ-server) during execution of this plan line', :align=>:right }  if @include_ash_in_sql
+  column_options << {:caption=>'PGA max.',    :data=>proc{|rec| fn(rec.max_pga_ash_mb) },                     :title=>'Maximum amount of PGA in MB allocated by one session (incl. PQ-server) during execution of this plan line (from ASH)', data_title: memory_title, :align=>:right }  if @include_ash_in_sql
 
 
   column_options.concat [

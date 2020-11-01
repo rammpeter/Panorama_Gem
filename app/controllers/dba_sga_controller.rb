@@ -230,8 +230,43 @@ class DbaSgaController < ApplicationController
     sql
   end
 
-  private
-  def get_open_cursor_count(instance, sql_id)
+  # get sums over various records in gv$SQL
+  def v_sql_sums(instance, sql_id, object_status, parsing_schema_name, con_id)
+    where_string = ""
+    where_values = []
+
+    if instance
+      where_string << " AND s.Inst_ID = ?"
+      where_values << instance
+    end
+
+    if object_status
+      where_string << " AND s.Object_Status = ?"
+      where_values << object_status
+    end
+
+    if parsing_schema_name
+      where_string << " AND s.Parsing_Schema_Name = ?"
+      where_values << parsing_schema_name
+    end
+
+    if con_id
+      where_string << " AND s.Con_ID = ?"
+      where_values << con_id
+    end
+
+    sql_select_first_row ["\
+      SELECT COUNT(*) Child_Count
+      FROM   gv$SQL s
+      WHERE  s.SQL_ID = ?
+      #{where_string}
+      ", sql_id].concat(where_values)
+  end
+
+
+
+
+    def get_open_cursor_count(instance, sql_id)
     sql_select_one ["\
         SELECT /* Panorama-Tool Ramm */ COUNT(*)
         FROM   gv$Open_Cursor o
@@ -346,6 +381,9 @@ class DbaSgaController < ApplicationController
           Last_CU_Buffer_Gets, CU_Buffer_Gets, Last_Disk_Reads, Disk_Reads, Last_Disk_Writes, Disk_Writes,
           Last_Elapsed_Time/1000 Last_Elapsed_Time, Elapsed_Time/1000 Elapsed_Time,
           p.Cost, p.Cardinality, p.CPU_Cost, p.IO_Cost, p.Bytes, p.Partition_Start, p.Partition_Stop, p.Partition_ID, p.Time,
+          p.Policy, p.Estimated_Optimal_Size, p.Estimated_Onepass_Size, p.Last_Memory_Used, p.Last_Execution, p.Last_Degree,
+          p.Total_Executions, p.Optimal_Executions, p.Onepass_Executions, p.Multipasses_Executions, p.Active_Time,
+          p.Max_TempSeg_Size, p.Last_Tempseg_Size,
           NVL(t.Num_Rows, i.Num_Rows) Num_Rows,
           NVL(t.Last_Analyzed, i.Last_Analyzed) Last_Analyzed,
           (SELECT SUM(Bytes)/(1024*1024) FROM DBA_Segments s WHERE s.Owner=p.Object_Owner AND s.Segment_Name=p.Object_Name) MBytes
@@ -551,12 +589,16 @@ class DbaSgaController < ApplicationController
     @instance     = prepare_param_instance
     @sql_id       = params[:sql_id]
     @child_number = params[:child_number].to_i
-    @child_address  = params[:child_address] == '' ? nil : params[:child_address]
+    @child_address  = prepare_param :child_address
     @object_status= params[:object_status]
     @object_status='VALID' if @object_status.nil? || @object_status == ''  # wenn kein status als Parameter uebergeben, dann VALID voraussetzen
-    @parsing_schema_name  = params[:parsing_schema_name]
+    @parsing_schema_name  = prepare_param :parsing_schema_name
+    @con_id       = prepare_param :con_id
 
-    @sql                  = fill_sql_sga_stat("GV$SQL", @instance, @sql_id, @object_status, @child_number, @parsing_schema_name, @child_address)
+
+    @sql                  = fill_sql_sga_stat("GV$SQL", @instance, @sql_id, @object_status, @child_number, @parsing_schema_name, @child_address, @con_id)
+
+    @v_sql_sums           = v_sql_sums(@instance, @sql_id, @object_status, @parsing_schema_name, @con_id)
 
     @sql_statement        = get_sga_sql_statement(@instance, @sql_id)
     @sql_bind_count       = get_sql_bind_count(@instance, @sql_id, @child_number, @child_address)
@@ -592,8 +634,8 @@ class DbaSgaController < ApplicationController
     @sql_id   = params[:sql_id].strip
     @object_status= params[:object_status]
     @object_status='VALID' if @object_status.nil? || @object_status == ''  # wenn kein status als Parameter uebergeben, dann VALID voraussetzen
-    @con_id  = params[:con_id]
-    @con_id  = nil if @con_id == ''
+    @parsing_schema_name  = prepare_param :parsing_schema_name
+    @con_id  = prepare_param :con_id
 
     # Liste der Child-Cursoren
     @sqls = sql_select_all ["SELECT Inst_ID, Child_Number FROM gv$SQL WHERE SQL_ID = ?#{" AND Inst_ID = ?" if @instance}", @sql_id].concat(@instance ? [@instance]: [])
@@ -624,7 +666,7 @@ class DbaSgaController < ApplicationController
       return
     end
 
-    @sql = fill_sql_sga_stat("GV$SQLArea", @instance, @sql_id, @object_status, nil, nil, nil, @con_id)
+    @sql = fill_sql_sga_stat("GV$SQLArea", @instance, @sql_id, @object_status, nil, @parsing_schema_name, nil, @con_id)
 
     @sql_statement        = get_sga_sql_statement(@instance, params[:sql_id])
     @sql_bind_count       = get_sql_bind_count(@instance, @sql_id)
