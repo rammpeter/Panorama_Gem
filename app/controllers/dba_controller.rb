@@ -490,7 +490,7 @@ class DbaController < ApplicationController
 
   def list_redologs_historic
     @instance = prepare_param_instance
-    @dbid     = require_param_dbid
+    @dbid     = prepare_param_dbid
     save_session_time_selection  # werte in session puffern
 
     wherestr = ""
@@ -844,7 +844,7 @@ class DbaController < ApplicationController
   end
   
   def show_session_detail
-    @dbid        = require_param_dbid
+    @dbid        = prepare_param_dbid
     @instance    = prepare_param_instance
     @sid         = params[:sid].to_i
     @serialno    = params[:serialno].to_i
@@ -978,7 +978,7 @@ class DbaController < ApplicationController
   end
 
   def render_session_detail_sql_monitor
-    @dbid        = require_param_dbid
+    @dbid        = prepare_param_dbid
     @instance     = prepare_param_instance
     @sid          = prepare_param :sid
     @serialno     = prepare_param :serialno

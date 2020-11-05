@@ -585,7 +585,7 @@ class DbaSgaController < ApplicationController
 
   def list_sql_detail_sql_id_childno
     @modus = "GV$SQL"   # Detaillierung SQL-ID, ChildNo
-    @dbid         = require_param_dbid
+    @dbid         = prepare_param_dbid
     @instance     = prepare_param_instance
     @sql_id       = params[:sql_id]
     @child_number = params[:child_number].to_i
@@ -629,7 +629,7 @@ class DbaSgaController < ApplicationController
 
   # Details auf Ebene SQL_ID kumuliert über Child-Cursoren
   def list_sql_detail_sql_id
-    @dbid         = require_param_dbid
+    @dbid         = prepare_param_dbid
     @instance = prepare_param_instance
     @sql_id   = params[:sql_id].strip
     @object_status= params[:object_status]
@@ -1327,7 +1327,7 @@ class DbaSgaController < ApplicationController
                                    )
                             WHERE Snap_ID >= ?
                             ORDER BY snap_id, Size_Factor
-                           ", require_param_dbid, @instance, @min_snap_id-1, @max_snap_id, @min_snap_id]
+                           ", prepare_param_dbid, @instance, @min_snap_id-1, @max_snap_id, @min_snap_id]
 
     results = []
     columns = {}
@@ -1982,7 +1982,7 @@ END;
   def list_resize_operations_historic
     save_session_time_selection
     @instance     = prepare_param_instance
-    @dbid         = require_param_dbid
+    @dbid         = prepare_param_dbid
     @time_groupby = params[:time_groupby].to_sym if params[:time_groupby]
     @update_area = get_unique_area_id
 
@@ -2115,7 +2115,7 @@ END;
     @time_selection_start = params[:time_selection_start]
     @time_selection_end   = params[:time_selection_end]
     @instance     = prepare_param_instance
-    @dbid         = require_param_dbid
+    @dbid         = prepare_param_dbid
     @component    = params[:component]
     @component    = nil if @component == ''
 

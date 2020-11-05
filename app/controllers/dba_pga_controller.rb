@@ -58,7 +58,7 @@ class DbaPgaController < ApplicationController
 
   def list_pga_stat_historic
     @instance = prepare_param_instance
-    @dbid     = require_param_dbid
+    @dbid     = prepare_param_dbid
     raise PopupMessageException.new("Parameter 'Instance' must be set") unless @instance
     save_session_time_selection   # werte in session puffern
 
