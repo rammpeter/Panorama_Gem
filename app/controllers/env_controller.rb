@@ -122,8 +122,12 @@ class EnvController < ApplicationController
       @version_info << ({:banner => "Platform: #{@database_info.platform_name}" }.extend SelectHashHelper)
 
       if get_db_version >= '11.2'
-        exadata_info = sql_select_first_row "SELECT COUNT(*) Cell_Count FROM (SELECT cellname FROM v$Cell_Config GROUP BY CellName)"
-        @version_info << ({:banner => "Machine: EXADATA with #{exadata_info.cell_count} storage cell server" }.extend SelectHashHelper) if exadata_info.cell_count > 0
+        exadata_info = sql_select_first_row "SELECT COUNT(*) Cell_Count,
+                                                    MAX(CAST(extract(xmltype(confval), '/cli-output/cell/makeModel/text()') AS VARCHAR2(200))) MakeModel
+                                             FROM   v$Cell_Config
+                                             WHERE  ConfType = 'CELL'
+                                            "
+        @version_info << ({:banner => "Machine: EXADATA #{exadata_info.makemodel.remove('Oracle Corporation ORACLE SERVER ')} with #{exadata_info.cell_count} storage cell server" }.extend SelectHashHelper) if exadata_info.cell_count > 0
       end
 
       if get_db_version >= '12.1'
