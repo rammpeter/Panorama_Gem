@@ -197,7 +197,9 @@ class PanoramaConnection
     @transaction_variable_header_size = db_config['transaction_var_header_size']
     @unsigned_byte_4_size             = db_config['unsigned_byte_4_size']
 
-    if db_version >= '12.1'
+    @db_version = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT Version_Full FROM v$Instance")['version_full'] if @db_version >= '19'
+
+    if @db_version >= '12.1'
       con_id_data   = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT Con_ID FROM v$Session WHERE audsid = userenv('sessionid')") # Con_ID of connected session
       @con_id        = con_id_data['con_id']
     else
