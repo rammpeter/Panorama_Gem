@@ -734,19 +734,20 @@ class DbaSchemaController < ApplicationController
     @partition_expression = get_table_partition_expression(@owner, @table_name)
 
     @subpartitions = sql_select_all ["\
-      SELECT p.*, (SELECT SUM(Bytes)/(1024*1024)
-                   FROM   DBA_Segments s
-                   WHERE  s.Owner = p.Table_Owner AND s.Segment_Name = p.Table_Name AND s.Partition_Name = p.SubPartition_Name
-                  ) Size_MB,
+      SELECT sp.*, (SELECT SUM(Bytes)/(1024*1024)
+                    FROM   DBA_Segments s
+                    WHERE  s.Owner = sp.Table_Owner AND s.Segment_Name = sp.Table_Name AND s.Partition_Name = sp.SubPartition_Name
+                   ) Size_MB,
              m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments,
-             o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
+             o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, p.High_Value Partition_High_Value
          #{", mi.GC_Mastering_Policy,  mi.Current_Master + 1  Current_Master,  mi.Previous_Master + 1  Previous_Master, mi.Remaster_Cnt" if PanoramaConnection.rac?}
-      FROM DBA_Tab_SubPartitions p
-      LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Table_Owner AND o.Object_Name = p.Table_Name AND o.SubObject_Name = p.SubPartition_Name AND o.Object_Type = 'TABLE SUBPARTITION'
-      LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = p.Table_Owner AND m.Table_Name = p.Table_Name AND m.Partition_Name = p.Partition_Name AND m.SubPartition_Name = p.SubPartition_Name
+      FROM DBA_Tab_SubPartitions sp
+      JOIN DBA_Tab_Partitions p ON p.Table_Owner = sp.Table_Owner AND p.Table_Name = sp.Table_Name AND p.Partition_Name = sp.Partition_Name
+      LEFT OUTER JOIN DBA_Objects o ON o.Owner = sp.Table_Owner AND o.Object_Name = sp.Table_Name AND o.SubObject_Name = sp.SubPartition_Name AND o.Object_Type = 'TABLE SUBPARTITION'
+      LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = sp.Table_Owner AND m.Table_Name = sp.Table_Name AND m.Partition_Name = sp.Partition_Name AND m.SubPartition_Name = sp.SubPartition_Name
       #{"LEFT OUTER JOIN V$GCSPFMASTER_INFO mi ON mi.Data_Object_ID = o.Data_Object_ID" if PanoramaConnection.rac?}
-      WHERE p.Table_Owner = ? AND p.Table_Name = ?
-      #{" AND p.Partition_Name = ?" if @partition_name}
+      WHERE sp.Table_Owner = ? AND sp.Table_Name = ?
+      #{" AND sp.Partition_Name = ?" if @partition_name}
       ", @owner, @table_name, @partition_name]
 
     @subpartitions.sort! {|a, b| b.high_value <=> a.high_value }
@@ -1447,17 +1448,18 @@ class DbaSchemaController < ApplicationController
     @partition_expression = get_index_partition_expression(@owner, @index_name)
 
     @subpartitions = sql_select_all ["\
-      SELECT p.*, (SELECT SUM(Bytes)/(1024*1024)
-                   FROM   DBA_Segments s
-                   WHERE  s.Owner = p.Index_Owner AND s.Segment_Name = p.Index_Name AND s.Partition_Name = p.SubPartition_Name
-                  ) Size_MB,
-             o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
+      SELECT sp.*, (SELECT SUM(Bytes)/(1024*1024)
+                    FROM   DBA_Segments s
+                    WHERE  s.Owner = sp.Index_Owner AND s.Segment_Name = sp.Index_Name AND s.Partition_Name = sp.SubPartition_Name
+                   ) Size_MB,
+             o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, p.High_Value Partition_High_Value
               #{", mi.GC_Mastering_Policy,  mi.Current_Master + 1  Current_Master,  mi.Previous_Master + 1  Previous_Master, mi.Remaster_Cnt" if PanoramaConnection.rac?}
-      FROM DBA_Ind_SubPartitions p
-      LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Index_Owner AND o.Object_Name = p.Index_Name AND o.SubObject_Name = p.SubPartition_Name AND o.Object_Type = 'INDEX SUBPARTITION'
+      FROM DBA_Ind_SubPartitions sp
+      JOIN DBA_Ind_Partitions p ON p.Index_Owner = sp.Index_Owner AND p.Index_Name = sp.Index_Name AND p.Partition_Name = sp.Partition_Name
+      LEFT OUTER JOIN DBA_Objects o ON o.Owner = sp.Index_Owner AND o.Object_Name = sp.Index_Name AND o.SubObject_Name = sp.SubPartition_Name AND o.Object_Type = 'INDEX SUBPARTITION'
    #{"LEFT OUTER JOIN V$GCSPFMASTER_INFO mi ON mi.Data_Object_ID = o.Data_Object_ID" if PanoramaConnection.rac?}
-      WHERE p.Index_Owner = ? AND p.Index_Name = ?
-      #{" AND p.Partition_Name = ?" if @partition_name}
+      WHERE sp.Index_Owner = ? AND sp.Index_Name = ?
+      #{" AND sp.Partition_Name = ?" if @partition_name}
       ", @owner, @index_name, @partition_name]
     @subpartitions.sort! {|a, b| b.high_value <=> a.high_value }
 
