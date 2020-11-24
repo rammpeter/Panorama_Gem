@@ -27,8 +27,7 @@ brakeman_analysis:
 .tests:
   script:
     - echo "running as `id`"
-    - date
-    - free -h
+    - date && free -h && lscpu
     - bundle config set deployment 'true'
     - bundle install --jobs 8
     #- docker exec jruby sh -c "cd Panorama_Gem && export CHROME_BIN=/usr/bin/chromium-browser && export CHROME_PATH=/usr/lib/chromium/ && export DB_VERSION='11.2' && rake test"
