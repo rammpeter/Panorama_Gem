@@ -3,18 +3,112 @@
 # Use image stored in local gitlab repo
 image: registry.gitlab.com/osp-silver/panorama_gem/jruby_with_chrome:9.2.11.1
 
+variables:
+  CI_PROJECT_DIR: /home/jruby
+  TEST_HOST: "oracle-db"
+  CI_DEBUG_SERVICES: trace
+
+
 stages:
-- build
-- test
-- deploy
+  - code_analysis
+  - test_19.3_EE_CDB
+  - test_19.3_EE_PDB
+  - deploy
 
-before_script:
-  - cat /etc/*-release
-  - ruby -v
-  - which ruby
-
-
-prepare_env:
-  stage: build
+brakeman_analysis:
+  stage: code_analysis
   script:
-    - bundle install
+    - sh -c "git clone https://github.com/rammpeter/Panorama_Gem"
+    - sh -c "cd Panorama_Gem && bundle install --jobs 8"
+    - gem install brakeman
+    - sh -c "cd Panorama_Gem && brakeman -A"
+
+.tests:
+  script:
+    - echo "running as `id`"
+    - date
+    - bundle config set deployment 'true'
+    - bundle install --jobs 8
+    #- docker exec jruby sh -c "cd Panorama_Gem && export CHROME_BIN=/usr/bin/chromium-browser && export CHROME_PATH=/usr/lib/chromium/ && export DB_VERSION='11.2' && rake test"
+    #- docker exec jruby sh -c "cd Panorama_Gem && export DB_VERSION='11.2' && rake test TEST=test/system/dba_general_test.rb"
+    - rake test
+    #- sh -c "cd Panorama_Gem && rake test TEST=test/system/spec_additions_test.rb"
+  artifacts:
+    when: always
+    paths:
+      #     - last_test.log
+      - test/dummy/log/
+      - test/dummy/tmp/screenshots/
+    expire_in: 1 month
+
+################### test templates 19.3_EE
+.tests_19.3_EE:
+  extends: .tests
+  services:
+    - name: registry.gitlab.com/osp-silver/panorama_gem/database_prebuilt_panorama_test:19.3.0.0-ee
+      alias: oracle-db
+
+.tests_19.3_EE_CDB:
+  extends: .tests_19.3_EE
+  variables:
+    TEST_USERNAME: "c##panorama_test"
+    TEST_SERVICENAME: "ORCLCDB"
+
+.tests_19.3_EE_PDB:
+  extends: .tests_19.3_EE
+  variables:
+    TEST_SERVICENAME: "ORCLPDB1"
+
+################### test_19.3_EE_CDB
+
+19.3-ee_diagnostics_and_tuning_pack_CDB:
+  stage: test_19.3_EE_CDB
+  extends: .tests_19.3_EE_CDB
+  variables:
+    MANAGEMENT_PACK_LICENSE: "diagnostics_and_tuning_pack"
+
+19.3-ee_diagnostics_pack_CDB:
+  stage: test_19.3_EE_CDB
+  extends: .tests_19.3_EE_CDB
+  variables:
+    MANAGEMENT_PACK_LICENSE: "diagnostics_pack"
+
+19.3-ee_panorama_sampler_CDB:
+  stage: test_19.3_EE_CDB
+  extends: .tests_19.3_EE_CDB
+  variables:
+    MANAGEMENT_PACK_LICENSE: "panorama_sampler"
+
+19.3-ee_none_CDB:
+  stage: test_19.3_EE_CDB
+  extends: .tests_19.3_EE_CDB
+  variables:
+    MANAGEMENT_PACK_LICENSE: "none"
+
+################### test_19.3_EE_PDB
+
+19.3-ee_diagnostics_and_tuning_pack_PDB:
+  stage: test_19.3_EE_PDB
+  extends: .tests_19.3_EE_PDB
+  variables:
+    MANAGEMENT_PACK_LICENSE: "diagnostics_and_tuning_pack"
+
+19.3-ee_diagnostics_pack_PDB:
+  stage: test_19.3_EE_PDB
+  extends: .tests_19.3_EE_PDB
+  variables:
+    MANAGEMENT_PACK_LICENSE: "diagnostics_pack"
+
+19.3-ee_panorama_sampler_PDB:
+  stage: test_19.3_EE_PDB
+  extends: .tests_19.3_EE_PDB
+  variables:
+    MANAGEMENT_PACK_LICENSE: "panorama_sampler"
+
+19.3-ee_none_PDB:
+  stage: test_19.3_EE_PDB
+  extends: .tests_19.3_EE_PDB
+  variables:
+    MANAGEMENT_PACK_LICENSE: "none"
+
+
