@@ -21,7 +21,7 @@ brakeman_analysis:
   script:
     - date && free -h && lscpu
     - sh -c "git clone https://github.com/rammpeter/Panorama_Gem"
-    - sh -c "cd Panorama_Gem && bundle install --jobs 8"
+    - sh -c "cd Panorama_Gem && bundle install --jobs 4"
     - gem install brakeman
     - sh -c "cd Panorama_Gem && brakeman -A"
 
