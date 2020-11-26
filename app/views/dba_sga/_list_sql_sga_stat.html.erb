@@ -130,8 +130,11 @@ end
 </table>
 
 <script type="application/javascript">
-    // ensure no line break heppens due to vertical scrollbar
-    jQuery("#<%= @table_id_prefix %>_sql").width(jQuery("#<%= @table_id_prefix %>_sql").width()+20);
+    // ensure no line break happens due to vertical scrollbar
+    // Respect 5+5 padding and 20 additional space for expansion before enlarge width to prevent main table wider than window_width
+    if ( jQuery("#<%= @table_id_prefix %>_main").width() < <%=params[:window_width] %> - 30){
+        jQuery("#<%= @table_id_prefix %>_sql").width(jQuery("#<%= @table_id_prefix %>_sql").width()+20);
+    }
 
   // set height of sql (left column) to height of right column
   jQuery("#<%= "#{@table_id_prefix}_sql" %>").height(jQuery("#<%= "#{@table_id_prefix}_right_single_table"%>").height() + jQuery("#<%= "#{@table_id_prefix}_right_table"%>").height());

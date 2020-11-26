@@ -105,12 +105,12 @@ This statement executes only for current (login) RAC-instance. Please execute se
             :parameter=>[{:name=> t(:dragnet_helper_93_param_1_name, :default=>'Minimum number of rows processed / execution'), :size=>8, :default=>100000, :title=> t(:dragnet_helper_93_param_1_hint, :default=>'Minimum number of rows processed / execution as threshold for possible inefficieny of nested loop')}]
         },
         {
-            :name  => t(:dragnet_helper_94_name, :default=>'Iteration in nested-loop join against full scan operation'),
+            :name  => t(:dragnet_helper_94_name, :default=>'Iteration in nested-loop join against full scan operation (current SGA)'),
             :desc  => t(:dragnet_helper_94_desc, :default=>'Frequent execution of full scan operation by iteration in nested loop join may result in exorbitant number of block access massive contention of CPU and I/O-ressources.
 It may also activate cache buffers chains latch-waits.
 This access my be acceptable, if controlling result for nested loop has only one or less records.
-Statement executes only for current connected RAC-Instance (due to runtime prblem otherwise), so it must be executed separately for every instance.'),
-            :sql=>  "SELECT p.Inst_ID, p.SQL_ID, s.Executions, s.Elapsed_Time/1000000 Elapsed_time_Secs, p.Child_Number, p.Plan_Hash_Value,
+Statement executes only for current connected RAC-Instance (due to runtime problem otherwise), so it must be executed separately for every instance.'),
+            :sql=>  "SELECT p.Inst_ID, p.SQL_ID, s.Executions, ROUND(s.Elapsed_Time/1000000, 1) Elapsed_time_Secs, p.Child_Number, p.Plan_Hash_Value,
                              p.pnl1_Cardinality \"Cardinality of leading op.\",
                              p.Operation, p.Options, p.Object_Owner, Object_Name,
                              NVL(t.Num_Rows, i.Num_Rows) \"Num. rows object\",
@@ -228,8 +228,8 @@ ORDER BY h.Seconds DESC
 Problems may be targeted by execution time of SQL or size of affected tables.
 Results are from GV$SQL_Plan'),
             :sql=>  "SELECT /*+ USE_HASH(p s i t) LEADING(p) */ p.Inst_ID, p.SQL_ID, p.Child_Number, p.Operation, p.Options, p.Object_Owner, p.Object_Name, NVL(i.Num_Rows, t.Num_Rows) Num_Rows,
-                             s.Executions, s.Elapsed_Time/1000000 Elapsed_Time_Secs,
-                             p.ID Line_ID, p.Parent_ID
+                             s.Executions, ROUND(s.Elapsed_Time/1000000, 1) Elapsed_Time_Secs_SQL, h.Seconds Seconds_ASH_Cartesian,
+                             p.ID Line_ID, p.Parent_ID, p.Cartesian_Line_ID
                       FROM   (WITH plans AS (SELECT /*+ NO_MERGE */ *
                                              FROM   gv$SQL_Plan
                                              WHERE  (Inst_ID, SQL_ID, Plan_Hash_Value, Child_Number) IN (SELECT Inst_ID, SQL_ID, Plan_Hash_Value, Child_Number
@@ -237,7 +237,7 @@ Results are from GV$SQL_Plan'),
                                                                                                          WHERE  options = 'CARTESIAN'
                                                                                                         )
                                             )
-                              SELECT /*+ NO_MERGE */ Level, plans.*
+                              SELECT /*+ NO_MERGE */ Level, plans.*, CONNECT_BY_ROOT ID Cartesian_Line_ID
                               FROM   plans
                               CONNECT BY PRIOR Inst_ID = Inst_ID AND PRIOR SQL_ID=SQL_ID AND  PRIOR Plan_Hash_Value = Plan_Hash_Value AND  PRIOR child_number = child_number AND PRIOR  id = parent_id AND PRIOR Object_Name IS NULL -- Nur Nachfolger suchen so lange Vorgänger kein Object_Name hat
                               START WITH options = 'CARTESIAN'
@@ -245,15 +245,20 @@ Results are from GV$SQL_Plan'),
                       JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, SQL_ID, Child_Number, Executions, Elapsed_Time
                               FROM gv$SQL
                              ) s ON s.Inst_ID = p.Inst_ID AND s.SQL_ID = p.SQL_ID AND s.Child_Number = p.Child_Number
+                      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ h.Inst_ID, h.SQL_ID, h.SQL_Child_Number, h.SQL_Plan_Hash_Value, h.SQL_Plan_Line_ID, COUNT(*) Seconds
+                                       FROM   gv$Active_Session_History h
+                                       JOIN   All_Users u ON u.User_ID = h.User_ID
+                                       AND    u.UserName NOT IN (#{system_schema_subselect})
+                                       GROUP BY h.Inst_ID, h.SQL_ID, h.SQL_Child_Number, h.SQL_Plan_Hash_Value, h.SQL_Plan_Line_ID
+                                      ) h ON h.Inst_ID = p.Inst_ID AND h.SQL_ID = p.SQL_ID AND h.SQL_Child_Number = p.Child_Number AND h.SQL_Plan_Hash_Value = p.Plan_Hash_Value AND h.SQL_Plan_Line_ID = p.Cartesian_Line_ID
                       LEFT OUTER JOIN DBA_Indexes i ON i.Owner = p.Object_Owner AND i.Index_Name = p.Object_Name
                       LEFT OUTER JOIN DBA_Tables t  ON t.Owner = p.Object_Owner AND t.Table_Name = p.Object_Name
                       WHERE Object_Name IS NOT NULL  -- Erstes Vorkommen von ObjectName in der Parent-Hierarchie nutzen
-                      AND   Object_Owner != NVL(?, 'Hugo')
+                      AND   Object_Owner NOT IN (#{system_schema_subselect})
                       AND   Elapsed_Time/1000000 > ?
-                      ORDER BY s.Elapsed_Time DESC, s.SQL_ID, s.Child_Number
+                      ORDER BY h.Seconds DESC NULLS LAST, s.Elapsed_Time DESC NULLS LAST, s.SQL_ID, s.Child_Number
             ",
             :parameter=>[
-                {:name=>t(:dragnet_helper_55_param1_name, :default=>'Exclusion of object owners'), :size=>30, :default=>'SYS', :title=>t(:dragnet_helper_55_param1_desc, :default=>'Exclusion of single object owners from result') },
                 {:name=>t(:dragnet_helper_55_param2_name, :default=>'Minimum total execution time of SQL (sec.)'), :size=>10, :default=>100, :title=>t(:dragnet_helper_55_param2_desc, :default=>'Minimum total execution time of SQL in SGA in seconds') },
             ]
         },
@@ -262,34 +267,45 @@ Results are from GV$SQL_Plan'),
             :desc  => t(:dragnet_helper_56_desc, :default => 'Cartesian joins may be problematic in case of joining two large results without join condition.
 Problems may be targeted by execution time of SQL or size of affected tables.
 Results are from DBA_Hist_SQL_Plan'),
-            :sql=>  "SELECT ps.*,
+            :sql=>  "WITH Min_Time AS (SELECT SYSDATE - ? min_time FROM DUAL)
+                      SELECT ps.*, h.Seconds Seconds_ASH_Cartesian,
                              (SELECT Num_Rows FROM DBA_Indexes i WHERE i.Owner = ps.Object_Owner AND i.Index_Name = ps.Object_Name) Num_Rows_Index,
                              (SELECT Num_Rows FROM  DBA_Tables t WHERE t.Owner = ps.Object_Owner AND t.Table_Name = ps.Object_Name) Num_Rows_Table
                       FROM   (
-                              SELECT /*+ LEADING(p) */ s.Instance_Number, p.SQL_ID, p.Plan_Hash_Value, p.Operation, p.Options, p.Object_Owner, p.Object_Name, p.ID Line_ID, p.Parent_ID,
-                                     SUM(s.Executions_Delta) Executions, SUM(s.Elapsed_Time_Delta/1000000) Elapsed_Time_Secs
+                              SELECT /*+ LEADING(p) */ s.Instance_Number, p.SQL_ID, p.Plan_Hash_Value, p.Operation, p.Options, p.Object_Owner, p.Object_Name, p.ID Line_ID, p.Parent_ID, p.Cartesian_Line_ID,
+                                     SUM(s.Executions_Delta) Executions, ROUND(SUM(s.Elapsed_Time_Delta/1000000), 1) Elapsed_Time_Secs
                               FROM   (WITH plans AS (SELECT /*+ NO_MERGE MATERIALIZE */ o.*
                                                      FROM   (SELECT /*+ PARALLEL(i,2) */ DISTINCT DBID, SQL_ID, Plan_Hash_Value FROM DBA_Hist_SQL_Plan i WHERE options = 'CARTESIAN') i
                                                      JOIN   DBA_Hist_SQL_Plan o ON o.DBID=i.DBID AND o.SQL_ID=I.SQL_ID AND o.Plan_Hash_Value = i.Plan_Hash_Value
                                                     )
-                                      SELECT /*+ NO_MERGE */ Level, plans.*
+                                      SELECT /*+ NO_MERGE */ Level, plans.*, CONNECT_BY_ROOT ID Cartesian_Line_ID
                                       FROM   plans
                                       CONNECT BY PRIOR DBID = DBID AND PRIOR SQL_ID=SQL_ID AND  PRIOR Plan_Hash_Value = Plan_Hash_Value AND PRIOR  id = parent_id AND PRIOR Object_Name IS NULL  -- Nur Nachfolger suchen so lange Vorgänger kein Object_Name hat
                                       START WITH options = 'CARTESIAN'
                                      ) p
                               JOIN   DBA_Hist_SQLStat s ON s.DBID = p.DBID AND s.SQL_ID = p.SQL_ID AND s.Plan_Hash_Value = p.Plan_Hash_Value
                               JOIN   DBA_Hist_Snapshot ss ON ss.DBID = p.DBID AND ss.Instance_Number = s.Instance_Number AND ss.Snap_ID = s.Snap_ID
+                              CROSS JOIN min_Time
                               WHERE Object_Name IS NOT NULL -- Erstes Vorkommen von ObjectName in der Parent-Hierarchie nutzen
-                              AND   ss.Begin_Interval_Time > SYSDATE - ?
-                              AND   p.Object_Owner != NVL(?, 'Hugo')
-                              GROUP BY s.Instance_Number, p.SQL_ID, p.Plan_Hash_Value, p.Operation, p.Options, p.Object_Owner, p.Object_Name, p.ID, p.ID, p.Parent_ID
+                              AND   ss.Begin_Interval_Time > min_time.min_time
+                              AND   p.Object_Owner NOT IN (#{system_schema_subselect})
+                              GROUP BY s.Instance_Number, p.SQL_ID, p.Plan_Hash_Value, p.Operation, p.Options, p.Object_Owner, p.Object_Name, p.ID, p.ID, p.Parent_ID, p.Cartesian_Line_ID
                              ) ps
-                      WHERE   Elapsed_Time_Secs > ?
-                      ORDER BY Elapsed_Time_Secs DESC, SQL_ID, Plan_Hash_Value
+                      LEFT OUTER JOIN (SELECT h.Instance_Number, h.SQL_ID, h.SQL_Plan_Hash_Value, h.SQL_Plan_Line_ID, COUNT(*)*10 Seconds
+                                       FROM   DBA_Hist_Snapshot ss
+                                       JOIN   DBA_Hist_Active_Sess_History h ON h.DBID = ss.DBID AND h.Instance_Number = ss.Instance_Number AND h.Snap_ID = ss.Snap_ID
+                                       JOIN   All_Users u ON u.User_ID = h.User_ID
+                                       CROSS JOIN min_Time
+                                       WHERE  ss.Begin_Interval_Time > min_time.min_time
+                                       AND    u.UserName NOT IN (#{system_schema_subselect})
+                                       GROUP BY h.Instance_Number, h.SQL_ID, h.SQL_Plan_Hash_Value, h.SQL_Plan_Line_ID
+                                     ) h ON h.Instance_Number = ps.Instance_Number AND h.SQL_ID = ps.SQL_ID AND h.SQL_Plan_Hash_Value = ps.Plan_Hash_Value AND h.SQL_Plan_Line_ID = ps.Cartesian_Line_ID
+
+                      WHERE   ps.Elapsed_Time_Secs > ?
+                      ORDER BY h.Seconds DESC NULLS LAST, ps.Elapsed_Time_Secs DESC, ps.SQL_ID, ps.Plan_Hash_Value
                       ",
             :parameter=>[
                 {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
-                {:name=>t(:dragnet_helper_56_param1_name, :default=>'Exclusion of object owners'), :size=>30, :default=>'SYS', :title=>t(:dragnet_helper_56_param1_desc, :default=>'Exclusion of single object owners from result') },
                 {:name=>t(:dragnet_helper_56_param2_name, :default=>'Minimum total execution time of SQL (sec.)'), :size=>10, :default=>100, :title=>t(:dragnet_helper_56_param2_desc, :default=>'Minimum total execution time of SQL in SGA in seconds') },
             ]
         },

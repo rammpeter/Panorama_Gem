@@ -818,8 +818,6 @@
     Hinweis auf Probleme können die Laufzeit des SQL sowie die Größe der beteiligten Tabellen sein.
     Ausgewertet wird die aktuelle SGA (GV$SQL_Plan)
   dragnet_helper_55_name:                                   Problematische Nutzung von kartesischen Joins (Auswertung aktuelle SGA)
-  dragnet_helper_55_param1_name:                            Ausschluss eines Objekt-Owners
-  dragnet_helper_55_param1_desc:                            Ausschluss eines einzelnen Objekt-Owners aus dem Ergebnis
   dragnet_helper_55_param2_name:                            Minimum totale Laufzeit des SQL (Sek.)
   dragnet_helper_55_param2_desc:                            Minimum der Summe der totalen Laufzeit des SQL in SGA in Sekunden
 
@@ -829,8 +827,6 @@
     Hinweis auf Probleme können die Laufzeit des SQL sowie die Größe der beteiligten Tabellen sein.
     Ausgewertet wird die AWR-Historie (DBA_Hist_SQL_Plan)
   dragnet_helper_56_name:                                   Problematische Nutzung von kartesischen Joins (Auswertung AWR-Historie)
-  dragnet_helper_56_param1_name:                            Ausschluss eines Objekt-Owners
-  dragnet_helper_56_param1_desc:                            Ausschluss eines einzelnen Objekt-Owners aus dem Ergebnis
   dragnet_helper_56_param2_name:                            Minimum totale Laufzeit des SQL (Sek.)
   dragnet_helper_56_param2_desc:                            Minimum der Summe der totalen Laufzeit des SQL in SGA in Sekunden
 
@@ -1072,7 +1068,7 @@
     Vielfache Ausführung von Full-Scan Operationen per Iteration in Nested Loop Join kann zu exorbitanten Blockzugriffen führen und damit  massiv CPU und I/O-Ressourcen beanspruchen sowie Cache Buffers Chains Latch-Waits provozieren.
     Legitim ist ein solcher Zugriff allerdings, wenn steuerndes Result des Nested Loop einen oder wenige Records liefert.
     Statement muss für jede RAC-Instanz separat angewandt werden, da wegen akzeptabler akzeptabler Laufzeit nur die aktuell angemeldete Instanz geprüft wird.
-  dragnet_helper_94_name:                                   Iteration im Nested-Loop-Join gegen Full-Scan-Operation
+  dragnet_helper_94_name:                                   Iteration im Nested-Loop-Join gegen Full-Scan-Operation (aktuelle SGA)
 
 
   dragnet_helper_95_desc: |-

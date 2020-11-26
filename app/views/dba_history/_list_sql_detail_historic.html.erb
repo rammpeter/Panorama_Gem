@@ -101,30 +101,36 @@ end
 </table>
 
 <%=
-  render_async(:dba_sga, :show_profiles, {
-      force_matching_signature: @sql.force_matching_signature,
-      exact_matching_signature: @exact_matching_signature,
-      update_area:              @update_area
-  })
+  if @sql.force_matching_signature || @exact_matching_signature
+    render_async(:dba_sga, :show_profiles, {
+        force_matching_signature: @sql.force_matching_signature,
+        exact_matching_signature: @exact_matching_signature,
+        update_area:              @update_area
+    })
+  end
 %>
 
 
 <%=
-  render_async(:dba_sga, :show_stored_outlines, {
-      force_matching_signature: @sql.force_matching_signature,
-      exact_matching_signature: @exact_matching_signature,
-      update_area:              @update_area
-  })
+  if @sql.force_matching_signature || @exact_matching_signature
+    render_async(:dba_sga, :show_stored_outlines, {
+        force_matching_signature: @sql.force_matching_signature,
+        exact_matching_signature: @exact_matching_signature,
+        update_area:              @update_area
+    })
+  end
 %>
 
 
 <% if get_db_version >= '11.1' &&  (@sql.force_matching_signature || @exact_matching_signature) %>
   <%=
-    render_async(:dba_sga, :show_plan_baselines, {
-        force_matching_signature: @sql.force_matching_signature,
-        exact_matching_signature: @exact_matching_signature,
-        update_area:              @update_area
-    })
+    if @sql.force_matching_signature || @exact_matching_signature
+      render_async(:dba_sga, :show_plan_baselines, {
+          force_matching_signature: @sql.force_matching_signature,
+          exact_matching_signature: @exact_matching_signature,
+          update_area:              @update_area
+      })
+    end
   %>
 <% end %>
 
@@ -139,11 +145,13 @@ end
 
 <% if get_db_version >= '11.1' &&  (@sql.force_matching_signature || @exact_matching_signature) %>
   <%=
-    render_async(:dba_sga, :show_sql_patches, {
-        force_signature: @sql.force_matching_signature,
-        exact_signature: @exact_matching_signature,
-        update_area:     @update_area
-    })
+    if @sql.force_matching_signature || @exact_matching_signature
+      render_async(:dba_sga, :show_sql_patches, {
+          force_signature: @sql.force_matching_signature,
+          exact_signature: @exact_matching_signature,
+          update_area:     @update_area
+      })
+    end
   %>
 <% end %>
 
@@ -315,10 +323,13 @@ end
 </div>
 
 <script type="application/javascript">
-    // ensure no line break heppens due to vertical scrollbar
-    jQuery("#<%= @table_id_prefix %>_sql").width(jQuery("#<%= @table_id_prefix %>_sql").width()+20);
+    // ensure no line break happens due to vertical scrollbar
+    // Respect 5+5 padding and 20 additional space for expansion before enlarge width to prevent main table wider than window_width
+    if ( jQuery("#<%= @table_id_prefix %>_main").width() < <%=params[:window_width] %> - 30){
+        jQuery("#<%= @table_id_prefix %>_sql").width(jQuery("#<%= @table_id_prefix %>_sql").width()+20);
+    }
 
-  // set height of sql (left column) to height of right column
+    // set height of sql (left column) to height of right column
   jQuery("#<%= "#{@table_id_prefix}_sql" %>").height(jQuery("#<%= "#{@table_id_prefix}_right_single_table"%>").height() + jQuery("#<%= "#{@table_id_prefix}_right_table"%>").height());
 
   jQuery("#<%= "#{@table_id_prefix}_main" %>").resizable({
