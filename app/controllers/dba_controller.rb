@@ -1118,7 +1118,7 @@ class DbaController < ApplicationController
              oblocked.Owner                                              Blocked_Owner,
              oblocked.Object_Name                                        Blocked_Object_Name,
              oblocked.Data_Object_ID                                     Blocked_Data_Object_ID,
-             CASE WHEN sblocked.LockWait IS NOT NULL AND sblocked.Row_Wait_Obj# != -1  THEN
+             CASE WHEN oblocked.Data_Object_ID IS NOT NULL AND sblocked.LockWait IS NOT NULL AND sblocked.Row_Wait_Obj# != -1  THEN
                RowIDTOChar(DBMS_RowID.RowID_Create(1, oblocked.Data_Object_ID, sblocked.Row_Wait_File#, sblocked.Row_Wait_Block#, sblocked.Row_Wait_Row#))
              END                                                         Blocked_RowID
      FROM    RawLock l

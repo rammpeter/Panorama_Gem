@@ -64,7 +64,7 @@
       {:caption=>"Blocking RowID", :data=>link_blocking_rowid,                                                          :title=>"RowID in blocking object this session is waiting for"},
       {:caption=>"Blocked SID",    :data=>link_blocked_sid,                                                            :title=>"SID of session that is blocked by this session"},
       {:caption=>"Blocked Object", :data=>proc{|rec| link_object_description(@update_area, rec.blocked_owner, rec.blocked_object_name)},  :title=>"Object that is blocked by this session for another session"},
-      {:caption=>"Blocked RowID",  :data=>link_blocked_rowid,                                                          :title=>"RowID in object that is blocked by this session for another session"},
+      {:caption=>"Blocked RowID",  :data=>link_blocked_rowid,                                                          :title=>"RowID in object that is blocked by this session for another session.\n\nUnfortunately only works for unpartitioned tables."},
 
     ]
 
