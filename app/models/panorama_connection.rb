@@ -667,7 +667,15 @@ class PanoramaConnection
     )
     Rails.logger.info "New database connection created: URL='#{jdbc_thin_url}' User='#{get_threadlocal_config[:user]}' Pool size=#{@@connection_pool.count+1}"
 
-    jdbc_connection.raw_connection.setNetworkTimeout(java.util.concurrent.Executors.newSingleThreadExecutor, query_timeout*2*1000);   # Schedule socket timeout to cancel connection in case of network stuck after twice of query timeout
+    # Schedule socket timeout to cancel connection in case of network stuck after twice of query timeout
+    jdbc_connection.raw_connection.setNetworkTimeout(java.util.concurrent.Executors.newSingleThreadExecutor, query_timeout*2*1000);
+
+    # Allow Oracle JDBC driver to cache cursors
+    jdbc_connection.raw_connection.setImplicitCachingEnabled(true)
+
+    # hold up to 100 cursors open
+    jdbc_connection.raw_connection.setStatementCacheSize(100)
+
     jdbc_connection
   end
 
