@@ -962,10 +962,9 @@ class DbaSgaController < ApplicationController
   end # list_db_cache_content
 
   def show_using_sqls
-    @object_owner = params[:ObjectOwner]
-    @object_owner = nil if @object_owner == ""
-    @object_name = params[:ObjectName]
-    @instance = prepare_param_instance
+    @object_owner = prepare_param :ObjectOwner
+    @object_name  = prepare_param :ObjectName
+    @instance     = prepare_param_instance
 
     wherestr = "p.Object_Name LIKE UPPER(?)"
     whereval = [@object_name]

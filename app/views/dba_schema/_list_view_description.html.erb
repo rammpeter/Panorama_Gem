@@ -42,6 +42,17 @@ column_options =
     }, :title => "Show grants for #{@object_type} #{@owner}.#{@object_name}")
     %>
   </div>
+
+  <div class="flex-row-element">
+    <%= ajax_submit("SQLs by plan", {
+        update_area:  @update_area,
+        controller:   :dba_sga,
+        action:       :show_using_sqls,
+        ObjectOwner:  @owner,
+        ObjectName:   @object_name
+    }, :title => "Show SQLs for #{@object_type} #{@owner}.#{@object_name} with view explicitely used in execution plan (not resolved)")
+    %>
+  </div>
 </div>
 
 <div id="<%= @update_area %>"></div>
