@@ -1450,11 +1450,11 @@
     CHAR-Spalten aufgefüllt mit unnötigen Leerzeichen
 
   dragnet_helper_138_desc: |-
-    Die Sortierung des SQL-Resultates innerhalb eines Views ist oft unnötig, da nicht bekannt ist wie das den View aufrufende SQL das Resultat weiterverarbeitet.
+    Die Sortierung des SQL-Resultates am Ende eines View-SQLs ist oft unnötig, da nicht bekannt ist wie das den View aufrufende SQL das Resultat weiterverarbeitet.
     Statt dessen sollte die Sortierung wenn nötig in dem den View nutzenden SQL vorgenommen werden.
-    Die Selektion besteht aus PL/SQL-Code und sollte ausserhalb von Pnorama ausgeführt werden
+    Die Selektion ist nutzbar mit Rel. 12.1 oder größer.
   dragnet_helper_138_name: |-
-    Views mit ORDER BY im View-SQL
+    Views mit äusserem ORDER BY im View-SQL
 
   dragnet_helper_139_desc: |-
     Es ist zu empfehlen, durch die DB die Nutzung von Indizes zu protokollieren per ALTER INDEX ... MONITORING USAGE,

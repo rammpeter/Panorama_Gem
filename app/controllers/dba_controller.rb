@@ -1328,6 +1328,8 @@ class DbaController < ApplicationController
              #{"MAX(Seconds_In_Wait) Max_Wait_Time_Seconds," if get_db_version < '11.1'}
              #{"SUM(DECODE(State, 'WAITING', s.Wait_Time_Micro, s.Time_Since_Last_Wait_Micro))/1000000 Sum_Wait_Time_Seconds," if get_db_version >= '11.1'}
              #{"MAX(DECODE(State, 'WAITING', s.Wait_Time_Micro, s.Time_Since_Last_Wait_Micro))/1000000 Max_Wait_Time_Seconds," if get_db_version >= '11.1'}
+             COUNT(DISTINCT s.UserName)                     UserName_Count,
+             MIN(s.UserName)                                UserName,
              COUNT(DISTINCT s.Module)                       Module_Count,
              MIN(s.Module)                                  Module,
              COUNT(DISTINCT s.Action)                       Action_Count,

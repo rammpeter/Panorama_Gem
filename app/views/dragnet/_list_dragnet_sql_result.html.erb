@@ -89,7 +89,7 @@ if @res.count > 0
                                 #)
 
                              }
-          when ['table_name', 'table name', 'tablename', 'referenced table', 'table-name', 'log_table', 'object_name', 'master_table', 'sequence_name'].include?(col[:caption].downcase)
+          when ['table_name', 'table name', 'tablename', 'referenced table', 'table-name', 'log_table', 'object_name', 'master_table', 'sequence_name', 'view_name'].include?(col[:caption].downcase)
           then
             col[:data] = proc{|rec|
                                 table_name = rec[col[:caption]]
