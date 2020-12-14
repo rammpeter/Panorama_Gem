@@ -119,6 +119,16 @@ class EnvController < ApplicationController
 
       client_info = sql_select_first_row "SELECT sys_context('USERENV', 'NLS_DATE_LANGUAGE') || '_' || sys_context('USERENV', 'NLS_TERRITORY') NLS_Lang FROM DUAL"
 
+      client_nls_info = ''
+      sql_select_all("SELECT Parameter, Value FROM NLS_Session_Parameters").each do |nls_param|
+        if nls_param.parameter == 'NLS_NUMERIC_CHARACTERS'
+          client_nls_info << "Decimal separator = '#{nls_param.value[0]}'\n"
+          client_nls_info << "Thousands separator = '#{nls_param.value[1]}'\n"
+        else
+          client_nls_info << "#{nls_param.parameter} = '#{nls_param.value}'\n"
+        end
+      end
+
       @version_info << ({:banner => "Platform: #{@database_info.platform_name}" }.extend SelectHashHelper)
 
       if get_db_version >= '11.2'
@@ -142,11 +152,13 @@ class EnvController < ApplicationController
         @version_info << ({banner: nil, client_info: nil}.extend SelectHashHelper)
       end
 
-      @version_info[0][:client_info] = "JDBC connect string = \"#{PanoramaConnection.jdbc_thin_url}\""
-      @version_info[1][:client_info] = "JDBC driver version = \"#{PanoramaConnection.get_jdbc_driver_version}\""
-      @version_info[2][:client_info] = "Java client time zone = \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}"
-      @version_info[3][:client_info] = "DB client time zone = \"#{@database_info.sessiontimezone}\""
-      @version_info[4][:client_info] = "DB client NLS setting = \"#{client_info.nls_lang}\""
+      @version_info[0][:client_info]        = "JDBC connect string = \"#{PanoramaConnection.jdbc_thin_url}\""
+      @version_info[1][:client_info]        = "JDBC driver version = \"#{PanoramaConnection.get_jdbc_driver_version}\""
+      @version_info[2][:client_info]        = "Java client time zone = \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZone.get_default.get_display_name}"
+      @version_info[3][:client_info]        = "DB client time zone = \"#{@database_info.sessiontimezone}\""
+      @version_info[3][:client_info_title]  = "\n#{client_nls_info}"
+      @version_info[4][:client_info]        = "DB client NLS setting = \"#{client_info.nls_lang}\""
+      @version_info[4][:client_info_title]  = "\n#{client_nls_info}"
 
       @version_info << ({:banner => "SYSDATE = '#{localeDateTime(@database_info.sysdate)}'&nbsp;&nbsp;#{@database_info.sys_offset}",
                          banner_title: "DB timezone offset given at CREATE DATABASE: #{@database_info.dbtimezone}",

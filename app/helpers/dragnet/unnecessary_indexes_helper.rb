@@ -232,7 +232,7 @@ If none of the four reasons really requires the existence, the index can be remo
                            cc.Updates                                                                 \"Updates on ref. since anal.\",
                            cc.Deletes                                                                 \"Deletes on ref. since anal.\",
                            CASE WHEN pec.Table_Name IS NOT NULL THEN 'Y' END                          \"Partition exchange possible\",
-                           i.Tablespace_Name                                                          \"Tablespace\",
+                           seg.Tablespace_Name                                                        \"Tablespace\",
                            u.\"End monitoring\",
                            i.Index_Type,
                            t.IOT_Type                                                                 \"IOT Type\"
@@ -273,7 +273,8 @@ If none of the four reasons really requires the existence, the index can be remo
                                      HAVING COUNT(DISTINCT ic.Column_Name) = MAX(cc.Column_Count) /* All constraint columns are covered by index columns, index may have additional columns */
                                      AND    MAX(ic.Column_Position) = MAX(cc.Column_Count)               /* All additional columns of index are right from contraint columns */
                                     ) uc ON uc.Index_Owner = u.Owner AND uc.Index_Name = u.Index_Name
-                    JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes
+                    JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes,
+                                 CASE WHEN COUNT(DISTINCT TableSpace_Name) > 1 THEN '< '||COUNT(DISTINCT TableSpace_Name)||' different >' ELSE MIN(TableSpace_Name) END TableSpace_Name
                           FROM   DBA_Segments
                           GROUP BY Owner, Segment_Name
                           HAVING SUM(bytes)/(1024*1024) > ?

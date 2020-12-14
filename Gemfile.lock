@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    panorama_gem (2.9.80)
+    panorama_gem (2.9.81)
       actionmailer (= 6.0.3.4)
       actionpack (= 6.0.3.4)
       actionview (= 6.0.3.4)
@@ -80,7 +80,7 @@ GEM
       concurrent-ruby (~> 1.0)
     launchy (2.5.0)
       addressable (~> 2.7)
-    loofah (2.7.0)
+    loofah (2.8.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     mail (2.7.1)
@@ -152,7 +152,7 @@ GEM
       selenium-webdriver (>= 3.0, < 4.0)
     xpath (3.2.0)
       nokogiri (~> 1.8)
-    zeitwerk (2.4.1)
+    zeitwerk (2.4.2)
 
 PLATFORMS
   java
