@@ -20,9 +20,9 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   s.files = Dir["{app,config,lib}/**/*", "Rakefile", "README.md", "README.rdoc"]
 
   #  use exactly this rails version
-  s.add_dependency "rails", "6.1.0"
+  # s.add_dependency "rails", "6.1.0"
 
-  # Alternative instead of complete rails including actioncable etc., prev. version was 5.2.3
+  # Alternative instead of complete rails including actioncable etc., prev. version was 6.0.4
   s.add_dependency  "activerecord",   "6.1.0"
   s.add_dependency  "activemodel",    "6.1.0"
   s.add_dependency  "actionpack",     "6.1.0"
