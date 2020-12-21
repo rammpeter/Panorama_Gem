@@ -3,10 +3,10 @@
 
   link_column_sql_id = proc do |rec|
     retval = ''
-    retval << link_historic_sql_id(rec.instance_number, rec.sql_id, rec.rounded_sample_time, rec.rounded_sample_time, @update_area, rec.username)
+    retval << link_historic_sql_id(rec.instance_number, rec.sql_id, localeDateTime(rec.rounded_sample_time), localeDateTime(rec.rounded_sample_time), @update_area, rec.username)
     if rec["top_level_sql_id"] && rec.top_level_sql_id != rec.sql_id
       retval << " "
-      retval << link_historic_sql_id(rec.instance_number, rec.top_level_sql_id, rec.rounded_sample_time, rec.rounded_sample_time, @update_area, rec.username)
+      retval << link_historic_sql_id(rec.instance_number, rec.top_level_sql_id, localeDateTime(rec.rounded_sample_time), localeDateTime(rec.rounded_sample_time), @update_area, rec.username)
     end
     retval
   end

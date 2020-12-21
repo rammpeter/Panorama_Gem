@@ -10,3 +10,5 @@ test/dummy/log/*.log
 test/dummy/tmp/
 test/dummy/client_info.store/*
 test/dummy/config/secrets.yml
+/test/dummy/public/assets/*
+/test/dummy/node_modules/.yarn-integrity

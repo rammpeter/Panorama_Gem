@@ -20,17 +20,17 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   s.files = Dir["{app,config,lib}/**/*", "Rakefile", "README.md", "README.rdoc"]
 
   #  use exactly this rails version
-  #s.add_dependency "rails", "5.2.3"
+  s.add_dependency "rails", "6.1.0"
 
   # Alternative instead of complete rails including actioncable etc., prev. version was 5.2.3
-  s.add_dependency  "activerecord",   "6.0.3.4"
-  s.add_dependency  "activemodel",    "6.0.3.4"
-  s.add_dependency  "actionpack",     "6.0.3.4"
-  s.add_dependency  "actionview",     "6.0.3.4"
-  s.add_dependency  "actionmailer",   "6.0.3.4"
-  s.add_dependency  "activejob",      "6.0.3.4"
-  s.add_dependency  "activesupport",  "6.0.3.4"
-  s.add_dependency  "railties",       "6.0.3.4"
+  s.add_dependency  "activerecord",   "6.1.0"
+  s.add_dependency  "activemodel",    "6.1.0"
+  s.add_dependency  "actionpack",     "6.1.0"
+  s.add_dependency  "actionview",     "6.1.0"
+  s.add_dependency  "actionmailer",   "6.1.0"
+  s.add_dependency  "activejob",      "6.1.0"
+  s.add_dependency  "activesupport",  "6.1.0"
+  s.add_dependency  "railties",       "6.1.0"
 
   s.add_dependency 'activerecord-nulldb-adapter'
   s.add_dependency 'activerecord-oracle_enhanced-adapter'     
@@ -38,7 +38,7 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   s.add_dependency 'nokogiri', '>=1.10.10'                                      # Vulnerability in 1.10.7
 
   # Use SCSS for stylesheets
-  s.add_dependency  'sass-rails', '~> 5.0'                                      # still needed
+  s.add_dependency  'sass-rails', '>= 6.0'                                      # still needed
 
   s.add_dependency 'i18n'
 
