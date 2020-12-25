@@ -21,10 +21,6 @@ brakeman_analysis:
   stage: code_analysis
   script:
     - date && free -h && lscpu
-    - mkdir -p /home/jruby/.bundle
-    - touch /home/jruby/.bundle/config
-    - ls -l /home/jruby/.bundle/config
-    - bundle config set deployment 'true'
     - sh -c "git clone https://github.com/rammpeter/Panorama_Gem"
     - sh -c "cd Panorama_Gem && bundle install --jobs 4"
     - gem install brakeman
@@ -37,6 +33,7 @@ brakeman_analysis:
     - cat /proc/sys/vm/overcommit_memory
     - df -h
     - ls -ld /home/jruby
+    - gem update bundler
     - bundle config set deployment 'true'
     - bundle install --jobs 4
     #- docker exec jruby sh -c "cd Panorama_Gem && export CHROME_BIN=/usr/bin/chromium-browser && export CHROME_PATH=/usr/lib/chromium/ && export DB_VERSION='11.2' && rake test"
