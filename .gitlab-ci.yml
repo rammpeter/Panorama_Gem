@@ -21,6 +21,7 @@ brakeman_analysis:
   stage: code_analysis
   script:
     - date && free -h && lscpu
+    - ls -l /home/jruby/.bundle/config
     - sh -c "git clone https://github.com/rammpeter/Panorama_Gem"
     - sh -c "cd Panorama_Gem && bundle install --jobs 4"
     - gem install brakeman
