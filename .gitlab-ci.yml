@@ -9,6 +9,7 @@ variables:
   CI_DEBUG_SERVICES: trace
   KUBERNETES_MEMORY_REQUEST: 8Gi
   KUBERNETES_MEMORY_LIMIT: 16Gi
+  JAVA_OPTS: -Xmx1500M
 
 
 stages:
@@ -24,7 +25,7 @@ brakeman_analysis:
     - sh -c "git clone https://github.com/rammpeter/Panorama_Gem"
     - sh -c "cd Panorama_Gem && bundle install --jobs 4"
     - gem install brakeman
-    - sh -c "cd Panorama_Gem && export JAVA_OPTS=-Xmx1500M && brakeman -A"
+    - sh -c "cd Panorama_Gem && brakeman -A"
 
 .tests:
   script:
