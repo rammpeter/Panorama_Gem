@@ -28,6 +28,7 @@ brakeman_analysis:
     - sh -c "cd Panorama_Gem && brakeman -A"
 
 .tests:
+  resource_group: SINGLE
   script:
     - echo "running as `id`"
     - date && free -h && lscpu
