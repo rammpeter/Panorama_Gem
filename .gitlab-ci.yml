@@ -24,7 +24,7 @@ brakeman_analysis:
     - sh -c "git clone https://github.com/rammpeter/Panorama_Gem"
     - sh -c "cd Panorama_Gem && bundle install --jobs 4"
     - gem install brakeman
-    - sh -c "cd Panorama_Gem && brakeman -A -J-Xmx1500M"
+    - sh -c "cd Panorama_Gem && export JAVA_OPTS=-Xmx1500M && brakeman -A"
 
 .tests:
   script:
