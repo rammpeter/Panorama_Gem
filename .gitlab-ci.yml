@@ -24,13 +24,16 @@ brakeman_analysis:
     - sh -c "git clone https://github.com/rammpeter/Panorama_Gem"
     - sh -c "cd Panorama_Gem && bundle install --jobs 4"
     - gem install brakeman
-    - sh -c "cd Panorama_Gem && brakeman -A"
+    - sh -c "cd Panorama_Gem && export JAVA_OPTS=-Xmx1500M && brakeman -A"
 
 .tests:
   script:
     - echo "running as `id`"
     - date && free -h && lscpu
     - cat /proc/sys/vm/overcommit_memory
+    - df -h
+    - ls -ld /home/jruby
+    - gem update bundler
     - bundle config set deployment 'true'
     - bundle install --jobs 4
     #- docker exec jruby sh -c "cd Panorama_Gem && export CHROME_BIN=/usr/bin/chromium-browser && export CHROME_PATH=/usr/lib/chromium/ && export DB_VERSION='11.2' && rake test"
