@@ -50,7 +50,8 @@ module ActiveSessionHistoryHelper
       @session_statistics_key_rules_hash["Modus"]           = {:sql => "s.Modus",             :sql_alias => "modus",              :Name => 'Mode',          :Title      => "Mode in which session is executed" } if get_db_version >= "11.2"
       @session_statistics_key_rules_hash["PQ"]              = {:sql => "DECODE(s.QC_Instance_ID, NULL, 'NO', s.Instance_Number||':'||s.Session_ID||', '||s.Session_Serial_No)",  :sql_alias => "pq",  :Name => 'Parallel query',  :Title => 'PQ instance and session if executed in parallel query (NO if not executed in parallel or session is PQ-coordinator)' }
       @session_statistics_key_rules_hash["Plan-Hash-Value"] = {:sql => "s.SQL_Plan_Hash_Value", :sql_alias => "plan_hash_value",  :Name => 'Plan-Hash-Value', :Title => "Plan hash value, uniquely identifies execution plan of SQL" }
-      @session_statistics_key_rules_hash['Remote-Instance'] = {:sql => "s.Remote_Instance_No",   :sql_alias => 'remote_instance',   :Name => 'R. I.',       :Title      => "Remote instance identifier that will serve the block that this session is waiting for.\nThis information is only available if the session was waiting for cluster events." } if get_db_version >= "11.2"
+      @session_statistics_key_rules_hash["Client-ID"]       = {:sql => "s.Client_ID",         :sql_alias => "client_id",          :Name => 'Client ID',     :Title => "Client-ID set by DBMS_SESSION.Set_Identifier" }
+      @session_statistics_key_rules_hash['Remote-Instance'] = {:sql => "s.Remote_Instance_No",:sql_alias => 'remote_instance',    :Name => 'R. I.',         :Title      => "Remote instance identifier that will serve the block that this session is waiting for.\nThis information is only available if the session was waiting for cluster events." } if get_db_version >= "11.2"
       if get_db_version >= "11.2"
         @session_statistics_key_rules_hash['Blocking Session']= {:sql => "s.Blocking_Inst_ID||DECODE(s.Blocking_Session, NULL, NULL, ':')||s.Blocking_Session||DECODE(s.Blocking_Session, NULL, NULL, ',')||s.Blocking_Session_Serial_No", :sql_alias => 'blocking_session',   :Name => 'Blocking Session',       :Title      => "Blocking Session (Instance:SID, SN) that is blocking this session.", info_sql: "MIN(s.Blocking_Session_Status)", info_caption: "Blocking Session Status" }
       elsif get_db_version >= "10.2"                                            # without Blocking_Inst_ID in 10.2 and 11.1
@@ -107,7 +108,7 @@ module ActiveSessionHistoryHelper
         SubObject_Name:               {:name => 'SubObject_Name',              :sql => "o.SubObject_Name"},
         Current_Obj_No:               {:name => 'Current_Obj_No',              :sql => "s.Current_Obj_No"},
         User_ID:                      {:name => 'User-ID',                     :sql => "s.User_ID"},
-        Additional_Filter:            {:name => 'Additional Filter',           :sql => "UPPER(u.UserName||s.Session_ID||s.SQL_ID||s.Module||s.Action||o.Object_Name||s.Program#{get_db_version >= '11.2' ? '|| s.Machine' : ''}||s.SQL_Plan_Hash_Value) LIKE UPPER('%'||?||'%')", :already_bound => true }, # Such-Filter
+        Additional_Filter:            {:name => 'Additional Filter',           :sql => "UPPER(u.UserName||s.Session_ID||s.SQL_ID||s.Module||s.Action||o.Object_Name||s.Program#{get_db_version >= '11.2' ? '|| s.Machine' : ''}||s.SQL_Plan_Hash_Value||s.Client_ID) LIKE UPPER('%'||?||'%')", :already_bound => true }, # Such-Filter
         Temp_Usage_MB_greater:        {:name => 'TEMP-usage (MB) > x',         :sql => "s.Temp_Space_Allocated > ?*(1024*1024)", :already_bound => true},
         Temp_TS:                      {:name => 'TEMP-TS',                     :sql => "u.Temporary_Tablespace"},
     }

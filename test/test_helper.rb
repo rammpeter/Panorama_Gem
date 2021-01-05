@@ -1,7 +1,11 @@
 # Configure Rails Environment
 ENV['RAILS_ENV'] ||= 'test'
 
+# Suppress warning: loading in progress, circular require considered harmful
+old_verbose = $VERBOSE
+$VERBOSE=nil
 require_relative '../test/dummy/config/environment'
+$VERBOSE=old_verbose
 
 #require File.expand_path("../../test/dummy/config/environment.rb", __FILE__)
 require "rails/test_help"

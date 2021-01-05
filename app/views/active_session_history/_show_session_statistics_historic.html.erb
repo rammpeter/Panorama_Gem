@@ -23,15 +23,16 @@
     </div>
 
     <div class="flex-row-element" title="optional additional Filter on all of the following columns:
-- username
-- session-ID
-- module
-- action
+- Action
+- Client-ID
 - DB-object
-- program
-- machine
+- Machine
+- Module
+- Plan hash value
+- Program
+- Session-ID
 - SQL-ID
-- plan hash value
+- Username
 LIKE-comparison with wildcards (%, ?) and case ignored">
       Filter
       <%= text_field_tag(:filter, "", :size=>20) %>

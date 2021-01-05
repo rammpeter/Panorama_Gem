@@ -68,11 +68,13 @@ SELECT x.Owner, x.Table_Name,
 FROM   Objects x
 JOIN Segments s ON s.Owner = x.Owner AND s.Segment_Name = x.Table_Name AND NVL(s.Partition_Name, '-1') = NVL(x.Partition_Name, '-1')
 GROUP BY x.Owner, x.Table_Name
+HAVING MAX(Last_Analyzed) < SYSDATE - ?
 ORDER BY Size_MB DESC NULLS LAST
             ",
             :parameter=>[
                 {:name=>t(:dragnet_helper_50_param_1_name, :default=> 'Minimum size of table or partition in MB'), :size=>8, :default=>10, :title=>t(:dragnet_helper_50_param_1_hint, :default=> 'Minimum size of table, partition or subpartition in MB for consideration in result of selection') },
-                {:name=>t(:dragnet_helper_50_param_2_name, :default=> 'Maximum % of udates compared to inserts + deletes'), :size=>8, :default=>5, :title=>t(:dragnet_helper_50_param_2_hint, :default=> 'Maximum percentage of udate operations sind last analyze compared to the number of inserts + deletes') },
+                {:name=>t(:dragnet_helper_50_param_2_name, :default=> 'Maximum % of udates compared to inserts + deletes'), :size=>8, :default=>5, :title=>t(:dragnet_helper_50_param_2_hint, :default=> 'Maximum percentage of udate operations since last analyze compared to the number of inserts + deletes') },
+                {:name=>t(:dragnet_helper_50_param_3_name, :default=> 'Minimum days since last analyze'), :size=>8, :default=>7, :title=>t(:dragnet_helper_50_param_3_hint, :default=> 'Minimum number of days since last analyze to ensure valid values for inserts, updates and deletes') },
             ]
         },
         {

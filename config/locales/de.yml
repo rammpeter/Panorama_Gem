@@ -535,7 +535,7 @@
 
   dba_show_sessions_caption:                                Anzeige Sessions
   dba_show_sessions_filter_hint: |-
-    Optionaler LIKE-Filter für  Client/Shadow-Process auf: Session-ID, Process-ID, Username, Client-Info, Module, Action, Maschine, Programm
+    Optionaler LIKE-Filter für  Client/Shadow-Process auf: Session-ID, Process-ID, Username, Client-Info, Client-ID, Module, Action, Maschine, Programm
   dba_show_sessions_only_active_caption:                    Nur Aktive
   dba_show_sessions_only_active_hint:                       Nur aktive Sessions anzeigen
   dba_show_sessions_only_db_link_caption:                   Nur DB-Link
@@ -790,6 +790,8 @@
   dragnet_helper_50_param_1_name:                            Mindestgröße der Tabelle order Partition in MB
   dragnet_helper_50_param_2_hint:                            Maximaler Prozenatnteil Update-Operationen seit der letzten Analyse verglichen zur Anzahl Inserts + Deletes
   dragnet_helper_50_param_2_name:                            Max. % Updates verglichen zu Inserts + Deletes
+  dragnet_helper_50_param_3_hint:                            Minimale Anzahl Tage seit der letzten Analyse zur sicherstellung valider Werte für Inserts, Updates und Deletes
+  dragnet_helper_50_param_3_name:                            Minimale Anzahl Tage seit der letzten Analyse
 
   dragnet_helper_51_desc: |-
     Für die Sicherstellung der referentiellen Integrität sollten dringlich technische Schlüssel statt fachlicher Ausdrücke verwendet werden.

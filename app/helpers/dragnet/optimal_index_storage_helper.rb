@@ -82,14 +82,17 @@ Partial index-compression (COMPRESS x) assumes that index-column to be compresse
 This selections shows recommendations for compression of single columns of multicolumn indexes beginning with column-position 1.'),
             :sql=> "SELECT *
                     FROM   (
-                            SELECT i.Owner, i.Table_Name, i.Index_Name, i.Index_Type, i.Compression, i.Prefix_Length, i.Num_Rows, i.Last_Analyzed, i.Partitioned,
+                            SELECT i.Owner, i.Table_Name, i.Index_Name, i.Index_Type \"Index Type\", i.Compression, i.Prefix_Length \"Prefix Length\",
+                                   i.Num_Rows, i.Last_Analyzed \"Last Analyzed\", i.Partitioned \"Part.\",
                                    (SELECT COUNT(*)
                                     FROM   DBA_Ind_Partitions ip
                                     WHERE  ip.Index_Owner = i.Owner
                                     AND    ip.Index_Name = i.Index_Name
                                    ) Partitions,
-                                   ica.Columns, ic.Column_Name, ic.Column_Position,
-                                   tc.Num_Distinct, tc.Avg_Col_Len, ROUND(i.Num_Rows/DECODE(tc.Num_Distinct,0,1,tc.Num_Distinct)) Rows_per_Key,
+                                   ica.Columns, ic.Column_Name, ic.Column_Position \"Column Pos.\",
+                                   tc.Num_Distinct \"Num. Distinct\",
+                                   tc.Avg_Col_Len   \"Avg Col Len\",
+                                   ROUND(i.Num_Rows/DECODE(tc.Num_Distinct,0,1,tc.Num_Distinct)) \"Rows per Key\",
                                    seg.MBytes
                             FROM   DBA_Indexes i
                             JOIN   (SELECT Index_Owner, Index_Name, COUNT(*) Columns
@@ -107,7 +110,7 @@ This selections shows recommendations for compression of single columns of multi
                             AND    i.Num_Rows/DECODE(tc.Num_Distinct,0,1,tc.Num_Distinct) > ?
                             AND    (i.Compression = 'DISABLED' OR i.Prefix_Length < ic.Column_Position)
                            )
-                    ORDER BY Column_Position, NVL(Avg_Col_Len, 5) * NVL(Avg_Col_Len, 5) * Num_Rows * Num_Rows/DECODE(Num_Distinct,0,1,Num_Distinct)/DECODE(Partitions, 0, 1, Partitions) DESC NULLS LAST",
+                    ORDER BY \"Column Pos.\", NVL(\"Avg Col Len\", 5) * NVL(\"Avg Col Len\", 5) * Num_Rows * Num_Rows/DECODE(\"Num. Distinct\",0,1,\"Num. Distinct\")/DECODE(Partitions, 0, 1, Partitions) DESC NULLS LAST",
             :parameter=>[{:name=> t(:dragnet_helper_130_param_1_name, :default=>'Min. number of rows of index'), :size=>10, :default=>1000000, :title=>t(:dragnet_helper_130_param_1_hint, :default=> 'Minimum number of rows of index to be considered in this selection') },
                          {:name=> 'Min. rows/key per column', :size=>8, :default=>10, :title=>t(:dragnet_helper_130_param_2_hint, :default=> 'Minimum number of index rows per DISTINCT Key of single index column') },
             ]

@@ -731,6 +731,7 @@ class DbaController < ApplicationController
       where_string << " OR UPPER(s.OSUser)      LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
       where_string << " OR UPPER(s.Machine)     LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
       where_string << " OR UPPER(s.Client_Info) LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
+      where_string << " OR UPPER(s.Client_Identifier) LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
       where_string << " OR UPPER(s.Module)      LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
       where_string << " OR UPPER(s.Action)      LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
       where_string << " OR UPPER(s.Program)     LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
@@ -749,6 +750,7 @@ class DbaController < ApplicationController
         s.UserName,                 
         s.Client_Info,
         s.Module, s.Action,
+        s.Client_Identifier,
         p.spID,
         p.PID,
         s.machine,                                                                                                                        
@@ -1349,14 +1351,14 @@ class DbaController < ApplicationController
 
     @blocking_waits = sql_select_iterator("\
       WITH Locks AS (
-              SELECT /*+ LEADING(l) */ /* Panorama-Tool Ramm */
+              SELECT /* Panorama-Tool Ramm */
                      s.Inst_ID,
                      s.SID,
                      s.Serial# SerialNo,
                      s.SQL_ID,
                      s.SQL_Child_Number,
                      s.Status,
-                     s.Event,
+                     DECODE(s.State, 'WAITING', s.Event, 'ON CPU')  Event,
                      s.Client_Info,
                      s.Module,
                      s.Action,
@@ -1376,7 +1378,7 @@ class DbaController < ApplicationController
                      s.Blocking_Session     Blocking_SID,
                      bs.Serial#             Blocking_SerialNo,
                      bs.Status              Blocking_Status,
-                     bs.Event               Blocking_Event,
+                     DECODE(bs.State, 'WAITING', bs.Event, 'ON CPU') Blocking_Event,
                      bs.Client_Info         Blocking_Client_Info,
                      bs.Module              Blocking_Module,
                      bs.Action              Blocking_Action,

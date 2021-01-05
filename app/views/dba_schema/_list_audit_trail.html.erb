@@ -26,7 +26,7 @@
     {:caption=> 'Machine',           :data=>proc{|rec| link_machine_ip_info(@update_area, rec.userhost)},      :title=> 'Client machine'},
     {:caption=> 'OS-User',           :data=>proc{|rec| rec.os_username},                         :title=> 'Client OS user name'},
     {:caption=> 'DB-User',           :data=>proc{|rec| rec.username},                            :title=> 'DB user name used to connect'},
-    {:caption=> 'Proc',              :data=>proc{|rec| rec.os_process},                          :title=>"OS process identifier of the database's Oracle process"},
+    {:caption=> 'Proc',              :data=>proc{|rec| rec.os_process},                          :title=> "OS process identifier of the database Oracle process"},
     {:caption=> 'Terminal',           :data=>proc{|rec| rec.terminal},                           :title=> 'Terminal info'},
     {:caption=> 'Action',            :data=>proc{|rec| rec.action_name},                         :title=> 'Action name'},
     {:caption=> 'Object', :data=>proc{|rec| link_object_description(@update_area, rec.owner, rec.obj_name) }, :title=> 'Owner an name of affected object'},

@@ -44,6 +44,7 @@
     {:caption=>"C-Proc",           :data=>proc{|rec| rec.process},                    :title=>t(:dba_list_sessions_process_hint, :default=>'Process-ID of client process on client machine (1234 is dummy-process-ID of JDBC-driver, CONNECTION_PROPERTY_THIN_VSESSION_PROCESS_DEFAULT=1234)') },
     {:caption=>"Program",          :data=>proc{|rec| rec.program},                    :title=>t(:dba_list_sessions_program_hint, :default=>'Executed program of client process on client machine') },
     {:caption=>"Client-Info",      :data=>proc{|rec| rec.client_info},                :title=>"Client-Info"},
+    {:caption=>"Client ID",        :data=>proc{|rec| rec.client_identifier},          :title=>"Client-identifier"},
     {:caption=>"Module",           :data=>proc{|rec| rec.module},                     :title=>"Module-Info"},
     {:caption=>"Action",           :data=>proc{|rec| rec.action},                     :title=>"Action-Info"},
     {:caption=>"Service",          :data=>proc{|rec| rec.service_name},               :title=>t(:dba_list_sessions_service_hint, :default=>'Name of TNS-service session uses for connection') },
