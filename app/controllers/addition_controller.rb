@@ -308,6 +308,7 @@ class AdditionController < ApplicationController
              CASE WHEN COUNT(DISTINCT Instance_Number) = 1 THEN TO_CHAR(MIN(Instance_Number)) ELSE '< '||COUNT(DISTINCT Instance_Number)||' >' END Instance_Number,
              CASE WHEN COUNT(DISTINCT SID)             = 1 THEN TO_CHAR(MIN(SID))             ELSE '< '||COUNT(DISTINCT SID)            ||' >' END SID,
              CASE WHEN COUNT(DISTINCT SQL_ID)          = 1 THEN TO_CHAR(MIN(SQL_ID))          ELSE '< '||COUNT(DISTINCT SQL_ID)         ||' >' END SQL_ID,
+             CASE WHEN COUNT(DISTINCT Event)           = 1 THEN TO_CHAR(MIN(Event))           ELSE '< '||COUNT(DISTINCT Event)          ||' >' END Event,
              CASE WHEN COUNT(DISTINCT SerialNo)        = 1 THEN TO_CHAR(MIN(SerialNo))        ELSE '< '||COUNT(DISTINCT SerialNo)       ||' >' END SerialNo,
              CASE WHEN COUNT(DISTINCT Module)          = 1 THEN TO_CHAR(MIN(Module))          ELSE '< '||COUNT(DISTINCT Module)         ||' >' END Module,
              CASE WHEN COUNT(DISTINCT Object_name)     = 1 THEN TO_CHAR(MIN(Object_Name))     ELSE '< '||COUNT(DISTINCT Object_Name)    ||' >' END Object_Name,
@@ -319,7 +320,9 @@ class AdditionController < ApplicationController
              CASE WHEN COUNT(DISTINCT Blocking_Instance_Number) = 1 THEN TO_CHAR(MIN(Blocking_Instance_Number)) ELSE '< '||COUNT(DISTINCT Blocking_Instance_Number)||' >' END Blocking_Instance_Number,
              CASE WHEN COUNT(DISTINCT Blocking_SID)    = 1 THEN TO_CHAR(MIN(Blocking_SID))    ELSE '< '||COUNT(DISTINCT Blocking_SID)   ||' >' END Blocking_SID,
              CASE WHEN COUNT(DISTINCT Blocking_SerialNo)=1 THEN TO_CHAR(MIN(Blocking_SerialNo))ELSE '< '||COUNT(DISTINCT Blocking_SerialNo)||' >' END Blocking_SerialNo,
-             CASE WHEN COUNT(DISTINCT Blocking_SQL_ID) = 1 THEN TO_CHAR(MIN(Blocking_SQL_ID)) ELSE '< '||COUNT(DISTINCT Blocking_SQL_ID)||' >' END Blocking_SQL_ID
+             CASE WHEN COUNT(DISTINCT Blocking_SQL_ID) = 1 THEN TO_CHAR(MIN(Blocking_SQL_ID)) ELSE '< '||COUNT(DISTINCT Blocking_SQL_ID)||' >' END Blocking_SQL_ID,
+             CASE WHEN COUNT(DISTINCT Blocking_Event)  = 1 THEN TO_CHAR(MIN(Blocking_Event))  ELSE '< '||COUNT(DISTINCT Blocking_Event) ||' >' END Blocking_Event,
+             CASE WHEN COUNT(DISTINCT Blocking_Status) = 1 THEN TO_CHAR(MIN(Blocking_Status)) ELSE '< '||COUNT(DISTINCT Blocking_Status)||' >' END Blocking_Status
       FROM   (SELECT l.*,
                      (TO_CHAR(Snapshot_Timestamp,'J') * 24 + TO_CHAR(Snapshot_Timestamp, 'HH24')) * 60 + TO_CHAR(Snapshot_Timestamp, 'MI') Minutes
               FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
@@ -375,6 +378,7 @@ class AdditionController < ApplicationController
              ELSE
                MIN(Root_Waiting_For_PK_Value)
              END Root_Waiting_For_PK_Value,
+             Root_Blocking_Event,
              Root_Blocking_Status, Root_Blocking_Client_Info,
              Root_Blocking_Module, Root_Blocking_Action, Root_Blocking_User_Name, Root_Blocking_Machine, Root_Blocking_OS_User,
              Root_Blocking_Process, Root_Blocking_Program,
@@ -391,6 +395,7 @@ class AdditionController < ApplicationController
                      CONNECT_BY_ROOT Blocking_SQL_Child_Number Root_Blocking_SQL_Child_Number,
                      CONNECT_BY_ROOT Blocking_Prev_SQL_ID     Root_Blocking_Prev_SQL_ID,
                      CONNECT_BY_ROOT Blocking_Prev_Child_Number Root_Block_Prev_Child_Number,
+                     CONNECT_BY_ROOT Blocking_Event           Root_Blocking_Event,
                      CONNECT_BY_ROOT Waiting_For_PK_Column_Name Root_Wait_For_PK_Column_Name,
                      CONNECT_BY_ROOT Waiting_For_PK_Value     Root_Waiting_For_PK_Value,
                      CONNECT_BY_ROOT Blocking_Status          Root_Blocking_Status,
@@ -419,7 +424,7 @@ class AdditionController < ApplicationController
                        )
       GROUP BY Root_Snapshot_Timestamp, Root_Blocking_Instance_Number, Root_Blocking_SID, Root_Blocking_SerialNo,
                Root_Blocking_SQL_ID, Root_Blocking_SQL_Child_Number, Root_Blocking_Prev_SQL_ID, Root_Block_Prev_Child_Number,
-               Root_Blocking_Status, Root_Blocking_Client_Info,
+               Root_Blocking_Event, Root_Blocking_Status, Root_Blocking_Client_Info,
                Root_Blocking_Module, Root_Blocking_Action, Root_Blocking_User_Name, Root_Blocking_Machine, Root_Blocking_OS_User,
              Root_Blocking_Process, Root_Blocking_Program
       ORDER BY SUM(Seconds_In_Wait) DESC",

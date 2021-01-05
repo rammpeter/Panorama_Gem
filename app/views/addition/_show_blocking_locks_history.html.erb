@@ -7,20 +7,20 @@
     <div class="flex-row-container" style="border:1px solid gray; margin: 2px; padding: 2px; ; height: 40px;">
       <div class="flex-row-element">
         Zeitscheibe (Minuten)
-        <%= text_field_tag(:timeslice, "10", :size=>5, :title=>"Verdichtung auf Zeitscheibe von x Minuten je Ergebinszeile") %>
+        <%= text_field_tag(:timeslice, "10", :size=>5, :title=>"Grouping by time period of x minutes per result row") %>
       </div>
 
       <div class="flex-row-element">
-        Auch lange nichtblockierende anzeigen
-        <%= check_box_tag(:show_non_blocking, 1, true, :title=>"Auch nicht-blockierende, aber lang anhaltende Locks anzeigen ?") %>
+        Show larger non-blocking locks also?
+        <%= check_box_tag(:show_non_blocking, 1, true, :title=>"Show also non-blocking but longer lasting locks?") %>
       </div>
       <div class="flex-row-element">
-        <%= submit_tag("Tabellarisch", :name => "commit_table", :title => "Anlistung der Treffer") %>
+        <%= submit_tag("Tabular", :name => "commit_table", :title => "Show tabular list of blocking locks grouped by time period") %>
       </div>
     </div>
     <div class="flex-row-container" style="border:1px solid gray; margin: 2px; padding: 2px; height: 40px;">
       <div class="flex-row-element">
-        <%= submit_tag("Hierarchie der Blocker", :name => "commit_hierarchy", :title => "Anlistung der Hierarchie Blocker/Blocking beginnend mit Root-Knoten") %>
+        <%= submit_tag("Hierarchy of blockers", :name => "commit_hierarchy", :title => "Show hierarchy of blocker/waiter starting with root blocking sessions for each snapshot") %>
       </div>
     </div>
   </div>

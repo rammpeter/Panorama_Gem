@@ -36,6 +36,7 @@ END Panorama_Sampler_Block_Locks;
                        s.Prev_SQL_ID,
                        s.Prev_Child_Number,
                        s.Status,
+                       DECODE(s.State, 'WAITING', s.Event, 'ON CPU')  Event,
                        s.Client_Info,
                        s.Module,
                        s.Action,
@@ -71,6 +72,7 @@ END Panorama_Sampler_Block_Locks;
                        bs.Prev_SQL_ID         Blocking_Prev_SQL_ID,
                        bs.Prev_Child_Number   Blocking_Prev_Child_Number,
                        bs.Status              Blocking_Status,
+                       DECODE(bs.State, 'WAITING', bs.Event, 'ON CPU')  Blocking_Event,
                        bs.Client_Info         Blocking_Client_Info,
                        bs.Module              Blocking_Module,
                        bs.Action              Blocking_Action,
@@ -161,19 +163,21 @@ END Panorama_Sampler_Block_Locks;
       BEGIN
       INSERT INTO panorama_owner.Panorama_Blocking_Locks (
         Snapshot_Timestamp, Instance_Number, SID, SerialNo, SQL_ID, SQL_Child_Number, Prev_SQL_ID, Prev_Child_Number,
-        Status, Client_Info, Module, Action, Object_Name, User_Name, Machine, OS_User, Process, Program,
+        Status, Event, Client_Info, Module, Action, Object_Name, User_Name, Machine, OS_User, Process, Program,
         Lock_Type, Seconds_in_Wait, ID1, ID2, Request, Lock_mode,
         Blocking_Object_Owner, Blocking_Object_Name, Blocking_RowID, Blocking_Instance_Number, Blocking_SID, Blocking_SerialNo,
         Blocking_SQL_ID, Blocking_SQL_Child_Number, Blocking_Prev_SQL_ID, Blocking_Prev_Child_Number, Blocking_Status,
+        Blocking_Event,
         Blocking_Client_Info, Blocking_Module, Blocking_Action, Blocking_User_name, Blocking_Machine, Blocking_OS_User,
         Blocking_Process, Blocking_Program, Waiting_For_PK_Column_Name, Waiting_For_PK_Value
       )
       VALUES (
         v_Snapshot_Timestamp, Rec.Inst_ID, Rec.SID, Rec.Serial#, Rec.SQL_ID, Rec.SQL_Child_Number, Rec.Prev_SQL_ID, Rec.Prev_Child_Number,
-        Rec.Status, Rec.Client_Info, Rec.Module, Rec.Action, Rec.Object_Name, Rec.UserName, Rec.Machine, Rec.OSUser, Rec.Process, Rec.Program,
+        Rec.Status, Rec.Event, Rec.Client_Info, Rec.Module, Rec.Action, Rec.Object_Name, Rec.UserName, Rec.Machine, Rec.OSUser, Rec.Process, Rec.Program,
         Rec.Lock_Type, Rec.Seconds_In_Wait, Rec.ID1, Rec.ID2, Rec.Request, Rec.Lock_Mode,
         Rec.Blocking_Object_Owner, Rec.Blocking_Object_Name, v_Blocking_RowID, Rec.Blocking_Instance_Number, Rec.Blocking_SID, Rec.Blocking_SerialNo,
         Rec.Blocking_SQL_ID, Rec.Blocking_SQL_Child_Number, Rec.Blocking_Prev_SQL_ID, Rec.Blocking_Prev_Child_Number, Rec.Blocking_Status,
+        Rec.Blocking_Event,
         Rec.Blocking_Client_Info, Rec.Blocking_Module, Rec.Blocking_Action, Rec.Blocking_User_name, Rec.Blocking_Machine, Rec.Blocking_OS_User,
         Rec.Blocking_Process, Rec.Blocking_Program, v_Waiting_For_PK_Column_Name, v_Waiting_For_PK_Value
       );
