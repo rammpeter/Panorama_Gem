@@ -41,5 +41,8 @@ Rails.application.configure do
   # config.action_view.raise_on_missing_translations = true
   #
 
+  # Debug mode disables concatenation and preprocessing of assets.
+  config.assets.debug = true
+
   config.log_level = :debug
 end
