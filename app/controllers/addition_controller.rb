@@ -575,6 +575,7 @@ class AdditionController < ApplicationController
              CASE WHEN COUNT(DISTINCT SerialNo)        = 1 THEN TO_CHAR(MIN(SerialNo))        ELSE '< '||COUNT(DISTINCT SerialNo)       ||' >' END SerialNo,
              CASE WHEN COUNT(DISTINCT SQL_ID)          = 1 THEN TO_CHAR(MIN(SQL_ID))          ELSE '< '||COUNT(DISTINCT SQL_ID)         ||' >' END SQL_ID,
              CASE WHEN COUNT(DISTINCT SQL_Child_Number)= 1 THEN TO_CHAR(MIN(SQL_Child_Number))ELSE '< '||COUNT(DISTINCT SQL_Child_Number)||' >' END SQL_Child_Number,
+             CASE WHEN COUNT(DISTINCT Event)           = 1 THEN TO_CHAR(MIN(Event))           ELSE '< '||COUNT(DISTINCT Event)          ||' >' END Event,
              CASE WHEN COUNT(DISTINCT Module)          = 1 THEN TO_CHAR(MIN(Module))          ELSE '< '||COUNT(DISTINCT Module)         ||' >' END Module,
              CASE WHEN COUNT(DISTINCT Object_Name)     = 1 THEN TO_CHAR(MIN(Object_Name))     ELSE '< '||COUNT(DISTINCT Object_Name)    ||' >' END Object_Name,
              CASE WHEN COUNT(DISTINCT Lock_Type)       = 1 THEN TO_CHAR(MIN(Lock_Type))       ELSE '< '||COUNT(DISTINCT Lock_Type)      ||' >' END Lock_Type,
@@ -586,7 +587,9 @@ class AdditionController < ApplicationController
              CASE WHEN COUNT(DISTINCT Blocking_SID)    = 1 THEN TO_CHAR(MIN(Blocking_SID))    ELSE '< '||COUNT(DISTINCT Blocking_SID)   ||' >' END Blocking_SID,
              CASE WHEN COUNT(DISTINCT Blocking_SerialNo)=1 THEN TO_CHAR(MIN(Blocking_SerialNo))ELSE '< '||COUNT(DISTINCT Blocking_SerialNo)||' >' END Blocking_SerialNo,
              CASE WHEN COUNT(DISTINCT Blocking_SQL_ID) = 1 THEN TO_CHAR(MIN(Blocking_SQL_ID)) ELSE '< '||COUNT(DISTINCT Blocking_SQL_ID)||' >' END Blocking_SQL_ID,
-             CASE WHEN COUNT(DISTINCT Blocking_SQL_Child_Number)= 1 THEN TO_CHAR(MIN(Blocking_SQL_Child_Number))ELSE '< '||COUNT(DISTINCT Blocking_SQL_Child_Number)||' >' END Blocking_SQL_Child_Number
+             CASE WHEN COUNT(DISTINCT Blocking_SQL_Child_Number)= 1 THEN TO_CHAR(MIN(Blocking_SQL_Child_Number))ELSE '< '||COUNT(DISTINCT Blocking_SQL_Child_Number)||' >' END Blocking_SQL_Child_Number,
+             CASE WHEN COUNT(DISTINCT Blocking_Event)  = 1 THEN TO_CHAR(MIN(Blocking_Event))  ELSE '< '||COUNT(DISTINCT Blocking_Event) ||' >' END Blocking_Event,
+             CASE WHEN COUNT(DISTINCT Blocking_Status) = 1 THEN TO_CHAR(MIN(Blocking_Status)) ELSE '< '||COUNT(DISTINCT Blocking_Status)||' >' END Blocking_Status
       FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
       WHERE  1 = 1
       #{@where_string}
