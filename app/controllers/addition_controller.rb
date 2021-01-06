@@ -225,8 +225,8 @@ class AdditionController < ApplicationController
 
     retval = {
         "Snapshot_Timestamp" => {:sql => "l.Snapshot_Timestamp =TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true },
-        "Min_Zeitstempel"   => {:sql => "l.Snapshot_Timestamp>=TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true  },
-        "Max_Zeitstempel"   => {:sql => "l.Snapshot_Timestamp<=TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true  },
+        "Min_Timestamp"     => {:sql => "l.Snapshot_Timestamp>=TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true  },
+        "Max_Timestamp"     => {:sql => "l.Snapshot_Timestamp<=TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true  },
         "Instance"          => {:sql => "l.Instance_Number" },
         "SID"               => {:sql => "l.SID"},
         "SerialNo"          => {:sql => "l.SerialNo"},
@@ -452,7 +452,7 @@ class AdditionController < ApplicationController
                     WHERE  l.Snapshot_Timestamp = TO_DATE(?, '#{sql_datetime_second_mask}')
                    )
       SELECT o.Instance_Number, o.Sid, o.SerialNo, o.Seconds_In_Wait, o.SQL_ID, o.SQL_Child_Number,
-             o.Prev_SQL_ID, o.Prev_Child_Number, o.Status, o.Client_Info, o.Module, o.Action, o.user_name, o.program,
+             o.Prev_SQL_ID, o.Prev_Child_Number, o.Event, o.Status, o.Client_Info, o.Module, o.Action, o.user_name, o.program,
              o.machine, o.os_user, o.process,
              CASE
                WHEN Object_Name LIKE 'SYS_LOB%%' THEN
@@ -515,7 +515,7 @@ class AdditionController < ApplicationController
              SID,         SerialNo,
              SQL_ID,      SQL_Child_Number,
              Prev_SQL_ID, Prev_Child_Number,
-             Status,
+             Event, Status,
              Client_Info, Module, Action,
              CASE
                WHEN Object_Name LIKE 'SYS_LOB%%' THEN
@@ -539,7 +539,7 @@ class AdditionController < ApplicationController
              Blocking_Instance_Number, Blocking_SID, Blocking_SerialNo,
              Blocking_SQL_ID, Blocking_SQL_Child_Number,
              Blocking_Prev_SQL_ID, Blocking_Prev_Child_Number,
-             Blocking_Status,
+             Blocking_Event, Blocking_Status,
              Blocking_Client_Info, Blocking_Module, Blocking_Action,
              Blocking_User_Name, Blocking_Machine, Blocking_OS_User, Blocking_Process, Blocking_Program,
              NULL Waiting_App_Desc,

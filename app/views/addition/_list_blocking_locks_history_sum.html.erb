@@ -7,8 +7,8 @@
     ajax_link(value,
                 {:action       => action,
                  :groupfilter  => @groupfilter.merge({
-                                    :Min_Zeitstempel => localeDateTime(result.min_snapshot_timestamp),
-                                    :Max_Zeitstempel => localeDateTime(result.max_snapshot_timestamp),
+                                    :Min_Timestamp => localeDateTime(result.min_snapshot_timestamp),
+                                    :Max_Timestamp => localeDateTime(result.max_snapshot_timestamp),
                                   }),
                  :update_area  => @update_area
                 }.merge(groupkey),

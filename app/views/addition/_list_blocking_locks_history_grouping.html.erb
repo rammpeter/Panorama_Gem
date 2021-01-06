@@ -3,7 +3,7 @@
 @update_area = get_unique_area_id
 
 def link_column_sql_id(instance, sql_id, child_number)
-  link_historic_sql_id(instance, sql_id, @groupfilter[:Min_Zeitstempel], @groupfilter[:Max_Zeitstempel], @update_area, nil)
+  link_historic_sql_id(instance, sql_id, @groupfilter[:Min_Timestamp], @groupfilter[:Max_Timestamp], @update_area, nil)
 end
 
 
