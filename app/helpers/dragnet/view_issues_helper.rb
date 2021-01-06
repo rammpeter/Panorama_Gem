@@ -11,6 +11,7 @@ module Dragnet::ViewIssuesHelper
 Sorting should be placed in calling SQL instead of view if necessary.
 Selection is usable with Rel. 12.1 or greater
 '),
+            min_db_version: '12.1',
             :sql=> "\
 WITH
   FUNCTION fCheck(owner IN VARCHAR2, view_name IN VARCHAR2) RETURN VARCHAR2 IS

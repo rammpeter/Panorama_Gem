@@ -45,6 +45,8 @@ module DragnetHelper
   #   :desc           Beschreibung
   #   :entries        Array von Hashes mit selber Struktur (rekursiv), wenn belegt, dann gilt Element als Menü-Knoten
   #   :sql            SQL-Statement zur Ausführung
+  #   :min_db_version Optional minimum DB version
+  #   :not_executable Optional mark entry as not executable SQL
   #   :parameter      Array von Hashes mit folgender Struktur
   #       :name       Name des Parameters
   #       :size       Darstellungsgröße
