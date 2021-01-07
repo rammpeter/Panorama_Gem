@@ -38,9 +38,12 @@ end
     <td valign="top">
       <table  id="<%= "#{@table_id_prefix}_right_single_table" %>" border="1" width="100%" style="font-size:small;">
         <tr title="Parsing schema name">            <td>Parsing schema name</td><td align="center"><%= @sql.min_parsing_schema_name %></td>        </tr>
-        <tr title="<%= t(:dba_history_list_sql_detail_historic_last_plan_hash_hint, :default=>"Hash-value of last execution plan") %> + <%= t(:dba_history_list_sql_detail_historic_plan_count_hint, :default=>"Number of different execution plans in time period (if > 1)") %>">            <td>Plan-Hash-Value</td><td align="center"><%= "#{@sql.last_plan_hash_value}#{" <span style='background-color:orange;'>( #{@sql.plan_hash_value_count} )</span>" if @sql.plan_hash_value_count > 1}".html_safe %></td>        </tr>
-        <tr title="Hash-value over total optimizer environment + Number of different optimizer environments in time period (if > 1)">            <td>Optimizer Env Hash-Value</td><td align="center"><%= "#{@sql.last_optimizer_env_hash_value}#{" <span style='background-color:orange;'>( #{@sql.optimizer_env_hash_value_count} )</span>" if @sql.optimizer_env_hash_value_count > 1}".html_safe %></td>        </tr>
-        <tr title="<%= t(:dba_history_list_sql_detail_historic_module_action_hint, :default=>"Module and action of last parsing session")%>">            <td>Parsing module</td><td align="center">
+        <tr title="<%= t(:dba_history_list_sql_detail_historic_last_plan_hash_hint, :default=>"Hash-value of last execution plan") %> + <%= t(:dba_history_list_sql_detail_historic_plan_count_hint, :default=>"Number of different execution plans in time period (if > 1)") %> /
+Hash-value over total optimizer environment + Number of different optimizer environments in time period (if > 1)">
+          <td>Plan-Hash-Value / Opt.Env.</td>
+          <td align="center"><%= "#{@sql.last_plan_hash_value}#{" <span style='background-color:orange;'>( #{@sql.plan_hash_value_count} )</span>" if @sql.plan_hash_value_count > 1}".html_safe %> / <%= "#{@sql.last_optimizer_env_hash_value}#{" <span style='background-color:orange;'>( #{@sql.optimizer_env_hash_value_count} )</span>" if @sql.optimizer_env_hash_value_count > 1}".html_safe %></td>
+        </tr>
+        <tr title="<%= t(:dba_history_list_sql_detail_historic_module_action_hint, :default=>"Module and action of last parsing session")%><%= "\nModule='#{@sql.last_module}'\nAction='#{@sql.last_action}'" %>"><td>Parsing module / action</td><td align="center">
           <%=
             @update_area_module = get_unique_area_id
             ajax_link(@sql.last_module, {
@@ -51,26 +54,23 @@ end
             },
                       :title=>t(:dba_history_list_sql_detail_historic_module_link_hint, :default=>'Explanation of module name'))
           %>
-          <div id='<%= @update_area_module %>'></div>
-        </td>        </tr>
-        <tr title="<%= t(:dba_history_list_sql_detail_historic_module_action_hint, :default=>"Module and action of last parsing session")%>">            <td>Parsing action</td><td align="center">
+          <%= '/' unless @sql.last_action.nil? %>
           <%=
-            @update_area_action = get_unique_area_id
             ajax_link(@sql.last_action, {
-                :controller   => :dba_sga,
-                :action       => :show_application_info,
-                :update_area  => @update_area_action,
-                :org_text     => @sql.last_action
+              :controller   => :dba_sga,
+              :action       => :show_application_info,
+              :update_area  => @update_area_module,
+              :org_text     => @sql.last_action
             },
                       :title=>t(:dba_history_list_sql_detail_historic_action_link_hint, :default=>'Explanation of action name'))
           %>
-          <div id='<%= @update_area_action %>'></div>
+          <div id='<%= @update_area_module %>'></div>
         </td>        </tr>
         <tr title="Begin of AWR-snapshot with first occurrence of SQL in AWR"> <td>First AWR-snapshot</td><td align="center"><%= localeDateTime(@sql.first_occurrence) %></td>        </tr>
         <tr title="End of AWR-snapshot with last occurrence of SQL in AWR"> <td>Last AWR-snapshot</td><td align="center"><%= localeDateTime(@sql.last_occurrence) %></td>        </tr>
         <tr title="Earliest sample of SQL in active session history"> <td>First ASH-sample</td><td align="center"><%= localeDateTime(@sql.min_sample_time) %></td>        </tr>
         <tr title="Latest sample of SQL in active session history"> <td>Last ASH-sample</td><td align="center"><%= localeDateTime(@sql.max_sample_time) %></td>        </tr>
-        <tr title="<%= t(:dba_sga_list_sql_sga_stat_hit_ration_hint, :default=>'Ratio cache hits to buffer gets') %>">            <td>Buffer cache hit ratio</td><td align="center"><%= fn(@sql.hit_ratio, 2) %></td>        </tr>
+        <tr title="<%= t(:dba_sga_list_sql_sga_stat_hit_ration_hint, :default=>'Ratio cache hits to buffer gets') %>">            <td>Buffer cache hit ratio</td><td align="center"><%= fn(@sql.hit_ratio, 2) %> %</td>        </tr>
         <tr title="Number of times the object was loaded or reloaded after invalidisation of cursor">            <td>Loads</td><td align="center"><%= fn(@sql.loads) %></td>        </tr>
       </table>
 
@@ -154,9 +154,7 @@ end
     end
   %>
 <% end %>
-
-<br><b><%= t(:additional_infos, :default=>'Additional information') %></b><br><br>
-
+<br/>
 <div class="flex-row-container">
   <div class="flex-row-element">
     <%= ajax_submit("Execution-Plan (#{@sql.plan_hash_value_count})", {
