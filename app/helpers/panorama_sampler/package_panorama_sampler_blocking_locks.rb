@@ -15,7 +15,7 @@ END Panorama_Sampler_Block_Locks;
 
   def panorama_sampler_blocking_locks_code
     "
-  PROCEDURE Create_Block_Locks_Snapshot(p_Instance_Number IN NUMBER, p_LongLocksSeconds IN NUMBER) IS
+  PROCEDURE Create_Block_Locks_Snapshot(p_Instance_Number IN NUMBER, p_LongLocksSeconds IN NUMBER /*, p_MinBlockMilliSeconds IN NUMBER */) IS
     v_Waiting_For_PK_Column_Name  panorama_owner.Panorama_Blocking_Locks.Waiting_For_PK_Column_Name%TYPE;
     v_Waiting_For_PK_Value        panorama_owner.Panorama_Blocking_Locks.Waiting_For_PK_Value%TYPE;
     v_TableName                   VARCHAR2(30);
@@ -26,31 +26,34 @@ END Panorama_Sampler_Block_Locks;
   BEGIN
     v_Snapshot_Timestamp := SYSDATE;    -- Einheitlicher Zeitpunkt des Schnappschuss ueber gesamte Verarbeitung
     FOR Rec IN (
-                WITH RawLock AS (SELECT /*+ MATERIALIZE NO_MERGE */ * FROM gv$Lock)
-                SELECT /*+ parallel(l,2) parallel(bo,2) */
-                       l.Inst_ID,
-                       s.SID,
-                       s.Serial#,
-                       s.SQL_ID,
-                       s.SQL_Child_Number,
-                       s.Prev_SQL_ID,
-                       s.Prev_Child_Number,
-                       s.Status,
+                WITH RawLock AS (SELECT /*+ MATERIALIZE NO_MERGE */ *
+                                 FROM   gv$Lock
+                                 WHERE  ((CTime > p_LongLocksSeconds  AND Type IN ('TM', 'TX')) OR Request != 0)
+                                 AND    Type NOT IN ('PS')
+                                ),
+                     Lock_Sessions AS (SELECT /*+ MATERIALIZE NO_MERGE */ s.Inst_ID, s.SID
+                                       FROM   gv$Session s
+                                       WHERE  s.LockWait IS NOT NULL OR s.Blocking_Session IS NOT NULL
+                                      ),
+                     Lock_Session_Combined AS (SELECT /*+ MATERIALIZE NO_MERGE */
+                                                      NVL(l.Inst_ID, s.Inst_ID) Inst_ID,
+                                                      NVL(l.SID,     s.SID)     SID,
+                                                      l.Type, l.ID1, l.ID2, l.Request, l.LMode,
+                                                      CASE WHEN l.Request = 0 THEN l.CTime END LongWaitSeconds /* Lock without blocking */
+                                               FROM   RawLock l
+                                               FULL OUTER JOIN Lock_Sessions s ON s.Inst_ID = l.Inst_ID AND s.SID = l.SID
+                                              )
+                SELECT /*+ NO_MERGE */
+                       s.Inst_ID, s.SID, s.Serial#, s.SQL_ID, s.SQL_Child_Number, s.Prev_SQL_ID, s.Prev_Child_Number, s.Status,
                        DECODE(s.State, 'WAITING', s.Event, 'ON CPU')  Event,
-                       s.Client_Info,
-                       s.Module,
-                       s.Action,
+                       s.Client_Info, s.Module, s.Action,
                        CASE
                        WHEN l.Type='TM' THEN /* Locked Object for TM */
                             (SELECT o.Owner||'.'||o.object_name FROM sys.dba_objects o WHERE l.id1=o.object_id)
                        WHEN l.Type='TX' THEN /* Used Rollback Segment for TX */
                             (SELECT DECODE(Count(*),1,'','Multi:')||MIN(SUBSTR('RBS:'||x.XIDUSN,1,18)) FROM GV$Transaction x WHERE x.Addr=s.TAddr)
                        END Object_Name,
-                       s.UserName,
-                       s.machine,
-                       s.OSUser,
-                       s.Process,
-                       s.program,
+                       s.UserName, s.machine, s.OSUser, s.Process, s.program,
                        l.Type                 Lock_Type,
                        bo.Owner               Blocking_Object_Owner,
                        bo.Object_Name         Blocking_Object_Name,
@@ -58,7 +61,8 @@ END Panorama_Sampler_Block_Locks;
                        s.Row_Wait_File#,      -- fuer Ermittlung RowID
                        s.Row_Wait_Block#,     -- fuer Ermittlung RowID
                        s.Row_Wait_Row#,       -- fuer Ermittlung RowID
-                       s.Seconds_In_Wait,
+                       CASE WHEN l.LongWaitSeconds IS NOT NULL THEN l.LongWaitSeconds /* not blocking long lasting lock */
+                       ELSE s.Wait_Time_Micro/1000000 END Seconds_In_Wait,
                        l.ID1,
                        l.ID2,
                        /* Request!=0 indicates waiting for resource determinded by ID1, ID2 */
@@ -72,7 +76,7 @@ END Panorama_Sampler_Block_Locks;
                        bs.Prev_SQL_ID         Blocking_Prev_SQL_ID,
                        bs.Prev_Child_Number   Blocking_Prev_Child_Number,
                        bs.Status              Blocking_Status,
-                       DECODE(bs.State, 'WAITING', bs.Event, 'ON CPU')  Blocking_Event,
+                       DECODE(bs.State, 'WAITING', bs.Event, CASE WHEN bs.State IS NOT NULL THEN 'ON CPU' END)  Blocking_Event,
                        bs.Client_Info         Blocking_Client_Info,
                        bs.Module              Blocking_Module,
                        bs.Action              Blocking_Action,
@@ -81,7 +85,7 @@ END Panorama_Sampler_Block_Locks;
                        bs.OSUser              Blocking_OS_User,
                        bs.Process             Blocking_Process,
                        bs.Program             Blocking_Program
-                 FROM RawLock l
+                 FROM Lock_Session_Combined l
                  JOIN gv$session s ON s.Inst_ID = l.Inst_ID AND s.SID = l.SID
                  LEFT OUTER JOIN gv$Session bs ON bs.Inst_ID = s.Blocking_Instance AND bs.SID = s.Blocking_Session
                  -- Object der blockenden Session
@@ -94,9 +98,7 @@ END Panorama_Sampler_Block_Locks;
                                                                            END
                                                                       END
                  WHERE s.type = 'USER'
-                 AND l.Type != 'PS'
-                 AND bo.Object_Name != 'SEMAPHORE'  -- Diese Tabellen dienen der Prozessabgrenzung mittels blocking locks, muessen also nicht protokolliert werden
-                 AND ((s.Seconds_In_Wait > p_LongLocksSeconds  AND l.Type NOT IN ('BR', 'MR') ) OR (s.LockWait IS NOT NULL AND l.Request != 0) )
+                 AND   (l.LongWaitSeconds IS NOT NULL OR (s.Wait_Class != 'Idle' /* AND s.Wait_Time_Micro > p_MinBlockMilliSeconds*1000 */) )
     ) LOOP
       -- Ermitteln Primary Key-Values
       v_Waiting_For_PK_Column_Name := NULL;              -- Default
