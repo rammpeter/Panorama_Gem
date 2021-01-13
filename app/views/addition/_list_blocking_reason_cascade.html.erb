@@ -30,7 +30,7 @@ end
 column_options =
   [
     {:caption=>"R",               :data=>proc{|rec| rec.level},                                :title=>"Ranking in dependency of blocker/waiter (Row with largest value is the root cause of blocker/waiter dependency hierarchy)"},
-    {:caption=>"Wait (Sec.)",     :data=>proc{|rec| formattedNumber(rec.seconds_in_wait)},     :title=>"Number of seconds waiting for this blocking session", :align=>"right"},
+    {:caption=>"Wait (Sec.)",     :data=>proc{|rec| formattedNumber(rec.seconds_in_wait)},     :title=>"Number of seconds waiting for this blocking session", :align=>"right", data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_in_wait)}"}},
     {:caption=>"Objectname",      :data=>proc{|rec| rec.object_name},                          :title=>"Name of object waiting for"},
     {:caption=>"LT",              :data=>proc{|rec| rec.lock_type},                            :title=>"Lock type of blocked session", :data_title=>'#{lock_types(rec.lock_type)}'},
     {:caption=>"ID1, ID2",        :data=>proc{|rec| "#{rec.id1}, #{rec.id2}"},                 :title=>"ID1, ID2 of object waiting for"},

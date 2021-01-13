@@ -70,7 +70,7 @@ column_options =
     {:caption=>"Max. timestamp", :data=>proc{|rec| localeDateTime(rec.max_snapshot_timestamp)},                               :title=>"Largest timestamp in considered period"},
     {:caption=>"Inst.",           :data=>proc{|rec| link_column_grouping.call(rec, rec.instance_number, 'Instance')},          :title=>"Instance of blocked session (or number if multiple)"},
     {:caption=>"SID",             :data=>proc{|rec| link_column_grouping.call(rec, rec.sid, 'SID')},                           :title=>"SID of blocked Session (or number if multiple)"},
-    {:caption=>"Wait (Sec.)",     :data=>proc{|rec| formattedNumber(rec.seconds_in_wait,0)},                                   :title=>"Number of seconds the sessions are still blocked", :align=>"right"},
+    {:caption=>"Wait (Sec.)",     :data=>proc{|rec| formattedNumber(rec.seconds_in_wait,0)},                                   :title=>"Number of seconds the sessions are still blocked", :align=>"right", data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_in_wait)}"}},
     {:caption=>"Samples",         :data=>proc{|rec| link_column_single.call(rec, "< #{fn(rec.samples,0)} >")},                 :title=>"Number of recorded samples", :align=>"right"},
     {:caption=>"SQL-ID",          :data=>proc{|rec| link_column_grouping.call(rec, rec.sql_id, 'SQL-ID')},                     :title=>"SQL-ID of blocked session (or number if multiple)"},
     {:caption=>"Event",           :data=>proc{|rec| link_column_grouping.call(rec, rec.event, 'Event')},                       :title=>"wait event of blocked session (or number if multiple)"},

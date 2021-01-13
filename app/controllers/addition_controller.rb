@@ -344,7 +344,6 @@ class AdditionController < ApplicationController
                       FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
                       WHERE  l.Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
                       AND    l.Blocking_SID IS NOT NULL  -- keine langdauernden Locks beruecksichtigen
-                      AND    l.Request != 0              -- nur Records beruecksichtigen, die wirklich auf Lock warten
                     )
       SELECT Root_Snapshot_Timestamp, Root_Blocking_Instance_Number, Root_Blocking_SID, Root_Blocking_SerialNo,
              COUNT(DISTINCT SID) Blocked_Sessions_Total,
@@ -450,6 +449,7 @@ class AdditionController < ApplicationController
       WITH TSel AS (SELECT /*+ NO_MERGE */ *
                     FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
                     WHERE  l.Snapshot_Timestamp = TO_DATE(?, '#{sql_datetime_second_mask}')
+                    AND    l.Blocking_SID IS NOT NULL  -- keine langdauernden Locks beruecksichtigen
                    )
       SELECT o.Instance_Number, o.Sid, o.SerialNo, o.Seconds_In_Wait, o.SQL_ID, o.SQL_Child_Number,
              o.Prev_SQL_ID, o.Prev_Child_Number, o.Event, o.Status, o.Client_Info, o.Module, o.Action, o.user_name, o.program,
@@ -480,7 +480,6 @@ class AdditionController < ApplicationController
                              LEVEL cLevel,
                              l.*
                       FROM   tSel l
-                      WHERE  l.Request != 0              -- nur Records beruecksichtigen, die wirklich auf Lock warten
                       CONNECT BY NOCYCLE PRIOR Snapshot_Timestamp = Snapshot_Timestamp
                                      AND PRIOR sid                = blocking_sid
                                      AND PRIOR instance_number    = blocking_instance_number
@@ -492,7 +491,6 @@ class AdditionController < ApplicationController
       WHERE  o.Blocking_Instance_Number = ?
       AND    o.Blocking_SID             = ?
       AND    o.Blocking_SerialNo        = ?
-      AND    o.Request != 0              -- nur Records beruecksichtigen, die wirklich auf Lock warten
       ORDER BY o.Seconds_In_Wait+cs.Seconds_In_Wait_Blocked_Total DESC",
                             @snapshot_timestamp, @blocking_instance, @blocking_sid, @blocking_serialno, @blocking_instance, @blocking_sid, @blocking_serialno]
 
@@ -610,7 +608,7 @@ class AdditionController < ApplicationController
       WITH TSel AS (SELECT /*+ NO_MERGE */ *
                     FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
                     WHERE  l.Snapshot_Timestamp = TO_DATE(?, '#{sql_datetime_second_mask}')
-                    AND    l.Request != 0  -- nur Records beruecksichtigen, die wirklich auf Lock warten
+                    AND    l.Blocking_SID IS NOT NULL  -- keine langdauernden Locks beruecksichtigen
                    )
       SELECT Level,
              Object_Name, Lock_Type, Seconds_in_Wait, ID1, ID2, Request, Lock_Mode,
