@@ -267,7 +267,9 @@ ORDER BY x.MBytes DESC NULLS LAST
             :sql=>  "SELECT x.*,
                             ROUND(\"Values per day\"/DECODE(Cache_Size,0,1,Cache_Size)) \"Cache reloads per day\"
                      FROM   (SELECT
-                                    s.Sequence_Owner, s.Sequence_Name, s.Cache_size, s.Min_Value, s.Max_Value, s.Increment_By,
+                                    s.Sequence_Owner, s.Sequence_Name, s.Cache_size,
+                                    ROUND((s.Last_Number-s.Min_Value)/(SYSDATE-o.Created)/24) \"Suggested Cache Size\", /* Based on strived one reload per hour */
+                                    s.Min_Value, s.Max_Value, s.Increment_By,
                                     s.Cycle_flag, s.Last_Number,
                                     ROUND(s.Last_Number*100/s.Max_Value, 1) \"Pct. of max. value reached\",
                                     ROUND((s.Last_Number-s.Min_Value)/(SYSDATE-o.Created)) \"Values per day\",
