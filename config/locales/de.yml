@@ -1201,11 +1201,6 @@
   dragnet_helper_108_param_1_hint:                           Falls Analyze-Info existiert, ab welchem Alter Aufnahme in Selektion
   dragnet_helper_108_param_1_name:                           Mindestalter existierender Analyse in Tagen
 
-  dragnet_helper_109_desc: |-
-    Unzureichende Bereitstellung von PGA-Memory für Sort-/Hash-Operationen führt zu Auslagern auf TEMP-Tablespace mit entsprechenden Performance-Auswirkungen.
-  dragnet_helper_109_name: |-
-    PGA-Auslastung: Historische Auslastung PGA-Strukturen
-
   dragnet_helper_110_desc: |-
     Das Nachlesen von Sequence-Werten / Fuellen des Sequence-Caches ist verbunden mit Schreiben in Dictionary sowie Abgleich der Strukturen zwischen RAC-Instanzen.
     Zu hochfrequenter Zugriff auf Dictionary-Strukturen der Sequences führt zu diversen unnötigen Wartesituationen, daher fachlich und technisch sinnvolle Cache-Größen definieren für Sequences.

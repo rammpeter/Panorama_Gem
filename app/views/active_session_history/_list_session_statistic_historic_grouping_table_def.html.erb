@@ -104,7 +104,7 @@
                                                                                   Session_ID:           rec.group_value.split(':')[1].split(',')[0],
                                                                                   SerialNo:             rec.group_value.split(':')[1].split(',')[1],
                                                                                   Idle_Wait1:           'PX Deq Credit: send blkd',
-                                                                                  DBID:                 get_dbid,
+                                                                                  DBID:                 @groupfilter[:DBID],
                                                                                   time_selection_start: @groupfilter[:time_selection_start],
                                                                                   time_selection_end:   @groupfilter[:time_selection_end],
                                                                                   Min_Snap_ID:          rec.min_snap_id,

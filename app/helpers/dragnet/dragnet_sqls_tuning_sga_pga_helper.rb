@@ -234,33 +234,6 @@ ORDER BY x.MBytes DESC NULLS LAST
             :parameter=>[{:name=>t(:dragnet_helper_108_param_1_name, :default=>'Minimum age of existing analyze info in days'), :size=>8, :default=>100, :title=>t(:dragnet_helper_108_param_1_hint, :default=>'If analyze info exists: minimun age for consideration in selection')}]
         },
         {
-            :name  => t(:dragnet_helper_109_name, :default=>'PGA-Usage: Historic utilization of PGA-structures'),
-            :desc  => t(:dragnet_helper_109_desc, :default=>'Insufficient supply of PGA-memory for sort and hash operations leads to transfer to TEMP-tablespace with according impact on performance'),
-            :sql=>  "SELECT /*+ DB-Tools Ramm - PGA-Historie*/
-                             ss.Begin_Interval_Time, p.Instance_Number,
-                             ROUND(MAX(DECODE(p.Name, 'aggregate PGA target parameter'      , p.Value, 0))/(1024*1024)) \"PGA Aggregate Target (MB)\",
-                             ROUND(MAX(DECODE(p.Name, 'aggregate PGA auto target'           , p.Value, 0))/(1024*1024)) \"PGA Auto Target (MB)\",
-                             ROUND(MAX(DECODE(p.Name, 'global memory bound'                 , p.Value, 0))/(1024*1024)) \"global memory bound (MB)\",
-                             ROUND(MAX(DECODE(p.Name, 'total PGA inuse'                     , p.Value, 0))/(1024*1024)) \"total PGA inuse (MB)\",
-                             ROUND(MAX(DECODE(p.Name, 'total PGA allocated'                 , p.Value, 0))/(1024*1024)) \"total PGA allocated (MB)\",
-                             ROUND(MAX(DECODE(p.Name, 'total freeable PGA memory'           , p.Value, 0))/(1024*1024)) \"total freeable PGA memory (MB)\",
-                             MAX(DECODE(p.Name, 'process count'                             , p.Value, 0))              \"No. of processes\",
-                             MAX(DECODE(p.Name, 'max processes count'                       , p.Value, 0))              \"Max. no. of processes\",
-                             ROUND(MAX(DECODE(p.Name, 'PGA memory freed back to OS'         , p.Value, 0))/(1024*1024)) \"PGA mem freed back (MB kum.)\",
-                             ROUND(MAX(DECODE(p.Name, 'total PGA used for auto workareas'   , p.Value, 0))/(1024*1024)) \"total PGA Used Auto (MB)\",
-                             ROUND(MAX(DECODE(p.Name, 'total PGA used for manual workareas' , p.Value, 0))/(1024*1024)) \"total PGA used manual (MB)\",
-                             MAX(DECODE(p.Name, 'over allocation count'                     , p.Value, 0)) -            -- Subtraktion Vorgaenger fuer Delta
-                             (SELECT Value FROM DBA_hist_PgaStat i WHERE i.DBID=p.DBID AND i.Snap_ID=p.Snap_ID-1 AND I.INSTANCE_NUMBER = p.Instance_Number AND i.Name =  'over allocation count') \"No. of over allocations\",
-                             MAX(DECODE(p.Name, 'cache hit percentage'   , p.Value, 0))                                 \"Cache Hit pct (since startup)\"
-                      FROM   DBA_hist_PgaStat p
-                      JOIN   DBA_Hist_Snapshot ss ON ss.DBID = p.DBID AND ss.Instance_Number = p.Instance_Number AND ss.Snap_ID = p.Snap_ID
-                      WHERE  p.Instance_Number = 1
-                      AND    ss.Begin_Interval_Time > SYSDATE-?
-                      GROUP BY ss.Begin_Interval_Time, p.Instance_Number, p.DBID, p.Snap_ID
-                      ORDER BY ss.Begin_Interval_Time",
-            :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') }]
-        },
-        {
             :name  => t(:dragnet_helper_110_name, :default=>'Concurrency on memory, latches: insufficient cached sequences from DBA_Sequences'),
             :desc  => t(:dragnet_helper_110_desc, :default=>'Fetching of sequence values / filling the sequence cache causes writes in dictionary and interchange between REC-instances.
                           Highly frequent access on dictionary structures of sequences leads to unnecessary wait events, therefore you should define reasonable cache sizes for sequences.'),

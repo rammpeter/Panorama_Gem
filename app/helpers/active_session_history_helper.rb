@@ -88,7 +88,8 @@ module ActiveSessionHistoryHelper
 
   # additional filter conditions that are not listed as grouping criteria in session_statistics_key_rules
   def additional_ash_filter_conditions
-    {
+    retval =
+      {
         Blocking_Instance:            {:name => 'Blocking_Instance',           :sql => "s.Blocking_Inst_ID"},
         Blocking_Session:             {:name => 'Blocking_Session',            :sql => "s.Blocking_Session"},
         Blocking_Session_Serial_No:   {:name => 'Blocking_Session_Serial_No',  :sql => "s.Blocking_Session_Serial_No"}, 
@@ -111,7 +112,22 @@ module ActiveSessionHistoryHelper
         Additional_Filter:            {:name => 'Additional Filter',           :sql => "UPPER(u.UserName||s.Session_ID||s.SQL_ID||s.Module||s.Action||o.Object_Name||s.Program#{get_db_version >= '11.2' ? '|| s.Machine' : ''}||s.SQL_Plan_Hash_Value||s.Client_ID) LIKE UPPER('%'||?||'%')", :already_bound => true }, # Such-Filter
         Temp_Usage_MB_greater:        {:name => 'TEMP-usage (MB) > x',         :sql => "s.Temp_Space_Allocated > ?*(1024*1024)", :already_bound => true},
         Temp_TS:                      {:name => 'TEMP-TS',                     :sql => "u.Temporary_Tablespace"},
-    }
+      }
+    retval[:con_id] =  {:name => 'Con-ID', :sql => "Con_ID" } if get_db_version >= '12.1'
+    retval
+  end
+
+  def hide_groupfilter_content?(groupfilter, key)
+    if groupfilter_value(key)[:hide_content]
+      case key
+      when :DBID
+        groupfilter[:DBID] == PanoramaConnection.dbid || groupfilter[:con_id]
+      else
+        true
+      end
+    else
+      false
+    end
   end
 
   # Ermitteln des SQL für NOT NULL oder NULL
@@ -148,6 +164,13 @@ module ActiveSessionHistoryHelper
     @global_where_values = []              # Filter-werte für nachfolgendes Statement für alle Union-Tabellen
     @dba_hist_where_string  = ""             # Filter-Text für nachfolgendes Statement mit AND-Erweiterung für DBA_Hist_Active_Sess_History
     @dba_hist_where_values = []              # Filter-werte für nachfolgendes Statement für DBA_Hist_Active_Sess_History
+    @sga_ash_where_string  = ""
+    @sga_ash_where_values = []
+
+    # Check if PDB is selected by DBID, than add con_id to groupfilter
+    if get_db_version >= '12.1' && @groupfilter[:DBID] != PanoramaConnection.dbid
+      @groupfilter[:con_id] = sql_select_one ["SELECT Con_ID FROM gv$Containers WHERE DBID = ?", @groupfilter[:DBID]]
+    end
 
     @groupfilter.each do |key,value|
       @groupfilter.delete(key) if value.nil? || key == 'NULL'   # '' zulassen, da dies NULL signalisiert, Dummy-Werte ausblenden
@@ -162,9 +185,13 @@ module ActiveSessionHistoryHelper
       @groupfilter[:Max_Snap_ID] = @max_snap_id unless @groupfilter.has_key?(:Max_Snap_ID)
     end
 
-    @groupfilter.each {|key,value|
+    # Switch table access to no result if records are not needed
+    @sga_ash_where_string << " WHERE 1=2" unless sga_ash_needed?(@groupfilter)
+
+    @groupfilter.each do |key,value|
       sql = groupfilter_value(key, value)[:sql]
-      if key == :DBID || key == :Min_Snap_ID || key == :Max_Snap_ID    # Werte nur gegen HistTabelle binden
+      case key
+      when :DBID, :Min_Snap_ID, :Max_Snap_ID
         @dba_hist_where_string << " AND #{sql}"  # Filter weglassen, wenn nicht belegt
         if value && value != ''
           @dba_hist_where_values << value   # Wert nur binden wenn nicht im :sql auf NULL getestet wird
@@ -172,12 +199,22 @@ module ActiveSessionHistoryHelper
           @dba_hist_where_values << 0                    # Wenn kein valides Alter festgestellt über DBA_Hist_Snapshot, dann reicht gv$Active_Session_History aus für Zugriff,
           @dba_hist_where_string << "/* Zugriff auf DBA_Hist_Active_Sess_History ausblenden, da kein Wert für #{key} gefunden wurde (alle Daten kommen aus gv$Active_Session_History)*/"
         end
-      else                                # Werte für Hist- und gv$-Tabelle binden
+      when :con_id
+        @sga_ash_where_string << "#{@sga_ash_where_string == '' ? " WHERE" : " AND"} #{sql} "
+        @sga_ash_where_values << value
+      else
         @global_where_string << " AND #{sql}" if sql
         @global_where_values << value if value && value != ''  # Wert nur binden wenn nicht im :sql auf NULL getestet wird
       end
-    }
+    end
   end # where_from_groupfilter
+
+  # Is access to gv$Active_Session_History needed for this filter conditions
+  def sga_ash_needed?(groupfilter)
+    # Access to gv$Active_Session_History is needed if accessing the default DBID or a PDB
+    groupfilter[:DBID] == PanoramaConnection.dbid ||
+      groupfilter[:con_id]
+  end
 
   # Gruppierungskriterien für list_temp_usage_historic
   def temp_historic_grouping_options

@@ -180,10 +180,14 @@ class DbaPgaController < ApplicationController
       column_options << {:caption=>key, :data=>"rec['#{key}']", :title=>key.to_s, :align=>"right" } unless found  # Nicht in vordefinierten Spalten gefunden, dann hinzu
     end
 
+    caption = "PGA history between #{@time_selection_start} and #{@time_selection_end} for instance = #{@instance}, DBID = '#{@dbid}'"
+
     output = gen_slickgrid(@stats, column_options, {
-        :multiple_y_axes=>false,
-        :show_y_axes=>true,
-        :max_height => 450
+      caption: caption,
+      :multiple_y_axes=>false,
+      :show_y_axes=>true,
+      :max_height => 450,
+      show_pin_icon: 1,
     })
     respond_to do |format|
       format.html {render :html => output }

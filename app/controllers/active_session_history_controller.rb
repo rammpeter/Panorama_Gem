@@ -60,12 +60,12 @@ class ActiveSessionHistoryController < ApplicationController
       FROM   (SELECT /*+ NO_MERGE ORDERED */
                      10 Sample_Cycle, Instance_Number, #{get_ash_default_select_list}
               FROM   DBA_Hist_Active_Sess_History s
-              LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
+              LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History #{@sga_ash_where_string} GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
               WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
               #{@dba_hist_where_string}
               UNION ALL
               SELECT 1 Sample_Cycle,  Inst_ID Instance_Number, #{get_ash_default_select_list}
-              FROM   (SELECT s.Inst_ID Instance_Number, s.* FROM gv$Active_Session_History s) s
+              FROM gv$Active_Session_History #{@sga_ash_where_string}
              )s
       LEFT OUTER JOIN DBA_Users             u   ON u.User_ID     = s.User_ID
       LEFT OUTER JOIN DBA_Objects           o   ON o.Object_ID   = CASE WHEN s.P2Text = 'object #' THEN /* Wait kennt Object */ s.P2 ELSE s.Current_Obj_No END
@@ -76,7 +76,7 @@ class ActiveSessionHistoryController < ApplicationController
       WHERE 1=1 #{@global_where_string}
       GROUP BY TRUNC(Sample_Time) + TRUNC(TO_NUMBER(TO_CHAR(Sample_Time, 'SSSSS'))/#{group_seconds})*#{group_seconds}/86400, #{session_statistics_key_rule(@groupby)[:sql]}
       ORDER BY 1
-     "].concat(@dba_hist_where_values).concat([@dbid]).concat(@global_where_values))
+     "].concat(@sga_ash_where_values).concat(@dba_hist_where_values).concat(@sga_ash_where_values).concat([@dbid]).concat(@global_where_values))
 
 
     # Anzeige der Filterbedingungen im Caption des Diagrammes
@@ -215,12 +215,12 @@ class ActiveSessionHistoryController < ApplicationController
            ash AS  (SELECT /*+ NO_MERGE MATERIALIZE ORDERED */
                            10 Sample_Cycle, Instance_Number, #{rounded_sample_time_sql(10, 's.Sample_Time')} Rounded_Sample_Time, #{get_ash_default_select_list}
                     FROM   DBA_Hist_Active_Sess_History s
-                    LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
+                    LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History  #{@sga_ash_where_string} GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
                     WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen */
                     #{@dba_hist_where_string}
                     UNION ALL
                     SELECT /*+ NO_MERGE */ 1 Sample_Cycle, Inst_ID Instance_Number, #{rounded_sample_time_sql(1)} Rounded_Sample_Time,#{get_ash_default_select_list}
-                    FROM   gv$Active_Session_History
+                    FROM   gv$Active_Session_History  #{@sga_ash_where_string}
                    )
       SELECT /*+ ORDERED USE_HASH(u sv f) Panorama-Tool Ramm */
              MIN(s.Sample_Time)         Start_Sample_Time,
@@ -328,7 +328,7 @@ class ActiveSessionHistoryController < ApplicationController
       GROUP BY #{group_by_value}
       ORDER BY #{group_by_value}
      "
-     ].concat(@dba_hist_where_values).concat([@dbid]).concat(@global_where_values), record_modifier)
+     ].concat(@sga_ash_where_values).concat(@dba_hist_where_values).concat(@sga_ash_where_values).concat([@dbid]).concat(@global_where_values), record_modifier)
 
     render_partial :list_session_statistic_historic_single_record
   end # list_session_statistic_historic_single_record
@@ -384,12 +384,12 @@ class ActiveSessionHistoryController < ApplicationController
       FROM   (SELECT /*+ NO_MERGE ORDERED */
                      10 Sample_Cycle, DBID, Instance_Number, Snap_ID, #{get_ash_default_select_list}
               FROM   DBA_Hist_Active_Sess_History s
-              LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
+              LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History#{@sga_ash_where_string} GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
               WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
               #{@dba_hist_where_string}
               UNION ALL
               SELECT 1 Sample_Cycle, #{@dbid} DBID, Inst_ID Instance_Number, NULL Snap_ID, #{get_ash_default_select_list}
-              FROM   gv$Active_Session_History
+              FROM   gv$Active_Session_History#{@sga_ash_where_string}
              )s
       LEFT OUTER JOIN DBA_Objects           o   ON o.Object_ID = CASE WHEN s.P2Text = 'object #' THEN /* Wait kennt Object */ s.P2 ELSE s.Current_Obj_No END
       LEFT OUTER JOIN DBA_Users             u   ON u.User_ID   = s.User_ID  -- LEFT OUTER JOIN verursacht Fehler
@@ -402,7 +402,7 @@ class ActiveSessionHistoryController < ApplicationController
       GROUP BY s.DBID, #{session_statistics_key_rule(@groupby)[:sql]}
       ORDER BY SUM(s.Sample_Cycle) DESC
      "
-     ].concat(@dba_hist_where_values).concat(@global_where_values),
+     ].concat(@sga_ash_where_values).concat(@dba_hist_where_values).concat(@sga_ash_where_values).concat(@global_where_values),
                               record_modifier
     )
 

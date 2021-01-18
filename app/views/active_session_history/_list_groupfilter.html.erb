@@ -39,7 +39,7 @@
         form_content << "<table>"
         form_content << "<tr>"
         @groupfilter.each do|key,value|
-            form_content << "<th title=\"#{t(:active_session_history_list_group_filter_filter_hint, :default=>'Current active filter conditions for selection')}\">#{groupfilter_value(key)[:name]}</th>".html_safe if !groupfilter_value(key)[:hide_content] &&  key != :time_selection_start && key != :time_selection_end
+            form_content << "<th title=\"#{t(:active_session_history_list_group_filter_filter_hint, :default=>'Current active filter conditions for selection')}\">#{groupfilter_value(key)[:name]}</th>".html_safe if !hide_groupfilter_content?(@groupfilter, key) &&  key != :time_selection_start && key != :time_selection_end
         end
         form_content << "<th title=\"#{t(:active_session_history_list_group_filter_filter_hint, :default=>'Current active filter conditions for selection')}\">Start time</th>"
         form_content << "<th title=\"#{t(:active_session_history_list_group_filter_filter_hint, :default=>'Current active filter conditions for selection')}\">End time</th>"
@@ -51,7 +51,7 @@
 
         form_content << "<th></th></tr><tr>"
         @groupfilter.each do|key,value|
-            if !groupfilter_value(key)[:hide_content] &&  key != :time_selection_start && key != :time_selection_end
+            if !hide_groupfilter_content?(@groupfilter, key) &&  key != :time_selection_start && key != :time_selection_end
                 input_id = get_unique_area_id
                 form_content << "<td>"
                 form_content << text_field_tag(key, value, {:id=>input_id, :size=>value.to_s.length+4, :title => (session_statistics_key_rules[key] ? session_statistics_key_rule(key)[:Title] : groupfilter_value(key)[:name]) })
