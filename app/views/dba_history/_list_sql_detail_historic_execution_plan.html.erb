@@ -155,14 +155,12 @@
 
   @caption_title = ''
    if get_db_version >= '11.2'
+     @caption_title << "Columns DB-Time, CPU, Waits etc. are calculated based on Active Session History.\\n"
      @caption_title << "First considered ASH sample is from #{localeDateTime(@min_sample_time)}\\n"
      @caption_title << "Last considered ASH sample is from #{localeDateTime(@max_sample_time)}\\n"
-     puts @caption_title
    end
 
-
-
-     params_string = '{ '
+   params_string = '{ '
    params.each do |key, value|
      params_string << "#{key}: '#{value}', "
    end

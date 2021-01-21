@@ -23,6 +23,9 @@
                    {:caption=> 'Description',  :data=>proc{|rec| show_source(rec)},       :title=> 'Description of trigger'},
                    {:caption=> 'When clause',  :data=>proc{|rec| rec.when_clause},        :title=> 'When-clause of trigger'},
                    {:caption=> 'Action type',  :data=>proc{|rec| rec.action_type},        :title=> 'Action type of trigger'},
+                   {:caption=> 'Created',      :data=>proc{|rec| localeDateTime(rec.created)},        :title=> 'Timestamp of trigger creation'},
+                   {:caption=> 'Last DDL',     :data=>proc{|rec| localeDateTime(rec.last_ddl_time)},  :title=> 'Timestamp of last DDL operation on trigger'},
+                   { caption: 'Spec. TS',      data: proc{|rec| localeDateTime(rec.spec_ts)},         title: "Timestamp for the last specification change of the trigger" },
            ]
 
 %>

@@ -1480,7 +1480,12 @@ class DbaController < ApplicationController
   end
 
   def list_database_triggers
-    @triggers = sql_select_iterator "SELECT * FROM dba_triggers where base_object_type LIKE 'DATABASE%' ORDER BY Triggering_Event, Trigger_Name"
+    @triggers = sql_select_iterator "\
+      SELECT t.*, o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS
+      FROM   DBA_Triggers t
+      LEFT OUTER JOIN DBA_Objects o ON o.Owner = t.Owner AND o.Object_Name = t.Trigger_Name AND o.Object_Type = 'TRIGGER'
+      WHERE  t.Base_Object_Type LIKE 'DATABASE%'
+      ORDER BY t.Triggering_Event, t.Trigger_Name"
     params[:update_area] = 'content_for_layout'
     render_partial
   end

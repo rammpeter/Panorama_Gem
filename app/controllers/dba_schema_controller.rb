@@ -400,7 +400,8 @@ class DbaSchemaController < ApplicationController
         list_plsql_description
         return
       when 'TRIGGER'
-        rec = sql_select_first_row ["SELECT Table_Owner, Table_Name FROM DBA_Triggers WHERE Owner=? AND Trigger_Name=?", @owner, @object_name]
+        rec = sql_select_first_row ["SELECT TRIM(Base_Object_Type) Base_Object_Type, Table_Owner, Table_Name FROM DBA_Triggers WHERE Owner=? AND Trigger_Name=?", @owner, @object_name]
+        raise "No detail view available for trigger #{@owner}.#{@object_name} of base object type='#{rec.base_object_type}'" unless ['TABLE', 'VIEW'].include? rec.base_object_type
         params[:owner] = rec.table_owner
         params[:table_name] = rec.table_name
         list_triggers
@@ -415,7 +416,7 @@ class DbaSchemaController < ApplicationController
         list_cluster(@owner, @object_name)
         return
       else
-        raise PopupMessageException.new("Segment #{@owner}.#{@object_name} is of unsupported type #{object.object_type}")
+        raise PopupMessageException.new("Segment #{@owner}.#{@object_name} of type #{object.object_type} is unsupported for detail view")
     end
 
     # assuming it is a table now

@@ -168,7 +168,7 @@ module ActiveSessionHistoryHelper
     @sga_ash_where_values = []
 
     # Check if PDB is selected by DBID, than add con_id to groupfilter
-    if get_db_version >= '12.1' && @groupfilter[:DBID] != PanoramaConnection.dbid
+    if get_db_version >= '12.1' && @groupfilter[:DBID] && @groupfilter[:DBID] != PanoramaConnection.dbid
       @groupfilter[:con_id] = sql_select_one ["SELECT Con_ID FROM gv$Containers WHERE DBID = ?", @groupfilter[:DBID]]
     end
 
