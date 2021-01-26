@@ -59,6 +59,8 @@ def link_column_grouping(result, value, name)
       else
         link_column_blocked(result, result.blocking_sid)
       end
+    when 'Blocking Object'
+      link_object_description(@update_area, result.blocking_object.split('.')[0], result.blocking_object.split('.')[1])
     else value
     end
   end
@@ -115,26 +117,26 @@ end
 
 column_options =
   [
-    {:caption=>"Min. Timestamp", :data=>proc{|rec| localeDateTime(rec.min_snapshot_timestamp)},            :title=>"Smallest snapshot timestamp in considered period"},
-    {:caption=>"Max. Timestamp", :data=>proc{|rec| localeDateTime(rec.max_snapshot_timestamp)},            :title=>"Largest snapshot timestamp in considered period"},
-    {:caption=>"Inst.",           :data=>proc{|rec| link_column_grouping(rec, rec.instance_number, 'Instance')}, :title=>"Instance of blocked session (or number if multiple)"},
-    {:caption=>"SID",             :data=>proc{|rec| link_column_grouping(rec, rec.sid, 'SID')},             :title=>"SID of blocked session (or number if multiple)"},
-    {:caption=>"Wait (Sec.)",     :data=>proc{|rec| formattedNumber(rec.seconds_in_wait)},                  :title=>"Number of seconds sessions are waiting", :align=>"right", data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_in_wait)}"}},
-    {:caption=>"Samples",         :data=>proc{|rec| link_column_single(rec, "< #{formattedNumber(rec.samples,0)} >")}, :title=>"Number of recorded snapshot samples", :align=>"right"},
-    {:caption=>"SQL-ID",          :data=>proc{|rec| link_column_grouping(rec, rec.sql_id, 'SQL-ID')},       :title=>"SQL-ID of blocked session (or number if multiple)"},
-    {:caption=>"Event",           :data=>proc{|rec| link_column_grouping(rec, rec.event, 'Event')},         :title=>"Wait event of blocked session (or number if multiple)"},
-    {:caption=>"Module",          :data=>proc{|rec| link_column_grouping(rec, rec.module, 'Module')},       :title=>"Module of blocked session (or number if multiple)"},
-    {:caption=>"Object name",     :data=>proc{|rec| link_column_grouping(rec, rec.object_name, 'Objectname')}, :title=>"Objectname of blocked session (or number if multiple)"},
-    {:caption=>"LT",              :data=>proc{|rec| link_column_grouping(rec, rec.lock_type, 'Locktype')},  :title=>"Lock type of blocked session (or number if multiple)", :data_title=>'#{lock_types(rec.lock_type)}'},
-    {:caption=>"R",               :data=>proc{|rec| link_column_grouping(rec, rec.request, 'Request')},     :title=>"Requested lock mode of blocked session (or number if multiple)", :data_title=>'#{lock_modes(rec.request)}'},
-    {:caption=>"L",               :data=>proc{|rec| link_column_grouping(rec, rec.lock_mode, 'LockMode')},  :title=>"Held lock mode of blocked session (or number if multiple)", :data_title=>'#{lock_modes(rec.lock_mode)}'},
-    {:caption=>"Blocking object", :data=>proc{|rec| link_column_grouping(rec, rec.blocking_object, 'Blocking Object')}, :title=>"Schema and name of blocking object (or number if multiple)"},
-    {:caption=>"RowID",           :data=>proc{|rec| link_column_grouping(rec, rec.blocking_rowid, 'RowID')}, :title=>"RowID of blocking object (or number if multiple)"},
+    {:caption=>"Min. Timestamp",  :data=>proc{|rec| localeDateTime(rec.min_snapshot_timestamp)},            :title=>"Smallest snapshot timestamp in considered period"},
+    {:caption=>"Max. Timestamp",  :data=>proc{|rec| localeDateTime(rec.max_snapshot_timestamp)},            :title=>"Largest snapshot timestamp in considered period"},
     {:caption=>"B. Inst.",        :data=>proc{|rec| link_column_grouping(rec, rec.blocking_instance_number, 'B.Instance')}, :title=>"Instance of blocking session (or number if multiple)"},
     {:caption=>"B. SID",          :data=>proc{|rec| link_column_grouping(rec, rec.blocking_sid, 'B.SID')}, :title=>"SID of blocking session (or number if multiple)"},
     {:caption=>"B. SQL-ID",       :data=>proc{|rec| link_column_grouping(rec, rec.blocking_sql_id, 'B.SQL-ID')}, :title=>"SQL-ID of blocking session (or number if multiple)"},
     {:caption=>"B. Event",        :data=>proc{|rec| link_column_grouping(rec, rec.blocking_event, 'B.Event')}, :title=>"Wait event of blocking session (or number if multiple)"},
     {:caption=>"B. Status",       :data=>proc{|rec| link_column_grouping(rec, rec.blocking_status, 'B.Status')}, :title=>"Status of blocking session (or number if multiple)"},
+    {:caption=>"Wait (Sec.)",     :data=>proc{|rec| formattedNumber(rec.seconds_in_wait)},                  :title=>"Number of seconds sessions are waiting", :align=>"right", data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_in_wait)}"}},
+    {:caption=>"Samples",         :data=>proc{|rec| link_column_single(rec, "< #{formattedNumber(rec.samples,0)} >")}, :title=>"Number of recorded snapshot samples", :align=>"right"},
+    {:caption=>"Blocking object", :data=>proc{|rec| link_column_grouping(rec, rec.blocking_object, 'Blocking Object')}, :title=>"Schema and name of blocking object (or number if multiple)"},
+    {:caption=>"RowID",           :data=>proc{|rec| link_column_grouping(rec, rec.blocking_rowid, 'RowID')}, :title=>"RowID of blocking object (or number if multiple)"},
+    {:caption=>"W. Inst.",        :data=>proc{|rec| link_column_grouping(rec, rec.instance_number, 'Instance')}, :title=>"Instance of blocked session (or number if multiple)"},
+    {:caption=>"W. SID",          :data=>proc{|rec| link_column_grouping(rec, rec.sid, 'SID')},             :title=>"SID of blocked session (or number if multiple)"},
+    {:caption=>"W. SQL-ID",       :data=>proc{|rec| link_column_grouping(rec, rec.sql_id, 'SQL-ID')},       :title=>"SQL-ID of blocked session (or number if multiple)"},
+    {:caption=>"W. Event",        :data=>proc{|rec| link_column_grouping(rec, rec.event, 'Event')},         :title=>"Wait event of blocked session (or number if multiple)", data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.event)}"}},
+    {:caption=>"W. Module",       :data=>proc{|rec| link_column_grouping(rec, rec.module, 'Module')},       :title=>"Module of blocked session (or number if multiple)"},
+    {:caption=>"LT",              :data=>proc{|rec| link_column_grouping(rec, rec.lock_type, 'Locktype')},  :title=>"Lock type of blocked session (or number if multiple)", :data_title=>'#{lock_types(rec.lock_type)}'},
+    {:caption=>"R",               :data=>proc{|rec| link_column_grouping(rec, rec.request, 'Request')},     :title=>"Requested lock mode of blocked session (or number if multiple)", :data_title=>'#{lock_modes(rec.request)}'},
+    {:caption=>"L",               :data=>proc{|rec| link_column_grouping(rec, rec.lock_mode, 'LockMode')},  :title=>"Held lock mode of blocked session (or number if multiple)", :data_title=>'#{lock_modes(rec.lock_mode)}'},
+    {:caption=>"W. Object name",  :data=>proc{|rec| link_column_grouping(rec, rec.object_name, 'Objectname')}, :title=>"Objectname of blocked session (or number if multiple)"},
   ]
 %>
 

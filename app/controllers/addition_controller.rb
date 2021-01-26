@@ -224,6 +224,9 @@ class AdditionController < ApplicationController
   def blocking_locks_groupfilter_values(key)
 
     retval = {
+      "Blocking_Event"      => {:sql => 'l.blocking_Event'},
+      "Event"               => {:sql => 'l.Event'},
+      "Blocking_Status"     => {:sql => 'l.Blocking_Status'},
         "Snapshot_Timestamp" => {:sql => "l.Snapshot_Timestamp =TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true },
         "Min_Timestamp"     => {:sql => "l.Snapshot_Timestamp>=TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true  },
         "Max_Timestamp"     => {:sql => "l.Snapshot_Timestamp<=TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true  },
@@ -275,6 +278,13 @@ class AdditionController < ApplicationController
 
   end
 
+  def distinct_expr(column_name, nvl_replace, column_alias=nil)
+    local_replace = nvl_replace
+    local_replace = "'#{nvl_replace}'" if nvl_replace.instance_of? String
+    column_alias = column_name if column_alias.nil?
+    "CASE WHEN COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) = 1 THEN TO_CHAR(MIN(#{column_name})) ELSE '< '||COUNT(DISTINCT NVL(#{column_name}, #{local_replace}))||' >' END #{column_alias}"
+  end
+
   public
 
 
@@ -305,8 +315,8 @@ class AdditionController < ApplicationController
              MAX(Snapshot_Timestamp)      Max_Snapshot_Timestamp,
              SUM(Seconds_In_Wait) Seconds_in_Wait,
              COUNT(*)             Samples,
-             CASE WHEN COUNT(DISTINCT Instance_Number) = 1 THEN TO_CHAR(MIN(Instance_Number)) ELSE '< '||COUNT(DISTINCT Instance_Number)||' >' END Instance_Number,
-             CASE WHEN COUNT(DISTINCT SID)             = 1 THEN TO_CHAR(MIN(SID))             ELSE '< '||COUNT(DISTINCT SID)            ||' >' END SID,
+             CASE WHEN COUNT(DISTINCT NVL(Instance_Number, 0)) = 1 THEN TO_CHAR(MIN(Instance_Number)) ELSE '< '||COUNT(DISTINCT Instance_Number)||' >' END Instance_Number,
+             CASE WHEN COUNT(DISTINCT NVL(SID, 0))             = 1 THEN TO_CHAR(MIN(SID))             ELSE '< '||COUNT(DISTINCT SID)            ||' >' END SID,
              CASE WHEN COUNT(DISTINCT SQL_ID)          = 1 THEN TO_CHAR(MIN(SQL_ID))          ELSE '< '||COUNT(DISTINCT SQL_ID)         ||' >' END SQL_ID,
              CASE WHEN COUNT(DISTINCT Event)           = 1 THEN TO_CHAR(MIN(Event))           ELSE '< '||COUNT(DISTINCT Event)          ||' >' END Event,
              CASE WHEN COUNT(DISTINCT SerialNo)        = 1 THEN TO_CHAR(MIN(SerialNo))        ELSE '< '||COUNT(DISTINCT SerialNo)       ||' >' END SerialNo,
@@ -568,18 +578,18 @@ class AdditionController < ApplicationController
              MAX(Snapshot_Timestamp)      Max_Snapshot_Timestamp,
              SUM(Seconds_In_Wait) Seconds_in_Wait,
              COUNT(*)             Samples,
-             CASE WHEN COUNT(DISTINCT Instance_Number) = 1 THEN TO_CHAR(MIN(Instance_Number)) ELSE '< '||COUNT(DISTINCT Instance_Number)||' >' END Instance_Number,
-             CASE WHEN COUNT(DISTINCT SID)             = 1 THEN TO_CHAR(MIN(SID))             ELSE '< '||COUNT(DISTINCT SID)            ||' >' END SID,
-             CASE WHEN COUNT(DISTINCT SerialNo)        = 1 THEN TO_CHAR(MIN(SerialNo))        ELSE '< '||COUNT(DISTINCT SerialNo)       ||' >' END SerialNo,
-             CASE WHEN COUNT(DISTINCT SQL_ID)          = 1 THEN TO_CHAR(MIN(SQL_ID))          ELSE '< '||COUNT(DISTINCT SQL_ID)         ||' >' END SQL_ID,
-             CASE WHEN COUNT(DISTINCT SQL_Child_Number)= 1 THEN TO_CHAR(MIN(SQL_Child_Number))ELSE '< '||COUNT(DISTINCT SQL_Child_Number)||' >' END SQL_Child_Number,
-             CASE WHEN COUNT(DISTINCT Event)           = 1 THEN TO_CHAR(MIN(Event))           ELSE '< '||COUNT(DISTINCT Event)          ||' >' END Event,
-             CASE WHEN COUNT(DISTINCT Module)          = 1 THEN TO_CHAR(MIN(Module))          ELSE '< '||COUNT(DISTINCT Module)         ||' >' END Module,
-             CASE WHEN COUNT(DISTINCT Object_Name)     = 1 THEN TO_CHAR(MIN(Object_Name))     ELSE '< '||COUNT(DISTINCT Object_Name)    ||' >' END Object_Name,
-             CASE WHEN COUNT(DISTINCT Lock_Type)       = 1 THEN TO_CHAR(MIN(Lock_Type))       ELSE '< '||COUNT(DISTINCT Lock_Type)      ||' >' END Lock_Type,
-             CASE WHEN COUNT(DISTINCT Request)         = 1 THEN TO_CHAR(MIN(Request))         ELSE '< '||COUNT(DISTINCT Request)        ||' >' END Request,
-             CASE WHEN COUNT(DISTINCT Lock_Mode)       = 1 THEN TO_CHAR(MIN(Lock_Mode))       ELSE '< '||COUNT(DISTINCT Lock_Mode)      ||' >' END Lock_Mode,
-             CASE WHEN COUNT(DISTINCT Blocking_Object_Owner||'.'||Blocking_Object_Name) = 1 THEN TO_CHAR(MIN(LOWER(Blocking_Object_Owner)||'.'||Blocking_Object_Name))        ELSE '< '||COUNT(DISTINCT Blocking_Object_Owner||'.'||Blocking_Object_Name)||' >' END Blocking_Object,
+             #{distinct_expr('Instance_Number',         0)},
+             #{distinct_expr('SID',                     0)},
+             #{distinct_expr('SerialNo',                0)},
+             #{distinct_expr('SQL_ID',                  '')},
+             #{distinct_expr('SQL_Child_Number',        -1)},
+             #{distinct_expr('Event',                   '')},
+             #{distinct_expr('Module',                  '')},
+             #{distinct_expr('Object_Name',             '')},
+             #{distinct_expr('Lock_Type',               '')},
+             #{distinct_expr('Request',                 '')},
+             #{distinct_expr('Lock_Mode',               '')},
+             #{distinct_expr("Blocking_Object_Owner||'.'||Blocking_Object_Name",   '', 'Blocking_Object')},
              CASE WHEN COUNT(DISTINCT Blocking_RowID)  = 1 THEN CAST(MIN(Blocking_RowID) AS VARCHAR2(18)) ELSE '< '||COUNT(DISTINCT Blocking_RowID) ||' >' END Blocking_RowID,
              CASE WHEN COUNT(DISTINCT Blocking_Instance_Number) = 1 THEN TO_CHAR(MIN(Blocking_Instance_Number)) ELSE '< '||COUNT(DISTINCT Blocking_Instance_Number)||' >' END Blocking_Instance_Number,
              CASE WHEN COUNT(DISTINCT Blocking_SID)    = 1 THEN TO_CHAR(MIN(Blocking_SID))    ELSE '< '||COUNT(DISTINCT Blocking_SID)   ||' >' END Blocking_SID,
@@ -611,7 +621,7 @@ class AdditionController < ApplicationController
                     AND    l.Blocking_SID IS NOT NULL  -- keine langdauernden Locks beruecksichtigen
                    )
       SELECT Level,
-             Object_Name, Lock_Type, Seconds_in_Wait, ID1, ID2, Request, Lock_Mode,
+             Instance_Number, SID, SerialNo, SQL_ID, Event, Module, Action, Object_Name, User_Name, Lock_Type, Seconds_in_Wait, ID1, ID2, Request, Lock_Mode,
              Blocking_Object_Owner||'.'||
              CASE
                WHEN Blocking_Object_Name LIKE 'SYS_LOB%%' THEN

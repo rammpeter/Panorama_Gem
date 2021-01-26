@@ -42,30 +42,51 @@
 #{}"
   end
 
+  link_ash_blocking_sid = proc do |rec|
+    retval = ''
+    if rec.sid
+      retval << ajax_link(rec.sid, {
+        controller:  :active_session_history,
+        action:     :list_session_statistic_historic_grouping,
+        groupfilter: {
+          DBID:                 get_dbid,
+          Instance:             rec.instance_number,
+          Session_ID:           rec.sid,
+          SerialNo:             rec.serialno,
+          Idle_Wait1:           'PX Deq Credit: send blkd',
+          time_selection_start: @snapshot_timestamp,
+          time_selection_end:   @snapshot_timestamp,
+        },
+        :groupby      => 'Session/Sn.',
+        :update_area  => @update_area
+      }, title: "Show Active Session History of this session with serial# = '#{rec.serialno}' "
+      )
 
-  def link_column_blocking_reason_cascade(rec, value)
-      ajax_link(value,
-                  {:action              => "list_blocking_reason_cascade",
-                   :update_area         => @update_area,
-                   :snapshot_timestamp  => @snapshot_timestamp,
-                   :instance            => rec.instance_number,
-                   :sid                 => rec.sid,
-                   :serialno            => rec.serialno
-                  },
-           :title => "Show full cascade of blockers for this session")
+      retval << ' '
+      retval << ajax_submit('Thread', {
+        :action       => "list_blocking_reason_cascade",
+        :update_area  => @update_area,
+        :snapshot_timestamp => @snapshot_timestamp,
+        :instance     => rec.instance_number,
+        :sid          => rec.sid,
+        :serialno     => rec.serialno
+      }, :title => "Show full cascade of blockers for this session"
+      )
+    end
+    retval
   end
 
   column_options =
   [
     {:caption=>"I.",              :data=>proc{|rec| rec.instance_number},                                     :title=>"Instance of blocked session"},
-    {:caption=>"SID",             :data=>proc{|rec| link_column_blocking_reason_cascade(rec, rec.sid)},       :title=>"SID of blocked session", :data_title=>proc{|rec| "%t\nSerialNo=#{rec.serialno}"}},
+    {:caption=>"SID",             :data=>link_ash_blocking_sid,                                               :title=>"SID of blocked session", :data_title=>proc{|rec| "%t\nSerialNo=#{rec.serialno}"}},
     {:caption=>"Direct Blocked",  :data=>proc{|rec| link_blocked.call(rec, "< #{fn(rec.blocked_sessions_direct,0)} >")}, :title=>"Number of sessions direct blocked by this session", :align=>"right"},
     {:caption=>"Total Blocked",   :data=>proc{|rec| link_blocked.call(rec, "< #{fn(rec.blocked_sessions_total,0)} >")},  :title=>"Total number of sessions blocked by this session (direct and indirect)", :align=>"right"},
     {:caption=>"Direct Wait",     :data=>proc{|rec| fn(rec.seconds_in_wait)},                                 :title=>"Number of seconds this session is waiting blocked", :align=>"right", data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_in_wait)}"}},
     {:caption=>"Total Wait",      :data=>proc{|rec| fn(rec.seconds_in_wait_blocked_total)},                   :title=>"Number of seconds sessions waiting blocked that are direct or indirect blocked by this session", :align=>"right", data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_in_wait_blocked_total)}"}},
     {:caption=>"Samples",         :data=>link_single,                                                         :title=>"Number of sample records for this session and snapshot", :align=>"right"},
     {:caption=>"SQL-ID Prev.SQL-ID", :data=>proc{|rec| "#{link_column_sql_id(rec, rec.sql_id, rec.sql_child_number)} #{link_column_sql_id(rec, rec.prev_sql_id, rec.prev_child_number)}"}, :title=>"Current and previous SQL of blocked session"},
-    {:caption=>"Event",           :data=>proc{|rec| rec.event},                                               :title=>"Wait event of blocked session"},
+    {:caption=>"Event",           :data=>proc{|rec| rec.event},                                               :title=>"Wait event of blocked session", data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.event)}"}},
     {:caption=>"Status",          :data=>proc{|rec| rec.status},                                              :title=>"Status of blocked session"},
     {:caption=>"Client-Info / Module / Action",:data=>proc{|rec| "#{rec.client_info} #{rec.module} #{rec.action}"}, :title=>"Client-Info, module and action of blocked session", :data_title=>proc{|rec| "%t\n#{rec.waiting_app_desc}"}},
     {:caption=>"User",            :data=>proc{|rec| rec.user_name},                                           :title=>"User of blocked session", :data_title=>proc{|rec| "%t\nMachine=#{rec.machine}\nOS-User=#{rec.os_user}\nProcess=#{rec.process}"}},
