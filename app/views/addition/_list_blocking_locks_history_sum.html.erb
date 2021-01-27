@@ -42,13 +42,13 @@
 column_options =
   [
     {:caption=>"Min. timestamp",  :data=>proc{|rec| localeDateTime(rec.min_snapshot_timestamp)},                    :title=>"Smallest timestamp in considered period"},
-    {:caption=>"Max. timestamp",  :data=>proc{|rec| localeDateTime(rec.max_snapshot_timestamp)},                    :title=>"Largest timestamp in considered period"},
+    {:caption=>"Max. timestamp",  :data=>proc{|rec| localeDateTime(rec.max_snapshot_timestamp)},                    :title=>"Largest timestamp in considered period", plot_master_time: true},
     {:caption=>"B. Inst.",        :data=>proc{|rec| link_grouping.call(rec, 'B.Instance')},                         :title=>"Instance of blocking session (or number if multiple)"},
     {:caption=>"B. SID",          :data=>proc{|rec| link_grouping.call(rec, 'B.SID')},                              :title=>"SID of blocking session (or number if multiple)"},
     {:caption=>"B. SQL-ID",       :data=>proc{|rec| link_grouping.call(rec, 'B.SQL-ID')},                           :title=>"SQL-ID of blocking session (or number if multiple)"},
     {:caption=>"B. Event",        :data=>proc{|rec| link_grouping.call(rec, 'Blocking_Event')},                     :title=>"Wait event of blocking session (or number if multiple)"},
     {:caption=>"B. Status",       :data=>proc{|rec| link_grouping.call(rec, 'Blocking_Status')},                    :title=>"Status of blocking session (or number if multiple)"},
-    {:caption=>"Wait (Sec.)",     :data=>proc{|rec| formattedNumber(rec.seconds_in_wait,0)},                        :title=>"Number of seconds the sessions are still blocked", :align=>"right", data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_in_wait)}"}},
+    {:caption=>"Wait (Sec.)",     :data=>proc{|rec| formattedNumber(rec.seconds_in_wait,0)},                        :title=>"Number of seconds the sessions are still blocked at the time the sample was taken", :align=>"right", data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_in_wait)}"}},
     {:caption=>"Samples",         :data=>proc{|rec| link_column_single.call(rec, "< #{fn(rec.samples,0)} >")},      :title=>"Number of recorded samples", :align=>"right"},
     {:caption=>"Blocking object", :data=>proc{|rec| link_grouping.call(rec, 'Blocking Object')},                    :title=>"Schema and name of blocking object (or number if multiple)"},
     {:caption=>"RowID",           :data=>proc{|rec| link_grouping.call(rec, 'RowID')},                              :title=>"RowID of blocking object (or number if multiple)"},

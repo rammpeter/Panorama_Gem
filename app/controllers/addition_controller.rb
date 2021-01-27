@@ -219,7 +219,7 @@ class AdditionController < ApplicationController
 
   def list_blocking_locks_history
     save_session_time_selection                   # Werte puffern fuer spaetere Wiederverwendung
-    @timeslice = params[:timeslice]
+    @min_wait_ms = prepare_param_int :min_wait_ms
 
     # Sprungverteiler nach diversen commit-Buttons
     list_blocking_locks_history_sum       if params[:commit_table]
@@ -228,6 +228,7 @@ class AdditionController < ApplicationController
   end
 
   def list_blocking_locks_history_sum
+    @timeslice = params[:timeslice]
     # Initiale Belegung des Groupfilters, wird dann immer weiter gegeben
     groupfilter = {}
 
@@ -252,8 +253,9 @@ class AdditionController < ApplicationController
               #{@where_string}
              )
       GROUP BY TRUNC(Minutes/ #{@timeslice})
+      HAVING SUM(Seconds_In_Wait)*1000 > ?
       ORDER BY 1",
-                            @time_selection_start, @time_selection_end].concat(@where_values)
+                            @time_selection_start, @time_selection_end].concat(@where_values).concat([@min_wait_ms])
 
     render_partial :list_blocking_locks_history_sum
   end
@@ -348,8 +350,9 @@ class AdditionController < ApplicationController
                Root_Blocking_Event, Root_Blocking_Status, Root_Blocking_Client_Info,
                Root_Blocking_Module, Root_Blocking_Action, Root_Blocking_User_Name, Root_Blocking_Machine, Root_Blocking_OS_User,
              Root_Blocking_Process, Root_Blocking_Program
+      HAVING SUM(Seconds_In_Wait)*1000 > ?
       ORDER BY SUM(Seconds_In_Wait) DESC",
-                            @time_selection_start, @time_selection_end]
+                            @time_selection_start, @time_selection_end, @min_wait_ms]
 
     # Erweitern der Daten um Informationen, die nicht im originalen Statement selektiert werden können,
     # da die Tabellen nicht auf allen DB zur Verfügung stehen

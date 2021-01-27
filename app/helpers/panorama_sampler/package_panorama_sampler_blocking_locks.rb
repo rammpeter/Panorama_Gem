@@ -125,10 +125,10 @@ END Panorama_Sampler_Block_Locks;
       -- Primary-Key-Spalten ermitteln wenn PKey existiert
       v_First := TRUE;
       FOR pRec IN (SELECT Column_Name
-                   FROM   All_Ind_Columns
+                   FROM   DBA_Ind_Columns
                    WHERE  Index_Owner   = Rec.Blocking_Object_Owner
                    AND    Index_Name    = (SELECT Index_Name
-                                           FROM   All_Constraints
+                                           FROM   DBA_Constraints
                                            WHERE  Owner      = Rec.Blocking_Object_Owner
                                            AND    Table_Name = v_TableName
                                            AND    Constraint_Type = 'P'
