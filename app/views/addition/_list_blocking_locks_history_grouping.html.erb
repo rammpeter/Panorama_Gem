@@ -7,99 +7,71 @@ def link_column_sql_id(instance, sql_id, child_number)
 end
 
 
-def link_column(result, value, newgroupkey, action, linktitle)
+def link_column(rec, value, newgroupkey, action, linktitle)
   ajax_link(value,
               {:action       => action,
-               :groupfilter  => @groupfilter.merge({@groupkey => result.group_value}),
+               :groupfilter  => @groupfilter.merge({@groupkey => rec.group_value}),
                :update_area  => @update_area
               }.merge(newgroupkey),
        :title=>linktitle)
 end
 
-def link_column_single(result, value)
-  link_column(result, value, {}, "list_blocking_locks_history_single_record", "Show single snapshot records of grouping")
+def link_column_single(rec, value)
+  link_column(rec, value, {}, "list_blocking_locks_history_single_record", "Show single snapshot records of grouping")
 end
 
-# Prüfung, ob value ein Anzahlfeld a'la "< 4 >" ist
-def is_value_anzahl?(value)
-  value[0,1] == '<' && value[value.length-1,1] =='>'
-end
+def link_column_grouping(rec, name)
+  col_alias = blocking_locks_groupfilter_values(name)[:alias] || name.downcase
+  col_min = "#{col_alias}_min"
+  col_cnt = "#{col_alias}_cnt"
 
-def link_column_grouping(result, value, name)
+
   # Nur als Link anzeigen, wenn mehrere Treffer vorhanden (Muster "< Anzahl >")
-  if is_value_anzahl?(value)
-    if value == "< 0 >"
-      ""
-    else
-      link_column(result, value,
-                {:groupkey => name},
-                :list_blocking_locks_history_grouping,
-                "Show samples of this group row grouped by #{name}"
-               )
-    end
-  else         # Wert trotzdem als Link darstellen, wenn andere Details statt Gruppierung gezeigt werden können
+  case rec[col_cnt]
+  when 0
+    ''
+  when 1
     case name
     when "SID"
-      link_column_blocking_reason_cascade(result, value)
+      link_column_blocking_reason_cascade(rec, rec[col_min])
     when "SQL-ID" then
-      if is_value_anzahl?(result.instance_number) || is_value_anzahl?(result.sql_child_number)
-        value
+      if rec.instance_number_cnt > 1 || rec.sql_child_number_cnt > 1
+        rec[col_min]
       else
-        link_column_sql_id(result.instance_number, result.sql_id, result.sql_child_number)
+        link_column_sql_id(rec.instance_number_min, rec.sql_id_min, rec.sql_child_number_min)
       end
     when "B.SQL-ID" then
-      if is_value_anzahl?(result.blocking_instance_number) || is_value_anzahl?(result.blocking_sql_child_number)
-        value
+      if rec.blocking_instance_number_cnt > 1 || rec.blocking_sql_child_number_cnt > 1
+        rec[col_min]
       else
-        link_column_sql_id(result.blocking_instance_number, result.blocking_sql_id, result.blocking_sql_child_number )
+        link_column_sql_id(rec.blocking_instance_number_min, rec.blocking_sql_id_min, rec.blocking_sql_child_number_min )
       end
     when "B.SID"
-      if is_value_anzahl?(result.blocking_instance_number) || is_value_anzahl?(result.blocking_sid) || is_value_anzahl?(result.blocking_serialno)
-        value
+      if rec.blocking_instance_number_cnt > 1 || rec.blocking_sid_cnt > 1 || rec.blocking_serialno_cnt > 1
+        rec[col_min]
       else
-        link_column_blocked(result, result.blocking_sid)
+        link_column_blocked(rec, rec.blocking_sid_min)
       end
     when 'Blocking Object'
-      link_object_description(@update_area, result.blocking_object.split('.')[0], result.blocking_object.split('.')[1])
-    else value
+      link_object_description(@update_area, rec.blocking_object_min.split('.')[0], rec.blocking_object_min.split('.')[1])
+    else rec[col_min]
     end
+  else
+    link_column(rec, "<&nbsp;#{rec[col_cnt]}&nbsp;>".html_safe, {:groupkey => name}, :list_blocking_locks_history_grouping, "Show samples of this group row grouped by #{name}")
   end
 end
 
-def link_column_caption(rec, caption, value)
-  case caption
-    when "SQL-ID" then
-      if is_value_anzahl?(rec.instance_number) || is_value_anzahl?(rec.sql_child_number)
-        value
-      else
-        link_column_sql_id(rec.instance_number, rec.sql_id, rec.sql_child_number )
-      end
-    when "B.SQL-ID" then
-      if is_value_anzahl?(rec.blocking_instance_number) || is_value_anzahl?(rec.blocking_sql_child_number)
-        value
-      else
-        link_column_sql_id(rec.blocking_instance_number, rec.blocking_sql_id, rec.blocking_sql_child_number )
-      end
-    when "B.SID"
-      if is_value_anzahl?(rec.blocking_instance_number) || is_value_anzahl?(rec.blocking_sid) || is_value_anzahl?(rec.blocking_serialno)
-        value
-      else
-        link_column_blocked(rec, rec.blocking_sid)
-      end
-    else value
-  end
-end
 
 def link_column_blocking_reason_cascade(rec, value)
     ajax_link(value,
                 {:action                => "list_blocking_reason_cascade",
                  :update_area           => @update_area,
                  :snapshot_timestamp    => localeDateTime(rec.max_snapshot_timestamp),
-                 :instance              => rec.instance_number,
-                 :sid                   => rec.sid,
-                 :serialno              => rec.serialno
+                 :instance              => rec.instance_number_min,
+                 :sid                   => rec.sid_min,
+                 :serialno              => rec.serialno_min
                 },
-         :title => "Show full cascade of blockers for this session")
+         :title => "Show full cascade of blockers for this session at the last snapshot of period")
 end
 
 def link_column_blocked(rec, value)
@@ -107,11 +79,11 @@ def link_column_blocked(rec, value)
             :action             => 'list_blocking_locks_history_hierarchy_detail',
             :update_area        => @update_area,
             :snapshot_timestamp => localeDateTime(rec.max_snapshot_timestamp),
-            :blocking_instance  => rec.blocking_instance_number,
-            :blocking_sid       => rec.blocking_sid,
-            :blocking_serialno  => rec.blocking_serialno
+            :blocking_instance  => rec.blocking_instance_number_min,
+            :blocking_sid       => rec.blocking_sid_min,
+            :blocking_serialno  => rec.blocking_serialno_min
           },
-   :title=>'Show sessions blocked by this session')
+   :title=>'Show sessions blocked by this session at the last snapshot of period')
 end
 
 
@@ -119,24 +91,24 @@ column_options =
   [
     {:caption=>"Min. Timestamp",  :data=>proc{|rec| localeDateTime(rec.min_snapshot_timestamp)},            :title=>"Smallest snapshot timestamp in considered period"},
     {:caption=>"Max. Timestamp",  :data=>proc{|rec| localeDateTime(rec.max_snapshot_timestamp)},            :title=>"Largest snapshot timestamp in considered period"},
-    {:caption=>"B. Inst.",        :data=>proc{|rec| link_column_grouping(rec, rec.blocking_instance_number, 'B.Instance')}, :title=>"Instance of blocking session (or number if multiple)"},
-    {:caption=>"B. SID",          :data=>proc{|rec| link_column_grouping(rec, rec.blocking_sid, 'B.SID')}, :title=>"SID of blocking session (or number if multiple)"},
-    {:caption=>"B. SQL-ID",       :data=>proc{|rec| link_column_grouping(rec, rec.blocking_sql_id, 'B.SQL-ID')}, :title=>"SQL-ID of blocking session (or number if multiple)"},
-    {:caption=>"B. Event",        :data=>proc{|rec| link_column_grouping(rec, rec.blocking_event, 'B.Event')}, :title=>"Wait event of blocking session (or number if multiple)"},
-    {:caption=>"B. Status",       :data=>proc{|rec| link_column_grouping(rec, rec.blocking_status, 'B.Status')}, :title=>"Status of blocking session (or number if multiple)"},
+    {:caption=>"B. Inst.",        :data=>proc{|rec| link_column_grouping(rec, 'B.Instance')},               :title=>"Instance of blocking session (or number if multiple)"},
+    {:caption=>"B. SID",          :data=>proc{|rec| link_column_grouping(rec, 'B.SID')},                    :title=>"SID of blocking session (or number if multiple)"},
+    {:caption=>"B. SQL-ID",       :data=>proc{|rec| link_column_grouping(rec, 'B.SQL-ID')},                 :title=>"SQL-ID of blocking session (or number if multiple)"},
+    {:caption=>"B. Event",        :data=>proc{|rec| link_column_grouping(rec, 'Blocking_Event')},           :title=>"Wait event of blocking session (or number if multiple)", data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.blocking_event_min) if rec.blocking_event_cnt == 1}"}},
+    {:caption=>"B. Status",       :data=>proc{|rec| link_column_grouping(rec, 'Blocking_Status')},          :title=>"Status of blocking session (or number if multiple)"},
     {:caption=>"Wait (Sec.)",     :data=>proc{|rec| formattedNumber(rec.seconds_in_wait)},                  :title=>"Number of seconds sessions are waiting", :align=>"right", data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_in_wait)}"}},
     {:caption=>"Samples",         :data=>proc{|rec| link_column_single(rec, "< #{formattedNumber(rec.samples,0)} >")}, :title=>"Number of recorded snapshot samples", :align=>"right"},
-    {:caption=>"Blocking object", :data=>proc{|rec| link_column_grouping(rec, rec.blocking_object, 'Blocking Object')}, :title=>"Schema and name of blocking object (or number if multiple)"},
-    {:caption=>"RowID",           :data=>proc{|rec| link_column_grouping(rec, rec.blocking_rowid, 'RowID')}, :title=>"RowID of blocking object (or number if multiple)"},
-    {:caption=>"W. Inst.",        :data=>proc{|rec| link_column_grouping(rec, rec.instance_number, 'Instance')}, :title=>"Instance of blocked session (or number if multiple)"},
-    {:caption=>"W. SID",          :data=>proc{|rec| link_column_grouping(rec, rec.sid, 'SID')},             :title=>"SID of blocked session (or number if multiple)"},
-    {:caption=>"W. SQL-ID",       :data=>proc{|rec| link_column_grouping(rec, rec.sql_id, 'SQL-ID')},       :title=>"SQL-ID of blocked session (or number if multiple)"},
-    {:caption=>"W. Event",        :data=>proc{|rec| link_column_grouping(rec, rec.event, 'Event')},         :title=>"Wait event of blocked session (or number if multiple)", data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.event)}"}},
-    {:caption=>"W. Module",       :data=>proc{|rec| link_column_grouping(rec, rec.module, 'Module')},       :title=>"Module of blocked session (or number if multiple)"},
-    {:caption=>"LT",              :data=>proc{|rec| link_column_grouping(rec, rec.lock_type, 'Locktype')},  :title=>"Lock type of blocked session (or number if multiple)", :data_title=>'#{lock_types(rec.lock_type)}'},
-    {:caption=>"R",               :data=>proc{|rec| link_column_grouping(rec, rec.request, 'Request')},     :title=>"Requested lock mode of blocked session (or number if multiple)", :data_title=>'#{lock_modes(rec.request)}'},
-    {:caption=>"L",               :data=>proc{|rec| link_column_grouping(rec, rec.lock_mode, 'LockMode')},  :title=>"Held lock mode of blocked session (or number if multiple)", :data_title=>'#{lock_modes(rec.lock_mode)}'},
-    {:caption=>"W. Object name",  :data=>proc{|rec| link_column_grouping(rec, rec.object_name, 'Objectname')}, :title=>"Objectname of blocked session (or number if multiple)"},
+    {:caption=>"Blocking object", :data=>proc{|rec| link_column_grouping(rec, 'Blocking Object')},          :title=>"Schema and name of blocking object (or number if multiple)"},
+    {:caption=>"RowID",           :data=>proc{|rec| link_column_grouping(rec, 'RowID')},                    :title=>"RowID of blocking object (or number if multiple)"},
+    {:caption=>"W. Inst.",        :data=>proc{|rec| link_column_grouping(rec, 'Instance')},                 :title=>"Instance of blocked session (or number if multiple)"},
+    {:caption=>"W. SID",          :data=>proc{|rec| link_column_grouping(rec, 'SID')},                      :title=>"SID of blocked session (or number if multiple)"},
+    {:caption=>"W. SQL-ID",       :data=>proc{|rec| link_column_grouping(rec, 'SQL-ID')},                   :title=>"SQL-ID of blocked session (or number if multiple)"},
+    {:caption=>"W. Event",        :data=>proc{|rec| link_column_grouping(rec, 'Event')},                    :title=>"Wait event of blocked session (or number if multiple)", data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.event_min) if rec.event_cnt == 1}"}},
+    {:caption=>"W. Module",       :data=>proc{|rec| link_column_grouping(rec, 'Module')},                   :title=>"Module of blocked session (or number if multiple)"},
+    {:caption=>"LT",              :data=>proc{|rec| link_column_grouping(rec, 'Locktype')},                 :title=>"Lock type of blocked session (or number if multiple)", data_title: proc{|rec| "%t\n#{lock_types(rec.lock_type_min) if rec.lock_type_cnt == 1}" }},
+    {:caption=>"R",               :data=>proc{|rec| link_column_grouping(rec, 'Request')},                  :title=>"Requested lock mode of blocked session (or number if multiple)", data_title: proc{|rec| "%t\n#{lock_modes(rec.request_min) if rec.request_cnt == 1}"} },
+    {:caption=>"L",               :data=>proc{|rec| link_column_grouping(rec, 'LockMode')},                 :title=>"Held lock mode of blocked session (or number if multiple)", data_title: proc{|rec| "%t\n#{lock_modes(rec.lock_mode_min) if rec.lock_mode_cnt == 1}"}},
+    {:caption=>"W. Object name",  :data=>proc{|rec| link_column_grouping(rec, 'Objectname')},               :title=>"Objectname of blocked session (or number if multiple)"},
   ]
 %>
 

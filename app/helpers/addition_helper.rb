@@ -16,5 +16,34 @@ module AdditionHelper
     "
   end
 
+  def blocking_locks_groupfilter_values(key)
+
+    retval = {
+      "Blocking_Event"      => {:sql => 'l.blocking_Event'},
+      "Event"               => {:sql => 'l.Event'},
+      "Blocking_Status"     => {:sql => 'l.Blocking_Status'},
+      "Snapshot_Timestamp" => {:sql => "l.Snapshot_Timestamp =TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true },
+      "Min_Timestamp"     => {:sql => "l.Snapshot_Timestamp>=TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true  },
+      "Max_Timestamp"     => {:sql => "l.Snapshot_Timestamp<=TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true  },
+      "Instance"          => {:sql => "l.Instance_Number",          alias: 'instance_number' },
+      "SID"               => {:sql => "l.SID"},
+      "SerialNo"          => {:sql => "l.SerialNo"},
+      "Hide_Non_Blocking" => {:sql => "NVL(l.Blocking_SID, '0') != ?", :already_bound => true },
+      "Blocking Object"   => {:sql => "LOWER(l.Blocking_Object_Owner)||'.'||l.Blocking_Object_Name" },
+      "SQL-ID"            => {:sql => "l.SQL_ID",                   alias: 'sql_id'},
+      "Module"            => {:sql => "l.Module"},
+      "Objectname"        => {:sql => "l.Object_Name",              alias: 'object_name'},
+      "Locktype"          => {:sql => "l.Lock_Type",                alias: 'lock_type'},
+      "Request"           => {:sql => "l.Request"},
+      "LockMode"          => {:sql => "l.Lock_Mode",                alias: 'lock_mode'},
+      "RowID"             => {:sql => "CAST(l.blocking_rowid AS VARCHAR2(18))", alias: 'blocking_rowid'},
+      "B.Instance"        => {:sql => 'l.blocking_Instance_Number', alias: 'blocking_instance_number'},
+      "B.SID"             => {:sql => 'l.blocking_SID',             alias: 'blocking_sid'},
+      "B.SQL-ID"          => {:sql => 'l.blocking_SQL_ID',          alias: 'blocking_sql_id'},
+    }[key.to_s]
+    raise "blocking_locks_groupfilter_values: unknown key '#{key}' of class #{key.class}" unless retval
+    retval
+  end
+
 end
 

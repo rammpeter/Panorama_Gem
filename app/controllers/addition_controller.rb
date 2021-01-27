@@ -217,77 +217,6 @@ class AdditionController < ApplicationController
     end
   end # list_db_cache_historic_timeline
 
-
-
-  private
-
-  def blocking_locks_groupfilter_values(key)
-
-    retval = {
-      "Blocking_Event"      => {:sql => 'l.blocking_Event'},
-      "Event"               => {:sql => 'l.Event'},
-      "Blocking_Status"     => {:sql => 'l.Blocking_Status'},
-        "Snapshot_Timestamp" => {:sql => "l.Snapshot_Timestamp =TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true },
-        "Min_Timestamp"     => {:sql => "l.Snapshot_Timestamp>=TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true  },
-        "Max_Timestamp"     => {:sql => "l.Snapshot_Timestamp<=TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true  },
-        "Instance"          => {:sql => "l.Instance_Number" },
-        "SID"               => {:sql => "l.SID"},
-        "SerialNo"          => {:sql => "l.SerialNo"},
-        "Hide_Non_Blocking" => {:sql => "NVL(l.Blocking_SID, '0') != ?", :already_bound => true },
-        "Blocking Object"   => {:sql => "LOWER(l.Blocking_Object_Owner)||'.'||l.Blocking_Object_Name" },
-        "SQL-ID"            => {:sql => "l.SQL_ID"},
-        "Module"            => {:sql => "l.Module"},
-        "Objectname"        => {:sql => "l.Object_Name"},
-        "Locktype"          => {:sql => "l.Lock_Type"},
-        "Request"           => {:sql => "l.Request"},
-        "LockMode"          => {:sql => "l.Lock_Mode"},
-        "RowID"             => {:sql => "CAST(l.blocking_rowid AS VARCHAR2(18))"},
-        "B.Instance"        => {:sql => 'l.blocking_Instance_Number'},
-        "B.SID"             => {:sql => 'l.blocking_SID'},
-        "B.SQL-ID"          => {:sql => 'l.blocking_SQL_ID'},
-    }[key.to_s]
-    raise "blocking_locks_groupfilter_values: unknown key '#{key}' of class #{key.class}" unless retval
-    retval
-  end
-
-
-  # Belegen des WHERE-Statements aus Hash mit Filter-Bedingungen und setzen Variablen
-  def where_from_blocking_locks_groupfilter (groupfilter, groupkey)
-    @groupfilter = groupfilter
-    @groupfilter = @groupfilter.to_unsafe_h.to_h.symbolize_keys  if @groupfilter.class == ActionController::Parameters
-    raise "Parameter groupfilter should be of class Hash or ActionController::Parameters" if @groupfilter.class != Hash
-    @groupkey    = groupkey
-    @where_string  = ""                    # Filter-Text für nachfolgendes Statement mit AND-Erweiterung
-    @where_values = []    # Filter-werte für nachfolgendes Statement
-
-    @groupfilter.each {|key,value|
-      sql = blocking_locks_groupfilter_values(key)[:sql].clone
-
-      unless blocking_locks_groupfilter_values(key)[:already_bound]
-        if value && value != ''
-          sql << " = ?"
-        else
-          sql << " IS NULL"
-        end
-      end
-
-      @where_string << " AND #{sql}"
-      # Wert nur binden wenn nicht im :sql auf NULL getestet wird
-      @where_values << value if value && value != ''
-    }
-
-  end
-
-  def distinct_expr(column_name, nvl_replace, column_alias=nil)
-    local_replace = nvl_replace
-    local_replace = "'#{nvl_replace}'" if nvl_replace.instance_of? String
-    column_alias = column_name if column_alias.nil?
-    "CASE WHEN COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) = 1 THEN TO_CHAR(MIN(#{column_name})) ELSE '< '||COUNT(DISTINCT NVL(#{column_name}, #{local_replace}))||' >' END #{column_alias}"
-  end
-
-  public
-
-
   def list_blocking_locks_history
     save_session_time_selection                   # Werte puffern fuer spaetere Wiederverwendung
     @timeslice = params[:timeslice]
@@ -315,24 +244,7 @@ class AdditionController < ApplicationController
              MAX(Snapshot_Timestamp)      Max_Snapshot_Timestamp,
              SUM(Seconds_In_Wait) Seconds_in_Wait,
              COUNT(*)             Samples,
-             CASE WHEN COUNT(DISTINCT NVL(Instance_Number, 0)) = 1 THEN TO_CHAR(MIN(Instance_Number)) ELSE '< '||COUNT(DISTINCT Instance_Number)||' >' END Instance_Number,
-             CASE WHEN COUNT(DISTINCT NVL(SID, 0))             = 1 THEN TO_CHAR(MIN(SID))             ELSE '< '||COUNT(DISTINCT SID)            ||' >' END SID,
-             CASE WHEN COUNT(DISTINCT SQL_ID)          = 1 THEN TO_CHAR(MIN(SQL_ID))          ELSE '< '||COUNT(DISTINCT SQL_ID)         ||' >' END SQL_ID,
-             CASE WHEN COUNT(DISTINCT Event)           = 1 THEN TO_CHAR(MIN(Event))           ELSE '< '||COUNT(DISTINCT Event)          ||' >' END Event,
-             CASE WHEN COUNT(DISTINCT SerialNo)        = 1 THEN TO_CHAR(MIN(SerialNo))        ELSE '< '||COUNT(DISTINCT SerialNo)       ||' >' END SerialNo,
-             CASE WHEN COUNT(DISTINCT Module)          = 1 THEN TO_CHAR(MIN(Module))          ELSE '< '||COUNT(DISTINCT Module)         ||' >' END Module,
-             CASE WHEN COUNT(DISTINCT Object_name)     = 1 THEN TO_CHAR(MIN(Object_Name))     ELSE '< '||COUNT(DISTINCT Object_Name)    ||' >' END Object_Name,
-             CASE WHEN COUNT(DISTINCT Lock_Type)       = 1 THEN TO_CHAR(MIN(Lock_Type))       ELSE '< '||COUNT(DISTINCT Lock_Type)      ||' >' END Lock_Type,
-             CASE WHEN COUNT(DISTINCT Request)         = 1 THEN TO_CHAR(MIN(Request))         ELSE '< '||COUNT(DISTINCT Request)        ||' >' END Request,
-             CASE WHEN COUNT(DISTINCT Lock_Mode)       = 1 THEN TO_CHAR(MIN(Lock_Mode))       ELSE '< '||COUNT(DISTINCT Lock_Mode)      ||' >' END Lock_Mode,
-             CASE WHEN COUNT(DISTINCT Blocking_Object_Owner||'.'||Blocking_Object_Name) = 1 THEN TO_CHAR(MIN(LOWER(Blocking_Object_Owner)||'.'||Blocking_Object_Name))        ELSE '< '||COUNT(DISTINCT Blocking_Object_Owner||'.'||Blocking_Object_Name)||' >' END Blocking_Object,
-             CASE WHEN COUNT(DISTINCT Blocking_RowID)  = 1 THEN CAST(MIN(Blocking_RowID) AS VARCHAR2(18)) ELSE '< '||COUNT(DISTINCT Blocking_RowID) ||' >' END Blocking_RowID,
-             CASE WHEN COUNT(DISTINCT Blocking_Instance_Number) = 1 THEN TO_CHAR(MIN(Blocking_Instance_Number)) ELSE '< '||COUNT(DISTINCT Blocking_Instance_Number)||' >' END Blocking_Instance_Number,
-             CASE WHEN COUNT(DISTINCT Blocking_SID)    = 1 THEN TO_CHAR(MIN(Blocking_SID))    ELSE '< '||COUNT(DISTINCT Blocking_SID)   ||' >' END Blocking_SID,
-             CASE WHEN COUNT(DISTINCT Blocking_SerialNo)=1 THEN TO_CHAR(MIN(Blocking_SerialNo))ELSE '< '||COUNT(DISTINCT Blocking_SerialNo)||' >' END Blocking_SerialNo,
-             CASE WHEN COUNT(DISTINCT Blocking_SQL_ID) = 1 THEN TO_CHAR(MIN(Blocking_SQL_ID)) ELSE '< '||COUNT(DISTINCT Blocking_SQL_ID)||' >' END Blocking_SQL_ID,
-             CASE WHEN COUNT(DISTINCT Blocking_Event)  = 1 THEN TO_CHAR(MIN(Blocking_Event))  ELSE '< '||COUNT(DISTINCT Blocking_Event) ||' >' END Blocking_Event,
-             CASE WHEN COUNT(DISTINCT Blocking_Status) = 1 THEN TO_CHAR(MIN(Blocking_Status)) ELSE '< '||COUNT(DISTINCT Blocking_Status)||' >' END Blocking_Status
+             #{distinct_expr_for_blocking_locks}
       FROM   (SELECT l.*,
                      (TO_CHAR(Snapshot_Timestamp,'J') * 24 + TO_CHAR(Snapshot_Timestamp, 'HH24')) * 60 + TO_CHAR(Snapshot_Timestamp, 'MI') Minutes
               FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
@@ -577,27 +489,8 @@ class AdditionController < ApplicationController
              MIN(Snapshot_Timestamp)      Min_Snapshot_Timestamp,
              MAX(Snapshot_Timestamp)      Max_Snapshot_Timestamp,
              SUM(Seconds_In_Wait) Seconds_in_Wait,
-             COUNT(*)             Samples,
-             #{distinct_expr('Instance_Number',         0)},
-             #{distinct_expr('SID',                     0)},
-             #{distinct_expr('SerialNo',                0)},
-             #{distinct_expr('SQL_ID',                  '')},
-             #{distinct_expr('SQL_Child_Number',        -1)},
-             #{distinct_expr('Event',                   '')},
-             #{distinct_expr('Module',                  '')},
-             #{distinct_expr('Object_Name',             '')},
-             #{distinct_expr('Lock_Type',               '')},
-             #{distinct_expr('Request',                 '')},
-             #{distinct_expr('Lock_Mode',               '')},
-             #{distinct_expr("Blocking_Object_Owner||'.'||Blocking_Object_Name",   '', 'Blocking_Object')},
-             CASE WHEN COUNT(DISTINCT Blocking_RowID)  = 1 THEN CAST(MIN(Blocking_RowID) AS VARCHAR2(18)) ELSE '< '||COUNT(DISTINCT Blocking_RowID) ||' >' END Blocking_RowID,
-             CASE WHEN COUNT(DISTINCT Blocking_Instance_Number) = 1 THEN TO_CHAR(MIN(Blocking_Instance_Number)) ELSE '< '||COUNT(DISTINCT Blocking_Instance_Number)||' >' END Blocking_Instance_Number,
-             CASE WHEN COUNT(DISTINCT Blocking_SID)    = 1 THEN TO_CHAR(MIN(Blocking_SID))    ELSE '< '||COUNT(DISTINCT Blocking_SID)   ||' >' END Blocking_SID,
-             CASE WHEN COUNT(DISTINCT Blocking_SerialNo)=1 THEN TO_CHAR(MIN(Blocking_SerialNo))ELSE '< '||COUNT(DISTINCT Blocking_SerialNo)||' >' END Blocking_SerialNo,
-             CASE WHEN COUNT(DISTINCT Blocking_SQL_ID) = 1 THEN TO_CHAR(MIN(Blocking_SQL_ID)) ELSE '< '||COUNT(DISTINCT Blocking_SQL_ID)||' >' END Blocking_SQL_ID,
-             CASE WHEN COUNT(DISTINCT Blocking_SQL_Child_Number)= 1 THEN TO_CHAR(MIN(Blocking_SQL_Child_Number))ELSE '< '||COUNT(DISTINCT Blocking_SQL_Child_Number)||' >' END Blocking_SQL_Child_Number,
-             CASE WHEN COUNT(DISTINCT Blocking_Event)  = 1 THEN TO_CHAR(MIN(Blocking_Event))  ELSE '< '||COUNT(DISTINCT Blocking_Event) ||' >' END Blocking_Event,
-             CASE WHEN COUNT(DISTINCT Blocking_Status) = 1 THEN TO_CHAR(MIN(Blocking_Status)) ELSE '< '||COUNT(DISTINCT Blocking_Status)||' >' END Blocking_Status
+                 COUNT(*)             Samples,
+             #{distinct_expr_for_blocking_locks}
       FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
       WHERE  1 = 1
       #{@where_string}
@@ -971,5 +864,66 @@ class AdditionController < ApplicationController
 
   end
 
+  private
+
+  # Belegen des WHERE-Statements aus Hash mit Filter-Bedingungen und setzen Variablen
+  def where_from_blocking_locks_groupfilter (groupfilter, groupkey)
+    @groupfilter = groupfilter
+    @groupfilter = @groupfilter.to_unsafe_h.to_h.symbolize_keys  if @groupfilter.class == ActionController::Parameters
+    raise "Parameter groupfilter should be of class Hash or ActionController::Parameters" if @groupfilter.class != Hash
+    @groupkey    = groupkey
+    @where_string  = ""                    # Filter-Text für nachfolgendes Statement mit AND-Erweiterung
+    @where_values = []    # Filter-werte für nachfolgendes Statement
+
+    @groupfilter.each {|key,value|
+      sql = blocking_locks_groupfilter_values(key)[:sql].clone
+
+      unless blocking_locks_groupfilter_values(key)[:already_bound]
+        if value && value != ''
+          sql << " = ?"
+        else
+          sql << " IS NULL"
+        end
+      end
+
+      @where_string << " AND #{sql}"
+      # Wert nur binden wenn nicht im :sql auf NULL getestet wird
+      @where_values << value if value && value != ''
+    }
+
+  end
+
+  def distinct_expr(column_name, nvl_replace, column_alias=nil, direct_access=nil)
+    local_replace = nvl_replace
+    local_replace = "'#{nvl_replace}'" if nvl_replace.instance_of? String
+    column_alias  = column_name if column_alias.nil?
+    direct_access = "TO_CHAR(MIN(#{column_name}))" if direct_access.nil?
+    "#{direct_access} #{column_alias}_Min,
+COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) #{column_alias}_Cnt"
+  end
+
+  def distinct_expr_for_blocking_locks
+    "#{distinct_expr('Instance_Number',         0)},
+     #{distinct_expr('SID',                     0)},
+     #{distinct_expr('SerialNo',                0)},
+     #{distinct_expr('SQL_ID',                  '-1')},
+     #{distinct_expr('SQL_Child_Number',        -1)},
+     #{distinct_expr('Event',                   '-1')},
+     #{distinct_expr('Module',                  '-1')},
+     #{distinct_expr('Object_Name',             '-1')},
+     #{distinct_expr('Lock_Type',               '-1')},
+     #{distinct_expr('Request',                 '-1')},
+     #{distinct_expr('Lock_Mode',               '-1')},
+     #{distinct_expr("Blocking_Object_Owner||'.'||Blocking_Object_Name",   '', 'Blocking_Object')},
+     #{distinct_expr('Blocking_RowID',          '', 'Blocking_RowID', 'CAST(MIN(Blocking_RowID) AS VARCHAR2(18))')},
+     #{distinct_expr('Blocking_Instance_Number', 0)},
+     #{distinct_expr('Blocking_SID',             0)},
+     #{distinct_expr('Blocking_SerialNo',        0)},
+     #{distinct_expr('Blocking_SQL_ID',          '-1')},
+     #{distinct_expr('Blocking_SQL_Child_Number',-1)},
+     #{distinct_expr('Blocking_Event',           '-1')},
+     #{distinct_expr('Blocking_Status',          '-1')}
+    "
+  end
 
 end

@@ -19,46 +19,48 @@
     link_column.call(result, value, {}, "list_blocking_locks_history_single_record", "Show particular samples of grouping")
   end
 
-  link_column_grouping = proc do |result, value, name|
-    # Nur als Link anzeigen, wenn mehrere Treffer vorhanden (Muster "< Anzahl >")
-    if value[0,1] == '<' && value[value.length-1,1] =='>'
-      if value[2,1] != '0'
-        link_column.call(result, value, {:groupkey => name}, :list_blocking_locks_history_grouping, "Show grouping by #{name} from samples of this group" )
+  link_grouping = proc do |rec, name|
+    col_alias = blocking_locks_groupfilter_values(name)[:alias] || name.downcase
+    col_min = "#{col_alias}_min"
+    col_cnt = "#{col_alias}_cnt"
+    case rec[col_cnt]
+    when 0
+      ''
+    when 1
+      case name
+      when 'Blocking Object'
+        link_object_description(@update_area, rec.blocking_object_min.split('.')[0], rec.blocking_object_min.split('.')[1])
+      else
+        link_column.call(rec, rec[col_min], {:groupkey => name}, :list_blocking_locks_history_grouping, "Show grouping by #{name} from samples of this group" )
       end
     else
-      case name
-        when 'Blocking Object'
-          link_object_description(@update_area, result.blocking_object.split('.')[0], result.blocking_object.split('.')[1])
-      else
-        link_column.call(result, value, {:groupkey => name}, :list_blocking_locks_history_grouping, "Show grouping by #{name} from samples of this group" )
-      end
+      link_column.call(rec, "<&nbsp;#{rec[col_cnt]}&nbsp;>".html_safe, {:groupkey => name}, :list_blocking_locks_history_grouping, "Show grouping by #{name} from samples of this group" )
     end
   end
 
 
-
 column_options =
   [
-    {:caption=>"Min. timestamp",  :data=>proc{|rec| localeDateTime(rec.min_snapshot_timestamp)},                               :title=>"Smallest timestamp in considered period"},
-    {:caption=>"Max. timestamp",  :data=>proc{|rec| localeDateTime(rec.max_snapshot_timestamp)},                               :title=>"Largest timestamp in considered period"},
-    {:caption=>"B. Inst.",        :data=>proc{|rec| link_column_grouping.call(rec, rec.blocking_instance_number, 'B.Instance')}, :title=>"Instance of blocking session (or number if multiple)"},
-    {:caption=>"B. SID",          :data=>proc{|rec| link_column_grouping.call(rec, rec.blocking_sid, 'B.SID')},                :title=>"SID of blocking session (or number if multiple)"},
-    {:caption=>"B. SQL-ID",       :data=>proc{|rec| link_column_grouping.call(rec, rec.blocking_sql_id, 'B.SQL-ID')},          :title=>"SQL-ID of blocking session (or number if multiple)"},
-    {:caption=>"B. Event",        :data=>proc{|rec| link_column_grouping.call(rec, rec.blocking_event, 'Blocking_Event')},     :title=>"Wait event of blocking session (or number if multiple)"},
-    {:caption=>"B. Status",       :data=>proc{|rec| link_column_grouping.call(rec, rec.blocking_status, 'Blocking_Status')},   :title=>"Status of blocking session (or number if multiple)"},
-    {:caption=>"Wait (Sec.)",     :data=>proc{|rec| formattedNumber(rec.seconds_in_wait,0)},                                   :title=>"Number of seconds the sessions are still blocked", :align=>"right", data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_in_wait)}"}},
-    {:caption=>"Samples",         :data=>proc{|rec| link_column_single.call(rec, "< #{fn(rec.samples,0)} >")},                 :title=>"Number of recorded samples", :align=>"right"},
-    {:caption=>"Blocking object", :data=>proc{|rec| link_column_grouping.call(rec, rec.blocking_object, 'Blocking Object')},   :title=>"Schema and name of blocking object (or number if multiple)"},
-    {:caption=>"RowID",           :data=>proc{|rec| link_column_grouping.call(rec, rec.blocking_rowid, 'RowID')},              :title=>"RowID of blocking object (or number if multiple)"},
-    {:caption=>"W. Inst.",        :data=>proc{|rec| link_column_grouping.call(rec, rec.instance_number, 'Instance')},          :title=>"Instance of waiting/blocked session (or number if multiple)"},
-    {:caption=>"W. SID",          :data=>proc{|rec| link_column_grouping.call(rec, rec.sid, 'SID')},                           :title=>"SID of waiting/blocked Session (or number if multiple)"},
-    {:caption=>"W. SQL-ID",       :data=>proc{|rec| link_column_grouping.call(rec, rec.sql_id, 'SQL-ID')},                     :title=>"SQL-ID of waiting/blocked session (or number if multiple)"},
-    {:caption=>"W. Event",        :data=>proc{|rec| link_column_grouping.call(rec, rec.event, 'Event')},                       :title=>"Wait event of waiting/blocked session (or number if multiple)", data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.event)}"}},
-    {:caption=>"W. Module",       :data=>proc{|rec| link_column_grouping.call(rec, rec.module, 'Module')},                     :title=>"Module of waiting/blocked session (or number if multiple)"},
-    {:caption=>"LT",              :data=>proc{|rec| link_column_grouping.call(rec, rec.lock_type, 'Locktype')},                :title=>"Lock type of waiting/blocked session (or number if multiple)", :data_title=>proc{|rec| lock_types(rec.lock_type)} },
-    {:caption=>"R",               :data=>proc{|rec| link_column_grouping.call(rec, rec.request, 'Request')},                   :title=>"Requested lock mode of waiting/blocked session (or number if multiple)", :data_title=>proc{|rec| lock_modes(rec.request)} },
-    {:caption=>"L",               :data=>proc{|rec| link_column_grouping.call(rec, rec.lock_mode, 'LockMode')},                :title=>"Held lock mode of waiting/blocked session (or number if multiple)", :data_title=>proc{|rec| lock_modes(rec.lock_mode)} },
-    {:caption=>"W. Object name",  :data=>proc{|rec| link_column_grouping.call(rec, rec.object_name, 'Objectname')},            :title=>"current object name blocked session is waiting for (or number if multiple)"},
+    {:caption=>"Min. timestamp",  :data=>proc{|rec| localeDateTime(rec.min_snapshot_timestamp)},                    :title=>"Smallest timestamp in considered period"},
+    {:caption=>"Max. timestamp",  :data=>proc{|rec| localeDateTime(rec.max_snapshot_timestamp)},                    :title=>"Largest timestamp in considered period"},
+    {:caption=>"B. Inst.",        :data=>proc{|rec| link_grouping.call(rec, 'B.Instance')},                         :title=>"Instance of blocking session (or number if multiple)"},
+    {:caption=>"B. SID",          :data=>proc{|rec| link_grouping.call(rec, 'B.SID')},                              :title=>"SID of blocking session (or number if multiple)"},
+    {:caption=>"B. SQL-ID",       :data=>proc{|rec| link_grouping.call(rec, 'B.SQL-ID')},                           :title=>"SQL-ID of blocking session (or number if multiple)"},
+    {:caption=>"B. Event",        :data=>proc{|rec| link_grouping.call(rec, 'Blocking_Event')},                     :title=>"Wait event of blocking session (or number if multiple)"},
+    {:caption=>"B. Status",       :data=>proc{|rec| link_grouping.call(rec, 'Blocking_Status')},                    :title=>"Status of blocking session (or number if multiple)"},
+    {:caption=>"Wait (Sec.)",     :data=>proc{|rec| formattedNumber(rec.seconds_in_wait,0)},                        :title=>"Number of seconds the sessions are still blocked", :align=>"right", data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_in_wait)}"}},
+    {:caption=>"Samples",         :data=>proc{|rec| link_column_single.call(rec, "< #{fn(rec.samples,0)} >")},      :title=>"Number of recorded samples", :align=>"right"},
+    {:caption=>"Blocking object", :data=>proc{|rec| link_grouping.call(rec, 'Blocking Object')},                    :title=>"Schema and name of blocking object (or number if multiple)"},
+    {:caption=>"RowID",           :data=>proc{|rec| link_grouping.call(rec, 'RowID')},                              :title=>"RowID of blocking object (or number if multiple)"},
+    {:caption=>"W. Inst.",        :data=>proc{|rec| link_grouping.call(rec, 'Instance')},                           :title=>"Instance of waiting/blocked session (or number if multiple)"},
+    {:caption=>"W. SID",          :data=>proc{|rec| link_grouping.call(rec, 'SID')},                                :title=>"SID of waiting/blocked Session (or number if multiple)"},
+    {:caption=>"W. SQL-ID",       :data=>proc{|rec| link_grouping.call(rec, 'SQL-ID')},                             :title=>"SQL-ID of waiting/blocked session (or number if multiple)"},
+    {:caption=>"W. Event",        :data=>proc{|rec| link_grouping.call(rec, 'Event')},                              :title=>"Wait event of waiting/blocked session (or number if multiple)", data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.event_min) if rec.event_cnt == 1}"}},
+    {:caption=>"W. Module",       :data=>proc{|rec| link_grouping.call(rec, 'Module')},                             :title=>"Module of waiting/blocked session (or number if multiple)"},
+    {:caption=>"LT",              :data=>proc{|rec| link_grouping.call(rec, 'Locktype')},                           :title=>"Lock type of waiting/blocked session (or number if multiple)", :data_title=>proc{|rec| lock_types(rec.lock_type_min) if rec.lock_type_cnt == 1} },
+    {:caption=>"R",               :data=>proc{|rec| link_grouping.call(rec, 'Request')},                            :title=>"Requested lock mode of waiting/blocked session (or number if multiple)", :data_title=>proc{|rec| lock_modes(rec.request_min) if rec.request_cnt == 1} },
+    {:caption=>"L",               :data=>proc{|rec| link_grouping.call(rec, 'LockMode')},                           :title=>"Held lock mode of waiting/blocked session (or number if multiple)", :data_title=>proc{|rec| lock_modes(rec.lock_mode_min) if rec.lock_mode_cnt == 1} },
+    {:caption=>"W. Object name",  :data=>proc{|rec| link_grouping.call(rec, 'Objectname')},                         :title=>"current object name blocked session is waiting for (or number if multiple)"},
   ]
 %>
 
