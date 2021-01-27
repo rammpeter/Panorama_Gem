@@ -12,7 +12,7 @@ Decrease in size by 1/3 to 1/2 is possible.
 Min. 20% decrease of size and relevant I/O should exist to compensate CPU overhead of compression/decompression.
 
 OLTP-compression is well suitable for tables with insert and delete operations.
-During update oeprations DB-blocks are decompressed with possibly creation of chained rows. Therefore for OLTP-compression there should by only less or no update operations on table.
+During update operations DB-blocks are decompressed with possibly creation of chained rows. Therefore for OLTP-compression there should by only less or no update operations on table.
 
 OLTP-compression requires licensing of Advanced Compression Option.
             '),
@@ -76,6 +76,74 @@ ORDER BY Size_MB DESC NULLS LAST
                 {:name=>t(:dragnet_helper_50_param_2_name, :default=> 'Maximum % of udates compared to inserts + deletes'), :size=>8, :default=>5, :title=>t(:dragnet_helper_50_param_2_hint, :default=> 'Maximum percentage of udate operations since last analyze compared to the number of inserts + deletes') },
                 {:name=>t(:dragnet_helper_50_param_3_name, :default=> 'Minimum days since last analyze'), :size=>8, :default=>7, :title=>t(:dragnet_helper_50_param_3_hint, :default=> 'Minimum number of days since last analyze to ensure valid values for inserts, updates and deletes') },
             ]
+        },
+        {
+          :name  => t(:dragnet_helper_49_name, :default=> 'Possibly suboptimal OLTP-compression of tables'),
+          :desc  => t(:dragnet_helper_49_desc, :default=> 'OLTP-compression is well suitable for tables with insert and delete operations.
+During update operations DB-blocks are decompressed with possibly creation of chained rows.
+Therefore for OLTP-compression there should by only less or no update operations on table.
+This selection shows compressed tables with percentage of update operations higher than the limit compared to inserts and deletes.
+
+OLTP-compression requires licensing of Advanced Compression Option.
+            '),
+
+          :sql=> "\
+WITH Segments AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Segment_Name, Partition_Name, ROUND(SUM(Bytes/(1024*1024)),2) Size_MB
+                  FROM   DBA_Segments
+                  WHERE  Owner NOT IN (#{system_schema_subselect})
+                  AND    Bytes/(1024*1024) > ?
+                  GROUP BY Owner, Segment_Name, Partition_Name
+                 ),
+     Tables AS   (SELECT /*+ NO_MERGE MATERIALIZE */ t.Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed, NULL Partition_Name,
+                         m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, t.Compression
+                  FROM   DBA_Tables t
+                  LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL
+                  AND    t.Compression = 'DISABLED'
+                 ),
+     Partitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ t.Table_Owner Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed, t.Partition_Name,
+                           m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, t.Compression
+                    FROM   DBA_Tab_Partitions t
+                    LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name
+                    WHERE  t.Composite = 'NO'
+                   ),
+     SubPartitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ t.Table_Owner Owner, t.Table_Name, t.Num_Rows, t.Last_Analyzed, t.SubPartition_Name Partition_Name,
+                              m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, t.Compression
+                       FROM   DBA_Tab_SubPartitions t
+                       LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name AND m.SubPartition_Name = t.SubPartition_Name
+                      ),
+     Objects AS  (SELECT /*+ NO_MERGE MATERIALIZE */ x.*, COUNT(*) OVER (PARTITION BY Owner, Table_Name) Partitions_Total
+                  FROM   (
+                          SELECT * FROM Tables t
+                          UNION ALL
+                          SELECT * FROM Partitions
+                          UNION ALL
+                          SELECT * FROM SubPartitions
+                         ) x
+                  WHERE  x.Owner NOT IN (#{system_schema_subselect})
+                  AND    x.Compression != 'DISABLED'
+                  AND    x.Updates > (x.Inserts + x.Deletes)/(100/?)    -- updates less than limit
+                 )
+SELECT x.Owner, x.Table_Name,
+       SUM(CASE WHEN x.Partition_Name IS NULL THEN NULL ELSE 1 END) \"Partitions to Compress\",
+       MAX(CASE WHEN x.Partition_Name IS NULL THEN NULL ELSE Partitions_Total END) \"Partitions Total\",
+       SUM(Num_Rows) Num_Rows,
+       SUM(Size_MB)  Size_MB,
+       MAX(Last_Analyzed) Max_Last_analyzed,
+       SUM(Inserts) Inserts,
+       SUM(Updates) Updates,
+       SUM(Deletes) Deletes,
+       MAX(Last_DML) Last_DML
+FROM   Objects x
+JOIN Segments s ON s.Owner = x.Owner AND s.Segment_Name = x.Table_Name AND NVL(s.Partition_Name, '-1') = NVL(x.Partition_Name, '-1')
+GROUP BY x.Owner, x.Table_Name
+HAVING MAX(Last_Analyzed) < SYSDATE - ?
+ORDER BY Size_MB DESC NULLS LAST
+            ",
+          :parameter=>[
+            {:name=>t(:dragnet_helper_49_param_1_name, :default=> 'Minimum size of table or partition in MB'), :size=>8, :default=>10, :title=>t(:dragnet_helper_49_param_1_hint, :default=> 'Minimum size of table, partition or subpartition in MB for consideration in result of selection') },
+            {:name=>t(:dragnet_helper_49_param_2_name, :default=> 'Minimum % of udates compared to inserts + deletes'), :size=>8, :default=>5, :title=>t(:dragnet_helper_49_param_2_hint, :default=> 'Minimum percentage of udate operations since last analyze compared to the number of inserts + deletes') },
+            {:name=>t(:dragnet_helper_49_param_3_name, :default=> 'Minimum days since last analyze'), :size=>8, :default=>7, :title=>t(:dragnet_helper_49_param_3_hint, :default=> 'Minimum number of days since last analyze to ensure valid values for inserts, updates and deletes') },
+          ]
         },
         {
             :name  => t(:dragnet_helper_140_name, :default=> 'Tables with PCT_FREE > 0 but without update-DML'),

@@ -773,6 +773,20 @@
   dragnet_helper_3_12_desc: |-
     Ermittlung von suboptimalen bzw. inkompatiblen Parametrisierungen der Datenbank
 
+  dragnet_helper_49_desc: |-
+    Die OLTP-Komprimierung ist gut nutzbar für Tabellen mit Insert-und Delete-Operationen.
+    Während Update-Operationen findet Dekomprimierung der DB-Blöcke statt mit evtl. Chained Rows.
+    Daher sollten für OLTP-Komprimierung nur wenige oder gar keine Update-Operationen auf der Table stattfinden.
+    Diese Selektion zeigt komprimierte Tabellen mit einen Anteil von Update-Operationen größer als der Schwellwert vergleichen mit Inserts und Deletes.
+
+    OLTP-Komprimierung erfordert die Lizensierung der Advanced Compression Option.
+  dragnet_helper_49_name:                                    Evtl. nicht sinnvolle OLTP-Komprimierung von Tabellen
+  dragnet_helper_49_param_1_hint:                            Mindestgröße der Tabelle, Partition oder SubPartition in MB für Aufnahme in Resultat der Selektion
+  dragnet_helper_49_param_1_name:                            Mindestgröße der Tabelle order Partition in MB
+  dragnet_helper_49_param_2_hint:                            Minimaler Prozentanteil Update-Operationen seit der letzten Analyse verglichen zur Anzahl Inserts + Deletes
+  dragnet_helper_49_param_2_name:                            Min. % Updates verglichen zu Inserts + Deletes
+  dragnet_helper_49_param_3_hint:                            Minimale Anzahl Tage seit der letzten Analyse zur sicherstellung valider Werte für Inserts, Updates und Deletes
+  dragnet_helper_49_param_3_name:                            Minimale Anzahl Tage seit der letzten Analyse
 
   dragnet_helper_50_desc: |-
     Tabellen-Komprimierung (COMPRESS FOR xxx) reduziert I/O-Aufwände durch Verbesserung der Cache-Hit-Rate.
@@ -786,7 +800,7 @@
   dragnet_helper_50_name:                                    Empfehlungen für evtl. sinnvolle OLTP-Komprimierung von Tabellen
   dragnet_helper_50_param_1_hint:                            Mindestgröße der Tabelle, Partition oder SubPartition in MB für Aufnahme in Resultat der Selektion
   dragnet_helper_50_param_1_name:                            Mindestgröße der Tabelle order Partition in MB
-  dragnet_helper_50_param_2_hint:                            Maximaler Prozenatnteil Update-Operationen seit der letzten Analyse verglichen zur Anzahl Inserts + Deletes
+  dragnet_helper_50_param_2_hint:                            Maximaler Prozentanteil Update-Operationen seit der letzten Analyse verglichen zur Anzahl Inserts + Deletes
   dragnet_helper_50_param_2_name:                            Max. % Updates verglichen zu Inserts + Deletes
   dragnet_helper_50_param_3_hint:                            Minimale Anzahl Tage seit der letzten Analyse zur sicherstellung valider Werte für Inserts, Updates und Deletes
   dragnet_helper_50_param_3_name:                            Minimale Anzahl Tage seit der letzten Analyse
