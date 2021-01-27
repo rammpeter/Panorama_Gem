@@ -50,7 +50,7 @@ def link_column_grouping(rec, name)
       if rec.blocking_instance_number_cnt > 1 || rec.blocking_sid_cnt > 1 || rec.blocking_serialno_cnt > 1
         rec[col_min]
       else
-        link_column_blocked(rec, rec.blocking_sid_min)
+        link_column_blocked(rec)
       end
     when 'Blocking Object'
       link_object_description(@update_area, rec.blocking_object_min.split('.')[0], rec.blocking_object_min.split('.')[1])
@@ -63,27 +63,69 @@ end
 
 
 def link_column_blocking_reason_cascade(rec, value)
-    ajax_link(value,
-                {:action                => "list_blocking_reason_cascade",
-                 :update_area           => @update_area,
-                 :snapshot_timestamp    => localeDateTime(rec.max_snapshot_timestamp),
-                 :instance              => rec.instance_number_min,
-                 :sid                   => rec.sid_min,
-                 :serialno              => rec.serialno_min
-                },
-         :title => "Show full cascade of blockers for this session at the last snapshot of period")
+  retval = ''
+  retval << ajax_link(rec.sid_min, {
+                        controller:  :active_session_history,
+                        action:     :list_session_statistic_historic_grouping,
+                        groupfilter: {
+                          DBID:                 get_dbid,
+                          Instance:             rec.instance_number_min,
+                          Session_ID:           rec.sid_min,
+                          SerialNo:             rec.serialno_min,
+                          Idle_Wait1:           'PX Deq Credit: send blkd',
+                          time_selection_start: localeDateTime(rec.min_snapshot_timestamp),
+                          time_selection_end:   localeDateTime(rec.max_snapshot_timestamp),
+                        },
+                        :groupby      => 'Session/Sn.',
+                        :update_area  => @update_area
+                      }, title: "Show Active Session History of this session with serial# = '#{rec.serialno_min}'"
+  )
+  retval << ' '
+  retval << ajax_submit('Blockers',
+                        {:action                => "list_blocking_reason_cascade",
+                         :update_area           => @update_area,
+                         :snapshot_timestamp    => localeDateTime(rec.max_snapshot_timestamp),
+                         :instance              => rec.instance_number_min,
+                         :sid                   => rec.sid_min,
+                         :serialno              => rec.serialno_min
+                        },
+                        {:title => "Show full cascade of blockers for this session at the last snapshot of period"},
+                        style: 'display:inline;'
+  ) if rec.sid_min
+  retval
 end
 
-def link_column_blocked(rec, value)
-  ajax_link(value, {
-            :action             => 'list_blocking_locks_history_hierarchy_detail',
-            :update_area        => @update_area,
-            :snapshot_timestamp => localeDateTime(rec.max_snapshot_timestamp),
-            :blocking_instance  => rec.blocking_instance_number_min,
-            :blocking_sid       => rec.blocking_sid_min,
-            :blocking_serialno  => rec.blocking_serialno_min
-          },
-   :title=>'Show sessions blocked by this session at the last snapshot of period')
+def link_column_blocked(rec)
+  retval = ''
+  retval << ajax_link(rec.blocking_sid_min, {
+    controller:  :active_session_history,
+    action:     :list_session_statistic_historic_grouping,
+    groupfilter: {
+      DBID:                 get_dbid,
+      Instance:             rec.blocking_instance_number_min,
+      Session_ID:           rec.blocking_sid_min,
+      SerialNo:             rec.blocking_serialno_min,
+      Idle_Wait1:           'PX Deq Credit: send blkd',
+      time_selection_start: localeDateTime(rec.min_snapshot_timestamp),
+      time_selection_end:   localeDateTime(rec.max_snapshot_timestamp),
+    },
+    :groupby      => 'Session/Sn.',
+    :update_area  => @update_area
+  }, title: "Show Active Session History of this session with serial# = '#{rec.blocking_serialno_min}'"
+  )
+  retval << ' '
+  retval << ajax_submit('Blocked', {
+                          :action             => 'list_blocking_locks_history_hierarchy_detail',
+                          :update_area        => @update_area,
+                          :snapshot_timestamp => localeDateTime(rec.max_snapshot_timestamp),
+                          :blocking_instance  => rec.blocking_instance_number_min,
+                          :blocking_sid       => rec.blocking_sid_min,
+                          :blocking_serialno  => rec.blocking_serialno_min
+                        },
+                        { :title=>'Show sessions blocked by this session at the last snapshot of period'},
+                        style: 'display:inline;'
+  ) if rec.blocking_sid_min
+  retval
 end
 
 

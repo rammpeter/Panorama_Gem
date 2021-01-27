@@ -127,16 +127,17 @@
         blocked_session_unqiue = rec.instance_number_cnt == 1 && rec.session_id_cnt == 1 && rec.session_serial_no_cnt == 1    # Single record or all records grouped for one session
         retval << ' '
         retval << ajax_submit('Thread', {
-          action:                     :list_ash_dependecy_thread,
-          blocked_inst_id:            blocked_session_unqiue ? rec.instance_number    : rec.blocking_inst_id,
-          blocked_session:            blocked_session_unqiue ? rec.session_id         : rec.blocking_session,
-          blocked_session_serial_no:  blocked_session_unqiue ? rec.session_serial_no  : rec.blocking_session_serial_no,
-          sample_time:                localeDateTime(rec.start_rounded_sample_time),
-          min_snap_id:                @groupfilter[:Min_Snap_ID],
-          max_snap_id:                @groupfilter[:Max_Snap_ID],
-          update_area:                @update_area,
-          }, :title => "List full blocking session dependency thread (if blocking session is blocked itself by other session)"
-         )
+                              action:                     :list_ash_dependecy_thread,
+                              blocked_inst_id:            blocked_session_unqiue ? rec.instance_number    : rec.blocking_inst_id,
+                              blocked_session:            blocked_session_unqiue ? rec.session_id         : rec.blocking_session,
+                              blocked_session_serial_no:  blocked_session_unqiue ? rec.session_serial_no  : rec.blocking_session_serial_no,
+                              sample_time:                localeDateTime(rec.start_rounded_sample_time),
+                              min_snap_id:                @groupfilter[:Min_Snap_ID],
+                              max_snap_id:                @groupfilter[:Max_Snap_ID],
+                              update_area:                @update_area,
+                              }, {:title => "List full blocking session dependency thread (if blocking session is blocked itself by other session)"},
+                              style: 'display:inline;'
+        )
         retval
       else
         value

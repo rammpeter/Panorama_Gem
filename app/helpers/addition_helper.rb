@@ -29,7 +29,7 @@ module AdditionHelper
       "SID"               => {:sql => "l.SID"},
       "SerialNo"          => {:sql => "l.SerialNo"},
       "Hide_Non_Blocking" => {:sql => "NVL(l.Blocking_SID, '0') != ?", :already_bound => true },
-      "Blocking Object"   => {:sql => "LOWER(l.Blocking_Object_Owner)||'.'||l.Blocking_Object_Name" },
+      "Blocking Object"   => {:sql => "LOWER(l.Blocking_Object_Owner)||'.'||l.Blocking_Object_Name", alias: 'blocking_object' },
       "SQL-ID"            => {:sql => "l.SQL_ID",                   alias: 'sql_id'},
       "Module"            => {:sql => "l.Module"},
       "Objectname"        => {:sql => "l.Object_Name",              alias: 'object_name'},

@@ -9,15 +9,38 @@ link_column_sql_id = proc do |rec|
 end
 
 link_column_blocked = proc do |rec|
-  ajax_link(rec.blocking_sid, {
-            :action            => 'list_blocking_locks_history_hierarchy_detail',
-            :update_area       => @update_area,
-            :snapshot_timestamp => @snapshot_timestamp,
-            :blocking_instance => rec.blocking_instance_number,
-            :blocking_sid      => rec.blocking_sid,
-            :blocking_serialno => rec.blocking_serialno
-          },
-   :title=>'Show sessions blocked by this session')
+  retval = ''
+  if rec.sid
+    retval << ajax_link(rec.sid, {
+      controller:  :active_session_history,
+      action:     :list_session_statistic_historic_grouping,
+      groupfilter: {
+        DBID:                 get_dbid,
+        Instance:             rec.blocking_instance_number,
+        Session_ID:           rec.blocking_sid,
+        SerialNo:             rec.blocking_serialno,
+        Idle_Wait1:           'PX Deq Credit: send blkd',
+        time_selection_start: @snapshot_timestamp,
+        time_selection_end:   @snapshot_timestamp,
+      },
+      :groupby      => 'Session/Sn.',
+      :update_area  => @update_area
+    }, title: "Show Active Session History of this session with serial# = '#{rec.blocking_serialno}' "
+    )
+
+    retval << ' '
+    retval << ajax_submit('Blocked', {
+                            :action            => 'list_blocking_locks_history_hierarchy_detail',
+                            :update_area       => @update_area,
+                            :snapshot_timestamp => @snapshot_timestamp,
+                            :blocking_instance => rec.blocking_instance_number,
+                            :blocking_sid      => rec.blocking_sid,
+                            :blocking_serialno => rec.blocking_serialno
+                          }, {:title => "Show sessions blocked by this session"},
+                          style: 'display:inline;'
+    )
+  end
+  retval
 end
 
   link_object = proc do |rec|

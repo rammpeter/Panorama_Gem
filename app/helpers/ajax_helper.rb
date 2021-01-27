@@ -169,8 +169,8 @@ module AjaxHelper
   #   caption:      String
   #   url:          Hash with controller, action, update_area, payload
   #   html_options: Hash
-  def ajax_submit(caption, url, html_options)
-    ajax_form(url) do
+  def ajax_submit(caption, url, html_options, form_options={})
+    ajax_form(url, form_options) do
       #html_options['data-disable-with']=false
       submit_tag caption, html_options
     end
