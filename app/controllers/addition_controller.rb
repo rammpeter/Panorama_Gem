@@ -658,6 +658,19 @@ class AdditionController < ApplicationController
     end
     @sizes << record if sizes.length > 0  # letzten Record sichern
 
+    # iterate through result rows
+    prev_record = nil
+    @sizes.each do |s|
+      unless prev_record.nil?
+        s[:total_increase] = s[:total] - prev_record[:total]
+        columns.each do |key, _|
+          s["#{key}_increase"] = s[key] - prev_record[key]
+        end
+      end
+
+      prev_record = s
+    end
+
     link_mbytes = proc do |rec, key, value|
       ajax_link(fn(value, 2), {
           action:               :list_object_increase_objects_per_time,
@@ -687,11 +700,13 @@ class AdditionController < ApplicationController
     column_options =
         [
             {:caption=>"Gather date",     :data=>proc{|rec| localeDateTime(rec[:gather_date])},   :title=>"Timestamp of object size snapshot", :plot_master_time=>true},
-            {:caption=>"Total MB",        :data=>link_total_mbytes,                               :title=>"Total size for filter criterias in MBytes", :align=>"right" }
+            {:caption=>"Total MB",        :data=>link_total_mbytes,                               :title=>"Total size for filter criterias in MBytes", :align=>"right" },
+            {:caption=>"Total incr. MB",  data: proc{|rec| fn(rec[:total_increase])},             :title=>"Total increase since last snapshot for filter criterias in MBytes", :align=>"right" },
         ]
 
     columns.each do |key, value|
       column_options << {:caption=>key, :data=>proc{|rec| link_mbytes.call(rec, key, rec[key])}, :title=>"Size for #{key} in MB", :align=>"right" }
+      column_options << {caption: "#{key} incr.", data: proc{|rec| fn(rec["#{key}_increase"])},  :title=>"Increase since last snapshot for #{key} in MB", :align=>"right" }
     end
 
     output = gen_slickgrid(@sizes, column_options, {
