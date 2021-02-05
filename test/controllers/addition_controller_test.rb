@@ -34,19 +34,21 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
     PanoramaSamplerStructureCheck.do_check(prepare_panorama_sampler_thread_db_config, :BLOCKING_LOCKS)         # Ensure that structures are existing
 
     post '/addition/list_blocking_locks_history', :params => { :format=>:html,
-         :time_selection_start =>"01.01.2011 00:00",
-         :time_selection_end =>"01.01.2011 01:00",
-         :timeslice =>"10",
-         :commit_table => "1",
-         :update_area=>:hugo } if get_db_version >= '11.2'
+                                                               :time_selection_start =>"01.01.2011 00:00",
+                                                               :time_selection_end =>"01.01.2011 01:00",
+                                                               :timeslice =>"10",
+                                                               min_wait_ms: 0,
+                                                               :commit_table => "1",
+                                                               :update_area=>:hugo } if get_db_version >= '11.2'
     assert_response :success
 
     post '/addition/list_blocking_locks_history', :params => { :format=>:html,
-         :time_selection_start =>"01.01.2011 00:00",
-         :time_selection_end =>"01.01.2011 01:00",
-         :timeslice =>'10',
-         :commit_hierarchy => "1",
-         :update_area=>:hugo } if get_db_version >= '11.2'
+                                                               :time_selection_start =>"01.01.2011 00:00",
+                                                               :time_selection_end =>"01.01.2011 01:00",
+                                                               :timeslice =>'10',
+                                                               min_wait_ms: 0,
+                                                               :commit_hierarchy => "1",
+                                                               :update_area=>:hugo } if get_db_version >= '11.2'
     assert_response :success
 
     post '/addition/list_blocking_locks_history_hierarchy_detail', :params => { :format=>:html,

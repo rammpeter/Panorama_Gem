@@ -2,8 +2,8 @@
 // This file is automatically included by javascript_include_tag :defaults
 
 // Eigenes jQuery verwenden, da Version aus jquery_rails $.browser nicht unterstützte
-// jquery_3.1.0 führt zu Problemen beim Ändern der Spaltenbreite
-//= require jquery-2.1.4
+// jquery_3.1.0 statt 2.1.4 führt zu Problemen beim Ändern der Spaltenbreite
+//= require jquery-3.5.1
 //= require jquery-ui
 //= require jquery.ui.touch-punch.js
 // jquery_ujs.js aus gem jquery-rails nach vendor/assets/javascript kopiert, da im gem selbst nicht gefunden, statt dessen: sprocket-Error
@@ -15,7 +15,7 @@
 //= require flot/jquery.flot.resize
 //= require flot/jquery.flot.crosshair
 //= require flot/jquery.flot.stack
-//= require jquery.event.drag-2.2
+//= require jquery.event.drag-2.3.0
 //= require slick.core
 //= require slick.grid
 //= require slick.dataview
@@ -280,11 +280,12 @@ function ajax_html(update_area, controller, action, payload, options){
 
 // bind ajax:success to store html-response in target
 // used by ajax calls submitted via ruby methode "ajax_form"
+// Ensure by "unbind" that only one handler is registered even if multiple called
 // Parameter:
 //   element:     DOM-Element as jQuery
 //   target:      target DOM-ID for response
 function bind_ajax_html_response(element, target){
-    element.bind("ajax:success", function(event, data, status, xhr) {
+    element.unbind("ajax:success").bind("ajax:success", function(event, data, status, xhr) {
         process_ajax_success(data, xhr, target);
     });
 }
