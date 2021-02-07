@@ -480,7 +480,7 @@ class ActiveSessionHistoryController < ApplicationController
   def list_blocking_locks_historic
     @dbid = prepare_param_dbid
     save_session_time_selection
-    get_min_max_snap_ids(@time_selection_start, @time_selection_end, @dbid)
+    @min_snap_id, @max_snap_id = get_min_max_snap_ids(@time_selection_start, @time_selection_end, @dbid)
 
     @locks = sql_select_iterator [
       "WITH /* Panorama-Tool Ramm */

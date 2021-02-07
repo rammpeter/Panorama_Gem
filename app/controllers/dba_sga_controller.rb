@@ -1994,7 +1994,7 @@ END;
       where_values << @instance
     end
 
-    get_min_max_snap_ids(@time_selection_start, @time_selection_end, @dbid)
+    @min_snap_id, @max_snap_id = get_min_max_snap_ids(@time_selection_start, @time_selection_end, @dbid)
 
 
     case @time_groupby.to_sym
@@ -2139,7 +2139,7 @@ END;
       where_values << @oper_type
     end
 
-    get_min_max_snap_ids(@time_selection_start, @time_selection_end, @dbid)
+    @min_snap_id, @max_snap_id = get_min_max_snap_ids(@time_selection_start, @time_selection_end, @dbid)
 
     @result = sql_select_iterator ["
       SELECT *

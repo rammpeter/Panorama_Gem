@@ -730,7 +730,7 @@ module ApplicationHelper
 
   # Ermitteln der Min- und Max-Abgrenzungen auf Basis Snap_ID für Zeitraum über alle Instanzen hinweg
   def get_min_max_snap_ids(time_selection_start, time_selection_end, dbid)
-    @min_snap_id = sql_select_one ["SELECT /*+ Panorama-Tool Ramm */ MIN(Snap_ID)
+    min_snap_id = sql_select_one ["SELECT /*+ Panorama-Tool Ramm */ MIN(Snap_ID)
                                     FROM   (SELECT MAX(Snap_ID) Snap_ID
                                             FROM   DBA_Hist_Snapshot
                                             WHERE DBID = ?
@@ -739,15 +739,15 @@ module ApplicationHelper
                                            )
                                    ", dbid, time_selection_start
                                   ]
-    unless @min_snap_id   # Start vor Beginn der Aufzeichnungen, dann kleinste existierende Snap-ID
-      @min_snap_id = sql_select_one ['SELECT /*+ Panorama-Tool Ramm */ MIN(Snap_ID)
+    unless min_snap_id   # Start vor Beginn der Aufzeichnungen, dann kleinste existierende Snap-ID
+      min_snap_id = sql_select_one ['SELECT /*+ Panorama-Tool Ramm */ MIN(Snap_ID)
                                       FROM   DBA_Hist_Snapshot
                                       WHERE DBID = ?
                                      ', dbid
                                     ]
     end
 
-    @max_snap_id = sql_select_one ["SELECT /*+ Panorama-Tool Ramm */ MAX(Snap_ID)
+    max_snap_id = sql_select_one ["SELECT /*+ Panorama-Tool Ramm */ MAX(Snap_ID)
                                     FROM   (SELECT MIN(Snap_ID) Snap_ID
                                             FROM   DBA_Hist_Snapshot
                                             WHERE DBID = ?
@@ -756,17 +756,16 @@ module ApplicationHelper
                                           )
                                    ", dbid, time_selection_end
                                   ]
-    unless @max_snap_id       # Letzten bekannten Snapshot werten, wenn End-Zeitpunkt in der Zukunft liegt
-      @max_snap_id = sql_select_one ['SELECT /*+ Panorama-Tool Ramm */ MAX(Snap_ID)
+    unless max_snap_id       # Letzten bekannten Snapshot werten, wenn End-Zeitpunkt in der Zukunft liegt
+      max_snap_id = sql_select_one ['SELECT /*+ Panorama-Tool Ramm */ MAX(Snap_ID)
                                       FROM   DBA_Hist_Snapshot
                                       WHERE DBID = ?
                                      ', dbid
                                     ]
     end
-    raise "No snapshot found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')} for DBID=#{dbid}!" if @min_snap_id.nil?
-    raise "No snapshot found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')} for DBID=#{dbid}!" if @max_snap_id.nil?
-    # TODO: change
-    return @min_snap_id, @max_snap_id
+    Rails.logger.debug "No snapshot found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')} for DBID=#{dbid}!" if min_snap_id.nil?
+    Rails.logger.debug "No snapshot found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')} for DBID=#{dbid}!" if max_snap_id.nil?
+    return min_snap_id, max_snap_id
   end
 
   # explain seconds to minutes, hours and days

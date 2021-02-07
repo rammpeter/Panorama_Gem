@@ -167,6 +167,11 @@ module ActiveSessionHistoryHelper
     @sga_ash_where_string  = ""
     @sga_ash_where_values = []
 
+    # convert integers from strings
+    @groupfilter[:DBID]         = @groupfilter[:DBID].to_i
+    @groupfilter[:Min_Snap_ID]  = @groupfilter[:Min_Snap_ID].to_i
+    @groupfilter[:Max_Snap_ID]  = @groupfilter[:Max_Snap_ID].to_i
+
     # Check if PDB is selected by DBID, than add con_id to groupfilter
     if get_db_version >= '12.1' && @groupfilter[:DBID] && @groupfilter[:DBID] != PanoramaConnection.dbid
       @groupfilter[:con_id] = sql_select_one ["SELECT Con_ID FROM gv$Containers WHERE DBID = ?", @groupfilter[:DBID]]
@@ -180,9 +185,9 @@ module ActiveSessionHistoryHelper
 
     # Set Filter on Snap_ID for partition pruning on DBA_Hist_Active_Sess_History (if not already set)
     if !@groupfilter.has_key?(:Min_Snap_ID) || !@groupfilter.has_key?(:Max_Snap_ID)
-      get_min_max_snap_ids(@groupfilter[:time_selection_start], @groupfilter[:time_selection_end], @groupfilter[:DBID])
-      @groupfilter[:Min_Snap_ID] = @min_snap_id unless @groupfilter.has_key?(:Min_Snap_ID)
-      @groupfilter[:Max_Snap_ID] = @max_snap_id unless @groupfilter.has_key?(:Max_Snap_ID)
+      min_snap_id, max_snap_id = get_min_max_snap_ids(@groupfilter[:time_selection_start], @groupfilter[:time_selection_end], @groupfilter[:DBID])
+      @groupfilter[:Min_Snap_ID] = min_snap_id unless @groupfilter.has_key?(:Min_Snap_ID)
+      @groupfilter[:Max_Snap_ID] = max_snap_id unless @groupfilter.has_key?(:Max_Snap_ID)
     end
 
     # Switch table access to no result if records are not needed
@@ -211,9 +216,8 @@ module ActiveSessionHistoryHelper
 
   # Is access to gv$Active_Session_History needed for this filter conditions
   def sga_ash_needed?(groupfilter)
-    # Access to gv$Active_Session_History is needed if accessing the default DBID or a PDB
-    groupfilter[:DBID] == PanoramaConnection.dbid ||
-      groupfilter[:con_id]
+    # Access to gv$Active_Session_History is needed if accessing the default DBID or a local PDB
+    groupfilter[:DBID] == PanoramaConnection.dbid || PanoramaConnection.pdbs.map{|p| p[:dbid]}.include?(groupfilter[:DBID])
   end
 
   # Gruppierungskriterien für list_temp_usage_historic

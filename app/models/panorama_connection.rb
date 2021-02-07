@@ -201,7 +201,7 @@ class PanoramaConnection
 
     if @db_version >= '12.1'
       con_id_data   = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT Con_ID FROM v$Session WHERE audsid = userenv('sessionid')") # Con_ID of connected session
-      @con_id        = con_id_data['con_id']
+      @con_id       = con_id_data['con_id']
     else
       @con_id        = 0
     end
@@ -233,6 +233,18 @@ class PanoramaConnection
   def get_config_from_jdbc_connection
     @jdbc_connection.instance_variable_get(:@config)
   end
+
+  # Select PDBs each time they are requested because number of PDBs may change during lifetime of PanoramaConnection
+  def pdbs
+    if db_version >= '12.1'
+      PanoramaConnection.direct_select(@jdbc_connection, "SELECT DISTINCT Con_ID, DBID, Name FROM gv$Containers WHERE Con_ID != 0").map do |p|
+        { con_id: p['con_id'], dbid: p['dbid'], name: p['name']}
+      end
+    else
+      []
+    end
+  end
+
 
   ########################### class methods #############################
   # Store connection redentials for this request in thread, marks begin of request
@@ -311,6 +323,7 @@ class PanoramaConnection
     @@connection_pool
   end
 
+
   def self.autonomous_database?;            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].autonomous_database;               end
   def self.block_common_header_size;        check_for_open_connection;        Thread.current[:panorama_connection_connection_object].block_common_header_size;          end
   def self.con_id;                          check_for_open_connection;        Thread.current[:panorama_connection_connection_object].con_id;                            end  # Container-ID for PDBs or 0
@@ -323,7 +336,7 @@ class PanoramaConnection
   def self.db_wordsize;                     check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_wordsize;                       end
   def self.edition;                         check_for_open_connection;        Thread.current[:panorama_connection_connection_object].edition;                           end
   def self.instance_number;                 check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_number;                   end
-  def self.rac?;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_count > 1;                end
+  def self.pdbs;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].pdbs;                              end
   def self.rac?;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_count > 1;                end
   def self.rowid_size;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].rowid_size;                        end
   def self.sid;                             check_for_open_connection;        Thread.current[:panorama_connection_connection_object].sid;                               end
@@ -710,7 +723,7 @@ class PanoramaConnection
   end
 
   # Execute select direct on JDBC-Connection with logging
-  def self.direct_select_one(jdbc_connection, sql)
+  def self.direct_select(jdbc_connection, sql)
     retval = nil
     ActiveSupport::Notifications.instrumenter.instrument(
         "sql.active_record",
@@ -721,7 +734,11 @@ class PanoramaConnection
         :binds          => []) do
       retval = jdbc_connection.select sql
     end
-    retval.first if retval
+    retval
+  end
+
+  def self.direct_select_one(jdbc_connection, sql)
+    PanoramaConnection.direct_select(jdbc_connection, sql)&.first
   end
 
   class SqlSelectIterator

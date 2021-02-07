@@ -44,12 +44,10 @@ module HtmlHelper
     result = ''
     dbids = [{dbid: PanoramaConnection.dbid, title: "DBID of instance / container DB"}]
     current_dbids = Set[PanoramaConnection.dbid]
-    if is_cdb?
+    PanoramaConnection.pdbs.each do |p|
       # Add possibly existing pluggable databases
-      PanoramaConnection.sql_select_all("SELECT DISTINCT Con_ID, DBID, Name FROM gv$Containers WHERE Con_ID != 0").each do |p|
-        current_dbids.add(p.dbid)
-        dbids << {dbid: p.dbid, title: "PDB #{p.con_id}: #{p.name}"}
-      end
+      current_dbids.add(p[:dbid])
+      dbids << {dbid: p[:dbid], title: "PDB #{p[:con_id]}: #{p[:name]}"}
     end
 
     # Add possibly existing previously recorded databases
@@ -65,7 +63,7 @@ module HtmlHelper
       GROUP BY DBID, DB_Name
       ) n ON n.DBID = s.DBID")
     all_awr_dbs.each do |a|
-      unless current_dbids.include? a.dbid
+      unless current_dbids.include? a.dbid                                      # List AWR DBIDs not already known as current
         dbids << {dbid: a.dbid, title: "#{a.db_name} #{localeDateTime(a.start_ts, :minutes)} .. #{localeDateTime(a.end_ts, :minutes)}"}
       end
     end
