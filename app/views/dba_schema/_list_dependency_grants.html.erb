@@ -8,9 +8,9 @@
           {caption: 'Depending object',     data: proc{|rec| link_object_description(@update_area, rec.owner, rec.name, nil, rec.type)},           title: 'Object that is depending from'},
           {caption: 'Depending type',       data: proc {|rec| rec.type},                  title: 'Type of object that is depending from'},
           {caption: 'Dependency type',      data: proc{|rec| rec.dependency_type},        title: 'Whether the dependency is a REF dependency (REF) or not (HARD)'},
-          {caption: 'Depends from object',  data: proc {|rec| link_object_description(@update_area, rec.referenced_owner, rec.referenced_name, nil, rec.type)}, title: 'Object that it depends from'},
+          {caption: 'Depends on object',    data: proc {|rec| link_object_description(@update_area, rec.referenced_owner, rec.referenced_name, nil, rec.type)}, title: 'Object that it depends on'},
           {caption: 'Link',                 data: proc {|rec| rec.referenced_link_name},  title: 'Name of the link to the parent object (if remote)'},
-          {caption: 'Depends from type',    data: proc {|rec| rec.referenced_type},       title: 'Type of object that it depends from'},
+          {caption: 'Depends on type',      data: proc {|rec| rec.referenced_type},       title: 'Type of object that it depends on'},
 
           {:caption=> 'Grantor',      :data=>proc{|rec| rec.grantor},             :title=> 'Name of the user who performed the grant'},
           {:caption=> 'Grantee',      :data=>proc{|rec| rec.grantee},             :title=> 'Name of the user to whom access was granted'},

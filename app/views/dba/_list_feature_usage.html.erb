@@ -29,7 +29,7 @@
   column_options =
       [
           {:caption=>'DBID',                :data=>proc{|rec| fn rec.dbid },                        :title=>"Database identifier of the database being tracked"},
-          {:caption=>'Featur name',         :data=>proc{|rec| rec.name },                           :title=>"Name of the feature"},
+          {:caption=>'Feature name',        :data=>proc{|rec| rec.name },                           :title=>"Name of the feature"},
           {:caption=>'Management pack name',:data=>proc{|rec| pack_from_feature(rec.name) },        :title=>"Name of the management pack the feature belongs to (MOS-note 1317265.1)"},
           {:caption=>'Version',             :data=>proc{|rec| rec.version },                        :title=>"Database version in which the feature was tracked"},
           {:caption=>'Detected usages',     :data=>proc{|rec| fn rec.detected_usages },             :title=>"Number of times the system has detected usage for the feature", :align=>:right},

@@ -10,7 +10,7 @@ module Dragnet::DragnetSqlsLogwriterRedoHelper
             :desc  => t(:dragnet_helper_74_desc, :default=>'Delays during log buffer write by log writer lead to „log file sync“ wait events, especially during commit.
 Writing operations (Insert/Update/Delete) which cannot write into log buffer during „log file sync“ lead to „log buffer space“ wait events.
 Requests for block transfer in RAC environment lead to „gc buffer busy“ wait events, if requested blocks in delivering RAC-instance are affected by simultaneous „log buffer space“ or „log file sync“ events.
-The likelihood of „log buffer space“ events depends from frequency of writing operations. This selection determines heavy frequented write SQLs as candidates for deeper consideration.
+The likelihood of „log buffer space“ events depends on frequency of writing operations. This selection determines heavy frequented write SQLs as candidates for deeper consideration.
 Solution can be the aggregation of multiple writes (bulk-processing).'),
             :sql=>  "SELECT /* DB-Tools Ramm: Schreibende Zugriffe nach Executes */
                          Inst_ID, SQL_ID, Parsing_Schema_Name, Executions, Rows_Processed, ROUND(Rows_Processed/Executions,2) \"Rows per Exec\",
@@ -27,7 +27,7 @@ Solution can be the aggregation of multiple writes (bulk-processing).'),
             :desc  => t(:dragnet_helper_75_desc, :default=>'Delays during log buffer write by log writer lead to „log file sync“ wait events, especially during commit.
 Writing operations (Insert/Update/Delete) which cannot write into log buffer during „log file sync“ lead to „log buffer space“ wait events.
 Requests for block transfer in RAC environment lead to „gc buffer busy“ wait events, if requested blocks in delivering RAC-instance are affected by simultaneous „log buffer space“ or „log file sync“ events.
-The likelihood of „log buffer space“ events depends from frequency of writing operations. This selection determines heavy frequented write SQLs as candidates for deeper consideration.
+The likelihood of „log buffer space“ events depends on frequency of writing operations. This selection determines heavy frequented write SQLs as candidates for deeper consideration.
 Solution can be the aggregation of multiple writes (bulk-processing).'),
             :sql=>  "SELECT /* DB-Tools Ramm: Schreibende Zugriffe nach Executes */
                          s.Instance_Number, s.SQL_ID, s.Executions, s.Rows_Processed,

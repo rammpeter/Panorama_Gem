@@ -80,7 +80,7 @@
     <%=
 
       gen_slickgrid(@dependencies_im_from, column_options_im_from, {
-          :caption => "Objects, #{@object_type} #{@owner}.#{@object_name} depends from",
+          :caption => "Objects, #{@object_type} #{@owner}.#{@object_name} depends on",
           :max_height => 450, :width=>:auto
       })
     %>
@@ -92,7 +92,7 @@
                      :object_type    => @object_type,
                      :update_area    => @update_area,
                     },
-                    :title=>"Show full tree of objects #{@object_type} #{@owner}.#{@object_name} depends from")
+                    :title=>"Show full tree of objects #{@object_type} #{@owner}.#{@object_name} depends on")
     %>
   </div>
 </div>

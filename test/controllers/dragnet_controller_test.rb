@@ -113,7 +113,7 @@ class DragnetControllerTest < ActionController::TestCase
     create_personal_selection
     create_personal_selection
 
-    # :dragnet_hidden_entry_id=>"_8_0" depends from number of submenus in list
+    # :dragnet_hidden_entry_id=>"_8_0" depends on number of submenus in list
 
     # drop 2nd entry
     post :drop_personal_selection, :params => {:format=>:html, :dragnet_hidden_entry_id=>"_9_1", :update_area=>:content_for_layout }
