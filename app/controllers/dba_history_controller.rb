@@ -416,6 +416,7 @@ class DbaHistoryController < ApplicationController
                  SUM(Parse_Calls_Delta)             Parse_Calls,
                  SUM(Sorts_Delta)                   Sorts,
                  SUM(Loads_Delta)                   Loads,
+                 SUM(Invalidations_Delta)           Invalidations,
                  100 * (SUM(s.Buffer_Gets_Delta) - SUM(s.Disk_Reads_Delta)) / GREATEST(SUM(s.Buffer_Gets_Delta), 1) Hit_Ratio,
                  SUM(Elapsed_Time_Delta)/1000000    Elapsed_Time_Secs,
                  SUM(ELAPSED_TIME_Delta/1000000) / DECODE(SUM(EXECUTIONS_Delta), 0, 1, SUM(EXECUTIONS_Delta)) ELAPSED_TIME_SECS_PER_EXECUTE,

@@ -90,13 +90,11 @@ END Panorama_Sampler_Block_Locks;
                  LEFT OUTER JOIN gv$Session bs ON bs.Inst_ID = s.Blocking_Instance AND bs.SID = s.Blocking_Session
                  -- Object der blockenden Session
                  -- erst p2 abfragen, da bei Request=3 in row_wait_obj# das als vorletztes gelockte Objekt stehen kann
-                 LEFT OUTER JOIN sys.DBA_Objects bo ON bo.Object_ID = CASE WHEN s.LockWait IS NOT NULL AND l.Request != 0 THEN /* Waiting for Lock */
-                                                                           CASE WHEN s.P2Text = 'object #' THEN /* Wait kennt Objekt */ s.P2
-                                                                           ELSE CASE WHEN s.Row_Wait_Obj# != -1 THEN /* Session kennt Objekt */   s.Row_Wait_Obj#
-                                                                                ELSE NULL
-                                                                                END
-                                                                           END
-                                                                      END
+                 LEFT OUTER JOIN sys.DBA_Objects bo ON bo.Object_ID =  CASE WHEN s.P2Text = 'object #' THEN /* Wait kennt Objekt */ s.P2
+                                                                       ELSE CASE WHEN s.Row_Wait_Obj# != -1 THEN /* Session kennt Objekt */   s.Row_Wait_Obj#
+                                                                            ELSE NULL
+                                                                            END
+                                                                       END
                  WHERE s.type = 'USER'
                  AND   (l.LongWaitSeconds IS NOT NULL OR (s.Wait_Class != 'Idle' /* AND s.Wait_Time_Micro > p_MinBlockMilliSeconds*1000 */) )
     ) LOOP
@@ -183,6 +181,7 @@ END Panorama_Sampler_Block_Locks;
         Rec.Blocking_Client_Info, Rec.Blocking_Module, Rec.Blocking_Action, Rec.Blocking_User_name, Rec.Blocking_Machine, Rec.Blocking_OS_User,
         Rec.Blocking_Process, Rec.Blocking_Program, v_Waiting_For_PK_Column_Name, v_Waiting_For_PK_Value
       );
+
       EXCEPTION
         WHEN OTHERS THEN
           RAISE;

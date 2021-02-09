@@ -29,6 +29,12 @@ module ApplicationHelper
 
   include ActionView::Helpers::SanitizeHelper
 
+  # Overwrite ActionView::Helpers::TranslationHelper because "%{alias}" is not replaced there for :default in Rails 6.1.1
+  # Issue: https://github.com/rails/rails/issues/41380
+  def t(key, **options)
+    I18n.translate(key, **options)
+  end
+
   def get_client_info_store
     if !defined?($login_client_store) || $login_client_store.nil?
       $login_client_store = ActiveSupport::Cache::FileStore.new(EngineConfig.config.client_info_filename)
