@@ -169,8 +169,8 @@ module ActiveSessionHistoryHelper
 
     # convert integers from strings
     @groupfilter[:DBID]         = @groupfilter[:DBID].to_i
-    @groupfilter[:Min_Snap_ID]  = @groupfilter[:Min_Snap_ID].to_i
-    @groupfilter[:Max_Snap_ID]  = @groupfilter[:Max_Snap_ID].to_i
+    @groupfilter[:Min_Snap_ID]  = @groupfilter[:Min_Snap_ID].to_i if @groupfilter.has_key?(:Min_Snap_ID)
+    @groupfilter[:Max_Snap_ID]  = @groupfilter[:Max_Snap_ID].to_i if @groupfilter.has_key?(:Max_Snap_ID)
 
     # Check if PDB is selected by DBID, than add con_id to groupfilter
     if get_db_version >= '12.1' && @groupfilter[:DBID] && @groupfilter[:DBID] != PanoramaConnection.dbid
@@ -186,8 +186,8 @@ module ActiveSessionHistoryHelper
     # Set Filter on Snap_ID for partition pruning on DBA_Hist_Active_Sess_History (if not already set)
     if !@groupfilter.has_key?(:Min_Snap_ID) || !@groupfilter.has_key?(:Max_Snap_ID)
       min_snap_id, max_snap_id = get_min_max_snap_ids(@groupfilter[:time_selection_start], @groupfilter[:time_selection_end], @groupfilter[:DBID])
-      @groupfilter[:Min_Snap_ID] = min_snap_id unless @groupfilter.has_key?(:Min_Snap_ID)
-      @groupfilter[:Max_Snap_ID] = max_snap_id unless @groupfilter.has_key?(:Max_Snap_ID)
+      @groupfilter[:Min_Snap_ID] = min_snap_id if !@groupfilter.has_key?(:Min_Snap_ID) && !min_snap_id.nil?
+      @groupfilter[:Max_Snap_ID] = max_snap_id if !@groupfilter.has_key?(:Max_Snap_ID) && !max_snap_id.nil?
     end
 
     # Switch table access to no result if records are not needed
@@ -235,6 +235,7 @@ module ActiveSessionHistoryHelper
 
   def blocking_locks_historic_event_with_selection(dbid, start_time, end_time)
     min_snap_id, max_snap_id = get_min_max_snap_ids(start_time, end_time, dbid)
+    raise "No AWR snapshot found for DBID=#{@dbid}" if min_snap_id.nil? || max_snap_id.nil?
     sql = "WITH /* Panorama-Tool Ramm */
            TSSel AS (SELECT /*+ NO_MERGE MATERIALIZE */ h.*, h.Time_Waited/1000000 Seconds_in_Wait
                      FROM   (

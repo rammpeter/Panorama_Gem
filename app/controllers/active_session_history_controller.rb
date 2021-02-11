@@ -481,6 +481,7 @@ class ActiveSessionHistoryController < ApplicationController
     @dbid = prepare_param_dbid
     save_session_time_selection
     @min_snap_id, @max_snap_id = get_min_max_snap_ids(@time_selection_start, @time_selection_end, @dbid)
+    raise "No AWR snapshot found for DBID=#{@dbid}" if @min_snap_id.nil? || @max_snap_id.nil?
 
     @locks = sql_select_iterator [
       "WITH /* Panorama-Tool Ramm */

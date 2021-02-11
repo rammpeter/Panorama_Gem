@@ -1997,7 +1997,7 @@ END;
     end
 
     @min_snap_id, @max_snap_id = get_min_max_snap_ids(@time_selection_start, @time_selection_end, @dbid)
-
+    raise "No AWR snapshot found for DBID=#{@dbid}" if @min_snap_id.nil? || @max_snap_id.nil?
 
     case @time_groupby.to_sym
     when :second then group_by_value = "o.Start_Time"
@@ -2142,6 +2142,7 @@ END;
     end
 
     @min_snap_id, @max_snap_id = get_min_max_snap_ids(@time_selection_start, @time_selection_end, @dbid)
+    raise "No AWR snapshot found for DBID=#{@dbid}" if @min_snap_id.nil? || @max_snap_id.nil?
 
     @result = sql_select_iterator ["
       SELECT *
