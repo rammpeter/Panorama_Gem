@@ -100,7 +100,7 @@ column_options =
 
    def link_last_analyzed(rec)
      ajax_link(localeDateTime(rec.last_analyzed),
-                {:action      => :list_gather_historic,
+                {:action      => :list_gather_table_historic,
                  :owner       => @owner,
                  :table_name  => @table_name,
                  :update_area => @update_area,

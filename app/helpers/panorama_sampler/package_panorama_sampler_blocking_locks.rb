@@ -160,7 +160,6 @@ END Panorama_Sampler_Block_Locks;
         END;
       END IF;
 
-      BEGIN
       INSERT INTO panorama_owner.Panorama_Blocking_Locks (
         Snapshot_Timestamp, Instance_Number, SID, SerialNo, SQL_ID, SQL_Child_Number, Prev_SQL_ID, Prev_Child_Number,
         Status, Event, Client_Info, Module, Action, Object_Name, User_Name, Machine, OS_User, Process, Program,
@@ -182,10 +181,6 @@ END Panorama_Sampler_Block_Locks;
         Rec.Blocking_Process, Rec.Blocking_Program, v_Waiting_For_PK_Column_Name, v_Waiting_For_PK_Value
       );
 
-      EXCEPTION
-        WHEN OTHERS THEN
-          RAISE;
-      END;
     END LOOP;
   END Create_Block_Locks_Snapshot;
     "

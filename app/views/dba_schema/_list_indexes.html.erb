@@ -42,6 +42,17 @@
        )
    end
 
+   link_last_analyzed = proc do |rec|
+     ajax_link(localeDateTime(rec.last_analyzed),
+               {:action      => :list_gather_index_historic,
+                :owner       => rec.owner,
+                :index_name  => rec.index_name,
+                :update_area => @update_area,
+               },
+               :title=>'Show historic gather_index_stats-operations for index'
+     )
+   end
+
 
    list_states = proc do |rec|
      result = ''
@@ -260,7 +271,7 @@ See also: https://richardfoote.wordpress.com/2020/06/30/oracle-19c-automatic-ind
                    {:caption=> 'Created',          :data=>proc{|rec| localeDateTime(rec.created)},                        :title=> 'Timestamp of index creation'},
                    {:caption=> 'Last DDL',         :data=>proc{|rec| localeDateTime(rec.last_ddl_time)},                  :title=> 'Timestamp of last DDL operation on index'},
                    { caption: 'Spec. TS',          data: proc{|rec| localeDateTime(rec.spec_ts)},                         title: "Timestamp for the last specification change of the index" },
-                   {:caption=> 'Last analyzed',    :data=>proc{|rec| localeDateTime(rec.last_analyzed)},                  :title=> 'The date of the most recent time this table was analyzed'},
+                   {:caption=> 'Last analyzed',    data: link_last_analyzed,                                              :title=> 'The date of the most recent time this table was analyzed'},
                    {:caption=> 'FK',               data: link_fk,                                                         title: 'Is index used for protection of foreign key constraints?' },
                    {:caption=> 'Use',              data: link_used,                                                       :title=> 'Usage of index detected? From sys.Object_Usage', data_title: data_title_use, data_style: proc{|rec| 'background-color:coral;' if rec.used=='NO'} },
                    {:caption=> 'Several States',   :data=>list_states,                                                    :title=> title_states},

@@ -1804,14 +1804,17 @@ WHERE RowNum < 100
     render_partial
   end
 
-  def list_gather_historic
-    @owner      = params[:owner]
-    @table_name = params[:table_name]
+  def list_gather_table_historic
+    @owner          = params[:owner]
+    @table_name     = params[:table_name]
+    @partition_name = prepare_param :partition_name
 
     @operations = sql_select_all ["SELECT o.*,
                                            EXTRACT(HOUR FROM End_Time - Start_Time)*60*24 + EXTRACT(MINUTE FROM End_Time - Start_Time)*60 + EXTRACT(SECOND FROM End_Time - Start_Time) Duration
-                                   FROM   sys.WRI$_OPTSTAT_OPR o
-                                   WHERE  SUBSTR(Target, 1, DECODE(INSTR(target, '.', 1, 2), 0, 200, INSTR(target, '.', 1, 2)-1)) = ?  /* remove possibly following partition name */
+                                   FROM   (SELECT o.*, REPLACE(Target, '\"', '') STarget /* Target has double quotes starting with 19c */
+                                           FROM   sys.WRI$_OPTSTAT_OPR o
+                                          ) o
+                                   WHERE  SUBSTR(STarget, 1, DECODE(INSTR(STarget, '.', 1, 2), 0, 200, INSTR(STarget, '.', 1, 2)-1)) = ?  /* remove possibly following partition name */
                                    ORDER BY Start_Time DESC
                                   ", "#{@owner}.#{@table_name}"]
 
@@ -1830,6 +1833,34 @@ WHERE RowNum < 100
     render_partial
   end
 
+  def list_gather_index_historic
+    @owner      = params[:owner]
+    @table_name = params[:table_name]
+    @partition_name = prepare_param :partition_name
+
+    @operations = sql_select_all ["SELECT o.*,
+                                           EXTRACT(HOUR FROM End_Time - Start_Time)*60*24 + EXTRACT(MINUTE FROM End_Time - Start_Time)*60 + EXTRACT(SECOND FROM End_Time - Start_Time) Duration
+                                   FROM   (SELECT o.*, REPLACE(Target, '\"', '') STarget /* Target has double quotes starting with 19c */
+                                           FROM   sys.WRI$_OPTSTAT_OPR o
+                                          ) o
+                                   WHERE  SUBSTR(STarget, 1, DECODE(INSTR(STarget, '.', 1, 2), 0, 200, INSTR(STarget, '.', 1, 2)-1)) = ?  /* remove possibly following partition name */
+                                   ORDER BY Start_Time DESC
+                                  ", "#{@owner}.#{@table_name}"]
+
+    @tab_history = sql_select_all ["SELECT t.*, o.Subobject_Name
+                                    FROM   DBA_Objects o
+                                    JOIN   sys.WRI$_OPTSTAT_TAB_HISTORY t ON t.Obj# = o.Object_ID
+                                    WHERE  o.Owner       = ?
+                                    AND    o.Object_Name = ?
+                                    ORDER BY t.AnalyzeTime DESC
+                                   ", @owner, @table_name]
+
+    if get_db_version >= '11.1'
+      @extensions = sql_select_all ["SELECT * FROM DBA_Stat_Extensions WHERE Owner = ? AND Table_Name = ?", @owner, @table_name]
+    end
+
+    render_partial
+  end
 
   def list_dbms_metadata_get_ddl
     @owner       = params[:owner]

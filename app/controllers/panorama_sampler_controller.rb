@@ -97,26 +97,15 @@ class PanoramaSamplerController < ApplicationController
     status = 200                                                                # Default
 
     config_array = PanoramaSamplerConfig.get_reduced_config_array_for_status_monitor
-
-    retval = "{\n\"config_list\": ["
+    config_list = []
+    # retval = "{\n\"config_list\": ["
     config_array.each do |config|
       status = 500 if config[:error_active]
-      retval << "\n#{JSON.pretty_generate(config, {indent: '  '}).gsub(/\\\\n/, "\n")},"
-
-
-=begin
-indent: a string used to indent levels (default: ''),
-space: a string that is put after, a : or , delimiter (default: ''),
-space_before: a string that is put before a : pair delimiter (default: ''),
-object_nl: a string that is put at the end of a JSON object (default: ''),
-array_nl: a string that is put at the end of a JSON array (default: ''),
-allow_nan: true if NaN, Infinity, and -Infinity should be generated, otherwise an exception is thrown if these values are encountered. This options defaults to false.
-max_nesting: The maximum depth of nesting allowed in the data structures from which JSON is to be generated. Disable depth checking with :max_nestin
-=end
-
-
+      #retval << "\n#{JSON.pretty_generate(config, {indent: '  '}).gsub(/\\\\n/, "\n")},"
+      config_list << config
     end
-    retval << "\n]\n}"
-    render json: retval, status: status
+    # retval << "\n]\n}"
+    retval = { config_list: config_list}
+    render json: JSON.pretty_generate(retval, {indent: '  '}).gsub(/\\\\n/, "\\n"), status: status
   end
 end
