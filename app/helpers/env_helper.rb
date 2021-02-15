@@ -300,7 +300,7 @@ module EnvHelper
         msg << "Values of last AWR snapshot in DBA_Hist_Snapshot are:\n"
         msg << "End_Interval_Time = #{localeDateTime(s.end_interval_time)}:\n"
         msg << "End_Interval_Time_TZ = #{localeDateTime(s.end_interval_time_tz)}:\n"
-        msg << "Snap_Timezone = #{s.snap_timezone}:\n"
+        msg << "Snap_Timezone diff. to GMT = #{s.snap_timezone}:\n"
         msg << "Time drift between End_Interval_Time and End_Interval_Time_TZ = #{fn(s.diff_hours, 1)} hours\n\n"
         msg << "AWR data selected by Panorama may be falsified regarding time boundaries!!!\n\n"
       end
