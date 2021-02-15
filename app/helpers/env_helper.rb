@@ -285,4 +285,26 @@ module EnvHelper
     tnsnames
   end
 
+  def check_awr_for_time_drift
+    # TODO: Check with foreign time settings if End_Interval_Time_TZ can replace End_Interval_Time in selections
+    if get_db_version >= '18.1' && [:diagnostics_pack, :diagnostics_and_tuning_pack].include?(PanoramaConnection.get_management_pack_license_from_db_as_symbol)
+      msg = ''
+      sql_select_all("SELECT Snap_ID, DBID, Con_ID, End_Interval_Time, End_Interval_Time_TZ,
+                             TO_CHAR(EXTRACT (Hour FROM Snap_Timezone), '00')||':'||TRIM(TO_CHAR(EXTRACT (Minute FROM Snap_Timezone), '00')) Snap_Timezone,
+                             (CAST(End_Interval_Time AS DATE) - CAST(End_Interval_Time_TZ AS DATE)) *24 Diff_Hours
+                      FROM DBA_Hist_Snapshot s1
+                      WHERE  Snap_ID = (SELECT MAX(Snap_ID) FROM DBA_Hist_Snapshot s2 WHERE s2.DBID = s1.DBID)
+                      AND    CAST(End_Interval_Time AS DATE) != CAST(End_Interval_Time_TZ AS DATE)
+                     ").each do |s|
+        msg << "Caution: Time drift in AWR snapshot times for DBID = #{s.dbid}, Con-ID = #{s.con_id}\n"
+        msg << "Values of last AWR snapshot in DBA_Hist_Snapshot are:\n"
+        msg << "End_Interval_Time = #{localeDateTime(s.end_interval_time)}:\n"
+        msg << "End_Interval_Time_TZ = #{localeDateTime(s.end_interval_time_tz)}:\n"
+        msg << "Snap_Timezone = #{s.snap_timezone}:\n"
+        msg << "Time drift between End_Interval_Time and End_Interval_Time_TZ = #{fn(s.diff_hours, 1)} hours\n\n"
+        msg << "AWR data selected by Panorama may be falsified regarding time boundaries!!!\n\n"
+      end
+      add_statusbar_message(msg) if msg.length > 0
+    end
+  end
 end

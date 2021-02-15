@@ -212,6 +212,8 @@ class EnvController < ApplicationController
                                      "
       end
       @traces = sql_select_all "SELECT * from DBA_ENABLED_TRACES"
+
+      check_awr_for_time_drift
     rescue Exception => e
       Rails.logger.error "Exception: #{e.message}"
       log_exception_backtrace(e, 20)
