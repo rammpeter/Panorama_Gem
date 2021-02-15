@@ -20,17 +20,17 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   s.files = Dir["{app,config,lib}/**/*", "Rakefile", "README.md", "README.rdoc"]
 
   #  use exactly this rails version
-  # s.add_dependency "rails", "6.1.1"
+  # s.add_dependency "rails", "6.1.2.1"
 
   # Alternative instead of complete rails including actioncable etc., prev. version was 6.0.4
-  s.add_dependency  "activerecord",   "6.1.1"
-  s.add_dependency  "activemodel",    "6.1.1"
-  s.add_dependency  "actionpack",     "6.1.1"
-  s.add_dependency  "actionview",     "6.1.1"
-  s.add_dependency  "actionmailer",   "6.1.1"
-  s.add_dependency  "activejob",      "6.1.1"
-  s.add_dependency  "activesupport",  "6.1.1"
-  s.add_dependency  "railties",       "6.1.1"
+  s.add_dependency  "activerecord",   "6.1.2.1"
+  s.add_dependency  "activemodel",    "6.1.2.1"
+  s.add_dependency  "actionpack",     "6.1.2.1"
+  s.add_dependency  "actionview",     "6.1.2.1"
+  s.add_dependency  "actionmailer",   "6.1.2.1"
+  s.add_dependency  "activejob",      "6.1.2.1"
+  s.add_dependency  "activesupport",  "6.1.2.1"
+  s.add_dependency  "railties",       "6.1.2.1"
 
   s.add_dependency 'activerecord-nulldb-adapter'
   s.add_dependency 'activerecord-oracle_enhanced-adapter'     
@@ -40,7 +40,9 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   # sass-rails pinned to 5.0 which depends on sass, current sass-rails (6.0) depends on sassc which is incompatible with warbler
   s.add_dependency  'sass-rails', '~> 5.0'
 
-  s.add_dependency 'i18n'
+  # TODO: i18n 1.8.8, 1.8.9 leads to Uncaught exception: undefined method `deep_merge!' for {}:Concurrent::Hash
+  # Check if following versions fix this error
+  s.add_dependency 'i18n', '1.8.7'
 
 
 end
