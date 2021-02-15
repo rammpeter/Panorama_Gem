@@ -81,6 +81,19 @@
       )
   end
 
+  link_last_analyzed = proc do |rec|
+    ajax_link(localeDateTime(rec.last_analyzed),
+              {:action      => :list_gather_table_historic,
+               :owner       => @owner,
+               :table_name  => @table_name,
+               partition_name: rec.subpartition_name,
+               :update_area => @update_area,
+              },
+              :title=>'Show historic gather_table_stats-operations for table-subpartition'
+    )
+  end
+
+
   column_options =
             [
                     {:caption=> 'Sub-part. name',         :data=>proc{|rec| rec.subpartition_name},            :title=> 'Sub-partition name'},
@@ -101,7 +114,7 @@
         {:caption=> 'Created',                :data=>proc{|rec| localeDateTime(rec.created)},      :title=> 'Timestamp of subpartition creation'},
         {:caption=> 'Last DDL',               :data=>proc{|rec| localeDateTime(rec.last_ddl_time)},:title=> 'Timestamp of last DDL operation on table subpartition'},
         { caption: 'Spec. TS',                 data: proc{|rec| localeDateTime(rec.spec_ts)},      title: "Timestamp for the last specification change of the table subpartition" },
-        {:caption=> 'Last analyzed',          :data=>proc{|rec| localeDateTime rec.last_analyzed},  :title=> 'Date on which this partition was most recently analyzed'},
+        {:caption=> 'Last analyzed',          :data=>link_last_analyzed,                           :title=> 'Date on which this partition was most recently analyzed'},
         {:caption=> 'Log.',                   :data=>proc{|rec| rec.logging},                      :title=> "Indicates whether or not changes to the table are logged in Redo-Log" },
                           ]
     column_options << {:caption=> 'Inserts',          :data=>proc{|rec| fn rec.inserts},                  :title=> "Number of insert-operations since last table analysis if table has MONITORING-flag.\nStatistics are populated in memory by database. Run the DBMS_STATS.FLUSH_DATABASE_MONITORING_INFO to see the latest information here.", :align=>:right}

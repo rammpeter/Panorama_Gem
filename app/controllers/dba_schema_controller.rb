@@ -1805,26 +1805,27 @@ WHERE RowNum < 100
   end
 
   def list_gather_table_historic
-    @owner          = params[:owner]
-    @table_name     = params[:table_name]
-    @partition_name = prepare_param :partition_name
+    @owner              = params[:owner]
+    @table_name         = params[:table_name]
+    @partition_name     = prepare_param :partition_name
 
-    @operations = sql_select_all ["SELECT o.*,
-                                           EXTRACT(HOUR FROM End_Time - Start_Time)*60*24 + EXTRACT(MINUTE FROM End_Time - Start_Time)*60 + EXTRACT(SECOND FROM End_Time - Start_Time) Duration
-                                   FROM   (SELECT o.*, REPLACE(Target, '\"', '') STarget /* Target has double quotes starting with 19c */
-                                           FROM   sys.WRI$_OPTSTAT_OPR o
-                                          ) o
-                                   WHERE  SUBSTR(STarget, 1, DECODE(INSTR(STarget, '.', 1, 2), 0, 200, INSTR(STarget, '.', 1, 2)-1)) = ?  /* remove possibly following partition name */
-                                   ORDER BY Start_Time DESC
-                                  ", "#{@owner}.#{@table_name}"]
+    @operations = analyze_operations(@owner, @table_name, @partition_name)
 
+    where_string = ''
+    where_values = []
+
+    if @partition_name
+      where_string << " AND o.Subobject_Name = ?"
+      where_values << @partition_name
+    else
+      where_string << " AND SubObject_Name IS NULL"
+    end
     @tab_history = sql_select_all ["SELECT t.*, o.Subobject_Name
                                     FROM   DBA_Objects o
                                     JOIN   sys.WRI$_OPTSTAT_TAB_HISTORY t ON t.Obj# = o.Object_ID
-                                    WHERE  o.Owner       = ?
-                                    AND    o.Object_Name = ?
+                                    WHERE  o.Owner = ? AND o.Object_Name = ? #{where_string}
                                     ORDER BY t.AnalyzeTime DESC
-                                   ", @owner, @table_name]
+                                   ", @owner, @table_name].concat(where_values)
 
     if get_db_version >= '11.1'
       @extensions = sql_select_all ["SELECT * FROM DBA_Stat_Extensions WHERE Owner = ? AND Table_Name = ?", @owner, @table_name]
@@ -1835,29 +1836,27 @@ WHERE RowNum < 100
 
   def list_gather_index_historic
     @owner      = params[:owner]
-    @table_name = params[:table_name]
+    @index_name = params[:index_name]
     @partition_name = prepare_param :partition_name
 
-    @operations = sql_select_all ["SELECT o.*,
-                                           EXTRACT(HOUR FROM End_Time - Start_Time)*60*24 + EXTRACT(MINUTE FROM End_Time - Start_Time)*60 + EXTRACT(SECOND FROM End_Time - Start_Time) Duration
-                                   FROM   (SELECT o.*, REPLACE(Target, '\"', '') STarget /* Target has double quotes starting with 19c */
-                                           FROM   sys.WRI$_OPTSTAT_OPR o
-                                          ) o
-                                   WHERE  SUBSTR(STarget, 1, DECODE(INSTR(STarget, '.', 1, 2), 0, 200, INSTR(STarget, '.', 1, 2)-1)) = ?  /* remove possibly following partition name */
-                                   ORDER BY Start_Time DESC
-                                  ", "#{@owner}.#{@table_name}"]
 
-    @tab_history = sql_select_all ["SELECT t.*, o.Subobject_Name
-                                    FROM   DBA_Objects o
-                                    JOIN   sys.WRI$_OPTSTAT_TAB_HISTORY t ON t.Obj# = o.Object_ID
-                                    WHERE  o.Owner       = ?
-                                    AND    o.Object_Name = ?
-                                    ORDER BY t.AnalyzeTime DESC
-                                   ", @owner, @table_name]
+    @operations = analyze_operations(@owner, @index_name, @partition_name)
 
-    if get_db_version >= '11.1'
-      @extensions = sql_select_all ["SELECT * FROM DBA_Stat_Extensions WHERE Owner = ? AND Table_Name = ?", @owner, @table_name]
+    where_string = ''
+    where_values = []
+
+    if @partition_name
+      where_string << " AND SubObject_Name = ?"
+      where_values << @partition_name
+    else
+      where_string << " AND SubObject_Name IS NULL"
     end
+    @ind_history = sql_select_all ["SELECT t.*, o.Subobject_Name
+                                    FROM   DBA_Objects o
+                                    JOIN   sys.WRI$_OPTSTAT_Ind_HISTORY t ON t.Obj# = o.Object_ID
+                                    WHERE  o.Owner = ? AND o.Object_Name = ? #{where_string}
+                                    ORDER BY t.AnalyzeTime DESC
+                                   ", @owner, @index_name].concat(where_values)
 
     render_partial
   end
@@ -2100,5 +2099,38 @@ WHERE RowNum < 100
     end
   end
 
+  private
+  def analyze_operations(owner, object_name, partition_name)
+    where_string = ''
+    where_values = []
+
+    if partition_name
+      where_string << " AND Partition_Name = ?"
+      where_values << partition_name
+    else
+      where_string << " AND Partition_Name IS NULL"
+    end
+
+    sql_select_all ["SELECT o.*,
+                            EXTRACT(HOUR FROM End_Time - Start_Time)*60*24 + EXTRACT(MINUTE FROM End_Time - Start_Time)*60 + EXTRACT(SECOND FROM End_Time - Start_Time) Duration
+                    FROM   (SELECT SUBSTR(sTarget, 1, INSTR(sTarget, '.')-1) Owner,
+                                   CASE WHEN INSTR(sTarget, '.', 1, 2) = 0
+                                   THEN
+                                   SUBSTR(sTarget, INSTR(sTarget, '.')+1)
+                                   ELSE
+                                   SUBSTR(sTarget, INSTR(sTarget, '.')+1, INSTR(sTarget, '.', 1, 2) - INSTR(sTarget, '.')-1)
+                                   END Object_Name,
+                                   CASE WHEN INSTR(sTarget, '.', 1, 2) > 0 THEN
+                                   SUBSTR(sTarget, INSTR(sTarget, '.', 1, 2)+1)
+                                   END Partition_Name,
+                                   o.*
+                            FROM   (SELECT o.*, REPLACE(Target, '\"', '') STarget /* Target has double quotes starting with 19c */
+                                    FROM   sys.WRI$_OPTSTAT_OPR o
+                                   ) o
+                           ) o
+                    WHERE  Owner = ? AND Object_Name = ? #{where_string}
+                    ORDER BY Start_Time DESC
+                   ", owner, object_name].concat(where_values)
+  end
 
 end
