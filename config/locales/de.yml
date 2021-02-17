@@ -592,6 +592,7 @@
   dragnet_helper_group_pl_sql_usage:                        Hinweise zur Nutzung von PL/SQL
   dragnet_helper_group_potential_db_structures:             Potential in DB-Strukturen
   dragnet_helper_group_problems_with_parallel_query:        Eventuelle Probleme mit Parallel Query
+  dragnet_helper_group_soft_parses_cursor_caching:          Soft-Parse-Aktivitäten / Cachen von SQL-Statement Cursoren
   dragnet_helper_group_suboptimal_index_index:              Suboptimale Nutzung von Indizes in SQL-Statements
   dragnet_helper_group_tuning_sga_pga:                      Tuning bzw. Entlastung von SGA/PGA-Strukturen
   dragnet_helper_group_unnecessary_executions:              Eventuell unnötige Ausührungen von SQL-Statements
@@ -1625,6 +1626,27 @@
     ALTER TABLE <tab> MODIFY CONSTRAINT <constraint> VALIDATE;
     ALTER TABLE <tab> NOPARALLEL;
   dragnet_helper_155_name: Nichtvalidierte Foreign Key Constraints
+
+  dragnet_helper_156_desc: |-
+    Die Anzahl Soft-Parses über JDBC-thin Verbindungen lässt vermuten, dass der client-seitige JDBC Statement Cache nicht benutzt wird oder die Einstellung zu niedrig ist.
+    Das client-seitige JDBC Statement Caching erlaubt eine Anzahl der hochfrequent genutzten SQL-Cursoren offen zu halten an der DB-Verbindung auch wenn das JDBC statment handle in der Applikation geschlossen wird.
+    Dies erlaubt die Erhöhunt der Applikationsperformance und Reduktion der Soft Parse Aktivität auch wenn die Applikation selbst nicht in der Lage ist die frequent genutzten Cursoren offen zu halten.
+    Nicht in der Lage zu sein die frequent genutzten Cursoren offen zu halten ist oft der Fall wenn die Applikation OR-mapper Frameworks benutzt.
+
+    Der JDBC Statement Cache ist disabled per Default in Oracle's JDBC-Treiber.
+    Es gibt zwei Wege den client-seitigen JDBC Statement Cache zu aktivieren und die Cache-Größe zu setzen (z.B. auf 100):
+
+    1. Aktivieren auf der JDBC connection:
+    ((OracleConnection)conn).setImplicitCachingEnabled(true));
+    ((OracleConnection)conn).setStatementCacheSize(100));
+
+    2. Aktivieren via JDBC URL (ab DB-Release 19c):
+    jdbc:oracle:thin:@tcp://myorclhostname:1521/myorclservicename?oracle.jdbc.implicitStatementCacheSize=100
+  dragnet_helper_156_name:                                  JDBC Client Statement Cache vermutlich nicht genutzt (Auswertung der SGA)
+  dragnet_helper_156_param1_name:                           Anzahl Parses in % zu Executions
+  dragnet_helper_156_param1_hint:                           Anzahl Parses in % im Verhältnis zu Anzahl Executions
+
+  dragnet_helper_157_name:                                  JDBC Client Statement Cache vermutlich nicht genutzt (Auswertung der AWR-Historie)
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 

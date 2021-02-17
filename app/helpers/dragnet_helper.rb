@@ -15,6 +15,7 @@ include Dragnet::OptimizableFullScansHelper
 include Dragnet::PartitioningHelper
 include Dragnet::PlSqlUsageHelper
 include Dragnet::ProblemsWithParallelQueryHelper
+include Dragnet::SoftParseCursorCachingHelper
 include Dragnet::SqlsConclusionApplicationHelper
 include Dragnet::SqlsCursorRedundanciesHelper
 include Dragnet::SqlsPotentialDbStructuresHelper
@@ -101,11 +102,16 @@ module DragnetHelper
         },
         {
             :name     => t(:dragnet_helper_group_tuning_sga_pga,           :default=> 'Tuning of / load rejection from SGA, PGA'),
-            :entries  => dragnet_sqls_tuning_sga_pga
-        },
-        {
-            :name     => t(:dragnet_helper_group_cursor_redundancies,      :default=> 'Redundant cursors / usage of bind variables'),
-            :entries  => sqls_cursor_redundancies
+            entries: [
+              {
+                :name     => t(:dragnet_helper_group_cursor_redundancies,      :default=> 'Redundant cursors / usage of bind variables'),
+                :entries  => sqls_cursor_redundancies
+              },
+              {
+                :name     => t(:dragnet_helper_group_soft_parses_cursor_caching,  :default=> 'Soft parse activities / SQL statement cursor caching'),
+                :entries  => soft_parse_cursor_caching
+              },
+            ].concat(dragnet_sqls_tuning_sga_pga)
         },
         {
             :name     => t(:dragnet_helper_group_logwriter_redo,           :default=> 'Logwriter load / redo impact'),

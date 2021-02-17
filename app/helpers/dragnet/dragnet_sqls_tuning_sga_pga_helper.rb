@@ -296,26 +296,6 @@ ORDER BY x.MBytes DESC NULLS LAST
             ]
         },
         {
-            :name  => t(:dragnet_helper_113_name, :default=>'Parse activity'),
-            :desc  => t(:dragnet_helper_113_desc, :default=>'Consideration of ratio parses vs. executes.
-                                    For highly frequent parses you should look for alternatives like:
-                                    - reuse of already parsed statements in application
-                                    - usage of statement caches in application server or JDBC-driver
-                                    - usage of DB-feature "session cached cursor"
-              '),
-            :sql=>  "SELECT /* DB-Tools Ramm Parse-Ratio single values */ s.*, ROUND(Executions/DECODE(Parses, 0, 1, Parses),2) \"Execs/Parse\"
-                      FROM   (
-                              SELECT s.SQL_ID, s.Instance_Number, Parsing_schema_Name, SUM(s.Executions_Delta) Executions,
-                                     SUM(s.Parse_Calls_Delta) Parses
-                              FROM   DBA_Hist_SQLStat s
-                              JOIN   DBA_Hist_Snapshot ss ON ss.DBID=s.DBID AND ss.Instance_Number = s.Instance_Number AND ss.Snap_ID = s.Snap_ID
-                              WHERE  ss.Begin_Interval_Time > SYSDATE - ?
-                              GROUP BY s.SQL_ID, s.Instance_Number, Parsing_schema_Name
-                             ) s
-                      ORDER BY Parses DESC NULLS LAST",
-            :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') }]
-        },
-        {
             :name  => t(:dragnet_helper_3_12_name, :default=> 'Non-optimal database configuration parameters'),
             :desc  => t(:dragnet_helper_3_12_desc, :default=> 'Detection of non-optimal or incompatible database parameters'),
             :sql=>  "SELECT /* DB-Tools Ramm DB-Parameter */
