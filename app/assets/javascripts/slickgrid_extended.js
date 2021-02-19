@@ -620,11 +620,6 @@ function SlickGridExtended(container_id, options){
 
         trace_log(caller+": start calculate_current_grid_column_widths ");
 
-//        if (reset_line_height) {
-//            options['rowHeight'] = 1;
-//            this.grid.setOptions(options);
-//        }
-
         this.slickgrid_render_needed = 0;                                       // Falls das Flag gesetzt war, wird das rendern jetzt durchgeführt und Flag damit entwertet
 
         viewport_div.css('overflow', '');                                        // Default-Einstellung des SlickGrid für Scrollbar entfernen
@@ -858,8 +853,11 @@ function SlickGridExtended(container_id, options){
             this.grid.setColumns(columns);                                      // Setzen der veränderten Spaltenweiten am slickGrid, löst onScroll-Ereignis aus mit evtl. wiederholtem aufruf dieser Funktion, daher erst am Ende setzen
         }
 
+        if (total_scroll_height == total_height)
+            viewport_div.css('overflow-y', 'hidden');                           // force remove vertical scrollbar if not needed (especially for Safari)
+        else {                                                                  // Reduce header with by vertical scrollbar width
 
-
+        }
 
         trace_log(caller+": end calculate_current_grid_column_widths");
     };
@@ -1228,11 +1226,12 @@ function SlickGridExtended(container_id, options){
     function scrollbarWidth() {
         if (scrollbarWidth_internal_cache)
             return scrollbarWidth_internal_cache;
-        var div = $('<div style="width:40px;height:40px;overflow:scroll;">Hugo</div>');
+        var div = $('<div style="width:50px;overflow-x:scroll;"><div id="scrollbarWidth_testdiv">Hugoplusadditionalinfo</div></div>');
         // Append our div, do our calculation and then remove it
         $('body').append(div);
-        scrollbarWidth_internal_cache = div.innerWidth() - div.width();
+        scrollbarWidth_internal_cache = div.innerHeight() - div.find("#scrollbarWidth_testdiv").height();
         $(div).remove();
+        trace_log("measured scrollbarWidth = "+scrollbarWidth_internal_cache);
         return scrollbarWidth_internal_cache;
     }
     /**
@@ -1682,7 +1681,7 @@ function HTMLFormatter(row, cell, value, columnDef, dataContext){
 
 
 function trace_log(msg){
-    if (true){
+    if (false){
         console.log(msg);                                                           // Aktivieren trace-Ausschriften
     }
 }
