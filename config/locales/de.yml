@@ -304,6 +304,7 @@
   dba_list_blocking_dml_locks_blocking_client_info_hint:        Client-Info, Module und Action der blockenden Session
   dba_list_blocking_dml_locks_blocking_program_hint:            Programm der blockenden Session
   dba_list_blocking_dml_locks_blocking_object_hint:             Schema und Name des blockenden Objektes
+  dba_list_blocking_dml_locks_blocking_waiting_seconds_hint:    Sekunden im Wait der blockenden Session
   dba_list_blocking_dml_locks_blocking_sid_hint:                Instance und SID der blockenden Session
   dba_list_blocking_dml_locks_blocking_status_hint:             Status der blockenden Session
   dba_list_blocking_dml_locks_blocking_user_hint:               User der blockenden Session

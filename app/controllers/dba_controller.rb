@@ -150,7 +150,8 @@ class DbaController < ApplicationController
                      s.Row_Wait_File#       Row_Wait_File_No,
                      s.Row_Wait_Block#      Row_Wait_Block_No,
                      s.Row_Wait_Row#        Row_Wait_Row_No,
-                     #{get_db_version < '11.1' ? "s.Seconds_In_Wait" : "s.Wait_Time_Micro/1000000"} Seconds_Waiting,
+                     s.Wait_Time_Micro/1000000 Seconds_Waiting,
+                     DECODE(bs.State, 'WAITING', bs.Wait_Time_Micro/1000000) Blocking_Seconds_Waiting,
                      l.ID1,
                      l.ID2,
                      /* Request!=0 indicates waiting for resource determinded by ID1, ID2 */
