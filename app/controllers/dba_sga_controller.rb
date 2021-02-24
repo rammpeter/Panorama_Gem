@@ -375,8 +375,8 @@ class DbaSgaController < ApplicationController
 
     all_plans = sql_select_all ["\
         SELECT /* Panorama-Tool Ramm */
-          Operation, Options, Object_Owner, Object_Name, Object_Type, Object_Alias, QBlock_Name, p.Timestamp, p.Optimizer, Plan_Hash_Value,
-          Other_Tag, Other_XML, Other, Version_Orange_Count, Version_Red_Count, Child_Number,
+          p.Operation, p.Options, p.Object_Owner, p.Object_Name, p.Object_Type, p.Object_Alias, p.QBlock_Name, p.Timestamp, p.Optimizer, p.Plan_Hash_Value,
+          p.Other_Tag, p.Other_XML, p.Other, Version_Orange_Count, Version_Red_Count, Child_Number,
           Depth, Access_Predicates, Filter_Predicates, Projection, p.temp_Space/(1024*1024) Temp_Space_MB, Distribution,
           ID, Parent_ID, Executions, p.Search_Columns,
           Last_Starts, Starts, Last_Output_Rows, Output_Rows, Last_CR_Buffer_Gets, CR_Buffer_Gets,
@@ -388,6 +388,7 @@ class DbaSgaController < ApplicationController
           p.Max_TempSeg_Size, p.Last_Tempseg_Size,
           NVL(t.Num_Rows, i.Num_Rows) Num_Rows,
           NVL(t.Last_Analyzed, i.Last_Analyzed) Last_Analyzed,
+          o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Last_Spec_TS,
           (SELECT SUM(Bytes)/(1024*1024) FROM DBA_Segments s WHERE s.Owner=p.Object_Owner AND s.Segment_Name=p.Object_Name) MBytes
           #{", a.DB_Time_Seconds, a.CPU_Seconds, a.Waiting_Seconds, a.Read_IO_Requests, a.Write_IO_Requests,
                a.IO_Requests, a.Read_IO_Bytes, a.Write_IO_Bytes, a.Interconnect_IO_Bytes, a.Min_Sample_Time, a.Max_Sample_Time, a.Max_Temp_ASH_MB, a.Max_PGA_ASH_MB, a.Max_PQ_Sessions " if @include_ash_in_sql}
@@ -452,6 +453,8 @@ class DbaSgaController < ApplicationController
                              GROUP BY SQL_Plan_Line_ID, SQL_Plan_Hash_Value
                  ) a ON a.SQL_Plan_Line_ID = p.ID AND a.SQL_Plan_Hash_Value = p.Plan_Hash_Value
           " if @include_ash_in_sql}
+        -- Object_Type ensures that only one record is gotten from DBA_Objects even if object is partitioned
+        LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Object_Owner AND o.Object_Name = p.Object_Name AND o.Object_Type = p.Object_Type
         ORDER BY ID
         ", @instance, @sql_id]
                                    .concat(where_values)
