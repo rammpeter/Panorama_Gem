@@ -94,11 +94,11 @@
                {:caption=>'Recovery status',  :data=>proc{|rec| rec.recovery_status},                 :title=>"Shows whether recovery is enabled or disabled for the PDB."},
                {:caption=>'Snapshot parent',  :data=>proc{|rec| rec.snapshot_parent_con_id },         :title=>"This column shows the container ID of the master PDB that this PDB is a snapshot clone of.\nThis column shows a non-zero value only if the PDB is a snapshot clone.\nFor all other cases, it shows a value of 0."},
            ]
-       column_options << {:caption=>'Application root',         :data=>proc{|rec| rec.application_root},                :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
-       column_options << {:caption=>'Application PDB',          :data=>proc{|rec| rec.application_pdb},                 :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
-       column_options << {:caption=>'Application seed',         :data=>proc{|rec| rec.application_seed},                :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
-       column_options << {:caption=>'Application root con-ID',  :data=>proc{|rec| rec.application_root_con_id},         :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
-       column_options << {:caption=>'Application root clone',   :data=>proc{|rec| rec.application_root_clone},          :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Appl. root',         :data=>proc{|rec| rec.application_root},                :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Appl. PDB',          :data=>proc{|rec| rec.application_pdb},                 :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Appl. seed',         :data=>proc{|rec| rec.application_seed},                :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Appl. root con-ID',  :data=>proc{|rec| rec.application_root_con_id},         :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
+       column_options << {:caption=>'Appl. root clone',   :data=>proc{|rec| rec.application_root_clone},          :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
        column_options << {:caption=>'Proxy PDB',                :data=>proc{|rec| rec.proxy_pdb},                       :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
        column_options << {:caption=>'Local UNDO',               :data=>proc{|rec| rec.local_undo},                      :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
        column_options << {:caption=>'Creation time',            :data=>proc{|rec| localeDateTime(rec.creation_time)},   :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
