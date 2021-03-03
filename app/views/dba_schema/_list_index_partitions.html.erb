@@ -101,6 +101,7 @@
       {:caption=> 'Tablespace',             :data=>proc{|rec| rec.tablespace_name},              :title=> 'Name of the tablespace containing the partition'},
       {:caption=> 'Pct. free',              :data=>proc{|rec| rec.pct_free},                     :title=> 'Minimum percentage of free space in a block', :align=>:right},
       {:caption=> 'Ini. trans',             :data=>proc{|rec| rec.ini_trans},                    :title=> 'Initial number of transactions', data_title: proc{|rec| "%t\nNumber of maximum transactions (MAX_TRANS) = #{rec.max_trans}"}, :align=>:right},
+      {:caption=> 'Ini. ext. (KB)',         :data=>proc{|rec| rec.initial_extent_kb},            :title=> 'Initial extent size in kByte', :align=>:right},
       {:caption=> 'Logging',                :data=>proc{|rec| rec.logging},                      :title=> 'Logging attribute of the partition'},
       {:caption=> 'Rows',                   :data=>proc{|rec| fn rec.num_rows},                  :title=> 'Number of rows in the partition', :align=>:right},
       {:caption=> 'Size (MB)',              :data=>proc{|rec| link_space_usage.call(rec, fn(rec.size_mb,2))}, :title=> 'Current object size in megabytes', :align=>:right},
