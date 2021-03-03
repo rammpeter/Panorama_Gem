@@ -696,7 +696,7 @@ function SlickGridExtended(container_id, options){
      * @param current_table_width
      * @param current_grid_width
      */
-    this.fill_unused_column_space = function(options, current_table_width, current_grid_width){
+    this.fill_unused_column_space = function(options, columns, current_table_width, current_grid_width){
         // Evtl. Zoomen der Spalten wenn noch mehr Platz rechts vorhanden
         if (options.width === '' || options.width === '100%'){                  // automatische volle Breite des Grid
             while (current_table_width < current_grid_width){                   // noch Platz am rechten Rand, kann auch nach wrap einer Spalte verbleiben
@@ -759,7 +759,7 @@ function SlickGridExtended(container_id, options){
             });
         }
 
-        this.fill_unused_column_space(options, current_table_width, current_grid_width);
+        this.fill_unused_column_space(options, columns, current_table_width, current_grid_width);
 
         var needs_horizontal_scrollbar = current_table_width-scrollbarWidth() > current_grid_width - 1;
         trace_log(caller+": needs_horizontal_scrollbar = "+ needs_horizontal_scrollbar);
@@ -785,7 +785,7 @@ function SlickGridExtended(container_id, options){
         trace_log(caller+": needs_vertical_scrollbar = "+ needs_vertical_scrollbar);
 
         if (!needs_vertical_scrollbar)                                          // use unused space for vertical scrollbar for columns
-            this.fill_unused_column_space(options, current_table_width-scrollbarWidth(), current_grid_width);
+            this.fill_unused_column_space(options, columns, current_table_width-scrollbarWidth(), current_grid_width);
 
 
         this.gridContainer.data('last_resize_width', this.gridContainer.parent().width()); // Merken der aktuellen Breite des Parents, um unnötige resize-Events zu vermeiden
