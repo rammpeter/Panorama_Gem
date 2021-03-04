@@ -10,9 +10,8 @@
  * (c) 2014 Peter Ramm
  * https://github.com/rammpeter/Panorama/blob/master/app/assets/javascripts/slickgrid_extended.js
  *
- * Personal extension for SlickGrid v2.1 (originated by Michael Leibman)
- *
- *
+ * Personal extension for SlickGrid v2.4 (originated by Michael Leibman)
+ * Based on version 2.4.3 from https://github.com/6pac/SlickGrid
  *
 *
 */
