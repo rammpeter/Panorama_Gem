@@ -735,6 +735,9 @@ class PanoramaConnection
       retval = jdbc_connection.select sql
     end
     retval
+  rescue Exception => e
+    Rails.logger.error "Error executing SQL: #{sql}"
+    raise
   end
 
   def self.direct_select_one(jdbc_connection, sql)
