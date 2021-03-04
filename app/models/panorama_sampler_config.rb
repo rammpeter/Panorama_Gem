@@ -185,9 +185,9 @@ class PanoramaSamplerConfig
     end
   end
 
-  def set_last_analyze_check_timestamp
+  def set_last_analyze_check_timestamp(timestamp = Time.now)
     @@config_access_mutex.synchronize do
-      @config_hash[:last_analyze_check_timestamp] = Time.now
+      @config_hash[:last_analyze_check_timestamp] = timestamp
       PanoramaSamplerConfig.write_config_array_to_store
     end
   end
