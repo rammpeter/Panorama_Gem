@@ -693,7 +693,8 @@ class DbaSchemaController < ApplicationController
               SP_Pct_Free_Count,        SP_Pct_Free,
               SP_Ini_Trans_Count,       SP_Ini_Trans,
               SP_Max_Trans_Count,       SP_Max_Trans,
-              SP_Initial_Extent_Count,  SP_Initial_Extent
+              SP_Initial_Extent_Count,  SP_Initial_Extent,
+              NULL                      Initial_Extent_KB
          #{", SP_Compress_For_Count,    SP_Compress_For,
               SP_InMemory_Count,        SP_InMemory" if get_db_version >= '12.1'}
          #{", mi.GC_Mastering_Policy,  mi.Current_Master + 1  Current_Master,  mi.Previous_Master + 1  Previous_Master, mi.Remaster_Cnt" if PanoramaConnection.rac?}
@@ -1422,7 +1423,8 @@ class DbaSchemaController < ApplicationController
               SP_Pct_Free_Count,     SP_Pct_Free,
               SP_Ini_Trans_Count,    SP_Ini_Trans,
               SP_Max_Trans_Count,    SP_Max_Trans,
-              SP_Initial_Extent_Count,  SP_Initial_Extent
+              SP_Initial_Extent_Count,  SP_Initial_Extent,
+              NULL                      Initial_Extent_KB
               #{", mi.GC_Mastering_Policy,  mi.Current_Master + 1  Current_Master,  mi.Previous_Master + 1  Previous_Master, mi.Remaster_Cnt" if PanoramaConnection.rac?}
       FROM DBA_Ind_Partitions p
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Index_Owner AND o.Object_Name = p.Index_Name AND o.SubObject_Name = p.Partition_Name AND o.Object_Type = 'INDEX PARTITION'
