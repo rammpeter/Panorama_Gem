@@ -49,13 +49,13 @@ jobs:
         cd ${PANORAMA_PATH} && bundle install
 
     # create encypted wallet zip file to store in repository, add passphrase
-    # gpg --symmetric --cipher-algo AES256 Wallet_PANORAMATEST.zip
+    # gpg --symmetric --cipher-algo AES256 Wallet_panoramatest.zip
     - name: Decrypt Wallet for database access
       env:
         GPG_KEY_FOR_DB_WALLET_ENCRYPTION: ${{ secrets.GPG_KEY_FOR_DB_WALLET_ENCRYPTION }}
       run: |
         cd ${PANORAMA_PATH}/.github && ./decrypt_DB_wallet.sh
-        cd ${PANORAMA_PATH}/.github && unzip Wallet_PANORAMATEST.zip
+        cd ${PANORAMA_PATH}/.github && unzip Wallet_panoramatest.zip
 
     - name: run Test
       env:
