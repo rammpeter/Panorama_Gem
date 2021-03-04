@@ -735,6 +735,8 @@ class PanoramaConnection
       retval = jdbc_connection.select sql
     end
     retval
+  rescue Exception => e
+    raise "Error '#{e.class}:#{e.message}' executing SQL: #{sql}"
   end
 
   def self.direct_select_one(jdbc_connection, sql)
