@@ -689,7 +689,7 @@ function SlickGridExtended(container_id, options){
                 }
             });
         }
-        trace_log('calculate_row_height = '+row_height+ ', from js_test_cell_height = '+(slick_inner_cells.length == 0));
+        trace_log('calculate_row_height = '+row_height);
         return row_height;
     }
 
@@ -1651,7 +1651,7 @@ function HTMLFormatter(row, cell, value, columnDef, dataContext){
 
 
 function trace_log(msg){
-    if (true){
+    if (false){
         console.log(msg);                                                           // Aktivieren trace-Ausschriften
     }
 }
