@@ -64,4 +64,10 @@ class EngineConfig < Rails::Application
 
   # Don't disable subit button after click
   config.action_view.automatically_disable_submit_tag = false
+
+  # Specify cookies SameSite protection level: either :none, :lax, or :strict.
+  #
+  # This change is not backwards compatible with earlier Rails versions.
+  # It's best enabled when your entire app is migrated and stable on 6.1.
+  config.action_dispatch.cookies_same_site_protection = :strict
 end
