@@ -302,9 +302,11 @@ module EnvHelper
         msg << "End_Interval_Time_TZ = #{localeDateTime(s.end_interval_time_tz)}:\n"
         msg << "Snap_Timezone diff. to GMT = #{s.snap_timezone}:\n"
         msg << "Time drift between End_Interval_Time and End_Interval_Time_TZ = #{fn(s.diff_hours, 1)} hours\n\n"
-        msg << "AWR data selected by Panorama may be falsified regarding time boundaries!!!\n\n"
       end
-      add_statusbar_message(msg) if msg.length > 0
+      if msg.length > 0
+        msg << "AWR data selected by Panorama may be falsified regarding time boundaries!!!\n"
+        add_statusbar_message(msg)
+      end
     end
   end
 end

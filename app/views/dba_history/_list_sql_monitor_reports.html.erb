@@ -14,7 +14,7 @@
                 browser_tab_id:        @browser_tab_id),
                   {method: 'post', target: '_blank'}
                   ) do                                     # internen Rails-Helper verwenden
-                    hidden_field_tag('download_oracle_com_reachable', 'false', class: 'download_oracle_com_reachable') + # Field is set at submit click with reachable state
+                    hidden_field_tag('download_oracle_com_reachable', 'false') + # Field is set at submit click with reachable state
                     submit_tag('Show report', {title: "Show generated SQL-Monitor report in separate browser tab (requires internet connection and Adobe Flash)", onclick: "on_submit_click();"})
                   end
 
@@ -76,20 +76,15 @@ column_options =
 %>
 
 <script text="javascript">
-
-  var download_oracle_com_reachable = false;                                    // Flag for visibility of download.oracle.com by browser
-
-  // Load an image to acknowledge existence or not existence of an URL
-  var img = document.createElement("img");
-  img.onload = function() {
-      download_oracle_com_reachable = true;
-  }
-  img.src = "http://download.oracle.com/favicon.ico";
-
+  var download_oracle_com_reachable = false;
+  isSiteOnline("https://download.oracle.com",function(found){
+      download_oracle_com_reachable = found; // store state in all hidden inputs at submit click
+  });
 
   function on_submit_click(){
-      jQuery('.download_oracle_com_reachable').val(download_oracle_com_reachable); // store state in all hidden inputs at submit click
+      jQuery('#download_oracle_com_reachable').val(download_oracle_com_reachable); // store state in all hidden inputs at submit click
   }
+
 
 </script>
 

@@ -90,7 +90,7 @@ module MenuHelper
             ]
             },
             {:class=> 'item', :caption=>t(:menu_wait_resource_limits_historic_caption, :default=> 'Resource limits historic'),      :controller=> 'dba_history',  :action=> 'show_resource_limits_historic',    :hint=>t(:menu_wait_resource_limits_historic_hint, :default=> 'Historic resource usage and resource limits from DBA_Hist_Resource_Limit') },
-            { :class=> 'menu', :caption=> 'Genuine Oracle AWR-reports', :content=>[
+            { :class=> 'menu', :caption=> 'Genuine Oracle reports', :content=>[
                 {:class=> 'item', :caption=>'Performance Hub',            :controller=>:dba_history,    :action=> 'show_performance_hub_report',     :hint=>'Genuine Oracle performance hub report by time period and instance', min_db_version: '12.1'  },
                 {:class=> 'item', :caption=>'AWR report',                 :controller=>:dba_history,    :action=> 'show_awr_report',          :hint=>'Genuine Oracle active workload repository report by time period and instance' },
                 {:class=> 'item', :caption=>'AWR global report (RAC)',    :controller=>:dba_history,    :action=> 'show_awr_global_report',   :hint=>'Genuine Oracle active workload repository global report for RAC by time period and instance (optional)' },
