@@ -1950,7 +1950,7 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
 
 
     if params[:download_oracle_com_reachable] != 'true'
-      @report = "ERROR:<br/>URL https://download.oracle.com is not available for your browser instance!<br/>Cannot load Flash content of performance hub report from this URL!"
+      @report = "ERROR:<br/>URL https://download.oracle.com is not available for your browser instance!<br/>Cannot load content of performance hub report from this URL!"
     else
 
       @report = sql_select_one ["\
@@ -1972,6 +1972,8 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
                                    .concat(@instance ? [@instance] : [])
                                    .concat(@realtime ? [] : [@time_selection_end, @time_selection_end])
     end
+
+    @report.gsub!(/http:/, 'https:') if request.original_url['https://']        # Request kommt mit https, dann müssen <script>-Includes auch per https abgerufen werden, sonst wird page geblockt wegen insecure content
 
     render :html => @report.html_safe
   end
