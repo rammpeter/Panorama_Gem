@@ -1609,6 +1609,7 @@ ORDER BY Column_ID
   end
 
   def remove_tables_internal
+    PanoramaConnection.sql_execute "ALTER SESSION SET DDL_LOCK_TIMEOUT=30"      # Ensure shot locks at DROP do not lead to error
     packages = PanoramaConnection.sql_select_all [ "SELECT Object_Name
                                                     FROM   All_Objects
                                                     WHERE  Owner=? AND Object_Type = 'PACKAGE'

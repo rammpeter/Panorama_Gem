@@ -1952,7 +1952,6 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
     if params[:download_oracle_com_reachable] != 'true'
       @report = "ERROR:<br/>URL https://download.oracle.com is not available for your browser instance!<br/>Cannot load content of performance hub report from this URL!"
     else
-
       @report = sql_select_one ["\
         SELECT DBMS_PERF.REPORT_PERFHUB(
                                  Is_RealTime            => #{@realtime ? '1' : 'NULL'},
