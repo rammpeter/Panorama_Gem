@@ -912,7 +912,7 @@ class DbaSchemaController < ApplicationController
 
     # Selected separately because of long runtime if executed within complex SQL
     index_sizes = sql_select_all ["\
-      SELECT /*+ NO_MERGE MATERIALIZE */ s.Owner, s.Segment_Name, SUM(s.Bytes)/(1024*1024) Size_MB, SUM(s.Extents) Extents, SUM(s.Blocks) Blocks
+      SELECT s.Owner, s.Segment_Name, SUM(s.Bytes)/(1024*1024) Size_MB, SUM(s.Extents) Extents, SUM(s.Blocks) Blocks
       FROM   DBA_Indexes ii
       JOIN   DBA_Segments s ON s.Owner = ii.Owner AND s.Segment_Name = ii.Index_Name
       WHERE  s.Segment_Type LIKE 'INDEX%'
@@ -959,6 +959,12 @@ class DbaSchemaController < ApplicationController
         names << ", #{c.column_expression ? c.column_expression : c.column_name}" if i.index_name == c.index_name
       end
       i[:column_names] = names[2,names.length]
+
+      if i.partition_number&.> 0
+        i['partition_expression'] = get_index_partition_expression(i.owner, i.index_name)
+      else
+        i['partition_expression'] = nil
+      end
 
       # Set values of partitions if they exist
       if !i.partition_number.nil? && i.partition_number > 0
