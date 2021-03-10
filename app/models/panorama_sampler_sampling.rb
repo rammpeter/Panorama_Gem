@@ -255,12 +255,12 @@ class PanoramaSamplerSampling
         DECLARE
         #{PanoramaSamplerStructureCheck.translate_plsql_aliases(@sampler_config, panorama_sampler_blocking_locks_code)}
         BEGIN
-          Create_Block_Locks_Snapshot(?, ?);
+          Create_Block_Locks_Snapshot(?);
         END;
         "
     end
 
-    PanoramaConnection.sql_execute [sql, PanoramaConnection.instance_number, @sampler_config.get_blocking_locks_long_locks_limit]
+    PanoramaConnection.sql_execute [sql, @sampler_config.get_blocking_locks_long_locks_limit]
   end
 
   def do_blocking_locks_housekeeping(shrink_space)

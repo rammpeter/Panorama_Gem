@@ -7,7 +7,7 @@ CREATE OR REPLACE Package panorama_owner.Panorama_Sampler_Block_Locks AS
   -- Panorama-Version: PANORAMA_VERSION
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
 
-  PROCEDURE Create_Block_Locks_Snapshot(p_Instance_Number IN NUMBER, p_LongLocksSeconds IN NUMBER);
+  PROCEDURE Create_Block_Locks_Snapshot(p_LongLocksSeconds IN NUMBER);
 
 END Panorama_Sampler_Block_Locks;
     "
@@ -15,7 +15,7 @@ END Panorama_Sampler_Block_Locks;
 
   def panorama_sampler_blocking_locks_code
     "
-  PROCEDURE Create_Block_Locks_Snapshot(p_Instance_Number IN NUMBER, p_LongLocksSeconds IN NUMBER /*, p_MinBlockMilliSeconds IN NUMBER */) IS
+  PROCEDURE Create_Block_Locks_Snapshot(p_LongLocksSeconds IN NUMBER /*, p_MinBlockMilliSeconds IN NUMBER */) IS
     v_Waiting_For_PK_Column_Name  panorama_owner.Panorama_Blocking_Locks.Waiting_For_PK_Column_Name%TYPE;
     v_Waiting_For_PK_Value        panorama_owner.Panorama_Blocking_Locks.Waiting_For_PK_Value%TYPE;
     v_TableName                   VARCHAR2(30);
