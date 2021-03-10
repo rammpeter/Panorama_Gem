@@ -23,6 +23,8 @@ END Panorama_Sampler_Block_Locks;
     v_PKey_Cols                   VARCHAR2(300);
     v_Blocking_RowID              UROWID;
     v_Snapshot_Timestamp          DATE;
+    TABLE_DOES_NOT_EXIST          EXCEPTION;
+    PRAGMA EXCEPTION_INIT(TABLE_DOES_NOT_EXIST, -942);
   BEGIN
     v_Snapshot_Timestamp := SYSDATE;    -- Einheitlicher Zeitpunkt des Schnappschuss ueber gesamte Verarbeitung
     FOR Rec IN (
@@ -153,6 +155,8 @@ END Panorama_Sampler_Block_Locks;
             v_Waiting_For_PK_Value := '[NO DATA FOUND]';
           WHEN SYS_INVALID_ROWID THEN
             v_Waiting_For_PK_Value := '[SYS_INVALID_ROWID]';
+          WHEN TABLE_DOES_NOT_EXIST THEN
+            v_Waiting_For_PK_Value := '[No select access on table]';
           WHEN OTHERS THEN
             DBMS_OUTPUT.PUT_LINE('Fehler bei Ermittlung Pkey aus RowID: '||Rec.Blocking_Object_Owner||'.'||v_TableName||'('||v_Pkey_Cols||
                                  ') für RowID='||v_Blocking_RowID);
