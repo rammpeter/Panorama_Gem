@@ -478,8 +478,8 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Status',                         column_type:   'VARCHAR2',  precision: 8,                   comment: 'Status of blocked session' },
               { column_name:  'Event',                          column_type:   'VARCHAR2',  precision: 64,                  comment: 'Wait event of blocked session' },
               { column_name:  'Client_Info',                    column_type:   'VARCHAR2',  precision: 64,                  comment: 'Client info of blocked session'},
-              { column_name:  'Module',                         column_type:   'VARCHAR2',  precision: 48,                  comment: 'Module of blocked session' },
-              { column_name:  'Action',                         column_type:   'VARCHAR2',  precision: 48,                  comment: 'Action of blocked session' },
+              { column_name:  'Module',                         column_type:   'VARCHAR2',  precision: 64,                  comment: 'Module of blocked session' },
+              { column_name:  'Action',                         column_type:   'VARCHAR2',  precision: 64,                  comment: 'Action of blocked session' },
               { column_name:  'Object_Owner',                   column_type:   'VARCHAR2',  precision: 128,                 comment: 'Owner of object waiting for lock' },
               { column_name:  'Object_Name',                    column_type:   'VARCHAR2',  precision: 128,                 comment: 'Name of object waiting for lock' },
               { column_name:  'User_Name',                      column_type:   'VARCHAR2',  precision: 128,                 comment: 'Owner of blocked session' },
@@ -1540,7 +1540,7 @@ ORDER BY Column_ID
       check_table_existence(table) if table[:domain] == domain
     end
 
-    @ora_tab_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config.get_owner.upcase]
+    @ora_tab_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name, Data_Precision, Char_Length FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config.get_owner.upcase]
     @ora_tab_colnull  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name, Nullable FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config.get_owner.upcase]
     TABLES.each do |table|
       check_table_columns(table) if table[:domain] == domain
@@ -1707,10 +1707,9 @@ ORDER BY Column_ID
       ############# Check Table existence
       log "Table #{table[:table_name]} does not exist"
       sql = "CREATE TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ("
-      table[:columns].each do |column|
-        sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{" CHARS" if column[:column_type] == 'VARCHAR2'}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]} ,"
-      end
-      sql[(sql.length) - 1] = ' '                                               # remove last ,
+      sql << table[:columns].map do |column|
+        "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{" CHAR" if column[:column_type] == 'VARCHAR2'}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]} #{"NOT NULL" if column[:not_null]}"
+      end.join(",\n")
       sql << ") PCTFREE 0 ENABLE ROW MOVEMENT"                                  # no need for updates on this tables
       log(sql)
       PanoramaConnection.sql_execute(sql)
@@ -1724,9 +1723,9 @@ ORDER BY Column_ID
   def check_table_columns(table)
     table[:columns].each do |column|
       # Check column existence
-      if !@ora_tab_columns.include?({'table_name' => table[:table_name].upcase, 'column_name' => column[:column_name].upcase})
+      if @ora_tab_columns.select{|c| c['table_name'] == table[:table_name].upcase && c['column_name'] == column[:column_name].upcase}.length == 0
         sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ADD ("
-        sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{" CHARS" if column[:column_type] == 'VARCHAR2'}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]}"
+        sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{" CHAR" if column[:column_type] == 'VARCHAR2'}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]}"
         sql << ")"
         log(sql)
         PanoramaConnection.sql_execute(sql)
@@ -1744,6 +1743,13 @@ ORDER BY Column_ID
             sql << 'NULL'
           end
           sql << ")"
+          log(sql)
+          PanoramaConnection.sql_execute(sql)
+        end
+        # Check column length
+        ora_tab_col = @ora_tab_columns.select{|c| c['table_name'] == table[:table_name].upcase && c['column_name'] == column[:column_name].upcase}.first
+        if column[:precision] && column[:column_type] == 'VARCHAR2' && column[:precision] != ora_tab_col.char_length
+          sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} MODIFY #{column[:column_name]} VARCHAR2(#{column[:precision]} CHAR)"
           log(sql)
           PanoramaConnection.sql_execute(sql)
         end
