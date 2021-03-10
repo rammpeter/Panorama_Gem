@@ -148,8 +148,8 @@ Retention time for snapshot data before deletion = #{fn(rec[:longterm_trend_snap
     {:caption=>'Last long-term trend snapshot duration',  data: @longterm_trend_snapshot_duration,    :title=>"Duration in seconds of last long-term trend snapshot creation", :align=>:right, :data_style=>@longterm_trend_style},
     {:caption=>'Last connect time',                       :data=>proc{|rec| localeDateTime(rec[:last_successful_connect])},         :title=>"Timestamp of last successful connect to this database"},
     {:caption=>'Last error time',                         :data=>proc{|rec| localeDateTime(rec[:last_error_time])},                 :title=>"Timestamp of last connect- or execution-error", :data_style=>@error_style },
-    {:caption=>'Last error message',                      :data=>proc{|rec| rec[:last_error_message]},                              :title=>"Last message of connect- or execution-error", :data_title=>proc{|rec| "%t\n#{rec[:last_error_message]}"}, :data_style=>@error_style, :max_wrap_width=>60},
-    {:caption=>'Action',                                  :data=>proc{|rec| @render_action_buttons.call(rec) },                           :title=>"Execute action for this record" },
+    {:caption=>'Last error message',                      :data=>proc{|rec| my_html_escape(rec[:last_error_message])},                              :title=>"Last message of connect- or execution-error", :data_title=>proc{|rec| "%t\n#{rec[:last_error_message]}"}, :data_style=>@error_style, :max_wrap_width=>60},
+    { caption: 'Action',                                  data: proc { |rec| @render_action_buttons.call(rec) },                    title: "Execute action for this record" },
   ]
 
 %>
