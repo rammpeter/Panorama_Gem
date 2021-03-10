@@ -226,7 +226,7 @@ class WorkerThread
   def check_analyze_internal
     # Check analyze info once a week
     if  @sampler_config.get_last_analyze_check_timestamp.nil? || @sampler_config.get_last_analyze_check_timestamp < Time.now - 86400*DAYS_BETWEEN_ANALYZE_CHECK
-      tables = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ? AND Last_Analyzed IS NULL OR Last_Analyzed < SYSDATE-?", @sampler_config.get_owner.upcase, DAYS_BETWEEN_ANALYZE_CHECK]
+      tables = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ? AND (Last_Analyzed IS NULL OR Last_Analyzed < SYSDATE-?)", @sampler_config.get_owner.upcase, DAYS_BETWEEN_ANALYZE_CHECK]
       tables.each do |t|
         start_time = Time.now
         PanoramaConnection.sql_select_all(["SELECT Index_Name FROM All_Indexes WHERE Owner = ?", @sampler_config.get_owner.upcase]).each do |index|
