@@ -1708,7 +1708,7 @@ ORDER BY Column_ID
       log "Table #{table[:table_name]} does not exist"
       sql = "CREATE TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ("
       table[:columns].each do |column|
-        sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]} ,"
+        sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{" CHARS" if column[:column_type] == 'VARCHAR2'}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]} ,"
       end
       sql[(sql.length) - 1] = ' '                                               # remove last ,
       sql << ") PCTFREE 0 ENABLE ROW MOVEMENT"                                  # no need for updates on this tables
@@ -1726,7 +1726,7 @@ ORDER BY Column_ID
       # Check column existence
       if !@ora_tab_columns.include?({'table_name' => table[:table_name].upcase, 'column_name' => column[:column_name].upcase})
         sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ADD ("
-        sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]}"
+        sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{" CHARS" if column[:column_type] == 'VARCHAR2'}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]}"
         sql << ")"
         log(sql)
         PanoramaConnection.sql_execute(sql)
