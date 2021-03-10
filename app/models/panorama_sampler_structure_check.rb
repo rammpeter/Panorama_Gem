@@ -479,7 +479,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Event',                          column_type:   'VARCHAR2',  precision: 64,                  comment: 'Wait event of blocked session' },
               { column_name:  'Client_Info',                    column_type:   'VARCHAR2',  precision: 64,                  comment: 'Client info of blocked session'},
               { column_name:  'Module',                         column_type:   'VARCHAR2',  precision: 48,                  comment: 'Module of blocked session' },
-              { column_name:  'Action',                         column_type:   'VARCHAR2',  precision: 32,                  comment: 'Action of blocked session' },
+              { column_name:  'Action',                         column_type:   'VARCHAR2',  precision: 48,                  comment: 'Action of blocked session' },
               { column_name:  'Object_Owner',                   column_type:   'VARCHAR2',  precision: 128,                 comment: 'Owner of object waiting for lock' },
               { column_name:  'Object_Name',                    column_type:   'VARCHAR2',  precision: 128,                 comment: 'Name of object waiting for lock' },
               { column_name:  'User_Name',                      column_type:   'VARCHAR2',  precision: 128,                 comment: 'Owner of blocked session' },
