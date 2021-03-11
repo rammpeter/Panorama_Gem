@@ -234,7 +234,7 @@ class WorkerThread
         end
 
         PanoramaConnection.sql_execute ["BEGIN DBMS_STATS.Gather_Table_Stats(?, ?); END;", @sampler_config.get_owner.upcase, t.table_name]
-        Rails.logger.info("Analyzed table #{t.user}.#{t.table_name} and shrink indizes in #{Time.now-start_time} seconds")
+        Rails.logger.info("Analyzed table #{@sampler_config.get_owner.upcase}.#{t.table_name} and shrink indizes in #{Time.now-start_time} seconds")
       end
       @sampler_config.set_last_analyze_check_timestamp
     end
