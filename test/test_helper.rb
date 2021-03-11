@@ -86,6 +86,11 @@ class ActiveSupport::TestCase
     unless $first_log_written
       $first_log_written = true
       puts "Database version = #{@db_version}"
+      begin
+        PanoramaConnection.sql_execute "PURGE RECYCLEBIN"
+      rescue Exception=>e
+        Rails.logger.error "#{e.class}:#{e.message} during PURGE RECYCLEBIN"
+      end
     end
   end
 
