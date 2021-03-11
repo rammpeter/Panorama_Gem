@@ -664,7 +664,7 @@ class AdditionController < ApplicationController
       unless prev_record.nil?
         s[:total_increase] = s[:total] - prev_record[:total]
         columns.each do |key, _|
-          s["#{key}_increase"] = s[key] - prev_record[key]
+          s["#{key}_increase"] = s[key] - prev_record[key] rescue nil           # not every category must have values or prevrecords / nil possible
         end
       end
 
