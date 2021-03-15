@@ -57,7 +57,7 @@ class PanoramaSamplerStructureCheckTest < ActiveSupport::TestCase
     end
     PanoramaConnection.sql_execute "ALTER TABLE Panorama_Blocking_Locks MODIFY Action VARCHAR2(20)"
     PanoramaSamplerStructureCheck.do_check(@sampler_config, :BLOCKING_LOCKS)
-    assert_equal 64,
+    assert_equal 128,
                  PanoramaConnection.sql_select_one("SELECT Char_Length FROM User_Tab_Columns WHERE Table_Name = 'PANORAMA_BLOCKING_LOCKS' AND Column_Name = 'ACTION'"),
                  'Ensure original length is restored after check'
   end
