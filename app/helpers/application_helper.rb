@@ -273,11 +273,18 @@ module ApplicationHelper
   def my_html_escape(org_value, line_feed_to_br=true)
     '' if org_value.nil?
 
-    retval =
-    ERB::Util.html_escape(org_value).   # Standard-Escape kann kein NewLine-><BR>
-      gsub(/\r/, '')      # Alle vorkommenden CR ersetzen, führt sonst bei Javascript zu Error String not closed
+    begin
+      retval = ERB::Util.html_escape(org_value)                                          # Standard-Escape kann kein NewLine-><BR>
+    rescue Encoding::CompatibilityError => e
+      Rails.logger.error "#{e.class} #{e.message}: Content: #{org_value}"
+      log_exception_backtrace(e)
 
-    retval = retval.gsub(/\n/, '<br>') if line_feed_to_br  # Alle vorkommenden NewLine ersetzen
+      # force encoding to UTF-8 before
+      retval = ERB::Util.html_escape(org_value.force_encoding('UTF-8'))   # Standard-Escape kann kein NewLine-><BR>
+    end
+
+    # Alle vorkommenden CR ersetzen, führt sonst bei Javascript zu Error String not closed
+    retval = retval.gsub(/\r/, '').gsub(/\n/, '<br>') if line_feed_to_br  # Alle vorkommenden NewLine ersetzen
     retval
   end
 
