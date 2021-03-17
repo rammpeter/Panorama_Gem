@@ -229,7 +229,7 @@ class WorkerThread
       tables = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ? AND (Last_Analyzed IS NULL OR Last_Analyzed < SYSDATE-?)", @sampler_config.get_owner.upcase, DAYS_BETWEEN_ANALYZE_CHECK]
       tables.each do |t|
         start_time = Time.now
-        PanoramaConnection.sql_select_all(["SELECT Index_Name FROM All_Indexes WHERE Owner = ?", @sampler_config.get_owner.upcase]).each do |index|
+        PanoramaConnection.sql_select_all(["SELECT Index_Name FROM All_Indexes WHERE Owner = ? AND Table_Name = ?", @sampler_config.get_owner.upcase, t.table_name]).each do |index|
           PanoramaConnection.sql_execute "ALTER INDEX #{@sampler_config.get_owner.upcase}.#{index.index_name} SHRINK SPACE"
         end
 
