@@ -16,6 +16,12 @@
     </div>
 
     <%= instance_tag %>
+
+    <div class="flex-row-element" title="<%= t(:dba_history_show_sql_area_historic_schema_hint, :default=>'Filter result on username at cursor creation (Parsing_Schema_Name)') %>">
+      User
+      <%= text_field_tag(:username, "", :size=>15) %>
+    </div>
+
     <div class="flex-row-element" title="<%= t(:sqlid_optional_filter_hint, :default=>'Filter on specific SQL-ID (optional, wildcards (%,_) can be used)') %>">
       SQL-ID
       <%= text_field_tag(:sql_id, "", :size=>14) %>

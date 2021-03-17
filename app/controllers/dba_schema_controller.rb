@@ -1628,7 +1628,7 @@ WHERE RowNum < 100
 
     if params[:time_selection_start] && params[:time_selection_end]
       save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
-      where_string << " AND Timestamp >= TO_DATE(?, '#{sql_datetime_minute_mask}') AND Timestamp <  TO_DATE(?, '#{sql_datetime_minute_mask}')"
+      where_string << " AND Timestamp >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND Timestamp <  TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')"
       where_values << @time_selection_start
       where_values << @time_selection_end
     end

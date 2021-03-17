@@ -629,7 +629,7 @@ class StorageController < ApplicationController
               FROM   DBA_Hist_UndoStat u
               LEFT OUTER JOIN DBA_Hist_Parameter p ON p.DBID = u.DBID AND p.Snap_ID = u.Snap_ID AND p.Instance_Number = u.Instance_Number AND p.Parameter_Hash = 2692150816 /* undo_tablespace */ #{"AND p.Con_DBID = u.Con_DBID" if get_db_version >= '12.1'}
               LEFT OUTER JOIN DBA_Tablespaces t ON t.Tablespace_Name = p.Value
-              WHERE  u.Begin_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+              WHERE  u.Begin_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
               AND    u.DBID = ?
               UNION ALL
               SELECT s.Begin_Time, s.End_Time, s.Inst_ID Instance_Number, s.UndoBlks, s.TxnCount, s.MaxQueryLen, s.MaxQueryID MaxQuerySQLID,
@@ -643,7 +643,7 @@ class StorageController < ApplicationController
                       GROUP BY Instance_Number
                      ) MaxAWR ON MaxAWR.Instance_Number = s.Inst_ID AND MaxAWR.Max_Begin_Time < s.Begin_Time
               LEFT OUTER JOIN sys.TS$ t ON t.ts# = s.UndoTSn
-              WHERE  s.Begin_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+              WHERE  s.Begin_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
              )
       #{'WHERE Instance_Number = ?' if @instance}
       ORDER BY Begin_Time

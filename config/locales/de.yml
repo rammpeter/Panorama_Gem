@@ -284,6 +284,7 @@
   dba_history_show_sql_area_historic_sorted_by_hint:            Resultat in absteigender Folge sortiert nach diesem Kriterium
   dba_history_show_sql_area_historic_submit_caption:            SQL anzeigen
   dba_history_show_sql_area_historic_submit_hint:               Anlistung der SQL nach Suchkriterien
+  dba_history_show_sql_area_historic_schema_hint:               Filter der Treffermenge auf Username beim Erzeugen des Child-Cursors (Parsing_Schema_Name)
 
   dba_history_show_sysmetric_historic_grouping_hint:        Verdichtung der Werte auf Zeitabschnitt
   dba_history_show_sysmetric_historic_header:               SysMetric-Historie aus %{sysmetric_history_table}/GV$SysMetric_History oder %{sysmetric_summary_table}/GV$SysMetric_Summary

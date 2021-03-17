@@ -523,8 +523,8 @@ class DbaController < ApplicationController
                       GROUP BY DBID, Snap_ID, Instance_Number
                      ) l
               JOIN   DBA_Hist_Snapshot ss ON ss.DBID=l.DBID AND ss.Snap_ID=l.Snap_ID AND ss.Instance_Number=l.Instance_Number
-              WHERE  ss.Begin_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-              AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') #{wherestr}
+              WHERE  ss.Begin_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+              AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') #{wherestr}
             ) x
       ORDER BY x.Begin_Interval_Time, x.Instance_Number
       ", @dbid, @time_selection_start, @time_selection_end].concat whereval
@@ -1676,8 +1676,8 @@ class DbaController < ApplicationController
 
     @files = sql_select_iterator ["SELECT f.*
                                    FROM   gv$Diag_Trace_File f
-                                   WHERE  f.Change_Time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                                   AND    f.Change_Time <  TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                                   WHERE  f.Change_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                                   AND    f.Change_Time <  TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
                                    #{where_string}
                                    ORDER BY f.Change_Time
                                   ", @time_selection_start, @time_selection_end].concat(where_values)

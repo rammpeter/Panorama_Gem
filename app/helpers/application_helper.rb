@@ -353,8 +353,8 @@ module ApplicationHelper
     snaps = sql_select_all ["
       SELECT /* Panorama-Tool Ramm */ Min(Snap_ID) Min_Snap_ID, MAX(Snap_ID) Max_Snap_ID
       FROM   DBA_Hist_Snapshot
-      WHERE  Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-      AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+      WHERE  Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(time_selection_start)}')
+      AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(time_selection_end)}')
       AND    DBID            = ?
       #{additional_where}",
                             time_selection_start, time_selection_end, prepare_param_dbid].concat(additional_binds)
