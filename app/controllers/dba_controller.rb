@@ -533,6 +533,7 @@ class DbaController < ApplicationController
   end
 
   def oracle_parameter
+    @instance = prepare_param_instance
     @name_array = params[:name_array]
     @name_array = nil if @name_array == ''
 
@@ -553,6 +554,11 @@ class DbaController < ApplicationController
         where_values << @name_array[i]
       end
       where_string << ")"
+    end
+
+    if @instance
+      where_string << " AND Instance = ?"
+      where_values << @instance
     end
 
     @hint = nil
@@ -625,19 +631,20 @@ class DbaController < ApplicationController
 
       end
       @parameters = sql_select_iterator(["\
-        SELECT /* Panorama-Tool Ramm */
-          Inst_ID                Instance,
-          Num                    ID,
-          Type                   ParamType,
-          Name,
-          Description,
-          Value,
-          Display_Value,
-          IsDefault,
-          ISSES_MODIFIABLE, IsSys_Modifiable, IsInstance_Modifiable, IsModified, IsAdjusted, IsDeprecated, Update_Comment#{", IsBasic" if get_db_version >= '11.1'}#{", Con_ID" if get_db_version >= '12.1'}
-        FROM  gv$Parameter
+        SELECT /* Panorama-Tool Ramm */ *
+        FROM   (SELECT Inst_ID                Instance,
+                       Num                    ID,
+                       Type                   ParamType,
+                       Name,
+                       Description,
+                       Value,
+                       Display_Value,
+                       IsDefault,
+                       ISSES_MODIFIABLE, IsSys_Modifiable, IsInstance_Modifiable, IsModified, IsAdjusted, IsDeprecated, Update_Comment#{", IsBasic" if get_db_version >= '11.1'}#{", Con_ID" if get_db_version >= '12.1'}
+                 FROM  gv$Parameter
+                )
         WHERE 1=1 #{where_string}
-        ORDER BY Name, Inst_ID"].concat(where_values),
+        ORDER BY Name, Instance"].concat(where_values),
         record_modifier
       )
 
