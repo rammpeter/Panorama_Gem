@@ -42,7 +42,6 @@ namespace :ci_preparation do
       rescue Exception=> e
         exception_text = "#{e.class}: #{e.message}"
         print '.'
-        puts e.message
         sleep 1                                                               # Wait and try again
       ensure
         resultSet&.close
