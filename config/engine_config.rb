@@ -6,8 +6,10 @@ class EngineConfig < Rails::Application
   # Verzeichnis für permanent zu schreibende Dateien
   if ENV['PANORAMA_VAR_HOME']
     config.panorama_var_home = ENV['PANORAMA_VAR_HOME']
+    config.panorama_var_home_user_defined = true
   else
     config.panorama_var_home = "#{Dir.tmpdir}/Panorama"
+    config.panorama_var_home_user_defined = false
   end
   Dir.mkdir config.panorama_var_home if !File.exist?(config.panorama_var_home)  # Ensure that directory exists
   Rails.logger.info "Panorama writes server side info to #{config.panorama_var_home}"

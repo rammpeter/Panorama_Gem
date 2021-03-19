@@ -36,6 +36,8 @@ module EnvHelper
     if retval.nil? && File.exists?(DEFAULT_SECRET_KEY_BASE_FILE)                # look for generated file
       retval = File.read(DEFAULT_SECRET_KEY_BASE_FILE)
       Rails.logger.info "Secret key base read from default file location '#{DEFAULT_SECRET_KEY_BASE_FILE}' (#{retval.length} chars)"
+      Rails.logger.warn "Default location of secret key base file '#{DEFAULT_SECRET_KEY_BASE_FILE}' points to a temporary folder because you did not provide a value for PANORAMA_VAR_HOME" unless EngineConfig.config.panorama_var_home_user_defined
+      Rails.logger.warn "Your stored connections and sampler configuration may be lost at next Panorama restart !" unless EngineConfig.config.panorama_var_home_user_defined
       Rails.logger.error "Secret key base file at default location '#{DEFAULT_SECRET_KEY_BASE_FILE}' is empty!" if retval.nil? || retval == ''
       Rails.logger.warn "Secret key base from file at default location '#{DEFAULT_SECRET_KEY_BASE_FILE}' is too short! Should have at least 128 chars!" if retval.length < 128
     end
