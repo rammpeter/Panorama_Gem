@@ -450,7 +450,7 @@ module KeyExplanationHelper
           'name-service call wait'            => 'RAC-event seen if PQ is used for short running SQLs with high execution count',
           'ON CPU'                            => "Pseudo wait event, working in database server's CPU",
           'os thread startup'                 => "A SQL statement is waiting for parallel query slave process to be allocated.\nConsider higher value for init-parameter 'parallel_min_servers' if this is a problem.",
-          'PL/SQL lock timer'                 => "Session is sleeping during execution of DBMS_LOCK.SLEEP",
+          'PL/SQL lock timer'                 => "Session is sleeping during execution of DBMS_LOCK.SLEEP rsp. DBMS_SESSION.SLEEP",
           'PX Deq Credit: send blkd'          => 'PQ process with result (producer) waiting for credit to send next message to consumer (e.g. query coordinator)',
           'PX Deq: Parse Reply'               => 'Query Coordinator waiting for the slaves to parse their SQL statements. Examine trace files of PQ-slaves for reason.',
           'PX Deq: Table Q Normal'            => 'Consumer slave set ist waiting for data-rows from producer slave set',

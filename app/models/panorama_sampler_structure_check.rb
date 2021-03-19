@@ -1641,6 +1641,7 @@ ORDER BY Column_ID
     translated_source_buffer = source_buffer.gsub(/PANORAMA_OWNER/i, "#{config.get_owner.upcase}")    # replace PANORAMA_OWNER with the real owner
     translated_source_buffer.gsub!(/COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME/, Time.now.to_s) # change source to provocate change of LAST_DDL_TIME even content is still the same
     translated_source_buffer.gsub!(/PANORAMA_VERSION/, PanoramaGem::VERSION) # stamp version to file
+    translated_source_buffer.gsub!(/DBMS_LOCK.SLEEP/i, 'DBMS_SESSION.SLEEP') if PanoramaConnection.db_version >= '18.0'
     translated_source_buffer
   end
 

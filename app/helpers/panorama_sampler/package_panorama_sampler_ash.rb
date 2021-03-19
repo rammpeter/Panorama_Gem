@@ -386,6 +386,7 @@ END Panorama_Sampler_ASH;
         v_Bulk_Size := 10; -- Number of seconds between persists/commits
 
         -- Wait until current second ends, ensure also that first sample is at seconds bound
+        -- DBMS_LOCK will be replaced with DBMS_SESSION before execution if DB version >= 18.0
         DBMS_LOCK.SLEEP(1-MOD(EXTRACT(SECOND FROM SYSTIMESTAMP), 1));
 
         -- Reduce Bulk_Size before end of snapshot so last records are so commited that they are visible for snapshot creation and don't fall into the next snapshot

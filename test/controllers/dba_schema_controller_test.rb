@@ -88,7 +88,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
         {owner: nil,        segment_name: 'ALL_TABLES'},                        # View
         {owner: 'SYS',      segment_name: 'WRH$_ACTIVE_SESSION_HISTORY'},       # partitioned Table
         {owner: 'PUBLIC',   segment_name: 'V$ARCHIVE'},                         # Synonym
-        {owner: 'SYS',      segment_name: 'DBMS_LOCK'},                         # Package oder Body
+        {owner: 'SYS',      segment_name: 'DBMS_SESSION'},                      # Package oder Body
     ]
         .concat(get_db_version >= '12.1' ? [{owner: 'XDB',      segment_name: 'XDB$ANY'}] :  [])    # XML-Table instead of relational table
         .each do |object|
@@ -97,10 +97,10 @@ class DbaSchemaControllerTest < ActionController::TestCase
     end
 
     [nil, 1].each do |show_line_numbers|
-      get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"DBMS_LOCK", :object_type=>'PACKAGE', show_line_numbers: show_line_numbers, :update_area=>:hugo }
+      get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"DBMS_SESSION", :object_type=>'PACKAGE', show_line_numbers: show_line_numbers, :update_area=>:hugo }
       assert_response :success
 
-      get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"DBMS_LOCK", :object_type=>'PACKAGE BODY', show_line_numbers: show_line_numbers, :update_area=>:hugo }
+      get :list_object_description, :params => {:format=>:html, :owner=>"SYS", :segment_name=>"DBMS_SESSION", :object_type=>'PACKAGE BODY', show_line_numbers: show_line_numbers, :update_area=>:hugo }
       assert_response :success
     end
 
@@ -181,15 +181,15 @@ class DbaSchemaControllerTest < ActionController::TestCase
     assert_response :success
     post :list_dependencies, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBA_AUDIT_TRAIL", :object_type=>'VIEW', :update_area=>:hugo }
     assert_response :success
-    post :list_dependencies, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBMS_LOCK", :object_type=>'PACKAGE', :update_area=>:hugo }
+    post :list_dependencies, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBMS_SESSION", :object_type=>'PACKAGE', :update_area=>:hugo }
     assert_response :success
-    post :list_dependencies, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBMS_LOCK", :object_type=>'PACKAGE BODY', :update_area=>:hugo }
-    assert_response :success
-
-    post :list_dependencies_from_me_tree, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBMS_LOCK", :object_type=>'PACKAGE BODY', :update_area=>:hugo }
+    post :list_dependencies, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBMS_SESSION", :object_type=>'PACKAGE BODY', :update_area=>:hugo }
     assert_response :success
 
-    post :list_dependencies_im_from_tree, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBMS_LOCK", :object_type=>'PACKAGE BODY', :update_area=>:hugo }
+    post :list_dependencies_from_me_tree, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBMS_SESSION", :object_type=>'PACKAGE BODY', :update_area=>:hugo }
+    assert_response :success
+
+    post :list_dependencies_im_from_tree, :params => {:format=>:html, :owner=>"SYS", :object_name=>"DBMS_SESSION", :object_type=>'PACKAGE BODY', :update_area=>:hugo }
     assert_response :success
 
     post :list_grants, :params => {:format=>:html, :owner=>"SYS", :object_name=>"AUD$", :update_area=>:hugo }
