@@ -45,7 +45,7 @@ module EnvHelper
     if retval.nil? || retval == ''
       Rails.logger.warn "Neither SECRET_KEY_BASE nor SECRET_KEY_BASE_FILE provided nor file exists at default location #{DEFAULT_SECRET_KEY_BASE_FILE}!"
       Rails.logger.warn "Encryption key for SECRET_KEY_BASE is initially generated and stored at #{DEFAULT_SECRET_KEY_BASE_FILE}!"
-      Rails.logger.warn "This key is valid only for the lifetime of this running Panorama instance if you don't have declared PANORAMA_VAR_HOME to a persistent folder!!!"
+      Rails.logger.warn "This key is may be valid only for the lifetime of this running Panorama instance because you did not provide a value for PANORAMA_VAR_HOME !" unless EngineConfig.config.panorama_var_home_user_defined
       retval = Random.rand 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
       File.write(DEFAULT_SECRET_KEY_BASE_FILE, retval)
     end
