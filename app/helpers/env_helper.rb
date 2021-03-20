@@ -9,11 +9,11 @@ module EnvHelper
   include DatabaseHelper
   include EnvExtensionHelper
 
-  # set default dir so that it is persistent if PANORAMA_VAR_HOME is set outside
-  DEFAULT_SECRET_KEY_BASE_FILE = File.join(EngineConfig.config.panorama_var_home, 'secret_key_base')
 
   # get master_key from file or environment
   def self.secret_key_base
+    # set default dir so that it is persistent if PANORAMA_VAR_HOME is set outside
+    default_secret_key_base_file = File.join(EngineConfig.config.panorama_var_home, 'secret_key_base')
     retval = nil
 
     if ENV['SECRET_KEY_BASE']                                                   # Env rules over file
@@ -33,21 +33,21 @@ module EnvHelper
       end
     end
 
-    if retval.nil? && File.exists?(DEFAULT_SECRET_KEY_BASE_FILE)                # look for generated file
-      retval = File.read(DEFAULT_SECRET_KEY_BASE_FILE)
-      Rails.logger.info "Secret key base read from default file location '#{DEFAULT_SECRET_KEY_BASE_FILE}' (#{retval.length} chars)"
-      Rails.logger.warn "Default location of secret key base file '#{DEFAULT_SECRET_KEY_BASE_FILE}' points to a temporary folder because you did not provide a value for PANORAMA_VAR_HOME" unless EngineConfig.config.panorama_var_home_user_defined
+    if retval.nil? && File.exists?(default_secret_key_base_file)                # look for generated file
+      retval = File.read(default_secret_key_base_file)
+      Rails.logger.info "Secret key base read from default file location '#{default_secret_key_base_file}' (#{retval.length} chars)"
+      Rails.logger.warn "Default location of secret key base file '#{default_secret_key_base_file}' points to a temporary folder because you did not provide a value for PANORAMA_VAR_HOME" unless EngineConfig.config.panorama_var_home_user_defined
       Rails.logger.warn "Your stored connections and sampler configuration may be lost at next Panorama restart !" unless EngineConfig.config.panorama_var_home_user_defined
-      Rails.logger.error "Secret key base file at default location '#{DEFAULT_SECRET_KEY_BASE_FILE}' is empty!" if retval.nil? || retval == ''
-      Rails.logger.warn "Secret key base from file at default location '#{DEFAULT_SECRET_KEY_BASE_FILE}' is too short! Should have at least 128 chars!" if retval.length < 128
+      Rails.logger.error "Secret key base file at default location '#{default_secret_key_base_file}' is empty!" if retval.nil? || retval == ''
+      Rails.logger.warn "Secret key base from file at default location '#{default_secret_key_base_file}' is too short! Should have at least 128 chars!" if retval.length < 128
     end
 
     if retval.nil? || retval == ''
-      Rails.logger.warn "Neither SECRET_KEY_BASE nor SECRET_KEY_BASE_FILE provided nor file exists at default location #{DEFAULT_SECRET_KEY_BASE_FILE}!"
-      Rails.logger.warn "Encryption key for SECRET_KEY_BASE is initially generated and stored at #{DEFAULT_SECRET_KEY_BASE_FILE}!"
+      Rails.logger.warn "Neither SECRET_KEY_BASE nor SECRET_KEY_BASE_FILE provided nor file exists at default location #{default_secret_key_base_file}!"
+      Rails.logger.warn "Encryption key for SECRET_KEY_BASE is initially generated and stored at #{default_secret_key_base_file}!"
       Rails.logger.warn "This key is may be valid only for the lifetime of this running Panorama instance because you did not provide a value for PANORAMA_VAR_HOME !" unless EngineConfig.config.panorama_var_home_user_defined
       retval = Random.rand 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
-      File.write(DEFAULT_SECRET_KEY_BASE_FILE, retval)
+      File.write(default_secret_key_base_file, retval)
     end
     retval.to_s.strip                                                           # remove witespaces incl. \n
   end

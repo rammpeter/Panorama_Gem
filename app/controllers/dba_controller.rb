@@ -1027,12 +1027,12 @@ class DbaController < ApplicationController
       JOIN   gv$Open_Cursor oc ON oc.Inst_ID = se.Inst_ID
                               AND oc.SID     = se.SID
       LEFT OUTER JOIN (SELECT Inst_ID, Address, Hash_Value,
-                               SUM(Estimated_Optimal_Size)  Estimated_Optimal_Size,
-                               SUM(Estimated_OnePass_Size)  Estimated_OnePass_Size,
-                               SUM(Last_Memory_used)        Last_Memory_Used,
-                               SUM(Active_Time)             Active_Time,
-                               SUM(Max_TempSeg_Size)        Max_TempSeg_Size,
-                               SUM(Last_TempSeg_Size)       Last_TempSeg_Size
+                               SUM(Estimated_Optimal_Size)/(1024)  Estimated_Optimal_Size_KB,
+                               SUM(Estimated_OnePass_Size)/(1024)  Estimated_OnePass_Size_KB,
+                               SUM(Last_Memory_used)/(1024)        Last_Memory_Used_KB,
+                               SUM(Active_Time)/1000               Active_Time_ms,
+                               SUM(Max_TempSeg_Size)/(1024)        Max_TempSeg_Size_KB,
+                               SUM(Last_TempSeg_Size)/(1024)       Last_TempSeg_Size_KB
                        FROM   gv$SQL_Workarea
                        GROUP BY Inst_ID, Address, Hash_Value
                       ) wa ON wa.Inst_ID    = oc.Inst_ID
