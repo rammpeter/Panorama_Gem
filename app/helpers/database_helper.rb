@@ -149,6 +149,8 @@ public
           [ '\s+RIGHT +OUTER +JOIN\s' , 16],
           [ '\s+RIGHT +JOIN\s'        , 10],
           [ '\s+INNER +JOIN\s'        , 10],
+          [ '\s+FULL +OUTER +JOIN\s'  , 15],
+          [ '\s+CROSS +JOIN\s'        , 10],
           [ '\s+JOIN\s'               , 4],
           [ '\s+WHERE\s'              , 5],
           [ '\s+GROUP\s+BY'           , 8],
