@@ -176,6 +176,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
                                        {:controller   => :storage,
                                         :action       => :list_sysaux_occupants,
                                         :update_area  => @update_area,
+                                        con_id: rec['con_id']
                                        },
                                :title=>"Show detailed usage of SYSAUX storage from v$SYSAUX_Occupants"
                                )

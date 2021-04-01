@@ -237,11 +237,14 @@ ORDER BY x.MBytes DESC NULLS LAST
             :name  => t(:dragnet_helper_110_name, :default=>'Concurrency on memory, latches: insufficient cached sequences from DBA_Sequences'),
             :desc  => t(:dragnet_helper_110_desc, :default=>'Fetching of sequence values / filling the sequence cache causes writes in dictionary and interchange between REC-instances.
                           Highly frequent access on dictionary structures of sequences leads to unnecessary wait events, therefore you should define reasonable cache sizes for sequences.'),
-            :sql=>  "SELECT x.*,
+            :sql=>  "SELECT Sequence_Owner, Sequence_Name, Cache_size,
+                            ROUND(suggested, 0-LENGTH(TO_CHAR(suggested))+1) \"Suggested Cache Size\",
+                            Min_Value, Max_Value, Increment_By, Cycle_flag, Last_Number,
+                            \"Pct. of max. value reached\", \"Values per day\", Created, Last_DDL_Time,
                             ROUND(\"Values per day\"/DECODE(Cache_Size,0,1,Cache_Size)) \"Cache reloads per day\"
                      FROM   (SELECT
                                     s.Sequence_Owner, s.Sequence_Name, s.Cache_size,
-                                    ROUND((s.Last_Number-s.Min_Value)/(SYSDATE-o.Created)/24) \"Suggested Cache Size\", /* Based on strived one reload per hour */
+                                    ROUND((s.Last_Number-s.Min_Value)/(SYSDATE-o.Created)/24) Suggested, /* Based on strived one reload per hour */
                                     s.Min_Value, s.Max_Value, s.Increment_By,
                                     s.Cycle_flag, s.Last_Number,
                                     ROUND(s.Last_Number*100/s.Max_Value, 1) \"Pct. of max. value reached\",

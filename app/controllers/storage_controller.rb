@@ -1363,7 +1363,13 @@ class StorageController < ApplicationController
   end
 
   def list_sysaux_occupants
-    @occupants = sql_select_iterator "SELECT * FROM V$SYSAUX_Occupants ORDER BY Space_Usage_KBytes DESC"
+    con_id = prepare_param :con_id
+    @occupants = sql_select_iterator [
+      "SELECT *
+       FROM   V$SYSAUX_Occupants
+       #{"WHERE Con_ID = ?" if con_id}
+       ORDER BY Space_Usage_KBytes DESC
+      "].concat(con_id ? [con_id] : [])
     render_partial
   end
 

@@ -109,7 +109,7 @@ class StorageControllerTest < ActionController::TestCase
   end
 
   test "list_sysaux_occupants with xhr: true" do
-    post :list_sysaux_occupants, :params => { :format=>:html}
+    post :list_sysaux_occupants, :params => { :format=>:html, con_id: (get_db_version >= '12.1' ? 1 : nil)}
     assert_response :success
   end
 
