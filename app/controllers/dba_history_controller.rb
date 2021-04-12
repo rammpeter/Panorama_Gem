@@ -1859,24 +1859,12 @@ FROM (
     render :json => response, :status => 200
   end
 
-
-  def show_resource_limits_historic
-    @names = sql_select_all 'SELECT /* Panorama-Tool Ramm */ DISTINCT Resource_Name FROM DBA_Hist_Resource_Limit'
-    if @names.length == 0
-      show_popup_message("No content available in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Resource_Limit')} for your connection!
-For PDB please connect to database with CDB-user instead of PDB-user.")
-    else
-      render_partial
-    end
-  end
-
   def list_resource_limits_historic
     @instance  = prepare_param_instance
     @dbid      = prepare_param_dbid
-    @resource_name = params[:resource][:name]
-    save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
+    @resource_name = params[:resource_name]
 
-    @limits = sql_select_iterator ["\
+    @limits = sql_select_all ["\
       SELECT /* Panorama-Tool Ramm */
              ROUND(ss.End_Interval_Time, 'MI')    End_Interval,
              SUM(rl.Current_Utilization)          Current_Utilization,
@@ -1888,16 +1876,20 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
                      CASE WHEN TRIM(Initial_Allocation) = 'UNLIMITED' THEN -1 ELSE TO_NUMBER(Initial_Allocation) END Initial_Allocation,
                      CASE WHEN TRIM(Limit_Value)        = 'UNLIMITED' THEN -1 ELSE TO_NUMBER(Limit_Value)        END Limit_Value
               FROM   DBA_Hist_Resource_Limit
-              WHERE  Resource_Name = ?
+              WHERE  DBID           = ?
+              AND    Resource_Name  = ?
+              #{ @instance ? " AND Instance_Number = ?" : ''}
              ) rl ON rl.DBID=ss.DBID AND rl.Snap_ID=ss.Snap_ID AND rl.Instance_Number=ss.Instance_Number
-      WHERE  ss.End_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
-      AND    ss.End_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
-      #{ @instance ? " AND ss.Instance_Number=#{@instance}" : ''}
       GROUP BY ROUND(ss.End_Interval_Time, 'MI')
       ORDER BY ROUND(ss.End_Interval_Time, 'MI') DESC
-     ", @resource_name, @time_selection_start, @time_selection_end ]
+     ", @dbid, @resource_name].concat(@instance ? [@instance] : [])
 
-    render_partial
+    if @limits.length == 0
+      show_popup_message("No content available in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Resource_Limit')} for your connection!
+  For PDB please connect to database with CDB-user instead of PDB-user.")
+    else
+      render_partial
+    end
   end
 
   private

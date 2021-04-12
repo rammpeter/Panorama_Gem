@@ -369,10 +369,8 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
         [1, nil].each do |instance|
           post '/dba_history/list_resource_limits_historic', params: {
               format:               :html,
-              time_selection_start: @time_selection_start,
-              time_selection_end:   @time_selection_end,
               instance:             instance,
-              resource:             {name: resname_rec.resource_name},
+              resource_name:        resname_rec.resource_name,
               update_area:          :hugo
           }
           assert_response :success

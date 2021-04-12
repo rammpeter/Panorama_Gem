@@ -1756,4 +1756,17 @@ class DbaController < ApplicationController
     render_partial
   end
 
+  def resource_limits
+    @resource_limits = sql_select_all ["
+       SELECT rl.*
+       FROM   gv$Resource_Limit rl
+       ORDER BY rl.Resource_Name, rl.Inst_ID
+      "]
+    if @resource_limits.length == 0
+      show_popup_message("No content available in gv$Resource_Limit for your connection!
+  For PDB please connect to database with CDB-user instead of PDB-user.")
+    else
+      render_partial
+    end
+  end
 end # Class

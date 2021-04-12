@@ -1775,11 +1775,12 @@
   menu_dba_schema_audit_trail_hint:                         Anzeige von per Standard Audit Trail geloggten Aktivitäten (DBA_Audit_Trail)
   menu_dba_schema_ts_objects_hint:                          DB-Objekte nach Größe, Auslastung, Verschnitt
   menu_dba_schema_unified_audit_trail_hint:                 Anzeige von per Unified Audit Trail geloggten Aktivitäten
-  menu_dba_parameter_hint:                                  Anlistung der aktiven Instance-Parameter
+  menu_dba_parameter_hint:                                  Anlistung der Init-Parameter der Instanz(en)
   menu_dba_redologs_hint:                                   Anlistung der Redo-Logs aus gv$Log
   menu_dba_redologs_historic_hint:                          Anlistung historischer Info der Redo-Logs aus Active Workload Repository (AWR)
   menu_dba_redologs_log_history_caption:                    Historisch aus gv$Log_History
   menu_dba_redologs_log_history_hint:                       Anlistung detaillierter historischer Info der Redo-Logs aus gv$Log_History
+  menu_dba_resource_limit_hint:                             Anlistung der Resource Limits aus gv$Resource_Limit
   menu_dba_server_logs_hint:                                Anlistung des Inhaltes der Server-Logs (alert.log, listener.log, ASM-Log)
   menu_dba_server_traces_hint:                              Anlistung der Trace-Files des DB-Servers
   menu_dba_sessions_hint:                                   Anlistung der aktuellen Session-Info
