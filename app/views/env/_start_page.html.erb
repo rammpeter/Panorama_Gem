@@ -89,7 +89,7 @@
                {:caption=>'Open mode',        :data=>proc{|rec| rec.open_mode},                       :title=>"Open mode info"},
                {:caption=>'Restricted',       :data=>proc{|rec| rec.restricted},                      :title=>"Indicates whether only users possessing RESTRICTED SESSION privilege can connect to the PDB"},
                {:caption=>'Open time',        :data=>proc{|rec| localeDateTime(rec.open_time)},       :title=>"Date and time when the database was last opened"},
-               {:caption=>'Total size',       :data=>proc{|rec| fn(rec.total_size/(1024*1024))},      :title=>"If a PDB is opened, disk space (in MBytes) used by the container,\nincluding both data and temp files.\nIf a PDB is closed, will be set to 0."},
+               {:caption=>'Total size',       :data=>proc{|rec| fn(rec.total_size/(1024*1024))},      :title=>"If a PDB is opened, disk space (in MBytes) used by the container,\nincluding both data and temp files.\nIf a PDB is closed, will be set to 0.", data_title: proc{|rec| "%t\n#{size_explain((rec.total_size.to_f / (1024*1024) rescue nil))}"} },
                {:caption=>'Block size',       :data=>proc{|rec| fn(rec.block_size)},                  :title=>"The current block size for the PDB"},
                {:caption=>'Recovery status',  :data=>proc{|rec| rec.recovery_status},                 :title=>"Shows whether recovery is enabled or disabled for the PDB."},
                {:caption=>'Snapshot parent',  :data=>proc{|rec| rec.snapshot_parent_con_id },         :title=>"This column shows the container ID of the master PDB that this PDB is a snapshot clone of.\nThis column shows a non-zero value only if the PDB is a snapshot clone.\nFor all other cases, it shows a value of 0."},
