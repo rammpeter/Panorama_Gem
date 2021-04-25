@@ -941,6 +941,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Startup_Time',                   column_type:  'TIMESTAMP',  precision: 3  },  # no not_null because added later (27.03.2018)
               { column_name:  'Begin_Interval_Time',            column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
               { column_name:  'End_Interval_Time',              column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
+              { column_name:  'End_Interval_Time_TZ',           column_type:  'TIMESTAMP WITH TIME ZONE',  not_null: false, precision: 3  },
               { column_name:  'Con_ID',                         column_type:  'NUMBER' },
           ],
           primary_key: { columns: ['DBID', 'Snap_ID', 'Instance_Number'], compress: 2 },
