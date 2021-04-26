@@ -1700,6 +1700,21 @@ ORDER BY Column_ID
     end
   end
 
+  # get column type expression for CREATE TABLE or ALTER TABLE
+  # @param [Hash] column
+  # @return [String]
+  def column_type_expr(column)
+    expr = "#{column[:column_name]} "
+    expr << case column[:column_type].upcase
+            when 'VARCHAR2' then "#{column[:column_type]} (#{column[:precision]} CHAR)"
+            when 'TIMESTAMP WITH TIME ZONE' then "TIMESTAMP (#{column[:precision]} ) WITH TIME ZONE"
+            else
+              "#{column[:column_type]} #{"(#{column[:precision]}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]}"
+            end
+    expr << " #{column[:addition]}" if column[:addition]
+    expr << " NOT NULL" if column[:not_null]
+    expr
+  end
 
   def check_table_existence(table)
     @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config.get_owner.upcase] unless @ora_tables
@@ -1709,9 +1724,7 @@ ORDER BY Column_ID
       ############# Check Table existence
       log "Table #{table[:table_name]} does not exist"
       sql = "CREATE TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ("
-      sql << table[:columns].map do |column|
-        "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{" CHAR" if column[:column_type] == 'VARCHAR2'}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]} #{"NOT NULL" if column[:not_null]}"
-      end.join(",\n")
+      sql << table[:columns].map { |column| column_type_expr(column) }.join(",\n")
       sql << ") PCTFREE 0 ENABLE ROW MOVEMENT"                                  # no need for updates on this tables
       log(sql)
       PanoramaConnection.sql_execute(sql)
@@ -1726,9 +1739,7 @@ ORDER BY Column_ID
     table[:columns].each do |column|
       # Check column existence
       if @ora_tab_columns.select{|c| c['table_name'] == table[:table_name].upcase && c['column_name'] == column[:column_name].upcase}.length == 0
-        sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ADD ("
-        sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{" CHAR" if column[:column_type] == 'VARCHAR2'}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]}"
-        sql << ")"
+        sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ADD (#{column_type_expr(column)})"
         log(sql)
         PanoramaConnection.sql_execute(sql)
       else                                                                      # Check NULL state for existing columns
