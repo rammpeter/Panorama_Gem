@@ -941,7 +941,8 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Startup_Time',                   column_type:  'TIMESTAMP',  precision: 3  },  # no not_null because added later (27.03.2018)
               { column_name:  'Begin_Interval_Time',            column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
               { column_name:  'End_Interval_Time',              column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
-              { column_name:  'End_Interval_Time_TZ',           column_type:  'TIMESTAMP WITH TIME ZONE',  not_null: false, precision: 3  },
+              { column_name:  'End_Interval_Time_TZ',           column_type:  'TIMESTAMP (3) WITH TIME ZONE',  not_null: false },
+              { column_name:  'Snap_Timezone',                  column_type:  'INTERVAL DAY(0) TO SECOND(0)',  not_null: false },
               { column_name:  'Con_ID',                         column_type:  'NUMBER' },
           ],
           primary_key: { columns: ['DBID', 'Snap_ID', 'Instance_Number'], compress: 2 },
@@ -1707,7 +1708,6 @@ ORDER BY Column_ID
     expr = "#{column[:column_name]} "
     expr << case column[:column_type].upcase
             when 'VARCHAR2' then "#{column[:column_type]} (#{column[:precision]} CHAR)"
-            when 'TIMESTAMP WITH TIME ZONE' then "TIMESTAMP (#{column[:precision]} ) WITH TIME ZONE"
             else
               "#{column[:column_type]} #{"(#{column[:precision]}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]}"
             end

@@ -47,8 +47,12 @@ class PanoramaSamplerSampling
     end
 
     ## DBA_Hist_Snapshot, must be the first atomic transaction to ensure that next snap_id is exactly incremented
-    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config.get_owner}.Panorama_Snapshot (Snap_ID, DBID, Instance_Number, Startup_Time, Begin_Interval_Time, End_Interval_Time, End_Interval_Time_TZ, Con_ID
-                                    ) SELECT ?, ?, ?, Startup_Time, ?, SYSDATE, SYSTIMESTAMP, ? FROM v$Instance",
+    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config.get_owner}.Panorama_Snapshot (Snap_ID, DBID, Instance_Number, Startup_Time, Begin_Interval_Time, End_Interval_Time, End_Interval_Time_TZ, Snap_Timezone, Con_ID
+                                    ) SELECT ?, ?, ?, Startup_Time, ?, SYSDATE, SYSTIMESTAMP,
+                                             TO_DSINTERVAL(CASE WHEN TO_NUMBER(TO_CHAR(SYSTIMESTAMP, 'TZH')) < 0 THEN '-' END||'0 '||
+                                                           SUBSTR(TO_CHAR(SYSTIMESTAMP, 'TZH'), 2)||':'||TO_CHAR(SYSTIMESTAMP, 'TZM')||':00'
+                                                          ),
+                                             ? FROM v$Instance",
                                     @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, begin_interval_time, PanoramaConnection.con_id]
 
     do_snapshot_call = "Do_Snapshot(p_Snap_ID                   => ?,
