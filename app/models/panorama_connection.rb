@@ -475,6 +475,7 @@ class PanoramaConnection
       get_connection.exec_update(stmt, query_name, binds)
     rescue Exception => e
       if e.message['ORA-10632']
+        Rails.logger.error "#{e.class}:#{e.message}! Retrying execution of SQL\n#{sql}"
         # reexecute the SQL in case of ORA-10632: invalid rowid
         # this can happen at CREATE TABLE with ENABLE ROW MOVEMENT
         get_connection.exec_update(stmt, query_name, binds)
