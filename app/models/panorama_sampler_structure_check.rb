@@ -1725,9 +1725,10 @@ ORDER BY Column_ID
       log "Table #{table[:table_name]} does not exist"
       sql = "CREATE TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ("
       sql << table[:columns].map { |column| column_type_expr(column) }.join(",\n")
-      sql << ") PCTFREE 0 ENABLE ROW MOVEMENT"                                  # no need for updates on this tables
+      sql << ") PCTFREE 0"                                  # no need for updates on this tables
       log(sql)
       PanoramaConnection.sql_execute(sql)
+      PanoramaConnection.sql_execute("ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ENABLE ROW MOVEMENT")
       log "Table #{table[:table_name]} created"
     end
 
