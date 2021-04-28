@@ -37,6 +37,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
       @subpart_table_subpartition_name  = subpart_table.subpartition_name
     else
       puts "DbaSchemaControllerTest.setup: There are no table subpartitions in database"
+      @subpart_table_owner              = nil                                   # prevent from warning: instance variable @subpart_table_owner not initialized
     end
 
     index = sql_select_first_row "SELECT Owner, Index_Name, Table_Owner, Table_Name FROM DBA_Indexes WHERE Segment_Created = 'YES' AND RowNum < 2"
