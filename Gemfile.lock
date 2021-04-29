@@ -86,11 +86,17 @@ GEM
     mail (2.7.1)
       mini_mime (>= 0.1.1)
     method_source (1.0.0)
+    mime-types (3.3.1)
+      mime-types-data (~> 3.2015)
+    mime-types-data (3.2021.0225)
     mini_mime (1.1.0)
     minitest (5.14.4)
     nio4r (2.5.7-java)
     nokogiri (1.11.3-java)
       racc (~> 1.4)
+    playwright-ruby-client (0.5.2)
+      concurrent-ruby (>= 1.1.6)
+      mime-types (>= 3.0)
     public_suffix (4.0.6)
     puma (5.2.2-java)
       nio4r (~> 2.0)
@@ -164,6 +170,7 @@ DEPENDENCIES
   capybara
   launchy
   panorama_gem!
+  playwright-ruby-client
   puma
   selenium-webdriver
   simplecov

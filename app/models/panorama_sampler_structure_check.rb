@@ -1636,6 +1636,12 @@ ORDER BY Column_ID
         end
       end
     end
+
+    begin
+      PanoramaConnection.sql_execute "PURGE RECYCLEBIN"                           # Free ressources after drop table
+    rescue Exception => e
+      Rails.logger.error "#{e.class}:#{e.message} at PURGE RECYCLEBIN"
+    end
   end
 
   def self.translate_plsql_aliases(config, source_buffer)
