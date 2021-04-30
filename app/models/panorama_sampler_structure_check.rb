@@ -1638,7 +1638,7 @@ ORDER BY Column_ID
     end
 
     begin
-      PanoramaConnection.sql_execute "PURGE RECYCLEBIN"                           # Free ressources after drop table
+      PanoramaConnection.sql_execute "PURGE RECYCLEBIN"                           # Free ressources after drop table, avoid ORA-10632 especially for 19.10-SE2
     rescue Exception => e
       Rails.logger.error "#{e.class}:#{e.message} at PURGE RECYCLEBIN"
     end

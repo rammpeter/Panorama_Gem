@@ -24,6 +24,20 @@ class EngineConfig < Rails::Application
   # File-Store für ActiveSupport::Cache::FileStore
   config.client_info_filename = "#{config.panorama_var_home}/client_info.store"
 
+  # Remove ojdbc11.jar if Panorama is running with Java < 11.x
+  # otherwise errors are causewd while loading JDBC driver like
+  # NameError:cannot link Java class oracle.jdbc.OracleDriver oracle/jdbc/OracleDriver has been compiled by a more recent version of the Java Runtime (class file version 55.0), this version of the Java Runtime only recognizes class file versions up to 52.0
+  java_version = java.lang.System.getProperty("java.version")
+  if java_version.match(/^8./) || java_version.match(/^9./) || java_version.match(/^10./)
+    begin
+      filename = "#{Rails.root}/lib/ojdbc11.jar"
+      File.unlink(filename)
+      Rails.logger.info "#{filename} removed because Java version is #{java_version}"
+    rescue Exception => e
+      Rails.logger.error "Error #{e.class}:#{e.message} while removing #{filename} because Java version is #{java_version}"
+    end
+  end
+
   @@client_store_mutex = Mutex.new
   def self.get_client_info_store
     if !defined?($login_client_store) || $login_client_store.nil?

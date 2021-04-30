@@ -1440,7 +1440,7 @@ class DbaController < ApplicationController
              P3Text, P3, P3Raw,
              #{"Seconds_In_Wait*1000 Wait_Time_MilliSeconds," if get_db_version < '11.1'}
              #{"DECODE(State, 'WAITING', s.Wait_Time_Micro, s.Time_Since_Last_Wait_Micro)/1000 Wait_Time_MilliSeconds," if get_db_version >= '11.1'}
-             State,
+             UserName, State,
              Client_Info, Module, Action,
              SQL_ID, Prev_SQL_ID, SQL_Child_Number, Prev_Child_Number
       FROM   gv$Session s
