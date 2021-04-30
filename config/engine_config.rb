@@ -28,7 +28,7 @@ class EngineConfig < Rails::Application
   # otherwise errors are causewd while loading JDBC driver like
   # NameError:cannot link Java class oracle.jdbc.OracleDriver oracle/jdbc/OracleDriver has been compiled by a more recent version of the Java Runtime (class file version 55.0), this version of the Java Runtime only recognizes class file versions up to 52.0
   java_version = java.lang.System.getProperty("java.version")
-  if java_version.match(/^8./) || java_version.match(/^9./) || java_version.match(/^10./)
+  if java_version.match(/^1.8./) || java_version.match(/^1.9./) || java_version.match(/^10./)
     begin
       filename = "#{Rails.root}/lib/ojdbc11.jar"
       File.unlink(filename)
