@@ -394,10 +394,10 @@ class DbaHistoryController < ApplicationController
                                ) Max_Sample_Time
                        FROM   (
                                 SELECT /*+ NO_MERGE */ DBID, Instance_Number,
-                                       NVL(MAX(CASE WHEN Begin_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') THEN Snap_ID ELSE NULL END) /* StartMin */,
-                                           MIN(CASE WHEN Begin_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') THEN Snap_ID ELSE NULL END) /* StartMax */) Start_Snap_ID,
-                                       NVL(MIN(CASE WHEN End_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') THEN Snap_ID ELSE NULL END) /* EndMax */,
-                                           MAX(CASE WHEN End_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') THEN Snap_ID ELSE NULL END) /* EndMin */) End_Snap_ID
+                                       COALESCE(MAX(CASE WHEN Begin_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') THEN Snap_ID ELSE NULL END) /* StartMin */,
+                                                MIN(CASE WHEN Begin_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') THEN Snap_ID ELSE NULL END) /* StartMax */) Start_Snap_ID,
+                                       COALESCE(MIN(CASE WHEN End_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') THEN Snap_ID ELSE NULL END) /* EndMax */,
+                                                MAX(CASE WHEN End_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') THEN Snap_ID ELSE NULL END) /* EndMin */) End_Snap_ID
                                 FROM   DBA_Hist_Snapshot
                                 WHERE  DBID=? #{'AND Instance_Number=?' if @instance}
                                 GROUP BY Instance_Number, DBID
