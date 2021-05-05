@@ -2,44 +2,9 @@
 
 #TODO: test/dummy/public/assets entsorgen incl. .sprockets* vor Tests
 
-# Remark 2020-01-06
-# You also don’t need to use Capybara’s save_and_open_screenshot, because Rails provides a take_screenshot method, that saves a screenshot in /tmp, and provides a link in the test output for easy access.
-
-
-=begin
-Capybara.register_driver :headless_chrome do |app|
-  args = ['window-size=1400,1000']                                              # window must be large enough in Y-dimension to paint full menu
-  args.concat %w[headless disable-gpu] if RbConfig::CONFIG['host_os'] != 'darwin' # run headless if not Mac-OS
-  args.concat ['--no-sandbox']                                                  # allow running chrome as root in docker
-  args.concat ["--enable-logging", "--verbose", "--log-path=chromedriver.log"]  # don't suppress chromedriver_helper log output
-  args.concat ['--disable-dev-shm-usage']                                       # try to prevent Selenium::WebDriver::Error::NoSuchDriverError: invalid session id
-
-
-
-  capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
-      loggingPrefs: {browser: 'ALL', driver: 'ALL', performance: 'ALL'},                           # Activate logging by selenium webdriver
-      chromeOptions: { args: args }
-  )
-
-  # Enable debug by "$DEBUG = true" or by environment variable "export DEBUG=1"
-  # This drives debug logging in selenium-webdriver/lib/selenium/webdriver/common/logger.rb
-  driver = Capybara::Selenium::Driver.new(
-      app,
-      browser: :chrome,
-      desired_capabilities: capabilities
-  )
-
-  # Selenium::WebDriver.logger.level = :debug                                     # Enable Selenium logging to console
-
-  driver
-end
-=end
-
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # $DEBUG = true # Activate logging for Webdriver also
   using   = (RbConfig::CONFIG['host_os'] != 'darwin' ? :headless_chrome : :chrome) # run headless if not Mac-OS
-  service = ::Selenium::WebDriver::Service.chrome(args: { whitelisted_ips: true, verbose: true, log_path: '/tmp/chromedriver.log' })
-#  options = {service: service}
   options = {}
 #options = {driver_opts: '--whitelisted-ips'}  # command line options for chromedriver
 

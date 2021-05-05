@@ -360,6 +360,10 @@ Detailed information about LOGON operations is available via menu 'DBA general /
 This list shows all all columns with unique values at the time of last analysis if neither unqiue index nor unique constraint exists for this column.
             "),
             :sql=>  "
+WITH Constraints  AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Table_Name, Constraint_Type FROM DBA_Constraints WHERE Constraint_Type IN ('P', 'U')),
+     Indexes      AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name FROM DBA_Indexes WHERE Uniqueness = 'UNIQUE'),
+     Cons_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Column_name FROM DBA_Cons_Columns WHERE Position = 1),
+     Ind_Columns  AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Column_name FROM DBA_Ind_Columns WHERE Column_Position = 1)
 SELECT tc.Owner, tc.Table_Name, tc.Column_Name, t.Num_Rows, tc.Num_Distinct, tc.Num_Nulls, tc.Num_Distinct+tc.Num_Nulls Distinct_and_Nulls
 FROM   DBA_Tab_Columns tc
 JOIN   DBA_Tables t ON t.Owner = tc.Owner AND t.Table_Name = tc.Table_Name
@@ -368,19 +372,15 @@ AND    tc.Num_Distinct > 1
 AND    tc.Owner NOT IN (#{system_schema_subselect})
 AND    (tc.Owner, tc.Table_Name, tc.Column_Name) NOT IN (
             SELECT i.Table_Owner, i.Table_Name, ic.Column_Name
-            FROM   DBA_Ind_Columns ic
-            JOIN   DBA_Indexes i ON i.Owner = ic.Index_Owner AND i.Index_Name = ic.Index_Name
-            WHERE  i.Uniqueness       = 'UNIQUE'
-            AND    ic.Column_Position = 1
+            FROM   Ind_Columns ic
+            JOIN   Indexes i ON i.Owner = ic.Index_Owner AND i.Index_Name = ic.Index_Name
 )
 AND    (tc.Owner, tc.Table_Name, tc.Column_Name) NOT IN (
             SELECT c.Owner, c.Table_Name, cc.Column_Name
-            FROM   DBA_Cons_Columns cc
-            JOIN   DBA_Constraints c ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name
-            WHERE  c.Constraint_Type IN ('P', 'U')
-            AND    cc.Position = 1
+            FROM   Cons_Columns cc
+            JOIN   Constraints c ON c.Owner = cc.Owner AND c.Constraint_Name = cc.Constraint_Name
 )
-ORDER BY tc.Owner, tc.Table_Name
+ORDER BY tc.Num_Distinct DESC
            ",
         },
     ]
