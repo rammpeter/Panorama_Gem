@@ -1,7 +1,9 @@
 <%
   @update_area = get_unique_area_id
+  @hidden_id = 0
 
   link_action = proc do |rec|
+    @hidden_id += 1
     form_tag(url_for(controller:            :dba_history,
                 action:                :list_awr_sql_monitor_report_html,
                 report_id:             rec.report_id,
@@ -14,8 +16,8 @@
                 browser_tab_id:        @browser_tab_id),
                   {method: 'post', target: '_blank'}
                   ) do                                     # internen Rails-Helper verwenden
-                    hidden_field_tag('download_oracle_com_reachable', 'false') + # Field is set at submit click with reachable state
-                    submit_tag('Show report', {title: "Show generated SQL-Monitor report in separate browser tab (requires internet connection and Adobe Flash)", onclick: "on_submit_click();"})
+                    hidden_field_tag("download_oracle_com_reachable_#{@hidden_id}", 'false', name: 'download_oracle_com_reachable') + # Field is set at submit click with reachable state
+                    submit_tag('Show report', {title: "Show generated SQL-Monitor report in separate browser tab (requires internet connection and Adobe Flash)", onclick: "on_submit_click('download_oracle_com_reachable_#{@hidden_id}');"})
                   end
 
   end
@@ -81,8 +83,9 @@ column_options =
       download_oracle_com_reachable = found; // store state in all hidden inputs at submit click
   });
 
-  function on_submit_click(){
-      jQuery('#download_oracle_com_reachable').val(download_oracle_com_reachable); // store state in all hidden inputs at submit click
+  function on_submit_click(hidden_field_id){
+      console.log(hidden_field_id);
+      jQuery('#'+hidden_field_id).val(download_oracle_com_reachable); // store state in all hidden inputs at submit click
   }
 
 

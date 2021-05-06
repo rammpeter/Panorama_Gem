@@ -30,9 +30,10 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
   end
 
   def teardown
-    @browser.close
-    @playwright.stop
-    @server.stop
+    # TODO: Screenshot at exception
+    @browser&.close
+    @playwright&.stop
+    @server&.stop
     super
   end
 
@@ -77,7 +78,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
 
   def wait_for_ajax(timeout_secs = 5)
     # temporary implementation
-    # should be replaced with page.wait_for_event('ajaxSuccess') if this function becomes available
+    # TODO: should be replaced with @page.wait_for_event('ajaxSuccess') if this function becomes available
 
     # process browser until timeout
     begin
