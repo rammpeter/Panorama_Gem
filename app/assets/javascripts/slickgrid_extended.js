@@ -462,13 +462,14 @@ function SlickGridExtended(container_id, options){
     function processColumnsResized(grid){
         for (var col_index in grid.getColumns()){
             var column = grid.getColumns()[col_index];
-            if (column['previousWidth'] !== column['width']){                        // Breite dieser Spalte wurde resized durch drag
-                column['fixedWidth'] = column['width'];                             // Diese spalte von Kalkulation der Spalten ausnehmen
+            // Value of column.previousWidth contains fractions since last Slickgrid release
+            if (Math.round(column.previousWidth) !== Math.round(column.width)){ // Breite dieser Spalte wurde resized durch drag
+                column.fixedWidth = column.width;                               // Diese spalte von Kalkulation der Spalten ausnehmen
             }
         }
- //       grid.getOptions()["rowHeight"] = 1;                                         //Neuberechnung der wirklich benötigten Höhe auslösen
+ //       grid.getOptions()["rowHeight"] = 1;                                   //Neuberechnung der wirklich benötigten Höhe auslösen
         thiz.calculate_current_grid_column_widths("processColumnsResized");
-        //grid.render();                                                              // Grid neu berechnen und zeichnen
+        //grid.render();                                                        // Grid neu berechnen und zeichnen
     }
 
     /**
@@ -703,20 +704,27 @@ function SlickGridExtended(container_id, options){
         // Evtl. Zoomen der Spalten wenn noch mehr Platz rechts vorhanden
         if (options.width === '' || options.width === '100%'){                  // automatische volle Breite des Grid
             var wrapped_colums_remaining = true;                                // assume there are wrapped columns to enlarge at first
+            var all_columns_fixed = true;                                       // assume there are no columns to expand
             // fill all columns one by one
             while (current_table_width < current_grid_width){                   // noch Platz am rechten Rand, kann auch nach wrap einer Spalte verbleiben
                 var wrapped_column_found = false;
                 columns.forEach(function(column) {
                     if (column.width < column.max_nowrap_width)
                         wrapped_column_found = true;
+                    if (!column.fixedWidth)
+                        all_columns_fixed = false;
                     if (current_table_width < current_grid_width && !column.fixedWidth &&
-                        (!wrapped_column_found || column.width < column.max_nowrap_width || column.width < column.header_nowrap_width )
+                        (!wrapped_colums_remaining || column.width < column.max_nowrap_width || column.width < column.header_nowrap_width )
                     ){
                         column.width++;
                         current_table_width++;
                     }
                 });
-                wrapped_colums_remaining = wrapped_column_found;
+                wrapped_colums_remaining = wrapped_column_found;                // enlarge all not fixed columns in next loops if no wrapped columns are remaining
+            }
+            if (all_columns_fixed && current_table_width < current_grid_width){ // if all columns are fixed, enlarge the last column
+                columns[columns.length-1].width = columns[columns.length-1].width + current_grid_width - current_table_width;
+                current_table_width = current_grid_width;
             }
         }
         return current_table_width;                                             // keep changed value for further user

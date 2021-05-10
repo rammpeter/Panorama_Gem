@@ -1515,7 +1515,7 @@ class DbaSgaController < ApplicationController
     sql_management_config.each do |rec|
       record[rec.parameter_name] = rec.parameter_value
 
-      column_options << {:caption=>rec.parameter_name,   :data=>proc{|irec| irec[rec.parameter_name]}, :title=>rec.parameter_name}
+      column_options << {:caption=>rec.parameter_name.gsub('_', ' '),  :data=>proc{|irec| irec[rec.parameter_name]}, :title=>rec.parameter_name}
     end
 
     @sql_management_config = gen_slickgrid([record], column_options, :caption => "Config data from DBA_SQL_Management_Config", width: :auto)
