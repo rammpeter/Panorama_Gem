@@ -6,7 +6,7 @@
 
     payload = rec.payload.gsub("\n", ' ') if !rec.payload.nil?
 
-    if payload['PARSE #'] || payload['EXEC #'] || payload['FETCH #'] || payload['STAT #'] || payload['CLOSE #']
+    if !rec.payload.nil? && (payload['PARSE #'] || payload['EXEC #'] || payload['FETCH #'] || payload['STAT #'] || payload['CLOSE #'])
 
       hash_index = payload.index('#')
       result = payload[0, hash_index]                                           # line Content before cursor ID
@@ -42,7 +42,7 @@
   @last_tim = nil
   show_tim = proc do |rec|
     pattern = 'tim='
-    tim_index = rec.payload.index(pattern)
+    tim_index = rec.payload&.index(pattern)
     if tim_index
       tim_end_index = rec.payload[tim_index + pattern.length, rec.payload.length].index(' ')
       tim_end_index = rec.payload[tim_index + pattern.length, rec.payload.length].index(',') if tim_end_index.nil?    # check for , if no space at end
