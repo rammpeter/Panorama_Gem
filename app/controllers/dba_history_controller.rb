@@ -1894,12 +1894,13 @@ FROM (
 
   private
   # min und max. Snap_ID für gegebenen Zeitraum und Instance (nullable)
+  # get latest snapshot before period and first after period
   # belegt Instanzvariablen
   def get_min_max_snapshot(instance, time_selection_start, time_selection_end)
     @min_snap_id = sql_select_one ["SELECT MAX(Snap_ID)
                                    FROM   DBA_Hist_Snapshot
                                    WHERE  DBID = ?
-                                   AND    Begin_Interval_Time < TO_TIMESTAMP(?, '#{sql_datetime_mask(time_selection_start)}')
+                                   AND    End_Interval_Time < TO_TIMESTAMP(?, '#{sql_datetime_mask(time_selection_start)}')
                                    #{' AND Instance_Number = ?' if instance}
                                   ", get_dbid, time_selection_start].concat(instance ? [instance] : [])
     if @min_snap_id.nil?                                                      # Ersten Snap nehmen wenn keiner zum start gefunden
