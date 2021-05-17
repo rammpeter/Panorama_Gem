@@ -157,6 +157,7 @@ class DbaHistoryController < ApplicationController
   # Anzeige einzelner Snaphots
   def list_segment_stat_hist_detail
     @instance       = prepare_param_instance
+    @dbid           = prepare_param_dbid
     @time_selection_start = params[:time_selection_start]
     @time_selection_start = nil if @time_selection_start == ''
     @time_selection_end   = params[:time_selection_end]
@@ -170,8 +171,8 @@ class DbaHistoryController < ApplicationController
     max_snap_id     = params[:max_snap_id]
     max_snap_id     = nil if max_snap_id == ''
 
-    where_string = ''
-    where_values = []
+    where_string = 'AND s.DBID = ?'
+    where_values = [@dbid]
 
     group_criteria = "CAST(Begin_Interval_Time + INTERVAL '0.5' SECOND AS DATE)" # Ensure that multiple RAC instances are rounded into one grouped row
 
