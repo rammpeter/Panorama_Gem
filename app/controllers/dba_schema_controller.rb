@@ -826,7 +826,7 @@ class DbaSchemaController < ApplicationController
                                     )
                  SELECT /*+ Panorama Ramm */ i.*, i.Initial_Extent/1024 Initial_Extent_KB,
                         p.Partition_Number, sp.SubPartition_Number,
-                        NULL Size_MB, NULL Extents, NULL Blocks, /* this columns are selected separately */
+                        NULL Size_MB, NULL Extents, NULL Segment_Blocks, /* this columns are selected separately */
                         DECODE(bitand(io.flags, 65536), 0, 'NO', 'YES') Monitoring,
                         DECODE(bitand(ou.flags, 1), 0, 'NO', NULL, 'Unknown', 'YES') Used,
                         TO_DATE(ou.start_monitoring, 'MM/DD/YYYY HH24:MI:SS') Start_Monitoring,
@@ -912,7 +912,7 @@ class DbaSchemaController < ApplicationController
 
     # Selected separately because of long runtime if executed within complex SQL
     index_sizes = sql_select_all ["\
-      SELECT s.Owner, s.Segment_Name, SUM(s.Bytes)/(1024*1024) Size_MB, SUM(s.Extents) Extents, SUM(s.Blocks) Blocks
+      SELECT s.Owner, s.Segment_Name, SUM(s.Bytes)/(1024*1024) Size_MB, SUM(s.Extents) Extents, SUM(s.Blocks) segment_Blocks
       FROM   DBA_Indexes ii
       JOIN   DBA_Segments s ON s.Owner = ii.Owner AND s.Segment_Name = ii.Index_Name
       WHERE  s.Segment_Type LIKE 'INDEX%'
@@ -950,7 +950,7 @@ class DbaSchemaController < ApplicationController
         if s.owner == i.owner && s.segment_name == i.index_name
           i.size_mb = s.size_mb
           i.extents = s.extents
-          i.blocks  = s.blocks
+          i.segment_blocks  = s.segment_blocks
         end
       end
 
@@ -1414,13 +1414,13 @@ class DbaSchemaController < ApplicationController
     @partition_expression = get_index_partition_expression(@owner, @index_name)
 
     @partitions = sql_select_all ["\
-      WITH Storage AS (SELECT /*+ NO_MERGE MATERIALIZE */   NVL(sp.Partition_Name, s.Partition_Name) Partition_Name, SUM(Bytes)/(1024*1024) MB
+      WITH Storage AS (SELECT /*+ NO_MERGE MATERIALIZE */   NVL(sp.Partition_Name, s.Partition_Name) Partition_Name, SUM(Bytes)/(1024*1024) MB, SUM(s.Blocks) Segment_Blocks, SUM(s.Extents) Extents
                       FROM DBA_Segments s
                       LEFT OUTER JOIN DBA_Ind_SubPartitions sp ON sp.Index_Owner = s.Owner AND sp.Index_Name = s.Segment_Name AND sp.SubPartition_Name = s.Partition_Name
                       WHERE s.Owner = ? AND s.Segment_Name = ?
                       GROUP BY NVL(sp.Partition_Name, s.Partition_Name)
                       )
-      SELECT p.*, st.MB Size_MB,
+      SELECT p.*, st.MB Size_MB, st.Segment_Blocks, st.Extents,
              o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
               sp.SubPartition_Count,
               SP_Status_Count,       SP_Status,
@@ -1475,14 +1475,12 @@ class DbaSchemaController < ApplicationController
     @partition_expression = get_index_partition_expression(@owner, @index_name)
 
     @subpartitions = sql_select_all ["\
-      SELECT sp.*, (SELECT SUM(Bytes)/(1024*1024)
-                    FROM   DBA_Segments s
-                    WHERE  s.Owner = sp.Index_Owner AND s.Segment_Name = sp.Index_Name AND s.Partition_Name = sp.SubPartition_Name
-                   ) Size_MB,
+      SELECT sp.*, s.Bytes/(1024*1024) Size_MB, s.Blocks Segment_Blocks, s.Extents,
              o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, p.High_Value Partition_High_Value
               #{", mi.GC_Mastering_Policy,  mi.Current_Master + 1  Current_Master,  mi.Previous_Master + 1  Previous_Master, mi.Remaster_Cnt" if PanoramaConnection.rac?}
       FROM DBA_Ind_SubPartitions sp
       JOIN DBA_Ind_Partitions p ON p.Index_Owner = sp.Index_Owner AND p.Index_Name = sp.Index_Name AND p.Partition_Name = sp.Partition_Name
+      JOIN DBA_Segments s ON s.Owner = sp.Index_Owner AND s.Segment_Name = sp.Index_Name AND s.Partition_Name = sp.SubPartition_Name
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = sp.Index_Owner AND o.Object_Name = sp.Index_Name AND o.SubObject_Name = sp.SubPartition_Name AND o.Object_Type = 'INDEX SUBPARTITION'
    #{"LEFT OUTER JOIN V$GCSPFMASTER_INFO mi ON mi.Data_Object_ID = o.Data_Object_ID" if PanoramaConnection.rac?}
       WHERE sp.Index_Owner = ? AND sp.Index_Name = ?

@@ -93,6 +93,24 @@
     )
   end
 
+  link_extents = proc do |rec|
+    ajax_link(fn(rec.extents),
+              {:controller    => :storage,
+               :action        => :list_object_extents,
+               :owner         => @owner,
+               :segment_name  => @index_name,
+               partition_name: rec.partition_name,
+               :update_area   => @update_area,
+              },
+              :title=>"List distribution of storage extents for index partition. Caution: Execution may last some time!"
+    )
+  end
+
+
+  blocks_data_title = proc do |rec|
+    "\n\nNumber of allocated blocks in segments = #{fn(rec.segment_blocks)} "
+  end
+
   column_options =
     [
       {:caption=> 'Part. name',             :data=>proc{|rec| rec.partition_name},               :title=> 'Partition name'},
@@ -104,7 +122,8 @@
       {:caption=> 'Ini. ext. (KB)',         :data=>proc{|rec| rec.initial_extent_kb},            :title=> 'Initial extent size in kByte', :align=>:right},
       {:caption=> 'Logging',                :data=>proc{|rec| rec.logging},                      :title=> 'Logging attribute of the partition'},
       {:caption=> 'Rows',                   :data=>proc{|rec| fn rec.num_rows},                  :title=> 'Number of rows in the partition', :align=>:right},
-      {:caption=> 'Size (MB)',              :data=>proc{|rec| link_space_usage.call(rec, fn(rec.size_mb,2))}, :title=> 'Current object size in megabytes', :align=>:right},
+      {:caption=> 'Size (MB)',              :data=>proc{|rec| link_space_usage.call(rec, fn(rec.size_mb,2))}, :title=> 'Current object size in megabytes', :align=>:right, data_title: proc{|rec| "%t\n#{size_explain(rec.size_mb)}#{blocks_data_title.call(rec)}"}},
+      {:caption=> 'Ext.',                   data: link_extents,                                  :title=> 'Number of extents (from DBA_Segments)', :align=>:right, data_title: proc{|rec| "%t#{blocks_data_title.call(rec)}"} },
       {:caption=> 'BLevel',                 :data=>proc{|rec| fn rec.blevel},                    :title=> 'B*-Tree level: depth of the index from its root block to its leaf blocks. A depth of 0 indicates that the root block and leaf block are the same.', :align=>:right},
       {:caption=> 'Leaf blocks',            :data=>proc{|rec| fn rec.leaf_blocks},               :title=> 'Number of leaf blocks in the index partition', :align=>:right},
       {:caption=> 'Dist. keys',             :data=>proc{|rec| fn rec.distinct_keys},             :title=> 'Number of distinct keys in the index partition', :align=>:right, :data_title=>proc{|rec| "%t, #{fn((rec.num_rows/rec.distinct_keys rescue nil),1)} rows per key" }},
