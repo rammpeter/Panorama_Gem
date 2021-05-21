@@ -151,7 +151,11 @@ column_options =
      result
    end
 
-  list_states = proc do |rec|
+   blocks_data_title = proc do |rec|
+     "\n\nNumber of used blocks below high water mark = #{fn(rec.blocks)}\nNumber of allocated blocks in segments = #{fn(rec.segment_blocks)} "
+   end
+
+   list_states = proc do |rec|
     result = ''
     result << "#{'<br/>' if result.length > 0}IOT-Type = #{rec.iot_type}"                                                                 if rec.iot_type
     result << "#{'<br/>' if result.length > 0}TEMPORARY (#{rec.duration.gsub(/SYS\$/, '')})"                                              if rec.temporary == 'Y'
@@ -253,9 +257,9 @@ column_options =
    column_options << {:caption=> 'Init. Trans',      :data=>proc{|rec| rec.ini_trans},                        :title=> 'Number of initial entries in transaction list of db block', :align=>:right, data_title: proc{|rec| "%t\nNumber of maximum transactions (MAX_TRANS) = #{rec.max_trans}"}}
    column_options << {:caption=> 'Initial extent (KB)',:data=>proc{|rec| rec.initial_extent_kb},              :title=> 'Size of initial extent allocated at object creation in kByte', :align=>:right, data_title: proc{|rec| "%t\nNext extent = #{fn(rec.next_extent/1024) rescue nil} kBytes\nMin. extents = #{fn(rec.min_extents)}\nMax. extents = #{fn(rec.max_extents)} "}}
    column_options << {:caption=> 'Rows',             :data=>link_real_num_rows,                               :title=> 'Number of rows calculated by last analyze run', :align=>:right}
-   column_options << {:caption=> 'Size (MB) Table',  data: proc{|rec| link_space_usage.call(rec, fn(rec.size_mb_table, 2))}, :title=> 'Current table size in megabytes (from DBA_Segments)', :align=>:right, data_title: proc{|rec| "%t\n#{size_explain(rec.size_mb_table)}\n\nNumber of allocated blocks = #{fn(rec.segment_blocks)}"}}
+   column_options << {:caption=> 'Size (MB) Table',  data: proc{|rec| link_space_usage.call(rec, fn(rec.size_mb_table, 2))}, :title=> 'Current table size in megabytes (from DBA_Segments)', :align=>:right, data_title: proc{|rec| "%t\n#{size_explain(rec.size_mb_table)}#{blocks_data_title.call(rec)}"}}
    column_options << {:caption=> 'Size (MB) Total',  :data=>proc{|rec| fn(@size_mb_total, 2)},                :title=> 'Current total size in megabytes (includes table, indexes, LOBs)', :align=>:right, data_title: proc{|rec| "%t\n#{size_explain(@size_mb_total)}"}}
-   column_options << {:caption=> 'Ext.',             :data=>link_extents,                                     :title=> 'Number of extents (from DBA_Segments)', :align=>:right}
+   column_options << {:caption=> 'Ext.',             :data=>link_extents,                                     :title=> 'Number of extents (from DBA_Segments)', :align=>:right, data_title: proc{|rec| "%t#{blocks_data_title.call(rec)}"} }
    column_options << {:caption=> '% unused',         :data=>proc{|rec| link_space_usage.call(rec, fn(calc_free_space_pct_table(rec.avg_row_len, rec.num_rows, rec.pct_free, rec.ini_trans, blocksize, rec.size_mb_table)))}, :title=> "Unused storage of table within extents in percent.#{explain_calc_free_space_by_avg_row_len}", data_title: proc{|rec| "%t\n\nCorrelating unused space in MB = #{fn(calc_free_space_mb_table(rec.avg_row_len, rec.num_rows, rec.pct_free, rec.ini_trans, blocksize, rec.size_mb_table), 3)}"}, :align=>:right}
    column_options << {:caption=> 'Empty',            :data=>proc{|rec| fn(rec.empty_blocks)},                 :title=> "Number of empty (never used) blocks calculated by last analyze run\nThis value is populated only by execution of ALTER TABLE xxx COMPUTE STATISTICS;", :align=>:right}                                              if @attribs.count > 0 && @attribs[0].empty_blocks != 0
    column_options << {:caption=> 'Avg. Spc.',        :data=>proc{|rec| fn(rec.avg_space)},                    :title=> "Average amount of free space, in bytes, in a data block allocated to the table calculated by last analyze run\nThis value is populated only by execution of ALTER TABLE xxx COMPUTE STATISTICS;", :align=>:right}   if @attribs.count > 0 && @attribs[0].avg_space != 0

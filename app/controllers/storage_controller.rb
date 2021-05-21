@@ -1349,15 +1349,60 @@ class StorageController < ApplicationController
   def list_object_extents
     @owner        = params[:owner]
     @segment_name = params[:segment_name]
+    @partition_name = prepare_param :partition_name
+
+    where_string = ''
+    where_values = []
+
+    if @partition_name
+      part_obj = sql_select_first_row ["SELECT Object_Type, Data_Object_ID
+                                    FROM   DBA_Objects
+                                    WHERE  Owner = ? AND Object_Name = ? AND SubObject_Name = ?",
+                                    @owner, @segment_name, @partition_name
+                                  ]
+      raise "Non-existing partition #{@partition_name}" if part_obj.nil?
+      if part_obj.data_object_id.nil?                                           # Partition has subpartitions
+        case part_obj.object_type
+        when 'TABLE PARTITION' then
+          where_string << " AND Partition_Name IN (SELECT SubPartition_Name
+                                                   FROM   DBA_Tab_SubPartitions
+                                                   WHERE  Table_Owner = ?
+                                                   AND    Table_name = ?
+                                                   AND    Partition_Name = ?
+                                                  )"
+        when 'INDEX PARTITION' then
+          where_string << " AND Partition_Name IN (SELECT SubPartition_Name
+                                                   FROM   DBA_Ind_SubPartitions
+                                                   WHERE  Index_Owner = ?
+                                                   AND    Index_Name = ?
+                                                   AND    Partition_Name = ?
+                                                  )"
+        when 'LOB PARTITION' then
+          where_string << " AND Partition_Name IN (SELECT LOB_SubPartition_Name
+                                                   FROM   DBA_Lob_SubPartitions
+                                                   WHERE  Table_Owner = ?
+                                                   AND    Table_Name = ?
+                                                   AND    LOB_Partition_Name = ?
+                                                  )"
+        end
+        where_values << @owner
+        where_values << @segment_name
+        where_values << @partition_name
+      else                                                                      # Partition has no subpartitions
+        where_string << " AND Partition_Name = ?"
+        where_values << @partition_name
+      end
+    end
 
     @extents = sql_select_all ["\
       SELECT Bytes/1024 Extent_Size_KB, COUNT(*) Extent_Count, SUM(Bytes)/1024 Total_Size_KB
       FROM   DBA_Extents
       WHERE  Owner        = ?
       AND    Segment_Name = ?
+      #{where_string}
       GROUP BY Bytes
       ORDER BY Bytes
-    ", @owner, @segment_name]
+    ", @owner, @segment_name].concat(where_values)
 
     render_partial
   end

@@ -678,7 +678,8 @@ class DbaSchemaController < ApplicationController
     @partition_expression = get_table_partition_expression(@owner, @table_name)
 
     @partitions = sql_select_all ["\
-      WITH Storage AS (SELECT /*+ NO_MERGE MATERIALIZE */   NVL(sp.Partition_Name, s.Partition_Name) Partition_Name, SUM(Bytes)/(1024*1024) MB
+      WITH Storage AS (SELECT /*+ NO_MERGE MATERIALIZE */   NVL(sp.Partition_Name, s.Partition_Name) Partition_Name, SUM(Bytes)/(1024*1024) MB,
+                              SUM(s.Blocks) Blocks, SUM(s.Extents) Extents
                       FROM DBA_Segments s
                       LEFT OUTER JOIN DBA_Tab_SubPartitions sp ON sp.Table_Owner = s.Owner AND sp.Table_Name = s.Segment_Name AND sp.SubPartition_Name = s.Partition_Name
                       WHERE s.Owner = ? AND s.Segment_Name = ?
@@ -687,6 +688,7 @@ class DbaSchemaController < ApplicationController
       SELECT  st.MB Size_MB, p.*,
               m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments,
               o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
+              st.Blocks segment_blocks, st.Extents,
               sp.SubPartition_Count,
               SP_Compression_Count,     SP_Compression,
               SP_Tablespace_Count,      SP_Tablespace_Name,
@@ -744,15 +746,13 @@ class DbaSchemaController < ApplicationController
     @partition_expression = get_table_partition_expression(@owner, @table_name)
 
     @subpartitions = sql_select_all ["\
-      SELECT sp.*, (SELECT SUM(Bytes)/(1024*1024)
-                    FROM   DBA_Segments s
-                    WHERE  s.Owner = sp.Table_Owner AND s.Segment_Name = sp.Table_Name AND s.Partition_Name = sp.SubPartition_Name
-                   ) Size_MB,
+      SELECT sp.*, s.Bytes/(1024*1024) Size_MB, s.Blocks segment_blocks, s.extents,
              m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments,
              o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, p.High_Value Partition_High_Value
          #{", mi.GC_Mastering_Policy,  mi.Current_Master + 1  Current_Master,  mi.Previous_Master + 1  Previous_Master, mi.Remaster_Cnt" if PanoramaConnection.rac?}
       FROM DBA_Tab_SubPartitions sp
       JOIN DBA_Tab_Partitions p ON p.Table_Owner = sp.Table_Owner AND p.Table_Name = sp.Table_Name AND p.Partition_Name = sp.Partition_Name
+      JOIN DBA_Segments s ON s.Owner = sp.Table_Owner AND s.Segment_Name = sp.Table_Name AND s.Partition_Name = sp.SubPartition_Name
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = sp.Table_Owner AND o.Object_Name = sp.Table_Name AND o.SubObject_Name = sp.SubPartition_Name AND o.Object_Type = 'TABLE SUBPARTITION'
       LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = sp.Table_Owner AND m.Table_Name = sp.Table_Name AND m.Partition_Name = sp.Partition_Name AND m.SubPartition_Name = sp.SubPartition_Name
       #{"LEFT OUTER JOIN V$GCSPFMASTER_INFO mi ON mi.Data_Object_ID = o.Data_Object_ID" if PanoramaConnection.rac?}

@@ -93,6 +93,22 @@
     )
   end
 
+  blocks_data_title = proc do |rec|
+    "\n\nNumber of used blocks below high water mark = #{fn(rec.blocks)}\nNumber of allocated blocks in segments = #{fn(rec.segment_blocks)} "
+  end
+
+  link_extents = proc do |rec|
+    ajax_link(fn(rec.extents),
+              {:controller    => :storage,
+               :action        => :list_object_extents,
+               :owner         => @owner,
+               :segment_name  => @table_name,
+               partition_name: rec.subpartition_name,
+               :update_area   => @update_area,
+              },
+              :title=>"List distribution of storage extents for table partition. Caution: Execution may last some time!"
+    )
+  end
 
   column_options =
             [
@@ -108,8 +124,8 @@
 
     column_options.concat [
         {:caption=> 'Num. rows',              :data=>link_real_num_rows,                           :title=> 'Number of rows in the partition', :align=>:right},
-        {:caption=> 'Size (MB)',              :data=>proc{|rec| link_space_usage.call(rec, fn(rec.size_mb,2))}, :title=> 'Current object size in megabytes', :align=>:right},
-        {:caption=> 'Blocks',                 :data=>proc{|rec| fn rec.blocks},                    :title=> 'Number of used data blocks in the partition (below high water mark)', :align=>:right},
+        {:caption=> 'Size (MB)',              :data=>proc{|rec| link_space_usage.call(rec, fn(rec.size_mb,2))}, :title=> 'Current object size in megabytes', :align=>:right, data_title: proc{|rec| "%t\n#{size_explain(rec.size_mb)}#{blocks_data_title.call(rec)}"}},
+        {:caption=> 'Ext.',                   data: link_extents,                                  :title=> 'Number of extents (from DBA_Segments)', :align=>:right, data_title: proc{|rec| "%t#{blocks_data_title.call(rec)}"} },
         {:caption=> '% unused',               :data=>list_percent_unused,                          :title=> "Unused storage of table subpartition within extents in percent.\nCalculated by size of all allocated extents - (Avg_Row_Len * Num_Rows)\nAlso includes the free space in blocks according to PCT_FREE\nMay be negative e.g. for compressed tables", data_title: proc{|rec| "%t\n\nCorrelating unused space in MB = #{fn(rec.size_mb - mb_used.call(rec), 2) rescue nil}"}, :align=>:right},
         {:caption=> 'Avg. row len',           :data=>proc{|rec| fn rec.avg_row_len},               :title=> 'Average length of a row in the partition (in bytes)', :align=>:right},
         {:caption=> 'Created',                :data=>proc{|rec| localeDateTime(rec.created)},      :title=> 'Timestamp of subpartition creation'},

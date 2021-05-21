@@ -984,8 +984,9 @@ class DbaSgaController < ApplicationController
       whereval << @instance
     end
 
+    # in Oracle 19.6 Select from gv$SQL ord gv$SQL_Plan shows cardinality of 1 => NESTED LOOP
     @sqls = sql_select_iterator ["
-       SELECT s.Inst_ID, SUBSTR(s.SQL_TEXT,1,100) SQL_Text,
+       SELECT /*+ USE_HASH(p s) */ s.Inst_ID, SUBSTR(s.SQL_TEXT,1,100) SQL_Text,
               s.Executions, s.Fetches, TO_DATE(s.First_Load_Time, 'YYYY-MM-DD/HH24:MI:SS') First_load_time,
               s.Parsing_Schema_Name,
               TO_DATE(s.Last_Load_Time, 'YYYY-MM-DD/HH24:MI:SS') last_load_time,
