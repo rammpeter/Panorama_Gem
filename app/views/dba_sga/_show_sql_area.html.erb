@@ -35,6 +35,11 @@
       </select>
     </div>
 
+    <div class="flex-row-element" title="<%= t(:dba_history_show_sql_area_historic_include_plsql_hint, :default=>'Include also PL/SQL executions')%>">
+      PL/SQL
+      <%= check_box_tag(:include_plsql, 1, true) %>
+    </div>
+
     <div class="flex-row-element">
       <%= submit_tag(t(:dba_sga_show_sql_area_submit_caption, :default=>'Show SQL'), :title => t(:dba_sga_show_sql_area_submit_hint, :default=>'Show SQL statements according to filter conditions')) %>
     </div>

@@ -47,10 +47,11 @@ class DbaSgaController < ApplicationController
 
     @filters = {}
     @filters[:instance]     = instance              if instance
-    @filters[:username]     = params[:username]     if params[:username]    && params[:username]    != ''
-    @filters[:sql_id]       = params[:sql_id]       if params[:sql_id]      && params[:sql_id]      != ''
-    @filters[:filter]       = params[:filter]       if params[:filter]      && params[:filter]      != ''
-    @filters[:sql_profile]  = params[:sql_profile]  if params[:sql_profile] && params[:sql_profile] != ''
+    @filters[:username]     = params[:username]     if prepare_param(:username)
+    @filters[:sql_id]       = params[:sql_id]       if prepare_param(:sql_id)
+    @filters[:filter]       = params[:filter]       if prepare_param(:filter)
+    @filters[:sql_profile]  = params[:sql_profile]  if prepare_param(:sql_profile)
+    @filters[:no_plsql]     = true                  unless prepare_param(:include_plsql)
 
     @sqls = fill_sql_area_list(modus, @filters,
                           params[:maxResultCount],
@@ -89,6 +90,10 @@ class DbaSgaController < ApplicationController
     if filters[:sql_profile]
       where_string << " AND s.SQL_Profile = ?"
       where_values << filters[:sql_profile]
+    end
+
+    if filters[:no_plsql]
+      where_string << " AND s.Command_Type != 47" # PL/SQL EXECUTE
     end
 
     where_values << max_result_count

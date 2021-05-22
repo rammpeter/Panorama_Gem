@@ -279,6 +279,7 @@ class DbaHistoryController < ApplicationController
     @dbid    = prepare_param_dbid
     sql_id   = prepare_param(:sql_id)&.strip
     username = prepare_param :username
+    no_plsql = prepare_param(:include_plsql).nil?
 
     topSort          = params[:topSort]
     topSort          = 'ElapsedTimeTotal' if topSort.nil? || topSort == ''
@@ -305,9 +306,15 @@ class DbaHistoryController < ApplicationController
       where_values << sql_id
     end
     if filter
-      where_string_aussen << " WHERE UPPER(SQL_TEXT) LIKE UPPER('%'||?||'%')"
+      where_string_aussen << " AND UPPER(SQL_TEXT) LIKE UPPER('%'||?||'%')"
       where_values << filter
     end
+
+    if no_plsql
+      where_string_aussen << " AND t.Command_Type IS NOT NULL AND t.Command_Type != 47" # exclude "PL/SQL EXECUTE" and force inner join to DBA_Hist_SQLText
+    end
+
+    where_string_aussen.sub!('AND', 'WHERE') if where_string_aussen.length > 0   # Replace first AND by WHERE
     where_values << maxResultCount if maxResultCount
     @sqls= sql_select_all ["\
       SELECT /* Panorama-Tool Ramm */ *
