@@ -38,11 +38,23 @@
   end
 
   supplemental_logging_data = proc do |rec|
-    rec.supplemental_log_data_min == 'NO' || rec.supplemental_log_data_pk == 'NO' || rec.supplemental_log_data_ui == 'NO' ? 'N' : 'Y'
+    rec.supplemental_log_data_min   == 'NO' ||
+      rec.supplemental_log_data_pk  == 'NO' ||
+      rec.supplemental_log_data_ui  == 'NO' ||
+      rec.supplemental_log_data_fk  == 'NO' ||
+      rec.supplemental_log_data_all == 'NO' ||
+      rec.supplemental_log_data_pl  == 'NO' ? 'N' : 'Y'
   end
 
   supplemental_logging_data_title = proc do |rec|
-    "%t\n\nMinimum supplemental logging = '#{rec.supplemental_log_data_min}'\nPrimary key supplemental logging = '#{rec.supplemental_log_data_pk}'\nUnique key supplemental logging = '#{rec.supplemental_log_data_ui}'"
+    retval = "%t\n"
+    retval << "\nMinimum supplemental logging = '#{rec.supplemental_log_data_min}'"
+    retval << "\nPrimary key supplemental logging = '#{rec.supplemental_log_data_pk}'"
+    retval << "\nUnique key supplemental logging = '#{rec.supplemental_log_data_ui}'"
+    retval << "\nForeign key supplemental logging = '#{rec.supplemental_log_data_fk}'"
+    retval << "\nAll columns supplemental logging = '#{rec.supplemental_log_data_all}'"
+    retval << "\nPL/SQL supplemental logging = '#{rec.supplemental_log_data_pl}'"
+    retval
   end
 
   column_options =
@@ -65,7 +77,7 @@
            {:caption=>"Switchover status", :data=>proc{|rec| rec.switchover_status },          :title=>"Indicates whether switchover is allowed", :data_title=>proc{|rec| "%t\n#{explain_switchover_status(rec.switchover_status)}"}  },
            {:caption=>"DG broker",     :data=>proc{|rec| rec.dataguard_broker },               :title=>"Indicates whether the Data Guard configuration is being managed by the broker (ENABLED) or not (DISABLED)"},
            {:caption=>"Force logging", :data=>proc{|rec| rec.force_logging },                  :title=>"Indicates whether the database is under force logging mode (YES) or not (NO)"},
-           {:caption=>"S. L.",         :data=>supplemental_logging_data,                       :title=>"Supplemental logging settings for Log Miner, Golden Gate etc.", data_title: supplemental_logging_data_title},
+           {:caption=>"S. L.",         :data=>supplemental_logging_data,                       :title=>"Supplemental logging settings for Log Miner, Golden Gate etc., table-specific config is shown by DBA_LOG_GROUPS", data_title: supplemental_logging_data_title},
            {:caption=>"AWR interval",  :data=>proc{|rec| rec.snap_interval_minutes },          :title=>"Interval in minutes for AWR-snapshots\nValues are hidden if you did not acknowledge licensing of Diagnostic Pack yet", :align=>:right},
            {:caption=>"AWR retention", :data=>proc{|rec| rec.snap_retention_days },            :title=>"Retention in days for AWR-snapshots\nValues are hidden if you did not acknowledge licensing of Diagnostic Pack yet", :align=>:right},
        ]
