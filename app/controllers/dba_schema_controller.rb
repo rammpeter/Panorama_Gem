@@ -974,7 +974,7 @@ class DbaSchemaController < ApplicationController
         i.pct_free          = i.p_pct_free_count     == 1 ? i.p_pct_free        : "< #{i.p_pct_free_count} different >"              if i.p_pct_free_count    > 0
         i.ini_trans         = i.p_ini_trans_count    == 1 ? i.p_ini_trans       : "< #{i.p_ini_trans_count} different >"             if i.p_ini_trans_count   > 0
         i.max_trans         = i.p_max_trans_count    == 1 ? i.p_max_trans       : "< #{i.p_max_trans_count} different >"             if i.p_max_trans_count   > 0
-        i.initial_extent_kb = i.p_initial_extent_count == 1 ? fn(i.p_initial_extent/1024) : "< #{i.p_initial_extent_count_count} different >" if i.p_initial_extent_count > 0
+        i.initial_extent_kb = i.p_initial_extent_count == 1 ? fn(i.p_initial_extent/1024) : "< #{i.p_initial_extent_count} different >" if i.p_initial_extent_count > 0
 
         if !i.subpartition_number.nil? && i.subpartition_number > 0
           # Set values of subpartitions if they exist
