@@ -1377,9 +1377,12 @@
   dragnet_helper_128_param_4_name:                           Minimales Alter der Tabelle in Tagen
 
   dragnet_helper_129_desc: |-
-    PL/SQL-Code kann als ungenutzt und verzichtbar angenommen werden wenn es keine Abhängigkeiten von anderem PL/SQL-Code gibt.
+    PL/SQL-Code kann als ungenutzt und verzichtbar angenommen werden wenn es keine Abhängigkeiten von anderem PL/SQL-Code gibt und keine Nutzung in SQL.
     Dies muss nicht wahr sein, da Eintrittspunkte in die PL/SQL-Verarbeitung benötigt werden die keine Abhängigkeiten von anderem PL/SQL-Code haben aber wesentlich sind.
     Daher ist weitere Abgrenzung sinnvoll, z.B. über Filter auf Namenskonventionen.
+
+    Leider ist der Check auf Nutzung der PL/SQL-Objekte in SQL-Statements (SGA und AWR) scheinbar nicht möglich in akzeptaber Laufzeit.
+    Daher ist dieser Check hier nicht enthalten.
   dragnet_helper_129_name: |-
     Identifikation evtl. ungenutzter PL/SQL-Objekte
   dragnet_helper_129_param_1_hint:                           Nur PL/SQL-Objekte für dieses Schema untersuchen (optional)
@@ -1598,9 +1601,10 @@
   dragnet_helper_152_desc: |-
     User-defined PL/SQL-Funktionen in SQL-Statements können besser performen ohne Kontextwechsel durch PRAGMA UDF.
     Diese Selektion zeigt PL/SQL->Funktionen von denen kein weiterer PL/SQL-Code abhängig ist.
-    Zusätzlich werden SQLs aus der SGA angezeigt, die diesen Funktionsnamen in ihrer SQL-Syntax nutzen.
+
+    Ein Klick auf den Objekt-Namen bring Details zur Function inklusive eines Buttons für die Syntax-Suche nach dei Funktion nutzenden SQL-Statements.
   dragnet_helper_152_name: |-
-    Kandidaten für PRAGMA UDF in user-defined PL/SQL-Funktionen
+    Kandidaten für PRAGMA UDF in puren user-defined PL/SQL-Funktionen
 
   dragnet_helper_153_desc: |-
     User-defined PL/SQL-Funktionen können aufeinanderfolgende Aufrufe mit identischen Parametern in Session cachen wenn sie als deterministisch deklariert sind.

@@ -74,6 +74,26 @@
   </div>
 
   <div class="flex-row-element">
+    <%= ajax_submit("Using/calling SQLs in SGA", {
+      :update_area   => @update_area,
+      :controller    => :dba_sga,
+      :action        => :show_sql_area_sql_id,
+      :filter        => "#{@owner}.#{@object_name}",
+    }, :title => "Look for SQL statements with '#{@owner}.#{@object_name}' in their SQL text in current SGA")
+    %>
+  </div>
+
+  <div class="flex-row-element">
+    <%= ajax_submit("Using/calling SQLs in AWR", {
+      :update_area   => @update_area,
+      :controller    => :dba_history,
+      :action        => :show_sql_area_historic,
+      :filter        => "#{@owner}.#{@object_name}",
+    }, :title => "Look for SQL statements with '#{@owner}.#{@object_name}' in their SQL text in AWR history")
+    %>
+  </div>
+
+  <div class="flex-row-element">
     <%= ajax_submit(@show_line_numbers ? 'Hide line numbers' : 'Show line numbers', {
         :action             => :list_plsql_description,
         :owner              => @owner,

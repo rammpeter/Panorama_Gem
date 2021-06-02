@@ -20,6 +20,11 @@ class DbaSgaController < ApplicationController
     end
   end
 
+  def show_sql_area_sql_id
+    @filter = prepare_param :filter
+    render_partial
+  end
+
   def list_sql_area_sql_id  # Auswertung GV$SQLArea
     @modus = "GV$SQLArea"
     list_sql_area(@modus)

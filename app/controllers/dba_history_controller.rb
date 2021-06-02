@@ -273,6 +273,12 @@ class DbaHistoryController < ApplicationController
     render_partial :list_segment_stat_historic_sql
   end #list_segment_stat_hist_sql
 
+
+  def show_sql_area_historic
+    @filter = prepare_param :filter
+    render_partial
+  end
+
   def list_sql_area_historic
     filter   = params[:filter]  =="" ? nil : params[:filter]
     instance = prepare_param_instance
