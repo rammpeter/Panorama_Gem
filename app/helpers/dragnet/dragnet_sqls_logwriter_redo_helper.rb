@@ -54,7 +54,7 @@ Solution can be the aggregation of multiple writes (bulk-processing).'),
                          ROUND(User_Rollbacks/(DECODE(User_Commits+User_Rollbacks, 0, 1, User_Commits+User_Rollbacks))*100) Percent_Rollback,
                          Rollback_Changes
                   FROM   (
-                          SELECT TRUNC(Begin_Interval_Time, 'HH24') Begin, Instance_Number,
+                          SELECT ROUND(Begin_Interval_Time, 'MI') Begin, Instance_Number,
                                  SUM(DECODE(Stat_Name, 'user commits', Value, 0)) User_Commits,
                                  SUM(DECODE(Stat_Name, 'user rollbacks', Value, 0)) User_Rollbacks,
                                  SUM(DECODE(Stat_Name, 'rollback changes - undo records applied', Value, 0)) Rollback_Changes
@@ -73,7 +73,7 @@ Solution can be the aggregation of multiple writes (bulk-processing).'),
                                   AND    Stat_Name IN ('user rollbacks', 'user commits', 'rollback changes - undo records applied')
                                  )
                           WHERE Value > 0
-                          GROUP BY TRUNC(Begin_Interval_Time, 'HH24'), Instance_Number
+                          GROUP BY ROUND(Begin_Interval_Time, 'MI'), Instance_Number
                          )
                   ORDER BY 1",
             :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },

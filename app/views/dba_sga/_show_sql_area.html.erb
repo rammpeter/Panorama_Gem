@@ -11,7 +11,7 @@
 
     <div class="flex-row-element" title="<%= t(:dba_sga_show_sql_area_filter_hint, :default=>'Filter string must be found in considered SQL statement. Wildcards (%,_) can be used in filter. (optional)') %>">
       Filter
-      <%= text_field_tag(:filter, "", :size=>50) %>
+      <%= text_field_tag(:filter, @filter, :size=>50) %>
     </div>
 
     <%= instance_tag %>
@@ -33,6 +33,11 @@
           <%= "<option value=\"#{key}\"#{" selected" if key == :ElapsedTimeTotal}>#{value[:title]}</option>".html_safe %>
         <% end %>
       </select>
+    </div>
+
+    <div class="flex-row-element" title="<%= t(:dba_history_show_sql_area_historic_include_plsql_hint, :default=>'Include also PL/SQL executions')%>">
+      PL/SQL
+      <%= check_box_tag(:include_plsql, 1, true) %>
     </div>
 
     <div class="flex-row-element">

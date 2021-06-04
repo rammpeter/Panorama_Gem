@@ -101,4 +101,11 @@ class WorkerThreadTest < ActiveSupport::TestCase
     end
   end
 
+  test "check_analyze" do
+    @sampler_config = prepare_panorama_sampler_thread_db_config
+    @sampler_config.set_last_analyze_check_timestamp(Time.now - 86400*20)       # 20 days back
+    WorkerThread.new(@sampler_config, 'check_analyze').check_analyze_internal   #run in same thread instead of separate thread
+    # WorkerThread.check_analyze(@sampler_config)
+  end
+
 end

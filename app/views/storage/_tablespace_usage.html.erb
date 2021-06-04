@@ -176,6 +176,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
                                        {:controller   => :storage,
                                         :action       => :list_sysaux_occupants,
                                         :update_area  => @update_area,
+                                        con_id: rec['con_id']
                                        },
                                :title=>"Show detailed usage of SYSAUX storage from v$SYSAUX_Occupants"
                                )
@@ -268,8 +269,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
             {:caption=>"% used max.",         :data=>show_pct_used_max,                           :title=>"Usage in percent of maximum size of tablespace including autoextend.\nFilled only if autoextend is used for at least one datafile.", data_title: data_title_max_size, align: :right},
             {:caption=>"Files",               :data=>link_file_count,                             :title=>"Number of data files, temp files or redo log groups", align: :right},
             {:caption=>"Status",              :data=>proc{|rec| rec.status}},
-            {:caption=>"Content",             :data=>proc{|rec| rec.contents}},
-            {:caption=>"Logging",             :data=>proc{|rec| rec.logging}},
+              {:caption=>"Logging",             :data=>proc{|rec| rec.logging}},
             {:caption=>"Force log.",          :data=>proc{|rec| rec.force_logging}},
             {:caption=>"Extent mgmt.",        :data=>proc{|rec| rec.extent_management},           :title=>'Extent management'},
             {:caption=>"Allocation Type",     :data=>proc{|rec| rec.allocation_type}},

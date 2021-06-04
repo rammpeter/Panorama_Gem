@@ -273,11 +273,18 @@ module ApplicationHelper
   def my_html_escape(org_value, line_feed_to_br=true)
     '' if org_value.nil?
 
-    retval =
-    ERB::Util.html_escape(org_value).   # Standard-Escape kann kein NewLine-><BR>
-      gsub(/\r/, '')      # Alle vorkommenden CR ersetzen, führt sonst bei Javascript zu Error String not closed
+    begin
+      retval = ERB::Util.html_escape(org_value)                                          # Standard-Escape kann kein NewLine-><BR>
+    rescue Encoding::CompatibilityError => e
+      Rails.logger.error "#{e.class} #{e.message}: Content: #{org_value}"
+      log_exception_backtrace(e)
 
-    retval = retval.gsub(/\n/, '<br>') if line_feed_to_br  # Alle vorkommenden NewLine ersetzen
+      # force encoding to UTF-8 before
+      retval = ERB::Util.html_escape(org_value.force_encoding('UTF-8'))   # Standard-Escape kann kein NewLine-><BR>
+    end
+
+    # Alle vorkommenden CR ersetzen, führt sonst bei Javascript zu Error String not closed
+    retval = retval.gsub(/\r/, '').gsub(/\n/, '<br>') if line_feed_to_br  # Alle vorkommenden NewLine ersetzen
     retval
   end
 
@@ -346,8 +353,8 @@ module ApplicationHelper
     snaps = sql_select_all ["
       SELECT /* Panorama-Tool Ramm */ Min(Snap_ID) Min_Snap_ID, MAX(Snap_ID) Max_Snap_ID
       FROM   DBA_Hist_Snapshot
-      WHERE  Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-      AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+      WHERE  Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(time_selection_start)}')
+      AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(time_selection_end)}')
       AND    DBID            = ?
       #{additional_where}",
                             time_selection_start, time_selection_end, prepare_param_dbid].concat(additional_binds)

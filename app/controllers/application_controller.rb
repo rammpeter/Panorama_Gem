@@ -53,7 +53,6 @@ class ApplicationController < ActionController::Base
 
   # Ausführung vor jeden Request
   def begin_request
-    #    Rails.logger.debug "begin_request"
     begin
       if get_locale
         I18n.locale = get_locale                                                # fuer laufende Action Sprache aktivieren

@@ -32,14 +32,14 @@
    end
 
    column_options = []
-   column_options << {:caption=>"SQL-ID",        :data=>proc{|rec| link_sql_id(@update_area, @instance, rec.sql_id, (get_db_version >= '12.1' ? rec.child_number : nil) )}, :title=>"SQL-ID of statement"}
-   column_options << {:caption=>"Child no.",     :data=>proc{|rec| fn(rec.child_number)},                                                                 :title=>"Child number of statement"} if get_db_version >= '12.1'
-   column_options << {:caption=>"Est.Opt.Size",  :data=>proc{|rec| link_column_workarea(rec, formattedNumber(rec.estimated_optimal_size))}, :align=>"right", :title=>"Estimated size required by this work area to execute the operation completely in memory (optimal execution). Derived from either optimizer statistics or previous executions in bytes."}
-   column_options << {:caption=>"Est.Onep.Size", :data=>proc{|rec| link_column_workarea(rec, formattedNumber(rec.estimated_onepass_size))}, :align=>"right", :title=>"Estimated size required by this work area to execute the operation in a single pass. Derived from either optimizer statistics or previous executions in bytes."}
-   column_options << {:caption=>"Last Mem.Used", :data=>proc{|rec| link_column_workarea(rec, formattedNumber(rec.last_memory_used))},       :align=>"right", :title=>"Memory used by this work area during the last execution of the cursor in bytes"}
-   column_options << {:caption=>"Active Time",   :data=>proc{|rec| link_column_workarea(rec, formattedNumber(rec.active_time))}, :align=>"right",            :title=>"Average time this work area is active (in hundredths of a second)"}
-   column_options << {:caption=>"Max. Temp",     :data=>proc{|rec| link_column_workarea(rec, formattedNumber(rec.max_tempseg_size))}, :align=>"right",       :title=>"Maximum temporary segment size (in bytes) created by an instantiation of this work area. This column is null if this work area has never spilled to disk."}
-   column_options << {:caption=>"Last Temp",     :data=>proc{|rec| link_column_workarea(rec, formattedNumber(rec.last_tempseg_size))}, :align=>"right",      :title=>"Temporary segment size (in bytes) created in the last instantiation of this work area. This column is null if the last instantiation of this work area did not spill to disk."}
+   column_options << {:caption=>"SQL-ID",               :data=>proc{|rec| link_sql_id(@update_area, @instance, rec.sql_id, (get_db_version >= '12.1' ? rec.child_number : nil) )}, :title=>"SQL-ID of statement"}
+   column_options << {:caption=>"Child no.",            :data=>proc{|rec| fn(rec.child_number)},                                                          :title=>"Child number of statement"} if get_db_version >= '12.1'
+   column_options << {:caption=>"Est. Opt. Size (kB)",  :data=>proc{|rec| link_column_workarea(rec, fn(rec.estimated_optimal_size_kb))}, :align=>"right", :title=>"Estimated size in kBytes required by this work area to execute the operation completely in memory (optimal execution).\nDerived from either optimizer statistics or previous executions in.", data_title: proc{|rec| "%t\n#{size_explain((rec.estimated_optimal_size_kb/1024.0 rescue nil))}"}}
+   column_options << {:caption=>"Est. Onep. Size (kB)", :data=>proc{|rec| link_column_workarea(rec, fn(rec.estimated_onepass_size_kb))}, :align=>"right", :title=>"Estimated size in kBytes required by this work area to execute the operation in a single pass.\nDerived from either optimizer statistics or previous executions in", data_title: proc{|rec| "%t\n#{size_explain((rec.estimated_onepass_size_kb/1024.0 rescue nil))}"}}
+   column_options << {:caption=>"Last Mem. Used (kB)",  :data=>proc{|rec| link_column_workarea(rec, fn(rec.last_memory_used_kb))},       :align=>"right", :title=>"Memory in kBytes used by this work area during the last execution of the cursor in", data_title: proc{|rec| "%t\n#{size_explain((rec.last_memory_used_kb/1024.0 rescue nil))}"}}
+   column_options << {:caption=>"Active Time (ms)",     :data=>proc{|rec| link_column_workarea(rec, fn(rec.active_time_ms))},            :align=>"right", :title=>"Average time this work area is active in milliseconds", data_title: proc{|rec| "%t\n#{seconds_explain((rec.active_time_ms/1000.0 rescue nil))}"}}
+   column_options << {:caption=>"Max. Temp (kB)",       :data=>proc{|rec| link_column_workarea(rec, fn(rec.max_tempseg_size_kb))}, :align=>"right",       :title=>"Maximum temporary segment size (in bytes) created by an instantiation of this work area. This column is null if this work area has never spilled to disk.", data_title: proc{|rec| "%t\n#{size_explain((rec.max_tempseg_size_kb/1024.0 rescue nil))}"}}
+   column_options << {:caption=>"Last Temp (kB)",       :data=>proc{|rec| link_column_workarea(rec, fn(rec.last_tempseg_size_kb))}, :align=>"right",      :title=>"Temporary segment size (in bytes) created in the last instantiation of this work area. This column is null if the last instantiation of this work area did not spill to disk.", data_title: proc{|rec| "%t\n#{size_explain((rec.last_tempseg_size_kb/1024.0 rescue nil))}"}}
    column_options << {:caption=>"SQL-Text",      :data=>proc{|rec| my_html_escape(rec.sql_text)},                                                                            :title=>"First characters of SQL-text"}
    column_options << {:caption=>"Own SAddr",     :data=>proc{|rec| link_saddr_session(rec)},                                                                 :title=>"Does gv$Open_Cursor.SAddr reference same session like gv$Open_Cursor.SID? If not, session referenced by SAddr is shown"}
    column_options << {caption: 'Last active',    data: proc{|rec| localeDateTime(rec.last_sql_active_time)},     title: "Time when this cursor was last executed"} if get_db_version >= '11.1'
@@ -50,7 +50,6 @@
 <%= gen_slickgrid(@opencursors, column_options, {
         :caption    => "Open cursors for instance=#{@instance}, SID=#{@sid}",
         :max_height => 450,
-        :width      => :auto,
         show_pin_icon: 1,
         update_area: @update_area
 }) %>

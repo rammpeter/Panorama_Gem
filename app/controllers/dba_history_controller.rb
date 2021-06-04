@@ -114,10 +114,10 @@ class DbaHistoryController < ApplicationController
               WHERE  (s.DBID, s.Snap_ID, s.Instance_Number) IN (
                       SELECT /*+ NO_MERGE ORDERED */ ss.DBID, ss.Snap_ID, ss.Instance_Number
                       FROM   DBA_Hist_Snapshot ss
-                      LEFT OUTER JOIN (SELECT DBID, Instance_Number, MAX(Snap_ID) Snap_ID FROM dba_hist_snapshot WHERE Begin_Interval_time  < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') GROUP BY DBID, Instance_Number) s1 ON s1.Instance_Number = ss.Instance_Number AND s1.DBID = ss.DBID
-                      JOIN            (SELECT DBID, Instance_Number, MIN(Snap_ID) Snap_ID FROM dba_hist_snapshot WHERE Begin_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') GROUP BY DBID, Instance_Number) s2 ON s2.Instance_Number = ss.Instance_Number AND s2.DBID = ss.DBID
-                      LEFT OUTER JOIN (SELECT DBID, Instance_Number, MIN(Snap_ID) Snap_ID FROM dba_hist_snapshot WHERE End_Interval_time    > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') GROUP BY DBID, Instance_Number) e1 ON e1.Instance_Number = ss.Instance_Number AND e1.DBID = ss.DBID
-                      JOIN            (SELECT DBID, Instance_Number, MAX(Snap_ID) Snap_ID FROM dba_hist_snapshot WHERE End_Interval_time   <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') GROUP BY DBID, Instance_Number) e2 ON e2.Instance_Number = ss.Instance_Number AND e2.DBID = ss.DBID
+                      LEFT OUTER JOIN (SELECT DBID, Instance_Number, MAX(Snap_ID) Snap_ID FROM dba_hist_snapshot WHERE Begin_Interval_time  < TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') GROUP BY DBID, Instance_Number) s1 ON s1.Instance_Number = ss.Instance_Number AND s1.DBID = ss.DBID
+                      JOIN            (SELECT DBID, Instance_Number, MIN(Snap_ID) Snap_ID FROM dba_hist_snapshot WHERE Begin_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') GROUP BY DBID, Instance_Number) s2 ON s2.Instance_Number = ss.Instance_Number AND s2.DBID = ss.DBID
+                      LEFT OUTER JOIN (SELECT DBID, Instance_Number, MIN(Snap_ID) Snap_ID FROM dba_hist_snapshot WHERE End_Interval_time    > TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') GROUP BY DBID, Instance_Number) e1 ON e1.Instance_Number = ss.Instance_Number AND e1.DBID = ss.DBID
+                      JOIN            (SELECT DBID, Instance_Number, MAX(Snap_ID) Snap_ID FROM dba_hist_snapshot WHERE End_Interval_time   <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') GROUP BY DBID, Instance_Number) e2 ON e2.Instance_Number = ss.Instance_Number AND e2.DBID = ss.DBID
                       WHERE  ss.Snap_ID >= NVL(s1.Snap_ID, s2.Snap_ID)
                       AND    ss.Snap_ID <= NVL(e1.Snap_ID, e2.Snap_ID)
                       AND    ss.DBID = ?
@@ -131,7 +131,7 @@ class DbaHistoryController < ApplicationController
                                 AVG(Wait_Time+Time_Waited)/1000 Time_Waited_Avg_ms
                          FROM   DBA_Hist_Active_Sess_History s
                          WHERE  DBID = ?
-                         AND    Sample_Time BETWEEN TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') AND TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                         AND    Sample_Time BETWEEN TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
                          #{ @instance ? " AND s.Instance_Number =#{@instance}" : ""}
                          AND    NVL(s.Event, s.Session_State) != 'PX Deq Credit: send blkd' -- dieser Event wird als Idle-Event gewertet
                          GROUP BY Instance_Number, Current_Obj#
@@ -157,6 +157,7 @@ class DbaHistoryController < ApplicationController
   # Anzeige einzelner Snaphots
   def list_segment_stat_hist_detail
     @instance       = prepare_param_instance
+    @dbid           = prepare_param_dbid
     @time_selection_start = params[:time_selection_start]
     @time_selection_start = nil if @time_selection_start == ''
     @time_selection_end   = params[:time_selection_end]
@@ -170,8 +171,8 @@ class DbaHistoryController < ApplicationController
     max_snap_id     = params[:max_snap_id]
     max_snap_id     = nil if max_snap_id == ''
 
-    where_string = ''
-    where_values = []
+    where_string = 'AND s.DBID = ?'
+    where_values = [@dbid]
 
     group_criteria = "CAST(Begin_Interval_Time + INTERVAL '0.5' SECOND AS DATE)" # Ensure that multiple RAC instances are rounded into one grouped row
 
@@ -257,8 +258,8 @@ class DbaHistoryController < ApplicationController
                 FROM   dba_hist_snapshot snap
                 JOIN   DBA_Hist_SQLStat s ON s.DBID=snap.DBID AND s.Instance_Number=snap.Instance_Number AND s.Snap_ID=snap.Snap_ID
                 WHERE  snap.Instance_Number= ?
-                AND    snap.Begin_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                AND    snap.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                AND    snap.Begin_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                AND    snap.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
                 GROUP BY s.DBID, s.SQL_ID, s.Instance_number, s.Parsing_Schema_Name
                ) sql,
                DBA_Hist_SQL_Plan p
@@ -272,15 +273,19 @@ class DbaHistoryController < ApplicationController
     render_partial :list_segment_stat_historic_sql
   end #list_segment_stat_hist_sql
 
+
+  def show_sql_area_historic
+    @filter = prepare_param :filter
+    render_partial
+  end
+
   def list_sql_area_historic
     filter   = params[:filter]  =="" ? nil : params[:filter]
     instance = prepare_param_instance
     @dbid    = prepare_param_dbid
-    sql_id   = case params[:sql_id]
-                 when nil then nil
-                 when "" then nil
-                 else params[:sql_id].strip
-               end
+    sql_id   = prepare_param(:sql_id)&.strip
+    username = prepare_param :username
+    no_plsql = prepare_param(:include_plsql).nil?
 
     topSort          = params[:topSort]
     topSort          = 'ElapsedTimeTotal' if topSort.nil? || topSort == ''
@@ -298,14 +303,24 @@ class DbaHistoryController < ApplicationController
       where_string_instance << " AND Instance_Number = ?"
       where_values << instance.to_i
     end
+    if username
+      where_string_innen << " WHERE s.Parsing_Schema_Name = UPPER(?)"
+      where_values << username
+    end
     if sql_id
       where_string_innen << " WHERE s.SQL_ID LIKE '%'||?||'%'"
       where_values << sql_id
     end
     if filter
-      where_string_aussen << " WHERE UPPER(SQL_TEXT) LIKE UPPER('%'||?||'%')"
+      where_string_aussen << " AND UPPER(SQL_TEXT) LIKE UPPER('%'||?||'%')"
       where_values << filter
     end
+
+    if no_plsql
+      where_string_aussen << " AND t.Command_Type IS NOT NULL AND t.Command_Type != 47" # exclude "PL/SQL EXECUTE" and force inner join to DBA_Hist_SQLText
+    end
+
+    where_string_aussen.sub!('AND', 'WHERE') if where_string_aussen.length > 0   # Replace first AND by WHERE
     where_values << maxResultCount if maxResultCount
     @sqls= sql_select_all ["\
       SELECT /* Panorama-Tool Ramm */ *
@@ -343,10 +358,10 @@ class DbaHistoryController < ApplicationController
                   start_s.Begin_Interval_Time Start_Time, end_s.End_Interval_Time End_Time
                   FROM    (
                            SELECT /*+ NO_MERGE */ DBID, Instance_Number,
-                                  MAX(CASE WHEN Begin_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) StartMin,
-                                  MIN(CASE WHEN Begin_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) StartMax,
-                                  MAX(CASE WHEN End_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) EndMin,
-                                  MIN(CASE WHEN End_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) EndMax
+                                  MAX(CASE WHEN Begin_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') THEN Snap_ID ELSE NULL END) StartMin,
+                                  MIN(CASE WHEN Begin_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') THEN Snap_ID ELSE NULL END) StartMax,
+                                  MAX(CASE WHEN End_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') THEN Snap_ID ELSE NULL END) EndMin,
+                                  MIN(CASE WHEN End_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') THEN Snap_ID ELSE NULL END) EndMax
                            FROM   DBA_Hist_Snapshot
                            WHERE  DBID=? #{where_string_instance}
                            GROUP BY Instance_Number, DBID
@@ -377,9 +392,6 @@ class DbaHistoryController < ApplicationController
     @parsing_schema_name = params[:parsing_schema_name]
     @parsing_schema_name = nil if @parsing_schema_name == ''
 
-    params[:time_selection_start] = params[:time_selection_start][0, sql_datetime_minute_mask.length-2]  # evtl. Sekunden abschneiden von Zeitstempel, -2 wegen HH24 bringt nur 2 stellen
-    params[:time_selection_end]   = params[:time_selection_end][0, sql_datetime_minute_mask.length-2]
-
     save_session_time_selection   # werte in session puffern
     @dbid        = prepare_param_dbid
 
@@ -396,10 +408,10 @@ class DbaHistoryController < ApplicationController
                                ) Max_Sample_Time
                        FROM   (
                                 SELECT /*+ NO_MERGE */ DBID, Instance_Number,
-                                       NVL(MAX(CASE WHEN Begin_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) /* StartMin */,
-                                           MIN(CASE WHEN Begin_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) /* StartMax */) Start_Snap_ID,
-                                       NVL(MIN(CASE WHEN End_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) /* EndMax */,
-                                           MAX(CASE WHEN End_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) /* EndMin */) End_Snap_ID
+                                       COALESCE(MAX(CASE WHEN Begin_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') THEN Snap_ID ELSE NULL END) /* StartMin */,
+                                                MIN(CASE WHEN Begin_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') THEN Snap_ID ELSE NULL END) /* StartMax */) Start_Snap_ID,
+                                       COALESCE(MIN(CASE WHEN End_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') THEN Snap_ID ELSE NULL END) /* EndMax */,
+                                                MAX(CASE WHEN End_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') THEN Snap_ID ELSE NULL END) /* EndMin */) End_Snap_ID
                                 FROM   DBA_Hist_Snapshot
                                 WHERE  DBID=? #{'AND Instance_Number=?' if @instance}
                                 GROUP BY Instance_Number, DBID
@@ -638,8 +650,8 @@ class DbaHistoryController < ApplicationController
                                     JOIN   DBA_Hist_SQL_Plan p ON p.DBID = s.DBID AND p.SQL_ID = s.SQL_ID AND p.Plan_Hash_Value = s.Plan_Hash_Value AND p.ID = 1   /* first record of plan,  count only real execution plans */
                                     WHERE  s.DBID = ?
                                     AND    s.SQL_ID = ?
-                                    AND    ss.End_Interval_time   > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                                    AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                                    AND    ss.End_Interval_time   > TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                                    AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
                                     #{where_stmt}
                                     GROUP BY s.Plan_Hash_Value, s.DBID, s.Parsing_Schema_Name
                                     ORDER BY MIN(ss.Begin_Interval_Time)
@@ -674,6 +686,7 @@ class DbaHistoryController < ApplicationController
                                 p.Cost, p.CPU_Cost, p.IO_Cost, p.Cardinality, p.Bytes, p.Partition_Start, p.Partition_Stop, p.Partition_ID, p.Time,
                                 NVL(t.Num_Rows, i.Num_Rows) Num_Rows,
                                 NVL(t.Last_Analyzed, i.Last_analyzed) Last_Analyzed,
+                                 o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Last_Spec_TS,
                                 (SELECT SUM(Bytes)/(1024*1024) FROM DBA_Segments s WHERE s.Owner=p.Object_Owner AND s.Segment_Name=p.Object_Name) MBytes,
                                 Count(*) OVER (PARTITION BY p.Parent_ID, p.Operation, p.Options, p.Object_Owner,    -- p.ID nicht abgleichen, damit Verschiebungen im Plan toleriert werden
                                               CASE WHEN p.Object_Name LIKE ':TQ%'
@@ -694,14 +707,16 @@ class DbaHistoryController < ApplicationController
                                  JOIN   DBA_Hist_Snapshot ss ON ss.DBID=s.DBID AND ss.Instance_Number=s.Instance_Number AND ss.Snap_ID=s.Snap_ID
                                  WHERE  s.DBID = ?
                                  AND    s.SQL_ID = ?
-                                 AND    ss.End_Interval_time   > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                                 AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                                 AND    ss.End_Interval_time   > TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                                 AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
                                  #{where_stmt}
                                  GROUP BY s.SQL_ID, s.Plan_Hash_Value, s.DBID, s.Parsing_Schema_Name
                                 ) ps
                          JOIN   DBA_Hist_SQL_Plan p ON p.DBID=ps.DBID AND p.SQL_ID=ps.SQL_ID AND p.Plan_Hash_Value=ps.Plan_Hash_Value
                          LEFT OUTER JOIN DBA_Tables t  ON t.Owner=p.Object_Owner AND t.Table_Name=p.Object_Name -- evtl. weiter zu filtern per  NVL(p.Object_Type, 'TABLE') LIKE 'TABLE%'
                          LEFT OUTER JOIN DBA_Indexes i ON i.Owner=p.Object_Owner AND i.Index_Name=p.Object_Name -- evtl. weiter zu filtern per  p.Object_Type LIKE 'INDEX%'
+                         -- Object_Type ensures that only one record is gotten from DBA_Objects even if object is partitioned
+                         LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Object_Owner AND o.Object_Name = p.Object_Name AND o.Object_Type = p.Object_Type
                          ORDER BY p.ID
                        ", get_dbid, @sql_id, @time_selection_start, @time_selection_end].concat(where_values)
 
@@ -762,8 +777,8 @@ class DbaHistoryController < ApplicationController
                                          FROM   DBA_Hist_Snapshot ss
                                          JOIN   DBA_Hist_Active_Sess_History h ON h.DBID = ss.DBID AND h.Instance_Number = ss.Instance_Number AND h.Snap_ID = ss.Snap_ID
                                          WHERE  ss.DBID = ?
-                                         AND    ss.End_Interval_time   > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                                         AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                                         AND    ss.End_Interval_time   > TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                                         AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
                                          AND    h.SQL_ID  = ?
                                          AND    h.SQL_Plan_Hash_Value = ? #{ash_where_stmt}
                                          GROUP BY h.SQL_Plan_Line_ID, NVL(h.QC_Session_ID, h.Session_ID), Sample_ID   -- Alle PQ-Werte mit auf Session kumulieren
@@ -915,10 +930,10 @@ class DbaHistoryController < ApplicationController
                   start_s.Begin_Interval_Time Start_Time, end_s.End_Interval_Time End_Time
                   FROM    (
                            SELECT /*+ NO_MERGE */ DBID, Instance_Number,
-                                  MAX(CASE WHEN Begin_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) StartMin,
-                                  MIN(CASE WHEN Begin_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) StartMax,
-                                  MAX(CASE WHEN End_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) EndMin,
-                                  MIN(CASE WHEN End_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) EndMax
+                                  MAX(CASE WHEN Begin_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') THEN Snap_ID ELSE NULL END) StartMin,
+                                  MIN(CASE WHEN Begin_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') THEN Snap_ID ELSE NULL END) StartMax,
+                                  MAX(CASE WHEN End_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') THEN Snap_ID ELSE NULL END) EndMin,
+                                  MIN(CASE WHEN End_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') THEN Snap_ID ELSE NULL END) EndMax
                            FROM   DBA_Hist_Snapshot
                            WHERE  DBID=? #{" AND Instance_Number = ?" if @instance}
                            GROUP BY Instance_Number, DBID
@@ -993,10 +1008,10 @@ FROM (
         JOIN   DBA_Hist_Snapshot snap ON snap.DBID = s.DBID AND snap.Instance_Number = s.Instance_Number AND snap.Snap_ID = s.Snap_ID
         JOIN   (
                 SELECT /*+ NO_MERGE*/ DBID, Instance_Number,
-                       MAX(CASE WHEN Begin_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) StartMin,      -- Normaler Start-Schnappschuss
-                       MIN(CASE WHEN Begin_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) StartMax,      -- alternativer Start-Schnappschuss wenn StartMin=NULL
-                       MAX(CASE WHEN End_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) EndMin,          -- alternativer End-Schnappschuss, wenn EndMin=NULL
-                       MIN(CASE WHEN End_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') THEN Snap_ID ELSE NULL END) EndMax           -- Normaler End-Schnappschuss
+                       MAX(CASE WHEN Begin_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') THEN Snap_ID ELSE NULL END) StartMin,      -- Normaler Start-Schnappschuss
+                       MIN(CASE WHEN Begin_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') THEN Snap_ID ELSE NULL END) StartMax,      -- alternativer Start-Schnappschuss wenn StartMin=NULL
+                       MAX(CASE WHEN End_Interval_time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') THEN Snap_ID ELSE NULL END) EndMin,          -- alternativer End-Schnappschuss, wenn EndMin=NULL
+                       MIN(CASE WHEN End_Interval_time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') THEN Snap_ID ELSE NULL END) EndMax           -- Normaler End-Schnappschuss
                 FROM   DBA_Hist_Snapshot
                 WHERE  DBID = ?
                 GROUP BY Instance_Number, DBID
@@ -1060,8 +1075,8 @@ FROM (
                       FROM   (SELECT DBID, Instance_Number, Min(Snap_ID) Min_Snap_ID, MAX(Snap_ID) Max_Snap_ID
                               FROM   DBA_Hist_Snapshot ss
                               WHERE  DBID = ? #{additional_where1}
-                              AND    Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                              AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                              AND    Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                              AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
                               GROUP BY DBID, Instance_Number
                              ) ss
                       JOIN   DBA_Hist_System_Event ev ON ev.DBID = ss.DBID AND ev.Instance_Number = ss.Instance_Number
@@ -1169,8 +1184,8 @@ FROM (
                       FROM   (SELECT /*+ NO_MERGE */ DBID, Instance_Number, MIN(Snap_ID) Min_Snap_ID, MAX(Snap_ID) Max_Snap_ID
                               FROM   DBA_Hist_Snapshot ss
                               WHERE  DBID = ? #{additional_where}
-                              AND    Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                              AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                              AND    Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                              AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
                               GROUP BY DBID, Instance_Number
                              ) ss
                       JOIN   DBA_Hist_SysStat st ON st.DBID=ss.DBID AND st.Instance_Number=ss.Instance_Number
@@ -1254,8 +1269,8 @@ FROM (
                       FROM   (SELECT /*+ NO_MERGE*/ DBID, Instance_Number, Min(Snap_ID) Min_Snap_ID, MAX(Snap_ID) Max_Snap_ID
                               FROM   DBA_Hist_Snapshot ss
                               WHERE  DBID = ? #{additional_where}
-                              AND    Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                              AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                              AND    Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                              AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
                               GROUP BY DBID, Instance_Number
                              ) ss
                       JOIN   DBA_Hist_SysStat st ON st.DBID=ss.DBID AND st.Instance_Number=ss.Instance_Number
@@ -1363,9 +1378,9 @@ FROM (
                               FROM   gv$SysMetric_History
                               WHERE  Group_ID = 2 -- System Metrics Long Duration
                              )
-                      WHERE  Begin_Time >= TO_DATE(?, '#{sql_datetime_minute_mask}')
-                      AND    Begin_Time  < TO_DATE(?, '#{sql_datetime_minute_mask}') -- Hilfe fuer Index-Zugriff, größter beginn auf alle Faelle vor groesstem Ende
-                      AND    End_Time   <= TO_DATE(?, '#{sql_datetime_minute_mask}')
+                      WHERE  Begin_Time >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
+                      AND    Begin_Time  < TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}') -- Hilfe fuer Index-Zugriff, größter beginn auf alle Faelle vor groesstem Ende
+                      AND    End_Time   <= TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                       #{additional_where}
                       GROUP BY #{time_expression} , Metric_ID, Metric_Name, Metric_Unit
                       ORDER BY 1, Metric_ID"
@@ -1393,9 +1408,9 @@ FROM (
                               FROM   gv$SysMetric_Summary
                               WHERE  Group_ID = 2 -- System Metrics Long Duration
                              )
-                      WHERE  Begin_Time >= TO_DATE(?, '#{sql_datetime_minute_mask}')
-                      AND    Begin_Time  < TO_DATE(?, '#{sql_datetime_minute_mask}') -- Hilfe fuer Index-Zugriff, größter beginn auf alle Faelle vor groesstem Ende
-                      AND    End_Time   <= TO_DATE(?, '#{sql_datetime_minute_mask}')
+                      WHERE  Begin_Time >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
+                      AND    Begin_Time  < TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}') -- Hilfe fuer Index-Zugriff, größter beginn auf alle Faelle vor groesstem Ende
+                      AND    End_Time   <= TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                       #{additional_where}
                       GROUP BY #{time_expression} , Metric_ID, Metric_Name, Metric_Unit
                       ORDER BY 1, Metric_ID"
@@ -1491,8 +1506,8 @@ FROM (
                              MAX(Begin_Interval_Time) Last_Occurrence
                       FROM   DBA_Hist_Snapshot
                       WHERE  DBID = ?
-                      AND    Begin_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                      AND    Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                      AND    Begin_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                      AND    Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
                       GROUP BY Instance_Number
                      ) snap ON snap.Instance_Number = l.Instance_Number
               WHERE  l.DBID = ?
@@ -1573,8 +1588,8 @@ FROM (
                      SUM(Sleeps)/SUM(Gets) Sleep_Ratio,
                      COUNT(*)              Samples
               FROM   GV$Mutex_Sleep_History
-              WHERE  Sleep_Timestamp >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-              AND    Sleep_Timestamp  < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+              WHERE  Sleep_Timestamp >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+              AND    Sleep_Timestamp  < TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
               #{@instance ? "AND Inst_ID=#{@instance}" : ""}
               GROUP BY Inst_ID, Mutex_Type, #{@groupby}
              )
@@ -1593,8 +1608,8 @@ FROM (
              SUM(Sleeps)/SUM(Gets) Sleep_Ratio,
              COUNT(*)              Samples
       FROM   GV$Mutex_Sleep_History
-              WHERE  Sleep_Timestamp >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-              AND    Sleep_Timestamp  < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+              WHERE  Sleep_Timestamp >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+              AND    Sleep_Timestamp  < TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
               #{@instance ? "AND Inst_ID=#{@instance}" : ""}
       GROUP BY TRUNC(Sleep_Timestamp, 'MI')
       ORDER BY TRUNC(Sleep_Timestamp, 'MI')", @time_selection_start, @time_selection_end]
@@ -1683,8 +1698,8 @@ FROM (
                              MAX(Begin_Interval_Time) Last_Occurrence
                       FROM   DBA_Hist_Snapshot
                       WHERE  DBID = ?
-                      AND    Begin_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                      AND    Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                      AND    Begin_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                      AND    Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
                       GROUP BY Instance_Number
                      ) snap ON snap.Instance_Number = h.Instance_Number
               WHERE  h.DBID = ?
@@ -1858,24 +1873,12 @@ FROM (
     render :json => response, :status => 200
   end
 
-
-  def show_resource_limits_historic
-    @names = sql_select_all 'SELECT /* Panorama-Tool Ramm */ DISTINCT Resource_Name FROM DBA_Hist_Resource_Limit'
-    if @names.length == 0
-      show_popup_message("No content available in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Resource_Limit')} for your connection!
-For PDB please connect to database with CDB-user instead of PDB-user.")
-    else
-      render_partial
-    end
-  end
-
   def list_resource_limits_historic
     @instance  = prepare_param_instance
     @dbid      = prepare_param_dbid
-    @resource_name = params[:resource][:name]
-    save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
+    @resource_name = params[:resource_name]
 
-    @limits = sql_select_iterator ["\
+    @limits = sql_select_all ["\
       SELECT /* Panorama-Tool Ramm */
              ROUND(ss.End_Interval_Time, 'MI')    End_Interval,
              SUM(rl.Current_Utilization)          Current_Utilization,
@@ -1887,26 +1890,31 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
                      CASE WHEN TRIM(Initial_Allocation) = 'UNLIMITED' THEN -1 ELSE TO_NUMBER(Initial_Allocation) END Initial_Allocation,
                      CASE WHEN TRIM(Limit_Value)        = 'UNLIMITED' THEN -1 ELSE TO_NUMBER(Limit_Value)        END Limit_Value
               FROM   DBA_Hist_Resource_Limit
-              WHERE  Resource_Name = ?
+              WHERE  DBID           = ?
+              AND    Resource_Name  = ?
+              #{ @instance ? " AND Instance_Number = ?" : ''}
              ) rl ON rl.DBID=ss.DBID AND rl.Snap_ID=ss.Snap_ID AND rl.Instance_Number=ss.Instance_Number
-      WHERE  ss.End_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-      AND    ss.End_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-      #{ @instance ? " AND ss.Instance_Number=#{@instance}" : ''}
       GROUP BY ROUND(ss.End_Interval_Time, 'MI')
       ORDER BY ROUND(ss.End_Interval_Time, 'MI') DESC
-     ", @resource_name, @time_selection_start, @time_selection_end ]
+     ", @dbid, @resource_name].concat(@instance ? [@instance] : [])
 
-    render_partial
+    if @limits.length == 0
+      show_popup_message("No content available in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Resource_Limit')} for your connection!
+  For PDB please connect to database with CDB-user instead of PDB-user.")
+    else
+      render_partial
+    end
   end
 
   private
   # min und max. Snap_ID für gegebenen Zeitraum und Instance (nullable)
+  # get latest snapshot before period and first after period
   # belegt Instanzvariablen
   def get_min_max_snapshot(instance, time_selection_start, time_selection_end)
     @min_snap_id = sql_select_one ["SELECT MAX(Snap_ID)
                                    FROM   DBA_Hist_Snapshot
                                    WHERE  DBID = ?
-                                   AND    Begin_Interval_Time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                                   AND    End_Interval_Time < TO_TIMESTAMP(?, '#{sql_datetime_mask(time_selection_start)}')
                                    #{' AND Instance_Number = ?' if instance}
                                   ", get_dbid, time_selection_start].concat(instance ? [instance] : [])
     if @min_snap_id.nil?                                                      # Ersten Snap nehmen wenn keiner zum start gefunden
@@ -1920,7 +1928,7 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
     @max_snap_id = sql_select_one ["SELECT MIN(Snap_ID)
                                    FROM   DBA_Hist_Snapshot
                                    WHERE  DBID = ?
-                                   AND    End_Interval_Time > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                                   AND    End_Interval_Time > TO_TIMESTAMP(?, '#{sql_datetime_mask(time_selection_end)}')
                                    #{' AND Instance_Number = ?' if instance}
                                    ", get_dbid, time_selection_end].concat(instance ? [instance] : [])
 
@@ -1947,28 +1955,29 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
 
 
     if params[:download_oracle_com_reachable] != 'true'
-      @report = "ERROR:<br/>URL https://download.oracle.com is not available for your browser instance!<br/>Cannot load Flash content of performance hub report from this URL!"
+      @report = "ERROR:<br/>URL https://download.oracle.com is not available for your browser instance!<br/>Cannot load content of performance hub report from this URL!"
     else
-
       @report = sql_select_one ["\
         SELECT DBMS_PERF.REPORT_PERFHUB(
                                  Is_RealTime            => #{@realtime ? '1' : 'NULL'},
-                                 Outer_Start_Time       => TO_DATE(?, '#{sql_datetime_minute_mask}'),
-                                 Selected_Start_Time    => TO_DATE(?, '#{sql_datetime_minute_mask}'),
+                                 Outer_Start_Time       => TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}'),
+                                 Selected_Start_Time    => TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}'),
                                  DBID                   => ?,
                                  Monitor_List_Detail    => ?,
                                  Workload_SQL_Detail    => ?,
                                  Report_Level           => 'typical',
                                  Type                   => 'ACTIVE'
                                  #{", Inst_ID           => ?" if @instance}
-                                 #{", Outer_End_Time    => TO_DATE(?, '#{sql_datetime_minute_mask}'),
-                                      Selected_End_Time => TO_DATE(?, '#{sql_datetime_minute_mask}')" if !@realtime}
+                                 #{", Outer_End_Time    => TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}'),
+                                      Selected_End_Time => TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')" if !@realtime}
                                 )
         FROM DUAL
         ", @time_selection_start, @time_selection_start, get_dbid, @top_n, @top_n]
                                    .concat(@instance ? [@instance] : [])
                                    .concat(@realtime ? [] : [@time_selection_end, @time_selection_end])
     end
+
+    @report.gsub!(/http:/, 'https:') if request.original_url['https://']        # Request kommt mit https, dann müssen <script>-Includes auch per https abgerufen werden, sonst wird page geblockt wegen insecure content
 
     render :html => @report.html_safe
   end
@@ -2008,8 +2017,8 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
     @instance  = prepare_param_instance
 
     @report = sql_select_iterator ["SELECT output FROM TABLE(DBMS_WORKLOAD_REPOSITORY.ASH_REPORT_HTML(?, ?,
-                                                                TO_DATE(?, '#{sql_datetime_minute_mask}'),
-                                                                TO_DATE(?, '#{sql_datetime_minute_mask}')
+                                                                TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}'),
+                                                                TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                                                             ))",
                                    get_dbid, @instance, @time_selection_start, @time_selection_end]
     res_array = []
@@ -2024,8 +2033,8 @@ For PDB please connect to database with CDB-user instead of PDB-user.")
     @instance  = prepare_param_instance
 
     @report = sql_select_iterator ["SELECT output FROM TABLE(DBMS_WORKLOAD_REPOSITORY.ASH_GLOBAL_REPORT_HTML(?, #{@instance ? '?' : 'NULL'},
-                                                                TO_DATE(?, '#{sql_datetime_minute_mask}'),
-                                                                TO_DATE(?, '#{sql_datetime_minute_mask}')
+                                                                TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}'),
+                                                                TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                                                             ))",
                                    get_dbid].concat(@instance ? [@instance] : []).concat([@time_selection_start, @time_selection_end])
     res_array = []
@@ -2258,8 +2267,8 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
              #{get_db_version >= '11.2' ? "SUBSTR(SQL_Text, 1, 60)" : "''"} SQL_Text_Substr,
              'gv$SQL_Monitor'                                 Origin
       FROM   gv$SQL_Monitor
-      WHERE  (    First_Refresh_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-              OR  Last_Refresh_Time  BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+      WHERE  (    First_Refresh_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+              OR  Last_Refresh_Time  BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
              )
       AND    Process_Name = 'ora' /* Foreground process, not PQ-slave */
       #{where_string_sga}
@@ -2291,8 +2300,8 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
         FROM   DBA_HIST_Reports r
         WHERE  DBID           = ?
         AND    Component_Name = 'sqlmonitor'
-        AND    (    Period_Start_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-                OR  Period_End_Time   BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+        AND    (    Period_Start_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
+                OR  Period_End_Time   BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                )
         #{where_string_hist}
         "
@@ -2377,8 +2386,8 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
               JOIN   (SELECT DBID, Instance_Number, MIN(Snap_ID) Min_Snap_ID, MAX(Snap_ID) Max_Snap_ID
                       FROM   DBA_Hist_Snapshot
                       WHERE  DBID = ?
-                      AND    Begin_Interval_Time >= TO_DATE(?, '#{sql_datetime_minute_mask}')
-                      AND    End_Interval_Time    < TO_DATE(?, '#{sql_datetime_minute_mask}')
+                      AND    Begin_Interval_Time >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
+                      AND    End_Interval_Time    < TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                       #{"AND Instance_Number = ?" if @instance}
                       GROUP BY DBID, Instance_Number
                      )ss ON ss.DBID = s.DBID AND ss.Instance_Number = s.Instance_Number

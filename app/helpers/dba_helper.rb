@@ -154,8 +154,8 @@ WHERE  indx = (SELECT name_ksrcctx FROM x$ksrcctx WHERE addr like '%'||TRIM(TO_C
         SELECT COUNT(*) Amount
         FROM   gv$SQL_Monitor
         WHERE  Process_Name = 'ora' /* Foreground process, not PQ-slave */
-        AND    (    First_Refresh_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-                OR  Last_Refresh_Time  BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+        AND    (    First_Refresh_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(time_selection_end)}')
+                OR  Last_Refresh_Time  BETWEEN TO_DATE(?, '#{sql_datetime_mask(time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(time_selection_end)}')
                )
         #{where_string_sga}
         ", time_selection_start, time_selection_end, time_selection_start, time_selection_end].concat(where_values)
@@ -166,8 +166,8 @@ WHERE  indx = (SELECT name_ksrcctx FROM x$ksrcctx WHERE addr like '%'||TRIM(TO_C
           FROM   DBA_HIST_Reports
           WHERE  DBID           = ?
           AND    Component_Name = 'sqlmonitor'
-          AND    (    Period_Start_Time BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
-                  OR  Period_End_Time   BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+          AND    (    Period_Start_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(time_selection_end)}')
+                  OR  Period_End_Time   BETWEEN TO_DATE(?, '#{sql_datetime_mask(time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(time_selection_end)}')
                  )
           #{where_string_awr}
           ", dbid, time_selection_start, time_selection_end, time_selection_start, time_selection_end].concat(where_values)

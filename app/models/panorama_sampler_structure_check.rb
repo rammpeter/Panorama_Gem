@@ -254,7 +254,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'IS_SQLID_CURRENT',               column_type:  'VARCHAR2', precision: 1 },
               { column_name:  'SQL_CHILD_NUMBER',               column_type:  'NUMBER' },
               { column_name:  'SQL_OPCODE',                     column_type:  'NUMBER' },
-              { column_name:  'SQL_OPNAME',                     column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'SQL_OPNAME',                     column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'FORCE_MATCHING_SIGNATURE',       column_type:  'NUMBER' },
               { column_name:  'TOP_LEVEL_SQL_ID',               column_type:  'VARCHAR2', precision: 13 },
               { column_name:  'TOP_LEVEL_SQL_OPCODE',           column_type:  'NUMBER' },
@@ -262,8 +262,8 @@ class PanoramaSamplerStructureCheck
               #{ column_name:  'SQL_FULL_PLAN_HASH_VALUE',       column_type:  'NUMBER' },
               { column_name:  'SQL_PLAN_HASH_VALUE',            column_type:  'NUMBER' },
               { column_name:  'SQL_PLAN_LINE_ID',               column_type:  'NUMBER' },
-              { column_name:  'SQL_PLAN_OPERATION',             column_type:  'VARCHAR2', precision: 64 },
-              { column_name:  'SQL_PLAN_OPTIONS',               column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'SQL_PLAN_OPERATION',             column_type:  'VARCHAR2', precision: 128 },
+              { column_name:  'SQL_PLAN_OPTIONS',               column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'SQL_EXEC_ID',                    column_type:  'NUMBER' },
               { column_name:  'SQL_EXEC_START',                 column_type:  'DATE' },
               { column_name:  'PLSQL_ENTRY_OBJECT_ID',          column_type:  'NUMBER' },
@@ -274,17 +274,17 @@ class PanoramaSamplerStructureCheck
               { column_name:  'QC_SESSION_ID',                  column_type:  'NUMBER' },
               { column_name:  'QC_SESSION_SERIAL#',             column_type:  'NUMBER' },
               { column_name:  'PX_FLAGS',                       column_type:  'NUMBER' },
-              { column_name:  'EVENT',                          column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'EVENT',                          column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'EVENT_ID',                       column_type:  'NUMBER' },
               #{ column_name:  'EVENT#',                         column_type:  'NUMBER' },
               { column_name:  'SEQ#',                           column_type:  'NUMBER' },
-              { column_name:  'P1TEXT',                         column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'P1TEXT',                         column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'P1',                             column_type:  'NUMBER' },
-              { column_name:  'P2TEXT',                         column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'P2TEXT',                         column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'P2',                             column_type:  'NUMBER' },
-              { column_name:  'P3TEXT',                         column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'P3TEXT',                         column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'P3',                             column_type:  'NUMBER' },
-              { column_name:  'WAIT_CLASS',                     column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'WAIT_CLASS',                     column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'WAIT_CLASS_ID',                  column_type:  'NUMBER' },
               { column_name:  'WAIT_TIME',                      column_type:  'NUMBER' },
               { column_name:  'SESSION_STATE',                  column_type:  'VARCHAR2', precision: 7 },
@@ -325,13 +325,13 @@ class PanoramaSamplerStructureCheck
               { column_name:  'IS_CAPTURED',                    column_type:  'VARCHAR2', precision: 1 },
               { column_name:  'IS_REPLAYED',                    column_type:  'VARCHAR2', precision: 1 },
               { column_name:  'SERVICE_HASH',                   column_type:  'NUMBER' },
-              { column_name:  'PROGRAM',                        column_type:  'VARCHAR2', precision: 64 },
-              { column_name:  'MODULE',                         column_type:  'VARCHAR2', precision: 64 },
-              { column_name:  'ACTION',                         column_type:  'VARCHAR2', precision: 64 },
-              { column_name:  'CLIENT_ID',                      column_type:  'VARCHAR2', precision: 64 },
-              { column_name:  'MACHINE',                        column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'PROGRAM',                        column_type:  'VARCHAR2', precision: 128 },
+              { column_name:  'MODULE',                         column_type:  'VARCHAR2', precision: 128 },
+              { column_name:  'ACTION',                         column_type:  'VARCHAR2', precision: 128 },
+              { column_name:  'CLIENT_ID',                      column_type:  'VARCHAR2', precision: 128 },
+              { column_name:  'MACHINE',                        column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'PORT',                           column_type:  'NUMBER' },
-              { column_name:  'ECID',                           column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'ECID',                           column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'DBREPLAY_FILE_ID',               column_type:  'NUMBER' },
               { column_name:  'DBREPLAY_CALL_COUNTER',          column_type:  'NUMBER' },
               { column_name:  'TM_DELTA_TIME',                  column_type:  'NUMBER' },
@@ -370,14 +370,14 @@ class PanoramaSamplerStructureCheck
               { column_name:  'IS_SQLID_CURRENT',               column_type:  'VARCHAR2', precision: 1 },
               { column_name:  'SQL_CHILD_NUMBER',               column_type:  'NUMBER' },
               { column_name:  'SQL_OPCODE',                     column_type:  'NUMBER' },
-              { column_name:  'SQL_OPNAME',                     column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'SQL_OPNAME',                     column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'FORCE_MATCHING_SIGNATURE',       column_type:  'NUMBER' },
               { column_name:  'TOP_LEVEL_SQL_ID',               column_type:  'VARCHAR2', precision: 13 },
               { column_name:  'TOP_LEVEL_SQL_OPCODE',           column_type:  'NUMBER' },
               { column_name:  'SQL_PLAN_HASH_VALUE',            column_type:  'NUMBER' },
               { column_name:  'SQL_PLAN_LINE_ID',               column_type:  'NUMBER' },
-              { column_name:  'SQL_PLAN_OPERATION',             column_type:  'VARCHAR2', precision: 64 },
-              { column_name:  'SQL_PLAN_OPTIONS',               column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'SQL_PLAN_OPERATION',             column_type:  'VARCHAR2', precision: 128 },
+              { column_name:  'SQL_PLAN_OPTIONS',               column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'SQL_EXEC_ID',                    column_type:  'NUMBER' },
               { column_name:  'SQL_EXEC_START',                 column_type:  'DATE' },
               { column_name:  'PLSQL_ENTRY_OBJECT_ID',          column_type:  'NUMBER' },
@@ -388,16 +388,16 @@ class PanoramaSamplerStructureCheck
               { column_name:  'QC_SESSION_ID',                  column_type:  'NUMBER' },
               { column_name:  'QC_SESSION_SERIAL#',             column_type:  'NUMBER' },
               { column_name:  'PX_FLAGS',                       column_type:  'NUMBER' },
-              { column_name:  'EVENT',                          column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'EVENT',                          column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'EVENT_ID',                       column_type:  'NUMBER' },
               { column_name:  'SEQ#',                           column_type:  'NUMBER' },
-              { column_name:  'P1TEXT',                         column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'P1TEXT',                         column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'P1',                             column_type:  'NUMBER' },
-              { column_name:  'P2TEXT',                         column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'P2TEXT',                         column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'P2',                             column_type:  'NUMBER' },
-              { column_name:  'P3TEXT',                         column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'P3TEXT',                         column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'P3',                             column_type:  'NUMBER' },
-              { column_name:  'WAIT_CLASS',                     column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'WAIT_CLASS',                     column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'WAIT_CLASS_ID',                  column_type:  'NUMBER' },
               { column_name:  'WAIT_TIME',                      column_type:  'NUMBER' },
               { column_name:  'SESSION_STATE',                  column_type:  'VARCHAR2', precision: 7 },
@@ -438,13 +438,13 @@ class PanoramaSamplerStructureCheck
               { column_name:  'IS_CAPTURED',                    column_type:  'VARCHAR2', precision: 1 },
               { column_name:  'IS_REPLAYED',                    column_type:  'VARCHAR2', precision: 1 },
               { column_name:  'SERVICE_HASH',                   column_type:  'NUMBER' },
-              { column_name:  'PROGRAM',                        column_type:  'VARCHAR2', precision: 64 },
-              { column_name:  'MODULE',                         column_type:  'VARCHAR2', precision: 64 },
-              { column_name:  'ACTION',                         column_type:  'VARCHAR2', precision: 64 },
-              { column_name:  'CLIENT_ID',                      column_type:  'VARCHAR2', precision: 64 },
-              { column_name:  'MACHINE',                        column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'PROGRAM',                        column_type:  'VARCHAR2', precision: 128 },
+              { column_name:  'MODULE',                         column_type:  'VARCHAR2', precision: 128 },
+              { column_name:  'ACTION',                         column_type:  'VARCHAR2', precision: 128 },
+              { column_name:  'CLIENT_ID',                      column_type:  'VARCHAR2', precision: 128 },
+              { column_name:  'MACHINE',                        column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'PORT',                           column_type:  'NUMBER' },
-              { column_name:  'ECID',                           column_type:  'VARCHAR2', precision: 64 },
+              { column_name:  'ECID',                           column_type:  'VARCHAR2', precision: 128 },
               { column_name:  'DBREPLAY_FILE_ID',               column_type:  'NUMBER' },
               { column_name:  'DBREPLAY_CALL_COUNTER',          column_type:  'NUMBER' },
               { column_name:  'TM_DELTA_TIME',                  column_type:  'NUMBER' },
@@ -476,17 +476,17 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Prev_SQL_ID',                    column_type:   'VARCHAR2',  precision: 13,                  comment: 'Previously executed SQL-ID' },
               { column_name:  'Prev_Child_Number',              column_type:   'NUMBER',                                    comment: 'Previously executed child number' },
               { column_name:  'Status',                         column_type:   'VARCHAR2',  precision: 8,                   comment: 'Status of blocked session' },
-              { column_name:  'Event',                          column_type:   'VARCHAR2',  precision: 64,                  comment: 'Wait event of blocked session' },
-              { column_name:  'Client_Info',                    column_type:   'VARCHAR2',  precision: 64,                  comment: 'Client info of blocked session'},
-              { column_name:  'Module',                         column_type:   'VARCHAR2',  precision: 48,                  comment: 'Module of blocked session' },
-              { column_name:  'Action',                         column_type:   'VARCHAR2',  precision: 32,                  comment: 'Action of blocked session' },
+              { column_name:  'Event',                          column_type:   'VARCHAR2',  precision: 128,                  comment: 'Wait event of blocked session' },
+              { column_name:  'Client_Info',                    column_type:   'VARCHAR2',  precision: 128,                  comment: 'Client info of blocked session'},
+              { column_name:  'Module',                         column_type:   'VARCHAR2',  precision: 128,                  comment: 'Module of blocked session' },
+              { column_name:  'Action',                         column_type:   'VARCHAR2',  precision: 128,                  comment: 'Action of blocked session' },
               { column_name:  'Object_Owner',                   column_type:   'VARCHAR2',  precision: 128,                 comment: 'Owner of object waiting for lock' },
               { column_name:  'Object_Name',                    column_type:   'VARCHAR2',  precision: 128,                 comment: 'Name of object waiting for lock' },
               { column_name:  'User_Name',                      column_type:   'VARCHAR2',  precision: 128,                 comment: 'Owner of blocked session' },
-              { column_name:  'Machine',                        column_type:   'VARCHAR2',  precision: 64,                  comment: 'Machine of blocked session' },
+              { column_name:  'Machine',                        column_type:   'VARCHAR2',  precision: 128,                  comment: 'Machine of blocked session' },
               { column_name:  'OS_User',                        column_type:   'VARCHAR2',  precision: 128,                 comment: 'OS-user of blocked session' },
               { column_name:  'Process',                        column_type:   'VARCHAR2',  precision: 128,                 comment: 'Process-ID of blocked session' },
-              { column_name:  'Program',                        column_type:   'VARCHAR2',  precision: 48,                  comment: 'Program of blocked session' },
+              { column_name:  'Program',                        column_type:   'VARCHAR2',  precision: 128,                  comment: 'Program of blocked session' },
               { column_name:  'Lock_Type',                      column_type:   'VARCHAR2',  precision: 2,                   comment: 'Lock type of blocked session' },
               { column_name:  'Seconds_In_Wait',                column_type:   'NUMBER',                                    comment: 'Number of seconds in current wait state' },
               { column_name:  'ID1',                            column_type:   'NUMBER',                                    comment: 'ID1 of lock' },
@@ -504,17 +504,17 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Blocking_Prev_SQL_ID',           column_type:   'VARCHAR2',  precision: 13,                  comment: 'Previously executed SQL-ID of blocking session' },
               { column_name:  'Blocking_Prev_Child_Number',     column_type:   'NUMBER',                                    comment: 'Previously executed child number of blocking session' },
               { column_name:  'Blocking_Status',                column_type:   'VARCHAR2',  precision: 8,                   comment: 'Status of blocking session' },
-              { column_name:  'Blocking_Event',                 column_type:   'VARCHAR2',  precision: 64,                  comment: 'Wait event of blocking session' },
-              { column_name:  'Blocking_Client_Info',           column_type:   'VARCHAR2',  precision: 64,                  comment: 'Client info of blocking session'},
-              { column_name:  'Blocking_Module',                column_type:   'VARCHAR2',  precision: 48,                  comment: 'Module of blocking session' },
-              { column_name:  'Blocking_Action',                column_type:   'VARCHAR2',  precision: 32,                  comment: 'Action of blocking session' },
+              { column_name:  'Blocking_Event',                 column_type:   'VARCHAR2',  precision: 128,                  comment: 'Wait event of blocking session' },
+              { column_name:  'Blocking_Client_Info',           column_type:   'VARCHAR2',  precision: 128,                  comment: 'Client info of blocking session'},
+              { column_name:  'Blocking_Module',                column_type:   'VARCHAR2',  precision: 128,                  comment: 'Module of blocking session' },
+              { column_name:  'Blocking_Action',                column_type:   'VARCHAR2',  precision: 128,                  comment: 'Action of blocking session' },
               { column_name:  'Blocking_User_Name',             column_type:   'VARCHAR2',  precision: 128,                 comment: 'Owner of blocking session' },
-              { column_name:  'Blocking_Machine',               column_type:   'VARCHAR2',  precision: 64,                  comment: 'Machine of blocking session' },
+              { column_name:  'Blocking_Machine',               column_type:   'VARCHAR2',  precision: 128,                  comment: 'Machine of blocking session' },
               { column_name:  'Blocking_OS_User',               column_type:   'VARCHAR2',  precision: 128,                 comment: 'OS-user of blocking session' },
               { column_name:  'Blocking_Process',               column_type:   'VARCHAR2',  precision: 12,                  comment: 'Process-ID of blocking session' },
-              { column_name:  'Blocking_Program',               column_type:   'VARCHAR2',  precision: 48,                  comment: 'Program of blocking session' },
+              { column_name:  'Blocking_Program',               column_type:   'VARCHAR2',  precision: 128,                  comment: 'Program of blocking session' },
               { column_name:  'Waiting_For_PK_Column_Name',     column_type:   'VARCHAR2',  precision: 300,                 comment: 'Column name(s) of primary key of table waiting for unblocking' },
-              { column_name:  'Waiting_For_PK_Value',           column_type:   'VARCHAR2',  precision: 48,                  comment: 'Primary key content of table-record waiting for unblocking' },
+              { column_name:  'Waiting_For_PK_Value',           column_type:   'VARCHAR2',  precision: 128,                  comment: 'Primary key content of table-record waiting for unblocking' },
           ],
           indexes: [ {index_name: 'Panorama_Blocking_Locks_TS', columns: ['Snapshot_Timestamp'], compress: 1 } ]
       },
@@ -677,7 +677,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
               { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
               { column_name:  'LATCH_HASH',                     column_type:   'NUMBER',    not_null: true },
-              { column_name:  'LATCH_NAME',                     column_type:   'VARCHAR2',  not_null: true, precision: 64 },
+              { column_name:  'LATCH_NAME',                     column_type:   'VARCHAR2',  not_null: true, precision: 128 },
               { column_name:  'LEVEL#',                         column_type:   'NUMBER' },
               { column_name:  'GETS',                           column_type:   'NUMBER' },
               { column_name:  'MISSES',                         column_type:   'NUMBER' },
@@ -723,7 +723,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
               { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
-              { column_name:  'COMPONENT',                      column_type:   'VARCHAR2',  not_null: true, precision: 64 },
+              { column_name:  'COMPONENT',                      column_type:   'VARCHAR2',  not_null: true, precision: 128 },
               { column_name:  'OPER_TYPE',                      column_type:   'VARCHAR2',  not_null: true, precision: 13 },
               { column_name:  'START_TIME',                     column_type:   'DATE',      not_null: true },
               { column_name:  'END_TIME',                       column_type:   'DATE',      not_null: true },
@@ -744,10 +744,10 @@ class PanoramaSamplerStructureCheck
           columns: [
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
               { column_name:  'GROUP_ID',                       column_type:   'NUMBER',    not_null: true },
-              { column_name:  'GROUP_NAME',                     column_type:   'VARCHAR2',  precision: 64 },
+              { column_name:  'GROUP_NAME',                     column_type:   'VARCHAR2',  precision: 128 },
               { column_name:  'METRIC_ID',                      column_type:   'NUMBER',    not_null: true },
-              { column_name:  'METRIC_NAME',                    column_type:   'VARCHAR2',  not_null: true, precision: 64 },
-              { column_name:  'METRIC_UNIT',                    column_type:   'VARCHAR2',  not_null: true, precision: 64 },
+              { column_name:  'METRIC_NAME',                    column_type:   'VARCHAR2',  not_null: true, precision: 128 },
+              { column_name:  'METRIC_UNIT',                    column_type:   'VARCHAR2',  not_null: true, precision: 128 },
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
@@ -800,7 +800,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'DBID',                         column_type:   'NUMBER',    not_null: true },
               { column_name:  'INSTANCE_NUMBER',              column_type:   'NUMBER',    not_null: true },
               { column_name:  'PARAMETER_HASH',               column_type:   'NUMBER',    not_null: true },
-              { column_name:  'PARAMETER_NAME',               column_type:   'VARCHAR2',  not_null: true, precision: 64 },
+              { column_name:  'PARAMETER_NAME',               column_type:   'VARCHAR2',  not_null: true, precision: 128 },
               { column_name:  'VALUE',                        column_type:   'VARCHAR2',  precision: 512 },
               { column_name:  'ISDEFAULT',                    column_type:   'VARCHAR2',  precision: 9 },
               { column_name:  'ISMODIFIED',                   column_type:   'VARCHAR2',  precision: 10 },
@@ -816,7 +816,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
               { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
-              { column_name:  'NAME',                           column_type:   'VARCHAR2',  not_null: true, precision: 64 },
+              { column_name:  'NAME',                           column_type:   'VARCHAR2',  not_null: true, precision: 128 },
               { column_name:  'VALUE',                          column_type:   'NUMBER' },
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },          ],
@@ -925,7 +925,7 @@ class PanoramaSamplerStructureCheck
           columns: [
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
               { column_name:  'SERVICE_NAME_HASH',              column_type:   'NUMBER',    not_null: true },
-              { column_name:  'SERVICE_NAME',                   column_type:   'VARCHAR2',  not_null: true, precision: 64 },
+              { column_name:  'SERVICE_NAME',                   column_type:   'VARCHAR2',  not_null: true, precision: 128 },
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER',    not_null: true },
           ],
@@ -941,6 +941,8 @@ class PanoramaSamplerStructureCheck
               { column_name:  'Startup_Time',                   column_type:  'TIMESTAMP',  precision: 3  },  # no not_null because added later (27.03.2018)
               { column_name:  'Begin_Interval_Time',            column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
               { column_name:  'End_Interval_Time',              column_type:  'TIMESTAMP',  not_null: true, precision: 3  },
+              { column_name:  'End_Interval_Time_TZ',           column_type:  'TIMESTAMP (3) WITH TIME ZONE',  not_null: false },
+              { column_name:  'Snap_Timezone',                  column_type:  'INTERVAL DAY(0) TO SECOND(0)',  not_null: false },
               { column_name:  'Con_ID',                         column_type:  'NUMBER' },
           ],
           primary_key: { columns: ['DBID', 'Snap_ID', 'Instance_Number'], compress: 2 },
@@ -1033,9 +1035,9 @@ class PanoramaSamplerStructureCheck
               { column_name:  'SHARABLE_MEM',                   column_type:   'NUMBER' },
               { column_name:  'LOADED_VERSIONS',                column_type:   'NUMBER' },
               { column_name:  'VERSION_COUNT',                  column_type:   'NUMBER' },
-              { column_name:  'MODULE',                         column_type:   'VARCHAR2',  precision: 64 },
-              { column_name:  'ACTION',                         column_type:   'VARCHAR2',  precision: 64 },
-              { column_name:  'SQL_PROFILE',                    column_type:   'VARCHAR2',  precision: 64 },
+              { column_name:  'MODULE',                         column_type:   'VARCHAR2',  precision: 128 },
+              { column_name:  'ACTION',                         column_type:   'VARCHAR2',  precision: 128 },
+              { column_name:  'SQL_PROFILE',                    column_type:   'VARCHAR2',  precision: 128 },
               { column_name:  'FORCE_MATCHING_SIGNATURE',       column_type:   'NUMBER' },
               { column_name:  'PARSING_SCHEMA_ID',              column_type:   'NUMBER' },
               { column_name:  'PARSING_SCHEMA_NAME',            column_type:   'VARCHAR2',  precision: 128 },
@@ -1125,7 +1127,7 @@ class PanoramaSamplerStructureCheck
           columns: [
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
               { column_name:  'STAT_ID',                        column_type:   'NUMBER',    not_null: true },
-              { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 64 },
+              { column_name:  'Name',                           column_type:   'VARCHAR2',  precision: 128 },
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER' },
           ],
@@ -1180,9 +1182,9 @@ class PanoramaSamplerStructureCheck
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
               { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
               { column_name:  'EVENT_ID',                       column_type:   'NUMBER',    not_null: true },
-              { column_name:  'EVENT_NAME',                     column_type:   'VARCHAR2',  not_null: true, precision: 64 },
+              { column_name:  'EVENT_NAME',                     column_type:   'VARCHAR2',  not_null: true, precision: 128 },
               { column_name:  'WAIT_CLASS_ID',                  column_type:   'NUMBER' },
-              { column_name:  'WAIT_CLASS',                     column_type:   'VARCHAR2',  precision: 64 },
+              { column_name:  'WAIT_CLASS',                     column_type:   'VARCHAR2',  precision: 128 },
               { column_name:  'TOTAL_WAITS',                    column_type:   'NUMBER' },
               { column_name:  'TOTAL_TIMEOUTS',                 column_type:   'NUMBER' },
               { column_name:  'TIME_WAITED_MICRO',              column_type:   'NUMBER' },
@@ -1268,7 +1270,7 @@ class PanoramaSamplerStructureCheck
           columns: [
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
               { column_name:  'Top_Level_Call#',                column_type:   'NUMBER',    not_null: true},
-              { column_name:  'Top_Level_Call_Name',            column_type:   'VARCHAR2',  precision: 64 },
+              { column_name:  'Top_Level_Call_Name',            column_type:   'VARCHAR2',  precision: 128 },
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER',    not_null: true },
           ],
@@ -1280,7 +1282,7 @@ class PanoramaSamplerStructureCheck
           columns: [
               { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
               { column_name:  'Top_Level_Call#',                column_type:   'NUMBER',    not_null: true},
-              { column_name:  'Top_Level_Call_Name',            column_type:   'VARCHAR2',  precision: 64 },
+              { column_name:  'Top_Level_Call_Name',            column_type:   'VARCHAR2',  precision: 128 },
               { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
               { column_name:  'CON_ID',                         column_type:   'NUMBER',    not_null: true },
           ],
@@ -1540,7 +1542,7 @@ ORDER BY Column_ID
       check_table_existence(table) if table[:domain] == domain
     end
 
-    @ora_tab_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config.get_owner.upcase]
+    @ora_tab_columns  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name, Data_Precision, Char_Length FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config.get_owner.upcase]
     @ora_tab_colnull  = PanoramaConnection.sql_select_all ["SELECT Table_Name, Column_Name, Nullable FROM All_Tab_Columns WHERE Owner = ? ORDER BY Table_Name, Column_ID", @sampler_config.get_owner.upcase]
     TABLES.each do |table|
       check_table_columns(table) if table[:domain] == domain
@@ -1609,6 +1611,7 @@ ORDER BY Column_ID
   end
 
   def remove_tables_internal
+    PanoramaConnection.sql_execute "ALTER SESSION SET DDL_LOCK_TIMEOUT=30"      # Ensure shot locks at DROP do not lead to error
     packages = PanoramaConnection.sql_select_all [ "SELECT Object_Name
                                                     FROM   All_Objects
                                                     WHERE  Owner=? AND Object_Type = 'PACKAGE'
@@ -1633,6 +1636,12 @@ ORDER BY Column_ID
         end
       end
     end
+
+    begin
+      PanoramaConnection.sql_execute "PURGE RECYCLEBIN"                           # Free ressources after drop table, avoid ORA-10632 especially for 19.10-SE2
+    rescue Exception => e
+      Rails.logger.error "#{e.class}:#{e.message} at PURGE RECYCLEBIN"
+    end
   end
 
   def self.translate_plsql_aliases(config, source_buffer)
@@ -1640,6 +1649,7 @@ ORDER BY Column_ID
     translated_source_buffer = source_buffer.gsub(/PANORAMA_OWNER/i, "#{config.get_owner.upcase}")    # replace PANORAMA_OWNER with the real owner
     translated_source_buffer.gsub!(/COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME/, Time.now.to_s) # change source to provocate change of LAST_DDL_TIME even content is still the same
     translated_source_buffer.gsub!(/PANORAMA_VERSION/, PanoramaGem::VERSION) # stamp version to file
+    translated_source_buffer.gsub!(/DBMS_LOCK.SLEEP/i, 'DBMS_SESSION.SLEEP') if PanoramaConnection.db_version >= '18.0'
     translated_source_buffer
   end
 
@@ -1697,6 +1707,20 @@ ORDER BY Column_ID
     end
   end
 
+  # get column type expression for CREATE TABLE or ALTER TABLE
+  # @param [Hash] column
+  # @return [String]
+  def column_type_expr(column)
+    expr = "#{column[:column_name]} "
+    expr << case column[:column_type].upcase
+            when 'VARCHAR2' then "#{column[:column_type]} (#{column[:precision]} CHAR)"
+            else
+              "#{column[:column_type]} #{"(#{column[:precision]}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]}"
+            end
+    expr << " #{column[:addition]}" if column[:addition]
+    expr << " NOT NULL" if column[:not_null]
+    expr
+  end
 
   def check_table_existence(table)
     @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config.get_owner.upcase] unless @ora_tables
@@ -1706,13 +1730,11 @@ ORDER BY Column_ID
       ############# Check Table existence
       log "Table #{table[:table_name]} does not exist"
       sql = "CREATE TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ("
-      table[:columns].each do |column|
-        sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]} ,"
-      end
-      sql[(sql.length) - 1] = ' '                                               # remove last ,
-      sql << ") PCTFREE 0 ENABLE ROW MOVEMENT"                                  # no need for updates on this tables
+      sql << table[:columns].map { |column| column_type_expr(column) }.join(",\n")
+      sql << ") PCTFREE 0"                                  # no need for updates on this tables
       log(sql)
       PanoramaConnection.sql_execute(sql)
+      PanoramaConnection.sql_execute("ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ENABLE ROW MOVEMENT")
       log "Table #{table[:table_name]} created"
     end
 
@@ -1723,10 +1745,8 @@ ORDER BY Column_ID
   def check_table_columns(table)
     table[:columns].each do |column|
       # Check column existence
-      if !@ora_tab_columns.include?({'table_name' => table[:table_name].upcase, 'column_name' => column[:column_name].upcase})
-        sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ADD ("
-        sql << "#{column[:column_name]} #{column[:column_type]} #{"(#{column[:precision]}#{", #{column[:scale]}" if column[:scale]})" if column[:precision]} #{column[:addition]}"
-        sql << ")"
+      if @ora_tab_columns.select{|c| c['table_name'] == table[:table_name].upcase && c['column_name'] == column[:column_name].upcase}.length == 0
+        sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ADD (#{column_type_expr(column)})"
         log(sql)
         PanoramaConnection.sql_execute(sql)
       else                                                                      # Check NULL state for existing columns
@@ -1743,6 +1763,13 @@ ORDER BY Column_ID
             sql << 'NULL'
           end
           sql << ")"
+          log(sql)
+          PanoramaConnection.sql_execute(sql)
+        end
+        # Check column length
+        ora_tab_col = @ora_tab_columns.select{|c| c['table_name'] == table[:table_name].upcase && c['column_name'] == column[:column_name].upcase}.first
+        if column[:precision] && column[:column_type] == 'VARCHAR2' && column[:precision] != ora_tab_col.char_length
+          sql = "ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} MODIFY #{column[:column_name]} VARCHAR2(#{column[:precision]} CHAR)"
           log(sql)
           PanoramaConnection.sql_execute(sql)
         end

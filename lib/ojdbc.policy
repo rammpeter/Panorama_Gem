@@ -49,7 +49,7 @@ grant codeBase "file:${oracle.jdbc.policy.JDBC_CODE_BASE}" {
   /* Needed only if you need orai18n.jar in your class path for National Character Set support */
   permission java.io.FilePermission "${oracle.jdbc.policy.ORAI18N}", "read";
 
-  /* Needed only if you use asynchronous notification: AQ notification or 
+  /* Needed only if you use asynchronous notification: AQ notification or
      Databasase Change Notification. */
   permission java.net.SocketPermission "${oracle.jdbc.policy.DBMS_HOST}", "accept";
 
@@ -82,8 +82,8 @@ grant codeBase "file:${oracle.jdbc.policy.JDBC_CODE_BASE}" {
   permission java.io.FilePermission "${oracle.jdbc.policy.ROWSET_CODE_BASE}", "read";
 
   /* For OracleWebRowSet only*/
-   permission java.util.PropertyPermission "javax.xml.parsers.SAXParserFactory","read";  
-   permission java.util.PropertyPermission "javax.xml.parsers.DocumentBuilderFactory","read"; 
+   permission java.util.PropertyPermission "javax.xml.parsers.SAXParserFactory","read";
+   permission java.util.PropertyPermission "javax.xml.parsers.DocumentBuilderFactory","read";
    permission java.net.SocketPermission "java.sun.com:80", "connect,resolve";
    permission java.util.PropertyPermission "oracle.xml.jaxp.NoShowForInvalidURLError", "read";
    permission java.util.PropertyPermission "oracle.xml.reportdocevents", "read";
@@ -97,7 +97,7 @@ grant codeBase "file:${oracle.jdbc.policy.JDBC_CODE_BASE}" {
   permission java.lang.RuntimePermission "modifyThreadGroup";
 
   /* Needed only by Oracle Fusion Applications.Do not grant otherwise. */
-  permission oracle.jdbc.proxy.ExtractDelegatePermission; 
+  permission oracle.jdbc.proxy.ExtractDelegatePermission;
 
   /* Allow the JDBC driver to auto-resolve and instantiate the Oracle PKI
    * Provider (For SSL with Oracle Wallets). Not needed if the Oracle PKI
@@ -118,7 +118,7 @@ grant codeBase "file:${oracle.jdbc.policy.DMS_CODE_BASE}" {
   permission java.util.PropertyPermission "oracle.dms.clock", "read";
   permission java.util.PropertyPermission "oracle.dms.clock.units", "read";
   permission java.util.PropertyPermission "oracle.dms.publisher.classes", "read";
- }; 
+ };
 
 /* Needed only if you require orai18n.jar for national
       character set support. */
@@ -138,25 +138,25 @@ grant codeBase "file:${oracle.jdbc.policy.JNDI}" {
 grant codeBase "file:${oracle.jdbc.policy.ROWSET_CODE_BASE}" {
    permission java.util.PropertyPermission "rowset.properties", "read";
    permission java.util.PropertyPermission "rowset.provider.classname", "read";
- 
+
 };
 
 /* Needed only if you use XML parser   */
 grant codeBase "file:${oracle.jdbc.policy.XMLPARSER_CODE_BASE}" {
-  permission java.util.PropertyPermission "oracle.xdkjava.compatibility.version" , "read";                                                                    
+  permission java.util.PropertyPermission "oracle.xdkjava.compatibility.version" , "read";
    /* For OracleWebRowSet only*/
   permission java.net.SocketPermission "java.sun.com:80", "connect,resolve";
   permission java.util.PropertyPermission "oracle.xml.jaxp.NoShowForInvalidURLError", "read";
   permission java.util.PropertyPermission "oracle.xml.reportdocevents", "read";
   permission java.util.PropertyPermission "oracle.xdkjava.security.resolveEntityDefault", "read";
- };  
+ };
 
 /* Needed only if you use XDB   */
 
 grant codeBase "file:${oracle.jdbc.policy.XDB_CODE_BASE}" {
   permission java.io.FilePermission "${oracle.jdbc.policy.ORAI18N}", "read";
   permission java.util.PropertyPermission "oracle.jserver.version.*","read";
- 
+
 };
 
 /* Needed only if you use Oracle AQ (Advanced Queueing)   */
@@ -188,15 +188,15 @@ grant codeBase "file:${oracle.jdbc.policy.USER_CODE_BASE}" {
   permission java.io.FilePermission "${oracle.jdbc.policy.USER_CODE_BASE}","read,write";
   permission java.io.FilePermission "${oracle.jdbc.policy.ORAI18N}", "read";
   permission javax.management.MBeanServerPermission "createMBeanServer";
- 
+
   permission java.lang.RuntimePermission "loadLibrary.heteroxa12";
 
   /* Needed only if you use the Thin driver */
-  permission java.net.SocketPermission "${oracle.jdbc.policy.DBMS_HOST}:${oracle.jdbc.policy.DBMS_PORT}", 
+  permission java.net.SocketPermission "${oracle.jdbc.policy.DBMS_HOST}:${oracle.jdbc.policy.DBMS_PORT}",
     "connect,resolve";
   permission java.net.SocketPermission "${oracle.jdbc.policy.CLIENT_HOST}", "connect,resolve";
 
-  /* Needed only if you use asynchronous notification: AQ notification or 
+  /* Needed only if you use asynchronous notification: AQ notification or
      Databasase Change Notification. */
   permission java.net.SocketPermission "${oracle.jdbc.policy.DBMS_HOST}", "accept";
 

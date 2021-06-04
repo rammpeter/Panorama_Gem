@@ -339,7 +339,4 @@ module SlickgridHelper
     output << '</script>'
     output.html_safe
   end
-
-
-
 end

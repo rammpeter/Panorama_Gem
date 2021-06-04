@@ -278,12 +278,14 @@
   dba_history_segment_stat_historic_show_partition_hint:                Partitionsdetails anzeigen?
   dba_history_segment_stat_historic_submit_hint:                        Anlistung der Segment-Statistiken
 
+  dba_history_show_sql_area_historic_include_plsql_hint:        Auch PL/SQL-Ausführungen berücksichtigen
   dba_history_show_sql_area_historic_filter_hint:               Filter-string muss in betrachteten SQL-Statements enthalten sein. Wildcards (%,_) können benutzt werden. (optional)
   dba_history_show_sql_area_historic_max_result_count_caption:  Anzahl Treffer
   dba_history_show_sql_area_historic_max_result_count_hint:     Einschränkung der Treffermenge auf max. Anzahl Zeilen (nach Sortierung nach gewähltem Kriterium)
   dba_history_show_sql_area_historic_sorted_by_hint:            Resultat in absteigender Folge sortiert nach diesem Kriterium
   dba_history_show_sql_area_historic_submit_caption:            SQL anzeigen
   dba_history_show_sql_area_historic_submit_hint:               Anlistung der SQL nach Suchkriterien
+  dba_history_show_sql_area_historic_schema_hint:               Filter der Treffermenge auf Username beim Erzeugen des Child-Cursors (Parsing_Schema_Name)
 
   dba_history_show_sysmetric_historic_grouping_hint:        Verdichtung der Werte auf Zeitabschnitt
   dba_history_show_sysmetric_historic_header:               SysMetric-Historie aus %{sysmetric_history_table}/GV$SysMetric_History oder %{sysmetric_summary_table}/GV$SysMetric_Summary
@@ -304,6 +306,7 @@
   dba_list_blocking_dml_locks_blocking_client_info_hint:        Client-Info, Module und Action der blockenden Session
   dba_list_blocking_dml_locks_blocking_program_hint:            Programm der blockenden Session
   dba_list_blocking_dml_locks_blocking_object_hint:             Schema und Name des blockenden Objektes
+  dba_list_blocking_dml_locks_blocking_waiting_seconds_hint:    Sekunden im Wait der blockenden Session
   dba_list_blocking_dml_locks_blocking_sid_hint:                Instance und SID der blockenden Session
   dba_list_blocking_dml_locks_blocking_status_hint:             Status der blockenden Session
   dba_list_blocking_dml_locks_blocking_user_hint:               User der blockenden Session
@@ -507,7 +510,7 @@
 
   dba_sga_show_sql_area_caption:                            Ressourcenintensive Statements aus
   dba_sga_show_sql_area_filter_hint:                        Filter-string muss in betrachteten SQL-Statements enthalten sein. Wildcards (%,_) können benutzt werden. (optional)
-  dba_sga_show_sql_area_max_result_count_caption:           Anzahl Treffer
+  dba_sga_show_sql_area_max_result_count_caption:           Top x Treffer
   dba_sga_show_sql_area_max_result_count_hint:              Einschränkung der Treffermenge auf max. Anzahl Zeilen (nach Sortierung)
   dba_sga_show_sql_area_sort_last_active_hint:              Zeitpunkt der letzten Ausführung
   dba_sga_show_sql_area_sort_memory_hint:                   Größe des Speichers in der SGA
@@ -547,6 +550,7 @@
   dba_show_session_waits_blocking_client_info_hint:         Client-Info, Module und Action der blockenden Session
   dba_show_session_waits_blocking_program_hint:             Programm der blockenden Session
   dba_show_session_waits_blocking_object_hint:              Schema und Name des blockenden Objektes
+  dba_show_session_waits_blocking_seconds_hint:             Sekunden im Wait der blockenden Session
   dba_show_session_waits_blocking_session_hint:             Instance und SID der blockenden Session
   dba_show_session_waits_blocking_status_hint:              Status der blockenden Session
   dba_show_session_waits_blocking_user_hint:                User der blockenden Session
@@ -1373,9 +1377,12 @@
   dragnet_helper_128_param_4_name:                           Minimales Alter der Tabelle in Tagen
 
   dragnet_helper_129_desc: |-
-    PL/SQL-Code kann als ungenutzt und verzichtbar angenommen werden wenn es keine Abhängigkeiten von anderem PL/SQL-Code gibt.
+    PL/SQL-Code kann als ungenutzt und verzichtbar angenommen werden wenn es keine Abhängigkeiten von anderem PL/SQL-Code gibt und keine Nutzung in SQL.
     Dies muss nicht wahr sein, da Eintrittspunkte in die PL/SQL-Verarbeitung benötigt werden die keine Abhängigkeiten von anderem PL/SQL-Code haben aber wesentlich sind.
     Daher ist weitere Abgrenzung sinnvoll, z.B. über Filter auf Namenskonventionen.
+
+    Leider ist der Check auf Nutzung der PL/SQL-Objekte in SQL-Statements (SGA und AWR) scheinbar nicht möglich in akzeptaber Laufzeit.
+    Daher ist dieser Check hier nicht enthalten.
   dragnet_helper_129_name: |-
     Identifikation evtl. ungenutzter PL/SQL-Objekte
   dragnet_helper_129_param_1_hint:                           Nur PL/SQL-Objekte für dieses Schema untersuchen (optional)
@@ -1594,9 +1601,10 @@
   dragnet_helper_152_desc: |-
     User-defined PL/SQL-Funktionen in SQL-Statements können besser performen ohne Kontextwechsel durch PRAGMA UDF.
     Diese Selektion zeigt PL/SQL->Funktionen von denen kein weiterer PL/SQL-Code abhängig ist.
-    Zusätzlich werden SQLs aus der SGA angezeigt, die diesen Funktionsnamen in ihrer SQL-Syntax nutzen.
+
+    Ein Klick auf den Objekt-Namen bring Details zur Function inklusive eines Buttons für die Syntax-Suche nach dei Funktion nutzenden SQL-Statements.
   dragnet_helper_152_name: |-
-    Kandidaten für PRAGMA UDF in user-defined PL/SQL-Funktionen
+    Kandidaten für PRAGMA UDF in puren user-defined PL/SQL-Funktionen
 
   dragnet_helper_153_desc: |-
     User-defined PL/SQL-Funktionen können aufeinanderfolgende Aufrufe mit identischen Parametern in Session cachen wenn sie als deterministisch deklariert sind.
@@ -1772,11 +1780,12 @@
   menu_dba_schema_audit_trail_hint:                         Anzeige von per Standard Audit Trail geloggten Aktivitäten (DBA_Audit_Trail)
   menu_dba_schema_ts_objects_hint:                          DB-Objekte nach Größe, Auslastung, Verschnitt
   menu_dba_schema_unified_audit_trail_hint:                 Anzeige von per Unified Audit Trail geloggten Aktivitäten
-  menu_dba_parameter_hint:                                  Anlistung der aktiven Instance-Parameter
+  menu_dba_parameter_hint:                                  Anlistung der Init-Parameter der Instanz(en)
   menu_dba_redologs_hint:                                   Anlistung der Redo-Logs aus gv$Log
   menu_dba_redologs_historic_hint:                          Anlistung historischer Info der Redo-Logs aus Active Workload Repository (AWR)
   menu_dba_redologs_log_history_caption:                    Historisch aus gv$Log_History
   menu_dba_redologs_log_history_hint:                       Anlistung detaillierter historischer Info der Redo-Logs aus gv$Log_History
+  menu_dba_resource_limit_hint:                             Anlistung der Resource Limits aus gv$Resource_Limit
   menu_dba_server_logs_hint:                                Anlistung des Inhaltes der Server-Logs (alert.log, listener.log, ASM-Log)
   menu_dba_server_traces_hint:                              Anlistung der Trace-Files des DB-Servers
   menu_dba_sessions_hint:                                   Anlistung der aktuellen Session-Info

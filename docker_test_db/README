@@ -39,7 +39,7 @@ create user panorama_test identified by panorama_test default tablespace sysaux 
 grant connect, resource to panorama_test;
 GRANT CREATE VIEW TO panorama_test;
 grant select any dictionary, OEM_Monitor to panorama_test;
--- muss als sys ausgeführt werden
+-- muss als sys ausgeführt werden, wenn DB < 18.0
 GRANT EXECUTE ON DBMS_LOCK TO panorama_test;
 alter profile DEFAULT limit password_life_time UNLIMITED;
 ALTER USER panorama_test quota unlimited on sysaux;

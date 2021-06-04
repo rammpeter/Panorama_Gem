@@ -37,26 +37,47 @@
     retval
   end
 
+  supplemental_logging_data = proc do |rec|
+    rec.supplemental_log_data_min   == 'NO' ||
+      rec.supplemental_log_data_pk  == 'NO' ||
+      rec.supplemental_log_data_ui  == 'NO' ||
+      rec.supplemental_log_data_fk  == 'NO' ||
+      rec.supplemental_log_data_all == 'NO' ||
+      rec.supplemental_log_data_pl  == 'NO' ? 'N' : 'Y'
+  end
+
+  supplemental_logging_data_title = proc do |rec|
+    retval = "%t\n"
+    retval << "\nMinimum supplemental logging = '#{rec.supplemental_log_data_min}'"
+    retval << "\nPrimary key supplemental logging = '#{rec.supplemental_log_data_pk}'"
+    retval << "\nUnique key supplemental logging = '#{rec.supplemental_log_data_ui}'"
+    retval << "\nForeign key supplemental logging = '#{rec.supplemental_log_data_fk}'"
+    retval << "\nAll columns supplemental logging = '#{rec.supplemental_log_data_all}'"
+    retval << "\nPL/SQL supplemental logging = '#{rec.supplemental_log_data_pl}'"
+    retval
+  end
+
   column_options =
        [
            {:caption=>'DBID',          :data=>proc{|rec| rec.dbid },                           :title=>"Unique identifier for this database", data_title: proc{|rec| "%t\nDB version = #{rec.version}"} },
            {:caption=>"I.",            :data=>proc{|rec| "#{rec.instance_number}#{" (*)" if rec.instance_connected && @instance_data.length >1}" },       :title=>"Instance number, (*) for connecting instance", data_title: proc{|rec| "%t\nDB version = #{rec.version}"} },
            {:caption=>'Version',       :data=>proc{|rec| rec.version >= '19' ? rec.version_full : rec.version }, :title=>"Instance version / full version" },
            {:caption=>"Name",          :data=>proc{|rec| rec.instance_name },                  :title=>"Instance name", data_title: proc{|rec| "%t\nDB version = #{rec.version}"} },
-           {:caption=>"Hostname",      :data=>proc{|rec| rec.host_name },                      :title=>"Last startup time of instance"},
+           {:caption=>"Host name",     :data=>proc{|rec| rec.host_name },                      :title=>"Last startup time of instance"},
            {:caption=>"Startup",       :data=>proc{|rec| localeDateTime(rec.startup_time) },   :title=>"Startup der DB", :data_title=>proc{|rec| "%t, open mode = #{rec.open_mode}"}},
            {:caption=>"Archiver",      :data=>proc{|rec| rec.archiver },                       :title=>"Archiver mode of instance"},
            {:caption=>"Character-set", :data=>proc{|rec| rec.nls_characterset },               :title=>"Character set of database", :data_title=>proc{|rec| "%t: NChar_Character_Set=#{rec.nls_nchar_characterset}"}},
            {:caption=>"Cp.",           :data=>show_compatible,                                 :title=>"Optimizer compatible mode of instance (from v$Parameter)", data_title: data_title_compatible},
            {:caption=>'Database role', :data=>proc{|rec| rec.database_role },                  :title=>"Database role for data guard\nCan be one of the following:\n- SNAPSHOT STANDBY\n- LOGICAL STANDBY\n- PHYSICAL STANDBY\n- PRIMARY\n- FAR SYNC"},
            {:caption=>"Instance role", :data=>proc{|rec| rec["instance_role"] },               :title=>"Instance role for data guard"},
-           {:caption=>"CPU-Count",     :data=>proc{|rec| rec.cpu_count },                      :title=>"Number of CPUs counted for instance (from gv$Parameter)", data_title: cpu_count_data_title, align: :right},
+           {:caption=>"CPU cnt.",      :data=>proc{|rec| rec.cpu_count },                      :title=>"Number of CPUs counted for instance (from gv$Parameter)", data_title: cpu_count_data_title, align: :right},
            {:caption=>"Phys. memory (GB)", :data=>proc{|rec| fn(rec.phys_mem_gb, 3) },         :title=>"Physical server memory in Gigabyte (from gv$OSStat)", data_title: phys_mem_data_title, align: :right},
            {:caption=>"Resource manager plan", :data=>proc{|rec| rec.resource_manager_plan },  :title=>"Resource manager plan that is currently active.\nEmpty if resource manager is deactivated."},
            {:caption=>"Protection mode", :data=>proc{|rec| rec.protection_mode },              :title=>"Protection mode currently in effect for the database.\nLook at DB-parameter \"log_archive_dest_n\" to recognize what sync-mode is used for standby configuration (SYNC or NOSYNC, AFFIRM or NOAFFIRM).",  :data_title=>proc{|rec| "%t\nProtection level = #{rec.protection_level}"}},
            {:caption=>"Switchover status", :data=>proc{|rec| rec.switchover_status },          :title=>"Indicates whether switchover is allowed", :data_title=>proc{|rec| "%t\n#{explain_switchover_status(rec.switchover_status)}"}  },
            {:caption=>"DG broker",     :data=>proc{|rec| rec.dataguard_broker },               :title=>"Indicates whether the Data Guard configuration is being managed by the broker (ENABLED) or not (DISABLED)"},
            {:caption=>"Force logging", :data=>proc{|rec| rec.force_logging },                  :title=>"Indicates whether the database is under force logging mode (YES) or not (NO)"},
+           {:caption=>"S. L.",         :data=>supplemental_logging_data,                       :title=>"Supplemental logging settings for Log Miner, Golden Gate etc., table-specific config is shown by DBA_LOG_GROUPS", data_title: supplemental_logging_data_title},
            {:caption=>"AWR interval",  :data=>proc{|rec| rec.snap_interval_minutes },          :title=>"Interval in minutes for AWR-snapshots\nValues are hidden if you did not acknowledge licensing of Diagnostic Pack yet", :align=>:right},
            {:caption=>"AWR retention", :data=>proc{|rec| rec.snap_retention_days },            :title=>"Retention in days for AWR-snapshots\nValues are hidden if you did not acknowledge licensing of Diagnostic Pack yet", :align=>:right},
        ]
@@ -89,7 +110,7 @@
                {:caption=>'Open mode',        :data=>proc{|rec| rec.open_mode},                       :title=>"Open mode info"},
                {:caption=>'Restricted',       :data=>proc{|rec| rec.restricted},                      :title=>"Indicates whether only users possessing RESTRICTED SESSION privilege can connect to the PDB"},
                {:caption=>'Open time',        :data=>proc{|rec| localeDateTime(rec.open_time)},       :title=>"Date and time when the database was last opened"},
-               {:caption=>'Total size',       :data=>proc{|rec| fn(rec.total_size/(1024*1024))},      :title=>"If a PDB is opened, disk space (in MBytes) used by the container,\nincluding both data and temp files.\nIf a PDB is closed, will be set to 0."},
+               {:caption=>'Total size',       :data=>proc{|rec| fn(rec.total_size/(1024*1024))},      :title=>"If a PDB is opened, disk space (in MBytes) used by the container,\nincluding both data and temp files.\nIf a PDB is closed, will be set to 0.", data_title: proc{|rec| "%t\n#{size_explain((rec.total_size.to_f / (1024*1024) rescue nil))}"} },
                {:caption=>'Block size',       :data=>proc{|rec| fn(rec.block_size)},                  :title=>"The current block size for the PDB"},
                {:caption=>'Recovery status',  :data=>proc{|rec| rec.recovery_status},                 :title=>"Shows whether recovery is enabled or disabled for the PDB."},
                {:caption=>'Snapshot parent',  :data=>proc{|rec| rec.snapshot_parent_con_id },         :title=>"This column shows the container ID of the master PDB that this PDB is a snapshot clone of.\nThis column shows a non-zero value only if the PDB is a snapshot clone.\nFor all other cases, it shows a value of 0."},

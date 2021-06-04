@@ -5,7 +5,9 @@
   <div class="flex-row-container">
     <%= include_start_end_timepicker %>
     <%= instance_tag %>
-    <div class="flex-row-element" title="Show realtime statistics (until now)\nEnd date is ignored in this case.\nIf start date is set too low realtime report may end in ORA-31011">
+    <div class="flex-row-element" title="Show realtime statistics (until now)
+    End date is ignored in this case.
+    If start date is set too low realtime report may end in ORA-31011">
       Realtime?
       <%= check_box_tag(:realtime, 1, false) %>
     </div>
@@ -22,19 +24,16 @@
 <% end %>
 
 <script text="javascript">
-    var download_oracle_com_reachable = false;                                    // Flag for visibility of download.oracle.com by browser
+    var download_oracle_com_reachable = false;
 
-    function on_iframe_load(){
-        download_oracle_com_reachable = true;                                     // successful loaded remote URL download.oracle.com in iframe
-    }
+    isSiteOnline("https://download.oracle.com",function(found){
+        download_oracle_com_reachable = found; // store state in all hidden inputs at submit click
+    });
 
     function on_submit_click(){
         jQuery('#download_oracle_com_reachable').val(download_oracle_com_reachable); // store state in all hidden inputs at submit click
     }
 
 </script>
-
-<!-- load download.oracle.com in iframe to check if it is reachable -->
-<iframe src="https://download.oracle.com" onload="on_iframe_load()" style="display: none;"></iframe>
 
 

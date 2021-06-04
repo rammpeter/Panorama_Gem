@@ -37,7 +37,7 @@ class AdditionController < ApplicationController
                       FROM   (SELECT o.*,
                                      SUM(Blocks_Total) OVER (PARTITION BY Snapshot_Timestamp) Sum_Total_per_Snapshot
                               FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Cache_Objects o
-                              WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                              WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                               #{" AND Instance_Number=#{@instance}" if @instance}
                              )
                       -- Verdichten je Schnappschuss auf Gruppierung, um saubere Min/Max/Avg-Werte zu erhalten
@@ -72,7 +72,7 @@ class AdditionController < ApplicationController
               SELECT o.*,
                      SUM(Blocks_Total) OVER (PARTITION BY Snapshot_Timestamp) Sum_Total_per_Snapshot
               FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Cache_Objects o
-              WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+              WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
               AND    Instance_Number  = ?
              )
       WHERE  Owner            = ?
@@ -140,7 +140,7 @@ class AdditionController < ApplicationController
                       FROM   (SELECT Instance_Number, Owner, Name, #{partition_expression} Partition_Name,
                                      SUM(Blocks_Total) Blocks_Total
                               FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Cache_Objects c
-                              WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                              WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                               #{" AND Instance_Number=#{@instance}" if @instance}
                               -- Verdichten je Schnappschuss auf Gruppierung, um saubere Min/Max/Avg-Werte zu erhalten
                               GROUP BY Snapshot_Timestamp, Instance_Number, Owner, Name, #{partition_expression}
@@ -150,7 +150,7 @@ class AdditionController < ApplicationController
                      )
               WHERE RowNum <= 10
              ) s ON s.Instance_Number = c.Instance_Number AND s.Owner = c.Owner AND s.Name||s.Partition_Name = c.Name||#{partition_expression}
-      WHERE  c.Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+      WHERE  c.Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
       #{" AND c.Instance_Number=#{@instance}" if @instance}
       GROUP BY c.Instance_Number, c.SnapShot_Timestamp, c.Owner, c.Name, #{partition_expression}
       ORDER BY c.Snapshot_Timestamp, MIN(s.SumBlocksTotal) DESC
@@ -249,7 +249,7 @@ class AdditionController < ApplicationController
       FROM   (SELECT l.*,
                      (TO_CHAR(Snapshot_Timestamp,'J') * 24 + TO_CHAR(Snapshot_Timestamp, 'HH24')) * 60 + TO_CHAR(Snapshot_Timestamp, 'MI') Minutes
               FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
-              WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+              WHERE  Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
               #{@where_string}
              )
       GROUP BY TRUNC(Minutes/ #{@timeslice})
@@ -266,7 +266,7 @@ class AdditionController < ApplicationController
      WITH /* Panorama-Tool Ramm */
            TSSel AS (SELECT /*+ NO_MERGE */ *
                       FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Blocking_Locks l
-                      WHERE  l.Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                      WHERE  l.Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                       AND    l.Blocking_SID IS NOT NULL  -- keine langdauernden Locks beruecksichtigen
                     )
       SELECT Root_Snapshot_Timestamp, Root_Blocking_Instance_Number, Root_Blocking_SID, Root_Blocking_SerialNo,
@@ -606,7 +606,7 @@ class AdditionController < ApplicationController
                              MAX(Tablespace_Name) KEEP (DENSE_RANK LAST ORDER BY Bytes) Greatest_TS,
                              COUNT(DISTINCT Tablespace_Name)                            Tablespaces
                       FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes
-                      WHERE  Gather_Date BETWEEN TO_DATE(?, '#{sql_datetime_minute_mask}') AND TO_DATE(?, '#{sql_datetime_minute_mask}')
+                      WHERE  Gather_Date BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                       #{@wherestr}
                       GROUP BY Owner, Segment_Name, Segment_Type, Gather_Date -- group over all tablespaces
                      ) s
@@ -634,8 +634,8 @@ class AdditionController < ApplicationController
                #{sql_groupby} GroupBy,
                SUM(Bytes)/(1024*1024) MBytes
         FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
-        WHERE  Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')
-        AND    Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')
+        WHERE  Gather_Date >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
+        AND    Gather_Date <= TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
         #{@wherestr}
         GROUP BY Gather_Date, #{sql_groupby}
         ORDER BY Gather_Date, #{sql_groupby}",
@@ -664,7 +664,7 @@ class AdditionController < ApplicationController
       unless prev_record.nil?
         s[:total_increase] = s[:total] - prev_record[:total]
         columns.each do |key, _|
-          s["#{key}_increase"] = s[key] - prev_record[key]
+          s["#{key}_increase"] = s[key] - prev_record[key] rescue nil           # not every category must have values or prevrecords / nil possible
         end
       end
 
@@ -782,8 +782,8 @@ class AdditionController < ApplicationController
                       MAX(Tablespace_Name) KEEP (DENSE_RANK LAST ORDER BY Bytes) Greatest_TS,
                       COUNT(DISTINCT Tablespace_Name)                            Tablespaces
               FROM   #{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]}.Panorama_Object_Sizes s
-              WHERE  Gather_Date >= TO_DATE(?, '#{sql_datetime_minute_mask}')
-              AND    Gather_Date <= TO_DATE(?, '#{sql_datetime_minute_mask}')
+              WHERE  Gather_Date >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}')
+              AND    Gather_Date <= TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
               AND    Owner        = ?
               AND    Segment_Name = ?
               GROUP BY Gather_Date
@@ -865,10 +865,13 @@ class AdditionController < ApplicationController
         SELECT p.*,
                NVL(t.Num_Rows, i.Num_Rows) Num_Rows,
                NVL(t.Last_Analyzed, i.Last_Analyzed) Last_Analyzed,
+               o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Last_Spec_TS,
                (SELECT SUM(Bytes)/(1024*1024) FROM DBA_Segments s WHERE s.Owner=p.Object_Owner AND s.Segment_Name=p.Object_Name) MBytes
         FROM   Plan_Table p
         LEFT OUTER JOIN DBA_Tables  t ON t.Owner=p.Object_Owner AND t.Table_Name=p.Object_Name
         LEFT OUTER JOIN DBA_Indexes i ON i.Owner=p.Object_Owner AND i.Index_Name=p.Object_Name
+        -- Object_Type ensures that only one record is gotten from DBA_Objects even if object is partitioned
+        LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Object_Owner AND o.Object_Name = p.Object_Name AND o.Object_Type = p.Object_Type
         WHERE  Statement_ID = ?
         ORDER BY ID
         ", statement_id]

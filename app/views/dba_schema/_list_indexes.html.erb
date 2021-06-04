@@ -216,7 +216,11 @@
     "%t\n\nCorrelating unused space in MB = #{fn(calc_free_space_mb_index(rec.avg_row_len, rec.num_rows, rec.pct_free, rec.ini_trans, blocksize, rec.size_mb, rec.leaf_blocks), 3)}\nCalculated based on avg. row len in index = #{fn(rec.avg_row_len)}"
   end
 
-  link_used = proc do |rec|
+   blocks_data_title = proc do |rec|
+     "\n\nNumber of allocated blocks in segments = #{fn(rec.segment_blocks)} "
+   end
+
+   link_used = proc do |rec|
     if get_db_version >= '12.2'
       ajax_link(rec.used,
                  {controller:   :dba_schema,
@@ -256,9 +260,10 @@ See also: https://richardfoote.wordpress.com/2020/06/30/oracle-19c-automatic-ind
                    {:caption=> 'TS',               :data=>proc{|rec| rec.tablespace_name},                                :title=> 'Tablespace name'},
                    {:caption=> 'Pct Free',         :data=>proc{|rec| rec.pct_free},                                       :title=> 'Percent free', :align=>:right},
                    {:caption=> 'Ini Trans',        :data=>proc{|rec| rec.ini_trans},                                      :title=> 'Number of initial entries in transaction list of db block', data_title: proc{|rec| "%t\nNumber of maximum transactions (MAX_TRANS) = #{rec.max_trans}"}, :align=>:right},
+                   {:caption=> 'Ini. ext. (KB)',   :data=>proc{|rec| rec.initial_extent_kb},                              :title=> 'Initial extent size in kByte', :align=>:right},
                    {:caption=> 'Rows',             :data=>proc{|rec| link_current_index_stats(rec, fn(rec.num_rows))},    :title=> 'Number of rows calculated by last analyze run', :align=>:right},
-                   {:caption=> 'Size (MB)',        :data=>proc{|rec| link_space_usage.call(rec, fn(rec.size_mb, 2))},     :title=> 'Current object size in megabytes', :align=>:right, data_title: proc{|rec| "%t\n\nNumber of blocks = #{fn(rec.blocks)}"}},
-                   {:caption=> 'Ext.',             :data=>link_extents,                                                   :title=> 'Number of extents (from DBA_Segments)', :align=>:right},
+                   {:caption=> 'Size (MB)',        :data=>proc{|rec| link_space_usage.call(rec, fn(rec.size_mb, 2))},     :title=> 'Current object size in megabytes', :align=>:right, data_title: proc{|rec| "%t\n#{size_explain(rec.size_mb)}#{blocks_data_title.call(rec)}"}},
+                   {:caption=> 'Ext.',             :data=>link_extents,                                                   :title=> 'Number of extents (from DBA_Segments)', :align=>:right, data_title: proc{|rec| "%t#{blocks_data_title.call(rec)}"}},
                    {:caption=> '% unused',         :data=>proc{|rec| link_space_usage.call(rec, fn(calc_free_space_pct_index(rec.avg_row_len, rec.num_rows, rec.pct_free, rec.ini_trans, blocksize, rec.size_mb, rec.leaf_blocks)))}, :title=> "Unused storage of index within extents in percent.#{explain_calc_free_space_by_avg_row_len}", data_title: data_title_unused, :align=>:right},
                    {:caption=> 'B',                :data=>proc{|rec| fn(rec.blevel)},                                     :title=> "B*-Tree level (depth of the index from its root block to its leaf blocks).\nA depth of 0 indicates that the root block and leaf block are the same.", :align=>:right},
                    {:caption=> 'Leaf blocks',      :data=>proc{|rec| link_current_index_stats(rec, fn(rec.leaf_blocks))}, :title=> 'Number of leaf blocks in the index calculated by last analyze run', :align=>:right},
@@ -266,7 +271,7 @@ See also: https://richardfoote.wordpress.com/2020/06/30/oracle-19c-automatic-ind
                    {:caption=> 'Avg. leaf blocks / key', :data=>proc{|rec| fn(rec.avg_leaf_blocks_per_key)},              :title=> "Average number of leaf blocks (calculated by last analyze run) in which each distinct value in the index appears,\nrounded to the nearest integer.\nFor indexes that enforce UNIQUE and PRIMARY KEY constraints, this value is always 1.", :align=>:right},
                    {:caption=> 'Avg. data blocks / key', :data=>proc{|rec| fn(rec.avg_data_blocks_per_key)},              :title=> "Average number of data blocks in the table (calculated by last analyze run) that are pointed to by a distinct value in the index rounded to the nearest integer.\nThis statistic is the average number of data blocks that contain rows that contain a given value for the indexed columns.", :align=>:right},
                    {:caption=> 'Cluster.',         :data=>proc{|rec| fn(rec.clustering_factor)},                          :title=> cluster_title, :align=>:right},
-                   {:caption=> 'Part.',            :data=>proc{|rec| link_ind_partitions(rec)},                           :title=> 'Number of index partitions ', :align=>:right},
+                   {:caption=> 'Part.',            :data=>proc{|rec| link_ind_partitions(rec)},                           :title=> 'Number of index partitions ', :align=>:right, data_title: proc{|rec| "%t\n\n#{rec.partition_expression}"}},
                    {:caption=> 'Sub-<wbr>Part.',        :data=>proc{|rec| link_ind_subpartitions(rec)},                   :title=> 'Number of index sub-partitions ', :align=>:right},
                    {:caption=> 'Created',          :data=>proc{|rec| localeDateTime(rec.created)},                        :title=> 'Timestamp of index creation'},
                    {:caption=> 'Last DDL',         :data=>proc{|rec| localeDateTime(rec.last_ddl_time)},                  :title=> 'Timestamp of last DDL operation on index'},

@@ -25,4 +25,7 @@ group :test do
   gem "capybara"
   gem "launchy"
   gem 'simplecov', require: false
+
+  # alternative to selenium
+  gem 'playwright-ruby-client'
 end

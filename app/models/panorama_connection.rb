@@ -471,7 +471,19 @@ class PanoramaConnection
     stmt, binds = sql_prepare_binds(transformed_sql)   # Transform SQL and split SQL and binds
     # Without query_timeout because long lasting ASH sampling is executed with this method
     Thread.current[:panorama_connection_connection_object].register_sql_execution(stmt)
-    get_connection.exec_update(stmt, query_name, binds)
+    begin
+      get_connection.exec_update(stmt, query_name, binds)
+    rescue Exception => e
+      if e.message['ORA-10632']
+        Rails.logger.error "#{e.class}:#{e.message}! Retrying execution of SQL\n#{sql}"
+        sleep(10)
+        # reexecute the SQL in case of ORA-10632: invalid rowid
+        # this can happen at CREATE TABLE with ENABLE ROW MOVEMENT, especially for 19.10 SE2
+        get_connection.exec_update(stmt, query_name, binds)
+      else
+        raise
+      end
+    end
   rescue Exception => e
     bind_text = ''
     unless binds.nil?
@@ -611,6 +623,16 @@ class PanoramaConnection
       end
 
       retval = PanoramaConnection.new(jdbc_connection)
+
+      # prevent from ORA-12850: Could not allocate slaves on all specified instances: 2 needed, 1 allocated
+      # Parallel slave failing with ORA-12850 with parallel_degree_policy set to AUTO (Doc ID 2663486.1)
+      # Requested by Wolfgang Konz, 2021-05-21
+      parallel_degree_policy_stmt = "ALTER SESSION SET parallel_degree_policy = MANUAL"
+      begin
+        jdbc_connection.exec_update(parallel_degree_policy_stmt, 'set parallel_degree_policy', [])
+      rescue Exception => e
+        Rails.logger.error "Error '#{e.message}' while setting parallel_degree_policy with '#{parallel_degree_policy_stmt}'"
+      end
 
       tz_stmt = "ALTER SESSION SET Time_Zone = '#{java.util.TimeZone.get_default.get_id}'"
       begin

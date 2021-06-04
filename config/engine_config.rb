@@ -3,11 +3,27 @@ class EngineConfig < Rails::Application
   # Application configuration should go into files in config/initializers
   # -- all .rb files in that directory are automatically loaded.
 
+  # Remove ojdbc11.jar if Panorama is running with Java < 11.x
+  # otherwise errors are causewd while loading JDBC driver like
+  # NameError:cannot link Java class oracle.jdbc.OracleDriver oracle/jdbc/OracleDriver has been compiled by a more recent version of the Java Runtime (class file version 55.0), this version of the Java Runtime only recognizes class file versions up to 52.0
+  java_version = java.lang.System.getProperty("java.version")
+  if java_version.match(/^1.8./) || java_version.match(/^1.9./) || java_version.match(/^10./)
+    begin
+      filename = "#{PanoramaGem::Engine.root}/lib/ojdbc11.jar"
+      File.unlink(filename)
+      Rails.logger.info "#{filename} removed because Java version is #{java_version}"
+    rescue Exception => e
+      Rails.logger.error "Error #{e.class}:#{e.message} while removing #{filename} because Java version is #{java_version}"
+    end
+  end
+
   # Verzeichnis für permanent zu schreibende Dateien
   if ENV['PANORAMA_VAR_HOME']
     config.panorama_var_home = ENV['PANORAMA_VAR_HOME']
+    config.panorama_var_home_user_defined = true
   else
     config.panorama_var_home = "#{Dir.tmpdir}/Panorama"
+    config.panorama_var_home_user_defined = false
   end
   Dir.mkdir config.panorama_var_home if !File.exist?(config.panorama_var_home)  # Ensure that directory exists
   Rails.logger.info "Panorama writes server side info to #{config.panorama_var_home}"
@@ -64,4 +80,10 @@ class EngineConfig < Rails::Application
 
   # Don't disable subit button after click
   config.action_view.automatically_disable_submit_tag = false
+
+  # Specify cookies SameSite protection level: either :none, :lax, or :strict.
+  #
+  # This change is not backwards compatible with earlier Rails versions.
+  # It's best enabled when your entire app is migrated and stable on 6.1.
+  config.action_dispatch.cookies_same_site_protection = :lax
 end

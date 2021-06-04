@@ -226,12 +226,15 @@ class WorkerThread
   def check_analyze_internal
     # Check analyze info once a week
     if  @sampler_config.get_last_analyze_check_timestamp.nil? || @sampler_config.get_last_analyze_check_timestamp < Time.now - 86400*DAYS_BETWEEN_ANALYZE_CHECK
-      @sampler_config.set_last_analyze_check_timestamp
-      tables = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ? AND Last_Analyzed IS NULL OR Last_Analyzed < SYSDATE-?", @sampler_config.get_owner.upcase, DAYS_BETWEEN_ANALYZE_CHECK]
+      tables = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ? AND (Last_Analyzed IS NULL OR Last_Analyzed < SYSDATE-?)", @sampler_config.get_owner.upcase, DAYS_BETWEEN_ANALYZE_CHECK]
       tables.each do |t|
         start_time = Time.now
+        PanoramaConnection.sql_select_all(["SELECT Index_Name FROM All_Indexes WHERE Owner = ? AND Table_Name = ?", @sampler_config.get_owner.upcase, t.table_name]).each do |index|
+          PanoramaConnection.sql_execute "ALTER INDEX #{@sampler_config.get_owner.upcase}.#{index.index_name} SHRINK SPACE"
+        end
+
         PanoramaConnection.sql_execute ["BEGIN DBMS_STATS.Gather_Table_Stats(?, ?); END;", @sampler_config.get_owner.upcase, t.table_name]
-        Rails.logger.info("Analyzed table #{t.user}.#{t.table_name} in #{Time.now-start_time} seconds")
+        Rails.logger.info("Analyzed table #{@sampler_config.get_owner.upcase}.#{t.table_name} and shrink indizes in #{Time.now-start_time} seconds")
       end
       @sampler_config.set_last_analyze_check_timestamp
     end

@@ -25,7 +25,11 @@ module MenuHelper
             ]
             },
             {:class => 'item', :caption => 'Sessions', :controller => :dba, :action => :show_sessions, :hint => t(:menu_dba_sessions_hint, :default => 'Show info of current DB-sessions')},
-            {:class => 'item', :caption => 'Oracle-Parameter', :controller => :dba, :action => :oracle_parameter, :hint => t(:menu_dba_parameter_hint, :default => 'Show active instance-parameters')},
+            {:class => 'menu', :caption => 'Database configuration', :content => [
+              {:class => 'item', :caption => 'Init-Parameter', :controller => :dba, :action => :oracle_parameter, :hint => t(:menu_dba_parameter_hint, :default => 'Show init-parameters of instance(s)')},
+              {:class => 'item', :caption => 'Resource limits', :controller => :dba, :action => :resource_limits, :hint => t(:menu_dba_resource_limit_hint, :default => 'Show resource limits from gv$Resource_Limit')},
+            ]
+            },
             {:class => 'menu', :caption => 'Audit Trail', :content => [
                 {:class => 'item', :caption => 'Standard Audit Trail', :controller => :dba_schema, :action => :show_audit_trail, :hint => t(:menu_dba_schema_audit_trail_hint, :default => 'Show activities logged by standard audit trail (DBA_Audit_Trail)')},
                 {:class => 'item', :caption => 'Unified Audit Trail', :controller => :dba_schema, :action => :show_unified_audit_trail, :hint => t(:menu_dba_schema_unified_audit_trail_hint, :default => 'Show activities logged by unified audit trail'), min_db_version: '12.1'},
@@ -89,8 +93,7 @@ module MenuHelper
                 {:class=> 'item', :caption=>t(:menu_historic_caption, :default=> 'Historic'),           :controller=> 'dba_history',          :action=> 'show_os_statistics',             :hint=>t(:menu_wait_os_historic_hint, :default=> 'Historic statistics of operating system from DBA_Hist_OSStat') },
             ]
             },
-            {:class=> 'item', :caption=>t(:menu_wait_resource_limits_historic_caption, :default=> 'Resource limits historic'),      :controller=> 'dba_history',  :action=> 'show_resource_limits_historic',    :hint=>t(:menu_wait_resource_limits_historic_hint, :default=> 'Historic resource usage and resource limits from DBA_Hist_Resource_Limit') },
-            { :class=> 'menu', :caption=> 'Genuine Oracle AWR-reports', :content=>[
+            { :class=> 'menu', :caption=> 'Genuine Oracle reports', :content=>[
                 {:class=> 'item', :caption=>'Performance Hub',            :controller=>:dba_history,    :action=> 'show_performance_hub_report',     :hint=>'Genuine Oracle performance hub report by time period and instance', min_db_version: '12.1'  },
                 {:class=> 'item', :caption=>'AWR report',                 :controller=>:dba_history,    :action=> 'show_awr_report',          :hint=>'Genuine Oracle active workload repository report by time period and instance' },
                 {:class=> 'item', :caption=>'AWR global report (RAC)',    :controller=>:dba_history,    :action=> 'show_awr_global_report',   :hint=>'Genuine Oracle active workload repository global report for RAC by time period and instance (optional)' },

@@ -12,10 +12,16 @@
 
     <div class="flex-row-element" title="<%= t(:dba_history_show_sql_area_historic_filter_hint, :default=>'Filter string must be found in considered SQL statement. Wildcards (%,_) can be used in filter. (optional)') %>">
       Filter
-      <%= text_field_tag(:filter, "", :size=>30) %>
+      <%= text_field_tag(:filter, @filter, :size=>30) %>
     </div>
 
     <%= instance_tag %>
+
+    <div class="flex-row-element" title="<%= t(:dba_history_show_sql_area_historic_schema_hint, :default=>'Filter result on username at cursor creation (Parsing_Schema_Name)') %>">
+      User
+      <%= text_field_tag(:username, "", :size=>15) %>
+    </div>
+
     <div class="flex-row-element" title="<%= t(:sqlid_optional_filter_hint, :default=>'Filter on specific SQL-ID (optional, wildcards (%,_) can be used)') %>">
       SQL-ID
       <%= text_field_tag(:sql_id, "", :size=>14) %>
@@ -28,6 +34,11 @@
           <%= "<option value=\"#{key}\"#{" selected" if key == :ElapsedTimeTotal}>#{value[:title]}</option>".html_safe %>
         <% end %>
       </select>
+    </div>
+
+    <div class="flex-row-element" title="<%= t(:dba_history_show_sql_area_historic_include_plsql_hint, :default=>'Include also PL/SQL executions')%>">
+      PL/SQL
+      <%= check_box_tag(:include_plsql, 1, true) %>
     </div>
 
     <div class="flex-row-element">

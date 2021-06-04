@@ -11,7 +11,11 @@ http://rammpeter.github.io/panorama.html
 This GitHub-project is intended to provide function as Rails engine which can be embedded in other Rails application.
 
 The executable Rails application "Panorama" with Panorama-gem embedded as engine you find at 
-https://github.com/rammpeter/Panorama
+https://github.com/rammpeter/panorama.
+
+Download the latest release from https://github.com/rammpeter/panorama/releases/latest/download/Panorama.war.
+
+Download previous releases from https://github.com/rammpeter/panorama/releases.
 
 ## License
 The gem is available as open source under the terms of the [GNU General Public License](http://www.gnu.org/licenses/gpl-3.0).

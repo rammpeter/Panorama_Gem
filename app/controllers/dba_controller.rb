@@ -150,7 +150,8 @@ class DbaController < ApplicationController
                      s.Row_Wait_File#       Row_Wait_File_No,
                      s.Row_Wait_Block#      Row_Wait_Block_No,
                      s.Row_Wait_Row#        Row_Wait_Row_No,
-                     #{get_db_version < '11.1' ? "s.Seconds_In_Wait" : "s.Wait_Time_Micro/1000000"} Seconds_Waiting,
+                     s.Wait_Time_Micro/1000000 Seconds_Waiting,
+                     DECODE(bs.State, 'WAITING', bs.Wait_Time_Micro/1000000) Blocking_Seconds_Waiting,
                      l.ID1,
                      l.ID2,
                      /* Request!=0 indicates waiting for resource determinded by ID1, ID2 */
@@ -522,8 +523,8 @@ class DbaController < ApplicationController
                       GROUP BY DBID, Snap_ID, Instance_Number
                      ) l
               JOIN   DBA_Hist_Snapshot ss ON ss.DBID=l.DBID AND ss.Snap_ID=l.Snap_ID AND ss.Instance_Number=l.Instance_Number
-              WHERE  ss.Begin_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-              AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') #{wherestr}
+              WHERE  ss.Begin_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+              AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}') #{wherestr}
             ) x
       ORDER BY x.Begin_Interval_Time, x.Instance_Number
       ", @dbid, @time_selection_start, @time_selection_end].concat whereval
@@ -532,6 +533,7 @@ class DbaController < ApplicationController
   end
 
   def oracle_parameter
+    @instance = prepare_param_instance
     @name_array = params[:name_array]
     @name_array = nil if @name_array == ''
 
@@ -552,6 +554,11 @@ class DbaController < ApplicationController
         where_values << @name_array[i]
       end
       where_string << ")"
+    end
+
+    if @instance
+      where_string << " AND Instance = ?"
+      where_values << @instance
     end
 
     @hint = nil
@@ -624,19 +631,20 @@ class DbaController < ApplicationController
 
       end
       @parameters = sql_select_iterator(["\
-        SELECT /* Panorama-Tool Ramm */
-          Inst_ID                Instance,
-          Num                    ID,
-          Type                   ParamType,
-          Name,
-          Description,
-          Value,
-          Display_Value,
-          IsDefault,
-          ISSES_MODIFIABLE, IsSys_Modifiable, IsInstance_Modifiable, IsModified, IsAdjusted, IsDeprecated, Update_Comment#{", IsBasic" if get_db_version >= '11.1'}#{", Con_ID" if get_db_version >= '12.1'}
-        FROM  gv$Parameter
+        SELECT /* Panorama-Tool Ramm */ *
+        FROM   (SELECT Inst_ID                Instance,
+                       Num                    ID,
+                       Type                   ParamType,
+                       Name,
+                       Description,
+                       Value,
+                       Display_Value,
+                       IsDefault,
+                       ISSES_MODIFIABLE, IsSys_Modifiable, IsInstance_Modifiable, IsModified, IsAdjusted, IsDeprecated, Update_Comment#{", IsBasic" if get_db_version >= '11.1'}#{", Con_ID" if get_db_version >= '12.1'}
+                 FROM  gv$Parameter
+                )
         WHERE 1=1 #{where_string}
-        ORDER BY Name, Inst_ID"].concat(where_values),
+        ORDER BY Name, Instance"].concat(where_values),
         record_modifier
       )
 
@@ -1019,12 +1027,12 @@ class DbaController < ApplicationController
       JOIN   gv$Open_Cursor oc ON oc.Inst_ID = se.Inst_ID
                               AND oc.SID     = se.SID
       LEFT OUTER JOIN (SELECT Inst_ID, Address, Hash_Value,
-                               SUM(Estimated_Optimal_Size)  Estimated_Optimal_Size,
-                               SUM(Estimated_OnePass_Size)  Estimated_OnePass_Size,
-                               SUM(Last_Memory_used)        Last_Memory_Used,
-                               SUM(Active_Time)             Active_Time,
-                               SUM(Max_TempSeg_Size)        Max_TempSeg_Size,
-                               SUM(Last_TempSeg_Size)       Last_TempSeg_Size
+                               SUM(Estimated_Optimal_Size)/(1024)  Estimated_Optimal_Size_KB,
+                               SUM(Estimated_OnePass_Size)/(1024)  Estimated_OnePass_Size_KB,
+                               SUM(Last_Memory_used)/(1024)        Last_Memory_Used_KB,
+                               SUM(Active_Time)/1000               Active_Time_ms,
+                               SUM(Max_TempSeg_Size)/(1024)        Max_TempSeg_Size_KB,
+                               SUM(Last_TempSeg_Size)/(1024)       Last_TempSeg_Size_KB
                        FROM   gv$SQL_Workarea
                        GROUP BY Inst_ID, Address, Hash_Value
                       ) wa ON wa.Inst_ID    = oc.Inst_ID
@@ -1373,7 +1381,8 @@ class DbaController < ApplicationController
                      s.Row_Wait_File#       Row_Wait_File_No,
                      s.Row_Wait_Block#      Row_Wait_Block_No,
                      s.Row_Wait_Row#        Row_Wait_Row_No,
-                     #{get_db_version < '11.1' ? "s.Seconds_In_Wait" : "s.Wait_Time_Micro/1000000"} Seconds_Waiting,
+                     s.Wait_Time_Micro/1000000 Seconds_Waiting,
+                     DECODE(bs.State, 'WAITING', bs.Wait_Time_Micro/1000000) Blocking_Seconds_Waiting,
                      s.Blocking_Instance    Blocking_Instance_Number,
                      s.Blocking_Session     Blocking_SID,
                      bs.Serial#             Blocking_SerialNo,
@@ -1431,7 +1440,7 @@ class DbaController < ApplicationController
              P3Text, P3, P3Raw,
              #{"Seconds_In_Wait*1000 Wait_Time_MilliSeconds," if get_db_version < '11.1'}
              #{"DECODE(State, 'WAITING', s.Wait_Time_Micro, s.Time_Since_Last_Wait_Micro)/1000 Wait_Time_MilliSeconds," if get_db_version >= '11.1'}
-             State,
+             UserName, State,
              Client_Info, Module, Action,
              SQL_ID, Prev_SQL_ID, SQL_Child_Number, Prev_Child_Number
       FROM   gv$Session s
@@ -1674,8 +1683,8 @@ class DbaController < ApplicationController
 
     @files = sql_select_iterator ["SELECT f.*
                                    FROM   gv$Diag_Trace_File f
-                                   WHERE  f.Change_Time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                                   AND    f.Change_Time <  TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                                   WHERE  f.Change_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                                   AND    f.Change_Time <  TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
                                    #{where_string}
                                    ORDER BY f.Change_Time
                                   ", @time_selection_start, @time_selection_end].concat(where_values)
@@ -1747,4 +1756,17 @@ class DbaController < ApplicationController
     render_partial
   end
 
+  def resource_limits
+    @resource_limits = sql_select_all ["
+       SELECT rl.*
+       FROM   gv$Resource_Limit rl
+       ORDER BY rl.Resource_Name, rl.Inst_ID
+      "]
+    if @resource_limits.length == 0
+      show_popup_message("No content available in gv$Resource_Limit for your connection!
+  For PDB please connect to database with CDB-user instead of PDB-user.")
+    else
+      render_partial
+    end
+  end
 end # Class

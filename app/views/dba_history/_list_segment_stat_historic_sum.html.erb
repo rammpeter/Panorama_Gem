@@ -24,6 +24,7 @@ def link_column_snap(rec, value)
                         :object_name    => rec.object_name,
                         :subobject_name => rec.subobject_name,
                         :instance       => rec.instance_number,
+                        dbid:               @dbid,
                         :time_selection_start => @time_selection_start,
                         :time_selection_end   => @time_selection_end,
                         :min_snap_id    => rec.min_snap_id,

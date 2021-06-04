@@ -145,8 +145,8 @@ class DbaWaitsController < ApplicationController
           JOIN (SELECT Instance_Number, MIN(Snap_ID) Min_Snap_ID, MAX(Snap_ID) Max_Snap_ID
                 FROM   DBA_Hist_Snapshot ss
                 WHERE  DBID = ?
-                AND    Begin_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
-                AND    Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')
+                AND    Begin_Interval_time > TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                AND    Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
                 #{@instance ? " AND Instance_Number = "+@instance.to_s : ""}
                 GROUP BY Instance_Number
                ) ss ON ss.Instance_Number = sy.Instance_Number
@@ -258,7 +258,7 @@ class DbaWaitsController < ApplicationController
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
     @instance = prepare_param_instance
 
-    where_string = "s.Sample_Time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}') AND s.Sample_Time <  TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')"
+    where_string = "s.Sample_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') AND s.Sample_Time <  TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')"
     where_values = [@time_selection_start, @time_selection_end]
 
     if @instance

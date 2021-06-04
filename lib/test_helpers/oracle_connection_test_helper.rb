@@ -71,7 +71,7 @@ class ActiveSupport::TestCase
     set_I18n_locale('de')
   end
 
-  def set_session_test_db_context
+  def set_session_test_db_context(ensure_sampler_tables_if_needed: true)
     # 2017/07/26 cookies are reset in ActionDispatch::IntegrationTest if using initialize_client_key_cookie
     # possibly redundant to def cookies above
     cookies['client_salt'] = 100
@@ -90,7 +90,7 @@ class ActiveSupport::TestCase
     @saddr    = db_session.saddr
     @pid      = db_session.pid
 
-    ensure_panorama_sampler_tables_exist_with_content if management_pack_license == :panorama_sampler
+    ensure_panorama_sampler_tables_exist_with_content if management_pack_license == :panorama_sampler && ensure_sampler_tables_if_needed
 
     yield if block_given?                                                       # Ausführen optionaler Blöcke mit Anweisungen, die gegen die Oracle-Connection verarbeitet werden
 

@@ -20,6 +20,8 @@ require File.expand_path("../../lib/test_helpers/menu_test_helper.rb", __FILE__)
 require File.expand_path("../../lib/test_helpers/application_system_test_case", __FILE__)
 require File.expand_path("../../lib/test_helpers/panorama_test_config.rb", __FILE__)
 
+require File.expand_path("../../lib/test_helpers/playwright_system_test_case", __FILE__)
+
 # Filter out Minitest backtrace while allowing backtrace from other libraries
 # to be shown.
 
@@ -85,7 +87,13 @@ class ActiveSupport::TestCase
 
     unless $first_log_written
       $first_log_written = true
-      puts "Database version = #{@db_version}"
+      puts "Database version    = #{@db_version}"
+      puts "JDBC driver version = #{PanoramaConnection.get_jdbc_driver_version}"
+      begin
+        PanoramaConnection.sql_execute "PURGE RECYCLEBIN"
+      rescue Exception=>e
+        Rails.logger.error "#{e.class}:#{e.message} during PURGE RECYCLEBIN"
+      end
     end
   end
 
