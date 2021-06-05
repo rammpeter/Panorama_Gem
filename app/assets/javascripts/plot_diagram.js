@@ -31,7 +31,6 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
     var plot_area               = jQuery('#'+plot_area_id);
     var canvas_id               = "canvas_" + unique_id;
     var head_id                 = "head_" + canvas_id;
-    var canvas_height           = 450;
     var updateLegendTimeout     = null;
     var latestPosition          = null;
     var legend_values           = null;         // Liste der letzten Spalten der Legende für Werte
@@ -55,7 +54,8 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
             grid:           { hoverable: true, autoHighlight: false },
             yaxis:          { show: true },
             xaxes:          [{ mode: 'time'}],
-            legend:         { position: "ne"}
+            legend:         { position: "ne"},
+            canvas_height:  450
         };
 
         // Punkte für Werte nicht anzeigen, wenn mehr als x Einzelwerte auf x-Achse
@@ -73,7 +73,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
             .addClass('plot_diagram')               // Ermitteln aller aktiven Diagramme
             .data('plot_diagram', this)             // Zugriff auf Objekt über DOM
             .html('<div id="'+head_id+'" class="slick-shadow" style="float:left; width:100%; background-color: white; padding-bottom: 5px;"></div>'+
-            '<div id="'+canvas_id+'" class="slick-shadow" style="float:left; width:100%; height: '+canvas_height+'px; background-color: white; margin-bottom: 10px; "></div>'
+            '<div id="'+canvas_id+'" class="slick-shadow" style="float:left; width:100%; height: '+options.canvas_height+'px; background-color: white; margin-bottom: 10px; "></div>'
         )
             .resize(function(){ resize_plot_diagrams();});     // Registrieren fuer Event
         // Header-Bereich belegen

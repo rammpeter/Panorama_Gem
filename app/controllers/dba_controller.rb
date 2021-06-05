@@ -1769,4 +1769,42 @@ class DbaController < ApplicationController
       render_partial
     end
   end
+
+  def list_dashboard
+    @hours_to_cover         = prepare_param(:hours_to_cover).to_f
+    @refresh_cycle_minutes  = prepare_param(:refresh_cycle_minutes).to_f
+    @refresh_cycle_id       = prepare_param(:refresh_cycle_id)                  # ID of select element
+    render_partial
+  end
+
+  def refresh_dashboard_ash
+    hours_to_cover            = prepare_param(:hours_to_cover).to_f
+    last_refresh_time_string  = prepare_param :last_refresh_time_string
+
+    where_string_inner = ''
+    where_string_outer = ''
+    where_values = []
+
+    if last_refresh_time_string
+      where_string_outer << "WHERE Sample_Time_String > ?"
+      where_values << last_refresh_time_string
+    else
+      where_string_inner << "WHERE Sample_Time > SYSDATE - ?/24"
+      where_values << hours_to_cover
+    end
+
+    ash_data = sql_select_all ["\
+      SELECT Sample_Time_String, Wait_Class, COUNT(*) Sessions
+      FROM   (SELECT TO_CHAR(Sample_Time, 'YYYY/MM/DD HH24:MI:SS') Sample_Time_String,
+                     COALESCE(Wait_Class, DECODE(Session_State, 'ON CPU', 'CPU', '[Unknown]')) Wait_Class
+              FROM   gv$Active_Session_History
+              #{where_string_inner}
+             )
+      #{where_string_outer}
+      GROUP BY Sample_Time_String, Wait_Class
+      ORDER BY Sample_Time_String, Wait_Class
+    "].concat(where_values)
+
+    render json: ash_data
+  end
 end # Class
