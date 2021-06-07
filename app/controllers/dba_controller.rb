@@ -1770,13 +1770,6 @@ class DbaController < ApplicationController
     end
   end
 
-  def list_dashboard
-    @hours_to_cover         = prepare_param(:hours_to_cover).to_f
-    @refresh_cycle_minutes  = prepare_param(:refresh_cycle_minutes).to_f
-    @refresh_cycle_id       = prepare_param(:refresh_cycle_id)                  # ID of select element
-    render_partial
-  end
-
   def refresh_dashboard_ash
     hours_to_cover            = prepare_param(:hours_to_cover).to_f
     last_refresh_time_string  = prepare_param :last_refresh_time_string
