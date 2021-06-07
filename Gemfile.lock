@@ -165,6 +165,7 @@ GEM
 
 PLATFORMS
   universal-java-15
+  universal-java-16
 
 DEPENDENCIES
   capybara

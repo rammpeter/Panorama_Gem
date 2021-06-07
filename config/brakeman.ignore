@@ -7,7 +7,7 @@
       "check_name": "MassAssignment",
       "message": "Specify exact keys allowed for mass assignment instead of using `permit!` which allows any keys",
       "file": "app/controllers/longterm_trend_controller.rb",
-      "line": 119,
+      "line": 121,
       "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
       "code": "params.permit!",
       "render_path": null,
@@ -27,7 +27,7 @@
       "check_name": "MassAssignment",
       "message": "Specify exact keys allowed for mass assignment instead of using `permit!` which allows any keys",
       "file": "app/controllers/io_controller.rb",
-      "line": 14,
+      "line": 16,
       "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
       "code": "params.permit!",
       "render_path": null,
@@ -47,7 +47,7 @@
       "check_name": "MassAssignment",
       "message": "Specify exact keys allowed for mass assignment instead of using `permit!` which allows any keys",
       "file": "app/controllers/active_session_history_controller.rb",
-      "line": 464,
+      "line": 465,
       "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
       "code": "params.permit!",
       "render_path": null,
@@ -61,13 +61,29 @@
       "note": "Uses params for redirect only"
     },
     {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 106,
+      "fingerprint": "c8adc1c0caf2c9251d1d8de588fb949070212d0eed5e1580aee88bab2287b772",
+      "check_name": "SanitizeMethods",
+      "message": "loofah gem 2.10.0 is vulnerable (CVE-2018-8048). Upgrade to 2.2.1",
+      "file": "Gemfile.lock",
+      "line": 83,
+      "link": "https://github.com/flavorjones/loofah/issues/144",
+      "code": null,
+      "render_path": null,
+      "location": null,
+      "user_input": null,
+      "confidence": "Medium",
+      "note": ""
+    },
+    {
       "warning_type": "Mass Assignment",
       "warning_code": 70,
       "fingerprint": "e84d729a42e6fcfec8c79ebecc034f0499c12453596fb9721c370d10033f327d",
       "check_name": "MassAssignment",
       "message": "Specify exact keys allowed for mass assignment instead of using `permit!` which allows any keys",
       "file": "app/controllers/dba_sga_controller.rb",
-      "line": 535,
+      "line": 587,
       "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
       "code": "params.permit!",
       "render_path": null,
@@ -81,6 +97,6 @@
       "note": "Uses params for redirect only"
     }
   ],
-  "updated": "2020-10-29 13:59:12 +0100",
-  "brakeman_version": "4.10.0"
+  "updated": "2021-06-07 10:01:10 +0200",
+  "brakeman_version": "5.0.1"
 }
