@@ -108,6 +108,14 @@ module DiagramHelper
     end
     output << "];"
 
+    output << "
+    data_array.forEach((col)=>{
+      let color = wait_class_color(col.label);
+       if (color)
+          col['color'] = color;
+    });
+    "
+
     unique_area_id = get_unique_area_id
 
     plot_area_id = "plot_area_#{unique_area_id}"

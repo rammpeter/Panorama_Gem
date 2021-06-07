@@ -35,6 +35,19 @@ class DashboardData {
         });
     }
 
+    // load data from DB
+    load_refresh_ash_data(){
+        jQuery.ajax({
+            method: "POST",
+            dataType: "json",
+            success: (data, status, xhr)=>{
+                this.process_load_refresh_ash_data_success(data, xhr);
+            },
+            url: 'dba/refresh_dashboard_ash?window_width='+jQuery(window).width()+'&browser_tab_id='+browser_tab_id,
+            data: { 'hours_to_cover': this.hours_to_cover, 'last_refresh_time_string': this.last_refresh_time_string}
+        });
+    }
+
     process_load_refresh_ash_data_success(data, xhr){
         let timestamps = {};
         let data_to_add = {};
@@ -129,6 +142,14 @@ class DashboardData {
             }
         });
 
+        // define colors
+        this.ash_data_array.forEach((col)=> {
+            let color = wait_class_color(col.label);
+            if (color){
+                col['color'] = color;
+            }
+        });
+
         plot_diagram(this.unique_id, this.canvas_id, 'Wait classes of last '+this.hours_to_cover+' hours', this.ash_data_array, this.options);
 
         if (this.refresh_cycle_minutes != 0 && this.selected_refresh_cycle() != '0'){                     // not started with refresh cycle=off and refresh cycle not changed to off in the meantime
@@ -137,17 +158,8 @@ class DashboardData {
         }
     }
 
-    // load data from DB
-    load_refresh_ash_data(){
-        jQuery.ajax({
-            method: "POST",
-            dataType: "json",
-            success: (data, status, xhr)=>{
-                this.process_load_refresh_ash_data_success(data, xhr);
-            },
-            url: 'dba/refresh_dashboard_ash?window_width='+jQuery(window).width()+'&browser_tab_id='+browser_tab_id,
-            data: { 'hours_to_cover': this.hours_to_cover, 'last_refresh_time_string': this.last_refresh_time_string}
-        });
+    load_top_sessions_and_sql(){
+
     }
 
     draw_refreshed_data(current_canvas_id, caller){
@@ -162,6 +174,7 @@ class DashboardData {
 
         this.remove_aged_records(this.ash_data_array);
         this.load_refresh_ash_data();
+        this.load_top_sessions_and_sql();
 
         // timeout for next refresh cycle is set after successful return from ajax call
     }

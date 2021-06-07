@@ -485,6 +485,62 @@ function isSiteOnline(url,callback) {
     img.src = url+"/favicon.ico";
 }
 
+/**
+ * Color for wait class in graph
+ * @param wait_class
+ */
+
+function wait_class_color(wait_class){
+    switch(wait_class){
+        case 'Administrative':
+            return 'rgb(120, 131, 8)';
+            break;
+        case 'Application':
+            return 'rgb(204, 0, 0)';
+            break;
+        case 'Cluster':
+            return 'rgb(249, 246, 227)';
+            break;
+        case 'Commit':
+            return 'rgb(255, 145, 77)';
+            break;
+        case 'Configuration':
+            return 'rgb(120, 85, 8)';
+            break;
+        case 'Concurrency':
+            return 'rgb(128, 0, 0)';
+            break;
+        case 'CPU':
+        case 'ON CPU':
+            return 'rgb(11, 244, 11)';
+            break;
+        case 'Other':
+            return 'rgb(255, 179, 179)';
+            break;
+        case 'Queueing':
+            return 'rgb(240, 230, 191)';
+            break;
+        case 'Network':
+            return 'rgb(196, 181, 100)';
+            break;
+        case 'Scheduler':
+            return 'rgb(230, 255, 236)';
+            break;
+        case 'System I/O':
+            return 'rgb(102, 179, 255)';
+            break;
+        case 'User I/O':
+            return 'rgb(0,0,179)';
+            break;
+
+
+
+
+        default:
+            return null;
+    }
+}
+
 
 
 
