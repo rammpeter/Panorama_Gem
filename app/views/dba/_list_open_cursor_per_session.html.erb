@@ -32,7 +32,7 @@
    end
 
    column_options = []
-   column_options << {:caption=>"SQL-ID",               :data=>proc{|rec| link_sql_id(@update_area, @instance, rec.sql_id, (get_db_version >= '12.1' ? rec.child_number : nil) )}, :title=>"SQL-ID of statement"}
+   column_options << {:caption=>"SQL-ID",               :data=>proc{|rec| link_sql_id(@update_area, @instance, rec.sql_id, childno: (get_db_version >= '12.1' ? rec.child_number : nil) )}, :title=>"SQL-ID of statement"}
    column_options << {:caption=>"Child no.",            :data=>proc{|rec| fn(rec.child_number)},                                                          :title=>"Child number of statement"} if get_db_version >= '12.1'
    column_options << {:caption=>"Est. Opt. Size (kB)",  :data=>proc{|rec| link_column_workarea(rec, fn(rec.estimated_optimal_size_kb))}, :align=>"right", :title=>"Estimated size in kBytes required by this work area to execute the operation completely in memory (optimal execution).\nDerived from either optimizer statistics or previous executions in.", data_title: proc{|rec| "%t\n#{size_explain((rec.estimated_optimal_size_kb/1024.0 rescue nil))}"}}
    column_options << {:caption=>"Est. Onep. Size (kB)", :data=>proc{|rec| link_column_workarea(rec, fn(rec.estimated_onepass_size_kb))}, :align=>"right", :title=>"Estimated size in kBytes required by this work area to execute the operation in a single pass.\nDerived from either optimizer statistics or previous executions in", data_title: proc{|rec| "%t\n#{size_explain((rec.estimated_onepass_size_kb/1024.0 rescue nil))}"}}

@@ -11,7 +11,7 @@
 
    column_options =
   [
-    {:caption=>"SQL-ID",              :data=>proc{|rec| link_sql_id(@update_area, @instance, rec.sql_id, rec.child_number) },           :title=>"SQL-ID des Statements"},
+    {:caption=>"SQL-ID",              :data=>proc{|rec| link_sql_id(@update_area, @instance, rec.sql_id, childno: rec.child_number) },           :title=>"SQL-ID des Statements"},
     {:caption=>"Child no.",           :data=>proc{|rec| rec.child_number },               :title=>"Child-Number des Statements"},
     {:caption=>"Op-Type",             :data=>proc{|rec| rec.operation_type },             :title=>"Operation-Type"},
     {:caption=>"Op-ID",               :data=>proc{|rec| rec.operation_id },               :title=>"Operation-ID des Workareas zur Referenz in Explain-Plan"},

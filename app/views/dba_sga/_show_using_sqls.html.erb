@@ -3,7 +3,7 @@
 
 
   def link_sql(rec)
-    link_sql_id(@update_area, rec.inst_id, rec.sql_id, rec.child_number, rec.parsing_schema_name)
+    link_sql_id(@update_area, rec.inst_id, rec.sql_id, childno: rec.child_number, parsing_schema_name: rec.parsing_schema_name)
   end
 
    # build data title for columns cost and cardinality

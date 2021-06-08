@@ -90,7 +90,13 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
                 val.yaxis = 1;
         });
 
-        plot = jQuery.plot(jQuery('#'+canvas_id), data_array, options);     // Ausgabe des Diagrammes auf Canvas
+        let canvas = jQuery('#'+canvas_id);
+        plot = jQuery.plot(canvas, data_array, options);     // Ausgabe des Diagrammes auf Canvas
+
+        // canvas durch Schieber am unteren Ende horizontal resizable gestalten
+        canvas.resizable({});
+        canvas.find(".ui-resizable-e").remove();                    // Entfernen des rechten resizes-Cursors
+        canvas.find(".ui-resizable-se").remove();                   // Entfernen des rechten unteren resize-Cursors
 
         if (data_array.length === 0){
             return;                                   // Aufbereitung des Diagrammes verlassen wenn gar keine Daten zum Zeichnen

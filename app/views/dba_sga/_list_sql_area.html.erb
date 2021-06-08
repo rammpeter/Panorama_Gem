@@ -3,9 +3,9 @@
 
   def link_column(rec, value)
     if @modus == "GV$SQL" || rec.child_count == 1    # Es kann direkt auch Child-Cursor verwiesen werden
-        link_sql_id(@update_area, rec.inst_id, rec.sql_id, rec.child_number, rec.parsing_schema_name, rec.object_status, rec.child_address, (get_current_database[:cdb] ? rec.con_id : nil))
+        link_sql_id(@update_area, rec.inst_id, rec.sql_id, childno: rec.child_number, parsing_schema_name: rec.parsing_schema_name, object_status: rec.object_status, child_address: rec.child_address, con_id: (get_current_database[:cdb] ? rec.con_id : nil))
     else
-        link_sql_id(@update_area, rec.inst_id, rec.sql_id, nil,              rec.parsing_schema_name, rec.object_status, nil,               (get_current_database[:cdb] ? rec.con_id : nil) )
+        link_sql_id(@update_area, rec.inst_id, rec.sql_id, parsing_schema_name: rec.parsing_schema_name, object_status: rec.object_status, con_id: (get_current_database[:cdb] ? rec.con_id : nil) )
     end
   end
 

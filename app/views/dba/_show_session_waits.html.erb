@@ -92,7 +92,7 @@ column_options =
     {:caption=>"W. User",               :data=>proc{|rec| rec.username},                                                      :title=>t(:dba_show_session_waits_waiting_user_hint, :default=>'User of waiting session'),             :data_title=>proc{|rec| "%t, Machine=#{rec.machine}, OSUser=#{rec.osuser}, Process=#{rec.process}"} },
     {:caption=>"W. Program",            :data=>proc{|rec| rec.program},                                                       :title=>t(:dba_show_session_waits_waiting_program_hint, :default=>'Program of waiting session'),         :data_title=>proc{|rec| "%t, Machine=#{rec.machine}, OSUser=#{rec.osuser}, Process=#{rec.process}"} },
     {:caption=>"W. Wait Time (sec.)",   :data=>proc{|rec| formattedNumber(rec.seconds_waiting, 1)},                           :title=>t(:dba_show_session_waits_seconds_hint, :default=>'Seconds in wait for waiting session'), data_title: proc{|rec| "%t\n#{seconds_explain(rec.seconds_waiting)}"}, :align=>"right"},
-    {:caption=>"W. SQL-ID",             :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.sql_id, rec.sql_child_number, rec.username)}, :title=>t(:dba_show_session_waits_waiting_sql_id_hint, :default=>'current SQL-ID of waiting session')},
+    {:caption=>"W. SQL-ID",             :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.sql_id, childno: rec.sql_child_number, parsing_schema_name: rec.username)}, :title=>t(:dba_show_session_waits_waiting_sql_id_hint, :default=>'current SQL-ID of waiting session')},
   ]
 %>
 

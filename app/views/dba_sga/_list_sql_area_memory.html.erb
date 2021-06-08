@@ -3,7 +3,7 @@
 
   def link_column(rec)
     if rec.record_count == 1
-      link_sql_id(@update_area, @instance, rec.sql_id, nil, rec.parsing_schema_name)
+      link_sql_id(@update_area, @instance, rec.sql_id, parsing_schema_name: rec.parsing_schema_name)
     else
       "Sum of #{fn rec.record_count} other SQL-IDs after the first top #{@max_rows_in_result} records"
     end

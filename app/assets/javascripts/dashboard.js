@@ -1,9 +1,13 @@
 var dashboard_data = undefined;                                                 // controls if data exists to append with delta or initial read occurs
 
+
+
 class DashboardData {
-    constructor(unique_id, canvas_id, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, options={}){
+    constructor(unique_id, canvas_id, top_session_sql_id, update_area_id, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, options={}){
         this.unique_id                  = unique_id;
         this.canvas_id                  = canvas_id;
+        this.top_session_sql_id         = top_session_sql_id;
+        this.update_area_id             = update_area_id;
         this.hours_to_cover             = hours_to_cover;
         this.refresh_cycle_minutes      = refresh_cycle_minutes;
         this.refresh_cycle_id           = refresh_cycle_id;
@@ -13,16 +17,25 @@ class DashboardData {
 
         const default_options = {
             series: {stack: true, lines: {show: true, fill: true}, points: {show: false}},
-            canvas_height: 300,
+            canvas_height: 250,
             legend: {position: "nw", sorted: 'reverse'},
         };
         /* deep merge defaults and options, without modifying defaults */
         this.options = jQuery.extend(true, {}, default_options, options);
     }
 
+    log(content){
+        if (false)
+            console.log(content);
+    }
+
     // which refresh cycle is choosen in select list now
     selected_refresh_cycle(){
         return $('#'+this.refresh_cycle_id).children("option:selected").val();
+    }
+
+    set_refresh_cycle_off(){
+        $('#'+this.refresh_cycle_id+' option[value="0"]').attr("selected", "selected");
     }
 
     remove_aged_records(data_array){
@@ -153,13 +166,19 @@ class DashboardData {
         plot_diagram(this.unique_id, this.canvas_id, 'Wait classes of last '+this.hours_to_cover+' hours', this.ash_data_array, this.options);
 
         if (this.refresh_cycle_minutes != 0 && this.selected_refresh_cycle() != '0'){                     // not started with refresh cycle=off and refresh cycle not changed to off in the meantime
-            console.log('timeout set');
+            this.log('timeout set');
             this.current_timeout = setTimeout(function(){ this.draw_refreshed_data(this.canvas_id, 'timeout')}.bind(this), 1000*60*this.refresh_cycle_minutes);  // schedule for next cycle
         }
     }
 
     load_top_sessions_and_sql(){
-
+        ajax_html(this.top_session_sql_id, 'dba', 'refresh_top_session_sql',
+            {
+                'hours_to_cover':           this.hours_to_cover,
+                'last_refresh_time_string': this.last_refresh_time_string,
+                'refresh_cycle_minutes':    this.refresh_cycle_minutes,
+                'update_area_id':           this.update_area_id
+            });
     }
 
     draw_refreshed_data(current_canvas_id, caller){
@@ -169,7 +188,7 @@ class DashboardData {
         if (caller == 'timeout' && this.selected_refresh_cycle() == '0')        // imediately stop timeout processing if refresh is set to off
             return;
 
-        console.log("draw_refreshed_data "+caller);
+        this.log("draw_refreshed_data "+caller);
         this.current_timeout = null;                                            // no timeout pending from now until scheduled again
 
         this.remove_aged_records(this.ash_data_array);
@@ -186,10 +205,11 @@ class DashboardData {
             clearTimeout(this.current_timeout);                                 // remove current aktive timeout first before
         this.draw_refreshed_data(canvas_id, 'new refresh cycle');
     }
+
 }
 
 // function to be called from Rails template
-refresh_dashboard = function(unique_id, canvas_id, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id){
+refresh_dashboard = function(unique_id, canvas_id, top_session_sql_id, update_area_id, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id){
     if (dashboard_data !== undefined) {
         if (dashboard_data.canvas_id != canvas_id)                              // check if dashboard_data belongs to the current element
             dashboard_data = undefined;                                         // throw away old content
@@ -198,7 +218,7 @@ refresh_dashboard = function(unique_id, canvas_id, hours_to_cover, refresh_cycle
     if (dashboard_data !== undefined) {
         dashboard_data.draw_with_new_refresh_cycle(canvas_id, hours_to_cover, refresh_cycle_minutes);
     } else {
-        dashboard_data = new DashboardData(unique_id, canvas_id, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id);
+        dashboard_data = new DashboardData(unique_id, canvas_id, top_session_sql_id, update_area_id,  hours_to_cover, refresh_cycle_minutes, refresh_cycle_id);
         dashboard_data.draw_refreshed_data(canvas_id, 'init');
     }
 }

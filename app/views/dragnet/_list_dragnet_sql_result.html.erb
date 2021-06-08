@@ -149,7 +149,7 @@ if @res.count > 0
               serial_number_captions.each do |snc|
                 serial_no = rec[snc] if rec[snc]
               end
-              link_session_details(:exec_dragnet_sql_detail_area, instance, rec[col[:caption]], serial_no, fn(rec[col[:caption]]))
+              link_session_details(:exec_dragnet_sql_detail_area, instance, rec[col[:caption]], serial_no, print_val: fn(rec[col[:caption]]))
 #"#{instance}, #{serial_no}"
             end
             col[:align] = :right

@@ -89,7 +89,7 @@ column_options =
     {:caption=>"ID1, ID2",              :data=>proc{|rec| link_column_id1id2(rec)},                                 :title=>t(:dba_list_blocking_dml_locks_waiting_id1id2_hint, :default=>'ID2, ID2 of waiting object')},
     {:caption=>"R",                     :data=>proc{|rec| rec.request},                                             :title=>t(:dba_list_blocking_dml_locks_request_hint, :default=>'Lock mode requested by waiting session'),                                                              :data_title=>proc{|rec| "%t: #{lock_modes(rec.request)}"} },
     {:caption=>"L",                     :data=>proc{|rec| rec.lockmode},                                            :title=>t(:dba_list_blocking_dml_locks_hold_hint, :default=>'Lock mode hold by blocking session'),                                                                 :data_title=>proc{|rec| "%t: #{lock_modes(rec.lockmode)}"} },
-    {:caption=>"W. SQL-ID",             :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.sql_id, rec.sql_child_number, rec.username)}, :title=>t(:dba_list_blocking_dml_locks_sql_id_hint, :default=>'SQL-ID of current statement of waiting session')},
+    {:caption=>"W. SQL-ID",             :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.sql_id, childno: rec.sql_child_number, parsing_schema_name: rec.username)}, :title=>t(:dba_list_blocking_dml_locks_sql_id_hint, :default=>'SQL-ID of current statement of waiting session')},
   ]
 %>
 

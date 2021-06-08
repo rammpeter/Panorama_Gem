@@ -28,8 +28,8 @@
       {:caption=>"Client-Info",               :data=>proc{|rec| rec.client_info },                      :title=>"Client-Info der Session"},
       {:caption=>"Module",                    :data=>proc{|rec| rec.module },                           :title=>"Module der Session"},
       {:caption=>"Action",                    :data=>proc{|rec| rec.action },                                 :title=>"Action der Session"},
-      {:caption=>"Active SQL",                :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.sql_id, rec.sql_child_number)}, :title=>"SQL-ID des aktiven Statements"},
-      {:caption=>"Prev. SQL",                 :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.prev_sql_id, rec.prev_child_number)}, :title=>"SQL-ID des vorhergehenden Statements"},
+      {:caption=>"Active SQL",                :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.sql_id, childno: rec.sql_child_number)}, :title=>"SQL-ID des aktiven Statements"},
+      {:caption=>"Prev. SQL",                 :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.prev_sql_id, childno: rec.prev_child_number)}, :title=>"SQL-ID des vorhergehenden Statements"},
     ]
 
 %>

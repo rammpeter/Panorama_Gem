@@ -138,7 +138,7 @@ module AjaxHelper
   #   caption:      String
   #   url:          Hash with controller, action, update_area, payload
   #   html_options: Hash
-  def ajax_link(caption, url, html_options={}, additional_onclick_js='')
+  def ajax_link(caption, url, html_options={}, additional_onclick_js=nil)
     data = {}
     options = ''
 
@@ -158,7 +158,7 @@ module AjaxHelper
     end
 
     local_additional_onclick_js = additional_onclick_js.clone
-    local_additional_onclick_js << ';' if local_additional_onclick_js[local_additional_onclick_js.length-1] != ';'
+    local_additional_onclick_js << ';' if local_additional_onclick_js && local_additional_onclick_js[local_additional_onclick_js.length-1] != ';'
 
     json_data =  my_html_escape( data.to_json.gsub(/\\"/, '"+String.fromCharCode(34)+"') )    # Escape possible double quotes in strings to JS code
     "<a href=\"#\" onclick=\"ajax_html('#{url[:update_area]}', '#{url[:controller]}', '#{url[:action]}', #{json_data}, { element: this}); #{local_additional_onclick_js} return false; \"  #{options}>#{my_html_escape(caption)}</a>".html_safe
@@ -225,7 +225,7 @@ module AjaxHelper
 
   # Erzeugen eines Links aus den Parametern auf Detail-Darstellung des SQL
   # Aktualisieren des title(hint) erst, wenn das erste mal mit Maus darüber gefahren wird
-  def link_sql_id(update_area, instance, sql_id, childno=nil, parsing_schema_name=nil, object_status=nil, child_address=nil, con_id=nil)
+  def link_sql_id(update_area, instance, sql_id, childno: nil, parsing_schema_name: nil, object_status: nil, child_address: nil, con_id: nil, additional_onclick_js: nil)
     unique_id = get_unique_area_id
     prefix = "#{t(:ajax_helper_link_sql_id_title_prefix, :default=>"Show details in SGA for")} SQL-ID = '#{sql_id}', Instance = #{instance}"
     prefix << ", ChildNo=#{childno} : " if childno
@@ -240,12 +240,13 @@ module AjaxHelper
               :parsing_schema_name => parsing_schema_name,   # Sichern der Eindeutigkeit bei mehrfachem Vorkommen identischer SQL in verschiedenen Schemata
               :object_status  => object_status,
               :con_id         => con_id
-    },
-     {:title       => "#{prefix} <#{t :link_historic_sql_id_coming_soon, :default=>"Text of SQL is loading, please hold mouse over object again"}>",
-      :id          =>  unique_id,
-      :prefix      => prefix,
-      :onmouseover => "expand_sql_id_hint('#{unique_id}', '#{sql_id}');"
-     }
+              },
+               {:title       => "#{prefix} <#{t :link_historic_sql_id_coming_soon, :default=>"Text of SQL is loading, please hold mouse over object again"}>",
+                :id          =>  unique_id,
+                :prefix      => prefix,
+                :onmouseover => "expand_sql_id_hint('#{unique_id}', '#{sql_id}');"
+               },
+              additional_onclick_js
     )
   end
 
@@ -271,7 +272,7 @@ module AjaxHelper
     )
   end
 
-  def link_session_details(update_area, instance, sid, serialno, print_val=nil)
+  def link_session_details(update_area, instance, sid, serialno, print_val: nil, additional_onclick_js: nil)
     if instance.nil? || sid.nil? || serialno.nil?
       ''
     else
@@ -284,7 +285,9 @@ module AjaxHelper
                         :serialno     => serialno,
                         :update_area  => update_area
                 },
-                :title=>t(:dba_list_sessions_show_session_hint, :default=>'Show session details') )
+                {:title=>t(:dba_list_sessions_show_session_hint, :default=>'Show session details')},
+                additional_onclick_js
+                )
     end
   end
 

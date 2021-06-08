@@ -1800,4 +1800,83 @@ class DbaController < ApplicationController
 
     render json: ash_data
   end
+
+  def refresh_top_session_sql
+    hours_to_cover            = prepare_param(:hours_to_cover).to_f
+    last_refresh_time_string  = prepare_param :last_refresh_time_string
+    refresh_cycle_minutes     = prepare_param(refresh_cycle_minutes).to_f
+    @update_area_id           = prepare_param :update_area_id
+
+    where_string = ''
+    where_values = []
+
+    if last_refresh_time_string
+      where_string << "WHERE TO_CHAR(h.Sample_Time, 'YYYY/MM/DD HH24:MI:SS') > ?"
+      where_values << last_refresh_time_string
+    else
+      where_string << "WHERE h.Sample_Time > SYSDATE - ?/24"
+      where_values << hours_to_cover
+    end
+
+    @top_sessions = sql_select_all ["\
+      SELECT h.*,
+             COALESCE(s.UserName, (SELECT u.UserName FROM All_Users u WHERE u.User_ID = h.User_ID)) UserName,
+             s.OSUser
+      FROM   (
+              SELECT /*+ NO_MERGE */ *
+              FROM   (
+                      SELECT Inst_ID, Session_ID, MIN(User_ID) User_ID, MIN(Machine) Machine,
+                             MAX(SQL_ID)            KEEP (DENSE_RANK LAST ORDER BY Max_Wait_SQL) Max_SQL_ID,
+                             MAX(SQL_Child_Number)  KEEP (DENSE_RANK LAST ORDER BY Max_Wait_SQL) Max_SQL_Child_Number,
+                             MAX(Module)            KEEP (DENSE_RANK LAST ORDER BY Max_Wait_Module) Max_Module,
+                             MAX(Action)            KEEP (DENSE_RANK LAST ORDER BY Max_Wait_Action) Max_Action,
+                             Session_Serial_No, COUNT(*) Wait_Time_secs, MIN(Sample_Time) First_OCcurrence, MAX(Sample_Time) Last_Occurrence
+                      FROM   (SELECT h.*,
+                                     COUNT(*) OVER (PARTITION BY Inst_ID, Session_ID, Session_Serial_No, SQL_ID, SQL_Child_Number) Max_Wait_SQL,
+                                     COUNT(*) OVER (PARTITION BY Inst_ID, Session_ID, Session_Serial_No, Module) Max_Wait_Module,
+                                     COUNT(*) OVER (PARTITION BY Inst_ID, Session_ID, Session_Serial_No, Action) Max_Wait_Action
+                              FROM   (SELECT Sample_Time, SQL_ID, SQL_Child_Number, Machine, Module, Action, User_ID,
+                                             NVL(QC_Instance_ID, Inst_ID)                   Inst_ID,
+                                             NVL(QC_Session_ID, Session_ID)                 Session_ID,
+                                             NVL(QC_Session_Serial#, Session_Serial#)       Session_Serial_No
+                                      FROM   gv$Active_Session_History h
+                                      #{where_string}
+                                     ) h
+                             )
+                      GROUP BY Inst_ID, Session_ID, Session_Serial_No
+                      ORDER BY Wait_Time_secs DESC
+                     ) h
+              WHERE  RowNum <= 10
+             ) h
+      LEFT OUTER JOIN gv$Session s ON s.Inst_ID = h.Inst_ID and s.SID = h.Session_ID
+      ORDER BY Wait_Time_secs DESC
+    "].concat(where_values)
+
+    @first_session_time = nil
+    @last_session_time  = nil
+    @top_sessions.each do |s|
+      @first_session_time = s.first_occurrence if  @first_session_time.nil? || @first_session_time > s.first_occurrence
+      @last_session_time  = s.last_occurrence  if  @last_session_time.nil?  || @last_session_time  < s.last_occurrence
+    end
+
+    @top_sqls = sql_select_all ["\
+      SELECT h.*, SUBSTR(s.SQL_Text, 1, 80) SQL_SubText
+      FROM   (
+              SELECT /*+ NO_MERGE */ *
+              FROM   (
+                      SELECT Inst_ID, SQL_ID, SQL_Child_Number, COUNT(*) Wait_Time_Secs, COUNT(DISTINCT Session_ID||','||Session_Serial#) Sessions,
+                             MIN(Sample_Time) First_OCcurrence, MAX(Sample_Time) Last_Occurrence
+                      FROM   gv$Active_Session_History h
+                      #{where_string} AND SQL_ID IS NOT NULL
+                      GROUP BY Inst_ID, SQL_ID, SQL_Child_Number
+                      ORDER BY Wait_Time_secs DESC
+                     ) h
+              WHERE  RowNum <= 10
+             ) h
+      JOIN   gv$SQL s ON s.Inst_ID = h.Inst_ID AND s.SQL_ID = h.SQL_ID AND s.Child_Number = h.SQL_Child_Number
+      ORDER BY Wait_Time_secs DESC
+    "].concat(where_values)
+
+    render_partial
+  end
 end # Class

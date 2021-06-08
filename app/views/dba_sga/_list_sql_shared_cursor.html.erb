@@ -13,7 +13,7 @@ For deeper analysis see <a href="https://support.oracle.com/epmos/faces/DocConte
 column_options =
 [
   {:caption=>"I",               :data=>proc{|rec| rec.inst_id},      :title=>"RAC-Instance"},
-  {:caption=>"SQL-ID",          :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.sql_id, rec.child_number)},      :title=>"SQL-ID"},
+  {:caption=>"SQL-ID",          :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.sql_id, childno: rec.child_number)},      :title=>"SQL-ID"},
   {:caption=>"C",               :data=>proc{|rec| rec.child_number},     :title=>"Child-Number"},
 
 ]
