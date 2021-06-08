@@ -1804,18 +1804,25 @@ class DbaController < ApplicationController
   def refresh_top_session_sql
     hours_to_cover            = prepare_param(:hours_to_cover).to_f
     last_refresh_time_string  = prepare_param :last_refresh_time_string
-    refresh_cycle_minutes     = prepare_param(refresh_cycle_minutes).to_f
+    start_range_ms            = prepare_param(:start_range_ms).to_i
+    end_range_ms              = prepare_param(:end_range_ms).to_i
     @update_area_id           = prepare_param :update_area_id
 
     where_string = ''
     where_values = []
 
-    if last_refresh_time_string
-      where_string << "WHERE TO_CHAR(h.Sample_Time, 'YYYY/MM/DD HH24:MI:SS') > ?"
-      where_values << last_refresh_time_string
+    if start_range_ms != 0 && end_range_ms != 0
+      where_string << "WHERE TO_CHAR(h.Sample_Time, 'YYYY/MM/DD HH24:MI:SS') >= ? AND TO_CHAR(h.Sample_Time, 'YYYY/MM/DD HH24:MI:SS') <= ?"
+      where_values << Time.at(start_range_ms/1000).utc.strftime("%Y/%m/%d %H:%M:%S")
+      where_values << Time.at(end_range_ms/1000).utc.strftime("%Y/%m/%d %H:%M:%S")
     else
-      where_string << "WHERE h.Sample_Time > SYSDATE - ?/24"
-      where_values << hours_to_cover
+      if last_refresh_time_string
+        where_string << "WHERE TO_CHAR(h.Sample_Time, 'YYYY/MM/DD HH24:MI:SS') > ?"
+        where_values << last_refresh_time_string
+      else
+        where_string << "WHERE h.Sample_Time > SYSDATE - ?/24"
+        where_values << hours_to_cover
+      end
     end
 
     @top_sessions = sql_select_all ["\

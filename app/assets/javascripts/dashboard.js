@@ -19,6 +19,13 @@ class DashboardData {
             series: {stack: true, lines: {show: true, fill: true}, points: {show: false}},
             canvas_height: 250,
             legend: {position: "nw", sorted: 'reverse'},
+            selection: {
+                mode: "x",
+                color: 'gray',
+                //shape: "round" or "miter" or "bevel",
+                shape: "bevel",
+                minSize: 4
+            }
         };
         /* deep merge defaults and options, without modifying defaults */
         this.options = jQuery.extend(true, {}, default_options, options);
@@ -165,18 +172,25 @@ class DashboardData {
 
         plot_diagram(this.unique_id, this.canvas_id, 'Wait classes of last '+this.hours_to_cover+' hours', this.ash_data_array, this.options);
 
+        // refresh selection in chart
+        $('#'+this.canvas_id).bind( "plotselected", ( event, ranges)=>{
+            this.set_refresh_cycle_off();
+            this.load_top_sessions_and_sql(ranges.xaxis.from, ranges.xaxis.to);
+        });
+
         if (this.refresh_cycle_minutes != 0 && this.selected_refresh_cycle() != '0'){                     // not started with refresh cycle=off and refresh cycle not changed to off in the meantime
             this.log('timeout set');
             this.current_timeout = setTimeout(function(){ this.draw_refreshed_data(this.canvas_id, 'timeout')}.bind(this), 1000*60*this.refresh_cycle_minutes);  // schedule for next cycle
         }
     }
 
-    load_top_sessions_and_sql(){
+    load_top_sessions_and_sql(start_range_ms=null, end_range_ms=null){
         ajax_html(this.top_session_sql_id, 'dba', 'refresh_top_session_sql',
             {
                 'hours_to_cover':           this.hours_to_cover,
                 'last_refresh_time_string': this.last_refresh_time_string,
-                'refresh_cycle_minutes':    this.refresh_cycle_minutes,
+                'start_range_ms':           start_range_ms,
+                'end_range_ms':             end_range_ms,
                 'update_area_id':           this.update_area_id
             });
     }

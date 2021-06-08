@@ -14,6 +14,7 @@
 //= require flot/jquery.flot.time
 //= require flot/jquery.flot.resize
 //= require flot/jquery.flot.crosshair
+//= require flot/jquery.flot.selection
 //= require flot/jquery.flot.stack
 //= require jquery.event.drag-2.3.0
 //= require slick.core
