@@ -36,11 +36,15 @@
 <table width="100%" style="border: 0; background: initial;">
   <tr><td colspan="2" style="background: initial;"><%= render_page_caption("Top sessions and SQLs between #{localeDateTime(@first_session_time)} and #{localeDateTime(@last_session_time)}") %></td></tr>
   <tr>
-    <td width="50%" style="padding-top: 0">
+    <td width="50%" style="padding-top: 0; background: initial;">
       <%= gen_slickgrid(@top_sessions, column_options_sessions, {width: '100%', line_height_single: true}) %>
     </td>
-    <td width="50%" style="padding-top: 0">
+    <td width="50%" style="padding-top: 0; background: initial;">
       <%= gen_slickgrid(@top_sqls, column_options_sqls, {width: '100%', line_height_single: true}) %>
     </td>
   </tr>
 </table>
+
+<script type="application/javascript">
+  dashboard_data.selection_refresh_pending = false;                             // next request may start, suppress multiple events for same selection
+</script>

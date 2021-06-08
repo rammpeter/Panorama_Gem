@@ -2,7 +2,7 @@ require 'date'
 
 module PanoramaGem
   # VERSION and RELEASE_DATE should have fix syntax and positions because they are parsed from other sites
-  VERSION = '2.10.62'
+  VERSION = '2.10.63'
   RELEASE_DATE = Date.parse('2021-06-08')
 
   RELEASE_DAY   = "%02d" % RELEASE_DATE.day

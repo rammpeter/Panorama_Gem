@@ -14,6 +14,7 @@ class DashboardData {
         this.ash_data_array             = [];
         this.last_refresh_time_string   = null;
         this.current_timeout            = null;                                 // current active timeout
+        this.selection_refresh_pending  = false;                                // is there a request in transit for selection? Suppress multiple events
 
         const default_options = {
             series: {stack: true, lines: {show: true, fill: true}, points: {show: false}},
@@ -175,7 +176,9 @@ class DashboardData {
         // refresh selection in chart
         $('#'+this.canvas_id).bind( "plotselected", ( event, ranges)=>{
             this.set_refresh_cycle_off();
-            this.load_top_sessions_and_sql(ranges.xaxis.from, ranges.xaxis.to);
+            if (!this.selection_refresh_pending)
+                this.load_top_sessions_and_sql(ranges.xaxis.from, ranges.xaxis.to);
+            this.selection_refresh_pending = true;                              // suppress subsequent calls until ajax response is processed, set to false in Rails template _refresh_top_session_sql
         });
 
         if (this.refresh_cycle_minutes != 0 && this.selected_refresh_cycle() != '0'){                     // not started with refresh cycle=off and refresh cycle not changed to off in the meantime
