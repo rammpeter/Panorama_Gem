@@ -1,6 +1,6 @@
 <%
   column_options = []
-  column_options << {caption: 'I',                data: proc{|rec| rec.inst_id },                                 title: "RAC-instance"}
+  column_options << {caption: 'I',                data: proc{|rec| rec.inst_id },                                 title: "RAC-instance"} if PanoramaConnection.rac?
   column_options << {caption: 'Name',             data: proc{|rec| rec.stat_name },                               title: "Name of the statistic"}
   column_options << {caption: 'Value',            data: proc{|rec| fn(rec.value) },                               title: "Value of the statistic",  align: :right}
   column_options << {caption: 'Comments',         data: proc{|rec| rec.comments },                                title: "Any additional OS-specific clarifications for the statistic"} if get_db_version >= "11.2"

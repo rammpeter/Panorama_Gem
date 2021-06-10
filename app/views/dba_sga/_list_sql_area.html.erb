@@ -10,7 +10,7 @@
   end
 
   column_options = []
-  column_options << {:caption=>"I",           :data=>proc{|rec| formattedNumber(rec.inst_id)},                         :title=>"Instance-ID"}
+  column_options << {:caption=>"I",           :data=>proc{|rec| formattedNumber(rec.inst_id)},                         :title=>"Instance-ID"} if PanoramaConnection.rac?
   column_options << {:caption=>'Con-ID',      :data=>proc{|rec| formattedNumber(rec.con_id)},                          :title=>"Container-ID for pluggable database"} if get_current_database[:cdb]
   column_options << {:caption=>"SQL-ID",      :data=>proc{|rec| link_column(rec, rec.sql_text)},                       :title=>"SQL-ID"}
   column_options << {:caption=>"SQL-Text",    :data=>proc{|rec| my_html_escape rec.sql_text},                          :title=>"SQL-Text", :data_title=>proc{|rec| "SQL_ID=#{rec.sql_id} : #{my_html_escape(rec.full_sql_text.strip)}"}}

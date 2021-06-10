@@ -205,7 +205,7 @@
    end
 
   column_options = []
-  column_options <<  {:caption=>"I",                :data=>proc{|rec| show_alt(rec.instance_number, rec.instance_number_cnt) },       :title=>"RAC-Instance", :data_title=>proc{|rec| data_title_alt(rec.instance_number_cnt)} }
+  column_options <<  {:caption=>"I",                :data=>proc{|rec| show_alt(rec.instance_number, rec.instance_number_cnt) },       :title=>"RAC-Instance", :data_title=>proc{|rec| data_title_alt(rec.instance_number_cnt)} } if PanoramaConnection.rac?
   column_options <<  {:caption=>"Con-ID",           :data=>proc{|rec| show_alt(rec.con_id, rec.con_id_cnt) },           :title=>"Container-ID for pluggable database", :data_title=>proc{|rec| data_title_alt(rec.con_id_cnt)} } if get_current_database[:cdb]
   column_options <<  {:caption=>"Sample time",      :data=>proc{|rec| localeDateTime(rec.start_rounded_sample_time)},   :title=>'Snapshot time of sample rounded to ASH cycle (1 or 10 seconds)', :data_title=>proc{|rec| "%t\nSample_ID = #{rec.sample_id}\nReal snapshot time = #{localeDateTime(rec.start_sample_time, :fractions)}" } } if @time_groupby == :single
   column_options <<  {:caption=>"Start time",       :data=>proc{|rec| localeDateTime(rec.start_sample_time)},           :title=>'Start snapshot time of group', :data_title=>proc{|rec| "%t\nStart snapshot time of group=#{localeDateTime(rec.start_sample_time, :fractions)}\nEnd snapshot time of group=#{localeDateTime(rec.end_sample_time, :fractions)}" }, :plot_master_time=>true } if @time_groupby != :single

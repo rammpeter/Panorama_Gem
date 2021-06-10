@@ -1,20 +1,25 @@
 <%
+  link_session_or_history = proc do |inst_id, session_id, serial_no, session_alive|
+    if session_alive
+      link_session_details(@update_area_id, inst_id, session_id, serial_no, additional_onclick_js: "dashboard_data.set_refresh_cycle_off();")
+    else
+      "TODO: ASH for session"
+    end
+  end
+
   link_session = proc do |rec|
-    link_session_details(@update_area_id, rec.inst_id, rec.session_id, rec.session_serial_no, additional_onclick_js: "dashboard_data.set_refresh_cycle_off();")
+    link_session_or_history.call(rec.qinst_id, rec.qsession_id, rec.qsession_serial_no, true)
   end
 
   link_session_sql = proc do |rec|
-    link_sql_id(@update_area_id, rec.inst_id, rec.max_sql_id, childno: rec.max_sql_child_number, additional_onclick_js: "dashboard_data.set_refresh_cycle_off();")
-  end
-
-  link_sql_sql = proc do |rec|
-    link_sql_id(@update_area_id, rec.inst_id, rec.sql_id, childno: rec.sql_child_number, additional_onclick_js: "dashboard_data.set_refresh_cycle_off();")
+    link_sql_id(@update_area_id, rec.qinst_id, rec.max_sql_id, childno: rec.max_sql_child_number, additional_onclick_js: "dashboard_data.set_refresh_cycle_off();")
   end
 
   column_options_sessions = []
-  column_options_sessions << {caption: 'I',                data: proc{|rec| rec.inst_id},               title: "Instance-ID"}
-  column_options_sessions << {caption: 'SID/SN',           data: link_session,                          title: 'SID, SerialNo', data_title: proc{|rec| "%t\n#{rec.session_id},#{rec.session_serial_no}"}}
+  column_options_sessions << {caption: 'I',                data: proc{|rec| rec.qinst_id},              title: "Instance-ID\n(of query coordinator session for parallel query)"} if PanoramaConnection.rac?
+  column_options_sessions << {caption: 'SID / SN',         data: link_session,                          title: 'SID, SerialNo\n(of query coordinator session for parallel query)', data_title: proc{|rec| "%t\n#{rec.qsession_id},#{rec.qsession_serial_no}"}}
   column_options_sessions << {caption: 'Wait time (sec.)', data: proc{|rec| fn(rec.wait_time_secs)},    title: "Wait time of session in seconds in considered time period", align: :right, show_pct_background: true, data_title: proc{|rec| "%t\n#{seconds_explain(rec.wait_time_secs)}\nBetween #{localeDateTime(rec.first_occurrence)} and #{localeDateTime(rec.last_occurrence)}\nAverage load = #{fn(rec.wait_time_secs / (rec.last_occurrence-rec.first_occurrence),1) rescue nil}"}}
+  column_options_sessions << {caption: 'PQ',               data: proc{|rec| fn(rec.pq_sessions) if rec.pq_sessions > 0},       title: "Number of different parallel query server sessions involved in SQL execution of this session in considered time period", align: :right}
   column_options_sessions << {caption: 'User',             data: proc{|rec| rec.username},              title: "Name of DB-User"}
   column_options_sessions << {caption: 'Machine',          data: proc{|rec| rec.machine},               title: "Client machine"}
   column_options_sessions << {caption: 'OS user',          data: proc{|rec| rec.osuser},                title: "Client machine user"}
@@ -22,11 +27,24 @@
   column_options_sessions << {caption: 'Module',           data: proc{|rec| rec.max_module},            title: "Module identifier with highest wait time in considered time period", data_title: proc{|rec| "%t\n\n#{rec.max_module}"}}
   column_options_sessions << {caption: 'Action',           data: proc{|rec| rec.max_action},            title: "Action identifier with highest wait time in considered time period", data_title: proc{|rec| "%t\n\n#{rec.max_action}"}}
 
+  link_sql_sql = proc do |rec|
+    link_sql_id(@update_area_id, rec.inst_id, rec.sql_id, childno: rec.sql_child_number, additional_onclick_js: "dashboard_data.set_refresh_cycle_off();")
+  end
+
+  link_sql_session = proc do |rec|
+    if rec.sessions > 1
+      "<&nbsp;#{fn(rec.sessions)}&nbsp;>"
+    else
+      link_session_or_history.call(rec.min_qinst_id, rec.min_qsession_id, rec.min_qsession_serial_no, true)
+    end
+  end
+
   column_options_sqls = []
-  column_options_sqls << {caption: 'I',                data: proc{|rec| rec.inst_id},                     title: "Instance-ID"}
+  column_options_sqls << {caption: 'I',                data: proc{|rec| rec.inst_id},                     title: "Instance-ID"} if PanoramaConnection.rac?
   column_options_sqls << {caption: 'SQL_ID',           data: link_sql_sql,                                title: "Current SQL-ID of session", data_title: proc{|rec| "%t\nChild-number = #{rec.sql_child_number}"}}
   column_options_sqls << {caption: 'Wait time (sec.)', data: proc{|rec| fn(rec.wait_time_secs)},          title: "Wait time of SQL in seconds in considered time period", align: :right, show_pct_background: true, data_title: proc{|rec| "%t\n#{seconds_explain(rec.wait_time_secs)}\nBetween #{localeDateTime(rec.first_occurrence)} and #{localeDateTime(rec.last_occurrence)}\nAverage load = #{fn(rec.wait_time_secs / (rec.last_occurrence-rec.first_occurrence),1) rescue nil}"}}
-  column_options_sqls << {caption: 'Sess.',            data: proc{|rec| fn(rec.sessions)},                title: "Number of different sessions executing this SQL in considered time period", align: :right}
+  column_options_sqls << {caption: 'Sess.',            data: link_sql_session,                            title: "Session ID/serial# if only one session was executing this SQL in in considered time period\nor number of different sessions executing this SQL in considered time period", align: :right}
+  column_options_sqls << {caption: 'PQ',               data: proc{|rec| fn(rec.pq_sessions) if rec.pq_sessions > 0}, title: "Number of different parallel query server sessions involved in execution of this SQL in considered time period", align: :right}
   column_options_sqls << {caption: 'SQL text',         data: proc{|rec| my_html_escape(rec.sql_subtext)}, title: "Start of SQL text"}
 
 %>

@@ -1832,30 +1832,32 @@ class DbaController < ApplicationController
       FROM   (
               SELECT /*+ NO_MERGE */ *
               FROM   (
-                      SELECT Inst_ID, Session_ID, MIN(User_ID) User_ID, MIN(Machine) Machine,
+                      SELECT QInst_ID, QSession_ID, QSession_Serial_No, MIN(User_ID) User_ID, MIN(Machine) Machine,
                              MAX(SQL_ID)            KEEP (DENSE_RANK LAST ORDER BY Max_Wait_SQL) Max_SQL_ID,
                              MAX(SQL_Child_Number)  KEEP (DENSE_RANK LAST ORDER BY Max_Wait_SQL) Max_SQL_Child_Number,
                              MAX(Module)            KEEP (DENSE_RANK LAST ORDER BY Max_Wait_Module) Max_Module,
                              MAX(Action)            KEEP (DENSE_RANK LAST ORDER BY Max_Wait_Action) Max_Action,
-                             Session_Serial_No, COUNT(*) Wait_Time_secs, MIN(Sample_Time) First_OCcurrence, MAX(Sample_Time) Last_Occurrence
+                             COUNT(*) Wait_Time_secs, MIN(Sample_Time) First_OCcurrence, MAX(Sample_Time) Last_Occurrence,
+                             COUNT(DISTINCT PQ_Session) PQ_Sessions
                       FROM   (SELECT h.*,
-                                     COUNT(*) OVER (PARTITION BY Inst_ID, Session_ID, Session_Serial_No, SQL_ID, SQL_Child_Number) Max_Wait_SQL,
-                                     COUNT(*) OVER (PARTITION BY Inst_ID, Session_ID, Session_Serial_No, Module) Max_Wait_Module,
-                                     COUNT(*) OVER (PARTITION BY Inst_ID, Session_ID, Session_Serial_No, Action) Max_Wait_Action
-                              FROM   (SELECT Sample_Time, SQL_ID, SQL_Child_Number, Machine, Module, Action, User_ID,
-                                             NVL(QC_Instance_ID, Inst_ID)                   Inst_ID,
-                                             NVL(QC_Session_ID, Session_ID)                 Session_ID,
-                                             NVL(QC_Session_Serial#, Session_Serial#)       Session_Serial_No
+                                     COUNT(*) OVER (PARTITION BY QInst_ID, QSession_ID, QSession_Serial_No, SQL_ID, SQL_Child_Number) Max_Wait_SQL,
+                                     COUNT(*) OVER (PARTITION BY QInst_ID, QSession_ID, QSession_Serial_No, Module) Max_Wait_Module,
+                                     COUNT(*) OVER (PARTITION BY QInst_ID, QSession_ID, QSession_Serial_No, Action) Max_Wait_Action
+                              FROM   (SELECT h.*,
+                                             NVL(QC_Instance_ID, Inst_ID)                   QInst_ID,
+                                             NVL(QC_Session_ID, Session_ID)                 QSession_ID,
+                                             NVL(QC_Session_Serial#, Session_Serial#)       QSession_Serial_No,
+                                             DECODE(QC_Session_ID, NULL, NULL, Inst_ID||','||Session_ID||','||Session_Serial#) PQ_Session
                                       FROM   gv$Active_Session_History h
                                       #{where_string}
                                      ) h
                              )
-                      GROUP BY Inst_ID, Session_ID, Session_Serial_No
+                      GROUP BY QInst_ID, QSession_ID, QSession_Serial_No
                       ORDER BY Wait_Time_secs DESC
                      ) h
               WHERE  RowNum <= 10
              ) h
-      LEFT OUTER JOIN gv$Session s ON s.Inst_ID = h.Inst_ID and s.SID = h.Session_ID
+      LEFT OUTER JOIN gv$Session s ON s.Inst_ID = h.QInst_ID and s.SID = h.QSession_ID
       ORDER BY Wait_Time_secs DESC
     "].concat(where_values)
 
@@ -1871,10 +1873,19 @@ class DbaController < ApplicationController
       FROM   (
               SELECT /*+ NO_MERGE */ *
               FROM   (
-                      SELECT Inst_ID, SQL_ID, SQL_Child_Number, COUNT(*) Wait_Time_Secs, COUNT(DISTINCT Session_ID||','||Session_Serial#) Sessions,
+                      SELECT Inst_ID, SQL_ID, SQL_Child_Number, COUNT(*) Wait_Time_Secs,
+                             COUNT(DISTINCT QInst_ID||','||QSession_ID||','||QSession_Serial_No) Sessions,
+                             COUNT(DISTINCT PQ_Session) PQ_Sessions,
+                             MIN(QInst_ID) Min_QInst_ID, MIN(QSession_ID) Min_QSession_ID, MIN(QSession_Serial_No) Min_QSession_Serial_No,
                              MIN(Sample_Time) First_OCcurrence, MAX(Sample_Time) Last_Occurrence
-                      FROM   gv$Active_Session_History h
-                      #{where_string} AND SQL_ID IS NOT NULL
+                      FROM   (SELECT h.*,
+                                     NVL(QC_Instance_ID, Inst_ID)                   QInst_ID,
+                                     NVL(QC_Session_ID, Session_ID)                 QSession_ID,
+                                     NVL(QC_Session_Serial#, Session_Serial#)       QSession_Serial_No,
+                                     DECODE(QC_Session_ID, NULL, NULL, Inst_ID||','||Session_ID||','||Session_Serial#) PQ_Session
+                              FROM   gv$Active_Session_History h
+                              #{where_string} AND SQL_ID IS NOT NULL
+                             ) h
                       GROUP BY Inst_ID, SQL_ID, SQL_Child_Number
                       ORDER BY Wait_Time_secs DESC
                      ) h

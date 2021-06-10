@@ -112,7 +112,7 @@
 
   column_options = []
   column_options <<  {caption: 'Level',            data: proc{|rec| rec.level },                      title: "Level / depth of depedency thread ( 1 = direkt blocking session) " }
-  column_options <<  {caption: 'I',                data: proc{|rec| rec.instance_number },            title: "Instance of blocking session", align: :right }
+  column_options <<  {caption: 'I',                data: proc{|rec| rec.instance_number },            title: "Instance of blocking session", align: :right } if PanoramaConnection.rac?
   column_options <<  {caption: "Con-ID",           data: proc{|rec| rec.con_id},                      title: "Container-ID for pluggable database" } if get_current_database[:cdb]
   column_options <<  {caption: 'Sample-Time',      data: proc{|rec| localeDateTime(rec.rounded_sample_time)}, title: "Snapshot time of sample\nRounded to 1 second if source is v$Active_Session_History\nRounded to 10 seconds if source is DBA_Hist_Active_Sess_History" }
   column_options <<  {caption: 'Session / Sn.',    data: link_column_sid,                             title: "Session-ID and serial number of blocking session" }

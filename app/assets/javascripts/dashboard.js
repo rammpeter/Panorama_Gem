@@ -3,7 +3,7 @@ var dashboard_data = undefined;                                                 
 
 
 class DashboardData {
-    constructor(unique_id, canvas_id, top_session_sql_id, update_area_id, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, options={}){
+    constructor(unique_id, canvas_id, top_session_sql_id, update_area_id, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id, options={}){
         this.unique_id                  = unique_id;
         this.canvas_id                  = canvas_id;
         this.top_session_sql_id         = top_session_sql_id;
@@ -11,6 +11,7 @@ class DashboardData {
         this.hours_to_cover             = hours_to_cover;
         this.refresh_cycle_minutes      = refresh_cycle_minutes;
         this.refresh_cycle_id           = refresh_cycle_id;
+        this.refresh_button_id          = refresh_button_id;
         this.ash_data_array             = [];
         this.last_refresh_time_string   = null;
         this.current_timeout            = null;                                 // current active timeout
@@ -33,7 +34,7 @@ class DashboardData {
     }
 
     log(content){
-        if (false)
+        if (true)
             console.log(content);
     }
 
@@ -43,7 +44,9 @@ class DashboardData {
     }
 
     set_refresh_cycle_off(){
+        this.cancel_timeout();
         $('#'+this.refresh_cycle_id+' option[value="0"]').attr("selected", "selected");
+        $('#'+this.refresh_button_id).attr('type', 'submit');                   // make refresh button visible
     }
 
     remove_aged_records(data_array){
@@ -72,6 +75,9 @@ class DashboardData {
     process_load_refresh_ash_data_success(data, xhr){
         let timestamps = {};
         let data_to_add = {};
+        let min_time_ms = null;                                                 // start of delta time range in ms since 1970
+        let max_time_ms = 0;                                                    // end of delta time range in ms since 1970
+        let initial_data_load = this.ash_data_array.length == 0;                // initial or delta load
 
         let previous_timestamps = [];                                           // remember used timestamps for later tasks
         if (this.ash_data_array.length > 0){
@@ -118,12 +124,16 @@ class DashboardData {
                 return 0;
             });
 
-            // transform date string into ms since 1970
+            // transform date string into ms since 1970 and remember low and high value
             col_data_delta_array.forEach((val_array)=>{
                 val_array[0] = new Date(val_array[0] + " GMT").getTime();
+                if (min_time_ms == null || min_time_ms > val_array[0])
+                    min_time_ms = val_array[0];
+                if (max_time_ms < val_array[0])
+                    max_time_ms = val_array[0];
             });
 
-            wait_class_object['data'] = wait_class_object.data.concat(col_data_delta_array);
+            wait_class_object['data'] = wait_class_object.data.concat(col_data_delta_array);    // add the delta data to the previous data
         }
 
         // build sum over wait_classes and sort by sums, so wait class with highest amount is on top in diagram
@@ -171,12 +181,22 @@ class DashboardData {
             }
         });
 
-        plot_diagram(this.unique_id, this.canvas_id, 'Wait classes of last '+this.hours_to_cover+' hours', this.ash_data_array, this.options);
+        // remove and recreate the sub_canvas object to suppress "Total canvas memory use exceeds the maximum limit"
+        $('#'+this.canvas_id).html('');
+        let sub_canvas_id = this.canvas_id+'_sub';
+        $('#'+this.canvas_id).append('<div id="'+sub_canvas_id+'"></div>');
 
-        // refresh selection in chart
-        $('#'+this.canvas_id).bind( "plotselected", ( event, ranges)=>{
+        let diagram = plot_diagram(this.unique_id, sub_canvas_id, 'Wait classes of last '+this.hours_to_cover+' hours', this.ash_data_array, this.options);
+
+        // set selection in chart to delta just added in diagram
+        if (!initial_data_load)
+            diagram.get_plot().setSelection( { xaxis: { from: min_time_ms, to: max_time_ms}}, true);
+
+        // react on selection in chart
+        $('#'+sub_canvas_id).bind( "plotselected", ( event, ranges)=>{
             this.set_refresh_cycle_off();
             if (!this.selection_refresh_pending)
+                this.log("Refreshing");
                 this.load_top_sessions_and_sql(ranges.xaxis.from, ranges.xaxis.to);
             this.selection_refresh_pending = true;                              // suppress subsequent calls until ajax response is processed, set to false in Rails template _refresh_top_session_sql
         });
@@ -218,25 +238,38 @@ class DashboardData {
     draw_with_new_refresh_cycle(canvas_id, hours_to_cover, refresh_cycle_minutes) {
         this.hours_to_cover         = hours_to_cover;
         this.refresh_cycle_minutes  = refresh_cycle_minutes;
-        if (this.current_timeout)
-            clearTimeout(this.current_timeout);                                 // remove current aktive timeout first before
+        this.cancel_timeout();
         this.draw_refreshed_data(canvas_id, 'new refresh cycle');
     }
 
+    // cancel possible timeout
+    cancel_timeout(){
+        if (this.current_timeout) {
+            this.log('clearTimeout '+this.current_timeout);
+            clearTimeout(this.current_timeout);                                 // remove current aktive timeout first before
+            this.current_timeout = null;
+        }
+    }
 }
 
 // function to be called from Rails template
-refresh_dashboard = function(unique_id, canvas_id, top_session_sql_id, update_area_id, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id){
+refresh_dashboard = function(unique_id, canvas_id, top_session_sql_id, update_area_id, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id){
     if (dashboard_data !== undefined) {
         if (dashboard_data.canvas_id != canvas_id)                              // check if dashboard_data belongs to the current element
-            dashboard_data = undefined;                                         // throw away old content
+            discard_dashboard_data();                                           // throw away old content
     }
 
     if (dashboard_data !== undefined) {
         dashboard_data.draw_with_new_refresh_cycle(canvas_id, hours_to_cover, refresh_cycle_minutes);
     } else {
-        dashboard_data = new DashboardData(unique_id, canvas_id, top_session_sql_id, update_area_id,  hours_to_cover, refresh_cycle_minutes, refresh_cycle_id);
+        dashboard_data = new DashboardData(unique_id, canvas_id, top_session_sql_id, update_area_id,  hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id);
         dashboard_data.draw_refreshed_data(canvas_id, 'init');
     }
 }
 
+discard_dashboard_data = function(){
+    if (dashboard_data !== undefined) {
+        dashboard_data.cancel_timeout();
+        dashboard_data = undefined;
+    }
+}

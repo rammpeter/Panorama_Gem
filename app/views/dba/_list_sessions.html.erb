@@ -27,7 +27,7 @@
 
   column_options = []
 
-  column_options << {:caption=>"I",                :data=>proc{|rec| rec.inst_id},                    :title=>'RAC instance ID'}
+  column_options << {:caption=>"I",                :data=>proc{|rec| rec.inst_id},                    :title=>'RAC instance ID'} if PanoramaConnection.rac?
   column_options << {:caption=>'Con. ID',           :data=>proc{|rec| fn(rec.con_id)},                 :title=>"Container-ID for pluggable database", :data_title=>proc{|rec| "%t\nContainer name = '#{rec.container_name}'"}} if get_current_database[:cdb]
 
   column_options.concat(

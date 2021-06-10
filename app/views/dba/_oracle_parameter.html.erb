@@ -16,7 +16,7 @@
 
 column_options = []
 
-  column_options << {:caption=>"I",                 :data=>proc{|rec| rec.instance},                       :title=>"Instance-ID"}
+  column_options << {:caption=>"I",                 :data=>proc{|rec| rec.instance},                       :title=>"Instance-ID"} if PanoramaConnection.rac?
   column_options << {:caption=>"ID",                :data=>proc{|rec| formattedNumber(rec.id)},            :title=>"Parameter-ID", :align=>"right"}  unless @reduced_columns
   column_options << {:caption=>"Type",              data: list_type,                                       :title=>"Parameter type"}  unless @reduced_columns
   column_options << {:caption=>"Name",              :data=>proc{|rec| rec.name},                           :title=>"Parameter name"}

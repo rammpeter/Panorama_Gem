@@ -21,8 +21,8 @@
 //   Weitere Einstellungen fuer options
 //      yaxis:          { min: 0 }              // Minimaler Wert
 
-    function plot_diagram(unique_id, plot_area_id, caption, data_array, options){
-    var p = new plot_diagram_class(unique_id, plot_area_id, caption, data_array, options);
+function plot_diagram(unique_id, plot_area_id, caption, data_array, options){
+    let p = new plot_diagram_class(unique_id, plot_area_id, caption, data_array, options);
     p.initialize();
     return p;
 }
@@ -182,7 +182,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
         jQuery('#'+canvas_id).contextMenu(context_menu_id, {
             menuStyle: {  width: '330px' },
             bindings:   bindings,
-            onContextMenu : function(event, menu)                                   // dynamisches Anpassen des Context-Menü
+            onContextMenu : function(event, menu)                               // dynamisches Anpassen des Context-Menü
             {
                 var cell = $(event.target);
                 return true;
@@ -190,8 +190,13 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
         });
 
 
-        this.registerLegend();  // erstmaliger Aufruf, des weiteren neuer Aufruf nach Resize
+        this.registerLegend();                                                  // erstmaliger Aufruf, des weiteren neuer Aufruf nach Resize
+        return plot;                                                            // get the original flot chart
     };   // end initialize
+
+    this.get_plot = function(){
+        return plot;
+    }
 
 
     function pad2(number){          // Vornullen auffuellen für Datum etc.

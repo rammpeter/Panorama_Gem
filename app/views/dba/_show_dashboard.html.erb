@@ -55,7 +55,7 @@
     //$('#<%= @submit_id %>').click();                                          // call subdialog at first open
 
     function hours_to_cover_changed(){
-        dashboard_data = undefined;                                             // Ensure whole dashboard data is refreshed now to other hours_to_cover
+        discard_dashboard_data();                                               // Ensure whole dashboard data is refreshed now to other hours_to_cover
         var selected = $('#<%= @refresh_cycle_id %>').children("option:selected").val();
         if (selected != '0'){
             submit_refresh();
@@ -64,9 +64,11 @@
 
     function refresh_cycle_changed(){
         var selected = $('#<%= @refresh_cycle_id %>').children("option:selected").val();
-        if (selected == '0')
+        if (selected == '0') {
             $('#<%= @refresh_id %>').attr('type', 'submit');
-        else {
+            if (dashboard_data !== undefined)
+                dashboard_data.cancel_timeout();
+        } else {
             $('#<%= @refresh_id %>').attr('type', 'hidden');
             submit_refresh();
         }
@@ -75,7 +77,7 @@
     function submit_refresh(){
         var hours_to_cover          = $('#<%= @hours_to_cover_id %>').children("option:selected").val();
         var refresh_cycle_minutes   = $('#<%= @refresh_cycle_id %>').children("option:selected").val();
-        refresh_dashboard('<%= @unique_id %>', '<%= @wait_class_canvas_id %>', '<%= @top_session_sql_id %>', '<%= @update_area %>', hours_to_cover, refresh_cycle_minutes, '<%= @refresh_cycle_id %>');
+        refresh_dashboard('<%= @unique_id %>', '<%= @wait_class_canvas_id %>', '<%= @top_session_sql_id %>', '<%= @update_area %>', hours_to_cover, refresh_cycle_minutes, '<%= @refresh_cycle_id %>', '<%= @refresh_id %>');
         jQuery('#<%= @update_area %>').html('');
         return false;
     }

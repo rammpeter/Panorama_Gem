@@ -23,7 +23,7 @@
   end
 
   column_options = []
-  column_options << {caption: 'I',                  data: proc{|rec| rec.inst_id},                                title: "Instance-ID"}
+  column_options << {caption: 'I',                  data: proc{|rec| rec.inst_id},                                title: "Instance-ID"} if PanoramaConnection.rac?
   column_options << {caption: 'Resource name',      data: proc{|rec| rec.resource_name},                          title: "Resource name"}
   column_options << {caption: 'Current util.',      data: proc{|rec| fn(rec.current_utilization)},                title: "Number of (resources, locks, or processes) currently being used", align: :right}
   column_options << {caption: 'Current util. %',    data: proc{|rec| show_pct.call(rec, rec.current_utilization)},title: "Percentage of current utilization compared to initial allocation", align: :right}
