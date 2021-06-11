@@ -40,7 +40,7 @@ module HtmlHelper
   end
 
   # Select DBID from different sources
-  def dbid_selection
+  def dbid_selection(select_element_id: nil, onchange: nil)
     result = ''
     dbids = [{dbid: PanoramaConnection.dbid, title: "DBID of instance / container DB"}]
     current_dbids = Set[PanoramaConnection.dbid]
@@ -68,16 +68,15 @@ module HtmlHelper
       end
     end
 
-    if dbids.count > 1                                                          # Don't show choice if only one DBID available
-      result << "<div class='flex-row-element' title='The requested info can be recorded for different database IDs as well as global and per PDB.\nSelect for which DBID values should be to evaluated.'>"
-      result << "  <label>DB-ID</label>"
-      result << "  <select name='dbid'>"
-      dbids.each do |d|
-        result << "    <option value='#{d[:dbid]}'#{" selected" if d[:dbid] == get_dbid}>#{d[:title]} (#{d[:dbid]})</option>"
-      end
-      result << "</select>"
-      result << "</div>"
+    # Don't show choice if only one DBID available
+    result << "<div class='flex-row-element' #{"style='display:none;'" if dbids.count == 1 } title='The requested info can be recorded for different database IDs as well as global and per PDB.\nSelect for which DBID values should be to evaluated.'>"
+    result << "  <label>DB-ID</label>"
+    result << "  <select name='dbid' #{"id='#{select_element_id}'" if select_element_id} #{"onchange='#{onchange}'" if onchange}>"
+    dbids.each do |d|
+      result << "    <option value='#{d[:dbid]}'#{" selected" if d[:dbid] == get_dbid}>#{d[:title]} (#{d[:dbid]})</option>"
     end
+    result << "</select>"
+    result << "</div>"
 
     result.html_safe
   end

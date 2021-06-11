@@ -3,6 +3,7 @@
   @submit_id            = get_unique_area_id
   @refresh_id           = get_unique_area_id
   @form_id              = get_unique_area_id
+  @dbid_id              = get_unique_area_id
   @rac_instanc_id       = get_unique_area_id
   @hours_to_cover_id    = get_unique_area_id
   @refresh_cycle_id     = get_unique_area_id
@@ -16,6 +17,8 @@
       <b>Realtime Dashboard</b>
       <%= submit_tag('', id: @submit_id, style: "visibility: hidden") %>
     </div>
+
+    <%= dbid_selection(select_element_id: @dbid_id, onchange: "dbid_changed();") %>
 
     <% if PanoramaConnection.rac? %>
       <div class="flex-row-element" title="Filter dashboard info for a specific RAC instance">
@@ -66,8 +69,16 @@
 
 <script type="application/javascript">
 
+
     function refresh_cycle_selected(){
         return $('#<%= @refresh_cycle_id %>').children("option:selected").val();
+    }
+
+    function dbid_changed(){
+        discard_dashboard_data();                                               // Ensure whole dashboard data is refreshed now to other hours_to_cover
+        if (refresh_cycle_selected() != '0'){
+            submit_refresh();
+        }
     }
 
     function instance_changed(){
@@ -96,6 +107,7 @@
     }
 
     function submit_refresh(){
+        var dbid                    = $('#<%= @dbid_id %>').children("option:selected").val();
         var hours_to_cover          = $('#<%= @hours_to_cover_id %>').children("option:selected").val();
         var refresh_cycle_minutes   = refresh_cycle_selected();
         var rac_instance            = null;
@@ -110,6 +122,7 @@
             '<%= @wait_class_canvas_id %>',
             '<%= @top_session_sql_id %>',
             '<%= @update_area %>',
+            dbid,
             rac_instance,
             hours_to_cover,
             refresh_cycle_minutes,

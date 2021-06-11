@@ -3,11 +3,12 @@ var dashboard_data = undefined;                                                 
 
 
 class DashboardData {
-    constructor(unique_id, canvas_id, top_session_sql_id, update_area_id, rac_instance, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id, options={}){
+    constructor(unique_id, canvas_id, top_session_sql_id, update_area_id, dbid, rac_instance, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id, options={}){
         this.unique_id                  = unique_id;
         this.canvas_id                  = canvas_id;
         this.top_session_sql_id         = top_session_sql_id;
         this.update_area_id             = update_area_id;
+        this.dbid                       = dbid;
         this.rac_instance               = rac_instance;                         // null if not used
         this.hours_to_cover             = hours_to_cover;
         this.refresh_cycle_minutes      = refresh_cycle_minutes;
@@ -17,7 +18,7 @@ class DashboardData {
         this.last_refresh_time_string   = null;
         this.current_timeout            = null;                                 // current active timeout
         this.selection_refresh_pending  = false;                                // is there a request in transit for selection? Suppress multiple events
-
+        this.diagram                    = null;                                 // instance of plot_diagram_class
         const default_options = {
             series: {stack: true, lines: {show: true, fill: true}, points: {show: false}},
             canvas_height: 250,
@@ -198,15 +199,37 @@ class DashboardData {
 
         // format label in legend
         this.options.legend.labelFormatter = (label, series) => {
-            let label_ajax_call = "alert('ASH-table for "+label+" coming soon here');"
-            return '<a href="#" onclick="'+label_ajax_call+' return false;">' + label + '</a>';
+
+            let label_ajax_call = "" +
+                "let json_data                       = { groupfilter: {}};\n" +
+                "json_data.groupfilter.DBID          = "+this.dbid+";\n" +
+                "json_data.groupfilter['Wait-Class'] = '"+label+"';\n" +
+                "json_data.groupby                   = 'Event';\n" +
+                "json_data.xstart_ms                 = "+min_time_ms+";\n" +
+                "json_data.xend_ms                   = "+max_time_ms+";\n" +
+                "json_data.update_area               = '"+this.update_area_id+"';\n"
+            ;
+
+            // use start and ent time of selection if selected
+            label_ajax_call += "let selection = jQuery('#"+sub_canvas_id+"').data('plot_diagram').get_plot().getSelection();\n";
+            label_ajax_call += "if (selection){\n"
+            label_ajax_call += "  json_data.xstart_ms = selection.xaxis.from;\n"
+            label_ajax_call += "  json_data.xend_ms = selection.xaxis.to;\n"
+            label_ajax_call += "}\n"
+
+            if (this.rac_instance)
+                label_ajax_call += "json_data.groupfilter.Instance = "+this.rac_instance+";\n"
+
+            label_ajax_call += "ajax_html('"+this.update_area_id+"', 'active_session_history', 'list_session_statistic_historic_grouping_with_ms_times', json_data);\n"
+
+            return '<a href="#" onclick="'+label_ajax_call+' return false;" title="Show details for this wait class grouped by wait event">' + label + '</a>';
         }
 
-        let diagram = plot_diagram(this.unique_id, sub_canvas_id, 'Wait classes of last '+this.hours_to_cover+' hours', this.ash_data_array, this.options);
+        this.diagram = plot_diagram(this.unique_id, sub_canvas_id, 'Wait classes of last '+this.hours_to_cover+' hours', this.ash_data_array, this.options);
 
         // set selection in chart to delta just added in diagram
         if (!initial_data_load)
-            diagram.get_plot().setSelection( { xaxis: { from: min_time_ms, to: max_time_ms}}, true);
+            this.diagram.get_plot().setSelection( { xaxis: { from: min_time_ms, to: max_time_ms}}, true);
 
         if (this.refresh_cycle_minutes != 0 && this.selected_refresh_cycle() != '0'){                     // not started with refresh cycle=off and refresh cycle not changed to off in the meantime
             this.log('timeout set');
@@ -259,7 +282,7 @@ class DashboardData {
 }
 
 // function to be called from Rails template
-refresh_dashboard = function(unique_id, canvas_id, top_session_sql_id, update_area_id, rac_instance, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id){
+refresh_dashboard = function(unique_id, canvas_id, top_session_sql_id, update_area_id, dbid, rac_instance, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id){
     if (dashboard_data !== undefined) {
         if (dashboard_data.canvas_id != canvas_id)                              // check if dashboard_data belongs to the current element
             discard_dashboard_data();                                           // throw away old content
@@ -268,7 +291,7 @@ refresh_dashboard = function(unique_id, canvas_id, top_session_sql_id, update_ar
     if (dashboard_data !== undefined) {
         dashboard_data.draw_with_new_refresh_cycle(canvas_id, hours_to_cover, refresh_cycle_minutes);
     } else {
-        dashboard_data = new DashboardData(unique_id, canvas_id, top_session_sql_id, update_area_id, rac_instance, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id);
+        dashboard_data = new DashboardData(unique_id, canvas_id, top_session_sql_id, update_area_id, dbid, rac_instance, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id);
         dashboard_data.draw_refreshed_data(canvas_id, 'init');
     }
 }
