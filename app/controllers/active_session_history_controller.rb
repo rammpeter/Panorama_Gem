@@ -99,8 +99,8 @@ class ActiveSessionHistoryController < ApplicationController
     json_data['xstart_ms']   = xstart_ms;
     json_data['xend_ms']     = xend_ms;
     json_data['update_area'] = '#{next_update_area_id}';
-    delete json_data.Min_Snap_ID;                                               // should be calculated again based on xstart_ms
-    delete json_data.Max_Snap_ID;                                               // should be calculated again based on xend_ms
+    delete json_data.groupfilter.Min_Snap_ID;                                   // should be calculated again based on xstart_ms
+    delete json_data.groupfilter.Max_Snap_ID;                                   // should be calculated again based on xend_ms
 
     ajax_html('#{next_update_area_id}', 'active_session_history', 'list_session_statistic_historic_grouping_with_ms_times', json_data);
     }"
