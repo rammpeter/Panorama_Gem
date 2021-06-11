@@ -27,7 +27,11 @@
 //                 shape: "bevel",
 //                 minSize: 4
 //      }
-//      plotselected_handler: function(start, end) with parameters as ms since 1970
+//      legend: {
+//                  labelFormatter: function with labelFormatter for legend: (label, series) => { return '<a href="#' + label + '">' + label + '</a>'; }
+//      }
+//      plotselected_handler:   function(start, end) with parameters as ms since 1970: (xstart, xend)=>{ ... }
+
 function plot_diagram(unique_id, plot_area_id, caption, data_array, options){
     let p = new plot_diagram_class(unique_id, plot_area_id, caption, data_array, options);
     p.initialize();
@@ -322,7 +326,7 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
             // Spalte zufügen für die Werte-Anzeige und für Schliesser
             legend_div.find("tr").each(function(index, elem){
                 var tr = jQuery(elem);
-                var legend_name = jQuery(tr.children('td')[1]).html();
+                var legend_name = jQuery(tr.children('td')[1]).text();          // strip possible decoration from labelFormatter
                 legend_indexes[legend_name] = index;                            // Position zum Name der Kurve in der Legende merken
                 tr.append("<td align='right' class='legend_value'></td>");
 

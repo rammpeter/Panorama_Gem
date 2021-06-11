@@ -196,6 +196,12 @@ class DashboardData {
             this.selection_refresh_pending = true;                              // suppress subsequent calls until ajax response is processed, set to false in Rails template _refresh_top_session_sql
         }
 
+        // format label in legend
+        this.options.legend.labelFormatter = (label, series) => {
+            let label_ajax_call = "alert('ASH-table for "+label+" coming soon here');"
+            return '<a href="#" onclick="'+label_ajax_call+' return false;">' + label + '</a>';
+        }
+
         let diagram = plot_diagram(this.unique_id, sub_canvas_id, 'Wait classes of last '+this.hours_to_cover+' hours', this.ash_data_array, this.options);
 
         // set selection in chart to delta just added in diagram
