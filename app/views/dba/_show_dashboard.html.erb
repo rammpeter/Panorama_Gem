@@ -3,6 +3,7 @@
   @submit_id            = get_unique_area_id
   @refresh_id           = get_unique_area_id
   @form_id              = get_unique_area_id
+  @rac_instanc_id       = get_unique_area_id
   @hours_to_cover_id    = get_unique_area_id
   @refresh_cycle_id     = get_unique_area_id
   @wait_class_canvas_id = get_unique_area_id
@@ -15,6 +16,18 @@
       <b>Realtime Dashboard</b>
       <%= submit_tag('', id: @submit_id, style: "visibility: hidden") %>
     </div>
+
+    <% if PanoramaConnection.rac? %>
+      <div class="flex-row-element" title="Filter dashboard info for a specific RAC instance">
+        RAC instance
+        <select name="instance" id="<%= @rac_instanc_id %>" onchange="instance_changed();">
+          <option value="0" selected>[All]</option>
+          <% PanoramaConnection.sql_select_all("SELECT Inst_ID, Instance_Name FROM gv$Instance ORDER BY Inst_ID").each do |i| %>
+            <option value="<%= i.inst_id %>"><%= "#{i.inst_id} #{i.instance_name}" %></option>
+          <% end %>
+        </select>
+      </div>
+    <% end %>
 
     <div class="flex-row-element" title="Show data for the choosen time period up to now">
       Time to cover
@@ -52,19 +65,27 @@
 <div id="<%= @update_area %>"></div>
 
 <script type="application/javascript">
-    //$('#<%= @submit_id %>').click();                                          // call subdialog at first open
+
+    function refresh_cycle_selected(){
+        return $('#<%= @refresh_cycle_id %>').children("option:selected").val();
+    }
+
+    function instance_changed(){
+        discard_dashboard_data();                                               // Ensure whole dashboard data is refreshed now to other hours_to_cover
+        if (refresh_cycle_selected() != '0'){
+            submit_refresh();
+        }
+    }
 
     function hours_to_cover_changed(){
         discard_dashboard_data();                                               // Ensure whole dashboard data is refreshed now to other hours_to_cover
-        var selected = $('#<%= @refresh_cycle_id %>').children("option:selected").val();
-        if (selected != '0'){
+        if (refresh_cycle_selected() != '0'){
             submit_refresh();
         }
     }
 
     function refresh_cycle_changed(){
-        var selected = $('#<%= @refresh_cycle_id %>').children("option:selected").val();
-        if (selected == '0') {
+        if (refresh_cycle_selected() == '0') {
             $('#<%= @refresh_id %>').attr('type', 'submit');
             if (dashboard_data !== undefined)
                 dashboard_data.cancel_timeout();
@@ -76,8 +97,25 @@
 
     function submit_refresh(){
         var hours_to_cover          = $('#<%= @hours_to_cover_id %>').children("option:selected").val();
-        var refresh_cycle_minutes   = $('#<%= @refresh_cycle_id %>').children("option:selected").val();
-        refresh_dashboard('<%= @unique_id %>', '<%= @wait_class_canvas_id %>', '<%= @top_session_sql_id %>', '<%= @update_area %>', hours_to_cover, refresh_cycle_minutes, '<%= @refresh_cycle_id %>', '<%= @refresh_id %>');
+        var refresh_cycle_minutes   = refresh_cycle_selected();
+        var rac_instance            = null;
+        if ($('#<%= @rac_instanc_id %>').length > 0){                           // Instance selectable
+            rac_instance = $('#<%= @rac_instanc_id %>').children("option:selected").val();
+            if (rac_instance == '0')
+                rac_instance = null;
+        }
+
+        refresh_dashboard(
+            '<%= @unique_id %>',
+            '<%= @wait_class_canvas_id %>',
+            '<%= @top_session_sql_id %>',
+            '<%= @update_area %>',
+            rac_instance,
+            hours_to_cover,
+            refresh_cycle_minutes,
+            '<%= @refresh_cycle_id %>',
+            '<%= @refresh_id %>'
+        );
         jQuery('#<%= @update_area %>').html('');
         return false;
     }

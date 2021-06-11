@@ -3,11 +3,12 @@ var dashboard_data = undefined;                                                 
 
 
 class DashboardData {
-    constructor(unique_id, canvas_id, top_session_sql_id, update_area_id, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id, options={}){
+    constructor(unique_id, canvas_id, top_session_sql_id, update_area_id, rac_instance, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id, options={}){
         this.unique_id                  = unique_id;
         this.canvas_id                  = canvas_id;
         this.top_session_sql_id         = top_session_sql_id;
         this.update_area_id             = update_area_id;
+        this.rac_instance               = rac_instance;                         // null if not used
         this.hours_to_cover             = hours_to_cover;
         this.refresh_cycle_minutes      = refresh_cycle_minutes;
         this.refresh_cycle_id           = refresh_cycle_id;
@@ -68,7 +69,7 @@ class DashboardData {
                 this.process_load_refresh_ash_data_success(data, xhr);
             },
             url: 'dba/refresh_dashboard_ash?window_width='+jQuery(window).width()+'&browser_tab_id='+browser_tab_id,
-            data: { 'hours_to_cover': this.hours_to_cover, 'last_refresh_time_string': this.last_refresh_time_string}
+            data: { 'instance': this.rac_instance, 'hours_to_cover': this.hours_to_cover, 'last_refresh_time_string': this.last_refresh_time_string}
         });
     }
 
@@ -209,7 +210,7 @@ class DashboardData {
 
     load_top_sessions_and_sql(start_range_ms=null, end_range_ms=null){
         ajax_html(this.top_session_sql_id, 'dba', 'refresh_top_session_sql',
-            {
+            {   'instance':                 this.rac_instance,
                 'hours_to_cover':           this.hours_to_cover,
                 'last_refresh_time_string': this.last_refresh_time_string,
                 'start_range_ms':           start_range_ms,
@@ -253,7 +254,7 @@ class DashboardData {
 }
 
 // function to be called from Rails template
-refresh_dashboard = function(unique_id, canvas_id, top_session_sql_id, update_area_id, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id){
+refresh_dashboard = function(unique_id, canvas_id, top_session_sql_id, update_area_id, rac_instance, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id){
     if (dashboard_data !== undefined) {
         if (dashboard_data.canvas_id != canvas_id)                              // check if dashboard_data belongs to the current element
             discard_dashboard_data();                                           // throw away old content
@@ -262,7 +263,7 @@ refresh_dashboard = function(unique_id, canvas_id, top_session_sql_id, update_ar
     if (dashboard_data !== undefined) {
         dashboard_data.draw_with_new_refresh_cycle(canvas_id, hours_to_cover, refresh_cycle_minutes);
     } else {
-        dashboard_data = new DashboardData(unique_id, canvas_id, top_session_sql_id, update_area_id,  hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id);
+        dashboard_data = new DashboardData(unique_id, canvas_id, top_session_sql_id, update_area_id, rac_instance, hours_to_cover, refresh_cycle_minutes, refresh_cycle_id, refresh_button_id);
         dashboard_data.draw_refreshed_data(canvas_id, 'init');
     }
 }

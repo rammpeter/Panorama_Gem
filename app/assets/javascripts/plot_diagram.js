@@ -469,7 +469,6 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
 
 function resize_plot_diagrams(){
     jQuery('.plot_diagram').each(function(index, element) {
-            console.log('resizeDiagram');
             var Container = jQuery(element);
             Container.data('plot_diagram').registerLegend();
         }

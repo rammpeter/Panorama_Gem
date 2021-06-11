@@ -1771,19 +1771,30 @@ class DbaController < ApplicationController
   end
 
   def refresh_dashboard_ash
+    instance                  = prepare_param_instance
     hours_to_cover            = prepare_param(:hours_to_cover).to_f
     last_refresh_time_string  = prepare_param :last_refresh_time_string
 
     where_string_inner = ''
     where_string_outer = ''
-    where_values = []
+    where_values_inner = []
+    where_values_outer = []
 
     if last_refresh_time_string
       where_string_outer << "WHERE Sample_Time_String > ?"
-      where_values << last_refresh_time_string
+      where_values_outer << last_refresh_time_string
     else
       where_string_inner << "WHERE Sample_Time > SYSDATE - ?/24"
-      where_values << hours_to_cover
+      where_values_inner << hours_to_cover
+    end
+
+    if instance
+      if where_string_inner == ''
+        where_string_inner << "WHERE Inst_ID = ?"
+      else
+        where_string_inner << " AND Inst_ID = ?"
+      end
+      where_values_inner << instance
     end
 
     ash_data = sql_select_all ["\
@@ -1796,12 +1807,13 @@ class DbaController < ApplicationController
       #{where_string_outer}
       GROUP BY Sample_Time_String, Wait_Class
       ORDER BY Sample_Time_String, Wait_Class
-    "].concat(where_values)
+    "].concat(where_values_inner).concat(where_values_outer)
 
     render json: ash_data
   end
 
   def refresh_top_session_sql
+    instance                  = prepare_param_instance
     hours_to_cover            = prepare_param(:hours_to_cover).to_f
     last_refresh_time_string  = prepare_param :last_refresh_time_string
     start_range_ms            = prepare_param(:start_range_ms).to_i
@@ -1823,6 +1835,11 @@ class DbaController < ApplicationController
         where_string << "WHERE h.Sample_Time > SYSDATE - ?/24"
         where_values << hours_to_cover
       end
+    end
+
+    if instance
+      where_string << " AND h.Inst_ID = ?"
+      where_values << instance
     end
 
     @top_sessions = sql_select_all ["\
