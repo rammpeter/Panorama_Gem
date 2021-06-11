@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 # require 'jruby/profiler'
+require 'json'
 
 class ActiveSessionHistoryController < ApplicationController
   # include ApplicationHelper       # application_helper leider nicht automatisch inkludiert bei Nutzung als Engine in anderer App
@@ -90,6 +91,20 @@ class ActiveSessionHistoryController < ApplicationController
                                                    :group_seconds=>group_seconds, :groupby=>@groupby, :filter=>@filter
     )}"
 
+    next_update_area_id = get_unique_area_id
+
+    plotselected_handler = "(xstart_ms,xend_ms)=>{
+    let json_data            = #{ {:groupfilter => @groupfilter}.to_json.html_safe };
+    json_data['groupby']     = '#{@groupby}';
+    json_data['xstart_ms']   = xstart_ms;
+    json_data['xend_ms']     = xend_ms;
+    json_data['update_area'] = '#{next_update_area_id}';
+    delete json_data.Min_Snap_ID;                                               // should be calculated again based on xstart_ms
+    delete json_data.Max_Snap_ID;                                               // should be calculated again based on xend_ms
+
+    ajax_html('#{next_update_area_id}', 'active_session_history', 'list_session_statistic_historic_grouping_with_ms_times', json_data);
+    }"
+
     plot_top_x_diagramm(:data_array         => singles,
                         :time_key_name      => 'start_sample',
                         :curve_key_name     => 'criteria',
@@ -97,7 +112,9 @@ class ActiveSessionHistoryController < ApplicationController
                         :top_x              => 10,
                         :caption            => diagram_caption,
                         :null_points_cycle  => group_seconds,
-                        :update_area        => params[:update_area]
+                        :update_area        => params[:update_area],
+                        plotselected_handler: plotselected_handler,
+                        next_update_area_id: next_update_area_id
     )
   end # list_session_statistic_historic_timeline
 
@@ -412,6 +429,16 @@ class ActiveSessionHistoryController < ApplicationController
 
     #profile_printer = JRuby::Profiler::FlatProfilePrinter.new(profile_data)
     #profile_printer.printProfile(STDOUT)
+  end
+
+  # called from javascript with timestamps in ms since 1970
+  def list_session_statistic_historic_grouping_with_ms_times
+    xstart_ms = prepare_param_int :xstart_ms
+    xend_ms   = prepare_param_int :xend_ms
+
+    params[:groupfilter][:time_selection_start] = localeDateTime(Time.at(xstart_ms/1000).utc)
+    params[:groupfilter][:time_selection_end]   = localeDateTime(Time.at(xend_ms/1000).utc)
+    list_session_statistic_historic_grouping                                    # call with times as strings
   end
 
   # Auswahl von/bis

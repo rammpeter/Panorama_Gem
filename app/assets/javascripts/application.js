@@ -533,10 +533,6 @@ function wait_class_color(wait_class){
         case 'User I/O':
             return 'rgb(0,0,179)';
             break;
-
-
-
-
         default:
             return null;
     }

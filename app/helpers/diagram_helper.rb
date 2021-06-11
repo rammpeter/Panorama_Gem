@@ -14,16 +14,20 @@ module DiagramHelper
   #   :caption:           Überschrift des Diagrammes
   #   :update_area:       DIV zur Darstellung des Diagrammes
   #   :null_points_cycle: Zyklus in Sekunden, aller derer ein 0-Punkt eingefügt wird, wenn nicht ein valider Wert existiert, keine Anwendung der Funktion, wenn nicht angegeben
+  #   :plotselected_handler: Javascript function with start end end in ms as parameter: (x,y)=>{alert(x+' '+y);}
+  #   :next_update_area_id:  Next target div for actions
 
   def plot_top_x_diagramm(param)
-    origin_data_array = param[:data_array]
-    time_key_name     = param[:time_key_name]
-    curve_key_name    = param[:curve_key_name]
-    value_key_name    = param[:value_key_name]
-    top_x             = param[:top_x]
-    caption           = param[:caption]
-    update_area       = param[:update_area]
-    null_points_cycle = param[:null_points_cycle]
+    origin_data_array     = param[:data_array]
+    time_key_name         = param[:time_key_name]
+    curve_key_name        = param[:curve_key_name]
+    value_key_name        = param[:value_key_name]
+    top_x                 = param[:top_x]
+    caption               = param[:caption]
+    update_area           = param[:update_area]
+    null_points_cycle     = param[:null_points_cycle]
+    plotselected_handler  = param[:plotselected_handler]
+    next_update_area_id   = param[:next_update_area_id]
 
 
     # Sortieren wenn die gesamte Menge an Daten bereits vor der Iteration bekannt ist (wie im Array)
@@ -122,7 +126,12 @@ module DiagramHelper
     output << "var options = {plot_diagram: {locale: '#{get_locale}'},
                               yaxis: { min: 0 },
                               legend:{sorted: 'reverse'}
-                             };"
+                             };\n"
+    if plotselected_handler
+      output << "options.selection = {mode: 'x', color: 'gray', shape: 'bevel', minSize: 4};\n"
+      output << "options.plotselected_handler = #{plotselected_handler};"
+    end
+
     output << "plot_diagram('#{unique_area_id}', '#{plot_area_id}', '#{caption}', data_array, options);"
 
     output << "});"
@@ -130,6 +139,7 @@ module DiagramHelper
     respond_to do |format|
       format.html {render :html => "
         <div id='#{plot_area_id}'></div>
+        #{ "<div id='#{next_update_area_id}'></div>" if next_update_area_id}
         <script type='text/javascript'>
         #{output}
         </script>

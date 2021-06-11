@@ -187,20 +187,20 @@ class DashboardData {
         let sub_canvas_id = this.canvas_id+'_sub';
         $('#'+this.canvas_id).append('<div id="'+sub_canvas_id+'"></div>');
 
+        // react on selection in chart
+        this.options.plotselected_handler = (xstart, xend)=>{
+            this.set_refresh_cycle_off();
+            if (!this.selection_refresh_pending)
+                this.log("Refreshing selection");
+            this.load_top_sessions_and_sql(xstart, xend);
+            this.selection_refresh_pending = true;                              // suppress subsequent calls until ajax response is processed, set to false in Rails template _refresh_top_session_sql
+        }
+
         let diagram = plot_diagram(this.unique_id, sub_canvas_id, 'Wait classes of last '+this.hours_to_cover+' hours', this.ash_data_array, this.options);
 
         // set selection in chart to delta just added in diagram
         if (!initial_data_load)
             diagram.get_plot().setSelection( { xaxis: { from: min_time_ms, to: max_time_ms}}, true);
-
-        // react on selection in chart
-        $('#'+sub_canvas_id).bind( "plotselected", ( event, ranges)=>{
-            this.set_refresh_cycle_off();
-            if (!this.selection_refresh_pending)
-                this.log("Refreshing");
-                this.load_top_sessions_and_sql(ranges.xaxis.from, ranges.xaxis.to);
-            this.selection_refresh_pending = true;                              // suppress subsequent calls until ajax response is processed, set to false in Rails template _refresh_top_session_sql
-        });
 
         if (this.refresh_cycle_minutes != 0 && this.selected_refresh_cycle() != '0'){                     // not started with refresh cycle=off and refresh cycle not changed to off in the meantime
             this.log('timeout set');

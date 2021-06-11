@@ -20,7 +20,14 @@
 
 //   Weitere Einstellungen fuer options
 //      yaxis:          { min: 0 }              // Minimaler Wert
-
+//      selection: {
+//                 mode: "x",
+//                 color: 'gray',
+//                 //shape: "round" or "miter" or "bevel",
+//                 shape: "bevel",
+//                 minSize: 4
+//      }
+//      plotselected_handler: function(start, end) with parameters as ms since 1970
 function plot_diagram(unique_id, plot_area_id, caption, data_array, options){
     let p = new plot_diagram_class(unique_id, plot_area_id, caption, data_array, options);
     p.initialize();
@@ -92,6 +99,13 @@ function plot_diagram_class(unique_id, plot_area_id, caption, data_array, option
 
         let canvas = jQuery('#'+canvas_id);
         plot = jQuery.plot(canvas, data_array, options);     // Ausgabe des Diagrammes auf Canvas
+
+        // bind plotselected handler to canvas for horizontal (x) selection
+        if (options.plotselected_handler){
+            canvas.bind( "plotselected", ( event, ranges)=>{
+                options.plotselected_handler(ranges.xaxis.from, ranges.xaxis.to);
+            });
+        }
 
         // canvas durch Schieber am unteren Ende horizontal resizable gestalten
         canvas.resizable({});
