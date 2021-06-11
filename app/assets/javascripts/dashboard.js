@@ -221,7 +221,6 @@ class DashboardData {
                 'last_refresh_time_string': this.last_refresh_time_string,
                 'start_range_ms':           start_range_ms,
                 'end_range_ms':             end_range_ms,
-                'update_area_id':           this.update_area_id
             });
     }
 

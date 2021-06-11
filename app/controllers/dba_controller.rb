@@ -1818,7 +1818,6 @@ class DbaController < ApplicationController
     last_refresh_time_string  = prepare_param :last_refresh_time_string
     start_range_ms            = prepare_param(:start_range_ms).to_i
     end_range_ms              = prepare_param(:end_range_ms).to_i
-    @update_area_id           = prepare_param :update_area_id
 
     where_string = ''
     where_values = []

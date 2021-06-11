@@ -1,7 +1,9 @@
 <%
+  @update_area = get_unique_area_id
+
   link_session_or_history = proc do |inst_id, session_id, serial_no, session_alive|
     if session_alive
-      link_session_details(@update_area_id, inst_id, session_id, serial_no, additional_onclick_js: "dashboard_data.set_refresh_cycle_off();")
+      link_session_details(@update_area, inst_id, session_id, serial_no, additional_onclick_js: "dashboard_data.set_refresh_cycle_off();")
     else
       "TODO: ASH for session"
     end
@@ -12,7 +14,7 @@
   end
 
   link_session_sql = proc do |rec|
-    link_sql_id(@update_area_id, rec.qinst_id, rec.max_sql_id, childno: rec.max_sql_child_number, additional_onclick_js: "dashboard_data.set_refresh_cycle_off();")
+    link_sql_id(@update_area, rec.qinst_id, rec.max_sql_id, childno: rec.max_sql_child_number, additional_onclick_js: "dashboard_data.set_refresh_cycle_off();")
   end
 
   column_options_sessions = []
@@ -28,7 +30,7 @@
   column_options_sessions << {caption: 'Action',           data: proc{|rec| rec.max_action},            title: "Action identifier with highest wait time in considered time period", data_title: proc{|rec| "%t\n\n#{rec.max_action}"}}
 
   link_sql_sql = proc do |rec|
-    link_sql_id(@update_area_id, rec.inst_id, rec.sql_id, childno: rec.sql_child_number, additional_onclick_js: "dashboard_data.set_refresh_cycle_off();")
+    link_sql_id(@update_area, rec.inst_id, rec.sql_id, childno: rec.sql_child_number, additional_onclick_js: "dashboard_data.set_refresh_cycle_off();")
   end
 
   link_sql_session = proc do |rec|
@@ -66,3 +68,5 @@
 <script type="application/javascript">
   dashboard_data.selection_refresh_pending = false;                             // next request may start, suppress multiple events for same selection
 </script>
+
+<div id="<%= @update_area %>"></div>
