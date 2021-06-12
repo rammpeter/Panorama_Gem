@@ -622,7 +622,7 @@ function SlickGridExtended(container_id, options){
     /**
      * Calculate row height
      */
-    this.calculate_row_height= function(columns){
+    this.calculate_row_height= function(columns, options){
         const row_height_addition = 2;                                          // 1px border-top + 1px border-bottom  hinzurechnen
         var row_height = options['rowHeight']
 
@@ -792,11 +792,11 @@ function SlickGridExtended(container_id, options){
         var needs_horizontal_scrollbar = current_table_width-scrollbarWidth() > current_grid_width - 1;
         trace_log(caller+": needs_horizontal_scrollbar = "+ needs_horizontal_scrollbar);
 
-        var row_height = this.calculate_row_height(columns);                    // get row height based on previously set column width
+        var row_height = this.calculate_row_height(columns, options);       // get row height based on previously set column width
 
         options['headerHeight'] = this.calculate_header_height(columns);
 
-        var total_height = options['headerHeight']                              // innere Höhe eines Headers
+        var total_height = options['headerHeight']                          // innere Höhe eines Headers
             + 8                                                             // padding top und bottom=4 des Headers
             + 2                                                             // border=1 top und bottom des headers
             + (row_height * this.grid.getDataLength() )                     // Höhe aller Datenzeilen
@@ -949,7 +949,6 @@ function SlickGridExtended(container_id, options){
                 return true;
             }
         });
-        //thiz.gridContainer.longpress(function() {alert("Hugo");}, null, 2000);
     }
 
     /**

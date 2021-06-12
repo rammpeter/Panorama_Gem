@@ -12,3 +12,4 @@ test/dummy/client_info.store/*
 test/dummy/config/secrets.yml
 /test/dummy/public/assets/*
 /test/dummy/node_modules/.yarn-integrity
+/vendor/assets/javascripts/d3.v6.js

@@ -36,7 +36,7 @@ class DashboardData {
     }
 
     log(content){
-        if (true)
+        if (false)
             console.log(content);
     }
 
