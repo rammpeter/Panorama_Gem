@@ -225,7 +225,11 @@ class DashboardData {
             return '<a href="#" onclick="'+label_ajax_call+' return false;" title="Show details for this wait class grouped by wait event">' + label + '</a>';
         }
 
-        this.diagram = plot_diagram(this.unique_id, sub_canvas_id, 'Wait classes of last '+this.hours_to_cover+' hours', this.ash_data_array, this.options);
+        let wait_string = ''+this.hours_to_cover+' hours';
+        if (this.hours_to_cover < 1)
+            wait_string = ''+Math.round(this.hours_to_cover*60)+ ' minutes';
+
+        this.diagram = plot_diagram(this.unique_id, sub_canvas_id, 'Number of active sessions within last '+wait_string+' grouped by wait class', this.ash_data_array, this.options);
 
         // set selection in chart to delta just added in diagram
         if (!initial_data_load)
