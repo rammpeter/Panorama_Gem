@@ -753,7 +753,7 @@
     Auch unqiue Indizes lassen sich local partitionieren, wenn der Partition-Key in identischer Folge Bestandteil des Index ist.
     Somit kann auch für Zugriffe über diese Indizes Partition-Pruning auf Index-Ebene genutzt werden sowie möglicherweise der BLevel des Index reduziert werden.
 
-  dragnet_helper_13_name:                                   Local-Partitionierung mit Overhead im Zugriff
+  dragnet_helper_13_name:                                   Local-Partitionierung von Indizes mit Overhead im Zugriff
   dragnet_helper_13_desc: |-
     Local-Partitionierung nach Spalten, die nicht im Index indiziert sind, führt zum Zugriff auf alle Partitionen des Index bei Range Scan oder Unique Scan.
     Bei frequenter Nutzung des Index führt dies bei großen Partitionsanzahlen zu unnötig hohen Buffer Gets.
@@ -1655,6 +1655,18 @@
   dragnet_helper_156_param1_hint:                           Anzahl Parses in % im Verhältnis zu Anzahl Executions
 
   dragnet_helper_157_name:                                  JDBC Client Statement Cache vermutlich nicht genutzt (Auswertung der AWR-Historie)
+
+  dragnet_helper_158_desc: |-
+    Bei aufwändigem Fll Table Scan mit Nutzung von Filtern kann Range- oder List-Partitionierung die Laufzeit signifikant reduzieren.
+    Besonders ab Release 12.2 erlaubt die automatische List-Partitionierung die einfache Erzeugung weiterer Partitionen ohne Operation-Aufwand.
+    Bedingungen für eine sinnvolle Partitionierung nach den genutzten FilterKriterien sind:
+    - der potentielle Partition Key sollte das Resultat signifikant einschränken ( z.B. auf weniger als 3/4 bei Nutzung als Filterbedingung)
+    - die resultierende Anzahl Partitionen sollte handhabbar sein (Oracle's absolutes Maximum für Partitionen einer Tabelle ist 1048575, das Optimum ist jedoch deutlich kleiner)
+    - die Anzahl Records in einer Partition sollte hoch genug sein (z.B. mehr als 10000 .. 100000), andererseits erfüllt möglicherweise ein Index besser die Anforderungen
+    - die Fulterbedingung sollte deterministisch sein (Voraussetzung für die Nutzung als Partitionierungskriterium)
+  dragnet_helper_158_name:                                  Vorschlag zur Partitionierung bei aufwändigen Full Table Scans mit Filtern
+  dragnet_helper_158_param_1_hint:                          Minimale Wartezeit in Sekunden auf Full Table Scan auf dem Objekt um in Selektion berücksichtigt zu werden
+  dragnet_helper_158_param_1_name:                          Minimale Wartezeit auf Full Table Scan
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 

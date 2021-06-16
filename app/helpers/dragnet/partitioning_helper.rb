@@ -86,7 +86,7 @@ This way partition pruning may be used for access on unique indexes plus possibl
                       ORDER BY t.Num_Rows DESC NULLS LAST",
         },
         {
-            :name  => t(:dragnet_helper_13_name, :default=> 'Local-partitioning with overhead in access'),
+            :name  => t(:dragnet_helper_13_name, :default=> 'Local-partitioning of indexes with overhead in access'),
             :desc  => t(:dragnet_helper_13_desc, :default=> 'Local partitioning by not indexed columns leads to iterative access on all partitions of index during range scan or unique scan.
 For frequently used indexes with high partition count this may result in unnecessary high access on database buffers.
 Solution for such situations is global (not) partitioning of index.'),
@@ -159,7 +159,57 @@ Solution for such situations is global (not) partitioning of index.'),
             :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, title: t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
             ]
         },
-
+        {
+          :name  => t(:dragnet_helper_158_name, :default=> 'Partitioning suggestion for expensive full table scans with filters'),
+          :desc  => t(:dragnet_helper_158_desc, :default=> "If expensive full table scan is done with filter conditions than range or list partitioning by one or more of this filter conditions may significantly reduce runtime.
+Especially with release 12.2 and above automatic list partitioning lets you easy handle the creation of needed partitions without operation effort.
+Conditions for useful partitioning by these filters are:
+- The potential partition key should significantly reduce the result (e.g. to less than 3/4 if used as filter condition)
+- The resulting number of partitions should by manageable (Oracle's absolute maximum for partitions of a table is 1048575, but the optimal number is much smaller)
+- The number of records in a partition should be high enough (e.g. more than 10000 .. 100000), otherwhise it could be more sufficient to use an index
+- The filter condition should by deterministic (able to be used as partition criteria)
+"),
+          :sql=> "\
+SELECT h.SQL_ID, h.SQL_Plan_Line_ID \"SQL plan line id\", h.SQL_Plan_Hash_Value, h.Wait_Time_Sec \"Wait Time (Sec) for plan line id\",
+       LOWER(o.Owner)||'.'||o.Object_Name \"Object according to ASH\",
+       LOWER(p.Object_Owner)||'.'||p.Object_Name \"Object according to SQL plan\",
+       NVL(p.Filter_Predicates, '[Not known because SQL plan is not in SGA]') Filter_Predicates
+FROM   (
+        SELECT /*+ NO_MERGE */ SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID, Current_Obj#, SUM(Wait_Time_Sec) Wait_Time_Sec
+        FROM   (SELECT /*+ NO_MERGE ORDERED */
+                       10 Wait_Time_Sec, Sample_Time, SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID, SQL_Child_Number, SQL_Plan_Operation, SQL_Plan_Options, User_ID, Current_Obj#
+                FROM   DBA_Hist_Active_Sess_History s
+                LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
+                WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
+                AND    DBID = (SELECT DBID FROM v$Database) /* Suppress multiple occurrence of records in PDB environment */
+                UNION ALL
+                SELECT 1 Wait_Time_Sec,  Sample_Time, SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID, SQL_Child_Number, SQL_Plan_Operation, SQL_Plan_Options, User_ID, Current_Obj#
+                FROM gv$Active_Session_History
+               )
+        WHERE  Sample_Time > SYSDATE-?
+        AND    SQL_Plan_Operation = 'TABLE ACCESS'
+        AND    SQL_Plan_Options LIKE '%FULL'  /* also include Exadata variants */
+        AND    User_ID NOT IN (SELECT /*+ NO_MERGE */ User_ID FROM All_Users WHERE Oracle_Maintained = 'Y')
+        AND    Current_Obj# != -1
+        GROUP BY SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID, SQL_Child_Number, Current_Obj#
+        HAVING SUM(Wait_Time_Sec) > ?
+       ) h
+LEFT OUTER JOIN DBA_Objects o ON o.Object_ID = h.Current_Obj#
+LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ SQL_ID, Plan_Hash_Value, ID, Filter_Predicates, Object_Owner, Object_Name  /* Compress over child numbers */
+                 FROM   gv$SQL_Plan
+                 WHERE  Operation = 'TABLE ACCESS'
+                 AND    Options LIKE '%FULL'  /* also include Exadata variants */
+                 GROUP BY SQL_ID, Plan_Hash_Value, ID, Filter_Predicates, Object_Owner, Object_Name
+                ) p
+                ON p.SQL_ID = h.SQL_ID AND p.Plan_Hash_Value = h.SQL_Plan_Hash_Value AND p.ID = h.SQL_Plan_Line_ID
+WHERE (p.SQL_ID IS NULL OR p.Filter_Predicates IS NOT NULL)
+ORDER BY Wait_Time_Sec DESC
+          ",
+          :parameter=>[
+            {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, title: t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
+            {:name=>t(:dragnet_helper_158_param_1_name, :default=>'Minimum wait time for full table scan'), :size=>8, :default=>100, title: t(:dragnet_helper_158_param_1_hint, :default=>'Minimum wait time in seconds for full table scan on the object to be considered in this selection') },
+          ]
+        },
     ]
   end # partitioning
 
