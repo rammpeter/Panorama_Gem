@@ -10,7 +10,7 @@ module Dragnet::ParallelQueryUsage
         :desc  => t(:dragnet_helper_159_desc, :default=>"This selection lists all sessions currently accessing PQ servers"),
         :sql =>  "\
 SELECT p.QCInst_ID Instance, p.QCSID SID, p.QCSerial# \"Serial number\", p.PQ_Sessions \"PQ sessions\", p.Degree, p.Req_Degree \"Requested degree\",
-       s.UserName, s.SQL_ID, s.SQL_Exec_ID, s.SQL_Exec_Start, s.OSUser, s.Machine, s.Program, s.Module, s.Action, s.Logon_Time
+       s.Status, s.UserName, s.SQL_ID, s.SQL_Exec_ID, s.SQL_Exec_Start, s.OSUser, s.Machine, s.Program, s.Module, s.Action, s.Logon_Time
 FROM   (
         SELECT QCInst_ID, QCSID, QCSerial#, COUNT(*) PQ_Sessions, MAX(Degree) Degree, MAX(Req_Degree) Req_Degree
         FROM   gv$PX_Session
