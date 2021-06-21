@@ -26,12 +26,14 @@ ORDER BY p.PQ_Sessions DESC"
         :sql =>  "\
 SELECT x.*, u.UserName
 FROM   (SELECT Start_Sample, MIN(Min_Sessions) Min_active_PQ_Sessions, MAX(Max_Sessions) Max_active_PQ_Sessions,
-               MAX(Max_SQL_ID)  KEEP (DENSE_RANK LAST ORDER BY Max_Sessions) Max_SQL_ID,
-               MAX(Max_User_ID) KEEP (DENSE_RANK LAST ORDER BY Max_Sessions) Max_User_ID
+               MAX(Max_SQL_ID)  KEEP (DENSE_RANK LAST ORDER BY Max_SQLID_User_Sessions) Max_SQL_ID,
+               MAX(Max_User_ID) KEEP (DENSE_RANK LAST ORDER BY Max_SQLID_User_Sessions) Max_User_ID,
+               MAX(Max_SQLID_User_Sessions) Max_SQLID_User_Sessions
         FROM   (
-                SELECT Sample_Time, TRUNC(Sample_Time, ?) Start_Sample, MIN(Sessions) Min_Sessions, MAX(Sessions) Max_Sessions,
+                SELECT Sample_Time, TRUNC(Sample_Time, ?) Start_Sample, SUM(Sessions) Min_Sessions, SUM(Sessions) Max_Sessions,
                        MAX(SQL_ID)  KEEP (DENSE_RANK LAST ORDER BY Sessions) Max_SQL_ID,
-                       MAX(User_ID) KEEP (DENSE_RANK LAST ORDER BY Sessions) Max_User_ID
+                       MAX(User_ID) KEEP (DENSE_RANK LAST ORDER BY Sessions) Max_User_ID,
+                       MAX(Sessions) Max_SQLID_User_Sessions
                 FROM   (
                         SELECT Instance_Number, Sample_Time, SQL_ID, User_ID, COUNT(*) Sessions
                         FROM   (
@@ -49,7 +51,7 @@ FROM   (SELECT Start_Sample, MIN(Min_Sessions) Min_active_PQ_Sessions, MAX(Max_S
                                )
                         GROUP BY Instance_Number, Sample_Time, SQL_ID, User_ID
                        ) h
-                CROSS JOIN (SELECT NULL Instance_Number FROM DUAL) d
+                CROSS JOIN (SELECT ? Instance_Number FROM DUAL) d
                 WHERE  Sample_Time > SYSDATE - ?
                 AND    (d.Instance_Number IS NULL OR h.Instance_Number = d.Instance_Number)
                 GROUP BY Sample_Time
@@ -60,6 +62,7 @@ LEFT OUTER JOIN All_Users u ON u.User_ID = x.Max_User_ID
 ORDER BY 1",
         :parameter=>[
           {:name=> 'Format picture for grouping by TRUNC-function', :size=>8, :default=> 'HH24', :title=> 'Format-picture of TRUNC function (DD=day, HH24=hour, MI=minute etc.)'},
+          {:name=> 'RAC-Instance number (optional)', :size=>8, :default=> '', :title=> 'RAC instance number to reduce result to one instance'},
           {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
         ]
       },
