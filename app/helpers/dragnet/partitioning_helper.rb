@@ -170,7 +170,7 @@ Conditions for useful partitioning by these filters are:
 - The filter condition should by deterministic (able to be used as partition criteria)
 "),
           :sql=> "\
-SELECT h.SQL_ID, h.SQL_Plan_Line_ID \"SQL plan line id\", h.SQL_Plan_Hash_Value, h.Wait_Time_Sec \"Wait Time (Sec) for plan line id\",
+SELECT h.SQL_ID, h.SQL_Plan_Line_ID \"SQL plan line id\", h.SQL_Plan_Hash_Value, h.Wait_Time_Sec \"Wait Time (Sec) for plan line\",
        LOWER(o.Owner)||'.'||o.Object_Name \"Object according to ASH\",
        LOWER(p.Object_Owner)||'.'||p.Object_Name \"Object according to SQL plan\",
        NVL(p.Filter_Predicates, '[Not known because SQL plan is not in SGA]') Filter_Predicates
