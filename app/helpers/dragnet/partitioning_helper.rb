@@ -189,7 +189,7 @@ FROM   (
         WHERE  Sample_Time > SYSDATE-?
         AND    SQL_Plan_Operation = 'TABLE ACCESS'
         AND    SQL_Plan_Options LIKE '%FULL'  /* also include Exadata variants */
-        AND    User_ID NOT IN (SELECT /*+ NO_MERGE */ User_ID FROM All_Users WHERE Oracle_Maintained = 'Y')
+        AND    User_ID NOT IN (#{system_schema_subselect})
         AND    Current_Obj# != -1
         GROUP BY SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID, SQL_Child_Number, Current_Obj#
         HAVING SUM(Wait_Time_Sec) > ?

@@ -12,6 +12,7 @@ include Dragnet::InstanceSetupTuning
 include Dragnet::MaterializedViewsHelper
 include Dragnet::OptimalIndexStorageHelper
 include Dragnet::OptimizableFullScansHelper
+include Dragnet::ParallelQueryUsage
 include Dragnet::PartitioningHelper
 include Dragnet::PlSqlUsageHelper
 include Dragnet::ProblemsWithParallelQueryHelper
@@ -133,7 +134,7 @@ module DragnetHelper
             :entries  => pl_sql_usage
         },
         {
-            :name     => t(:dragnet_helper_group_instance_setup_tuning, default: 'Instance-setup and instance-tuning'),
+            :name     => t(:dragnet_helper_group_instance_setup_tuning, default: 'Instance-setup, tuning and monitoring'),
             :entries  => instance_setup_tuning
         },
     ]

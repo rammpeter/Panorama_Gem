@@ -1,7 +1,8 @@
 <%  # Die folgende Logik liegt hier, da sonst nicht auf ActionView-Helper zurückgegriffen werden kann
-  instance_captions = ['instance', 'inst_id']
-  sid_captions = ['sid']
-  serial_number_captions = ['serial number', 'serial#']
+    instance_captions = ['instance', 'inst_id']
+    sid_captions = ['sid']
+    serial_number_captions = ['serial number', 'serial#']
+    sql_id_captions = ['sql_id', 'sql-id', 'max_sql_id']
 
 if @res.count > 0
     @column_options = []
@@ -52,7 +53,7 @@ if @res.count > 0
         end
 
         case
-          when ['sql_id', 'sql-id'].select{|s| col[:caption].downcase[s]}.length > 0 then
+          when sql_id_captions.select{|s| col[:caption].downcase[s]}.length > 0 then
 
             col[:data] = proc{|rec|
                                 inst_id = nil
