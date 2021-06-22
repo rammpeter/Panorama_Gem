@@ -189,7 +189,7 @@ FROM   (
         WHERE  Sample_Time > SYSDATE-?
         AND    SQL_Plan_Operation = 'TABLE ACCESS'
         AND    SQL_Plan_Options LIKE '%FULL'  /* also include Exadata variants */
-        AND    User_ID NOT IN (#{system_schema_subselect})
+        AND    User_ID NOT IN (#{system_userid_subselect})
         AND    Current_Obj# != -1
         GROUP BY SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID, SQL_Child_Number, Current_Obj#
         HAVING SUM(Wait_Time_Sec) > ?
@@ -208,8 +208,7 @@ ORDER BY Wait_Time_Sec DESC
           :parameter=>[
             {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, title: t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
             {:name=>t(:dragnet_helper_158_param_1_name, :default=>'Minimum wait time for full table scan'), :size=>8, :default=>100, title: t(:dragnet_helper_158_param_1_hint, :default=>'Minimum wait time in seconds for full table scan on the object to be considered in this selection') },
-          ],
-          min_db_version: '12.1'
+          ]
         },
     ]
   end # partitioning
