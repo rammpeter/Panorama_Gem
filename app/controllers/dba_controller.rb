@@ -1806,7 +1806,7 @@ class DbaController < ApplicationController
     seconds_coverered = db_time_now - smallest_timestamp
     grouping_secs = (seconds_coverered/(window_width/2)).round
     grouping_secs = 1 if grouping_secs < 1
-
+    grouping_secs = grouping_secs.to_f                                          # ensure exact values after division in SQL
     ash_data = sql_select_all ["\
       SELECT MAX(Sample_Time_String) OVER (PARTITION BY Grouping) Sample_Time_String, /* max. timestamp over all wait classes in group */
              Wait_Class, Sessions
@@ -1818,7 +1818,7 @@ class DbaController < ApplicationController
              FROM   (SELECT Sample_Time_Date,
                             Wait_Class,
                             COUNT(*) Sessions,
-                            TRUNC(((Sample_Time_Date - date '1970-01-01')*86400) / ?) Grouping /* grouping criteria for condensed data due to window width */
+                            ROUND(((Sample_Time_Date - date '1970-01-01')*86400) / ?) Grouping /* grouping criteria for condensed data due to window width */
                      FROM   (SELECT CAST (Sample_Time AS DATE) Sample_Time_Date,
                                     COALESCE(Wait_Class, DECODE(Session_State, 'ON CPU', 'CPU', '[Unknown]')) Wait_Class
                              FROM   gv$Active_Session_History
@@ -1847,7 +1847,7 @@ class DbaController < ApplicationController
       ORDER BY Sample_Time_String, Wait_Class
     "].concat(where_values_inner).concat(where_values_outer)
 =end
-    render json: ash_data
+    render json: { grouping_secs: grouping_secs, ash_data: ash_data }
   end
 
   def refresh_top_session_sql

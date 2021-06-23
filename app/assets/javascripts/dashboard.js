@@ -86,12 +86,14 @@ class DashboardData {
         });
     }
 
-    process_load_refresh_ash_data_success(data, xhr){
-        let timestamps = {};
-        let data_to_add = {};
-        let min_time_ms = null;                                                 // start of delta time range in ms since 1970
-        let max_time_ms = 0;                                                    // end of delta time range in ms since 1970
-        let initial_data_load = this.ash_data_array.length == 0;                // initial or delta load
+    process_load_refresh_ash_data_success(response_data, xhr){
+        let new_ash_data            = response_data.ash_data;
+        let grouping_secs           = response_data.grouping_secs;              // Default distance in seconds between two data points
+        let timestamps              = {};
+        let data_to_add             = {};
+        let initial_data_load       = this.ash_data_array.length == 0;          // initial or delta load
+        let min_refresh_time_string = null;
+        let max_refresh_time_string = null;
 
         let previous_timestamps = [];                                           // remember used timestamps for later tasks
         if (this.ash_data_array.length > 0){
@@ -100,14 +102,43 @@ class DashboardData {
             });
         }
 
-        data.forEach((d) => {
+        new_ash_data.forEach((d) => {
             if (this.last_refresh_time_string == null || this.last_refresh_time_string < d.sample_time_string)
                 this.last_refresh_time_string = d.sample_time_string;           // greatest known timestamp from ASH
-            timestamps[d.sample_time_string] = 1;                               // remember all used timestamps
+            timestamps[d.sample_time_string] = new Date(d.sample_time_string + " GMT").getTime(); // remember all used timestamps
             if (data_to_add[d.wait_class] === undefined){
                 data_to_add[d.wait_class] = {};
             }
             data_to_add[d.wait_class][d.sample_time_string] = d.sessions;
+
+            if (!min_refresh_time_string || min_refresh_time_string > d.sample_time_string)
+                min_refresh_time_string = d.sample_time_string;
+            if (!max_refresh_time_string || max_refresh_time_string < d.sample_time_string)
+                max_refresh_time_string = d.sample_time_string;
+        });
+
+        let min_time_ms = new Date(min_refresh_time_string + " GMT").getTime(); // start of delta time range in ms since 1970
+        let max_time_ms = new Date(max_refresh_time_string + " GMT").getTime(); // end of delta time range in ms since 1970
+
+        // add missing timestamps where no values exist for any wait class but values would be expected
+        let previous_ts = null;
+        if (this.ash_data_array[0] && this.ash_data_array[0].data.length > 0){       // pevious data exists, than use this to check the delay to next record
+            previous_ts = this.ash_data_array[0].data[this.ash_data_array[0].data.length - 1][0];
+        }
+        let date_to_add = new Date(Date.UTC());
+        Object.values(timestamps).forEach((timestamp_ms)=>{
+            if (previous_ts && (timestamp_ms - previous_ts)/1000 > grouping_secs*2){
+                // add an empty timestamp after the previous record
+                let ts = previous_ts+grouping_secs*1000;
+                date_to_add.setTime(ts);
+                timestamps[this.date_string(date_to_add)] = ts;
+
+                // add an empty timestamp before the current record
+                ts = timestamp_ms-grouping_secs*1000;
+                date_to_add.setTime(ts);
+                timestamps[this.date_string(date_to_add)] = ts;
+            }
+            previous_ts = timestamp_ms;
         });
 
         // copy values and generate 0-records for gaps in time series
@@ -123,7 +154,7 @@ class DashboardData {
             }
 
             let col_data_to_add = data_to_add[key];
-            // generate 0-records for gaps in time series
+            // generate 0-records for gaps in time series where other wait classes have values
             Object.entries(timestamps).forEach((ts_tupel)=>{
                 if (col_data_to_add[ts_tupel[0]] === undefined)
                     col_data_to_add[ts_tupel[0]] = 0;
@@ -140,11 +171,8 @@ class DashboardData {
 
             // transform date string into ms since 1970 and remember low and high value
             col_data_delta_array.forEach((val_array)=>{
-                val_array[0] = new Date(val_array[0] + " GMT").getTime();
-                if (min_time_ms == null || min_time_ms > val_array[0])
-                    min_time_ms = val_array[0];
-                if (max_time_ms < val_array[0])
-                    max_time_ms = val_array[0];
+                val_array[0] = timestamps[val_array[0]];
+                //val_array[0] = new Date(val_array[0] + " GMT").getTime();
             });
 
             wait_class_object['data'] = wait_class_object.data.concat(col_data_delta_array);    // add the delta data to the previous data
@@ -294,6 +322,13 @@ class DashboardData {
             clearTimeout(this.current_timeout);                                 // remove current aktive timeout first before
             this.current_timeout = null;
         }
+    }
+
+    // get date in YYYY/MM/DD HH24:MI:SS
+    date_string(d){
+        return d.getUTCFullYear() + '/' + ('0'+(d.getUTCMonth()+1)).slice(-2) + '/' + ('0'+(d.getUTCDate())).slice(-2) + ' ' +
+            ('0' + d.getUTCHours()).slice(-2) + ':' + ('0' + d.getUTCMinutes()).slice(-2) + ':' + ('0' + d.getUTCSeconds()).slice(-2)
+        ;
     }
 }
 
