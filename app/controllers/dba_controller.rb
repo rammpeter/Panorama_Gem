@@ -1774,29 +1774,67 @@ class DbaController < ApplicationController
     instance                  = prepare_param_instance
     hours_to_cover            = prepare_param(:hours_to_cover).to_f
     last_refresh_time_string  = prepare_param :last_refresh_time_string
+    smallest_timestamp_ms     = prepare_param_int :smallest_timestamp_ms
+    window_width              = prepare_param_int :window_width
 
-    where_string_inner = ''
-    where_string_outer = ''
-    where_values_inner = []
-    where_values_outer = []
+    where_string = ''
+    where_values = []
 
-    if last_refresh_time_string
-      where_string_outer << "WHERE Sample_Time_String > ?"
-      where_values_outer << last_refresh_time_string
-    else
-      where_string_inner << "WHERE Sample_Time > SYSDATE - ?/24"
-      where_values_inner << hours_to_cover
+    if last_refresh_time_string                                                 # add refresh delta to existing data
+      where_string << "WHERE TO_CHAR(Sample_Time, 'YYYY/MM/DD HH24:MI:SS') > ?"
+      where_values << last_refresh_time_string
+    else                                                                        # Initially read data
+      where_string << "WHERE Sample_Time > SYSDATE - ?/24"
+      where_values << hours_to_cover
     end
 
     if instance
-      if where_string_inner == ''
-        where_string_inner << "WHERE Inst_ID = ?"
-      else
-        where_string_inner << " AND Inst_ID = ?"
-      end
-      where_values_inner << instance
+      where_string << " AND Inst_ID = ?"
+      where_values << instance
     end
 
+    # Calculate granularity of points in diagram
+    smallest_timestamp = nil
+    if smallest_timestamp_ms.nil?                                               # first time read data (or none existing until now)
+      smallest_timestamp = sql_select_one ["\
+        SELECT MIN(Sample_Time) FROM gv$Active_Session_History #{where_string}
+      "].concat(where_values)
+    else
+      smallest_timestamp = Time.at(smallest_timestamp_ms/1000).utc
+    end
+    db_time_now = sql_select_one "SELECT SYSDATE FROM DUAL"
+    seconds_coverered = db_time_now - smallest_timestamp
+    grouping_secs = (seconds_coverered/(window_width/2)).round
+    grouping_secs = 1 if grouping_secs < 1
+
+    ash_data = sql_select_all ["\
+      SELECT MAX(Sample_Time_String) OVER (PARTITION BY Grouping) Sample_Time_String, /* max. timestamp over all wait classes in group */
+             Wait_Class, Sessions
+      FROM  (
+             SELECT Grouping,
+                    Wait_Class,
+                    TO_CHAR(MAX(Sample_Time_Date), 'YYYY/MM/DD HH24:MI:SS') Sample_Time_String,
+                    ROUND(AVG(Sessions), 2) Sessions
+             FROM   (SELECT Sample_Time_Date,
+                            Wait_Class,
+                            COUNT(*) Sessions,
+                            TRUNC(((Sample_Time_Date - date '1970-01-01')*86400) / ?) Grouping /* grouping criteria for condensed data due to window width */
+                     FROM   (SELECT CAST (Sample_Time AS DATE) Sample_Time_Date,
+                                    COALESCE(Wait_Class, DECODE(Session_State, 'ON CPU', 'CPU', '[Unknown]')) Wait_Class
+                             FROM   gv$Active_Session_History
+                             #{where_string}
+                            )
+                     GROUP BY Sample_Time_Date, Wait_Class /* group by seconds to get number of waiting sessions for timestamp */
+                    )
+             GROUP BY Grouping, Wait_Class
+            )
+      ORDER BY Sample_Time_String, Wait_Class
+    "].concat([grouping_secs]).concat(where_values)
+
+    ash_data.each do |a|
+      a.sessions = a.sessions.to_f if a.sessions.instance_of? BigDecimal
+    end
+=begin
     ash_data = sql_select_all ["\
       SELECT Sample_Time_String, Wait_Class, COUNT(*) Sessions
       FROM   (SELECT TO_CHAR(Sample_Time, 'YYYY/MM/DD HH24:MI:SS') Sample_Time_String,
@@ -1808,7 +1846,7 @@ class DbaController < ApplicationController
       GROUP BY Sample_Time_String, Wait_Class
       ORDER BY Sample_Time_String, Wait_Class
     "].concat(where_values_inner).concat(where_values_outer)
-
+=end
     render json: ash_data
   end
 

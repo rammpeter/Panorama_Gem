@@ -53,8 +53,8 @@ class DashboardData {
 
     remove_aged_records(data_array){
         data_array.forEach((col) => {
-            var max_date_ms = col.data[col.data.length-1][0];                   // last timestamp in array
-            var min_date_ms = max_date_ms - this.hours_to_cover*3600*1000
+            let max_date_ms = col.data[col.data.length-1][0];                   // last timestamp in array
+            let min_date_ms = max_date_ms - this.hours_to_cover*3600*1000
             while (col.data.length > 0 && col.data[0][0] < min_date_ms ){
                 col.data.shift();                                               // remove first record of array
             }
@@ -63,6 +63,13 @@ class DashboardData {
 
     // load data from DB
     load_refresh_ash_data(){
+        // get smallest timestamp in data
+        let smallest_timestamp_ms = null;
+        this.ash_data_array.forEach((col) => {
+            if (col.data.length > 0 && (!smallest_timestamp_ms || col.data[0][0] < smallest_timestamp_ms))
+                smallest_timestamp_ms = col.data[0][0];
+        });
+
         jQuery.ajax({
             method: "POST",
             dataType: "json",
@@ -70,7 +77,12 @@ class DashboardData {
                 this.process_load_refresh_ash_data_success(data, xhr);
             },
             url: 'dba/refresh_dashboard_ash?window_width='+jQuery(window).width()+'&browser_tab_id='+browser_tab_id,
-            data: { 'instance': this.rac_instance, 'hours_to_cover': this.hours_to_cover, 'last_refresh_time_string': this.last_refresh_time_string}
+            data: {
+                'instance':                 this.rac_instance,
+                'hours_to_cover':           this.hours_to_cover,
+                'last_refresh_time_string': this.last_refresh_time_string,
+                'smallest_timestamp_ms':    smallest_timestamp_ms
+            }
         });
     }
 
