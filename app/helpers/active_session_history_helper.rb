@@ -15,7 +15,7 @@ module ActiveSessionHistoryHelper
                          )"
 
 
-      @session_statistics_key_rules_hash["Event"]           = {:sql => "NVL(s.Event, s.Session_State)", :sql_alias => "event",    :Name => 'Wait-Event',    :Title => 'Event (Session-State, if Event = NULL)', :info_sql  => "MIN(s.Wait_Class)", :info_caption => "Wait-Class", :Data_Title => '#{explain_wait_event(rec.event)}' }
+      @session_statistics_key_rules_hash["Event"]           = {:sql => "NVL(s.Event, s.Session_State)", :sql_alias => "event",    :Name => 'Wait-Event',    :Title => 'Event (Session-State, if Event = NULL)', :Data_Title => '#{explain_wait_event(rec.event)}' }
       @session_statistics_key_rules_hash["Wait-Class"]      = {:sql => "NVL(s.Wait_Class, 'CPU')", :sql_alias => "wait_class",    :Name => 'Wait-Class',    :Title => 'Wait-Class' }
       @session_statistics_key_rules_hash["Instance"]        = {:sql => "s.Instance_Number",   :sql_alias => "instance_number",    :Name => 'Inst.',         :Title => 'RAC-Instance' }
       @session_statistics_key_rules_hash["Con-ID"]          = {:sql => "s.Con_ID",            :sql_alias => "con_id",             :Name => 'Con.-ID',       :Title => 'Container-ID for pluggable database', :info_sql=>"(SELECT MIN(Name) FROM gv$Containers i WHERE i.Con_ID=s.Con_ID)", :info_caption=>'Container name' } if get_current_database[:cdb]

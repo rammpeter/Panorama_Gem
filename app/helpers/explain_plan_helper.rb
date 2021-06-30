@@ -109,6 +109,7 @@ partition ID = #{rec.partition_id}"         if rec.partition_id}
     when 'PARALLEL_FROM_SERIAL'          then 'S > P'
     when 'PARALLEL_TO_PARALLEL'          then 'P > P'
     when 'PARALLEL_TO_SERIAL'            then 'P > S'
+    when 'SERIAL_FROM_REMOTE'            then 'SFR'
     when 'SINGLE_COMBINED_WITH_CHILD'    then 'SCWC'
     when 'SINGLE_COMBINED_WITH_PARENT'   then 'SCWP'
     else

@@ -464,7 +464,8 @@ class DbaSgaController < ApplicationController
                  ) a ON a.SQL_Plan_Line_ID = p.ID AND a.SQL_Plan_Hash_Value = p.Plan_Hash_Value
           " if @include_ash_in_sql}
         -- Object_Type ensures that only one record is gotten from DBA_Objects even if object is partitioned
-        LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Object_Owner AND o.Object_Name = p.Object_Name AND o.Object_Type = p.Object_Type
+        -- Content after blank does not matter for object_type (like 'INDEX (UNIQUE)')
+        LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Object_Owner AND o.Object_Name = p.Object_Name AND o.Object_Type = DECODE(INSTR(p.Object_Type, ' '), 0, p.Object_Type, SUBSTR(p.Object_Type, 1, INSTR(p.Object_Type, ' ')-1))
         ORDER BY ID
         ", @instance, @sql_id]
                                    .concat(where_values)
@@ -1066,16 +1067,7 @@ class DbaSgaController < ApplicationController
     plans = sql_select_all ["\
         SELECT /* Panorama-Tool Ramm */
           Inst_ID, SQL_ID, Child_Number,
-          Operation, Options, Object_Owner, Object_Name, Object_Type, Optimizer,
-          DECODE(Other_Tag,
-                 'PARALLEL_COMBINED_WITH_PARENT', 'PCWP',
-                 'PARALLEL_COMBINED_WITH_CHILD' , 'PCWC',
-                 'PARALLEL_FROM_SERIAL',          'S > P',
-                 'PARALLEL_TO_PARALLEL',          'P > P',
-                 'PARALLEL_TO_SERIAL',            'P > S',
-                 Other_Tag
-                ) Parallel_Short,
-          Other_Tag Parallel,
+          Operation, Options, Object_Owner, Object_Name, Object_Type, Optimizer, Other_Tag,
           Depth, Access_Predicates, Filter_Predicates, temp_Space, Distribution,
           ID, Parent_ID,
           Count(*) OVER (PARTITION BY p.Parent_ID, p.Operation, p.Options, p.Object_Owner,    -- p.ID nicht abgleichen, damit Verschiebungen im Plan toleriert werden
