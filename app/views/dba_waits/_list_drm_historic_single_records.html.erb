@@ -10,7 +10,7 @@
   end
 
   column_options = []
-  column_options << {caption: "Event date",       data: proc{|rec| localeDateTime(rec.conv_event_date)},      title: "Timestamp of event"}
+  column_options << {caption: "Event date",       data: proc{|rec| localeDateTime(rec.conv_event_date)},      title: "Timestamp of event", plot_master_time: true}
   column_options << {caption: "Policy event",     data: proc{|rec| rec.policy_event},                         title: "Name of policy event", data_title: proc{|rec| "%t\n#{policy_event_explanation(rec.policy_event)}"}}
   column_options << {caption: "Inst.",            data: proc{|rec| rec.inst_id},                              title: "RAC-instance recording this event", align: :right}
   column_options << {caption: "Tablespace",       data: proc{|rec| rec.tablespace_name},                      title: "Name of tablespace"} if get_db_version >= '12.1'
