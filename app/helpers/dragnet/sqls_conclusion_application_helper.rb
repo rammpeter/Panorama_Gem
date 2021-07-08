@@ -355,6 +355,28 @@ Detailed information about LOGON operations is available via menu 'DBA general /
             ]
         },
         {
+          :name  => t(:dragnet_helper_161_name, :default=>'Excessive logon operations (by current gv$Session)'),
+          :desc  => t(:dragnet_helper_161_desc, :default=>"An excessive number of logon operations may cause significant CPU-usage and possibly write I/O (e.g. for auditing).
+It also slows down the application waiting for the connect.
+Alternative solutions are usage of session pools, prevent subsequent LOGON/LOGOFF operations in loops.
+This selection shows sessions that were created shortly before.
+            "),
+          :sql=>  "\
+SELECT s.Inst_ID, s.SID, s.Serial#, s.AudSID, s.UserName, s.OSUser, s.Process,
+                       s.Machine, s.Port, s.Program, s.SQL_ID, s.SQL_Exec_Start, s.Module,
+                       s.Action, s.Client_Info, s.Logon_Time, s.Service_Name
+FROM   gv$Session s
+LEFT OUTER JOIN gv$PX_Session pxs ON pxs.Inst_ID = s.Inst_ID AND pxs.SID = s.SID AND pxs.Serial#=s.Serial#
+WHERE  s.Type = 'USER'
+AND    pxs.SID IS NULL
+    AND    Program NOT LIKE '%(PP%)'    /* Exclude own PQ processes that don't appear gv$PX_Session in while selecting from multiple RAC instances */
+    AND    Logon_Time > SYSDATE-1/(86400/?) /* Session not older than x seconds */
+           ",
+          :parameter=>[
+            {:name=>t(:dragnet_helper_161_param_1_name, :default=>'Maximum age of session in seconds'), :size=>8, :default=>1, :title=>t(:dragnet_helper_161_param_1_hint, :default=>'Maximum age of session in seconds (since v$Session.logon_time) to be considered in selection') },
+          ]
+        },
+        {
             :name  => t(:dragnet_helper_145_name, :default=>'Possibly missing guaranty of uniqueness by unique index or unique / primary key constraint'),
             :desc  => t(:dragnet_helper_145_desc, :default=>"If an implicit expectation for uniqueness of a column exists, than this should be safeguarded by an unique index or unique constraint.
 This list shows all all columns with unique values at the time of last analysis if neither unqiue index nor unique constraint exists for this column.

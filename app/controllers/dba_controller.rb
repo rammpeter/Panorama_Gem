@@ -768,6 +768,7 @@ class DbaController < ApplicationController
         s.Service_Name,
         SYSDATE - (s.Last_Call_Et/86400) Last_Call,
         s.Logon_Time,
+        sci.Network_Encryption, sci.Network_Checksumming,
         i.Block_Gets+i.Consistent_Gets+i.Physical_Reads+i.Block_Changes+i.Consistent_Changes IOIndex,
         temp.Temp_MB, temp.Temp_Extents, temp.Temp_Blocks,
         (       SELECT TO_CHAR(MIN(Start_Time), 'HH24:MI:SS') FROM GV$Session_LongOps o                                                   
@@ -847,6 +848,12 @@ class DbaController < ApplicationController
       #{"LEFT OUTER JOIN gv$Containers con ON con.Inst_ID=s.Inst_ID AND con.Con_ID=s.Con_ID" if get_current_database[:cdb]}
       LEFT OUTER JOIN gv$Session_Wait w ON w.Inst_ID = s.Inst_ID AND w.SID = s.SID
       LEFT OUTER JOIN gv$Transaction tx ON tx.Inst_ID = s.Inst_ID AND tx.Addr = s.TAddr
+      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Inst_ID, SID, Serial#,
+                              DECODE(SUM(CASE WHEN Network_Service_Banner LIKE '%Encryption service adapter%' THEN 1 ELSE 0 END), 0, 'NO', 'YES') Network_Encryption,
+                              DECODE(SUM(CASE WHEN Network_Service_Banner LIKE '%Crypto-checksumming service adapter%' THEN 1 ELSE 0 END), 0, 'NO', 'YES') Network_Checksumming
+                       FROM   gV$SESSION_CONNECT_INFO
+                       GROUP BY Inst_ID, SID, Serial#
+                      )sci ON sci.Inst_ID = s.Inst_ID AND sci.SID = s.SID AND sci.Serial# = s.Serial#
       WHERE 1=1 #{where_string}
       ORDER BY 1 ASC"].concat(where_values)
 
@@ -866,7 +873,9 @@ class DbaController < ApplicationController
                   s.Status, s.Client_Info, s.Module, s.Action, s.AudSID,
                   s.UserName, s.Machine, s.OSUser, s.Process, s.Program,
                   SYSDATE - (s.Last_Call_Et/86400) Last_Call,
-                  s.Logon_Time, p.spID, p.PID,
+                  s.Logon_Time,
+                  sci.Network_Encryption, sci.Network_Checksumming,
+                  p.spID, p.PID,
                   RawToHex(tx.XID) Tx_ID,
                   tx.Start_Time,
                   c.AUTHENTICATION_TYPE
@@ -882,9 +891,15 @@ class DbaController < ApplicationController
                             AND    RowNum < 2         /* Verdichtung da fuer jede Zeile des Network_Banners ein Record in GV$Session_Connect_Info existiert */
                            ) c ON c.Inst_ID = s.Inst_ID AND c.SID = s.SID #{'AND c.Serial# = s.Serial#'  if get_db_version >= '11.2' }
            LEFT OUTER JOIN gv$Transaction tx ON tx.Inst_ID = s.Inst_ID AND tx.Addr = s.TAddr
+           CROSS JOIN (SELECT /*+ NO_MERGE */
+                                   DECODE(SUM(CASE WHEN Network_Service_Banner LIKE '%Encryption service adapter%' THEN 1 ELSE 0 END), 0, 'NO', 'YES') Network_Encryption,
+                                   DECODE(SUM(CASE WHEN Network_Service_Banner LIKE '%Crypto-checksumming service adapter%' THEN 1 ELSE 0 END), 0, 'NO', 'YES') Network_Checksumming
+                            FROM   gV$SESSION_CONNECT_INFO
+                            WHERE  Inst_ID=? AND SID=? AND Serial#=?
+                           )sci
            #{"LEFT OUTER JOIN gv$Containers con ON con.Inst_ID=s.Inst_ID AND con.Con_ID=s.Con_ID" if get_current_database[:cdb]}
            WHERE  s.Inst_ID=? AND s.SID=? AND s.Serial#=?",
-           @instance, @sid].concat( get_db_version >= "11.2" ? [@serialno] : [] ).concat([@instance, @sid, @serialno])
+           @instance, @sid].concat( get_db_version >= "11.2" ? [@serialno] : [] ).concat([@instance, @sid, @serialno, @instance, @sid, @serialno])
     @dbsession    = nil
     @current_sql  = nil
     @previous_sql = nil

@@ -1126,7 +1126,7 @@ class ActiveSessionHistoryController < ApplicationController
     render_partial
   end
 
-  def list_ash_dependecy_thread
+  def list_ash_dependency_thread
     @blocked_inst_id           = prepare_param(:blocked_inst_id)
     @blocked_session           = params[:blocked_session]
     @blocked_session_serial_no = params[:blocked_session_serial_no]

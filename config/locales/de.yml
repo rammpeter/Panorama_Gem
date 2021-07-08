@@ -1675,6 +1675,16 @@
   dragnet_helper_160_desc:                                  Diese Selection zeit die Anzahl aktiver Sessions von PQ-Servern
   dragnet_helper_160_name:                                  Aktive PQ-Sessions aus Active Session History (ASH)
 
+  dragnet_helper_161_desc: |-
+    Exzessive Anzahlen von Logon-Operationen können signifikant CPU-Last verursachen und evtl. Write-I/O (z.B. durch Auditing).
+    Des weiteren verlangsamt es die auf die Connecion wartenden Applikationen.
+    Alternative Lösungen sind die Verwendung von Session-Pools sowie die Vermeidung aufeinanderfolgender LOGON/LOGOFF-Operationen in Schleifen.
+    Diese Selektion zeigt aktuell existierende Sessions die erst kurz erzeugt wurden.
+  dragnet_helper_161_name: |-
+    Exzessive logon-Operationen (über aktuelle gv$Session)
+  dragnet_helper_161_param_1_hint:                          Maximales Alter einer Session in Sekunden (seit v$Session.logon_time) um in Selektion berücksichtigt zu werden
+  dragnet_helper_161_param_1_name:                          Maximales Alter einer Session in Sekunden
+
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 
   dragnet_show_personal_selection_form_caption:             Erweitern der Rasterfahndungs-SQLs um persönliche Abfragen

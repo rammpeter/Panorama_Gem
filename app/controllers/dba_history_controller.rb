@@ -2407,7 +2407,7 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     # first entry is synthetic
     stat_names['CPU Load'] = { stat_name: 'CPU Load',
                                scale:     2,
-                               comments:  "Number of avg. active CPUs in time period.\nDerived from values of BUSY TIME and NUM CPUS"
+                               comments:  "Number of avg. active CPUs in time period.\nDerived from value of BUSY TIME"
     }
 
     osstats.each do |o|
@@ -2421,7 +2421,11 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
       end
 
       osstats_pivot[o.rounded_begin_interval_time][o.stat_name] = o.value
-      stat_names[o.stat_name] = { stat_name: o.stat_name}                       # register stat_name as used
+      stat_names[o.stat_name] = { stat_name: o.stat_name, scale: 0} unless stat_names.has_key? o.stat_name           # register stat_name as used
+      scale_value = o.value - o.value.to_i
+      if scale_value != 0 && scale_value.to_s.length > stat_names[o.stat_name][:scale]
+        stat_names[o.stat_name][:scale] =  scale_value.to_s.length
+      end
     end
 
     if get_db_version >= '11.2'                                                 # get comments for statistics
@@ -2429,7 +2433,6 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
         if stat_names.has_key?(s.stat_name)
           stat_names[s.stat_name][:comments]    = s.comments
           stat_names[s.stat_name][:cumulative]  = s.cumulative
-          stat_names[s.stat_name][:scale]       = 0
         end
       end
     end
@@ -2438,7 +2441,7 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
 
     # calculate CPU load
     @osstats.each do |s|
-      s['CPU Load'] = s['BUSY TIME']/(s[:max_end_interval_time] - s[:min_begin_interval_time])/s['NUM CPUS'] rescue nil
+      s['CPU Load'] = s['BUSY TIME']/100/(s[:max_end_interval_time] - s[:min_begin_interval_time]) rescue nil
     end
 
     @stat_names = stat_names.values

@@ -1695,15 +1695,18 @@ WHERE RowNum < 100
 
     @audit_source = audit_source
 
+    group_time_sql = "TRUNC(Timestamp, '#{grouping}')"
+    group_time_sql = "CAST (Timestamp AS DATE)" if grouping == 'SS'
+
     audits = sql_select_all ["\
                    SELECT /*+ FIRST_ROWS(1) Panorama Ramm */ *
-                   FROM   (SELECT TRUNC(Timestamp, '#{grouping}') Begin_Timestamp,
+                   FROM   (SELECT #{group_time_sql} Begin_Timestamp,
                                   MAX(Timestamp)+1/1440 Max_Timestamp,  -- auf naechste ganze Minute aufgerundet
                                   UserHost, OS_UserName, UserName, Action_Name,
                                   COUNT(*)         Audits
                                   FROM   #{audit_sql}
                                   WHERE  1=1 #{where_string}
-                                  GROUP BY TRUNC(Timestamp, '#{grouping}'), UserHost, OS_UserName, UserName, Action_Name
+                                  GROUP BY #{group_time_sql}, UserHost, OS_UserName, UserName, Action_Name
                           )
                    ORDER BY Begin_Timestamp, Audits
                   "].concat(where_values)

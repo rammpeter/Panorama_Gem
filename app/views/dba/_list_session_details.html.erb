@@ -39,6 +39,7 @@
    {:caption=>"Process",        :data=>proc{|rec| rec.process},         :title=>"Client process ID"},
    {:caption=>"Program",        :data=>proc{|rec| rec.program},         :title=>"Client program"},
    {:caption=>"Logon-time",     :data=>proc{|rec| localeDateTime(rec.logon_time)},  :title=>"Logon-time of session"},
+   {:caption=>"Enc.",           :data=>proc{|rec| "#{rec.network_encryption} #{rec.network_checksumming}"}, :title=>"Use of network encryption and checksumming?\nBased on gv$Session_Connect_Info.Network_Service_Banner"},
    {:caption=>"Last active start",:data=>proc{|rec| localeDateTime(rec.last_call)}, :title=>"Start of last ACTIVE-phase"},
    {:caption=>'Tx. ID',         :data=>link_tx_id,                      :title=>"Transaction-ID if session has an active transaction", data_title: tx_id_data_title},
    {:caption=>'Auth. type',     :data=>proc{|rec| rec.authentication_type}, :title=>'How the user was authenticated. See V$SESSION_CONNECT_INFO.Authentication_Type'},
