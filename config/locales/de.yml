@@ -1601,7 +1601,7 @@
 
   dragnet_helper_152_desc: |-
     User-defined PL/SQL-Funktionen in SQL-Statements können besser performen ohne Kontextwechsel durch PRAGMA UDF.
-    Diese Selektion zeigt PL/SQL->Funktionen von denen kein weiterer PL/SQL-Code abhängig ist.
+    Diese Selektion zeigt PL/SQL->Funktionen ohne PRAGMA UDF von denen kein weiterer PL/SQL-Code abhängig ist.
 
     Ein Klick auf den Objekt-Namen bring Details zur Function inklusive eines Buttons für die Syntax-Suche nach dei Funktion nutzenden SQL-Statements.
   dragnet_helper_152_name: |-

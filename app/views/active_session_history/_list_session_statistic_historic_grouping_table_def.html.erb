@@ -97,6 +97,13 @@
                                                         @update_area,
                                                         rec.username_cnt == 1 ? rec.username : nil
         )
+        when "Top Level SQL-ID"  then link_historic_sql_id(rec.instance_number_cnt == 1 ? rec.instance_number : nil,
+                                                      rec.top_level_sql_id,
+                                                      @groupfilter[:time_selection_start],
+                                                      @groupfilter[:time_selection_end],
+                                                      @update_area,
+                                                      rec.username_cnt == 1 ? rec.username : nil
+      )
         when 'Blocking Session' then ajax_link(rec.group_value, {
                                                                   action: :list_session_statistic_historic_grouping,
                                                                   groupfilter: {

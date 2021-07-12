@@ -102,22 +102,64 @@ Therefore this check is excluded here.
         {
             :name  => t(:dragnet_helper_152_name, :default=>'Candidates for PRAGMA UDF in pure user-defined PL/SQL functions'),
             :desc  => t(:dragnet_helper_152_desc, :default=>"User-defined PL/SQL in SQL-statements may perform better without context switching with PRAGMA UDF.
-This selection shows PL/SQL functions without PL/SQL code depending from them.
+This selection shows PL/SQL functions without PRAGMA UDF and without PL/SQL code depending from them.
 
 Click on the object name to get function details including a button for syntax search for SQL statements using this function.
 "),
             :sql=> "\
-SELECT p.Owner, p.Object_Name
-FROM   DBA_Procedures p
-WHERE  p.Object_Type = 'FUNCTION'
-AND    p.Owner NOT IN (#{system_schema_subselect})
-AND    (p.Owner, p.Object_Name, p.Object_Type) NOT IN (SELECT /*+ NO_MERGE */ DISTINCT d.Referenced_Owner, d.Referenced_Name, d.Referenced_Type /* all objects with PL/SQL dependency */
-                                                       FROM   DBA_Dependencies d
-                                                       JOIN   DBA_Procedures pl ON pl.Owner       = d.Owner /* Filters dependencies to PL/SQL only */
-                                                                               AND pl.Object_Name = d.Name
-                                                                               AND pl.Object_Type = d.Type                                                      )
-AND    (p.Owner, p.Object_Name, p.Object_Type) NOT IN (SELECT /*+ NO_MERGE */ Owner, Name, Type FROM DBA_Source WHERE UPPER(Text) LIKE '%PRAGMA%UDF%')
+WITH   Procs AS (SELECT /*+ NO_MERGE MATERIALIZE */ p.Object_ID, p.SubProgram_ID, p.Object_Type, p.Owner, p.Object_Name, p.Procedure_Name
+                 FROM   DBA_Procedures p
+                 LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ DISTINCT Owner, Package_Name, Object_Name
+                                  FROM   DBA_Arguments
+                                  WHERE  Position = 0 /* Function return */
+                                 ) a ON a.Owner = p.Owner AND a.Package_Name = p.Object_Name AND a.Object_Name = p.Procedure_Name
+                 WHERE  (p.Object_Type = 'FUNCTION' OR (p.Object_Type = 'PACKAGE' AND a.Package_Name IS NOT NULL))
+                 AND    p.Owner NOT IN (#{system_schema_subselect})
+                ),
+       Dependencies AS (SELECT /*+ NO_MERGE MATERIALIZE*/ Referenced_Owner, Referenced_Name, Referenced_Type, COUNT(*) Dependencies
+                        FROM   DBA_Dependencies
+                        WHERE  TYPE IN ('FUNCTION', 'PACKAGE', 'PACKAGE BODY', 'PROCEDURE', 'TRIGGER', 'TYPE', 'TYPE BODY')
+                        GROUP BY Referenced_Owner, Referenced_Name, Referenced_Type
+                       ),
+       UDF AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Name, Type FROM DBA_Source WHERE UPPER(Text) LIKE '%PRAGMA%UDF%'),
+       Ash AS (SELECT /*+ NO_MERGE MATERIALIZE */ SUM(Sample_Cycle) Elapsed_Secs, Top_Level_SQL_ID, SQL_ID, PLSQL_ENTRY_OBJECT_ID, PLSQL_ENTRY_SUBPROGRAM_ID, PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID
+               FROM   (
+                       SELECT /*+ NO_MERGE ORDERED */
+                              10 Sample_Cycle, Top_Level_SQL_ID, SQL_ID, Top_Level_SQL_OpCode, PLSQL_ENTRY_OBJECT_ID, PLSQL_ENTRY_SUBPROGRAM_ID, PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID
+                       FROM   DBA_Hist_Active_Sess_History s
+                       LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
+                       JOIN   DBA_Hist_Snapshot ss ON ss.DBID = s.DBID AND ss.Instance_Number = s.Instance_Number AND ss.Snap_ID = s.Snap_ID
+                       WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
+                       AND    ss.Begin_Interval_Time > SYSDATE - ?
+                       UNION ALL
+                       SELECT 1 Sample_Cycle, Top_Level_SQL_ID, SQL_ID, Top_Level_SQL_OpCode, PLSQL_ENTRY_OBJECT_ID, PLSQL_ENTRY_SUBPROGRAM_ID, PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID
+                       FROM   gv$Active_Session_History
+                      )
+               WHERE  PLSQL_ENTRY_OBJECT_ID IS NOT NULL
+               AND    Top_Level_SQL_OpCode != 47 /* Top level SQL does not start with PL/SQL */
+               GROUP BY Top_Level_SQL_ID, SQL_ID, PLSQL_ENTRY_OBJECT_ID, PLSQL_ENTRY_SUBPROGRAM_ID, PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID
+              )
+SELECT p.Object_Type, p.Owner, p.Object_Name, p.Procedure_Name, d.Dependencies,
+       peo.Elapsed_Secs Elapsed_Secs_Entry, peo.Top_Level_SQL_ID Top_Entry_Top_Level_SQL_ID, peo.SQL_ID Top_Entry_SQL_ID,
+       po.Elapsed_Secs Elapsed_Secs_Direct, po.Top_Level_SQL_ID Top_Direct_Top_Level_SQL_ID, po.SQL_ID Top_Direct_SQL_ID
+FROM   Procs p
+LEFT OUTER JOIN Dependencies d ON d.Referenced_Owner = p.Owner AND d.Referenced_Name = p.Object_Name AND d.Referenced_Type = p.Object_Type
+LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ PLSQL_ENTRY_OBJECT_ID, PLSQL_ENTRY_SUBPROGRAM_ID, SUM(Elapsed_Secs) Elapsed_Secs,
+                 MAX(Top_Level_SQL_ID) KEEP (DENSE_RANK LAST ORDER BY Elapsed_Secs) Top_Level_SQL_ID,
+                 MAX(SQL_ID)           KEEP (DENSE_RANK LAST ORDER BY Elapsed_Secs) SQL_ID
+                 FROM   Ash
+                 GROUP BY PLSQL_ENTRY_OBJECT_ID, PLSQL_ENTRY_SUBPROGRAM_ID
+                ) peo ON peo.PLSQL_Entry_Object_ID = p.Object_ID AND peo.PLSQL_Entry_SubProgram_ID = p.SubProgram_ID
+LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID, SUM(Elapsed_Secs) Elapsed_Secs,
+                 MAX(Top_Level_SQL_ID) KEEP (DENSE_RANK LAST ORDER BY Elapsed_Secs) Top_Level_SQL_ID,
+                 MAX(SQL_ID)           KEEP (DENSE_RANK LAST ORDER BY Elapsed_Secs) SQL_ID
+                 FROM   Ash
+                 GROUP BY PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID
+                ) po ON po.PLSQL_Object_ID = p.Object_ID AND po.PLSQL_SubProgram_ID = p.SubProgram_ID
+WHERE  (p.Owner, p.Object_Name, p.Object_Type) NOT IN (SELECT /*+ NO_MERGE */ Owner, Name, DECODE(Type, 'PACKAGE BODY', 'PACKAGE', Type) FROM UDF)
+ORDER BY Elapsed_Secs_Entry DESC NULLS LAST
            ",
+            :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>2, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') }]
         },
         {
             :name  => t(:dragnet_helper_153_name, :default=>'Candidates for DETERMINISTIC in user-defined PL/SQL functions'),

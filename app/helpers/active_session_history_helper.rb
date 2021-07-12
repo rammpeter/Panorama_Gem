@@ -14,6 +14,10 @@ module ActiveSessionHistoryHelper
                           WHERE  t.DBID=s.DBID AND t.SQL_ID=s.SQL_ID AND RowNum < 2
                          )"
 
+      top_level_sql_id_info_sql = "(SELECT TO_CHAR(SUBSTR(t.SQL_Text,1,40))
+                          FROM   DBA_Hist_SQLText t
+                          WHERE  t.DBID=s.DBID AND t.SQL_ID=s.Top_Level_SQL_ID AND RowNum < 2
+                         )"
 
       @session_statistics_key_rules_hash["Event"]           = {:sql => "NVL(s.Event, s.Session_State)", :sql_alias => "event",    :Name => 'Wait-Event',    :Title => 'Event (Session-State, if Event = NULL)', :Data_Title => '#{explain_wait_event(rec.event)}' }
       @session_statistics_key_rules_hash["Wait-Class"]      = {:sql => "NVL(s.Wait_Class, 'CPU')", :sql_alias => "wait_class",    :Name => 'Wait-Class',    :Title => 'Wait-Class' }
@@ -27,8 +31,9 @@ module ActiveSessionHistoryHelper
       @session_statistics_key_rules_hash["Session-Type"]    = {:sql => "SUBSTR(s.Session_Type,1,1)", :sql_alias => "session_type",              :Name => 'S-T',          :Title      => "Session-type: (U)SER, (F)OREGROUND or (B)ACKGROUND" }
       @session_statistics_key_rules_hash["Transaction"]     = {:sql => "s.Tx_ID",             :sql_alias => "transaction",        :Name => 'Tx.',           :Title => 'Transaction-ID' } if get_db_version >= "11.2"
       @session_statistics_key_rules_hash["User"]            = {:sql => "u.UserName",          :sql_alias => "username",           :Name => "User",          :Title => "User" }
-      @session_statistics_key_rules_hash["SQL-ID"]          = {:sql => "s.SQL_ID",            :sql_alias => "sql_id",             :Name => 'SQL-ID',        :Title => 'SQL-ID', :info_sql  => sql_id_info_sql, :info_caption => "SQL-Text (first chars)" }
+      @session_statistics_key_rules_hash["SQL-ID"]          = {:sql => "s.SQL_ID",            :sql_alias => "sql_id",             :Name => 'SQL-ID',        :Title => 'SQL-ID of the direct executed SQL', :info_sql  => sql_id_info_sql, :info_caption => "SQL-Text (first chars)" }
       @session_statistics_key_rules_hash["SQL Exec-ID"]     = {:sql => "s.SQL_Exec_ID",       :sql_alias => "sql_exec_id",        :Name => 'SQL Exec-ID',   :Title => 'SQL Execution ID', :info_sql  => "MIN(SQL_Exec_Start)", :info_caption => "Exec. start time"} if get_db_version >= "11.2"
+      @session_statistics_key_rules_hash["Top Level SQL-ID"]= {:sql => "s.Top_Level_SQL_ID",  :sql_alias => "top_level_sql_id",   :Name => 'Top Level SQL-ID',  :Title => "Top level SQL-ID\nID of the surrounding SQL if direct SQL is called recursive by another SQL", :info_sql  => top_level_sql_id_info_sql, :info_caption => "SQL-Text (first chars)" }
       @session_statistics_key_rules_hash["Operation"]       = {:sql => "RTRIM(s.SQL_Plan_Operation||' '||s.SQL_Plan_Options)", :sql_alias => "operation", :Name => 'Operation', :Title => 'Operation of explain plan line' } if get_db_version >= "11.2"
       @session_statistics_key_rules_hash["Module"]          = {:sql => "TRIM(s.Module)",      :sql_alias => "module",             :Name => 'Module',        :Title => 'Module set by DBMS_APPLICATION_INFO.Set_Module', :info_caption => 'Info' }
       @session_statistics_key_rules_hash["Action"]          = {:sql => "TRIM(s.Action)",      :sql_alias => "action",             :Name => 'Action',        :Title => 'Action set by DBMS_APPLICATION_INFO.Set_Module', :info_caption => 'Info' }
@@ -90,28 +95,29 @@ module ActiveSessionHistoryHelper
   def additional_ash_filter_conditions
     retval =
       {
-        Blocking_Instance:            {:name => 'Blocking_Instance',           :sql => "s.Blocking_Inst_ID"},
-        Blocking_Session:             {:name => 'Blocking_Session',            :sql => "s.Blocking_Session"},
-        Blocking_Session_Serial_No:   {:name => 'Blocking_Session_Serial_No',  :sql => "s.Blocking_Session_Serial_No"}, 
-        Blocking_Session_Status:      {:name => 'Blocking_Session_Status',     :sql => "s.Blocking_Session_Status"},
-        Blocking_Event:               {:name => 'Blocking Event',              :sql => "blocking.Event"},        # needs additional join
-        DBID:                         {:name => 'DBID',                        :sql => "s.DBID",                          :hide_content => true},
-        Min_Snap_ID:                  {:name => 'Min_Snap_ID',                 :sql => "s.snap_id >= ?",                  :hide_content => true, :already_bound => true  },
-        Max_Snap_ID:                  {:name => 'Max_Snap_ID',                 :sql => "s.snap_id <= ?",                  :hide_content => true, :already_bound => true  },
-        Plan_Line_ID:                 {:name => 'Plan-Line-ID',                :sql => "s.SQL_Plan_Line_ID" },
-        SQL_Child_Number:             {:name => 'Child number',                :sql => "s.SQL_Child_Number"},
-        Plan_Hash_Value:              {:name => 'Plan-Hash-Value',             :sql => "s.SQL_Plan_Hash_Value"},
-        Session_ID:                   {:name => 'Session-ID',                  :sql => "s.Session_ID"},
-        SerialNo:                     {:name => 'SerialNo',                    :sql => "s.Session_Serial_No"},
-        Idle_Wait1:                   {:name => 'Idle_Wait1',                  :sql => "NVL(s.Event, s.Session_State) != ?", :hide_content =>true, :already_bound => true},
-        Owner:                        {:name => 'Owner',                       :sql => "UPPER(o.Owner)"},
-        Object_Name:                  {:name => 'Object_Name',                 :sql => "o.Object_Name"},
-        SubObject_Name:               {:name => 'SubObject_Name',              :sql => "o.SubObject_Name"},
-        Current_Obj_No:               {:name => 'Current_Obj_No',              :sql => "s.Current_Obj_No"},
-        User_ID:                      {:name => 'User-ID',                     :sql => "s.User_ID"},
-        Additional_Filter:            {:name => 'Additional Filter',           :sql => "UPPER(u.UserName||s.Session_ID||s.SQL_ID||s.Module||s.Action||o.Object_Name||s.Program#{get_db_version >= '11.2' ? '|| s.Machine' : ''}||s.SQL_Plan_Hash_Value||s.Client_ID) LIKE UPPER('%'||?||'%')", :already_bound => true }, # Such-Filter
-        Temp_Usage_MB_greater:        {:name => 'TEMP-usage (MB) > x',         :sql => "s.Temp_Space_Allocated > ?*(1024*1024)", :already_bound => true},
-        Temp_TS:                      {:name => 'TEMP-TS',                     :sql => "u.Temporary_Tablespace"},
+        Blocking_Instance:                {:name => 'Blocking_Instance',           :sql => "s.Blocking_Inst_ID"},
+        Blocking_Session:                 {:name => 'Blocking_Session',            :sql => "s.Blocking_Session"},
+        Blocking_Session_Serial_No:       {:name => 'Blocking_Session_Serial_No',  :sql => "s.Blocking_Session_Serial_No"},
+        Blocking_Session_Status:          {:name => 'Blocking_Session_Status',     :sql => "s.Blocking_Session_Status"},
+        Blocking_Event:                   {:name => 'Blocking Event',              :sql => "blocking.Event"},        # needs additional join
+        DBID:                             {:name => 'DBID',                        :sql => "s.DBID",                          :hide_content => true},
+        Min_Snap_ID:                      {:name => 'Min_Snap_ID',                 :sql => "s.snap_id >= ?",                  :hide_content => true, :already_bound => true  },
+        Max_Snap_ID:                      {:name => 'Max_Snap_ID',                 :sql => "s.snap_id <= ?",                  :hide_content => true, :already_bound => true  },
+        Plan_Line_ID:                     {:name => 'Plan-Line-ID',                :sql => "s.SQL_Plan_Line_ID" },
+        SQL_Child_Number:                 {:name => 'Child number',                :sql => "s.SQL_Child_Number"},
+        SQL_ID_or_Top_Level_SQL_ID:       {:name => 'SQL-ID or top level SQL-ID',  :sql => "? IN (s.SQL_ID, s.Top_Level_SQL_ID)", already_bound: true},
+        Plan_Hash_Value:                  {:name => 'Plan-Hash-Value',             :sql => "s.SQL_Plan_Hash_Value"},
+        Session_ID:                       {:name => 'Session-ID',                  :sql => "s.Session_ID"},
+        SerialNo:                         {:name => 'SerialNo',                    :sql => "s.Session_Serial_No"},
+        Idle_Wait1:                       {:name => 'Idle_Wait1',                  :sql => "NVL(s.Event, s.Session_State) != ?", :hide_content =>true, :already_bound => true},
+        Owner:                            {:name => 'Owner',                       :sql => "UPPER(o.Owner)"},
+        Object_Name:                      {:name => 'Object_Name',                 :sql => "o.Object_Name"},
+        SubObject_Name:                   {:name => 'SubObject_Name',              :sql => "o.SubObject_Name"},
+        Current_Obj_No:                   {:name => 'Current_Obj_No',              :sql => "s.Current_Obj_No"},
+        User_ID:                          {:name => 'User-ID',                     :sql => "s.User_ID"},
+        Additional_Filter:                {:name => 'Additional Filter',           :sql => "UPPER(u.UserName||s.Session_ID||s.SQL_ID||s.Module||s.Action||o.Object_Name||s.Program#{get_db_version >= '11.2' ? '|| s.Machine' : ''}||s.SQL_Plan_Hash_Value||s.Client_ID) LIKE UPPER('%'||?||'%')", :already_bound => true }, # Such-Filter
+        Temp_Usage_MB_greater:            {:name => 'TEMP-usage (MB) > x',         :sql => "s.Temp_Space_Allocated > ?*(1024*1024)", :already_bound => true},
+        Temp_TS:                          {:name => 'TEMP-TS',                     :sql => "u.Temporary_Tablespace"},
       }
     retval[:con_id] =  {:name => 'Con-ID', :sql => "Con_ID" } if get_db_version >= '12.1'
     retval

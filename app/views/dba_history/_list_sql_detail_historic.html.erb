@@ -213,7 +213,7 @@ Hash-value over total optimizer environment + Number of different optimizer envi
                      :Max_Snap_ID            => @sql.max_snap_id,
                      :time_selection_start   => @time_selection_start,
                      :time_selection_end     => @time_selection_end ,
-                     "SQL-ID"                => @sql_id
+                     SQL_ID_or_Top_Level_SQL_ID: @sql_id
       }
 
       groupfilter[:Instance] = @instance if @instance
