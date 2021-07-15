@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    panorama_gem (2.10.74)
+    panorama_gem (2.10.75)
       actionmailer (= 6.1.4)
       actionpack (= 6.1.4)
       actionview (= 6.1.4)
@@ -57,7 +57,7 @@ GEM
       minitest (>= 5.1)
       tzinfo (~> 2.0)
       zeitwerk (~> 2.3)
-    addressable (2.7.0)
+    addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     builder (3.2.4)
     capybara (3.35.3)
@@ -88,13 +88,13 @@ GEM
     method_source (1.0.0)
     mime-types (3.3.1)
       mime-types-data (~> 3.2015)
-    mime-types-data (3.2021.0225)
+    mime-types-data (3.2021.0704)
     mini_mime (1.1.0)
     minitest (5.14.4)
     nio4r (2.5.7-java)
     nokogiri (1.11.7-java)
       racc (~> 1.4)
-    playwright-ruby-client (0.7.0)
+    playwright-ruby-client (0.8.0)
       concurrent-ruby (>= 1.1.6)
       mime-types (>= 3.0)
     public_suffix (4.0.6)
@@ -115,13 +115,13 @@ GEM
       method_source
       rake (>= 0.13)
       thor (~> 1.0)
-    rake (13.0.5)
+    rake (13.0.6)
     rb-fsevent (0.11.0)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
     regexp_parser (2.1.1)
     ruby-plsql (0.7.1)
-    rubyzip (2.3.0)
+    rubyzip (2.3.2)
     sass (3.7.4)
       sass-listen (~> 4.0.0)
     sass-listen (4.0.0)
@@ -178,4 +178,4 @@ DEPENDENCIES
   webdrivers
 
 BUNDLED WITH
-   2.2.20
+   2.2.23

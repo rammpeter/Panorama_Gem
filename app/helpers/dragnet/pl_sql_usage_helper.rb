@@ -102,9 +102,14 @@ Therefore this check is excluded here.
         {
             :name  => t(:dragnet_helper_152_name, :default=>'Candidates for PRAGMA UDF in pure user-defined PL/SQL functions'),
             :desc  => t(:dragnet_helper_152_desc, :default=>"User-defined PL/SQL in SQL-statements may perform better without context switching with PRAGMA UDF.
-This selection shows PL/SQL functions without PRAGMA UDF and without PL/SQL code depending from them.
+This selection shows PL/SQL functions without PRAGMA UDF sorted by the time the SQL spends in executing this function (by ASH).
+Elapsed time inside the function as well as top level and direct executed SQL-IDs are given for:
+- The SQL which executed the named function
+- The recursive execution of this function by an SQL encapsulated inside another PL/SQL code
 
-Click on the object name to get function details including a button for syntax search for SQL statements using this function.
+Click on the object name to get function details including buttons for:
+- syntax search for SQL statements using this function
+- Dependencies of this function or package in both directions
 "),
             :sql=> "\
 WITH   Procs AS (SELECT /*+ NO_MERGE MATERIALIZE */ p.Object_ID, p.SubProgram_ID, p.Object_Type, p.Owner, p.Object_Name, p.Procedure_Name

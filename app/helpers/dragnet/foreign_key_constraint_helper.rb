@@ -63,7 +63,44 @@ AND    c.Validated != 'VALIDATED'
 AND    c.Owner NOT IN ('SYSTEM')
 ORDER BY t.Num_Rows DESC",
         },
+        {
+          :name  => t(:dragnet_helper_5_name, :default=> 'Unnecessary primary keys without referencing foreign keys'),
+          :desc  => t(:dragnet_helper_5_desc, :default=> 'Primary key constraint including PK-index and PK-column may be obsolete and can be dropped if:
+- Purpose of this primary key is only technical nature (not ensuring business-driven uniqueness)
+- No foreign keys are referencing this primary key
+- No access occurs by using the primary key index
 
+Precondition for this selection is that index usage is monitored by ALTER INDEX ... MONITORING USAGE.'),
+          :sql=> "\
+WITH Cons AS (SELECT /*+ NO_MERGE MATERIALIZE */ cc.Owner, cc.Constraint_Name, cc.Table_Name, MIN(cc.Column_Name) Column_Name,
+                     MIN(Index_Owner) Index_Owner, MIN(Index_Name) Index_Name
+              FROM   DBA_Cons_Columns cc
+              JOIN   DBA_Constraints c ON c.Owner = cc.Owner AND c.Table_Name = cc.Table_Name AND c.Constraint_Name = cc.Constraint_Name
+              WHERE  c.Constraint_Type = 'P'
+              GROUP BY cc.Owner, cc.Constraint_Name, cc.Table_Name
+              HAVING COUNT(*) = 1
+             ),
+     RefCons AS (SELECT /*+ NO_MERGE  MATERIALIZE */ r_Owner, r_Constraint_Name FROM DBA_Constraints WHERE Constraint_Type = 'R'),
+     Usage AS (SELECT /*+ NO_MERGE  MATERIALIZE */ u.UserName Owner, io.name Index_Name, t.name Table_Name,
+               decode(bitand(i.flags, 65536), 0, 'NO', 'YES') Monitoring,
+               decode(bitand(ou.flags, 1), 0, 'NO', 'YES') Used,
+               ou.start_monitoring, ou.end_monitoring
+        FROM   sys.object_usage ou
+        JOIN   sys.ind$ i  ON i.obj# = ou.obj#
+        JOIN   sys.obj$ io ON io.obj# = ou.obj#
+        JOIN   sys.obj$ t  ON t.obj# = i.bo#
+        JOIN   DBA_Users u ON u.User_ID = io.owner#
+       )
+SELECT c.Owner, c.Table_Name, c.Constraint_Name, c.Column_Name, c.Index_Name, i.Index_Type, i.Num_Rows, u.Start_Monitoring
+FROM   Cons c
+JOIN   DBA_Indexes i ON i.Owner = c.Index_Owner AND i.Index_Name = c.Index_name
+JOIN   Usage u ON u.Owner = c.Index_Owner AND u.Index_Name = c.Index_Name
+WHERE  TO_DATE(u.Start_Monitoring, 'MM/DD/YYYY HH24:MI:SS') < SYSDATE - ?
+AND    u.Used='NO' AND u.Monitoring='YES'
+AND    (c.Owner, c.Constraint_Name) NOT IN (SELECT r_Owner, r_Constraint_Name FROM RefCons)
+ORDER BY i.Num_Rows DESC NULLS LAST",
+          parameter: [{:name=>t(:dragnet_helper_9_param_1_name, :default=>'Number of days backwards without usage'),    :size=>8, :default=>7,   :title=>t(:dragnet_helper_9_param_1_hint, :default=>'Minumin age in days of Start-Monitoring timestamp of unused index')}]
+        },
     ]
   end
 

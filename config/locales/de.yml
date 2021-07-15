@@ -1601,9 +1601,15 @@
 
   dragnet_helper_152_desc: |-
     User-defined PL/SQL-Funktionen in SQL-Statements können besser performen ohne Kontextwechsel durch PRAGMA UDF.
-    Diese Selektion zeigt PL/SQL->Funktionen ohne PRAGMA UDF von denen kein weiterer PL/SQL-Code abhängig ist.
+    Diese Selektion zeigt PL/SQL->Funktionen ohne PRAGMA UDF sortiert nach der Zeit die ein SQL in dieser Funktion verbracht hat (über ASH).
+    Die angefallene Laufzeit wie Top-Level- und direkt ausgeführtes SQL werden gezeigt für:
+    - Das die genannte Funktion direkt ausführende SQL (entry)
+    - Die Ausführung der Funktion rekursiv innerhalb eines in weiterem PL/SQL gekapselten SQLs
 
-    Ein Klick auf den Objekt-Namen bring Details zur Function inklusive eines Buttons für die Syntax-Suche nach dei Funktion nutzenden SQL-Statements.
+    Ein Klick auf den Objekt-Namen bring Details zur Function inklusive von Buttons für:
+    - die Syntax-Suche nach die Funktion nutzenden SQL-Statements
+    - die Abhängigkeiten dieser Funktion in beiden Richtungen
+
   dragnet_helper_152_name: |-
     Kandidaten für PRAGMA UDF in puren user-defined PL/SQL-Funktionen
 
@@ -1684,6 +1690,16 @@
     Exzessive logon-Operationen (über aktuelle gv$Session)
   dragnet_helper_161_param_1_hint:                          Maximales Alter einer Session in Sekunden (seit v$Session.logon_time) um in Selektion berücksichtigt zu werden
   dragnet_helper_161_param_1_name:                          Maximales Alter einer Session in Sekunden
+
+  dragnet_helper_162_desc: |-
+    Primärschlüssel einschliesslich der PK-Indizes and PK-Spalten sind überflüssig und können entfernt werden, wenn:
+    - Der Zweck des Primärschlüssels nur technischer Natur ist (keine Absicherung fachlicher Eindeutigkeiten)
+    - Keine Foreign Key Constraints den Primärschlüssel referenzieren
+    - Kein Zugriff stattfindet mit Nutzung des Primärschlüssel-Index
+
+    Voraussetzung für diese Selektion ist die Aufzeichnung der Index-Nutzug per ALTER INDEX ... MONITORING USAGE.
+
+  dragnet_helper_162_name:                                  Unnötige Primärschlüssel ohne Referenzierung durch Foreign Keys
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 
