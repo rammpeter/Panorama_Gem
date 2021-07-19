@@ -182,12 +182,8 @@ module ApplicationHelper
 
   # Genutzt zur Anzeige im zentralen Screen
   def current_tns
-    if get_current_database
-      get_current_database[:tns]
-    else
-      '[Keine]'
-    end
-  end 
+    get_current_database[:tns] if get_current_database
+  end
 
   def formattedNumber(number,                 # Auszugebende Zahl (Integer oder Float)
                       decimalCount=0,         # Anzahl Dezimalstellen
