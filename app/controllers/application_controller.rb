@@ -151,7 +151,6 @@ class ApplicationController < ActionController::Base
 
   # Ausgabe einer Popup-Message,
   # Nach Aufruf von show_popup_message muss mittels return die Verarbeitung der Controller-Methode abgebrochen werden (Vermeiden doppeltes rendern)
-
   def show_popup_message(message, response_format = :js)
     Rails.logger.info "show_popup_message with format #{response_format}: #{message}"
 

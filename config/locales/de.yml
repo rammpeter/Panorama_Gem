@@ -54,7 +54,6 @@
 
   active_session_history_duration_caption:                  Dauer
   active_session_history_duration_hint:                     Dauer in Sekunden innerhalb des Zeitraumes als Zeitabschnitt
-  active_session_history_first_occurrence_caption:          Erstes Auftreten
   active_session_history_first_occurrence_hint:             Erstes Auftreten eines sample-record in Gruppierung
   active_session_history_helper_db_object_title: |-
     aus gv$Session.Row_Wait_Obj#. Wenn p2Text=object#, dann wird diese genutzt anstatt row_wait_obj#. Achtung: Kann auch Objekt der vorherigen Aktion enthalten
@@ -1967,6 +1966,8 @@
   show_mutex_statistics_historic_timeline_caption:          Zeitliche Historie
   show_mutex_statistics_historic_timeline_hint:             Mutex-Sleep-Historie zeitlich gruppiert
   show_mutex_statistics_historic_waiter_hint:               Mutex-Sleep-Historie Gruppiert nach Waiter-Sessions
+
+  start_end_time_swapped:                                   Endzeit (%{time_selection_end}) muss nach Startzeit (%{time_selection_start}) liegen
 
   storage_tablespace_usage_header_caption:                  Storage-Objekte für Datenbank
   storage_tablespace_usage_schemas_mb_hint:                 Genutzter Platz in MB für Segment-Typ

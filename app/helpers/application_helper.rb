@@ -439,6 +439,14 @@ module ApplicationHelper
     if @time_selection_end && @time_selection_end != ''
       set_cached_time_selection_end(check_timestamp_picture(@time_selection_end))
     end
+    # Check if endtime is greater than starttime
+    if Time.parse(@time_selection_end) < Time.parse(@time_selection_start)
+      raise PopupMessageException.new t(:start_end_time_swapped,
+              default:              'End time (%{time_selection_end}) should be later than start time (%{time_selection_start})',
+              time_selection_start: @time_selection_start,
+              time_selection_end:   @time_selection_end
+            )
+    end
   end
 
   # Vorbelegung fuer Eingabefeld
