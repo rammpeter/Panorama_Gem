@@ -1,7 +1,7 @@
 <% @update_area = get_unique_area_id %>
 
 <%
-  @header = "TEMP usage by sessions in status \"ACTIVE\"<br/><br/>Total size of #{params[:groupfilter][:Temp_TS] ? params[:groupfilter][:Temp_TS] : "all temp files"} = #{fn @total_temp_mb} MB"
+  @header = "TEMP usage by sessions in status \"ACTIVE\"<br/><br/>Total size of #{@groupfilter[:Temp_TS] ? @groupfilter[:Temp_TS] : "all temp files"} = #{fn @total_temp_mb} MB"
   @repeat_action = :list_temp_usage_historic
 
   @group_filter_addition = []
