@@ -482,6 +482,7 @@ class StorageController < ApplicationController
     partition_name    = prepare_param(:partition_name)
     subpartition_name = prepare_param(:subpartition_name)
     object_type       = prepare_param(:object_type) || 'TABLE'
+    prefix            = prepare_param :prefix
 
     case
     when object_type == 'TABLE' || object_type == 'TABLE PARTITION' then
@@ -516,7 +517,7 @@ class StorageController < ApplicationController
     end
 
     respond_to do |format|
-      format.html {render :html => "real:&nbsp;#{fn num_rows}".html_safe}
+      format.html {render :html => "#{prefix}real:&nbsp;#{fn num_rows}".html_safe}
     end
   end
 

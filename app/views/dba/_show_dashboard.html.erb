@@ -135,4 +135,6 @@ Refreshed data is buffered in browser than and may last longer than data is pres
         jQuery('#<%= @update_area %>').html('');
         return false;
     }
+
+    jQuery('#<%= @refresh_id %>').click();  // Execute dashboard at first load with default values
 </script>

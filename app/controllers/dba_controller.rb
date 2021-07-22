@@ -1849,19 +1849,6 @@ class DbaController < ApplicationController
     ash_data.each do |a|
       a.sessions = a.sessions.to_f if a.sessions.instance_of? BigDecimal
     end
-=begin
-    ash_data = sql_select_all ["\
-      SELECT Sample_Time_String, Wait_Class, COUNT(*) Sessions
-      FROM   (SELECT TO_CHAR(Sample_Time, 'YYYY/MM/DD HH24:MI:SS') Sample_Time_String,
-                     COALESCE(Wait_Class, DECODE(Session_State, 'ON CPU', 'CPU', '[Unknown]')) Wait_Class
-              FROM   gv$Active_Session_History
-              #{where_string_inner}
-             )
-      #{where_string_outer}
-      GROUP BY Sample_Time_String, Wait_Class
-      ORDER BY Sample_Time_String, Wait_Class
-    "].concat(where_values_inner).concat(where_values_outer)
-=end
     render json: { grouping_secs: grouping_secs, ash_data: ash_data }
   end
 
@@ -1938,14 +1925,19 @@ class DbaController < ApplicationController
     end
 
     @top_sqls = sql_select_all ["\
-      SELECT h.*, SUBSTR(s.SQL_Text, 1, 80) SQL_SubText
+      SELECT h.*, SUBSTR(s.SQL_Text, 1, 80) SQL_SubText,
+             CASE WHEN User_IDs = 1 THEN (SELECT u.UserName FROM All_Users u WHERE u.User_ID = h.Min_User_ID) END UserName
       FROM   (
               SELECT /*+ NO_MERGE */ *
               FROM   (
                       SELECT Inst_ID, SQL_ID, SQL_Child_Number, COUNT(*) Wait_Time_Secs,
                              COUNT(DISTINCT QInst_ID||','||QSession_ID||','||QSession_Serial_No) Sessions,
-                             COUNT(DISTINCT PQ_Session) PQ_Sessions,
-                             MIN(QInst_ID) Min_QInst_ID, MIN(QSession_ID) Min_QSession_ID, MIN(QSession_Serial_No) Min_QSession_Serial_No,
+                             COUNT(DISTINCT PQ_Session)   PQ_Sessions,
+                             MIN(QInst_ID)                Min_QInst_ID,
+                             MIN(QSession_ID)             Min_QSession_ID,
+                             MIN(QSession_Serial_No)      Min_QSession_Serial_No,
+                             COUNT(DISTINCT User_ID)      User_IDs,
+                             MIN(User_ID)                 Min_User_ID,
                              MIN(Sample_Time) First_OCcurrence, MAX(Sample_Time) Last_Occurrence
                       FROM   (SELECT h.*,
                                      NVL(QC_Instance_ID, Inst_ID)                   QInst_ID,
