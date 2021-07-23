@@ -24,6 +24,8 @@
 //= require superfish/superfish
 //= require jstree
 //= require jquery.easytabs
+//= require codemirror.js
+//= require sql.js
 //= require_tree .
 
 "use strict";

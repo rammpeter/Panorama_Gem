@@ -7,7 +7,7 @@
           hint:                 'Execute SQL statement at cursor position (Ctrl+Enter)',
           icon_class:           'cui-play-circle',
           icon_style:           'font-size: larger;',
-          action:               'SQL_Worksheet.exec_worksheet_sql();',
+          action:               'sql_worksheet.exec_worksheet_sql();',
           show_icon_in_caption: true
       },
       {
@@ -16,7 +16,7 @@
           hint:                 'Explain SQL statement at cursor position by EXPLAIN PLAN FOR ... (Ctrl+E)',
           icon_class:           'cui-magnifying-glass',
           icon_style:           'font-size: larger;',
-          action:               'SQL_Worksheet.explain_worksheet_sql();',
+          action:               'sql_worksheet.explain_worksheet_sql();',
           show_icon_in_caption: true
       },
       {
@@ -25,7 +25,7 @@
           hint:                 'Show details of executed SQL in current SGA-memory (Alt+Enter)',
           icon_class:           'cui-settings',
           icon_style:           'font-size: larger;',
-          action:               'SQL_Worksheet.sql_in_sga();',
+          action:               'sql_worksheet.sql_in_sga();',
           show_icon_in_caption: true
       },
     ],
@@ -34,9 +34,7 @@
   )
 %>
 
-<div id="sql_text_div">
-  <textarea id="sql_text" style="width: 100%; resize: none; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;
-      height: 300px; font-family: monospace; font-size: larger; padding: 5px;"></textarea>
+<div id="sql_text_div" style="padding-bottom: 3px;">
 </div>
 
 
@@ -56,42 +54,9 @@
 </div>
 
 <script type="application/javascript">
+    var sql_worksheet = new SQL_Worksheet('sql_text_div');
 
-    $( "#sql_text_div" )
-        .resizable()
-        .find(".ui-resizable-e").remove()                    // Entfernen des rechten resizes-Cursors
-        .find(".ui-resizable-se").remove()                   // Entfernen des rechten unteren resize-Cursors
-    ;
-
-    $( "#sql_text_div" ).resize(function(){
-        $('#sql_text').css('height', ($("#sql_text_div").height()-3)+'px');
-    });
-
-
-    $( function() {
-        console.log("Init tab outside");
-        SQL_Worksheet.init_tab_container();
-        // $( "#sql_worksheet_tab_container" ).easytabs({animate: false}); // initialize tabs
-    } );
-
-
-    $("#sql_text").bind("keydown", function(event) {
-      if (event.ctrlKey == true && event.key == 'Enter'){
-          SQL_Worksheet.exec_worksheet_sql();
-          return false;
-      }
-      if (event.ctrlKey == true && event.key == 'e'){
-          SQL_Worksheet.explain_worksheet_sql();
-          return false;
-      }
-        if (event.altKey == true && event.key == 'Enter'){
-            SQL_Worksheet.sql_in_sga();
-            return false;                                                       // suppress default alt#Enter-Handling
-        }
-    });
-
-
-  // update line and column number in header
+  // TODO: switch to cm update line and column number in header
   $("#sql_text").bind("keyup click focus", function() {
       var sql_text    = $("#sql_text");
       var text_before_selection = sql_text.val().substr(0, sql_text.prop('selectionStart')).split("\n");

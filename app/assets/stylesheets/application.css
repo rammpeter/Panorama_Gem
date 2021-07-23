@@ -16,6 +16,7 @@
  *= require jstree
  *= require coreui-icons-solid.css
  *= require coreui-icons-linear.css
+ *= require codemirror.css
  *= require_tree .
  */
 
