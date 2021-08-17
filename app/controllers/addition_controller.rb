@@ -845,10 +845,23 @@ class AdditionController < ApplicationController
 
   def exec_worksheet_sql
     @caption = nil
-    @sql_statement = params[:sql_statement]
-    @res = sql_select_all @sql_statement
+    @sql_statement = prepare_sql_statement(params[:sql_statement])              # remove trailing semicolon if not PL/SQL
 
-    render_partial :list_dragnet_sql_result, controller: :dragnet
+    # remove comments from SQL
+    stripped_sql_statement = @sql_statement.split("\n").select{|s| s.strip[0,2] != '--'}.join("\n") # remove full line comments
+    stripped_sql_statement.gsub!(/\/\*.*?\*\//m, '')                            # remove /* comments */ also for multiple lines
+    stripped_sql_statement.upcase!
+
+    # TODO: evaluate binds
+
+    # choose execution type and execute
+    if stripped_sql_statement =~ /^SELECT/ || stripped_sql_statement =~ /^WITH/
+      @res = sql_select_all @sql_statement
+      render_partial :list_dragnet_sql_result, controller: :dragnet
+    else
+      PanoramaConnection.sql_execute @sql_statement
+      render html: "<div class='page_caption'>Statement executed at #{Time.now}</div>".html_safe
+    end
   end
 
   def explain_worksheet_sql
@@ -856,7 +869,7 @@ class AdditionController < ApplicationController
       show_popup_message('Nothing to explain: No statement typed')
       return
     end
-    @sql_statement = params[:sql_statement].rstrip.gsub(/;$/, "")       # remove trailing semicolon
+    @sql_statement = prepare_sql_statement(params[:sql_statement])       # remove trailing semicolon
 
     statement_id = get_unique_area_id
 
@@ -945,6 +958,16 @@ COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) #{column_alias}_Cnt"
      #{distinct_expr('Blocking_Event',           '-1')},
      #{distinct_expr('Blocking_Status',          '-1')}
     "
+  end
+
+  # remove trailing semicomon if needed
+  def prepare_sql_statement(sql)
+    sql.rstrip!
+    lines = sql.split("\n")
+    if lines && lines[lines.length-1].strip.upcase != 'END;'
+      sql.gsub!(/;$/, "")
+    end
+    sql
   end
 
 end

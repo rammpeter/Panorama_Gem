@@ -426,6 +426,19 @@ class PanoramaConnection
     PackLicense.filter_sql_for_pack_license(original_sql, get_threadlocal_config[:management_pack_license])
   end
 
+  def self.get_nested_exception_message(exception)
+    if exception.cause                                                          # exception class supports cause
+      message = ''
+      cause = exception
+      while cause = cause.cause                                                 # dig into nested causes
+        message << "#{cause.class}:\n#{cause.message}"
+      end
+      message
+    else
+      "#{exception.class}:\n#{exception.message}"                               # direct use of exception's message
+    end
+  end
+
   # Analog sql_select all, jedoch return ResultIterator mit each-Method
   # liefert Objekt zur späteren Iteration per each, erst dann wird SQL-Select ausgeführt (jedesmal erneut)
   # Parameter: sql = String mit Statement oder Array mit Statement und Bindevariablen
@@ -493,7 +506,7 @@ class PanoramaConnection
     end
 
     # Ensure stacktrace of first exception is show
-    msg = "Error while executing SQL:\n#{e.message}\nSQL-Statement:\n#{sql}\n#{bind_text.length > 0 ? "Bind-Values:\n#{bind_text}" : ''}"
+    msg = "Error while executing SQL:\n#{PanoramaConnection.get_nested_exception_message(e)}\nSQL-Statement:\n#{sql}\n#{bind_text.length > 0 ? "Bind-Values:\n#{bind_text}" : ''}"
     # Rails.logger.error("PanoramaConnection.sql_execute: #{msg}")  # Logging is done in outer exception handler
     new_ex = Exception.new(msg)
     new_ex.set_backtrace(e.backtrace)
@@ -789,7 +802,7 @@ class PanoramaConnection
       end
 
       # Ensure stacktrace of first exception is show
-      msg = "Error while executing SQL:\n#{e.message}\nSQL-Statement:\n#{@stmt}\n#{bind_text.length > 0 ? "Bind-Values:\n#{bind_text}" : ''}"
+      msg = "Error while executing SQL:\n#{PanoramaConnection.get_nested_exception_message(e)}\nSQL-Statement:\n#{@stmt}\n#{bind_text.length > 0 ? "Bind-Values:\n#{bind_text}" : ''}"
       Rails.logger.error("SqlSelectIterator.each : #{msg}")
       new_ex = Exception.new(msg)
       new_ex.set_backtrace(e.backtrace)
