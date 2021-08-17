@@ -17,7 +17,7 @@
       <select name="groupby">
         <% session_statistics_key_rules.keys.sort.each do |key| %>
           value = session_statistics_key_rules[key]
-          <%=  "<option value='#{key}' #{"selected='selected'" if key=="Event"}>#{key}</option>".html_safe %>
+          <%=  "<option value='#{key}' #{"selected='selected'" if key=='Wait Event'}>#{key}</option>".html_safe %>
         <% end %>
       </select>
     </div>

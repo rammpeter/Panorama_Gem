@@ -12,14 +12,14 @@
       <select name="groupby">
         <% longterm_trend_key_rules.keys.sort.each do |key| %>
           value = session_statistics_key_rules[key]
-          <%=  "<option value='#{key}' #{"selected='selected'" if key=="Wait-Event"}>#{key}</option>".html_safe %>
+          <%=  "<option value='#{key}' #{"selected='selected'" if key=="Wait Event"}>#{key}</option>".html_safe %>
         <% end %>
       </select>
     </div>
 
     <div class="flex-row-element" title="optional additional Filter on all of the following columns:
-- Wait-Event
-- Wait-Class
+- Wait Event
+- Wait Class
 - Username
 - Servicename
 - Machine

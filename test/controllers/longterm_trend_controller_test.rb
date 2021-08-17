@@ -59,8 +59,8 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
   def bind_value_from_key_rule(key)
     case key
     when 'Instance'     then 1
-    when 'Wait-Event'   then 'ON CPU'
-    when 'Wait-Class'   then 'CPU'
+    when 'Wait Event'   then 'ON CPU'
+    when 'Wait Class'   then 'CPU'
     when 'User-Name'    then 'SYS'
     when 'Service-Name' then 'SYS$USERS'
     when 'Machine'      then 'hugo'

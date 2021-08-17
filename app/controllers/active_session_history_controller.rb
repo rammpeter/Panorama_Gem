@@ -122,7 +122,7 @@ class ActiveSessionHistoryController < ApplicationController
   # Felder, die generell von DBA_Hist_Active_Sess_History und gv$Active_Session_History selektiert werden
   def get_ash_default_select_list
     retval = 'Sample_ID, Sample_Time, Session_id, Session_Type, Session_serial# Session_Serial_No, User_ID, SQL_Child_Number, SQL_Plan_Hash_Value, SQL_Opcode,
-              Session_State, Blocking_Session, Blocking_session_Status, blocking_session_serial# Blocking_session_Serial_No, NVL(Event, Session_State) Event, Event_ID, Seq# Sequence, P1Text, P1, P2Text, P2, P3Text, P3,
+              Session_State, Blocking_Session, Blocking_session_Status, blocking_session_serial# Blocking_session_Serial_No, Blocking_Hangchain_Info, NVL(Event, Session_State) Event, Event_ID, Seq# Sequence, P1Text, P1, P2Text, P2, P3Text, P3,
               Wait_Class, Wait_Time, Time_waited, Program, Module, Action, Client_ID, Current_Obj# Current_Obj_No, Current_File#  Current_File_No, Current_Block# Current_Block_No, RawToHex(XID) Tx_ID,
               PLSQL_Entry_Object_ID, PLSQL_Entry_SubProgram_ID, PLSQL_Object_ID, PLSQL_SubProgram_ID, Service_Hash, QC_Session_ID, QC_Instance_ID '
     if get_db_version >= '11.2'
@@ -261,6 +261,7 @@ class ActiveSessionHistoryController < ApplicationController
              #{ single_record_distinct_sql('s.Blocking_Session') },
              #{ single_record_distinct_sql('s.Blocking_session_Status') },
              #{ single_record_distinct_sql('s.Blocking_session_Serial_No') },
+             #{ single_record_distinct_sql('s.Blocking_Hangchain_Info') },
              #{ single_record_distinct_sql('s.Event') },
              #{ single_record_distinct_sql('s.Event_ID') },
              #{ single_record_distinct_sql('s.Sequence') },
@@ -455,13 +456,13 @@ class ActiveSessionHistoryController < ApplicationController
     @groupfilter[:SQL_ID_or_Top_Level_SQL_ID]   =  params[:SQL_ID_or_Top_Level_SQL_ID]          if params[:SQL_ID_or_Top_Level_SQL_ID]
     @groupfilter['Session/Sn.'.to_sym]          =  "#{params[:sid]}, #{params[:serialno]}"      if params[:sid] &&  params[:serialno]
     @groupfilter[:Action]                       =  params[:module_action]                       if params[:module_action]
-    @groupfilter['DB-Object']                   =  params[:db_object]                           if params[:db_object]
+    @groupfilter['DB Object']                   =  params[:db_object]                           if params[:db_object]
 
     @groupby = 'Hugo' # Default
     @groupby = 'SQL-ID'       if params[:sql_id] || params[:SQL_ID_or_Top_Level_SQL_ID]
     @groupby = 'Session/Sn.'  if params[:sid] &&  params[:serialno]
     @groupby = 'Action'       if params[:module_action]
-    @groupby = 'DB-Object'    if params[:db_object]
+    @groupby = 'DB Object'    if params[:db_object]
 
     render_partial
   end

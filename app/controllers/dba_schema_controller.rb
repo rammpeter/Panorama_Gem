@@ -1855,7 +1855,8 @@ WHERE RowNum < 100
                                    ", @owner, @table_name].concat(where_values)
 
     if get_db_version >= '11.1'
-      @extensions = sql_select_all ["SELECT * FROM DBA_Stat_Extensions WHERE Owner = ? AND Table_Name = ?", @owner, @table_name]
+      @extensions     = sql_select_all ["SELECT * FROM DBA_Stat_Extensions WHERE Owner = ? AND Table_Name = ?", @owner, @table_name]
+      @tab_stat_prefs = sql_select_all ["SELECT * FROM DBA_Tab_Stat_Prefs  WHERE Owner = ? AND Table_Name = ?", @owner, @table_name]
     end
 
     render_partial

@@ -469,7 +469,7 @@ module ApplicationHelper
 
 
 
-  # Schnell zu selektierende Information zu Wait-Event-Parametern
+  # Schnell zu selektierende Information zu Wait Event-Parametern
   def quick_wait_params_info(event, p1, p1text, p1raw, p2, p2text, p2raw, p3, p3text, p3raw)
     def get_wait_stat_class_name(id)  # Ermitteln WaitStat aus x. Position nach Class-ID
       return '' unless id

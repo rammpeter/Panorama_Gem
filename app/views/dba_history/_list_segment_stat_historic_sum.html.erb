@@ -59,7 +59,7 @@ def link_column_wait(rec, value)
                                 :Max_Snap_ID            => rec.max_snap_id,
                                 :Idle_Wait1             => "PX Deq Credit: send blkd"
                         }.merge(value_filter),
-                        :groupby        => "DB-Object",
+                        :groupby        => "DB Object",
                         :update_area    => @update_area
                        },
                 :title => t(:dba_history_list_segment_stat_historic_sum_link_wait_hint, :default=>"deeper details on incurred wait times of object from Active Session History")

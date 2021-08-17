@@ -50,7 +50,7 @@
                                          :time_selection_end     => localeDateTime((rec.max_sample_time+60 rescue nil), :minutes),   # add 60 seconds to ensure cut by minute covers exact sample time
                                          :Idle_Wait1             => "PX Deq Credit: send blkd"
                                  },
-                                 :groupby        => "Event",
+                                 :groupby        => 'Wait Event',
                                  :update_area    => @update_area
                          },
                          :title => "Show wait events for operation in Active Session History"

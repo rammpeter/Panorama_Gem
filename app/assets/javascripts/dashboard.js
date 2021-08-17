@@ -243,8 +243,8 @@ class DashboardData {
             let label_ajax_call = "" +
                 "let json_data                       = { groupfilter: {}};\n" +
                 "json_data.groupfilter.DBID          = "+this.dbid+";\n" +
-                "json_data.groupfilter['Wait-Class'] = '"+label+"';\n" +
-                "json_data.groupby                   = 'Event';\n" +
+                "json_data.groupfilter['Wait Class'] = '"+label+"';\n" +
+                "json_data.groupby                   = 'Wait Event';\n" +
                 "json_data.xstart_ms                 = "+min_time_ms+";\n" +
                 "json_data.xend_ms                   = "+max_time_ms+";\n" +
                 "json_data.update_area               = '"+this.update_area_id+"';\n"
