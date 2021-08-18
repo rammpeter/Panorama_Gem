@@ -860,7 +860,7 @@ class AdditionController < ApplicationController
       render_partial :list_dragnet_sql_result, controller: :dragnet
     else
       PanoramaConnection.sql_execute @sql_statement
-      render html: "<div class='page_caption'>Statement executed at #{Time.now}</div>
+      render html: "<div class='page_caption'>Statement executed at #{localeDateTime(Time.now)}</div>
 <pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(@sql_statement)}</pre>
 ".html_safe
     end
