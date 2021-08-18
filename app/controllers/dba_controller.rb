@@ -1814,6 +1814,7 @@ class DbaController < ApplicationController
       smallest_timestamp = sql_select_one ["\
         SELECT MIN(Sample_Time) FROM gv$Active_Session_History #{where_string}
       "].concat(where_values)
+      smallest_timestamp = Time.now-300 if smallest_timestamp.nil?              # use 5 minutes if no data in gv$Active_Session_History, especially for test
     else
       smallest_timestamp = Time.at(smallest_timestamp_ms/1000).utc
     end
