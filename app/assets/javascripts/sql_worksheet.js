@@ -41,14 +41,16 @@ class SQL_Worksheet  {
             let content_lines       = content.split("\n");
             let cursor_pos_line     = this.cm.getCursor().line;
             let current_stmt_end_line;
+            let prev_cursor_pos_line;                                           // remember prev. cursor_pos_line after shift for comparison in while
             do {
+                prev_cursor_pos_line = cursor_pos_line;                         // remember prev. cursor_pos_line after shift for comparison in while
                 current_stmt_end_line = this.find_stmt_end(content_lines);
                 if (current_stmt_end_line != null && current_stmt_end_line < cursor_pos_line){ // remove trailing SQLs if not current SQL
                     for (var i=0; i<=current_stmt_end_line; i++)
                         content_lines.shift();
                     cursor_pos_line = cursor_pos_line - (current_stmt_end_line+1);  // new position cursor in rest of content_lines
                 }
-            } while (current_stmt_end_line != null && current_stmt_end_line < cursor_pos_line);
+            } while (current_stmt_end_line != null && current_stmt_end_line < prev_cursor_pos_line);
             if (current_stmt_end_line != null){                                 // remove follwing SQLs if exist
                 content_lines.length = current_stmt_end_line + 1;               // cut the rest of the array lines
             }
