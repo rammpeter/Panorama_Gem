@@ -126,6 +126,7 @@ class ApplicationController < ActionController::Base
 
   # Aktivitäten nach Requestbearbeitung
   def after_request
+    response.set_header('content-security-policy', "frame-ancestors 'none'")    # suppress embedding in iFrame
     PanoramaConnection.release_connection # Free DB connection
   end
 
