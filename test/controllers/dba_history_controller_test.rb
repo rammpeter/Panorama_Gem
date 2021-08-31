@@ -307,7 +307,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       [nil, 1].each do |instance|
         # download_oracle_com_reachable: simulate test from previous dialog
         begin
-          post '/dba_history/list_performance_hub_report', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>instance, download_oracle_com_reachable: true }
+          post '/dba_history/list_performance_hub_report', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>instance, download_oracle_com_reachable: true }
           assert_response management_pack_license_ok? ? :success : :error
         rescue Exception => e
           msg = "DbaHistoryControllerTest.genuine_oracle_reports: Exception catched #{e.class} #{e.message} but not raised for breaking test"
@@ -317,28 +317,28 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    post '/dba_history/list_awr_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
+    post '/dba_history/list_awr_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>1 }
     assert_response management_pack_license_ok? ? :success : :error
 
-        post '/dba_history/list_awr_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
+        post '/dba_history/list_awr_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end }
     assert_response management_pack_license_ok? ? :success : :error
 
-    post '/dba_history/list_awr_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
+    post '/dba_history/list_awr_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>1 }
     assert_response management_pack_license_ok? ? :success : :error
 
-    post '/dba_history/list_ash_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
+    post '/dba_history/list_ash_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>1 }
     assert_response management_pack_license_ok? ? :success : :error
 
-    post '/dba_history/list_ash_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end }
+    post '/dba_history/list_ash_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end }
     assert_response management_pack_license_ok? ? :success : :error
 
-    post '/dba_history/list_ash_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1 }
+    post '/dba_history/list_ash_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>1 }
     assert_response management_pack_license_ok? ? :success : :error
 
     if @hist_sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
       Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
     else
-      post '/dba_history/list_awr_sql_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :sql_id=>@hist_sql_id }
+      post '/dba_history/list_awr_sql_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>1, :sql_id=>@hist_sql_id }
       assert_response management_pack_license_ok? ? :success : :error
     end
   end

@@ -1942,7 +1942,7 @@ FROM (
     end
 
     raise PopupMessageException.new("No AWR snapshots are found for your database / instance!") if @min_snap_id.nil? || @max_snap_id.nil?
-    raise PopupMessageException.new("Only one or less AWR snapshots found for time period '#{time_selection_start}' until '#{time_selection_end}' and instance=#{instance}! Min. Snap_ID = #{@min_snap_id}, max. Snap_ID = #{@max_snap_id}") if @min_snap_id >= @max_snap_id
+    raise PopupMessageException.new("Only one or less AWR snapshots found for time period '#{time_selection_start}' until '#{time_selection_end}' and instance=#{instance}! Min. Snap_ID = #{@min_snap_id}, max. Snap_ID = #{@max_snap_id}\nPlease use larger time period!") if @min_snap_id >= @max_snap_id
   end
 
   public

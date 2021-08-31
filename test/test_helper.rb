@@ -245,6 +245,7 @@ class ActiveSupport::TestCase
     @max_snap_id = snaps.max_snap_id
 
     @time_selection_start = localeDateTime(snaps.start_time-1, time_format)
+    @time_selection_between = localeDateTime(snaps.start_time+2, time_format)   # a timestamp within the snapshot
     @time_selection_end   = localeDateTime(snaps.end_time+(time_format == :minutes ? 60 : 0) , time_format)      # Add at least one minute to be sure timestamp is after snaps.end_time even if time_format is :minutes
     Rails.logger.info "initialize_min_max_snap_id_and_times: Selected Snap_IDs: #{@min_snap_id}, #{@max_snap_id} Times: #{@time_selection_start}, #{@time_selection_end}"
   end
