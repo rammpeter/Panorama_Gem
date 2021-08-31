@@ -3,12 +3,15 @@
 module SelectHashHelper
 
   # Ermittelns Spaltenwert aus korrespondierendem Hash-Value, Parameter wird als String erwartet
-  def get_hash_value(key)
-    if has_key?(key)
-      self[key]
+  def get_hash_value(key_value)
+    if has_key?(key_value)
+      self[key_value]
     else
-      raise "column '#{key}' does not exist in result-Hash with key-class 'String' or 'Symbol'" unless has_key?(key.to_sym)
-      self[key.to_sym]
+      if has_key?(key_value.to_sym)
+        self[key_value.to_sym]
+      else
+        raise "column '#{key_value}' does not exist in result-Hash with key-class 'String' or 'Symbol'"
+      end
     end
   end
 

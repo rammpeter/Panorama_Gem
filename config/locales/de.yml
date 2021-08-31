@@ -396,7 +396,7 @@
   dba_list_sessions_process_hint:                           Prozess-ID des Client-Prozesses auf der Client-Maschine (1234 ist Dummy-Prozess-ID von JDBC-Treibern, CONNECTION_PROPERTY_THIN_VSESSION_PROCESS_DEFAULT=1234)
   dba_list_sessions_program_hint:                           Ausgeführtes Programm des Client-Prozesses auf der Client-Maschine
   dba_list_sessions_service_hint:                           Name des TNS-Service über den die Session connected ist
-  dba_list_sessions_show_session_hint:                      Anzeige Details zu Session
+  dba_list_sessions_show_session_hint:                      Anzeige der aktuellen Details zu Session aus SGA
   dba_list_sessions_temp_hint:                              Genutzter Temp-Tablespace (MB)
 
   dba_schema_list_objects_avg_space_hint:                   Durchschn. ungenutzte Bytes je Block laut analyze-Info avg_space

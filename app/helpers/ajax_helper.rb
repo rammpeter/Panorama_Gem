@@ -285,7 +285,7 @@ module AjaxHelper
                         :serialno     => serialno,
                         :update_area  => update_area
                 },
-                {:title=>t(:dba_list_sessions_show_session_hint, :default=>'Show session details')},
+                {:title=>t(:dba_list_sessions_show_session_hint, :default=>'Show current session details in SGA')},
                 additional_onclick_js
                 )
     end

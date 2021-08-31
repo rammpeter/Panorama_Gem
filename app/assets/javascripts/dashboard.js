@@ -80,6 +80,7 @@ class DashboardData {
             data: {
                 'instance':                 this.rac_instance,
                 'hours_to_cover':           this.hours_to_cover,
+                'dbid':                     this.dbid,
                 'last_refresh_time_string': this.last_refresh_time_string,
                 'smallest_timestamp_ms':    smallest_timestamp_ms
             }
@@ -284,6 +285,7 @@ class DashboardData {
     load_top_sessions_and_sql(start_range_ms=null, end_range_ms=null){
         ajax_html(this.top_session_sql_id, 'dba', 'refresh_top_session_sql',
             {   'instance':                 this.rac_instance,
+                'dbid':                     this.dbid,
                 'hours_to_cover':           this.hours_to_cover,
                 'last_refresh_time_string': this.last_refresh_time_string,
                 'start_range_ms':           start_range_ms,

@@ -1,16 +1,30 @@
 <%
   @update_area = get_unique_area_id
 
-  link_session_or_history = proc do |inst_id, session_id, serial_no, session_alive|
+  link_session_or_history = proc do |inst_id, session_id, serial_no, first_occurrence, last_occurrence, sql_id, session_alive|
     if session_alive
       link_session_details(@update_area, inst_id, session_id, serial_no, additional_onclick_js: "dashboard_data.set_refresh_cycle_off();")
     else
-      "TODO: ASH for session"
+      ajax_link("#{session_id}, #{serial_no}", {
+        controller:     :active_session_history,
+        action:         :list_session_statistic_historic_grouping,
+        update_area:    @update_area,
+        groupby:        'Session/Sn.',
+        groupfilter:    {
+          Instance:             inst_id,
+          Session_ID:           session_id,
+          SerialNo:             serial_no,
+          DBID:                 @dbid,
+          time_selection_start: localeDateTime(first_occurrence),
+          time_selection_end:   localeDateTime(last_occurrence)
+        }.merge(sql_id ? {'SQL-ID' => sql_id} : {})
+      }, title: "Show ASH history for this already terminated session"
+      )
     end
   end
 
   link_session = proc do |rec|
-    link_session_or_history.call(rec.qinst_id, rec.qsession_id, rec.qsession_serial_no, true)
+    link_session_or_history.call(rec.qinst_id, rec.qsession_id, rec.qsession_serial_no, rec.first_occurrence, rec.last_occurrence, nil, rec.osuser != nil)
   end
 
   link_session_sql = proc do |rec|
@@ -37,7 +51,7 @@
     if rec.sessions > 1
       "<&nbsp;#{fn(rec.sessions)}&nbsp;>"
     else
-      link_session_or_history.call(rec.min_qinst_id, rec.min_qsession_id, rec.min_qsession_serial_no, true)
+      link_session_or_history.call(rec.min_qinst_id, rec.min_qsession_id, rec.min_qsession_serial_no, rec.first_occurrence, rec.last_occurrence, rec.sql_id, rec.osuser)
     end
   end
 

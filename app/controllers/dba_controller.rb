@@ -1787,6 +1787,7 @@ class DbaController < ApplicationController
 
   def refresh_dashboard_ash
     instance                  = prepare_param_instance
+    @dbid                      = prepare_param_dbid
     hours_to_cover            = prepare_param(:hours_to_cover).to_f
     last_refresh_time_string  = prepare_param :last_refresh_time_string
     smallest_timestamp_ms     = prepare_param_int :smallest_timestamp_ms
@@ -1854,7 +1855,8 @@ class DbaController < ApplicationController
   end
 
   def refresh_top_session_sql
-    instance                  = prepare_param_instance
+    @instance                 = prepare_param_instance
+    @dbid                     = prepare_param_dbid
     hours_to_cover            = prepare_param(:hours_to_cover).to_f
     last_refresh_time_string  = prepare_param :last_refresh_time_string
     start_range_ms            = prepare_param(:start_range_ms).to_i
@@ -1877,9 +1879,9 @@ class DbaController < ApplicationController
       end
     end
 
-    if instance
+    if @instance
       where_string << " AND h.Inst_ID = ?"
-      where_values << instance
+      where_values << @instance
     end
 
     @top_sessions = sql_select_all ["\
@@ -1894,7 +1896,7 @@ class DbaController < ApplicationController
                              MAX(SQL_Child_Number)  KEEP (DENSE_RANK LAST ORDER BY Max_Wait_SQL) Max_SQL_Child_Number,
                              MAX(Module)            KEEP (DENSE_RANK LAST ORDER BY Max_Wait_Module) Max_Module,
                              MAX(Action)            KEEP (DENSE_RANK LAST ORDER BY Max_Wait_Action) Max_Action,
-                             COUNT(*) Wait_Time_secs, MIN(Sample_Time) First_OCcurrence, MAX(Sample_Time) Last_Occurrence,
+                             COUNT(*) Wait_Time_secs, MIN(Sample_Time) First_Occurrence, MAX(Sample_Time) Last_Occurrence,
                              COUNT(DISTINCT PQ_Session) PQ_Sessions
                       FROM   (SELECT h.*,
                                      COUNT(*) OVER (PARTITION BY QInst_ID, QSession_ID, QSession_Serial_No, SQL_ID, SQL_Child_Number) Max_Wait_SQL,
@@ -1926,7 +1928,7 @@ class DbaController < ApplicationController
     end
 
     @top_sqls = sql_select_all ["\
-      SELECT h.*, SUBSTR(s.SQL_Text, 1, 80) SQL_SubText,
+      SELECT h.*, SUBSTR(s.SQL_Text, 1, 80) SQL_SubText, s.OSUSer,
              CASE WHEN User_IDs = 1 THEN (SELECT u.UserName FROM All_Users u WHERE u.User_ID = h.Min_User_ID) END UserName
       FROM   (
               SELECT /*+ NO_MERGE */ *
@@ -1954,6 +1956,7 @@ class DbaController < ApplicationController
               WHERE  RowNum <= 10
              ) h
       JOIN   gv$SQL s ON s.Inst_ID = h.Inst_ID AND s.SQL_ID = h.SQL_ID AND s.Child_Number = h.SQL_Child_Number
+      LEFT OUTER JOIN gv$Session s ON s.Inst_ID = h.Min_QInst_ID and s.SID = h.Min_QSession_ID
       ORDER BY Wait_Time_secs DESC
     "].concat(where_values)
 
