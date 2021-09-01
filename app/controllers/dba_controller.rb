@@ -1865,10 +1865,19 @@ class DbaController < ApplicationController
     where_string = ''
     where_values = []
 
-    if start_range_ms != 0 && end_range_ms != 0
+    if start_range_ms != 0 && end_range_ms != 0                                 # Manual selection in chart
       where_string << "WHERE TO_CHAR(h.Sample_Time, 'YYYY/MM/DD HH24:MI:SS') >= ? AND TO_CHAR(h.Sample_Time, 'YYYY/MM/DD HH24:MI:SS') <= ?"
       where_values << Time.at(start_range_ms/1000).utc.strftime("%Y/%m/%d %H:%M:%S")
       where_values << Time.at(end_range_ms/1000).utc.strftime("%Y/%m/%d %H:%M:%S")
+
+      min_ash_time = sql_select_one ["SELECT MIN(Sample_Time) FROM gv$Active_Session_History#{" WHERE Inst_ID = ?" if @instance}"]
+                                      .concat(@instance ? [@instance] : [])
+      if min_ash_time > Time.at(start_range_ms/1000).utc
+        show_popup_message("Needed data has already been flushed from ASH in SGA!
+Please use function at menu 'Session-Waits/Historic' instead for analysis with access on persisted ASH in AWR.
+
+Oldest remaining ASH record in SGA is from #{localeDateTime(min_ash_time)} but considered time period starts at #{localeDateTime(Time.at(start_range_ms/1000).utc)}")
+      end
     else
       if last_refresh_time_string
         where_string << "WHERE TO_CHAR(h.Sample_Time, 'YYYY/MM/DD HH24:MI:SS') > ?"
@@ -1916,7 +1925,7 @@ class DbaController < ApplicationController
                      ) h
               WHERE  RowNum <= 10
              ) h
-      LEFT OUTER JOIN gv$Session s ON s.Inst_ID = h.QInst_ID and s.SID = h.QSession_ID
+      LEFT OUTER JOIN gv$Session s ON s.Inst_ID = h.QInst_ID and s.SID = h.QSession_ID AND s.Serial# = h.QSession_Serial_No
       ORDER BY Wait_Time_secs DESC
     "].concat(where_values)
 
@@ -1956,7 +1965,7 @@ class DbaController < ApplicationController
               WHERE  RowNum <= 10
              ) h
       JOIN   gv$SQL s ON s.Inst_ID = h.Inst_ID AND s.SQL_ID = h.SQL_ID AND s.Child_Number = h.SQL_Child_Number
-      LEFT OUTER JOIN gv$Session s ON s.Inst_ID = h.Min_QInst_ID and s.SID = h.Min_QSession_ID
+      LEFT OUTER JOIN gv$Session s ON s.Inst_ID = h.Min_QInst_ID and s.SID = h.Min_QSession_ID AND s.Serial# = h.Min_QSession_Serial_No
       ORDER BY Wait_Time_secs DESC
     "].concat(where_values)
 
