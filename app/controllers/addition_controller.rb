@@ -846,7 +846,7 @@ class AdditionController < ApplicationController
   def exec_worksheet_sql
     @caption = nil
     @sql_statement = prepare_sql_statement(params[:sql_statement])              # remove trailing semicolon if not PL/SQL
-
+    show_popup_message('No SQL statement found') if @sql_statement.nil? || @sql_statement == ''
     # remove comments from SQL
     stripped_sql_statement = @sql_statement.split("\n").select{|s| s.strip[0,2] != '--'}.join("\n") # remove full line comments
     stripped_sql_statement.gsub!(/\/\*.*?\*\//m, '')                            # remove /* comments */ also for multiple lines
@@ -966,7 +966,7 @@ COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) #{column_alias}_Cnt"
   def prepare_sql_statement(sql)
     sql.rstrip!
     lines = sql.split("\n")
-    if lines && lines[lines.length-1].strip.upcase != 'END;'
+    if lines.count > 0 && lines[lines.length-1].strip.upcase != 'END;'
       sql.gsub!(/;$/, "")
     end
     sql

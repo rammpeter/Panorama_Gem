@@ -279,8 +279,12 @@ module ApplicationHelper
       retval = ERB::Util.html_escape(org_value.force_encoding('UTF-8'))   # Standard-Escape kann kein NewLine-><BR>
     end
 
-    # Alle vorkommenden CR ersetzen, führt sonst bei Javascript zu Error String not closed
-    retval = retval.gsub(/\r/, '').gsub(/\n/, '<br>') if line_feed_to_br  # Alle vorkommenden NewLine ersetzen
+    if line_feed_to_br  # Alle vorkommenden NewLine ersetzen
+      # Alle vorkommenden CR ersetzen, führt sonst bei Javascript zu Error String not closed
+      retval.gsub!(/\r/, '')
+      retval.gsub!(/\n/, '<br>')
+    end
+    retval.gsub!(/\\/, '\\\\\\\\')                                              # Escape single backslash
     retval
   end
 
