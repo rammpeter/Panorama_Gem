@@ -602,6 +602,7 @@
   dragnet_helper_group_unnecessary_executions:              Eventuell unnötige Ausührungen von SQL-Statements
   dragnet_helper_group_unnecessary_high_execution_frequency:  Eventuell unnötig hohe Frequenz von Executes/Fetches von SQL-Statements
   dragnet_helper_group_unnecessary_indexes:                 Identifikation eventuell unnötiger Indizes
+  dragnet_helper_group_unnecessary_index_columns:           Identifikation eventuell unnötiger Index-Spalten
   dragnet_helper_group_unused_tables:                       Ermittlung ungenutzter Tabellen oder Spalten
   dragnet_helper_group_view_issues:                         Potential in DB-Views
   dragnet_helper_group_wrong_execution_plan:                Ermittlung von SQL-Statements mit suboptimalem Ausführungsplan
@@ -1698,7 +1699,14 @@
 
     Voraussetzung für diese Selektion ist die Aufzeichnung der Index-Nutzug per ALTER INDEX ... MONITORING USAGE.
 
-  dragnet_helper_162_name:                                  Unnötige Primärschlüssel ohne Referenzierung durch Foreign Keys
+  dragnet_helper_162_name:                                  Unnötige Primärschlüssel ohne Referenzierung durch Foreign Key
+
+  dragnet_helper_163_desc: |-
+    Wenn die Partition-Keys eindeutig oder selektiv genug für effizientes Partition-Pruning sind, dann gibt es of keinen Grund, die Spalten noch zusätzlich im Index zu halten.
+    Partition-Pruning z.B. bei List-Partitions ist effizienter als B-Baum-Zugriff im Index.
+    Die Entfernung dieser Spalten aus dem Index reduziert die Größe des Index und den Aufwand beim Index-Scan.
+    Ausnahme: Für Unique-Indizes müssen die Spalten trotzdem Bestandteil des Index sein.
+  dragnet_helper_163_name:  Möglicherweise unnötige Spalten von Indizes die gleichzeitig auch Partition-Keys sind
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 

@@ -25,6 +25,7 @@ include Dragnet::SuboptimalIndexUsageHelper
 include Dragnet::UnnecessaryExecutionsHelper
 include Dragnet::UnnecessaryHighExecutionFrequencyHelper
 include Dragnet::UnnecessaryIndexesHelper
+include Dragnet::UnnecessaryIndexColumnsHelper
 include Dragnet::UnusedTablesHelper
 include Dragnet::ViewIssuesHelper
 
@@ -63,6 +64,9 @@ module DragnetHelper
                           },
                           {  :name    => t(:dragnet_helper_group_unnecessary_indexes, :default => 'Detection of possibly unnecessary indexes'),
                              :entries => unnecessary_indexes
+                          },
+                          {  :name    => t(:dragnet_helper_group_unnecessary_index_columns, :default => 'Detection of possibly unnecessary index columns'),
+                             :entries => unnecessary_index_columns
                           },
                           {  :name    => t(:dragnet_helper_group_partitioning, :default => 'Recommendations for partitioning'),
                              :entries => partitioning
