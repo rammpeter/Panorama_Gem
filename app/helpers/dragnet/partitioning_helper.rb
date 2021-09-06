@@ -251,7 +251,7 @@ FROM   (
                 WHERE  Sample_Time > SYSDATE - ?
                 AND    SQL_Plan_Line_ID IS NOT NULL
                 GROUP BY SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID
-                HAVING COUNT(*) > ? * 10  /* * 10 seconds */
+                HAVING COUNT(*) * 10 > ?  /* * 10 seconds */
                ) h ON h.SQL_ID = p.SQL_ID AND h.SQL_Plan_Hash_Value = p.Plan_Hash_Value AND h.SQL_Plan_Line_ID = p.ID
         LEFT OUTER JOIN DBA_Indexes i ON i.Owner = p.Object_Owner AND i.Index_Name = p.Object_Name AND p.IsIndex = 1
         GROUP BY h.SQL_ID, p.Plan_Hash_Value, NVL(i.Table_Owner, p.Object_Owner), NVL(i.Table_Name,  p.Object_Name)
