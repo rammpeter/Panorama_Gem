@@ -648,6 +648,18 @@ class DbaSchemaController < ApplicationController
     render_partial :list_object_description
   end
 
+  def list_distinct_values
+    @owner        = prepare_param :owner
+    @table_name   = prepare_param :table_name
+    @column_name  = prepare_param :column_name
+    @distinct_values = sql_select_iterator "\
+      SELECT  \"#{@column_name}\" Column_Value, COUNT(*) Records
+      FROM    \"#{@owner}\".\"#{@table_name}\"
+      GROUP BY \"#{@column_name}\"
+    "
+    render_partial
+  end
+
   private
   def get_table_partition_expression(owner, table_name)
     part_tab      = sql_select_first_row ["SELECT Partitioning_Type, SubPartitioning_Type #{", Interval" if get_db_version >= "11.2"} FROM DBA_Part_Tables WHERE Owner = ? AND Table_Name = ?", owner, table_name]

@@ -31,7 +31,7 @@
   column_options << {:caption=>'Owner',               :data=>proc{|rec| rec.owner},                             :title=>"Owner of SQL translation profile"}
   column_options << {:caption=>'Profile name',        :data=>proc{|rec| rec.profile_name},                      :title=>"Name of SQL translation profile"}
   column_options << {:caption=>'SQL to translate',    :data=>proc{|rec| list_sql_text(rec)},                    :title=>"Text of original SQL to be translated\nThis SQL text will never occur in SQL Area etc. if SQL is translated to another SQL text."}
-  column_options << {:caption=>'SQL-ID to translate', :data=>proc{|rec| rec.sql_id},                            :title=>"SQL-ID of original SQL to be translated\nThis SQL-ID will never occur in SQL Area etc. if SQL is translated to another SQL text."}
+  column_options << {:caption=>'SQL ID to translate', :data=>proc{|rec| rec.sql_id},                            :title=>"SQL ID of original SQL to be translated\nThis SQL-ID will never occur in SQL Area etc. if SQL is translated to another SQL text."}
   column_options << {:caption=>'Translated SQL',      :data=>proc{|rec| list_translated_text(rec)},             :title=>"Text of translated SQL after translation\nThis SQL text will occur in SQL Area etc. if translation is active."}
   column_options << {:caption=>'Enabled',             :data=>proc{|rec| rec.enabled},                           :title=>"Is translation enabled?"}
   column_options << {:caption=>'Registration time',   :data=>proc{|rec| localeDateTime(rec.registration_time)}, :title=>"Timestamp of translation registration"}                                                if get_db_version > '12.1.0.1.0'

@@ -160,7 +160,7 @@ Solution for such situations is global (not) partitioning of index.'),
             ]
         },
         {
-          :name  => t(:dragnet_helper_158_name, :default=> 'Partitioning suggestion for expensive full table scans with filters'),
+          :name  => t(:dragnet_helper_158_name, :default=> 'Partitioning for expensive full table scans with filters'),
           :desc  => t(:dragnet_helper_158_desc, :default=> "If expensive full table scan is done with filter conditions than range or list partitioning by one or more of this filter conditions may significantly reduce runtime.
 Especially with release 12.2 and above automatic list partitioning lets you easy handle the creation of needed partitions without operation effort.
 Conditions for useful partitioning by these filters are:
@@ -208,6 +208,63 @@ ORDER BY Wait_Time_Sec DESC
           :parameter=>[
             {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, title: t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
             {:name=>t(:dragnet_helper_158_param_1_name, :default=>'Minimum wait time for full table scan'), :size=>8, :default=>100, title: t(:dragnet_helper_158_param_1_hint, :default=>'Minimum wait time in seconds for full table scan on the object to be considered in this selection') },
+          ]
+        },
+        {
+          :name  => t(:dragnet_helper_158_name, :default=> 'Partitioning for expensive access filtered by columns with low number of distinct values'),
+          :desc  => t(:dragnet_helper_158_desc, :default=> "If expensive full table access is done with filter conditions than range or list partitioning by one or more of this filter conditions may significantly reduce runtime.
+Especially with release 12.2 and above automatic list partitioning lets you easy handle the creation of needed partitions without operation effort.
+Conditions for useful partitioning by these filters are:
+- The potential partition key should significantly reduce the result (e.g. to less than 3/4 if used as filter condition)
+- The resulting number of partitions should by manageable (Oracle's absolute maximum for partitions of a table is 1048575, but the optimal number is much smaller)
+- The number of records in a partition should be high enough (e.g. more than 10000 .. 100000), otherwhise it could be more sufficient to use an index
+- The filter condition should by deterministic (able to be used as partition criteria)
+
+Unfortunately, only execution plans in SGA are considered because Oracle does not store access and filter predicates in AWR speichert (fixed with rel. 21.3).
+
+"),
+          :sql=> "\
+SELECT x.*, tc.Column_Name, tc.Num_Distinct
+FROM   (
+        SELECT /*+ NO_MERGE */ h.SQL_ID, p.Plan_Hash_Value,
+               LISTAGG(h.SQL_Plan_Line_ID, ',') WITHIN GROUP (ORDER BY h.SQL_Plan_Line_ID) Plan_Line_IDs,
+               SUM(h.Waiting_Secs)   Waiting_Secs,
+               LISTAGG(p.Operation||' '||p.Options, ',') WITHIN GROUP (ORDER BY h.SQL_Plan_Line_ID) Operations,
+               NVL(i.Table_Owner, p.Object_Owner)  Owner,
+               NVL(i.Table_Name,  p.Object_Name)   Table_Name,
+               LISTAGG(UPPER(p.Access_Predicates||' '||p.Filter_Predicates), ',') WITHIN GROUP (ORDER BY h.SQL_Plan_Line_ID) Predicates
+        FROM   (SELECT /*+ NO_MERGE */ SQL_ID, Plan_Hash_Value, ID,
+                       CASE WHEN MIN(Object_Type) LIKE 'INDEX%' THEN 1 END IsIndex,
+                       MIN(Operation)       Operation,
+                       MIN(Options)         Options,
+                       MIN(Object_Owner)    Object_Owner,
+                       MIN(Object_Name)     Object_Name,
+                       MIN(Filter_Predicates) Filter_Predicates,
+                       MIN(Access_Predicates) Access_Predicates
+                FROM   gv$SQL_Plan
+                WHERE  (Object_Type LIKE 'TABLE%' OR Object_Type LIKE 'INDEX%')
+                AND    Partition_Start IS NULL
+                GROUP BY SQL_ID, Plan_Hash_Value, ID
+               ) p
+        JOIN   (SELECT /*+ NO_MERGE */ SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID, COUNT(*)*10 Waiting_Secs
+                FROM   DBA_Hist_Active_Sess_History
+                WHERE  Sample_Time > SYSDATE - ?
+                AND    SQL_Plan_Line_ID IS NOT NULL
+                GROUP BY SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID
+                HAVING COUNT(*) > ? * 10  /* * 10 seconds */
+               ) h ON h.SQL_ID = p.SQL_ID AND h.SQL_Plan_Hash_Value = p.Plan_Hash_Value AND h.SQL_Plan_Line_ID = p.ID
+        LEFT OUTER JOIN DBA_Indexes i ON i.Owner = p.Object_Owner AND i.Index_Name = p.Object_Name AND p.IsIndex = 1
+        GROUP BY h.SQL_ID, p.Plan_Hash_Value, NVL(i.Table_Owner, p.Object_Owner), NVL(i.Table_Name,  p.Object_Name)
+       ) x
+JOIN   DBA_Tab_Columns tc ON tc.Owner = x.Owner AND tc.Table_Name = x.Table_Name
+WHERE  x.Predicates LIKE '%'||tc.Column_Name||'%'
+AND    tc.Num_Distinct < ?
+ORDER BY x.Waiting_Secs DESC
+          ",
+          :parameter=>[
+            {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, title: t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
+            {:name=>t(:dragnet_helper_164_param_1_name, :default=>'Minimum wait time for index and table access'), :size=>8, :default=>500, title: t(:dragnet_helper_164_param_1_hint, :default=>'Minimum wait time in seconds for index and table access on the object to be considered in this selection') },
+            {:name=>t(:dragnet_helper_164_param_2_name, :default=>'Maximum number of dictinct values for column'), :size=>8, :default=>4000, title: t(:dragnet_helper_164_param_2_hint, :default=>'Maximum number of distinct values for column to be considered as possible partition key') },
           ]
         },
     ]
