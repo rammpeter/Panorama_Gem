@@ -232,7 +232,7 @@ FROM   (
                LISTAGG(p.Operation||' '||p.Options, ',') WITHIN GROUP (ORDER BY h.SQL_Plan_Line_ID) Operations,
                NVL(i.Table_Owner, p.Object_Owner)  Owner,
                NVL(i.Table_Name,  p.Object_Name)   Table_Name,
-               LISTAGG(UPPER(p.Access_Predicates||' '||p.Filter_Predicates), ',') WITHIN GROUP (ORDER BY h.SQL_Plan_Line_ID) Predicates
+               LISTAGG(UPPER(p.Access_Predicates||' '||p.Filter_Predicates), ',' #{"ON OVERFLOW TRUNCATE" if get_db_version >= '12.2'}) WITHIN GROUP (ORDER BY h.SQL_Plan_Line_ID) Predicates
         FROM   (SELECT /*+ NO_MERGE */ SQL_ID, Plan_Hash_Value, ID,
                        CASE WHEN MIN(Object_Type) LIKE 'INDEX%' THEN 1 END IsIndex,
                        MIN(Operation)       Operation,
