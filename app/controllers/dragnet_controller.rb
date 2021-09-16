@@ -160,8 +160,7 @@ Rails.logger.info "get_selection_list: called render" if  Rails.env.test?
     end
 
     respond_to do |format|
-
-      format.html {render :html => render_yellow_pre(show_value, 450) }
+      format.html {render :html => render_code_mirror(show_value) }
     end
   end
 

@@ -380,26 +380,37 @@ function check_menu_width() {
     }
 }
 
-// Anzeige yellow pre mit Schatten und size-Anpassung
-function render_yellow_pre(id, max_height){
-    var elem = $("#"+id);
+/**
+ * create a read only CodeMirror object from textarea with content
+ * style of object is defined in css class .CodeMirror
+ * @param id    texarea DOM-id
+ */
+function code_mirror_from_textarea(id, cm_options, options){
+    let cm = CodeMirror.fromTextArea(document.getElementById(id),
+        Object.assign(cm_options, {
+            mode:  "sql",
+            readOnly: true
+            // viewportMargin: Infinity
+        })
+    );
 
-    elem.wrap('<pre class="yellow-panel"></pre>');
+    let cm_wrapper = $(cm.getWrapperElement());
+    let max_height = 450;
+    if (options.max_height)
+        max_height = options.max_height;
 
-
-    if (max_height && elem.height() > max_height){
-        elem.height(max_height);
-        elem.css('overflow-y', 'scroll');
-    }
-
-    if (elem.prop('scrollWidth') > elem.width()){
-        elem.css('overflow-x', 'scroll');
-    }
-
-    elem.resizable();
-    elem.find(".ui-resizable-e").remove();                    // Entfernen des rechten resizes-Cursors
-    elem.find(".ui-resizable-se").remove();                   // Entfernen des rechten unteren resize-Cursors
+    cm_wrapper.css('margin-top', '5px');                                        // not in stylesheet to allow others to use CodeMirror without margin
+    cm_wrapper.addClass('shadow');                                              // not in stylesheet to allow others to use CodeMirror without shadow
+    cm_wrapper.resizable();
+    cm_wrapper.parent().find(".ui-resizable-se").remove();                      // Entfernen des rechten unteren resize-Cursor
+    cm_wrapper.resize(function(){cm.setSize('100%', cm_wrapper.height()); });   // Ensure that CodeMirror checks itself if vertical scrollbar is needed
+    //setTimeout(function(){
+        if (cm_wrapper.height() > max_height){
+            cm.setSize('100%', max_height);                                     // CodeMirror must set the height, otherwhise scrollbar will not work
+        }
+    //},0);
 }
+
 
 function show_popup_message(message){
     var div_id = 'show_popup_message_alert_box';

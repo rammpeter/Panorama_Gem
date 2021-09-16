@@ -861,7 +861,7 @@ class AdditionController < ApplicationController
     else
       PanoramaConnection.sql_execute @sql_statement
       render html: "<div class='page_caption'>Statement executed at #{localeDateTime(Time.now)}</div>
-<pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(@sql_statement)}</pre>
+      #{render_code_mirror(@sql_statement)}
 ".html_safe
     end
   end

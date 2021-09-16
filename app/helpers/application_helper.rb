@@ -596,15 +596,17 @@ module ApplicationHelper
     "[ #{t(:all, :default=>'All')} ]"
   end
 
-  # Ausgabe des Textes auf Panel
-  def render_yellow_pre(text, max_height = nil)
-    div_id = get_unique_area_id
-
-    output = "<div id=\"#{div_id}\">#{my_html_escape(text).html_safe}</div>
-              <script type=\"text/javascript\">
-                render_yellow_pre(\"#{div_id}\"#{max_height.nil? ? '' : ", #{max_height}"});
-              </script>
-    ".html_safe
+  # create texarea and CodeMirror object
+  def render_code_mirror(text, cm_options: {}, options: {})
+    id = get_unique_area_id
+    output = ''
+    output << text_area_tag(id, text)
+    output << "\
+<script type=\"text/javascript\">
+  code_mirror_from_textarea(\"#{id}\", #{cm_options.to_json}, #{options.to_json});
+</script>
+    "
+    output.html_safe
   end
 
   # request parameter for later recreation of view

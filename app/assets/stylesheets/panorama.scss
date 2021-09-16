@@ -75,6 +75,10 @@ body {
   flex-direction: row;
   flex-wrap: nowrap;
   justify-content: space-between;
+  box-shadow: 5px 5px 5px #888;
+  -webkit-box-shadow: 5px 5px 5px #888;
+  -moz-box-shadow: 5px 5px 5px #888;
+
 }
 
 
@@ -267,6 +271,11 @@ table a:active{
   background: url(vertical-corner-line.png) no-repeat center center;
 }
 
+.shadow {
+  box-shadow: 5px 5px 5px #888;
+  -webkit-box-shadow: 5px 5px 5px #888;
+  -moz-box-shadow: 5px 5px 5px #888;
+}
 
 .yellow-panel {
   background-color: lightyellow;
@@ -318,4 +327,9 @@ table a:active{
   background-image: -webkit-linear-gradient(left, #CCCCCC 0%, #EEEEEE 100%);
   background-image: -moz-linear-gradient(left, gray 0%, lightgray 100%);
   background-image: linear-gradient(left, gray 0%, #EEEEEE 100%);
+}
+
+.CodeMirror {
+  height: auto;
+  background-color: lightyellow;
 }

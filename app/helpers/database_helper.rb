@@ -20,7 +20,7 @@ public
   def strftime_format_with_days
     case get_locale
       when "de" then "%d.%m.%Y"
-      when "en" then "%Y-%m-%d"
+      when "en" then "%Y\u2011%m\u2011%d".encode('utf-8')                       # use unbreakable hyphen instead of '-'
       else "%d.%m.%Y"
     end
   end
@@ -29,7 +29,7 @@ public
   def strftime_format_with_seconds
     case get_locale
       when "de" then "%d.%m.%Y %H:%M:%S"
-      when "en" then "%Y-%m-%d %H:%M:%S"
+      when "en" then "%Y\u2011%m\u2011%d %H:%M:%S".encode('utf-8')              # use unbreakable hyphen instead of '-'
       else "%d.%m.%Y %H:%M:%S"
     end
   end
@@ -38,7 +38,7 @@ public
   def strftime_format_with_fractions
     case get_locale
     when "de" then "%d.%m.%Y %H:%M:%S.%6N"
-    when "en" then "%Y-%m-%d %H:%M:%S.%6N"
+    when "en" then "%Y\u2011%m\u2011%d %H:%M:%S.%6N".encode('utf-8')            # use unbreakable hyphen instead of '-'
     else "%d.%m.%Y %H:%M:%S.%6N"
     end
   end
@@ -47,7 +47,7 @@ public
   def strftime_format_with_minutes
     case get_locale
       when "de" then "%d.%m.%Y %H:%M"
-      when "en" then "%Y-%m-%d %H:%M"
+      when "en" then "%Y\u2011%m\u2011%d %H:%M".encode('utf-8')                 # use unbreakable hyphen instead of '-'
       else "%d.%m.%Y %H:%M"     # Deutsche Variante als default
     end
   end

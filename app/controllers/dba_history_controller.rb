@@ -2201,7 +2201,7 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
 "
 
     respond_to do |format|
-      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap; padding: 10px;'>#{my_html_escape(result)}</pre>".html_safe }
+      format.html {render :html => render_code_mirror(result) }
     end
   end
 

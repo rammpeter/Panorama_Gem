@@ -1570,7 +1570,7 @@ class DbaSgaController < ApplicationController
   def list_sql_profile_sqltext
     @sql = sql_select_one ["SELECT SQL_Text FROM  DBA_SQL_Profiles WHERE Name = ?", params[:profile_name]]
     respond_to do |format|
-      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(@sql)}</pre>".html_safe }
+      format.html {render :html => render_code_mirror(@sql) }
     end
 
   end
@@ -1647,7 +1647,7 @@ class DbaSgaController < ApplicationController
   def list_sql_plan_baseline_sqltext
     @sql = sql_select_one ["SELECT SQL_Text FROM  DBA_SQL_Plan_Baselines WHERE Plan_Name = ?", params[:plan_name]]
     respond_to do |format|
-      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(@sql)}</pre>".html_safe }
+      format.html {render :html => render_code_mirror(@sql) }
     end
 
   end
@@ -1716,14 +1716,14 @@ class DbaSgaController < ApplicationController
   def list_sql_translation_sql_text
     @sql_text = sql_select_one ["SELECT SQL_Text FROM DBA_SQL_Translations WHERE Owner = ? AND Profile_Name = ? AND SQL_ID = ?", params[:owner], params[:profile_name], params[:sql_id]]
     respond_to do |format|
-      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(@sql_text)}</pre>".html_safe }
+      format.html {render :html => render_code_mirror(@sql_text) }
     end
   end
 
   def list_sql_translation_translated_text
     @sql_text = sql_select_one ["SELECT Translated_Text FROM DBA_SQL_Translations WHERE Owner = ? AND Profile_Name = ? AND SQL_ID = ?", params[:owner], params[:profile_name], params[:sql_id]]
     respond_to do |format|
-      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(@sql_text)}</pre>".html_safe }
+      format.html {render :html => render_code_mirror(@sql_text) }
     end
   end
 
@@ -1773,7 +1773,7 @@ class DbaSgaController < ApplicationController
   def list_sql_patch_sql_text
     @sql_text = sql_select_one ["SELECT SQL_Text FROM DBA_SQL_Patches WHERE Category = ? AND TO_CHAR(Signature) = ?", params[:category], params[:signature]]
     respond_to do |format|
-      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(@sql_text)}</pre>".html_safe }
+      format.html {render :html => render_code_mirror(@sql_text) }
     end
   end
 
@@ -1902,7 +1902,7 @@ END;
 "
 
     respond_to do |format|
-      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap; padding: 10px;'>#{my_html_escape(result)}</pre>".html_safe }
+      format.html {render :html => render_code_mirror(result) }
     end
   end
 
@@ -1982,7 +1982,7 @@ END;
 "
 
     respond_to do |format|
-      format.html {render :html => "<pre class='yellow-panel' style=' white-space: pre-wrap; padding: 10px;'>#{my_html_escape(result)}</pre>".html_safe }
+      format.html {render :html => render_code_mirror(result) }
     end
   end
 
@@ -2187,7 +2187,7 @@ END;
         .gsub!(/A[0123456789].*/){|s| s.downcase }                              # switch table aliases (Ann) to downcase
 
     respond_to do |format|
-      format.html {render :html => "<pre class='yellow-panel' style='white-space: pre-wrap;'>#{my_html_escape(formatted_sql)}</pre>".html_safe }
+      format.html {render :html => render_code_mirror(formatted_sql) }
     end
 
 

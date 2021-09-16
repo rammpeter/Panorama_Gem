@@ -14,14 +14,7 @@
 
 <%= gen_slickgrid(@attribs, column_options, {:caption => "Description of #{@object_type} #{@owner}.#{@object_name}", :height => :auto, show_pin_icon: 1}) %>
 
-
-<div id="<%= @update_area %>_spec">
-  <%=  @result %>
-</div>
-
-<script type="text/javascript">
-  render_yellow_pre("<%= @update_area %>_spec");
-</script>
+<%=  render_code_mirror(@result) %>
 
 <div class="flex-row-container">
   <div class="flex-row-element">

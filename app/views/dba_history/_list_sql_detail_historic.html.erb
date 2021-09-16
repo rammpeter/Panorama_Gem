@@ -37,70 +37,74 @@ end
 
 <%= render_page_caption("#{t(:dba_history_list_sql_detail_historic_caption, :default=>'Statement details from')} #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat')} #{@time_selection_start} #{t(:until, :default=>'until')} #{@time_selection_end} : Instance = #{@instance.nil? ? 'All' : @instance}, SQL-ID = '#{@sql_id}'", get_recall_params_info_for_render_page_caption) %>
 
-<table id="<%= "#{@table_id_prefix}_main" %>" border="0" >
+<table id="<%= "#{@table_id_prefix}_main" %>" style="width: 100%;" >
   <tr>
-    <td valign="top" ><pre id="<%= "#{@table_id_prefix}_sql" %>" class="monospace" style="overflow-y: auto;"><%= convert_word_wrap_comma(format_sql(@sql_statement, params[:window_width])) %></pre></td>
-    <td valign="top">
-      <table  id="<%= "#{@table_id_prefix}_right_single_table" %>" border="1" width="100%" style="font-size:small;">
-        <tr title="Parsing schema name">            <td>Parsing schema name</td><td align="center"><%= @sql.min_parsing_schema_name %></td>        </tr>
-        <tr title="<%= t(:dba_history_list_sql_detail_historic_last_plan_hash_hint, :default=>"Hash-value of last execution plan") %> + <%= t(:dba_history_list_sql_detail_historic_plan_count_hint, :default=>"Number of different execution plans in time period (if > 1)") %> /
+    <td style="vertical-align: top">
+      <%= text_area_tag("#{@table_id_prefix}_sql", format_sql(@sql_statement, params[:window_width])) %>
+    </td>
+    <td style="vertical-align: top">
+      <div id="<%= "#{@table_id_prefix}_right_td" %>">
+        <table style="font-size:small; width: 100%;">
+          <tr title="Parsing schema name">            <td>Parsing schema name</td><td align="center"><%= @sql.min_parsing_schema_name %></td>        </tr>
+          <tr title="<%= t(:dba_history_list_sql_detail_historic_last_plan_hash_hint, :default=>"Hash-value of last execution plan") %> + <%= t(:dba_history_list_sql_detail_historic_plan_count_hint, :default=>"Number of different execution plans in time period (if > 1)") %> /
 Hash-value over total optimizer environment + Number of different optimizer environments in time period (if > 1)">
-          <td>Plan-Hash-Value / Opt.Env.</td>
-          <td align="center"><%= "#{@sql.last_plan_hash_value}#{" <span style='background-color:orange;'>( #{@sql.plan_hash_value_count} )</span>" if @sql.plan_hash_value_count > 1}".html_safe %> / <%= "#{@sql.last_optimizer_env_hash_value}#{" <span style='background-color:orange;'>( #{@sql.optimizer_env_hash_value_count} )</span>" if @sql.optimizer_env_hash_value_count > 1}".html_safe %></td>
-        </tr>
-        <tr title="<%= t(:dba_history_list_sql_detail_historic_module_action_hint, :default=>"Module and action of last parsing session")%><%= "\nModule='#{@sql.last_module}'\nAction='#{@sql.last_action}'" %>"><td>Parsing module / action</td><td align="center">
-          <%=
-            @update_area_module = get_unique_area_id
-            ajax_link(@sql.last_module, {
+            <td>Plan-Hash-Value / Opt.Env.</td>
+            <td align="center"><%= "#{@sql.last_plan_hash_value}#{" <span style='background-color:orange;'>( #{@sql.plan_hash_value_count} )</span>" if @sql.plan_hash_value_count > 1}".html_safe %> / <%= "#{@sql.last_optimizer_env_hash_value}#{" <span style='background-color:orange;'>( #{@sql.optimizer_env_hash_value_count} )</span>" if @sql.optimizer_env_hash_value_count > 1}".html_safe %></td>
+          </tr>
+          <tr title="<%= t(:dba_history_list_sql_detail_historic_module_action_hint, :default=>"Module and action of last parsing session")%><%= "\nModule='#{@sql.last_module}'\nAction='#{@sql.last_action}'" %>"><td>Parsing module / action</td><td align="center">
+            <%=
+              @update_area_module = get_unique_area_id
+              ajax_link(@sql.last_module, {
                 :controller   => :dba_sga,
                 :action       => :show_application_info,
                 :update_area  => @update_area_module,
                 :org_text     => @sql.last_module
-            },
-                      :title=>t(:dba_history_list_sql_detail_historic_module_link_hint, :default=>'Explanation of module name'))
-          %>
-          <%= '/' unless @sql.last_action.nil? %>
-          <%=
-            ajax_link(@sql.last_action, {
-              :controller   => :dba_sga,
-              :action       => :show_application_info,
-              :update_area  => @update_area_module,
-              :org_text     => @sql.last_action
-            },
-                      :title=>t(:dba_history_list_sql_detail_historic_action_link_hint, :default=>'Explanation of action name'))
-          %>
-          <div id='<%= @update_area_module %>'></div>
-        </td>        </tr>
-        <tr title="Begin of AWR-snapshot with first occurrence of SQL in AWR"> <td>First AWR-snapshot</td><td align="center"><%= localeDateTime(@sql.first_occurrence) %></td>        </tr>
-        <tr title="End of AWR-snapshot with last occurrence of SQL in AWR"> <td>Last AWR-snapshot</td><td align="center"><%= localeDateTime(@sql.last_occurrence) %></td>        </tr>
-        <tr title="Earliest sample of SQL in active session history"> <td>First ASH-sample</td><td align="center"><%= localeDateTime(@sql.min_sample_time) %></td>        </tr>
-        <tr title="Latest sample of SQL in active session history"> <td>Last ASH-sample</td><td align="center"><%= localeDateTime(@sql.max_sample_time) %></td>        </tr>
-        <tr title="<%= t(:dba_sga_list_sql_sga_stat_hit_ration_hint, :default=>'Ratio cache hits to buffer gets') %>">            <td>Buffer cache hit ratio</td><td align="center"><%= fn(@sql.hit_ratio, 2) %> %</td>        </tr>
-        <tr title="Number of times the object was loaded or reloaded after invalidisation of cursor">            <td>Loads</td><td align="center"><%= fn(@sql.loads) %></td>        </tr>
-      </table>
+              },
+                        :title=>t(:dba_history_list_sql_detail_historic_module_link_hint, :default=>'Explanation of module name'))
+            %>
+            <%= '/' unless @sql.last_action.nil? %>
+            <%=
+              ajax_link(@sql.last_action, {
+                :controller   => :dba_sga,
+                :action       => :show_application_info,
+                :update_area  => @update_area_module,
+                :org_text     => @sql.last_action
+              },
+                        :title=>t(:dba_history_list_sql_detail_historic_action_link_hint, :default=>'Explanation of action name'))
+            %>
+            <div id='<%= @update_area_module %>'></div>
+          </td>        </tr>
+          <tr title="Begin of AWR-snapshot with first occurrence of SQL in AWR"> <td>First AWR-snapshot</td><td align="center"><%= localeDateTime(@sql.first_occurrence) %></td>        </tr>
+          <tr title="End of AWR-snapshot with last occurrence of SQL in AWR"> <td>Last AWR-snapshot</td><td align="center"><%= localeDateTime(@sql.last_occurrence) %></td>        </tr>
+          <tr title="Earliest sample of SQL in active session history"> <td>First ASH-sample</td><td align="center"><%= localeDateTime(@sql.min_sample_time) %></td>        </tr>
+          <tr title="Latest sample of SQL in active session history"> <td>Last ASH-sample</td><td align="center"><%= localeDateTime(@sql.max_sample_time) %></td>        </tr>
+          <tr title="<%= t(:dba_sga_list_sql_sga_stat_hit_ration_hint, :default=>'Ratio cache hits to buffer gets') %>">            <td>Buffer cache hit ratio</td><td align="center"><%= fn(@sql.hit_ratio, 2) %> %</td>        </tr>
+          <tr title="Number of times the object was loaded or reloaded after invalidisation of cursor">            <td>Loads</td><td align="center"><%= fn(@sql.loads) %></td>        </tr>
+        </table>
 
 
-      <table  id="<%= "#{@table_id_prefix}_right_table" %>" border="1" width="100%" style="font-size:small;">
-        <tr><th>Metric-Name</th><th>Total</th><th>Per Exec.</th></tr>
-        <%= show_single_value("Executions", @sql.executions,0, "Number of executions in time period") %>
-        <%= show_both_values("Parse calls", @sql.parse_calls,0, "#{strings(:parse_calls_title)}\n\n#{parse_title_addition.call(@sql)}") %>
-        <%= show_both_values("Fetches ", @sql.fetches, 0, "Number of fetches in time period (Avg. #{@sql.rows_processed/@sql.fetches rescue nil} rows per fetch)")%>
-        <%= show_both_values("Sorts", @sql.sorts,0, "Number of sorts in time period") %>
-        <tr>
-          <td title="Number of rows processed in time period">Rows processed</td>
-          <td align='right' title="Number of rows processed in time period"><%= fn(@sql.rows_processed)%></td>
-          <td align='right' title="Number of rows processed in time period per execution"><%= fn(@sql.rows_processed.to_f/ (@sql.executions.to_i==0 ? 1 : @sql.executions), 2) %></td>
-        </tr>
-        <%= show_both_values('Buffer gets', @sql.buffer_gets,0, 'Number of total DB-blocks read', true) %>
-        <%= show_both_values("Disk reads", @sql.disk_reads,0, "Number of db blocks read from disk\nAvg. time per db block read from disk = #{fn((@sql.disk_reads && @sql.disk_reads>0 ? @sql.user_io_wait_time_secs*1000/@sql.disk_reads : 0),2)} ms\nAvg. disk transfer speed = #{fn((@sql.user_io_wait_time_secs && @sql.user_io_wait_time_secs>0 ? @sql.disk_reads * PanoramaConnection.db_blocksize / (1024*1024) / @sql.user_io_wait_time_secs : 0),2)} MB/sec. (per single session if using PQ) ", true) %>
-        <%= show_both_values("Elapsed time (sec), incl. parallel query slaves", @sql.elapsed_time_secs,0, "Runtime total in Seconds, sum over all PQ-processes", true, true)%>
-        <%= show_both_values("CPU-time (sec)", @sql.cpu_time_secs, 0, "CPU-time total in seconds, sum over all PQ-processes", true, true) %>
-        <%= show_both_values("Application wait time (sec)", @sql.application_wait_time_secs, 0, "Application wait-time total in seconds, incl. row lock waits", true, true) %>
-        <%= show_both_values("Concurrency wait time (sec)", @sql.concurrency_wait_time_secs, 0, "Concurrency wait-time total in seconds", true, true) %>
-        <%= show_both_values("Cluster wait time (sec)", @sql.cluster_wait_time_secs, 0, 'Wait time caused by RAC cluster issues', true, true) %>
-        <%= show_both_values("User-IO wait time (sec)", @sql.user_io_wait_time_secs, 0, 'Wait time caused by I/O operations', true, true) %>
-        <%= show_both_values("PL/SQL execution time (sec)", @sql.plsql_exec_time_secs, 0, "PL/SQL Execution-Time (Sec.) anteilig von CPU-Time", true, true) %>
-      </table>
+        <table style="font-size:small; width: 100%;">
+          <tr><th>Metric-Name</th><th>Total</th><th>Per Exec.</th></tr>
+          <%= show_single_value("Executions", @sql.executions,0, "Number of executions in time period") %>
+          <%= show_both_values("Parse calls", @sql.parse_calls,0, "#{strings(:parse_calls_title)}\n\n#{parse_title_addition.call(@sql)}") %>
+          <%= show_both_values("Fetches ", @sql.fetches, 0, "Number of fetches in time period (Avg. #{@sql.rows_processed/@sql.fetches rescue nil} rows per fetch)")%>
+          <%= show_both_values("Sorts", @sql.sorts,0, "Number of sorts in time period") %>
+          <tr>
+            <td title="Number of rows processed in time period">Rows processed</td>
+            <td align='right' title="Number of rows processed in time period"><%= fn(@sql.rows_processed)%></td>
+            <td align='right' title="Number of rows processed in time period per execution"><%= fn(@sql.rows_processed.to_f/ (@sql.executions.to_i==0 ? 1 : @sql.executions), 2) %></td>
+          </tr>
+          <%= show_both_values('Buffer gets', @sql.buffer_gets,0, 'Number of total DB-blocks read', true) %>
+          <%= show_both_values("Disk reads", @sql.disk_reads,0, "Number of db blocks read from disk\nAvg. time per db block read from disk = #{fn((@sql.disk_reads && @sql.disk_reads>0 ? @sql.user_io_wait_time_secs*1000/@sql.disk_reads : 0),2)} ms\nAvg. disk transfer speed = #{fn((@sql.user_io_wait_time_secs && @sql.user_io_wait_time_secs>0 ? @sql.disk_reads * PanoramaConnection.db_blocksize / (1024*1024) / @sql.user_io_wait_time_secs : 0),2)} MB/sec. (per single session if using PQ) ", true) %>
+          <%= show_both_values("Elapsed time (sec), incl. parallel query slaves", @sql.elapsed_time_secs,0, "Runtime total in Seconds, sum over all PQ-processes", true, true)%>
+          <%= show_both_values("CPU-time (sec)", @sql.cpu_time_secs, 0, "CPU-time total in seconds, sum over all PQ-processes", true, true) %>
+          <%= show_both_values("Application wait time (sec)", @sql.application_wait_time_secs, 0, "Application wait-time total in seconds, incl. row lock waits", true, true) %>
+          <%= show_both_values("Concurrency wait time (sec)", @sql.concurrency_wait_time_secs, 0, "Concurrency wait-time total in seconds", true, true) %>
+          <%= show_both_values("Cluster wait time (sec)", @sql.cluster_wait_time_secs, 0, 'Wait time caused by RAC cluster issues', true, true) %>
+          <%= show_both_values("User-IO wait time (sec)", @sql.user_io_wait_time_secs, 0, 'Wait time caused by I/O operations', true, true) %>
+          <%= show_both_values("PL/SQL execution time (sec)", @sql.plsql_exec_time_secs, 0, "PL/SQL Execution-Time (Sec.) anteilig von CPU-Time", true, true) %>
+        </table>
+      </div>
     </td>
   </tr>
 </table>
@@ -332,17 +336,19 @@ Hash-value over total optimizer environment + Number of different optimizer envi
         jQuery("#<%= @table_id_prefix %>_sql").width(jQuery("#<%= @table_id_prefix %>_sql").width()+20);
     }
 
-    // set height of sql (left column) to height of right column
-  jQuery("#<%= "#{@table_id_prefix}_sql" %>").height(jQuery("#<%= "#{@table_id_prefix}_right_single_table"%>").height() + jQuery("#<%= "#{@table_id_prefix}_right_table"%>").height());
+    (function() {
+        let cm = CodeMirror.fromTextArea(document.getElementById("<%= "#{@table_id_prefix}_sql" %>"), {
+                mode:  "sql",
+                readOnly: true,
+                lineWrapping: true
+            }
+        );
+        cm.setSize('100%', $("#<%= "#{@table_id_prefix}_right_td" %>").height()); // set height of sql (left column) to height of right column
 
-  jQuery("#<%= "#{@table_id_prefix}_main" %>").resizable({
-      handles: 's',
-      resize: function( event, ui ) {
-          jQuery("#<%= "#{@table_id_prefix}_sql" %>").height(jQuery("#<%= "#{@table_id_prefix}_main"%>").height()-30);
-      },
-      stop: function( event, ui ) {
-          jQuery("#<%= "#{@table_id_prefix}_sql" %>").height(jQuery("#<%= "#{@table_id_prefix}_main"%>").height()-10);
-      }
-  });
+        jQuery("#<%= "#{@table_id_prefix}_main" %>").resize(function(){
+                cm.setSize('100%', $("#<%= "#{@table_id_prefix}_right_td" %>").height());
+            }
+        );
 
+    })()
 </script>

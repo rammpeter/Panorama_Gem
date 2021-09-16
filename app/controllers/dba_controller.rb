@@ -1762,7 +1762,7 @@ class DbaController < ApplicationController
     prefix = result == '' ? "No SQL found for cursor ##{@cursor_id} in trace file up to this line #{@line_number}" : "-- SQL for cursor ##{@cursor_id} found PARSING IN CURSOR after line #{sql_line_number}"
 
     respond_to do |format|
-      format.html {render :html => render_yellow_pre("#{prefix}\n\n#{result}", 450) }
+      format.html {render :html => render_code_mirror("#{prefix}\n\n#{result}") }
     end
   end
 

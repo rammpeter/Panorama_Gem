@@ -13,7 +13,7 @@
 
 <%= gen_slickgrid(@attribs, column_options, {:caption => "Description of #{@object_type} #{@owner}.#{@object_name}", :height => :auto}) %>
 
-<%= render_yellow_pre(@source, 450) %>
+<%=  render_code_mirror(@source, cm_options: { lineNumbers: @show_line_numbers}) %>
 
 <div class="flex-row-container">
   <% if @object_type == 'PACKAGE' %>

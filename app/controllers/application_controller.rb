@@ -6,7 +6,9 @@
 # require 'application_helper' # Erweiterung der Controller um Helper-Methoden
 
 class ApplicationController < ActionController::Base
-  include ActionView::Helpers::JavaScriptHelper # u.a. zur Nutzung von escape_javascript(j) im Controllern
+  include ActionView::Helpers::JavaScriptHelper                                 # u.a. zur Nutzung von escape_javascript(j) im Controllern
+  include ActionView::Helpers::FormTagHelper                                    # allow text_area_tag etc. in controller code
+
 
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.

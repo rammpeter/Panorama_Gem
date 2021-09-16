@@ -56,7 +56,6 @@ function SlickGridExtended(container_id, options){
     var js_test_cell_heigth             = null;                                 // Objekt zum Test der realen Höhe einer Zeile
     var js_test_cell_header             = null;
     var columnFilters                   = {};                                   // aktuelle Filter-Kriterien der Daten
-    var sort_pfeil_width                = 12;                                   // Breite des Sort-Pfeils im Column-Header
     this.grid                           = null;                                 // Referenz auf SlickGrid-Objekt, belegt erst in initSlickGridExtended
     this.data_items                     = null;
     var last_slickgrid_contexmenu_col_header    = null;                         // globale Variable mit jQuery-Objekt des Spalten-Header der Spalte, in der Context-Menu zuletzt gerufen wurd
@@ -1153,7 +1152,7 @@ function SlickGridExtended(container_id, options){
             column.header_nowrap_width  = thiz.js_test_cell_header.scrollWidth; // genutzt für Test auf Umbruch des Headers, dann muss Höhe der Header-Zeile angepasst werden
 
             thiz.js_test_cell_header.style.width = '1px';
-            column.max_wrap_width      = thiz.js_test_cell_header.scrollWidth;  // min. Breite mit Umbruch muss trotzdem noch den Sort-Pfeil darstellen können
+            column.max_wrap_width      = thiz.js_test_cell_header.scrollWidth-10;  // min. Breite mit Umbruch muss trotzdem noch den Sort-Pfeil darstellen können
             column.header_wrap_height  = thiz.js_test_cell_header.scrollHeight;                      // max. height of header cell if all words are wrapped
 
 

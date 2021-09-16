@@ -2,13 +2,13 @@ class SQL_Worksheet  {
     constructor(parent_element_id) {
         this.cm = CodeMirror(document.getElementById(parent_element_id), {
             value: "-- Place your SQL code here\n",
-            mode:  "sql"
+            mode:  "sql",
+            lineNumbers: true
         });
 
         $(this.cm.getWrapperElement()).resizable();
         //$(this.cm.getWrapperElement()).parent().find(".ui-resizable-s").remove();  // Entfernen des rechten resizes-Cursors
         $(this.cm.getWrapperElement()).parent().find(".ui-resizable-se").remove();                   // Entfernen des rechten unteren resize-Cursors
-         //    .resizable()
 
         $(this.cm.getWrapperElement()).bind("keydown", function(event) {
             if (event.ctrlKey == true && event.key == 'Enter'){

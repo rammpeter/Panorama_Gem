@@ -1,7 +1,6 @@
 # encoding: utf-8
 class StorageController < ApplicationController
 
-
   # Groesse und Füllung der Tabelspaces
   def tablespace_usage
     @tablespaces = sql_select_all("\
@@ -446,7 +445,7 @@ class StorageController < ApplicationController
       ", @mview_id]
 
     respond_to do |format|
-      format.html {render :html => render_yellow_pre(text)}
+      format.html {render :html => render_code_mirror(text)}
     end
   end
 
