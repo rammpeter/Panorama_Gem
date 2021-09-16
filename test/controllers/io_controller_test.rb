@@ -59,7 +59,7 @@ class IoControllerTest < ActionController::TestCase
 
   test "refresh_time_selection with xhr: true" do
     io_file_key_rules.each do |groupby, value|
-      post :refresh_time_selection, :params => { :format=>:html, :groupfilter=>@groupfilter, :grooupby=>'Instance', repeat_controller: :io, :repeat_action => :list_io_file_history_grouping, :groupby=>groupby, :update_area=>:hugo }
+      post :refresh_time_selection, :params => { :format=>:html, :groupfilter=>@groupfilter, repeat_controller: :io, :repeat_action => :list_io_file_history_grouping, :groupby=>groupby, :update_area=>:hugo }
       assert_response :redirect # redirect_to schwierig im Test?
     end
   end
