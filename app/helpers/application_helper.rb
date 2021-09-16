@@ -11,7 +11,6 @@ require 'slickgrid_helper'
 require 'explain_application_info_helper'
 require 'strings_helper'
 require 'json'
-require 'action_dispatch/http/url'                                              # allow use of text_area_tag
 
 # Fix uninitialized constant Application if used as engine
 require_relative '../../config/engine_config'
@@ -601,7 +600,8 @@ module ApplicationHelper
   def render_code_mirror(text, cm_options: {}, options: {})
     id = get_unique_area_id
     output = ''
-    output << ActionDispatch::Http::URL.text_area_tag(id, text)
+    #output << ActionView::Helpers::FormTagHelper.text_area_tag(id, text)
+    output << "<textarea id=\"#{id}\" name=\"#{id}\">#{ERB::Util.html_escape(text)}</textarea>"
     output << "\
 <script type=\"text/javascript\">
   code_mirror_from_textarea(\"#{id}\", #{cm_options.to_json}, #{options.to_json});
