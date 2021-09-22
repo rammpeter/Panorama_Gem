@@ -28,8 +28,8 @@ class DbaGeneralTest < ApplicationSystemTestCase
     page.click_button 'button_dml_locks'
     unless assert_ajax_success_and_test_for_access_denied                       # Error dialog for "Access denied" called?
       assert_text 'DML Database locks (from GV$Lock)'                           # Check only if not error "Access denied" raised before
-      #      click_first_xpath_hit("//div[contains(@class, 'slick-cell') and contains(@class, 'l0') and contains(@class, 'r0')]",
-      #                      'click first row column "SID/SN" in grid')
+      click_first_xpath_hit("//div[contains(@class, 'slick-cell') and contains(@class, 'l0') and contains(@class, 'r0')]",
+                            'click first row column "SID/SN" in grid')
       # assert_text 'Details for session SID='                                  # Session may not exists anymore
     end
 
