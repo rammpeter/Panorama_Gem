@@ -28,6 +28,12 @@ class DbaController < ApplicationController
       add_statusbar_message("Error skipped while counting the number of DDL-Locks:\n#{e.message}")
     end
 
+    @blocking_session_count = sql_select_one "\
+      SELECT /* Panorama-Tool Ramm */ COUNT(*)
+      FROM gv$session s
+      JOIN gv$Session bs ON bs.Inst_ID = s.Blocking_Instance AND bs.SID = s.Blocking_Session
+      WHERE s.type = 'USER'"
+
     @pending_2pc_count = sql_select_one "SELECT COUNT(*) FROM DBA_2PC_Pending"
 
     render_partial
@@ -1365,6 +1371,10 @@ class DbaController < ApplicationController
               DECODE(State, 'WAITING', Wait_Class, NULL), DECODE(State, 'WAITING', State, NULL)
      ORDER BY COUNT(*) DESC, 6 DESC"
 
+    render_partial
+  end
+
+  def show_blocking_sessions
     # Erweitern der Daten um Informationen, die nicht im originalen Statement selektiert werden können,
     # da die Tabellen nicht auf allen DB zur Verfügung stehen
     record_modifier = proc{|rec|
