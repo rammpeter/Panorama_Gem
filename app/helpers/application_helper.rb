@@ -434,8 +434,8 @@ module ApplicationHelper
 
     raise "Parameter 'time_selection_start' missing in hash 'params'" unless params[:time_selection_start]
     raise "Parameter 'time_selection_end' missing in hash 'params'"   unless params[:time_selection_end]
-    @time_selection_start = params[:time_selection_start].rstrip
-    @time_selection_end   = params[:time_selection_end].rstrip
+    @time_selection_start = params[:time_selection_start].rstrip.gsub(/\u2011/, '-')  # replace unbreakable hyphen with '-'
+    @time_selection_end   = params[:time_selection_end].rstrip.gsub(/\u2011/, '-')    # replace unbreakable hyphen with '-'
 
     if @time_selection_start && @time_selection_start != ''
       set_cached_time_selection_start(check_timestamp_picture(@time_selection_start))
