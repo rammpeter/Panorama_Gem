@@ -54,8 +54,7 @@ column_options =
 
 %>
 <%=
-caption = t(:dba_history_list_sql_history_snapshots_caption, :default=>"Historic snapshots from %{table_name} for SQL-ID = '%{sql_id}' Instance = %{instance}", :sql_id=>@sql_id, :instance=>@instance, table_name: PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat'))
-caption << '<br><div style="font-weight: normal;">'
+caption = t(:dba_history_list_sql_history_snapshots_caption, :default=>"Historic snapshots from %{table_name} for SQL-ID = '%{sql_id}'", :sql_id=>@sql_id, table_name: PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat'))
 
 @time_selection_start_id = "time_selection_start_#{get_unique_area_id}"
 @time_selection_end_id   = "time_selection_end_#{get_unique_area_id}"
@@ -68,47 +67,51 @@ grouping_options = {
         :month  => t(:month,:default => 'Month'),
 }
 
-
-
-
 caption << (ajax_form(:controller => :dba_history, :action        => :list_sql_history_snapshots,
                                       :sql_id         => @sql_id,
                                       :update_area   => @prev_update_area,                   # Update_area des letzten Aufrufes wiederverwenden
                               ) do
-  form_content = ''
-  form_content << "<span title=\"RAC-Instance. You can change this filter value or empty this field to disable the filter\">Instance"
-  form_content << text_field_tag(:instance, @instance, :size=>4)
-  form_content << '</span>'
+  form_output = ''
+  form_output << "<div class=\"flex-row-container\" style=\"font-weight: normal;\">"
+  form_output << "  <div class=\"flex-row-element\" title=\"RAC-Instance. You can change this filter value or empty this field to disable the filter\">"
+  form_output << "    Instance"
+  form_output <<      text_field_tag(:instance, @instance, :size=>4)
+  form_output << "  </div>"
 
-  form_content << '&nbsp;&nbsp;&nbsp;'
-  form_content << "<span title=\"Parsing schema name. You can change this filter value or empty this field to disable the filter\">Schema "
-  form_content << text_field_tag(:parsing_schema_name, @parsing_schema_name, :size=>20)
-  form_content << '</span>'
+  form_output << "  <div class=\"flex-row-element\" title=\"Parsing schema name. You can change this filter value or empty this field to disable the filter\">"
+  form_output << "    Schema"
+  form_output <<      text_field_tag(:parsing_schema_name, @parsing_schema_name, :size=>20)
+  form_output << "  </div>"
 
-  form_content << '&nbsp;&nbsp;&nbsp;'
-  form_content << "<span title=\"#{t(:time_selection_start_hint, :default=>'Start of considered time period in format')} '#{human_datetime_minute_mask}'\">"
-  form_content << t(:time_selection_start_caption, :default => 'Start') << '&nbsp;'
-  form_content << text_field_tag(:time_selection_start, @time_selection_start, :size=>15, :id=>@time_selection_start_id, :title => "#{t(:time_selection_start_hint, :default=>'Start of considered time period in format')} '#{human_datetime_minute_mask}'")
-  form_content << '</span>'
+  form_output << "  <div class=\"flex-row-element\" title=\"#{t(:time_selection_start_hint, :default=>'Start of considered time period in format')} '#{human_datetime_minute_mask}'\">"
+  form_output <<      t(:time_selection_start_caption, :default => 'Start')
+  form_output <<      text_field_tag(:time_selection_start, @time_selection_start, :size=>15, :id=>@time_selection_start_id)
+  form_output << "  </div>"
 
-  form_content << '&nbsp;&nbsp;&nbsp;'
-  form_content << t(:time_selection_end_caption, :default => 'End')   << '&nbsp;'
-  form_content << text_field_tag(:time_selection_end, @time_selection_end, :size=>15, :id=>@time_selection_end_id, :title => "#{t(:time_selection_end_hint, :default=>'End of considered time period in format')} '#{human_datetime_minute_mask}'")
+  form_output << "  <div class=\"flex-row-element\" title=\"#{t(:time_selection_end_hint, :default=>'End of considered time period in format')} '#{human_datetime_minute_mask}'\">"
+  form_output <<      t(:time_selection_end_caption, :default => 'End')
+  form_output <<      text_field_tag(:time_selection_end, @time_selection_end, :size=>15, :id=>@time_selection_end_id)
+  form_output << "  </div>"
 
-  form_content << '&nbsp;&nbsp;&nbsp;'
-  form_content << "<span title=\"#{t(:grouping_hint, :default=>'Group listing by attribute')}\">#{t(:grouping, :default=>'Grouping')} "
-  form_content << '<select name="groupby">'
+  form_output << dbid_selection.gsub(/\n/, '')
+
+  form_output << "&nbsp;"
+  form_output << "  <div class=\"flex-row-element\" title=\"#{t(:grouping_hint, :default=>'Group listing by attribute')}\">"
+  form_output <<      t(:grouping, :default=>'Grouping')
+  form_output << "    <select name=\"groupby\">"
   grouping_options.each do |key, value|
-    form_content << "<option value=\"#{key}\" #{"selected='selected'" if key.to_s==@groupby}>#{value}</option>"
+    form_output << "<option value=\"#{key}\" #{"selected='selected'" if key.to_s==@groupby}>#{value}</option>"
   end
-  form_content << "</select>"
-  form_content << "</span>"
+  form_output << "    </select>"
+  form_output << "  </div>"
 
-  form_content << '&nbsp;&nbsp;&nbsp;'
-  form_content << submit_tag("Refresh", :title => t(:active_session_history_list_groupfilter_refresh_hint, :default=>"Refresh content with changed parameters"))
-  form_content.html_safe
+  form_output << "  <div class=\"flex-row-element\">"
+  form_output <<      submit_tag("Refresh", :title => t(:active_session_history_list_groupfilter_refresh_hint, :default=>"Refresh content with changed parameters"))
+  form_output << "  </div>"
+
+  form_output << "</div>"
+  form_output.html_safe
 end)
-caption << "</div>"
 
 gen_slickgrid(@hist, column_options, {  :caption     => caption.html_safe,
                                         :max_height  => 450, show_pin_icon: 1,
@@ -120,4 +123,3 @@ gen_slickgrid(@hist, column_options, {  :caption     => caption.html_safe,
     $("#<%= @time_selection_start_id %>").datetimepicker();
     $("#<%= @time_selection_end_id   %>").datetimepicker();
 </script>
-

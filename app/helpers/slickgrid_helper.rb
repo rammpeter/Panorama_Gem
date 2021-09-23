@@ -270,10 +270,8 @@ module SlickgridHelper
             case get_locale
               when 'de' then
                 col[:isDate] = false if stripped_celldata[2,1] != '.' || stripped_celldata[5,1] != '.' # Test auf Trennzeichen der Datum-Darstellung
-              when 'en' then
-                col[:isDate] = false if stripped_celldata[4,1] != '-' || stripped_celldata[7,1] != '-' # Test auf Trennzeichen der Datum-Darstellung
               else
-                col[:isDate] = false if stripped_celldata[4,1] != '-' || stripped_celldata[7,1] != '-' # Test auf Trennzeichen der Datum-Darstellung
+                col[:isDate] = false                                            # Date format does not matter because string-sorting is right for date also
             end
           else
             col[:isDate] = false

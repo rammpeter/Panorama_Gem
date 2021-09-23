@@ -245,6 +245,27 @@ class PanoramaConnection
     end
   end
 
+  # Cache existing DBIDs once per connection
+  def all_awr_dbids
+    if !defined?(@awr_dbids) || @awr_dbids.nil?
+      if PanoramaConnection.control_management_pack_access != 'NONE'
+        @awr_dbids = PanoramaConnection.sql_select_all "\
+          SELECT s.DBID, n.DB_Name, s.Start_TS, s.End_TS
+          FROM   (
+                   SELECT DBID, MIN(Begin_Interval_Time) Start_TS, MAX(End_Interval_Time) End_TS
+          FROM   DBA_Hist_Snapshot ss
+          GROUP BY DBID
+          ) s
+          JOIN   (SELECT /*+ NO_MERGE */ DBID, DB_Name
+          FROM   DBA_Hist_Database_Instance d
+          GROUP BY DBID, DB_Name
+          ) n ON n.DBID = s.DBID"
+      else
+        @awr_dbids = []                                                         # suppress access violations on AWR tables
+      end
+    end
+    @awr_dbids
+  end
 
   ########################### class methods #############################
   # Store connection redentials for this request in thread, marks begin of request
@@ -324,6 +345,7 @@ class PanoramaConnection
   end
 
 
+  def self.all_awr_dbids;                   check_for_open_connection;        Thread.current[:panorama_connection_connection_object].all_awr_dbids;               end
   def self.autonomous_database?;            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].autonomous_database;               end
   def self.block_common_header_size;        check_for_open_connection;        Thread.current[:panorama_connection_connection_object].block_common_header_size;          end
   def self.con_id;                          check_for_open_connection;        Thread.current[:panorama_connection_connection_object].con_id;                            end  # Container-ID for PDBs or 0
