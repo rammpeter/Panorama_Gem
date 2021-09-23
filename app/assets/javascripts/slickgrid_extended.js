@@ -113,7 +113,7 @@ function SlickGridExtended(container_id, options){
         for (col_index in viewable_columns) {
             column = viewable_columns[col_index];
             if (options['plotting'] && (column['plot_master'] || column['plot_master_time']))
-                alert('Only one column of table can be plot-masert for x-axis!');
+                alert('Only one column of table can be plot-master for x-axis!');
             if (column['plot_master'] || column['plot_master_time'])
                 options['plotting'] = true;
 
@@ -1246,7 +1246,8 @@ function SlickGridExtended(container_id, options){
                 parsed_field = date_parts[2]+"/"+date_parts[1]+"/"+date_parts[0]+" "+all_parts[1];   // Datum ISO neu zusammengsetzt + Zeit
             }
             if (options['locale'] === 'en'){
-                parsed_field= celldata.replace(/-/g,"/");       // Umwandeln "-" nach "/", da nur so im Date-Konstruktor geparst werden kann
+                // change "-" or unbreakable hyphen to "/", because only this way can be parsed in constructor
+                parsed_field= celldata.replace(/-/g,"/").replace(/\u2011/g, "/");
             }
             return new Date(parsed_field+" GMT");
         }
