@@ -774,6 +774,8 @@ class DbaController < ApplicationController
         s.Service_Name,
         SYSDATE - (s.Last_Call_Et/86400) Last_Call,
         s.Logon_Time,
+        s.Blocking_Session_Status, s.Blocking_Instance, s.Blocking_Session,
+        #{"s.Final_Blocking_Session_Status, s.Final_Blocking_Instance, s.Final_Blocking_Session," if get_db_version >= '12.1' }
         sci.Network_Encryption, sci.Network_Checksumming,
         i.Block_Gets+i.Consistent_Gets+i.Physical_Reads+i.Block_Changes+i.Consistent_Changes IOIndex,
         temp.Temp_MB, temp.Temp_Extents, temp.Temp_Blocks,

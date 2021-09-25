@@ -24,6 +24,18 @@
      )
    end
 
+   wait_event_data_title = proc do |rec|
+     output = explain_wait_event(rec.wait_event).clone(freeze: false)
+     if rec.blocking_session
+       output << "\n\nSession is blocked by: #{"Instance = #{rec.blocking_instance}, " if PanoramaConnection.rac?}SID = #{rec.blocking_session}, Status = #{rec.blocking_session_status}"
+       output << "\n\nFinal blocking session is: #{"Instance = #{rec.final_blocking_instance}, " if PanoramaConnection.rac?}SID = #{rec.final_blocking_session}, Status = #{rec.final_blocking_session_status}" if get_db_version >= '12.1' && rec.final_blocking_session != rec.blocking_session
+     end
+     output
+   end
+
+   wait_event_data_style = proc do |rec|
+     "background-color: coral;" if rec.blocking_session
+   end
 
   column_options = []
 
@@ -35,7 +47,7 @@
     {:caption=>"SID/SN",           :data=>proc{|rec| link_session_details(@update_area, rec.inst_id, rec.sid, rec.serialno)},              :title=>'SID, SerialNo'},
     {:caption=>"Status",           :data=>proc{|rec| rec.status},                     :title=>"Session-Status"},
     {:caption=>"SQL ID",           :data=>proc{|rec| link_sql_id(@update_area, rec.inst_id, rec.sql_id, childno: rec.sql_child_number)},                     :title=>"Current SQL-ID of session", data_title: proc{|rec| "%t\nChild-number = #{rec.sql_child_number}"}},
-    {:caption=>"Wait event",       :data=>proc{|rec| rec.wait_event},                 :title=>'Wait event', :data_title=>proc{|rec| explain_wait_event(rec.wait_event)} },
+    {:caption=>"Wait event",       :data=>proc{|rec| rec.wait_event},                 :title=>'Wait event', data_title: wait_event_data_title, data_style: wait_event_data_style},
     {:caption=>"Wait time",        :data=>proc{|rec| fn(rec.seconds_waiting, 1)},     :title=>'Wait time in current event in seconds', data_title: proc{|rec| "%t\nWait_time = #{fn((rec.seconds_waiting*1000 rescue 0), 3)} ms"}, :align=>:right},
     {:caption=>"User",             :data=>proc{|rec| rec.username},                   :title=>"Oracle-Username"},
     {:caption=>"Proc",             :data=>proc{|rec| rec.spid},                       :title=>t(:dba_list_sessions_proc_hint, :default=>'Process-ID of Oracle shadow process on DB-server (gv$Process.SPID)'), data_title: proc{|rec| "%t\nOracle process identifier (gv$Process.PID) = #{rec.pid} "}},

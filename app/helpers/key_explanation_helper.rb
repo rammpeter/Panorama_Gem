@@ -479,7 +479,7 @@ module KeyExplanationHelper
     end
 
     if @@wait_events[event]
-      @@wait_events[event]
+      @@wait_events[event].freeze                                               # Prevent content from being changed
     else
       "no explanation available for wait event '#{event}'"
     end
