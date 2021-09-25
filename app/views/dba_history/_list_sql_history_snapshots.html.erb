@@ -93,7 +93,8 @@ caption << (ajax_form(:controller => :dba_history, :action        => :list_sql_h
   form_output <<      text_field_tag(:time_selection_end, @time_selection_end, :size=>15, :id=>@time_selection_end_id)
   form_output << "  </div>"
 
-  form_output << dbid_selection.gsub(/\n/, '')
+  puts include_start_end_timepicker.gsub(/\n/, '\\n')
+  form_output << dbid_selection.gsub(/\n/, '\\n')                               # suppress real line feed in javascript strings, esacped with \n
 
   form_output << "&nbsp;"
   form_output << "  <div class=\"flex-row-element\" title=\"#{t(:grouping_hint, :default=>'Group listing by attribute')}\">"
@@ -120,6 +121,11 @@ gen_slickgrid(@hist, column_options, {  :caption     => caption.html_safe,
 %>
 
 <script type="text/javascript">
-    $("#<%= @time_selection_start_id %>").datetimepicker();
-    $("#<%= @time_selection_end_id   %>").datetimepicker();
+  // let create slickgrid with header at first, wenn refine elements in header
+  setTimeout(
+      () => {
+          $("#<%= @time_selection_start_id %>").datetimepicker();
+          $("#<%= @time_selection_end_id   %>").datetimepicker();
+      }, 0
+  )
 </script>

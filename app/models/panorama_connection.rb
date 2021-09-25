@@ -113,7 +113,6 @@ class PanoramaConnection
   attr_accessor :used_in_thread
   attr_accessor :last_used_time
   attr_accessor :last_used_query_timeout
-  attr_reader :autonomous_database                                              # nil if no autonomous DB
   attr_reader :block_common_header_size
   attr_reader :control_management_pack_access
   attr_reader :con_id
@@ -205,13 +204,6 @@ class PanoramaConnection
     else
       @con_id        = 0
     end
-
-    @autonomous_database = true                                                 # assume autonomous if next selection fails
-    begin
-      PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT ts# FROM sys.TS? WHERE RowNum < 2")
-    rescue Exception => e
-      @autonomous_database = false                                              # not autonomous database because sys.TS$ is readable
-    end
   end
 
   def register_sql_execution(stmt)
@@ -234,15 +226,31 @@ class PanoramaConnection
     @jdbc_connection.instance_variable_get(:@config)
   end
 
+  # nil if no autonomous DB
+  def autonomous_database
+    if !defined?(@autonomous_database) || @autonomous_database.nil?
+      @autonomous_database = false                                              # assume autonomous if next selection fails
+      begin
+        PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT ts# FROM sys.TS$ WHERE RowNum < 2")
+      rescue Exception => e
+        @autonomous_database = true                                             # autonomous database because sys.TS$ is not readable
+      end
+    end
+    @autonomous_database
+  end
+
   # Select PDBs each time they are requested because number of PDBs may change during lifetime of PanoramaConnection
   def pdbs
-    if db_version >= '12.1'
-      PanoramaConnection.direct_select(@jdbc_connection, "SELECT DISTINCT Con_ID, DBID, Name FROM gv$Containers WHERE Con_ID != 0").map do |p|
-        { con_id: p['con_id'], dbid: p['dbid'], name: p['name']}
+    if !defined?(@pdbs) || @pdbs.nil?
+      if db_version >= '12.1'
+        @pdbs = PanoramaConnection.direct_select(@jdbc_connection, "SELECT DISTINCT Con_ID, DBID, Name FROM gv$Containers WHERE Con_ID != 0").map do |p|
+          { con_id: p['con_id'], dbid: p['dbid'], name: p['name']}
+        end
+      else
+        @pdbs = []
       end
-    else
-      []
     end
+    @pdbs
   end
 
   # Cache existing DBIDs once per connection
