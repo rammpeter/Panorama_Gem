@@ -908,9 +908,7 @@ class DbaController < ApplicationController
            #{"LEFT OUTER JOIN gv$Containers con ON con.Inst_ID=s.Inst_ID AND con.Con_ID=s.Con_ID" if get_current_database[:cdb]}
            WHERE  s.Inst_ID=? AND s.SID=? AND s.Serial#=?",
            @instance, @sid].concat( get_db_version >= "11.2" ? [@serialno] : [] ).concat([@instance, @sid, @serialno, @instance, @sid, @serialno])
-    @dbsession    = nil
-    @current_sql  = nil
-    @previous_sql = nil
+
     if @dbsessions.length > 0   # Session lebt noch
       @dbsession = @dbsessions[0]
       @current_sql  = get_sga_sql_statement(@instance, @dbsession.sql_id)       if @dbsession.sql_id
@@ -935,9 +933,8 @@ class DbaController < ApplicationController
         @sql_data[1][:sql_exec_start] = @dbsession.prev_exec_start
         @sql_data[1][:sql_exec_id]    = @dbsession.prev_exec_id
       end
-    end
 
-    @pq_coordinator = sql_select_all ["SELECT s.Inst_ID, s.SID, s.Serial# SerialNo,
+      @pq_coordinator = sql_select_all ["SELECT s.Inst_ID, s.SID, s.Serial# SerialNo,
                                               s.SQL_ID, s.SQL_Child_Number, s.Status, s.Client_Info, s.Module, s.Action,
                                               s.UserName, s.Machine, s.OSUser, s.Process, s.Program,
                                               SYSDATE - (s.Last_Call_Et/86400) Last_Call,
@@ -950,7 +947,7 @@ class DbaController < ApplicationController
                                        AND    ps.Serial# = ?
                                       ", @instance, @sid, @serialno]
 
-    @open_cursor_counts = sql_select_first_row ["\
+      @open_cursor_counts = sql_select_first_row ["\
                          SELECT /*+ ORDERED USE_HASH(s) */
                                 COUNT(*) Total,
                                 SUM(CASE WHEN oc.SAddr=se.SAddr THEN 1 ELSE 0 END) Own_SAddr
@@ -959,8 +956,8 @@ class DbaController < ApplicationController
                          WHERE  se.Inst_ID=? AND se.SID=? AND se.Serial#=?
                          ", @instance, @sid, @serialno]
 
-    @pmems = sql_select_all ["\
-            SELECT /*+ ORDERED USE_HASH(s p pm) */ pm.Category, 
+      @pmems = sql_select_all ["\
+            SELECT /*+ ORDERED USE_HASH(s p pm) */ pm.Category,
                    SUM(pm.Allocated) Allocated,
                    SUM(pm.Used) Used,
                    SUM(pm.Max_Allocated) Max_Allocated
@@ -978,8 +975,16 @@ class DbaController < ApplicationController
             GROUP BY pm.Category
             ", @instance, @sid, @serialno, @instance, @sid, @serialno]
 
+      @workareas = sql_select_all ["\
+        SELECT wa.*
+        FROM   gv$SQL_Workarea_Active wa
+        WHERE  Inst_ID=? AND SID=?
+        UNION ALL
+        SELECT wa.*
+        FROM   gv$SQL_Workarea_Active wa
+        WHERE  QCInst_ID = ? AND QCSID = ? AND (Inst_ID!= ? OR SID!= ?)
+      ", @instance, @sid, @instance, @sid, @instance, @sid]
 
-    if @dbsession
       render_partial :list_session_details
     else
       show_popup_message "Session #{@sid}/#{@serialno} does not exist anymore at instance #{@instance}!"
