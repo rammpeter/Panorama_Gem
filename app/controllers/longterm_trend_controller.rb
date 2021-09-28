@@ -53,15 +53,6 @@ class LongtermTrendController < ApplicationController
                       else raise "Unknown point_group #{point_group}"
                       end
 
-    period_seconds = case point_group
-                     when :week then 7 * 86400
-                     when :day then 86400
-                     when :hour then 3600
-                     else raise "Unknown point_group #{point_group}"
-                     end
-
-
-
     where_from_groupfilter(params[:groupfilter], params[:groupby])
     panorama_sampler_schema = PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema].downcase
 

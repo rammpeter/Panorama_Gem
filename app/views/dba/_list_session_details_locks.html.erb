@@ -2,7 +2,6 @@
    @update_area = get_unique_area_id
 
     link_blocking_sid = proc do |rec|
-        update_area = "second_session_detail_area_#{@instance}_#{@sid}_#{rec.rownum}"
         ajax_link(rec.blocking_instance_number ? "#{rec.blocking_instance_number}:#{rec.blocking_sid},#{rec.blocking_serialno}" : "", {
                  :action            => :show_session_detail,
                  :instance          => rec.blocking_instance_number,

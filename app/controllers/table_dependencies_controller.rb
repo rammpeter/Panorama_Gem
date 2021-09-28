@@ -27,7 +27,6 @@ public
     @tablename = params[:all_table][:table_name]
     @filter_user = params[:filter_user][:username]
 
-    noa_users = sql_select_all "SELECT * FROM DBA_Users ORDER BY UserName"
     @dependencies = sql_select_all "\
       SELECT Level, DECODE(CONNECT_BY_ISCYCLE, 1, 'YES') CONNECT_BY_ISCYCLE, x.*, RowNum RN FROM
       (

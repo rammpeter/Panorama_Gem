@@ -11,7 +11,7 @@
 
     <div class="flex-row-element" title="<%= t(:dba_sga_show_sql_area_filter_hint, :default=>'Filter string must be found in considered SQL statement. Wildcards (%,_) can be used in filter. (optional)') %>">
       Filter
-      <%= text_field_tag(:filter, @filter, :size=>50) %>
+      <%= text_field_tag(:filter, '', :size=>50) %>
     </div>
 
     <%= instance_tag %>

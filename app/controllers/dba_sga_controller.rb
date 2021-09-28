@@ -2052,7 +2052,6 @@ END;
 
       unless pivot_column_tags.has_key?(column_key)
         pivot_column_tags[column_key] = 1
-        column_key_target = "#{column_key}_target"
         @pivot_columns << {caption:     "#{r.component} #{r.oper_type} resized MB",
                            sort_key:    "#{r.component} #{r.oper_type}",
                            data:        proc{|rec| historic_resize_link_ops(@update_area, rec, fn((rec["#{column_key}_real"] ? rec["#{column_key}_real"] : 0), 2), rec["#{column_key}_real"], r.component, r.oper_type)},
