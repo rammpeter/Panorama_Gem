@@ -42,7 +42,8 @@ Aims to issues that are inadequately analyzed and presented by other existing to
 
   # TODO: i18n 1.8.8, 1.8.9 leads to Uncaught exception: undefined method `deep_merge!' for {}:Concurrent::Hash
   # Check if following versions fix this error
-  s.add_dependency 'i18n', '1.8.7'
+  # s.add_dependency 'i18n', '1.8.7'
+  s.add_dependency 'i18n'
 
 
 end

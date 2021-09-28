@@ -79,7 +79,7 @@ Please remind also to establish housekeeping on audit data e.g. table sys.AUD$.
 Caution: For SELECT | INSERT | UPDATE | DELETE '),
             :sql=>  "
               SELECT /* Panorama-Tool Ramm: Auditing */
-                     'AUDIT '||NVL(a.Message, a.Name)||';'  \”Suggested audit rule\"
+                     'AUDIT '||NVL(a.Message, a.Name)||';'  \"Suggested audit rule\"
               FROM
               (
               SELECT 'CLUSTER'                Name, 'BY ACCESS' Success, 'BY ACCESS' Failure, NULL Message FROM DUAL UNION ALL
