@@ -73,6 +73,7 @@ GEM
     crass (1.0.6)
     docile (1.4.0)
     erubi (1.10.0)
+    ffi (1.15.4)
     ffi (1.15.4-java)
     globalid (0.5.2)
       activesupport (>= 5.0)
@@ -91,15 +92,21 @@ GEM
     mime-types-data (3.2021.0704)
     mini_mime (1.1.1)
     minitest (5.14.4)
+    nio4r (2.5.8)
     nio4r (2.5.8-java)
-    nokogiri (1.12.4-java)
+    nokogiri (1.12.5-java)
+      racc (~> 1.4)
+    nokogiri (1.12.5-x86_64-linux)
       racc (~> 1.4)
     playwright-ruby-client (1.14.0)
       concurrent-ruby (>= 1.1.6)
       mime-types (>= 3.0)
     public_suffix (4.0.6)
+    puma (5.4.0)
+      nio4r (~> 2.0)
     puma (5.4.0-java)
       nio4r (~> 2.0)
+    racc (1.5.2)
     racc (1.5.2-java)
     rack (2.2.3)
     rack-test (1.1.0)
@@ -165,6 +172,7 @@ GEM
 
 PLATFORMS
   universal-java-16
+  x86_64-linux
 
 DEPENDENCIES
   capybara
