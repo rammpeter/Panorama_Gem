@@ -93,7 +93,6 @@ caption << (ajax_form(:controller => :dba_history, :action        => :list_sql_h
   form_output <<      text_field_tag(:time_selection_end, @time_selection_end, :size=>15, :id=>@time_selection_end_id)
   form_output << "  </div>"
 
-  puts include_start_end_timepicker.gsub(/\n/, '\\n')
   form_output << dbid_selection.gsub(/\n/, '\\n')                               # suppress real line feed in javascript strings, esacped with \n
 
   form_output << "&nbsp;"
