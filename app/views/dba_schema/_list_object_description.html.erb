@@ -214,10 +214,6 @@ column_options =
        )
    end
 
-  mb_used = proc do |rec|
-    rec.avg_row_len.to_f * rec.num_rows / (1024*1024) rescue nil
-  end
-
    list_rac_master = proc do |rec|
      if @rac_attribs
        if @rac_attribs.current_master_cnt > 1

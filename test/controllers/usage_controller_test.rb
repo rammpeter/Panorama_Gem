@@ -15,7 +15,7 @@ class UsageControllerTest < ActionDispatch::IntegrationTest
   end
 
   def usage_file_exists?
-    file = File.open(EngineConfig.config.usage_info_filename, "r")
+    File.open(EngineConfig.config.usage_info_filename, "r")
     Rails.logger.info "UsageControllerTest.usage_file_exists?: Test excuted because usage #{EngineConfig.config.usage_info_filename} file exists. PWD = #{Dir.pwd}"
     true
   rescue Exception
