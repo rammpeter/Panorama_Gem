@@ -1,0 +1,11 @@
+CodeMirror currently used: 5.63.1
+Download:
+https://codemirror.net
+There's a link to:
+> Get the current version: 5.63.1
+unzip
+use:
+lib/codemirror.js
+lib/codemirror.css
+mode/sql/sql.js
+

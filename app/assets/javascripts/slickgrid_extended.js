@@ -1481,7 +1481,12 @@ function resize_slickGrids(){
     jQuery('.slickgrid_top').each(function(index, element){
         var gridContainer = jQuery(element);
         var sle = gridContainer.data('slickgridextended');
-        if (gridContainer.data('last_resize_width') && sle && gridContainer.data('last_resize_width') !== sle.get_grid_parent_width() && gridContainer.data('slickgrid')) { // nur durchrechnen, wenn sich wirklich Breite ändert und grid bereits initialisiert ist
+        if (gridContainer.data('last_resize_width') &&
+            sle &&
+            gridContainer.data('last_resize_width') !== sle.get_grid_parent_width() && // width of grid has really changed
+            gridContainer.is(':visible') &&                                     // suppress calculation of row heights if grid is not visible because scrollHeight of test cells is 0 in this case
+            gridContainer.data('slickgrid')                                     // data element is set before
+        ) {
             // darf nur in Rekalkulation der Höhe laufen wenn sich Spaltenbreiten verändern
             // für vertikalen Resize muss Höhenberechnung übersprungen werden
             sle.calculate_current_grid_column_widths("resize_slickGrids", true);

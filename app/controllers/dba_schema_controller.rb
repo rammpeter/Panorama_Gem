@@ -1289,30 +1289,11 @@ class DbaSchemaController < ApplicationController
     @object_name          = params[:object_name]
     @object_type          = params[:object_type]
     @current_update_area  = params[:update_area]
-    @show_line_numbers    = prepare_param(:show_line_numbers)
 
     @dependencies = get_dependencies_count(@owner, @object_name, @object_type)
     @grants       = get_grant_count(@owner, @object_name)
 
     @attribs = sql_select_all ["SELECT o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, o.Status FROM DBA_Objects o WHERE o.Owner = ? AND o.Object_Name = ? AND o.Object_Type = ?", @owner, @object_name, @object_type]
-
-=begin # access on GV$Access is often too slow for usage
-    @sessions_accessing_count = sql_select_one ["SELECT COUNT(*)
-                                                 FROM   GV$Access a
-                                                 LEFT OUTER JOIN GV$PX_Session pqc ON pqc.Inst_ID = a.Inst_ID AND pqc.SID = a.SID
-                                                 WHERE  a.Owner  = ?
-                                                 AND    a.Object = ?
-                                                 AND    a.Type   = ?
-                                                 AND    pqc.QCInst_ID IS NULL /* Session is not a PQ-slave */
-                                                ", @owner, @object_name, @object_type];
-=end
-
-    #line_no = 1
-    #@source = "#{line_no.to_s.rjust(5)+'  ' if @show_line_numbers}CREATE OR REPLACE "
-    #sql_select_all(["SELECT Text FROM DBA_Source WHERE Owner=? AND Name=? AND Type = ? ORDER BY Line", @owner, @object_name, @object_type]).each do |r|
-    #  @source << "#{line_no.to_s.rjust(5)+'  ' if @show_line_numbers && line_no > 1}#{r.text}"
-    #  line_no += 1
-    #end
 
     @source = "CREATE OR REPLACE "
     sql_select_iterator(["SELECT Text FROM DBA_Source WHERE Owner=? AND Name=? AND Type = ? ORDER BY Line", @owner, @object_name, @object_type]).each do |r|
@@ -1400,7 +1381,6 @@ class DbaSchemaController < ApplicationController
     @owner                = prepare_param(:owner)
     @trigger_name         = prepare_param(:trigger_name)
     @current_update_area  = params[:update_area]
-    @show_line_numbers    = prepare_param(:show_line_numbers)
 
     @body = sql_select_one ["\
       SELECT Trigger_Body

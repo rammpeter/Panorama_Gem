@@ -33,7 +33,7 @@
       {:caption=>"Tablespace",    :data=>proc{|rec| rec.tablespace  },                      :title=>"Used temporary tablespace"},
     ]
     %>
-    <%= gen_slickgrid(@workareas, column_options, {:caption => t(:dba_sga_list_sql_detail_sql_id_workarea_caption, :default=>'PGA work areas of sessions active executing this SQL statement'), :max_height => 450, :width=>:auto}) %>
+    <%= gen_slickgrid(@workareas, column_options, {:caption => t(:dba_sga_list_sql_detail_sql_id_workarea_caption, :default=>'PGA work areas of sessions active executing this SQL statement'), max_height: 450, width: :auto}) %>
 <% end %>
 
 <%= render :partial=>"list_sql_sga_stat_footer" %>

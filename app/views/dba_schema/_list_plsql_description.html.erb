@@ -13,7 +13,7 @@
 
 <%= gen_slickgrid(@attribs, column_options, {:caption => "Description of #{@object_type} #{@owner}.#{@object_name}", :height => :auto}) %>
 
-<%=  render_code_mirror(@source, cm_options: { lineNumbers: @show_line_numbers}) %>
+<%=  render_code_mirror(@source, cm_options: { lineNumbers: true}) %>
 
 <div class="flex-row-container">
   <% if @object_type == 'PACKAGE' %>
@@ -90,18 +90,6 @@
       :action        => :show_sql_area_historic,
       :filter        => "#{@owner}.#{@object_name}",
     }, :title => "Look for SQL statements with '#{@owner}.#{@object_name}' in their SQL text in AWR history")
-    %>
-  </div>
-
-  <div class="flex-row-element">
-    <%= ajax_submit(@show_line_numbers ? 'Hide line numbers' : 'Show line numbers', {
-        :action             => :list_plsql_description,
-        :owner              => @owner,
-        :object_name        => @object_name,
-        :object_type        => @object_type,
-        :show_line_numbers  => @show_line_numbers ? nil : 1,
-        :update_area        => @current_update_area,
-    }, :title => "Toggle line numbers for source text")
     %>
   </div>
 

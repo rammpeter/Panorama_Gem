@@ -1,6 +1,6 @@
 <% @update_area = get_unique_area_id %>
 
-<%=  render_code_mirror(@body, cm_options: { lineNumbers: @show_line_numbers}) %>
+<%=  render_code_mirror(@body, cm_options: { lineNumbers: true}) %>
 
 <div class="flex-row-container">
   <div class="flex-row-element">
@@ -11,16 +11,6 @@
         :object_name  => @trigger_name,
         :object_type  => 'TRIGGER'
     }, :title => "Show object dependencies for trigger #{@owner}.#{@trigger_name}")
-    %>
-  </div>
-  <div class="flex-row-element">
-    <%= ajax_submit(@show_line_numbers ? 'Hide line numbers' : 'Show line numbers', {
-        :action             => :list_trigger_body,
-        :owner              => @owner,
-        :trigger_name       => @trigger_name,
-        :show_line_numbers  => @show_line_numbers ? nil : 1,
-        :update_area        => @current_update_area,
-    }, :title => "Toggle line numbers for source text")
     %>
   </div>
 </div>

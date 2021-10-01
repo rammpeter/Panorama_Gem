@@ -542,7 +542,7 @@ class PanoramaConnection
     new_ex.set_backtrace(e.backtrace)
     raise new_ex
   ensure
-    Thread.current[:panorama_connection_connection_object].unregister_sql_execution
+    Thread.current[:panorama_connection_connection_object]&.unregister_sql_execution
   end
 
   def self.commit                                                               # only relevant if autocommit is switched off

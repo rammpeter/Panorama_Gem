@@ -155,7 +155,7 @@ column_options << {:caption=>'Client driver',       :data=>proc{|rec| rec.client
     column_options <<  {caption: 'Temp. segment size (MB)', data: proc{|rec| fn(rec.tempseg_size.to_f/(1024*1024), 3) rescue nil}, title: "	Size (in MBytes) of the temporary segment used on behalf of this work area.\nThis column is NULL if this work area has not (yet) spilled to disk.", align: :right, data_title: proc{|rec| "%t\n#{size_explain(rec.tempseg_size.to_f/(1024*1024)) rescue nil}\nTemp. tablespace used = #{rec.tablespace}"}}
     %>
     <div class="flex-row-element">
-      <%= gen_slickgrid(@workareas, column_options, caption: "Workareas (incl. PQ-Server) from GV$SQL_Workarea_Active", width: :auto) %>
+      <%= gen_slickgrid(@workareas, column_options, caption: "Workareas (incl. PQ-Server) from GV$SQL_Workarea_Active", max_height: 450, width: :auto) %>
     </div>
 
 
