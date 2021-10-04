@@ -118,25 +118,28 @@ WITH Ind_Cols AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Li
                  ),
      Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Num_Rows, Uniqueness
                  FROM   DBA_Indexes
-                 WHERE  Tablespace_Name NOT IN ('SYSTEM', 'SYSAUX')
+                 WHERE  OWNER NOT IN (#{system_schema_subselect})
+                ),
+     IndexFull AS (SELECT /*+ NO_MERGE MATERIALIZE */ i.Owner, i.Index_Name, i.Table_Owner, i.Table_Name, i.Num_Rows, i.Uniqueness, ic.Columns
+                   FROM   Indexes i
+                   JOIN   Ind_Cols ic  ON ic.Index_Owner = i.Owner AND ic.Index_Name = i.Index_Name
+                  ),
+     Segments AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Segment_Name, SUM(Bytes)/(1024*1024) MBytes
+                 FROM DBA_Segments
+                 GROUP BY Owner, Segment_Name
                 )
 SELECT x.*, ROUND(s.MBytes, 2) Size_MB_Index1
 FROM   (
         SELECT i1.owner, i1.Table_Name,
-               i1.Index_Name Index_1, ic1.Columns Columns_1, i1.Num_Rows Num_Rows_1, i1.Uniqueness Uniqueness_1,
-               i2.Index_Name Index_2, ic2.Columns Columns_2, i2.Num_Rows Num_Rows_2, i2.Uniqueness Uniqueness_2
-        FROM   Indexes i1
-        JOIN   Indexes i2 ON i2.Table_Owner = i1.Table_Owner AND i2.Table_Name = i1.Table_Name
-        JOIN   Ind_Cols ic1 ON ic1.Index_Owner = i1.Owner AND ic1.Index_Name = i1.Index_Name
-        JOIN   Ind_Cols ic2 ON ic2.Index_Owner = i2.Owner AND ic2.Index_Name = i2.Index_Name
+               i1.Index_Name Index_1, i1.Columns Columns_1, i1.Num_Rows Num_Rows_1, i1.Uniqueness Uniqueness_1,
+               i2.Index_Name Index_2, i2.Columns Columns_2, i2.Num_Rows Num_Rows_2, i2.Uniqueness Uniqueness_2
+        FROM   IndexFull i1
+        JOIN   IndexFull i2 ON i2.Table_Owner = i1.Table_Owner AND i2.Table_Name = i1.Table_Name
         WHERE  i1.Index_Name != i2.Index_Name
-        AND    ic2.Columns LIKE ic1.Columns || ',%' /* Columns of i1 are already indexed by i2 */
+        AND    i2.Columns LIKE i1.Columns || ',%' /* Columns of i1 are already indexed by i2 */
         AND    i1.Num_Rows > ?
        ) x
-LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, SUM(Bytes)/(1024*1024) MBytes
-                 FROM DBA_Segments
-                 GROUP BY Owner, Segment_Name
-                ) s ON s.Owner = x.Owner AND s.Segment_Name = x.Index_1
+LEFT OUTER JOIN segments s ON s.Owner = x.Owner AND s.Segment_Name = x.Index_1
 ORDER BY s.MBytes DESC NULLS LAST
             ",
             :parameter=>[{:name=> t(:dragnet_helper_8_param_1_name, :default=>'Minmum number of rows for index'), :size=>8, :default=>100000, :title=> t(:dragnet_helper_8_param_1_hint, :default=>'Minimum number of rows of index for consideration in result')}]

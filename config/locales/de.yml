@@ -690,7 +690,7 @@
     Letztlich Sicherheit über Nutzung gibt 'ALTER INDEX ... MONITORING USAGE' sowie Kontrolle über V$OBJECT_USAGE.
     Weitere Informationen zur Nutzung bringt Anzeige 'Segment statistics historisch' und Analyse der ActiveSessionHistory über Spalte 'Time waited'.
 
-  dragnet_helper_8_name:                                    Identifikation von Indizes mit doppelt indizierte Spalten
+  dragnet_helper_8_name:                                    Identifikation von Indizes mit doppelt indizierten Spalten
   dragnet_helper_8_desc: |-
     Diese Selektion sucht nach Indizes bei denen die Spalten des einen Index ein Subset der Spalten des anderen Index darstellen, wobei beide mit den selben Spalten beginnen.
     Die Rolle des ersten Index mit der kürzeren Spaltenmenge kann normalerweise durch den zweiten Index mit der größeren Spaltenmenge übernommen werden (inkl. der Absicherung von Foreign Key Constraints).
