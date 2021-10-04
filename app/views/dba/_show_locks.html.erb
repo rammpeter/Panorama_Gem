@@ -44,6 +44,11 @@
     <% end %>
   </div>
 
+  <div class="flex-row-element">
+    <%= ajax_form(:controller => :dba, :action=>:hang_analyze, :update_area => @update_area) do %>
+      <%= submit_tag "Hang analyze", title: "Get a script with the steps for executing hang analysis", :id=>:hang_analyze  %>
+    <% end %>
+  </div>
 
 </div>
 

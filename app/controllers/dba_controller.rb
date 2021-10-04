@@ -244,6 +244,32 @@ class DbaController < ApplicationController
     render_partial
   end
 
+  def hang_analyze
+    respond_to do |format|
+      format.html {render :html => "\
+<div class=\"yellow-panel\">
+-- Before fixing an blocking situation by \"SHUTDOWN ABORT\" or \"ALTER SYSTEM KILL SESSION\" you should record the current state for later investigation.
+-- Therefore execute the following commands as sysdba e.g. by \"sqlplus / as sysdba\"
+
+ oradebug setmypid
+ oradebug unlimit
+ oradebug hanganalyze 3
+ oradebug dump ashdumpseconds 30
+ oradebug dump systemstate 266
+ oradebug tracefile_name
+
+-- In case you cannot create a new session by \"sqlplus / as sysdba\" do \"sqlplus -prelim / as sysdba\" instead
+-- and connect to an existing idle process instead of \"oradebug setmypid\"
+oradebug setorapname diag
+
+-- Thanks to Franck Pachot for his explanations:
+-- https://blog.dbi-services.com/oracle-is-hanging-dont-forget-hanganalyze-and-systemstate/
+
+</div>
+      ".gsub(/\n/, '<br/>').html_safe }
+    end
+  end
+
   def convert_to_rowid
     @data_object_id = params[:data_object_id]
 
