@@ -1021,7 +1021,7 @@ class DbaSchemaController < ApplicationController
 
   private
   def get_session_consistent_gets
-    sql_select_one "SELECT Value FROM v$SesStat WHERE SID = USERENV('SID') AND Statistic# = 72"
+    sql_select_one ["SELECT Value FROM v$SesStat WHERE SID = USERENV('SID') AND Statistic# = ?", PanoramaConnection.stat_id_consistent_gets]
   end
   public
 
@@ -1055,7 +1055,7 @@ class DbaSchemaController < ApplicationController
     @consistent_gets = get_session_consistent_gets - consistent_gets_before
 
     @stats.each do |s|
-      s['total_leaf_blocks'] = leaf_blocks ? leaf_blocks.to_i : nil
+      s['total_leaf_blocks'] = leaf_blocks&.to_i
     end
 
     render_partial

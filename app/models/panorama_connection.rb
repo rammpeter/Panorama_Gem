@@ -226,6 +226,8 @@ class PanoramaConnection
     @jdbc_connection.instance_variable_get(:@config)
   end
 
+  #### Lazy cached values
+
   # nil if no autonomous DB
   def autonomous_database
     if !defined?(@autonomous_database) || @autonomous_database.nil?
@@ -275,6 +277,12 @@ class PanoramaConnection
     @awr_dbids
   end
 
+  def stat_id_consistent_gets
+    if !defined?(@stat_id_consistent_gets)
+      @stat_id_consistent_gets = PanoramaConnection.sql_select_one "SELECT Statistic# FROM v$StatName WHERE Name = 'consistent gets'"
+    end
+    @stat_id_consistent_gets
+  end
   ########################### class methods #############################
   # Store connection redentials for this request in thread, marks begin of request
   def self.set_connection_info_for_request(config)
@@ -370,6 +378,7 @@ class PanoramaConnection
   def self.rac?;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_count > 1;                end
   def self.rowid_size;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].rowid_size;                        end
   def self.sid;                             check_for_open_connection;        Thread.current[:panorama_connection_connection_object].sid;                               end
+  def self.stat_id_consistent_gets;         check_for_open_connection;        Thread.current[:panorama_connection_connection_object].stat_id_consistent_gets;           end
   def self.table_directory_entry_size;      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].table_directory_entry_size;        end
   def self.table_directory_entry_size;      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].table_directory_entry_size;        end
   def self.transaction_fixed_header_size;   check_for_open_connection;        Thread.current[:panorama_connection_connection_object].transaction_fixed_header_size;     end
