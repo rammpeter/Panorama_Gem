@@ -137,7 +137,6 @@ Rails.logger.info "get_selection_list: called render" if  Rails.env.test?
 
     # Ausführen des SQL
     @res = sql_select_all command_array
-
     # Optionales Filtern des Results
     if dragnet_sql[:filter_proc]
       raise "filter_proc muss Klasse proc besitzen für #{dragnet_sql[:name]}" if dragnet_sql[:filter_proc].class.name != 'Proc'

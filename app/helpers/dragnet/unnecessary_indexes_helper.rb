@@ -127,8 +127,9 @@ WITH Ind_Cols AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Li
      Segments AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Segment_Name, SUM(Bytes)/(1024*1024) MBytes
                  FROM DBA_Segments
                  GROUP BY Owner, Segment_Name
-                )
-SELECT x.*, ROUND(s.MBytes, 2) Size_MB_Index1
+                ),
+     Constraints AS (SELECT  /*+ NO_MERGE MATERIALIZE */ Table_Name, Index_Name, Constraint_Name FROM DBA_Constraints WHERE Index_Name IS NOT NULL)
+SELECT x.*, ROUND(s.MBytes, 2) Size_MB_Index1, c.Constraint_Name \"Constr. Enforcement by idx1\"
 FROM   (
         SELECT i1.owner, i1.Table_Name,
                i1.Index_Name Index_1, i1.Columns Columns_1, i1.Num_Rows Num_Rows_1, i1.Uniqueness Uniqueness_1,
@@ -139,7 +140,8 @@ FROM   (
         AND    i2.Columns LIKE i1.Columns || ',%' /* Columns of i1 are already indexed by i2 */
         AND    i1.Num_Rows > ?
        ) x
-LEFT OUTER JOIN segments s ON s.Owner = x.Owner AND s.Segment_Name = x.Index_1
+LEFT OUTER JOIN Constraints c ON c.Table_Name = x.Table_Name AND c.Index_Name = x.Index_1
+LEFT OUTER JOIN segments s    ON s.Owner = x.Owner AND s.Segment_Name = x.Index_1
 ORDER BY s.MBytes DESC NULLS LAST
             ",
             :parameter=>[{:name=> t(:dragnet_helper_8_param_1_name, :default=>'Minmum number of rows for index'), :size=>8, :default=>100000, :title=> t(:dragnet_helper_8_param_1_hint, :default=>'Minimum number of rows of index for consideration in result')}]
