@@ -754,6 +754,9 @@ oradebug setorapname diag
     if params[:showOnlyDbLink]=="1"
       where_string << " AND UPPER(s.program) like 'ORACLE@%' AND UPPER(s.Program) NOT LIKE 'ORACLE@'||(SELECT UPPER(i.Host_Name) FROM gv$Instance i WHERE i.Inst_ID=s.Inst_ID)||'%' "
     end
+    if params[:showTimer]!="1"
+      where_string << " AND w.Event != 'PL/SQL lock timer'"
+    end
     if params[:object_owner] && params[:object_name] && params[:object_owner] != '' && params[:object_name] != ''
       where_string << " AND (s.Inst_ID, s.SID) IN (SELECT /*+ NO_MERGE */ Inst_ID, SID FROM GV$Access WHERE Owner = ? AND Object = ?"
       where_string << " AND Type = ?" if params[:object_type] && params[:object_type] != ''
@@ -830,6 +833,7 @@ oradebug setorapname diag
         wa.Expected_Size_MB, wa.Actual_Mem_Used_MB, wa.Max_Mem_Used_MB, wa.Number_Passes,
         wa.WA_TempSeg_Size_MB,
         CASE WHEN w.State = 'WAITING' THEN w.Event ELSE 'ON CPU' END Wait_Event,
+        w.Wait_Class,
         RawToHex(tx.XID) XID,
         #{get_db_version < '11.1' ? "w.Seconds_In_Wait" : "DECODE(w.State, 'WAITING', w.Wait_Time_Micro, w.Time_Since_Last_Wait_Micro)/1000000"} Seconds_Waiting
       FROM    GV$session s

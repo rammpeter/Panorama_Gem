@@ -34,7 +34,7 @@
    end
 
    wait_event_data_style = proc do |rec|
-     "background-color: coral;" if rec.blocking_session
+     "background-color: coral;" if rec.blocking_session && rec.wait_class != 'Idle'
    end
 
   column_options = []
