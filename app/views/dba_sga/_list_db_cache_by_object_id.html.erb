@@ -7,7 +7,7 @@
     {:caption=>'Object name',     :data=>proc{|rec| rec.object_name },            :title=>'Name of object'},
     {:caption=>'Subobject name',  :data=>proc{|rec| rec.subobject_name },         :title=>'Name of subobject'},
     {:caption=>'Object type',     :data=>proc{|rec| rec.object_type },            :title=>'Type of object'},
-    {:caption=>"Size (MB)", :data=>proc{|rec| fn(rec.mb_total,3)},          :title=>"Total size of object in DB blocks in MBytes",:align=>:right },
+    {:caption=>"Size (MB)", :data=>proc{|rec| fn(rec.mb_total,3)},          :title=>"Total size of object in DB blocks in MBytes",:align=>:right, data_title: proc{|rec| "%t\n#{size_explain(rec.mb_total)}"}},
     {:caption=>"% total",   :data=>proc{|rec| fn(rec.pct,3)},               :title=>"Percentage from total DB cache size",:align=>:right },
     {:caption=>"Blocks",    :data=>proc{|rec| fn(rec.blocks)},              :title=>"Total number of DB blocks in Cache",         :align=>:right },
     {:caption=>"Dirty",     :data=>proc{|rec| fn(rec.dirty)},               :title=>"Number of dirty DB blocks in Cache",         :align=>:right },
