@@ -6,7 +6,7 @@
 
     payload = rec.payload.gsub("\n", ' ') if !rec.payload.nil?
 
-    if !rec.payload.nil? && (payload['PARSE #'] || payload['EXEC #'] || payload['FETCH #'] || payload['STAT #'] || payload['CLOSE #'])
+    if !rec.payload.nil? && (payload['PARSE #'] || payload['EXEC #'] || payload['FETCH #'] || payload['STAT #'] || payload['CLOSE #'] || payload['ERROR #'])
 
       hash_index = payload.index('#')
       result = payload[0, hash_index]                                           # line Content before cursor ID

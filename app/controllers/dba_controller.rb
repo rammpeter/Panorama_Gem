@@ -1756,20 +1756,37 @@ oradebug setorapname diag
     render_partial
   end
 
+  MAX_TRACE_FILE_LINES_TO_SHOW=10000
   def list_trace_file_content
     @instance       = prepare_param_instance
     @adr_home       = prepare_param(:adr_home)
     @trace_filename = prepare_param(:trace_filename)
     @con_id         = prepare_param(:con_id)
 
-    @content = sql_select_iterator ["SELECT c.*, c.Serial# SerialNo
-                                   FROM   gv$Diag_Trace_File_Contents c
-                                   WHERE  c.Inst_ID        = ?
-                                   AND    c.ADR_Home       = ?
-                                   AND    c.Trace_FileName = ?
-                                   AND    c.Con_ID         = ?
-                                   ORDER BY c.Line_Number
-                                  ", @instance, @adr_home, @trace_filename, @con_id]
+    counts = sql_select_first_row ["SELECT COUNT(*) lines, MAX(Line_Number) Max_Line_Number
+                                    FROM   gv$Diag_Trace_File_Contents c
+                                    WHERE  c.Inst_ID        = ?
+                                    AND    c.ADR_Home       = ?
+                                    AND    c.Trace_FileName = ?
+                                    AND    c.Con_ID         = ?
+                                    ORDER BY c.Line_Number
+                                   ", @instance, @adr_home, @trace_filename, @con_id]
+
+    if counts.lines > MAX_TRACE_FILE_LINES_TO_SHOW
+      add_statusbar_message("Trace file #{@trace_filename} contains #{fn(counts.lines)} rows!\nShowing only the last #{fn(MAX_TRACE_FILE_LINES_TO_SHOW)} rows.")
+    end
+
+    @content = sql_select_iterator ["SELECT *
+                                     FROM   (SELECT /*+ NO_MERGE */ c.*, c.Serial# SerialNo, RowNum Row_Num
+                                             FROM   gv$Diag_Trace_File_Contents c
+                                             WHERE  c.Inst_ID        = ?
+                                             AND    c.ADR_Home       = ?
+                                             AND    c.Trace_FileName = ?
+                                             AND    c.Con_ID         = ?
+                                             ORDER BY c.Line_Number
+                                            )
+                                     WHERE  Row_Num > ?
+                                  ", @instance, @adr_home, @trace_filename, @con_id, counts.lines - MAX_TRACE_FILE_LINES_TO_SHOW]
 
     render_partial
   end
@@ -1782,31 +1799,37 @@ oradebug setorapname diag
     @line_number    = prepare_param_int :line_number
     @cursor_id      = prepare_param :cursor_id
 
-    content = sql_select_iterator ["SELECT c.*, c.Serial# SerialNo
-                                   FROM   gv$Diag_Trace_File_Contents c
-                                   WHERE  c.Inst_ID        = ?
-                                   AND    c.ADR_Home       = ?
-                                   AND    c.Trace_FileName = ?
-                                   AND    c.Con_ID         = ?
-                                   AND    c.Line_Number    < ?  /* only look for SQL before ocurrence */
-                                   ORDER BY c.Line_Number
-                                  ", @instance, @adr_home, @trace_filename, @con_id, @line_number]
+    content = sql_select_all [ "WITH lines AS (SELECT *
+                                               FROM   gv$Diag_Trace_File_Contents
+                                               WHERE  Inst_ID        = ?
+                                               AND    ADR_Home       = ?
+                                               AND    Trace_FileName = ?
+                                               AND    Con_ID         = ?
+                                               AND    Line_Number    < ?
+                                              ),
+                                     start_line AS (SELECT MAX(Line_Number) Line_Number
+                                                    FROM   Lines
+                                                    WHERE  Payload LIKE 'PARSING IN CURSOR ##{@cursor_id}%'
+                                                   ),
+                                     end_line AS (SELECT MIN(l.Line_Number) Line_Number
+                                                  FROM   Lines l
+                                                  CROSS JOIN start_line
+                                                  WHERE  l.Line_Number > start_line.line_number
+                                                  AND  Payload LIKE 'END OF STMT%'
+                                                 )
+                                SELECT l.Line_Number, l.Payload
+                                FROM   Lines l
+                                CROSS JOIN start_line
+                                CROSS JOIN end_line
+                                WHERE  l.Line_Number > start_line.line_number
+                                AND    l.Line_Number < end_line.line_number
+                               ", @instance, @adr_home, @trace_filename, @con_id, @line_number]
     result = ''
-    recording = false
-    sql_line_number = 0
     content.each do |rec|
-      recording = false if rec.payload['END OF STMT']
-      result << rec.payload if recording
-      if rec.payload["PARSING IN CURSOR ##{@cursor_id}"]
-        recording = true                                                        # Start recording with next line
-        result = ''                                                             # throw away previous results
-        sql_line_number = rec.line_number
-      end
-
-      break if !recording && rec.line_number > @line_number
+      result << rec.payload
     end
 
-    prefix = result == '' ? "No SQL found for cursor ##{@cursor_id} in trace file up to this line #{@line_number}" : "-- SQL for cursor ##{@cursor_id} found PARSING IN CURSOR after line #{sql_line_number}"
+    prefix = result == '' ? "No SQL found for cursor ##{@cursor_id} in trace file up to this line #{@line_number}" : "-- SQL for cursor ##{@cursor_id} found PARSING IN CURSOR at line #{content[0].line_number-1}"
 
     respond_to do |format|
       format.html {render :html => render_code_mirror("#{prefix}\n\n#{result}") }

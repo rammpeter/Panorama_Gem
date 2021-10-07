@@ -53,6 +53,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
     @page.query_selector('#database_password').fill(test_config[:password_decrypted])
     @page.query_selector('#submit_login_dialog').click
     @page.wait_for_selector('#management_pack_license_diagnostics_pack')   # dialog shown
+    sleep(0.1)
     @page.query_selector("#management_pack_license_#{management_pack_license}").check
     @page.query_selector('text="Acknowledge and proceed"').click
     @page.wait_for_selector('#main_menu')
