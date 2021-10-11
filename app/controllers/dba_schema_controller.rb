@@ -6,6 +6,14 @@ class DbaSchemaController < ApplicationController
   include DbaHelper
   include DbaSchemaHelper
 
+  def list_db_users
+    @users = sql_select_iterator "SELECT u.*
+                                  FROM   DBA_Users u
+                                  ORDER BY u.UserName
+                                 "
+    render_partial
+  end
+
   # Einstieg in Seite (Menü-Action)
   def show_object_size
     @tablespaces = sql_select_all("\
@@ -599,14 +607,10 @@ class DbaSchemaController < ApplicationController
                                                 ", @owner, @table_name, @table_type];
 =end
 
-    @unique_constraints = sql_select_all ["\
-      SELECT c.*
-      FROM   DBA_Constraints c
-      WHERE  c.Constraint_Type = 'U'
-      AND    c.Owner = ?
-      AND    c.Table_Name = ?
-      ", @owner, @table_name]
+    # reuse for several constraint types because selection takes a bit
+    @constraints = sql_select_all ["SELECT c.*, CASE WHEN Generated = 'GENERATED NAME' THEN 1 END notnull FROM DBA_Constraints c WHERE Owner = ? AND Table_Name = ?", @owner, @table_name]
 
+    @unique_constraints = @constraints.select {|c| c.constraint_type == 'U'}
     @unique_constraints.each do |u|
       u[:columns] = ''
       columns =  sql_select_all ["\
@@ -623,11 +627,11 @@ class DbaSchemaController < ApplicationController
       u[:columns] = u[:columns][0...-2]                                         # Letzte beide Zeichen des Strings entfernen
     end
 
-    @pkeys = sql_select_one ["SELECT COUNT(*) FROM DBA_Constraints WHERE Constraint_Type = 'P' AND Owner = ? AND Table_Name = ?", @owner, @table_name]
+    @pkeys = @constraints.select {|c| c.constraint_type == 'P'}.count
 
-    @check_constraints = sql_select_one ["SELECT COUNT(*) FROM DBA_Constraints WHERE Constraint_Type = 'C' AND Owner = ? AND Table_Name = ? AND Generated != 'GENERATED NAME' /* Ausblenden implizite NOT NULL Constraints */", @owner, @table_name]
+    @check_constraints = @constraints.select {|c| c.constraint_type == 'C' && c.notnull.nil?}.count  # Ausblenden implizite NOT NULL Constraints
 
-    @references_from = sql_select_one ["SELECT COUNT(*) FROM DBA_Constraints WHERE Constraint_Type = 'R' AND Owner = ? AND Table_Name = ?", @owner, @table_name]
+    @references_from = @constraints.select {|c| c.constraint_type == 'R'}.count
 
     @references_to = sql_select_one ["\
       SELECT COUNT(*)
@@ -662,23 +666,31 @@ class DbaSchemaController < ApplicationController
 
   private
   def get_table_partition_expression(owner, table_name)
-    part_tab      = sql_select_first_row ["SELECT Partitioning_Type, SubPartitioning_Type #{", Interval" if get_db_version >= "11.2"} FROM DBA_Part_Tables WHERE Owner = ? AND Table_Name = ?", owner, table_name]
+    part_tab      = sql_select_first_row ["SELECT * FROM DBA_Part_Tables WHERE Owner = ? AND Table_Name = ?", owner, table_name]
     part_keys     = sql_select_all ["SELECT Column_Name FROM DBA_Part_Key_Columns WHERE Owner = ? AND Name = ? ORDER BY Column_Position", owner, table_name]
     subpart_keys  = sql_select_all ["SELECT Column_Name FROM DBA_SubPart_Key_Columns WHERE Owner = ? AND Name = ? ORDER BY Column_Position", owner, table_name]
 
-    partition_expression = "Partition by #{part_tab.partitioning_type} (#{part_keys.map{|i| i.column_name}.join(",")}) #{"Interval #{part_tab.interval}" if get_db_version >= "11.2" && part_tab.interval}"
-    partition_expression << " Sub-Partition by #{part_tab.subpartitioning_type} (#{subpart_keys.map{|i| i.column_name}.join(",")})" if part_tab.subpartitioning_type != 'NONE'
+    partition_expression = "PARTITION BY #{part_tab.partitioning_type} (#{part_keys.map{|i| i.column_name}.join(",")})"
+    partition_expression << " INTERVAL #{part_tab.interval}" if get_db_version >= "11.2" && part_tab.interval
+    partition_expression << " AUTOMATIC" if get_db_version >= "12.2" && part_tab.autolist == 'YES'
+    partition_expression << " SUBPARTITION BY #{part_tab.subpartitioning_type} (#{subpart_keys.map{|i| i.column_name}.join(",")})" if part_tab.subpartitioning_type != 'NONE'
+    partition_expression << " INTERVAL #{part_tab.interval_subpartition}" if get_db_version >= "12.2" && part_tab.interval_subpartition
+    partition_expression << " AUTOMATIC" if get_db_version >= "12.2" && part_tab.autolist_subpartition == 'YES'
     partition_expression
   end
 
   def get_index_partition_expression(owner, index_name)
 
-    part_ind      = sql_select_first_row ["SELECT Partitioning_Type, SubPartitioning_Type #{", Interval" if get_db_version >= "11.2"} FROM DBA_Part_Indexes WHERE Owner = ? AND Index_Name = ?", owner, index_name]
+    part_ind      = sql_select_first_row ["SELECT * FROM DBA_Part_Indexes WHERE Owner = ? AND Index_Name = ?", owner, index_name]
     part_keys     = sql_select_all ["SELECT Column_Name FROM DBA_Part_Key_Columns WHERE Owner = ? AND Name = ? ORDER BY Column_Position",  owner, index_name]
     sub_part_keys = sql_select_all ["SELECT Column_Name FROM DBA_SubPart_Key_Columns WHERE Owner = ? AND Name = ? ORDER BY Column_Position", owner, index_name]
 
-    partition_expression = "Partition by #{part_ind.partitioning_type} (#{part_keys.map{|i| i.column_name}.join(",")}) #{"Interval #{part_ind.interval}" if get_db_version >= "11.2" && part_ind.interval}"
-    partition_expression << " Sub-Partition by #{part_ind.subpartitioning_type} (#{sub_part_keys.map{|i| i.column_name}.join(",")})" if part_ind.subpartitioning_type != 'NONE'
+    partition_expression = "PARTITION BY #{part_ind.partitioning_type} (#{part_keys.map{|i| i.column_name}.join(",")})"
+    partition_expression << " INTERVAL #{part_ind.interval}" if get_db_version >= "11.2" && part_ind.interval
+    partition_expression << " AUTOMATIC" if get_db_version >= "12.2" && part_ind.autolist == 'YES'
+    partition_expression << " SUBPARTITION BY #{part_ind.subpartitioning_type} (#{sub_part_keys.map{|i| i.column_name}.join(",")})" if part_ind.subpartitioning_type != 'NONE'
+    partition_expression << " INTERVAL #{part_ind.interval}" if get_db_version >= "11.2" && part_ind.interval_subpartition
+    partition_expression << " AUTOMATIC" if get_db_version >= "12.2" && part_ind.autolist_subpartition == 'YES'
     partition_expression
   end
 

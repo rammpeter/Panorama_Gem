@@ -31,6 +31,7 @@ module MenuHelper
               {:class => 'item', :caption => 'Resource limits', :controller => :dba, :action => :resource_limits, :hint => t(:menu_dba_resource_limit_hint, :default => 'Show resource limits from gv$Resource_Limit')},
             ]
             },
+            {:class => 'item', :caption => 'Database users', :controller => :dba_schema, :action => :list_db_users, :hint => t(:menu_dba_schema_list_users_hint, :default => 'Show database users (All_Users)')},
             {:class => 'menu', :caption => 'Audit Trail', :content => [
                 {:class => 'item', :caption => 'Standard Audit Trail', :controller => :dba_schema, :action => :show_audit_trail, :hint => t(:menu_dba_schema_audit_trail_hint, :default => 'Show activities logged by standard audit trail (DBA_Audit_Trail)')},
                 {:class => 'item', :caption => 'Unified Audit Trail', :controller => :dba_schema, :action => :show_unified_audit_trail, :hint => t(:menu_dba_schema_unified_audit_trail_hint, :default => 'Show activities logged by unified audit trail'), min_db_version: '12.1'},

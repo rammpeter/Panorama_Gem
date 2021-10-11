@@ -1847,6 +1847,7 @@
   menu_dba_locks_hint:                                      Aktueller Lock-Status incl. Blocking Locks
   menu_dba_patch_hint:                                      Historie der Upgrades/ Downgrades / Patches
   menu_dba_schema_audit_trail_hint:                         Anzeige von per Standard Audit Trail geloggten Aktivitäten (DBA_Audit_Trail)
+  menu_dba_schema_list_users_hint:                          Anzeige der DB-User (All_Users)
   menu_dba_schema_ts_objects_hint:                          DB-Objekte nach Größe, Auslastung, Verschnitt
   menu_dba_schema_unified_audit_trail_hint:                 Anzeige von per Unified Audit Trail geloggten Aktivitäten
   menu_dba_parameter_hint:                                  Anlistung der Init-Parameter der Instanz(en)
