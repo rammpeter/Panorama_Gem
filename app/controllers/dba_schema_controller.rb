@@ -689,7 +689,7 @@ class DbaSchemaController < ApplicationController
     partition_expression << " INTERVAL #{part_ind.interval}" if get_db_version >= "11.2" && part_ind.interval
     partition_expression << " AUTOMATIC" if get_db_version >= "12.2" && part_ind.autolist == 'YES'
     partition_expression << " SUBPARTITION BY #{part_ind.subpartitioning_type} (#{sub_part_keys.map{|i| i.column_name}.join(",")})" if part_ind.subpartitioning_type != 'NONE'
-    partition_expression << " INTERVAL #{part_ind.interval}" if get_db_version >= "11.2" && part_ind.interval_subpartition
+    partition_expression << " INTERVAL #{part_ind.interval_subpartition}" if get_db_version >= "12.2" && part_ind.interval_subpartition
     partition_expression << " AUTOMATIC" if get_db_version >= "12.2" && part_ind.autolist_subpartition == 'YES'
     partition_expression
   end
