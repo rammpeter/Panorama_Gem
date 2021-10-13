@@ -15,8 +15,6 @@ class EnvControllerTest <  ActionDispatch::IntegrationTest
     call_controllers_menu_entries_with_actions
   end
 
-
-
   test "should connect to test-db with xhr: true" do
     database = get_current_database
     database[:password] = Encryption.decrypt_value(database[:password], cookies['client_salt'])
@@ -31,6 +29,23 @@ class EnvControllerTest <  ActionDispatch::IntegrationTest
     assert_response :success
 
   end
+
+  test "list_services with xhr: true" do
+    post '/env/list_services', :params => {:format=>:html }
+    assert_response :success
+
+    post '/env/list_services', :params => {:format=>:html, instance: 1 }
+    assert_response :success
+
+    if get_db_version >= '12.1'
+      post '/env/list_services', :params => {:format=>:html, pdb_name: 'ORCLPDB1' }
+      assert_response :success
+
+      post '/env/list_services', :params => {:format=>:html, instance: 1, pdb_name: 'ORCLPDB1' }
+      assert_response :success
+    end
+  end
+
 
   test "should throw oracle-error from test-db" do
 =begin

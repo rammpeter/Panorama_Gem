@@ -1,3 +1,4 @@
+<% @update_area = get_unique_area_id %>
 <%= render_page_caption("#{t :env_current_database, :default=>"Current database"} '#{@database_info.name}' #{t(:created, :default=>'created')} #{localeDateTime(@database_info.created)}") %>
 
 <% column_options =
@@ -57,6 +58,16 @@
     retval
   end
 
+  link_services = proc do |rec|
+    ajax_link(fn(rec.service_count),
+              {action:      :list_services,
+               instance:    rec.inst_id,
+               update_area: @update_area,
+              },
+              title: "Show TNS services for instance #{rec.inst_id}"
+    )
+  end
+
   column_options =
        [
            {:caption=>'DBID',          :data=>proc{|rec| rec.dbid },                           :title=>"Unique identifier for this database", data_title: proc{|rec| "%t\nDB version = #{rec.version}"} },
@@ -76,10 +87,11 @@
            {:caption=>"Protection mode", :data=>proc{|rec| rec.protection_mode },              :title=>"Protection mode currently in effect for the database.\nLook at DB-parameter \"log_archive_dest_n\" to recognize what sync-mode is used for standby configuration (SYNC or NOSYNC, AFFIRM or NOAFFIRM).",  :data_title=>proc{|rec| "%t\nProtection level = #{rec.protection_level}"}},
            {:caption=>"Switchover status", :data=>proc{|rec| rec.switchover_status },          :title=>"Indicates whether switchover is allowed", :data_title=>proc{|rec| "%t\n#{explain_switchover_status(rec.switchover_status)}"}  },
            {:caption=>"DG broker",     :data=>proc{|rec| rec.dataguard_broker },               :title=>"Indicates whether the Data Guard configuration is being managed by the broker (ENABLED) or not (DISABLED)"},
-           {:caption=>"Force logging", :data=>proc{|rec| rec.force_logging },                  :title=>"Indicates whether the database is under force logging mode (YES) or not (NO)"},
+           {:caption=>"Force log.",    :data=>proc{|rec| rec.force_logging },                  :title=>"Indicates whether the database is under force logging mode (YES) or not (NO)"},
            {:caption=>"S. L.",         :data=>supplemental_logging_data,                       :title=>"Supplemental logging settings for Log Miner, Golden Gate etc., table-specific config is shown by DBA_LOG_GROUPS", data_title: supplemental_logging_data_title},
            {:caption=>"AWR interval",  :data=>proc{|rec| rec.snap_interval_minutes },          :title=>"Interval in minutes for AWR-snapshots\nValues are hidden if you did not acknowledge licensing of Diagnostic Pack yet", :align=>:right},
            {:caption=>"AWR retention", :data=>proc{|rec| rec.snap_retention_days },            :title=>"Retention in days for AWR-snapshots\nValues are hidden if you did not acknowledge licensing of Diagnostic Pack yet", :align=>:right},
+           {:caption=>"Srv.",          :data=>link_services,                                   :title=>"Number of TNS services for this instance\n(from gv$Services)", :align=>:right},
        ]
    column_options << {:caption=>'CDB',           :data=>proc{|rec| rec.cdb },            :title=>'Is this database a container DB (PDB)?', :align=>:right}  if get_db_version >= '12.1'
 
@@ -100,7 +112,18 @@
 
 
 <% if get_current_database[:cdb] %>
-    <% column_options =
+    <%
+      link_services_pdb = proc do |rec|
+        ajax_link(fn(rec.service_count),
+                  {action:      :list_services,
+                   pdb_name:    rec.name,
+                   update_area: @update_area,
+                  },
+                  title: "Show TNS services for PDB #{rec.name}"
+        )
+      end
+
+      column_options =
            [
                {:caption=>'Inst.',            :data=>proc{|rec| rec.inst_id},                         :title=>"Instance number"},
                {:caption=>'Con-ID',           :data=>proc{|rec| "#{rec.con_id}#{" (*)" if rec.con_id == rec.connected_con_id}" },   :title=>"The ID of the container to which the data pertains. Possible values include:\n0: This value is used for rows containing data that pertain to the entire CDB. This value is also used for rows in non-CDBs.\n1: This value is used for rows containing data that pertain to only the root\nn: Where n is the applicable container ID for the rows containing data\n(*) for the container-ID you are connected on"},
@@ -114,6 +137,7 @@
                {:caption=>'Block size',       :data=>proc{|rec| fn(rec.block_size)},                  :title=>"The current block size for the PDB"},
                {:caption=>'Recovery status',  :data=>proc{|rec| rec.recovery_status},                 :title=>"Shows whether recovery is enabled or disabled for the PDB."},
                {:caption=>'Snapshot parent',  :data=>proc{|rec| rec.snapshot_parent_con_id },         :title=>"This column shows the container ID of the master PDB that this PDB is a snapshot clone of.\nThis column shows a non-zero value only if the PDB is a snapshot clone.\nFor all other cases, it shows a value of 0."},
+               {:caption=>"Srv.",             :data=>link_services_pdb,                               :title=>"Number of TNS services for this instance\n(from gv$Services)", :align=>:right},
            ]
        column_options << {:caption=>'Appl. root',         :data=>proc{|rec| rec.application_root},                :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
        column_options << {:caption=>'Appl. PDB',          :data=>proc{|rec| rec.application_pdb},                 :title=>"Docu. for 12.2 not yet available"} if get_db_version >= '12.2'
@@ -163,33 +187,35 @@
   %>
 <% end %>
 
+<div id="<%= @update_area %>">
+  <h2><%= t :env_licensing_header, :default=>"Licensing" %></h2>
+  <% @show_management_pack_choice = true %>
+  <%= render :partial => 'licensing' %>
 
-<h2><%= t :env_licensing_header, :default=>"Licensing" %></h2>
-<% @show_management_pack_choice = true %>
-<%= render :partial => 'licensing' %>
+  <%= render_async(:env, :panorama_sampler_data) %>
 
-<%= render_async(:env, :panorama_sampler_data) %>
-
-<% if @dictionary_access_problem %>
+  <% if @dictionary_access_problem %>
     <h2><%= "Dictionary Access-Problem"   %></h2>
     <div style='color:red;'>
       <%= @dictionary_access_msg.html_safe %>
     </div>
-<% end %>
+  <% end %>
 
-<h2><%= t :env_handling_hints, :default=>"Handling hints" %></h2>
+  <h2><%= t :env_handling_hints, :default=>"Handling hints" %></h2>
 
-<h3><%= t :generally, :default=>"Generally" %></h3>
-<ul>
-  <li><%= t :env_handling_hint_generally_1, :default=>"Context-info ist provided system-wide by mouse-over hints" %></li>
-  <li><%= t :env_handling_hint_generally_2, :default=>"Details for shown values are often available by clicking on hyperlinks" %></li>
-  <li><%= t :env_handling_hint_generally_3, :default=>"Details are shown inline in table cells or continued at bottom of current page" %></li>
-</ul>
+  <h3><%= t :generally, :default=>"Generally" %></h3>
+  <ul>
+    <li><%= t :env_handling_hint_generally_1, :default=>"Context-info ist provided system-wide by mouse-over hints" %></li>
+    <li><%= t :env_handling_hint_generally_2, :default=>"Details for shown values are often available by clicking on hyperlinks" %></li>
+    <li><%= t :env_handling_hint_generally_3, :default=>"Details are shown inline in table cells or continued at bottom of current page" %></li>
+  </ul>
 
-<h3><%= t :tables, :default=>"Tables" %></h3>
-<ul>
-  <li><%= t :env_handling_hint_1, :default=>"Sort table content by clicking column-header" %></li>
-  <li><%= t :env_handling_hint_2, :default=>"Sort by multiple columns may be done by subsequent sorting of single columns" %></li>
-  <li><%= t :env_handling_hint_3, :default=>"Search filter, optional diagram view and export to Excel are available via context menu (right mouse button)" %></li>
-  <li><%= t :env_handling_hint_4, default: "View complete cell content / copy cell content: double click on cell to open popup view." %></li>
-</ul>
+  <h3><%= t :tables, :default=>"Tables" %></h3>
+  <ul>
+    <li><%= t :env_handling_hint_1, :default=>"Sort table content by clicking column-header" %></li>
+    <li><%= t :env_handling_hint_2, :default=>"Sort by multiple columns may be done by subsequent sorting of single columns" %></li>
+    <li><%= t :env_handling_hint_3, :default=>"Search filter, optional diagram view and export to Excel are available via context menu (right mouse button)" %></li>
+    <li><%= t :env_handling_hint_4, default: "View complete cell content / copy cell content: double click on cell to open popup view." %></li>
+  </ul>
+</div>
+

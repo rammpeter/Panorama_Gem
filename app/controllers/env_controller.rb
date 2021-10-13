@@ -176,7 +176,7 @@ class EnvController < ApplicationController
                                                       s.Num_CPUs, s.Num_CPU_Cores, s.Num_CPU_Sockets, s.Phys_Mem_GB, s.Free_Mem_GB, s.Inactive_Mem_GB,
                                                       d.DBID, d.Open_Mode, d.Protection_Mode, d.Protection_Level, d.Switchover_Status, d.Dataguard_Broker, d.Force_Logging, d.Database_Role,
                                                       d.Supplemental_Log_Data_Min, d.Supplemental_Log_Data_PK, d.Supplemental_Log_Data_UI, d.Supplemental_Log_Data_FK, d.Supplemental_Log_Data_All, d.Supplemental_Log_Data_PL,
-                                                      ws.Snap_Interval_Minutes, ws.Snap_Retention_Days
+                                                      ws.Snap_Interval_Minutes, ws.Snap_Retention_Days, srv.Service_Count
                                                       #{", CDB" if get_db_version >= '12.1'}
                                                FROM  GV$Instance gi
                                                CROSS JOIN  v$Database d
@@ -191,6 +191,7 @@ class EnvController < ApplicationController
                                                                 FROM   gv$OSStat
                                                                 GROUP BY Inst_ID
                                                                ) s ON s.Inst_ID = gi.Inst_ID
+                                               LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Inst_ID, COUNT(*) Service_Count FROM gv$Services GROUP BY Inst_ID) srv ON srv.Inst_ID = gi.Inst_ID
                                                #{
       if PackLicense.diagnostics_pack_licensed?
         "LEFT OUTER JOIN (SELECT DBID, MIN(EXTRACT(HOUR FROM Snap_Interval))*60 + MIN(EXTRACT(MINUTE FROM Snap_Interval)) Snap_Interval_Minutes, MIN(EXTRACT(DAY FROM Retention)) Snap_Retention_Days FROM DBA_Hist_WR_Control GROUP BY DBID) ws ON ws.DBID = d.DBID"
@@ -208,9 +209,10 @@ class EnvController < ApplicationController
         end
       end
       if get_current_database[:cdb]
-        @containers = sql_select_all "SELECT c.*, s.Con_ID Connected_Con_ID
+        @containers = sql_select_all "SELECT c.*, s.Con_ID Connected_Con_ID, srv.Service_Count
                                       FROM   gv$Containers c
                                       JOIN   v$session s ON SID = SYS_CONTEXT('userenv', 'sid')
+                                      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ PDB, COUNT(*) Service_Count FROM gv$Services GROUP BY PDB) srv ON srv.PDB = c.name
                                      "
       end
       @traces = sql_select_all "SELECT * from DBA_ENABLED_TRACES"
@@ -264,7 +266,30 @@ class EnvController < ApplicationController
     set_database(true)
   end
 
+  def list_services
+    @instance = prepare_param_instance
+    @pdb_name = prepare_param :pdb_name
 
+    where_string = ''
+    where_values = []
+
+    if @instance
+      where_string << " AND Service_ID IN (SELECT Service_ID FROM gv$Services WHERE Inst_ID = ?)"
+      where_values << @instance
+    end
+
+    if @pdb_name
+      where_string << " AND PDB = ?"
+      where_values << @pdb_name
+    end
+
+    @services = sql_select_all ["SELECT *
+                               FROM   DBA_Services
+                               WHERE  1=1
+                               #{where_string}
+                              "].concat(where_values)
+    render_partial
+  end
 
   private
 
