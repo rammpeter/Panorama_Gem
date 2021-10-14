@@ -54,7 +54,7 @@
     ]
   %>
   <div>
-    <%= gen_slickgrid(@pq_waits, column_options,{:caption=>"Parallel query slave processes", :width=>:auto, show_pin_icon: 2}) %>
+    <%= gen_slickgrid(@pq_waits, column_options,{:caption=>"Parallel query slave processes", max_height: 450, :width=>:auto, show_pin_icon: 2}) %>
   </div>
 <% end %>
 

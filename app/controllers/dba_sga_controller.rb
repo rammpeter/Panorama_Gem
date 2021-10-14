@@ -559,7 +559,11 @@ class DbaSgaController < ApplicationController
       @additional_ash_message = "ASH-values are for child_number=#{@child_number} only but #{child_count} children exists for this SQL-ID and Instance" if child_count > 1
     end
 
-    render_partial :list_sql_detail_execution_plan
+    if @multiplans.count > 0
+      render_partial :list_sql_detail_execution_plan
+    else
+      show_popup_message("No execution plan found for SQL ID = '#{@sql_id}'#{", instance = #{@instance}" if @instance}#{", child number = #{@child_number}" if @child_number}#{", child address = '#{@child_address}'" if @child_address}")
+    end
   end
 
 
