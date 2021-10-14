@@ -176,8 +176,10 @@ column_options =
     result << "#{'<br/>' if result.length > 0}TEMPORARY (#{rec.duration.gsub(/SYS\$/, '')})"                                              if rec.temporary == 'Y'
     result << "#{'<br/>' if result.length > 0}Degree =  #{rec.degree}"                                                                    if rec.degree.to_i != 1
     result << "#{'<br/>' if result.length > 0}Cached =  #{rec.cache}"                                                                     if rec.cache.strip != 'N'
-    result << "#{'<br/>' if result.length > 0}Compression = #{rec.compression}#{" (#{rec.compress_for})" if get_db_version >= '12.1'}"    if !(rec.compression.nil? || rec.compression == 'DISABLED' || rec.compression == 'N/A')
+    result << "#{'<br/>' if result.length > 0}Compression = #{rec.compression} (#{rec.compress_for})"                                     if !(rec.compression.nil? || rec.compression == 'DISABLED' || rec.compression == 'N/A')
+    result << "#{'<br/>' if result.length > 0}Partition default for compression = #{rec.def_compression} (#{rec.def_compress_for})"       if !(rec.def_compression.nil? || rec.def_compression == 'DISABLED' || rec.def_compression == 'N/A') && !(rec.compression.nil? || rec.compression == 'DISABLED' || rec.compression == 'N/A')
     result << "#{'<br/>' if result.length > 0}InMemory = #{rec.inmemory}"                                                                 if get_db_version >= '12.1.0.2' && !(rec.inmemory == 'DISABLED' || rec.inmemory == 'N/A')
+    result << "#{'<br/>' if result.length > 0}Partition default for InMemory = #{rec.def_inmemory}"                                       if get_db_version >= '12.1.0.2' && !(rec.def_inmemory == 'DISABLED' || rec.def_inmemory == 'N/A' || rec.def_inmemory == 'NONE') && !(rec.inmemory == 'DISABLED' || rec.inmemory == 'N/A')
     result << "#{'<br/>' if result.length > 0}Flash Cache = #{rec.flash_cache}"                                                           if get_db_version >= '12.1.0.2' && rec.flash_cache != 'DEFAULT'
     result << "#{'<br/>' if result.length > 0}Cell Flash Cache = #{rec.cell_flash_cache}"                                                 if get_db_version >= '12.1.0.2' && rec.cell_flash_cache != 'DEFAULT'
     result << "#{'<br/>' if result.length > 0}Clustering Type = #{rec.clustering_type}"                                                   if get_db_version >= '12.1.0.2' && !rec.clustering_type.nil?
@@ -260,13 +262,29 @@ column_options =
      title
    end
 
+   data_title_part_def = proc do |value, text=nil|
+     prefix = text.nil? ? "%t#{"\n\nPartition default = #{value}" if !value.nil? }" : "#{"\n#{text} = #{value}" if !value.nil?}"
+   end
+
+   data_title_ini_trans = proc do |rec|
+     "%t#{                                data_title_part_def.call(rec.def_ini_trans, 'Partition default for initial transactions')}
+Number of maximum transactions (MAX_TRANS) = #{rec.max_trans} #{data_title_part_def.call(rec.def_max_trans, 'Partition default for max. transactions')}"
+   end
+
+   data_title_initial_extent = proc do |rec|
+     "%t#{                                data_title_part_def.call(rec.def_initial_extent   == 'DEFAULT' ? 'DEFAULT' : fn((rec.def_initial_extent*PanoramaConnection.db_blocksize/1024 rescue nil)), 'Partition default for initial extent')}
+Next extent = #{rec.next_extent} kBytes #{data_title_part_def.call(rec.def_next_extent      == 'DEFAULT' ? 'DEFAULT' : fn((rec.def_next_extent*PanoramaConnection.db_blocksize/1024 rescue nil)), 'Partition default for next extent')}
+Min. extents = #{rec.min_extents}  #{     data_title_part_def.call(rec.def_min_extents      == 'DEFAULT' ? 'DEFAULT' : fn(rec.def_min_extents), 'Partition default for min. extents')}
+Max. extents = #{rec.max_extents}  #{     data_title_part_def.call(rec.def_max_extents      == 'DEFAULT' ? 'DEFAULT' : fn(rec.def_max_extents), 'Partition default for max. extents')}"
+   end
+
    blocksize = PanoramaConnection.db_blocksize                                   # call only once
 
    column_options = []
-   column_options << {:caption=> 'TS',               :data=>proc{|rec| rec.tablespace_name},                  :title=> 'Tablespace name'}
-   column_options << {:caption=> 'Pct Free',         :data=>proc{|rec| rec.pct_free},                         :title=> 'Percent free', :align=>:right}
-   column_options << {:caption=> 'Init. Trans',      :data=>proc{|rec| rec.ini_trans},                        :title=> 'Number of initial entries in transaction list of db block', :align=>:right, data_title: proc{|rec| "%t\nNumber of maximum transactions (MAX_TRANS) = #{rec.max_trans}"}}
-   column_options << {:caption=> 'Initial extent (KB)',:data=>proc{|rec| rec.initial_extent_kb},              :title=> 'Size of initial extent allocated at object creation in kByte', :align=>:right, data_title: proc{|rec| "%t\nNext extent = #{fn(rec.next_extent/1024) rescue nil} kBytes\nMin. extents = #{fn(rec.min_extents)}\nMax. extents = #{fn(rec.max_extents)} "}}
+   column_options << {:caption=> 'TS',               :data=>proc{|rec| rec.tablespace_name},                  :title=> 'Tablespace name', data_title: proc{|rec| data_title_part_def.call(rec.def_tablespace_name)} }
+   column_options << {:caption=> 'Pct Free',         :data=>proc{|rec| rec.pct_free},                         :title=> 'Percent free', data_title: proc{|rec| data_title_part_def.call(rec.def_pct_free)}, :align=>:right}
+   column_options << {:caption=> 'Init. Trans',      :data=>proc{|rec| rec.ini_trans},                        :title=> 'Number of initial entries in transaction list of db block', :align=>:right, data_title: data_title_ini_trans}
+   column_options << {:caption=> 'Initial extent (KB)',:data=>proc{|rec| rec.initial_extent},                 :title=> 'Size of initial extent allocated at object creation in kByte', :align=>:right, data_title: data_title_initial_extent}
    column_options << {:caption=> 'Rows',             :data=>link_real_num_rows,                               :title=> 'Number of rows calculated by last analyze run', :align=>:right}
    column_options << {:caption=> 'Size (MB) Table',  data: proc{|rec| link_space_usage.call(rec, fn(rec.size_mb_table, 2))}, :title=> 'Current table size in megabytes (from DBA_Segments)', :align=>:right, data_title: proc{|rec| "%t\n#{size_explain(rec.size_mb_table)}#{blocks_data_title.call(rec)}"}}
    column_options << {:caption=> 'Size (MB) Total',  :data=>proc{|rec| fn(@size_mb_total, 2)},                :title=> 'Current total size in megabytes (includes table, indexes, LOBs)', :align=>:right, data_title: proc{|rec| "%t\n#{size_explain(@size_mb_total)}"}}

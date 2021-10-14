@@ -429,10 +429,12 @@ class DbaSchemaController < ApplicationController
 
     # assuming it is a table now
     # DBA_Tables is empty for XML-Tables, but DBA_All_Tables contains both object and relational tables
-    @attribs = sql_select_all ["SELECT t.*, t.Initial_Extent/1024 Initial_Extent_KB,
+    @attribs = sql_select_all ["SELECT t.*,
                                        o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS, o.Object_ID Table_Object_ID,
                                        m.Inserts, m.Updates, m.Deletes, m.Timestamp Last_DML, #{"m.Truncated, " if get_db_version >= '11.2'}m.Drop_Segments,
-                                       s.Size_MB_Table, s.Blocks Segment_Blocks, s.Extents
+                                       s.Size_MB_Table, s.Blocks Segment_Blocks, s.Extents,
+                                       pt.Def_Tablespace_Name, pt.Def_PCT_Free, pt.Def_Ini_Trans, pt.Def_Max_Trans, pt.Def_Initial_extent, pt.Def_Next_Extent, pt.Def_Min_Extents, pt.Def_Max_Extents,
+                                       pt.Def_Compression, pt.Def_Compress_For#{", pt.Def_InMemory" if get_db_version >= '12.1'}
                                        #{", ct.Clustering_Type, ct.On_Load CT_On_Load, ct.On_DataMovement CT_On_DataMovement, ct.Valid CT_Valid, ct.With_ZoneMap CT_With_Zonemap, ck.Clustering_Keys" if get_db_version >= '12.1.0.2'}
                                 FROM DBA_All_Tables t
                                 LEFT OUTER JOIN DBA_Objects o ON o.Owner = t.Owner AND o.Object_Name = t.Table_Name AND o.Object_Type = 'TABLE'
@@ -443,6 +445,7 @@ class DbaSchemaController < ApplicationController
                                                  WHERE  Owner = ? AND Segment_Name = ?
                                                  GROUP BY Owner, Segment_Name
                                                 ) s ON s.Owner = t.Owner AND s.Segment_name = t.Table_Name
+                                LEFT OUTER JOIN DBA_Part_Tables pt ON pt.Owner = t.Owner AND pt.Table_Name = t.Table_Name
                                 #{"LEFT OUTER JOIN DBA_Clustering_Tables ct ON ct.Owner = t.Owner AND ct.Table_Name = t.Table_Name
                                 LEFT OUTER JOIN (SELECT Owner, Table_Name, ListAgg(Detail_Column, ', ') WITHIN GROUP (ORDER BY Position) Clustering_Keys
                                                  FROM   DBA_Clustering_Keys
@@ -495,6 +498,14 @@ class DbaSchemaController < ApplicationController
                 ORDER BY c.Column_ID
                ", @owner, @table_name]
 
+    # Set numeric values to string to allow overriding with "< x different >" for partitions
+    @attribs.each do |a|
+      a.initial_extent = fn((a.initial_extent/1024 rescue nil))               # string value in KB
+      a.next_extent    = fn((a.next_extent/1024 rescue nil))                  # string value in KB
+      a.min_extents    = fn(a.min_extents)
+      a.max_extents    = fn(a.max_extents)
+    end
+
     if @attribs.count > 0 && @attribs[0].partitioned == 'YES'
       partitions = sql_select_first_row ["SELECT COUNT(*) Anzahl,
                                                  COUNT(DISTINCT Compression)      Compression_Count,    MIN(Compression)     Compression,
@@ -502,9 +513,12 @@ class DbaSchemaController < ApplicationController
                                                  COUNT(DISTINCT Pct_Free)         Pct_Free_Count,       MIN(Pct_Free)        Pct_Free,
                                                  COUNT(DISTINCT Ini_Trans)        Ini_Trans_Count,      MIN(Ini_Trans)       Ini_Trans,
                                                  COUNT(DISTINCT Max_Trans)        Max_Trans_Count,      MIN(Max_Trans)       Max_Trans,
-                                                 COUNT(DISTINCT Initial_Extent)   Initial_Extent_Count, MIN(Initial_Extent)  Initial_Extent
-                                            #{", COUNT(DISTINCT Compress_For)     Compress_For_Count,   MIN(Compress_For)    Compress_For,
-                                                 COUNT(DISTINCT InMemory)         InMemory_Count,       MIN(InMemory)        InMemory" if get_db_version >= '12.1'}
+                                                 COUNT(DISTINCT Initial_Extent)   Initial_Extent_Count, MIN(Initial_Extent)  Initial_Extent,
+                                                 COUNT(DISTINCT Next_Extent)      Next_Extent_Count,    MIN(Next_Extent)     Next_Extent,
+                                                 COUNT(DISTINCT Min_Extent)       Min_Extents_Count,    MIN(Min_Extent)      Min_Extents,
+                                                 COUNT(DISTINCT Max_Extent)       Max_Extents_Count,    MIN(Max_Extent)      Max_Extents,
+                                                 COUNT(DISTINCT Compress_For)     Compress_For_Count,   MIN(Compress_For)    Compress_For
+                                            #{", COUNT(DISTINCT InMemory)         InMemory_Count,       MIN(InMemory)        InMemory" if get_db_version >= '12.1'}
                                           FROM DBA_Tab_Partitions WHERE  Table_Owner = ? AND Table_Name = ?", @owner, @table_name]
       @partition_count = partitions.anzahl
 
@@ -514,9 +528,12 @@ class DbaSchemaController < ApplicationController
                                                     COUNT(DISTINCT Pct_Free)        Pct_Free_Count,       MIN(Pct_Free)         Pct_Free,
                                                     COUNT(DISTINCT Ini_Trans)       Ini_Trans_Count,      MIN(Ini_Trans)        Ini_Trans,
                                                     COUNT(DISTINCT Max_Trans)       Max_Trans_Count,      MIN(Max_Trans)        Max_Trans,
-                                                    COUNT(DISTINCT Initial_Extent)  Initial_Extent_Count, MIN(Initial_Extent)   Initial_Extent
-                                               #{", COUNT(DISTINCT Compress_For)    Compress_For_Count,   MIN(Compress_For)     Compress_For,
-                                                    COUNT(DISTINCT InMemory)        InMemory_Count,       MIN(InMemory)         InMemory" if get_db_version >= '12.1'}
+                                                    COUNT(DISTINCT Initial_Extent)  Initial_Extent_Count, MIN(Initial_Extent)   Initial_Extent,
+                                                    COUNT(DISTINCT Next_Extent)     Next_Extent_Count,    MIN(Next_Extent)      Next_Extent,
+                                                    COUNT(DISTINCT Min_Extent)      Min_Extents_Count,    MIN(Min_Extent)       Min_Extents,
+                                                    COUNT(DISTINCT Max_Extent)      Max_Extents_Count,    MIN(Max_Extent)       Max_Extents,
+                                                    COUNT(DISTINCT Compress_For)    Compress_For_Count,   MIN(Compress_For)     Compress_For
+                                               #{", COUNT(DISTINCT InMemory)        InMemory_Count,       MIN(InMemory)         InMemory" if get_db_version >= '12.1'}
                                              FROM DBA_Tab_SubPartitions WHERE  Table_Owner = ? AND Table_Name = ?", @owner, @table_name]
       @subpartition_count = subpartitions.anzahl
 
@@ -531,23 +548,31 @@ class DbaSchemaController < ApplicationController
         AND    SubObject_Name IS NOT NULL
       ", @owner, @table_name]
       @attribs.each do |a|
+        # a.initial_extent and a.next_extent are still characters in KB here
+
         a.compression       = partitions.compression_count  == 1 ? partitions.compression     : "< #{partitions.compression_count} different >"           if partitions.compression_count > 0
-        a.compress_for      = partitions.compress_for_count == 1 ? partitions.compress_for    : "< #{partitions.compress_for_count} different >"          if get_db_version >= '12.1' && partitions.compression_count > 0
+        a.compress_for      = partitions.compress_for_count == 1 ? partitions.compress_for    : "< #{partitions.compress_for_count} different >"          if partitions.compression_count > 0
         a.tablespace_name   = partitions.tablespace_count   == 1 ? partitions.tablespace_name : "< #{partitions.tablespace_count} different >"            if partitions.tablespace_count > 0
         a.pct_free          = partitions.pct_free_count     == 1 ? partitions.pct_free        : "< #{partitions.pct_free_count} different >"              if partitions.pct_free_count > 0
         a.ini_trans         = partitions.ini_trans_count    == 1 ? partitions.ini_trans       : "< #{partitions.ini_trans_count} different >"             if partitions.ini_trans_count > 0
         a.max_trans         = partitions.max_trans_count    == 1 ? partitions.max_trans       : "< #{partitions.max_trans_count} different >"             if partitions.max_trans_count > 0
-        a.initial_extent_kb = partitions.initial_extent_count == 1 ? fn(partitions.initial_extent/1024) : "< #{partitions.initial_extent_count} different >" if partitions.initial_extent_count > 0
+        a.initial_extent    = partitions.initial_extent_count == 1 ? fn(partitions.initial_extent/1024) : "< #{partitions.initial_extent_count} different >" if partitions.initial_extent_count > 0
+        a.next_extent       = partitions.next_extent_count  == 1 ? fn(partitions.next_extent/1024) : "< #{partitions.next_extent_count} different >"      if partitions.next_extent_count > 0
+        a.min_extents       = partitions.min_extents_count  == 1 ? partitions.min_extents     : "< #{partitions.min_extents_count} different >"           if partitions.min_extents_count > 0
+        a.max_extents       = partitions.max_extents_count  == 1 ? partitions.max_extents     : "< #{partitions.max_extents_count} different >"           if partitions.max_extents_count > 0
         a.inmemory          = partitions.inmemory_count     == 1 ? partitions.inmemory        : "< #{partitions.inmemory_count} different >"              if get_db_version >= '12.1' && partitions.inmemory_count > 0
 
-        # Subpartition-Werte überschreieben evtl. die Partition-Werte wieder
+        # Subpartition-Werte überschreiben evtl. die Partition-Werte wieder
         a.compression       = subpartitions.compression_count  == 1 ? subpartitions.compression     : "< #{subpartitions.compression_count} different >"   if subpartitions.compression_count > 0
-        a.compress_for      = subpartitions.compress_for_count == 1 ? subpartitions.compress_for    : "< #{subpartitions.compress_for_count} different >"  if get_db_version >= '12.1' && subpartitions.compression_count > 0
+        a.compress_for      = subpartitions.compress_for_count == 1 ? subpartitions.compress_for    : "< #{subpartitions.compress_for_count} different >"  if subpartitions.compression_count > 0
         a.tablespace_name   = subpartitions.tablespace_count   == 1 ? subpartitions.tablespace_name : "< #{subpartitions.tablespace_count} different >"    if subpartitions.tablespace_count > 0
         a.pct_free          = subpartitions.pct_free_count     == 1 ? subpartitions.pct_free        : "< #{subpartitions.pct_free_count} different >"      if subpartitions.pct_free_count > 0
         a.ini_trans         = subpartitions.ini_trans_count    == 1 ? subpartitions.ini_trans       : "< #{subpartitions.ini_trans_count} different >"     if subpartitions.ini_trans_count > 0
         a.max_trans         = subpartitions.max_trans_count    == 1 ? subpartitions.max_trans       : "< #{subpartitions.max_trans_count} different >"     if subpartitions.max_trans_count > 0
-        a.initial_extent_kb = subpartitions.initial_extent_count == 1 ? fn(subpartitions.initial_extent/1024) : "< #{subpartitions.initial_extent_count} different >" if subpartitions.initial_extent_count > 0
+        a.initial_extent    = subpartitions.initial_extent_count == 1 ? fn(subpartitions.initial_extent/1024) : "< #{subpartitions.initial_extent_count} different >" if subpartitions.initial_extent_count > 0
+        a.next_extent       = subpartitions.next_extent_count  == 1 ? fn(subpartitions.next_extent/1024) : "< #{subpartitions.next_extent_count} different >"  if subpartitions.next_extent_count > 0
+        a.min_extents       = subpartitions.min_extents_count  == 1 ? subpartitions.min_extents     : "< #{subpartitions.min_extents_count} different >"   if subpartitions.min_extents_count > 0
+        a.max_extents       = subpartitions.max_extents_count  == 1 ? subpartitions.max_extents     : "< #{subpartitions.max_extents_count} different >"   if subpartitions.max_extents_count > 0
         a.inmemory          = subpartitions.inmemory_count     == 1 ? subpartitions.inmemory        : "< #{subpartitions.inmemory_count} different >"      if get_db_version >= '12.1' && subpartitions.inmemory_count > 0
       end
 
@@ -848,7 +873,7 @@ class DbaSchemaController < ApplicationController
                                      WHERE  Owner = ? AND Table_Name = ?
                                      AND    Constraint_Type = 'R'
                                     )
-                 SELECT /*+ Panorama Ramm */ i.*, i.Initial_Extent/1024 Initial_Extent_KB,
+                 SELECT /*+ Panorama Ramm */ i.*,
                         p.Partition_Number, sp.SubPartition_Number,
                         NULL Size_MB, NULL Extents, NULL Segment_Blocks, /* this columns are selected separately */
                         DECODE(bitand(io.flags, 65536), 0, 'NO', 'YES') Monitoring,
@@ -862,6 +887,8 @@ class DbaSchemaController < ApplicationController
                         ELSE
                           col_len.Sum_Col_Len
                         END Avg_Row_Len,
+                        pi.Def_Tablespace_Name, pi.Def_Pct_Free, pi.Def_Ini_Trans, pi.Def_Max_Trans, pi.Def_Initial_Extent, pi.Def_Next_Extent,
+                        pi.Def_Min_Extents, pi.Def_Max_Extents,
                         p.P_Status_Count,         p.P_Status,
                         p.P_Compression_Count,    p.P_Compression,
                         p.P_Tablespace_Count,     p.P_Tablespace_Name,
@@ -869,13 +896,19 @@ class DbaSchemaController < ApplicationController
                         p.P_Ini_Trans_Count,      p.P_Ini_Trans,
                         p.P_Max_Trans_Count,      p.P_Max_Trans,
                         p.P_Initial_Extent_Count, p.P_Initial_Extent,
+                        p.P_Next_Extent_Count,    p.P_Next_Extent,
+                        p.P_Min_Extents_Count,    p.P_Min_Extents,
+                        p.P_Max_Extents_Count,    p.P_Max_Extents,
                         sp.SP_Status_Count,       sp.SP_Status,
                         sp.SP_Compression_Count,  sp.SP_Compression,
                         sp.SP_Tablespace_Count,   sp.SP_Tablespace_Name,
                         sp.SP_Pct_Free_Count,     sp.SP_Pct_Free,
                         sp.SP_Ini_Trans_Count,    sp.SP_Ini_Trans,
                         sp.SP_Max_Trans_Count,    sp.SP_Max_Trans,
-                        sp.SP_Initial_Extent_Count, sp.SP_Initial_Extent
+                        sp.SP_Initial_Extent_Count, sp.SP_Initial_Extent,
+                        sp.SP_Next_Extent_Count,  sp.SP_Next_Extent,
+                        sp.SP_Min_Extents_Count,  sp.SP_Min_Extents,
+                        sp.SP_Max_Extents_Count,  sp.SP_Max_Extents
                         #{", mi.GC_Mastering_Policy, mi.GC_Mastering_Policy_Cnt, mi.Current_Master, mi.Current_Master, mi.Current_Master_Cnt, mi.Previous_Master, mi.Previous_Master_Cnt, mi.Remaster_Cnt" if PanoramaConnection.rac?}
                  FROM   Indexes i
                  JOIN   DBA_Users   u  ON u.UserName  = i.owner
@@ -902,7 +935,10 @@ class DbaSchemaController < ApplicationController
                                   COUNT(DISTINCT ip.Pct_Free)        P_Pct_Free_Count,        MIN(ip.Pct_Free)         P_Pct_Free,
                                   COUNT(DISTINCT ip.Ini_Trans)       P_Ini_Trans_Count,       MIN(ip.Ini_Trans)        P_Ini_Trans,
                                   COUNT(DISTINCT ip.Max_Trans)       P_Max_Trans_Count,       MIN(ip.Max_Trans)        P_Max_Trans,
-                                  COUNT(DISTINCT ip.Initial_Extent)  P_Initial_Extent_Count,  MIN(ip.Initial_Extent)   P_Initial_Extent
+                                  COUNT(DISTINCT ip.Initial_Extent)  P_Initial_Extent_Count,  MIN(ip.Initial_Extent)   P_Initial_Extent,
+                                  COUNT(DISTINCT ip.Next_Extent)     P_Next_Extent_Count,     MIN(ip.Next_Extent)      P_Next_Extent,
+                                  COUNT(DISTINCT ip.Min_Extent)      P_Min_Extents_Count,     MIN(ip.Min_Extent)       P_Min_Extents,
+                                  COUNT(DISTINCT ip.Max_Extent)      P_Max_Extents_Count,     MIN(ip.Max_Extent)       P_Max_Extents
                                   FROM   Indexes ii
                                   JOIN   DBA_Ind_Partitions ip ON ip.Index_Owner=ii.Owner AND ip.Index_Name =ii.Index_Name
                                   GROUP BY ii.Index_Name
@@ -914,11 +950,15 @@ class DbaSchemaController < ApplicationController
                                   COUNT(DISTINCT ip.Pct_Free)        SP_Pct_Free_Count,       MIN(ip.Pct_Free)        SP_Pct_Free,
                                   COUNT(DISTINCT ip.Ini_Trans)       SP_Ini_Trans_Count,      MIN(ip.Ini_Trans)       SP_Ini_Trans,
                                   COUNT(DISTINCT ip.Max_Trans)       SP_Max_Trans_Count,      MIN(ip.Max_Trans)       SP_Max_Trans,
-                                  COUNT(DISTINCT ip.Initial_Extent)  SP_Initial_Extent_Count, MIN(ip.Initial_Extent)  SP_Initial_Extent
+                                  COUNT(DISTINCT ip.Initial_Extent)  SP_Initial_Extent_Count, MIN(ip.Initial_Extent)  SP_Initial_Extent,
+                                  COUNT(DISTINCT ip.Next_Extent)     SP_Next_Extent_Count,    MIN(ip.Next_Extent)     SP_Next_Extent,
+                                  COUNT(DISTINCT ip.Min_Extent)      SP_Min_Extents_Count,    MIN(ip.Min_Extent)      SP_Min_Extents,
+                                  COUNT(DISTINCT ip.Max_Extent)      SP_Max_Extents_Count,    MIN(ip.Max_Extent)      SP_Max_Extents
                                   FROM   Indexes ii
                                   JOIN   DBA_Ind_SubPartitions ip ON ip.Index_Owner=ii.Owner AND ip.Index_Name =ii.Index_Name
                                   GROUP BY ii.Index_Name
                                  ) sp ON sp.Index_Name = i.Index_Name
+                 LEFT OUTER JOIN DBA_Part_Indexes pi ON pi.Owner = i.Owner AND pi.Index_Name = i.Index_Name
               #{"LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ii.Index_Name, MIN(i.GC_Mastering_Policy) GC_Mastering_Policy,  COUNT(DISTINCT i.GC_Mastering_Policy) GC_Mastering_Policy_Cnt,
                                   MIN(i.Current_Master) + 1  Current_Master,       COUNT(DISTINCT i.Current_Master)      Current_Master_Cnt,
                                   MIN(i.Previous_Master) + 1  Previous_Master,     COUNT(DISTINCT DECODE(i.Previous_Master, 32767, NULL, i.Previous_Master)) Previous_Master_Cnt,
@@ -969,6 +1009,12 @@ class DbaSchemaController < ApplicationController
         ORDER BY ic.Column_Position", @owner, @table_name]
 
     @indexes.each do |i|
+      # Set numeric values to string to allow overriding with "< x different >" for partitions
+      i.initial_extent = fn((i.initial_extent/1024 rescue nil))               # string value in KB
+      i.next_extent    = fn((i.next_extent/1024 rescue nil))                  # string value in KB
+      i.min_extents    = fn(i.min_extents)
+      i.max_extents    = fn(i.max_extents)
+
       # LEFT OUTER JOIN to separately selected sizes
       index_sizes.each do |s|
         if s.owner == i.owner && s.segment_name == i.index_name
@@ -992,29 +1038,31 @@ class DbaSchemaController < ApplicationController
 
       # Set values of partitions if they exist
       if !i.partition_number.nil? && i.partition_number > 0
-        i.status            = i.p_status_count       == 1 ? i.p_status          : "< #{i.p_status_count} different >"                if i.p_status_count      > 0
-        i.compression       = i.p_compression_count  == 1 ? i.p_compression     : "< #{i.p_compression_count} different >"           if i.p_compression_count > 0
-        i.tablespace_name   = i.p_tablespace_count   == 1 ? i.p_tablespace_name : "< #{i.p_tablespace_count} different >"            if i.p_tablespace_count  > 0
-        i.pct_free          = i.p_pct_free_count     == 1 ? i.p_pct_free        : "< #{i.p_pct_free_count} different >"              if i.p_pct_free_count    > 0
-        i.ini_trans         = i.p_ini_trans_count    == 1 ? i.p_ini_trans       : "< #{i.p_ini_trans_count} different >"             if i.p_ini_trans_count   > 0
-        i.max_trans         = i.p_max_trans_count    == 1 ? i.p_max_trans       : "< #{i.p_max_trans_count} different >"             if i.p_max_trans_count   > 0
-        i.initial_extent_kb = i.p_initial_extent_count == 1 ? fn(i.p_initial_extent/1024) : "< #{i.p_initial_extent_count} different >" if i.p_initial_extent_count > 0
+        i.status            = i.p_status_count          == 1 ? i.p_status          : "< #{i.p_status_count} different >"                if i.p_status_count      > 0
+        i.compression       = i.p_compression_count     == 1 ? i.p_compression     : "< #{i.p_compression_count} different >"           if i.p_compression_count > 0
+        i.tablespace_name   = i.p_tablespace_count      == 1 ? i.p_tablespace_name : "< #{i.p_tablespace_count} different >"            if i.p_tablespace_count  > 0
+        i.pct_free          = i.p_pct_free_count        == 1 ? i.p_pct_free        : "< #{i.p_pct_free_count} different >"              if i.p_pct_free_count    > 0
+        i.ini_trans         = i.p_ini_trans_count       == 1 ? i.p_ini_trans       : "< #{i.p_ini_trans_count} different >"             if i.p_ini_trans_count   > 0
+        i.max_trans         = i.p_max_trans_count       == 1 ? i.p_max_trans       : "< #{i.p_max_trans_count} different >"             if i.p_max_trans_count   > 0
+        i.initial_extent    = i.p_initial_extent_count  == 1 ? fn(i.p_initial_extent/1024) : "< #{i.p_initial_extent_count} different >" if i.p_initial_extent_count > 0
+        i.next_extent       = i.p_next_extent_count     == 1 ? fn(i.p_next_extent/1024) : "< #{i.p_next_extent_count} different >"      if i.p_next_extent_count > 0
+        i.min_extents       = i.p_min_extents_count     == 1 ? i.p_min_extents     : "< #{i.p_min_extents_count} different >"           if i.p_min_extents_count   > 0
+        i.max_extents       = i.p_max_extents_count     == 1 ? i.p_max_extents     : "< #{i.p_max_extents_count} different >"           if i.p_max_extents_count   > 0
 
         if !i.subpartition_number.nil? && i.subpartition_number > 0
           # Set values of subpartitions if they exist
-          i.status            = i.sp_status_count       == 1 ? i.sp_status          : "< #{i.sp_status_count} different >"                if i.sp_status_count      > 0
-          i.compression       = i.sp_compression_count  == 1 ? i.sp_compression     : "< #{i.sp_compression_count} different >"           if i.sp_compression_count > 0
-          i.tablespace_name   = i.sp_tablespace_count   == 1 ? i.sp_tablespace_name : "< #{i.sp_tablespace_count} different >"            if i.sp_tablespace_count  > 0
-          i.pct_free          = i.sp_pct_free_count     == 1 ? i.sp_pct_free        : "< #{i.sp_pct_free_count} different >"              if i.sp_pct_free_count    > 0
-          i.ini_trans         = i.sp_ini_trans_count    == 1 ? i.sp_ini_trans       : "< #{i.sp_ini_trans_count} different >"             if i.sp_ini_trans_count   > 0
-          i.max_trans         = i.sp_max_trans_count    == 1 ? i.sp_max_trans       : "< #{i.sp_max_trans_count} different >"             if i.sp_max_trans_count   > 0
-          i.initial_extent_kb = i.sp_initial_extent_count == 1 ? fn(i.sp_initial_extent/1024) : "< #{i.sp_initial_extent_count} different >" if i.sp_initial_extent_count > 0
+          i.status            = i.sp_status_count         == 1 ? i.sp_status          : "< #{i.sp_status_count} different >"                if i.sp_status_count      > 0
+          i.compression       = i.sp_compression_count    == 1 ? i.sp_compression     : "< #{i.sp_compression_count} different >"           if i.sp_compression_count > 0
+          i.tablespace_name   = i.sp_tablespace_count     == 1 ? i.sp_tablespace_name : "< #{i.sp_tablespace_count} different >"            if i.sp_tablespace_count  > 0
+          i.pct_free          = i.sp_pct_free_count       == 1 ? i.sp_pct_free        : "< #{i.sp_pct_free_count} different >"              if i.sp_pct_free_count    > 0
+          i.ini_trans         = i.sp_ini_trans_count      == 1 ? i.sp_ini_trans       : "< #{i.sp_ini_trans_count} different >"             if i.sp_ini_trans_count   > 0
+          i.max_trans         = i.sp_max_trans_count      == 1 ? i.sp_max_trans       : "< #{i.sp_max_trans_count} different >"             if i.sp_max_trans_count   > 0
+          i.initial_extent    = i.sp_initial_extent_count == 1 ? fn(i.sp_initial_extent/1024) : "< #{i.sp_initial_extent_count} different >" if i.sp_initial_extent_count > 0
+          i.next_extent       = i.sp_next_extent_count    == 1 ? fn(i.sp_next_extent/1024) : "< #{i.sp_next_extent_count} different >"      if i.sp_next_extent_count > 0
+          i.min_extents       = i.sp_min_extents_count    == 1 ? i.sp_min_extents     : "< #{i.sp_min_extents_count} different >"           if i.sp_min_extents_count   > 0
+          i.max_extents       = i.sp_max_extents_count    == 1 ? i.sp_max_extents     : "< #{i.sp_max_extents_count} different >"           if i.sp_max_extents_count   > 0
         end
-
       end
-
-
-
     end
 
     render_partial :list_indexes
