@@ -25,9 +25,9 @@
   column_options << {caption: 'PQ svc.',          data: proc{|rec| rec.pq_svc},                         title: "Name of the associated parallel query rim service"} if get_db_version >= '12.2'
   column_options << {caption: 'Stop option',      data: proc{|rec| rec.stop_option},                    title: "Stop option for sessions of this service for planned maintenance"} if get_db_version >= '12.2'
   column_options << {caption: 'Failover restore', data: proc{|rec| rec.failover_restore},               title: "Indicates whether sessions recover their commonly used session state (like NLS, schema) when they are failed over with TAF"} if get_db_version >= '12.2'
-  column_options << {caption: 'Drain timeout',    data: proc{|rec| fn rec.drain_timeout},               title: "Number of seconds to wait for sessions to be drained", align: :right} if get_db_version >= '12.1'
-  column_options << {caption: 'Table family ID',  data: proc{|rec| fn rec.table_family_id},             title: "Sharded table family ID associated with the service", align: :right} if get_db_version >= '12.1'
-  column_options << {caption: 'Placement policy', data: proc{|rec| fn rec.placement_policy},            title: "Placement policy for the service. Possible values:\n0: PDB-NONE\n1: PDB-SINGLETON\n2: PDB-UNIFORM", align: :right} if get_db_version >= '12.1'
+  column_options << {caption: 'Drain timeout',    data: proc{|rec| fn rec.drain_timeout},               title: "Number of seconds to wait for sessions to be drained", align: :right} if get_db_version >= '12.2'
+  column_options << {caption: 'Table family ID',  data: proc{|rec| fn rec.table_family_id},             title: "Sharded table family ID associated with the service", align: :right} if get_db_version >= '19.0'
+  column_options << {caption: 'Placement policy', data: proc{|rec| fn rec.placement_policy},            title: "Placement policy for the service. Possible values:\n0: PDB-NONE\n1: PDB-SINGLETON\n2: PDB-UNIFORM", align: :right} if get_db_version >= '19.0'
 %>
 
 <%= gen_slickgrid(@services, column_options, {
