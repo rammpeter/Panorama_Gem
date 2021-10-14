@@ -11,7 +11,7 @@ jobs:
       matrix:
         management_pack_license: ["diagnostics_and_tuning_pack", "diagnostics_pack", "panorama_sampler", "none"]
     env:
-      JRUBY_VERSION: jruby-9.2.14.0
+      JRUBY_VERSION: jruby-9.3.0.0
       # Panorama dir after git clone
       PANORAMA_PATH: /home/runner/work/Panorama_Gem/Panorama_Gem
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
