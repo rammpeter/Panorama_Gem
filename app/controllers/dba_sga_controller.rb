@@ -562,7 +562,7 @@ class DbaSgaController < ApplicationController
     if @multiplans.count > 0
       render_partial :list_sql_detail_execution_plan
     else
-      show_popup_message("No execution plan found for SQL ID = '#{@sql_id}'#{", instance = #{@instance}" if @instance}#{", child number = #{@child_number}" if @child_number}#{", child address = '#{@child_address}'" if @child_address}")
+      show_popup_message("No execution plan found for SQL ID = '#{@sql_id}'#{", instance = #{@instance}" if @instance}#{", child number = #{@child_number}" if @child_number}#{", child address = '#{@child_address}'" if @child_address}", :html)
     end
   end
 
