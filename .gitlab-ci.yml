@@ -1,7 +1,7 @@
 # Pipeline for gitlab.com (silver account)
 
 # Use image stored in local gitlab repo
-image: registry.gitlab.com/osp-silver/panorama_gem/jruby_with_chrome:9.3.0.0
+image: registry.gitlab.com/osp-silver/panorama_gem/jruby_with_chrome:9.3.1.0
 
 variables:
   # CI_PROJECT_DIR: /home/jruby
