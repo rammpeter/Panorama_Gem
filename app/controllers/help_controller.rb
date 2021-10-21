@@ -28,6 +28,7 @@ class HelpController < ApplicationController
       @menu_entry_help << print_menu_entry(m)
     end
 
+    @help_title = t(:help_function_overview, default: 'Function overview')
     render :template=>"help/index"
   end
 
