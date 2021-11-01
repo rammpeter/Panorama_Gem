@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    panorama_gem (2.10.90)
+    panorama_gem (2.10.92)
       actionmailer (= 6.1.4.1)
       actionpack (= 6.1.4.1)
       actionview (= 6.1.4.1)
@@ -46,8 +46,8 @@ GEM
     activerecord (6.1.4.1)
       activemodel (= 6.1.4.1)
       activesupport (= 6.1.4.1)
-    activerecord-nulldb-adapter (0.7.0)
-      activerecord (>= 5.2.0, < 6.3)
+    activerecord-nulldb-adapter (0.8.0)
+      activerecord (>= 5.2.0, < 7.1)
     activerecord-oracle_enhanced-adapter (6.1.4)
       activerecord (~> 6.1.0)
       ruby-plsql (>= 0.6.0)
@@ -60,8 +60,9 @@ GEM
     addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     builder (3.2.4)
-    capybara (3.35.3)
+    capybara (3.36.0)
       addressable
+      matrix
       mini_mime (>= 0.1.3)
       nokogiri (~> 1.8)
       rack (>= 1.6.0)
@@ -85,6 +86,7 @@ GEM
       nokogiri (>= 1.5.9)
     mail (2.7.1)
       mini_mime (>= 0.1.1)
+    matrix (0.4.2)
     method_source (1.0.0)
     mime-types (3.3.1)
       mime-types-data (~> 3.2015)
@@ -94,7 +96,7 @@ GEM
     nio4r (2.5.8-java)
     nokogiri (1.12.5-java)
       racc (~> 1.4)
-    playwright-ruby-client (1.15.0)
+    playwright-ruby-client (1.16.0)
       concurrent-ruby (>= 1.1.6)
       mime-types (>= 3.0)
     public_suffix (4.0.6)
@@ -155,7 +157,7 @@ GEM
     tilt (2.0.10)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
-    tzinfo-data (1.2021.4)
+    tzinfo-data (1.2021.5)
       tzinfo (>= 1.0.0)
     webdrivers (5.0.0)
       nokogiri (~> 1.6)
@@ -180,4 +182,4 @@ DEPENDENCIES
   webdrivers
 
 BUNDLED WITH
-   2.2.28
+   2.2.29
