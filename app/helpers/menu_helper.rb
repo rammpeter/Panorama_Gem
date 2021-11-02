@@ -33,8 +33,9 @@ module MenuHelper
             },
             {:class => 'item', :caption => 'Database users', :controller => :dba_schema, :action => :list_db_users, :hint => t(:menu_dba_schema_list_users_hint, :default => 'Show database users (All_Users)')},
             {:class => 'menu', :caption => 'Audit Trail', :content => [
-                {:class => 'item', :caption => 'Standard Audit Trail', :controller => :dba_schema, :action => :show_audit_trail, :hint => t(:menu_dba_schema_audit_trail_hint, :default => 'Show activities logged by standard audit trail (DBA_Audit_Trail)')},
-                {:class => 'item', :caption => 'Unified Audit Trail', :controller => :dba_schema, :action => :show_unified_audit_trail, :hint => t(:menu_dba_schema_unified_audit_trail_hint, :default => 'Show activities logged by unified audit trail'), min_db_version: '12.1'},
+              {:class => 'item', :caption => 'Auditing rules',              :controller => :dba_schema, :action => :show_audit_rules, :hint => t(:menu_dba_schema_audit_rules_hint, :default => 'Show rules for standard and fine grain auditing')},
+              {:class => 'item', :caption => 'Standard audit trail + FGA',  :controller => :dba_schema, :action => :show_audit_trail, :hint => t(:menu_dba_schema_audit_trail_hint, :default => 'Show activities logged by standard audit trail and fine grain auditing (DBA_Common_Audit_Trail)')},
+              {:class => 'item', :caption => 'Unified audit trail',         :controller => :dba_schema, :action => :show_unified_audit_trail, :hint => t(:menu_dba_schema_unified_audit_trail_hint, :default => 'Show activities logged by unified audit trail'), min_db_version: '12.1'},
             ]
             },
             {class: 'menu', caption: 'Server Files', content: [

@@ -3,10 +3,10 @@
   @update_area = get_unique_area_id
 
     def link_session(rec)
-      ajax_link(rec.sessionid, {
+      ajax_link(rec.session_id, {
                   :controller   => :dba_schema,
                   :action       => :list_audit_trail,
-                  :sessionid    => rec.sessionid,
+                  :session_id   => rec.session_id,
                   :update_area  => @update_area
                  },
          :title=> 'Show audit records of session')
@@ -16,25 +16,26 @@
     def link_sql_text(rec)
       if rec.sql_text
         # Da der Inhalt nachträeglich erst per JSaufgerufen wird, müssen ' doppelt escaped werden
-        "<a title=\"Show complete SQL-Statement (below)\" onclick=\"list_audit_sql('#{j(my_html_escape rec.sql_text.gsub(/'/, "\\\\'") ) }');\">#{rec.sql_text.strip[0,30]}</a>".html_safe
+        "<a title=\"Show complete SQL-Statement (below)\" onclick=\"list_audit_sql('#{j(my_html_escape rec.sql_text.gsub(/'/, "'+String.fromCharCode(39)+'")) }');\">#{rec.sql_text.strip[0,30]}</a>".html_safe
       end
     end
 
   column_options =
   [
-    {:caption=> 'Time',              :data=>proc{|rec| localeDateTime(rec.timestamp)},           :title=> 'Timestamp of recorded action'},
+    {:caption=> 'Time',              :data=>proc{|rec| localeDateTime(rec.extended_timestamp, :fractions)},  :title=> 'Timestamp of recorded action'},
+    {:caption=> 'Audit type',        :data=>proc{|rec| rec.audit_type},                          :title=> 'Type of audit record source'},
     {:caption=> 'Machine',           :data=>proc{|rec| link_machine_ip_info(@update_area, rec.userhost)},      :title=> 'Client machine'},
-    {:caption=> 'OS-User',           :data=>proc{|rec| rec.os_username},                         :title=> 'Client OS user name'},
-    {:caption=> 'DB-User',           :data=>proc{|rec| rec.username},                            :title=> 'DB user name used to connect'},
+    {:caption=> 'OS-User',           :data=>proc{|rec| rec.os_user},                             :title=> 'Client OS user name'},
+    {:caption=> 'DB-User',           :data=>proc{|rec| rec.db_user},                             :title=> 'DB user name used to connect'},
     {:caption=> 'Proc',              :data=>proc{|rec| rec.os_process},                          :title=> "OS process identifier of the database Oracle process"},
     {:caption=> 'Terminal',           :data=>proc{|rec| rec.terminal},                           :title=> 'Terminal info'},
-    {:caption=> 'Action',            :data=>proc{|rec| rec.action_name},                         :title=> 'Action name'},
-    {:caption=> 'Object', :data=>proc{|rec| link_object_description(@update_area, rec.owner, rec.obj_name) }, :title=> 'Owner an name of affected object'},
+    {:caption=> 'Action',            :data=>proc{|rec| rec.statement_type},                      :title=> 'Action name (from column STATEMENT_TYPE)'},
+    {:caption=> 'Object', :data=>proc{|rec| link_object_description(@update_area, rec.object_schema, rec.object_name) }, :title=> 'Owner and name of affected object'},
     {:caption=> 'I',                 :data=>proc{|rec| rec.instance_number},                     :title=> 'Instance number as specified by the INSTANCE_NUMBER initialization parameter'},
-    {:caption=> 'Session-ID',        :data=>proc{|rec| link_session(rec)},                       :title=> 'ID of database session (AUDSID)'},
+    {:caption=> 'Session-ID',        :data=>proc{|rec| link_session(rec)},                       :title=> 'ID of database session (AUDSID)', data_title: proc{|rec| "%t\nStatement ID = #{rec.statementid}\nEntry ID = #{rec.entryid}"}},
     {:caption=> 'SQL-Text',          :data=>proc{|rec| link_sql_text(rec)},                      :title=> 'SQL-Text'},
     {:caption=> 'B',                 :data=>proc{|rec| rec.sql_bind},                            :title=> 'Bind variable data of the query'},
-    {:caption=> 'N.O.',              :data=>proc{|rec| "#{rec.new_owner}.#{rec.new_name}" if rec.new_owner || rec.new_name},  :title=> 'Owner an name after rename'},
+    {:caption=> 'N.O.',              :data=>proc{|rec| "#{rec.new_owner}.#{rec.new_name}" if rec.new_owner || rec.new_name},  :title=> 'Owner and name after rename'},
     {:caption=> 'O.P.',              :data=>proc{|rec| rec.obj_privilege},                       :title=> 'Object privileges granted or revoked by a GRANT or REVOKE statement'},
     {:caption=> 'S.P.',              :data=>proc{|rec| rec.sys_privilege},                       :title=> 'System privileges granted or revoked by a GRANT or REVOKE statement'},
     {:caption=> 'A',                 :data=>proc{|rec| rec.admin_option},                        :title=> 'Indicates whether the role or system privilege was granted with the ADMIN option'},
@@ -51,6 +52,9 @@
     {:caption=> 'Comment',           :data=>proc{|rec| rec.comment_text},                        :title=> 'Text comment on the audit trail entry, providing more information about the statement audited'},
     {:caption=> 'R',                 :data=>proc{|rec| rec.returncode},                          :title=> 'Oracle error code generated by the action. Some useful values: 0 - Action succeeded, 2004 - Security violation'},
     {:caption=> 'Priv.',             :data=>proc{|rec| rec.priv_used},                           :title=> 'System privilege used to execute the action'},
+    {:caption=> 'P.',                :data=>proc{|rec| rec.policy_name},                         :title=> 'Name of the Fine-Grained Auditing Policy'},
+    {:caption=> 'Tx.',               :data=>proc{|rec| rec.transactionid_hex},                   :title=> 'Transaction identifier of the transaction in which the object was accessed or modified'},
+    {:caption=> 'SCN',               :data=>proc{|rec| fn(rec.scn)},                             :title=> 'System change number (SCN) of the query', align: :right},
     {:caption=> 'Client-ID',         :data=>proc{|rec| rec.client_id},                           :title=> 'Client identifier in each Oracle session'},
 
   ]
@@ -64,15 +68,16 @@
 
 
 <%=
-    caption = "Audit-Records from #{@audit_source}"
+    caption = "Audit-Records from DBA_Common_Audit_Trail"
     caption << ", from #{@time_selection_start} until #{@time_selection_end}" if @time_selection_start && @time_selection_end
-    caption << ", Instance=#{@instance}"         if @instance
-    caption << ", Session-ID=#{@sessionid}"      if defined?(@sessionid)    && !@sessionid.nil?
-    caption << ", OS-User LIKE '#{@os_user}'"    if defined?(@os_user)      && !@os_user.nil?
-    caption << ", DB-User LIKE '#{@os_user}'"    if defined?(@db_user)      && !@db_user.nil?
-    caption << ", Machine LIKE '#{@machine}'"    if defined?(@machine)      && !@machine.nil?
-    caption << ", Object LIKE '#{@object_name}'" if defined?(@object_name)  && !@object_name.nil?
-    caption << ", Action LIKE '#{@action_name}'" if defined?(@action_name)  && !@action_name.nil?
+    caption << ", Instance=#{@instance}"            if @instance
+    caption << ", Audit type=#{@audit_type}"        if @audit_type
+    caption << ", Session-ID=#{@session_id}"        if @session_id
+    caption << ", OS-User LIKE '#{@os_user}'"       if @os_user
+    caption << ", DB-User LIKE '#{@os_user}'"       if @db_user
+    caption << ", Machine LIKE '#{@machine}'"       if @machine
+    caption << ", Object LIKE '#{@object_name}'"    if @object_name
+    caption << ", Action LIKE '#{@statement_type}'" if @statement_type
 
     gen_slickgrid(@audits, column_options, {
         :caption => caption,

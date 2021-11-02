@@ -745,7 +745,7 @@ class DbaSchemaController < ApplicationController
               SP_Ini_Trans_Count,       SP_Ini_Trans,
               SP_Max_Trans_Count,       SP_Max_Trans,
               SP_Initial_Extent_Count,  SP_Initial_Extent,
-              NULL                      Initial_Extent_KB
+              CASE WHEN Initial_Extent IS NOT NULL THEN Initial_Extent/1024 END Initial_Extent_KB
          #{", SP_Compress_For_Count,    SP_Compress_For,
               SP_InMemory_Count,        SP_InMemory" if get_db_version >= '12.1'}
          #{", mi.GC_Mastering_Policy,  mi.Current_Master + 1  Current_Master,  mi.Previous_Master + 1  Previous_Master, mi.Remaster_Cnt" if PanoramaConnection.rac?}
@@ -1475,7 +1475,7 @@ class DbaSchemaController < ApplicationController
               SP_Ini_Trans_Count,    SP_Ini_Trans,
               SP_Max_Trans_Count,    SP_Max_Trans,
               SP_Initial_Extent_Count,  SP_Initial_Extent,
-              NULL                      Initial_Extent_KB
+              CASE WHEN Initial_Extent IS NOT NULL THEN Initial_Extent/1024 END Initial_Extent_KB
               #{", mi.GC_Mastering_Policy,  mi.Current_Master + 1  Current_Master,  mi.Previous_Master + 1  Previous_Master, mi.Remaster_Cnt" if PanoramaConnection.rac?}
       FROM DBA_Ind_Partitions p
       LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Index_Owner AND o.Object_Name = p.Index_Name AND o.SubObject_Name = p.Partition_Name AND o.Object_Type = 'INDEX PARTITION'
@@ -1600,9 +1600,14 @@ class DbaSchemaController < ApplicationController
     render_partial
   end
 
-  def show_audit_trail
+  def show_audit_rules
     @audits = sql_select_all "SELECT * FROM DBA_Stmt_Audit_Opts ORDER BY Audit_Option"
     @options = sql_select_all "SELECT * FROM gv$Option WHERE Parameter = 'Unified Auditing' ORDER BY Inst_ID"
+    @policies = sql_select_iterator "SELECT * from DBA_Audit_Policies"
+    render_partial
+  end
+
+  def show_audit_trail
     render_partial
   end
 
@@ -1610,68 +1615,21 @@ class DbaSchemaController < ApplicationController
     render_partial
   end
 
-  private
-  def audit_mode_xml?
-    if !defined?(@audit_mode_xml)
-      @audit_mode_xml = sql_select_one("SELECT Value FROM v$Parameter WHERE Name = 'audit_trail'")['XML'] != nil
-    end
-    @audit_mode_xml
-  end
-
-  def audit_source
-    audit_mode_xml? ? 'gv$XML_Audit_Trail' :  'DBA_Audit_Trail'
-  end
-
-  # Liefert die FROM-Klausel in der Struktur von DBA_Audit_Trail
-  def audit_sql
-    if audit_mode_xml?
-      return "(SELECT a.Extended_Timestamp  Timestamp,
-                      a.OS_Host             UserHost,
-                      a.OS_User             OS_UserName,
-                      a.DB_User             UserName,
-                      a.OS_Process,
-                      a.Terminal,
-                      act.Name              Action_Name,
-                      a.Object_Schema       Owner,
-                      a.Object_Name         Obj_Name,
-                      a.Inst_ID             Instance_Number,
-                      a.Session_ID          SessionID,
-                      a.SQL_Text,
-                      a.SQL_Bind,
-                      a.New_Owner, a.New_Name,
-                      NULL                  Obj_Privilege,
-                      NULL                  Sys_Privilege,
-                      a.OS_Privilege        Admin_Option,
-                      a.Grantee,
-                      NULL                  Audit_Option,
-                      a.Ses_Actions,
-                      NULL                  Logoff_LRead,
-                      NULL                  Logoff_PRead,
-                      NULL                  Logoff_LWrite,
-                      NULL                  Logoff_DLock,
-                      NULL                  Session_CPU,
-                      a.Comment_Text,
-                      a.ReturnCode,
-                      a.Priv_Used,
-                      a.ClientIdentifier    Client_ID
-               FROM   gv$XML_Audit_Trail a
-               LEFT OUTER JOIN Audit_Actions act ON act.Action = a.Action
-WHERE RowNum < 100
-              )"
-    else
-      "DBA_Audit_Trail"
-    end
-  end
-
-  public
   def list_audit_trail
-    @instance  = prepare_param_instance
+    @instance       = prepare_param_instance
+    @audit_type     = prepare_param :audit_type
+    @session_id     = prepare_param :session_id
+    @os_user        = prepare_param :os_user
+    @db_user        = prepare_param :db_user
+    @machine        = prepare_param :machine
+    @object_name    = prepare_param :object_name
+    @statement_type = prepare_param :statement_type
     where_string = ""
     where_values = []
 
     if params[:time_selection_start] && params[:time_selection_end]
       save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
-      where_string << " AND Timestamp >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND Timestamp <  TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')"
+      where_string << " AND Extended_Timestamp >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND Extended_Timestamp <  TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')"
       where_values << @time_selection_start
       where_values << @time_selection_end
     end
@@ -1682,51 +1640,50 @@ WHERE RowNum < 100
       where_values << @instance
     end
 
-    if params[:sessionid] && params[:sessionid]!=""
-      @sessionid = params[:sessionid]
-      where_string << " AND SessionID=?"
-      where_values << @sessionid
+    if @audit_type
+      where_string << " AND Audit_Type=?"
+      where_values << @audit_type
     end
 
-    if params[:os_user] && params[:os_user]!=""
-      @os_user = params[:os_user]
-      where_string << " AND UPPER(OS_UserName) LIKE UPPER('%'||?||'%')"
+    if @session_id
+      where_string << " AND Session_ID=?"
+      where_values << @session_id
+    end
+
+    if @os_user
+      where_string << " AND UPPER(OS_User) LIKE UPPER('%'||?||'%')"
       where_values << @os_user
     end
 
-    if params[:db_user] && params[:db_user]!=""
-      @db_user = params[:db_user]
-      where_string << " AND UPPER(UserName) LIKE UPPER('%'||?||'%')"
+    if @db_user
+      where_string << " AND UPPER(DB_User) LIKE UPPER('%'||?||'%')"
       where_values << @db_user
     end
 
-    if params[:machine] && params[:machine]!=""
-      @machine = params[:machine]
+    if @machine
       where_string << " AND UPPER(UserHost) LIKE UPPER('%'||?||'%')"
       where_values << @machine
     end
 
-    if params[:object_name] && params[:object_name]!=""
-      @object_name = params[:object_name]
-      where_string << " AND UPPER(Obj_Name) LIKE UPPER('%'||?||'%')"
+    if @object_name
+      where_string << " AND UPPER(Object_Name) LIKE UPPER('%'||?||'%')"
       where_values << @object_name
     end
 
-    if params[:action_name] && params[:action_name]!=""
-      @action_name = params[:action_name]
-      where_string << " AND UPPER(Action_Name) LIKE UPPER('%'||?||'%')"
-      where_values << @action_name
+    if @statement_type
+      where_string << " AND UPPER(statement_type) LIKE UPPER('%'||?||'%')"
+      where_values << @statement_type
     end
 
     if params[:grouping] && params[:grouping] != "none"
       list_audit_trail_grouping(params[:grouping], where_string, where_values, params[:top_x].to_i)
     else
-      @audit_source = audit_source
       @audits = sql_select_iterator ["\
-                     SELECT /*+ FIRST_ROWS(1) Panorama Ramm */ *
-                     FROM   #{audit_sql}
+                     SELECT /*+ FIRST_ROWS(1) Panorama Ramm */ a.*,
+                            RAWTOHEX(a.TransactionID) TransactionID_Hex
+                     FROM   DBA_Common_Audit_Trail a
                      WHERE  1=1 #{where_string}
-                     ORDER BY Timestamp
+                     ORDER BY Extended_Timestamp
                     "].concat(where_values)
 
       render_partial :list_audit_trail
@@ -1738,20 +1695,18 @@ WHERE RowNum < 100
     @grouping = grouping
     @top_x    = top_x
 
-    @audit_source = audit_source
-
-    group_time_sql = "TRUNC(Timestamp, '#{grouping}')"
-    group_time_sql = "CAST (Timestamp AS DATE)" if grouping == 'SS'
+    group_time_sql = "TRUNC(Extended_Timestamp, '#{grouping}')"
+    group_time_sql = "CAST (Extended_Timestamp AS DATE)" if grouping == 'SS'
 
     audits = sql_select_all ["\
                    SELECT /*+ FIRST_ROWS(1) Panorama Ramm */ *
                    FROM   (SELECT #{group_time_sql} Begin_Timestamp,
-                                  MAX(Timestamp)+1/1440 Max_Timestamp,  -- auf naechste ganze Minute aufgerundet
-                                  UserHost, OS_UserName, UserName, Action_Name,
+                                  MAX(Extended_Timestamp)+1/1440 Max_Timestamp,  -- auf naechste ganze Minute aufgerundet
+                                  UserHost, OS_User, DB_User, Statement_Type,
                                   COUNT(*)         Audits
-                                  FROM   #{audit_sql}
+                                  FROM   DBA_Common_Audit_Trail
                                   WHERE  1=1 #{where_string}
-                                  GROUP BY #{group_time_sql}, UserHost, OS_UserName, UserName, Action_Name
+                                  GROUP BY #{group_time_sql}, UserHost, OS_User, DB_User, Statement_Type
                           )
                    ORDER BY Begin_Timestamp, Audits
                   "].concat(where_values)
@@ -1787,14 +1742,14 @@ WHERE RowNum < 100
         rec[:machines][a.userhost] = (rec[:machines][a.userhost] ||=0) + a.audits
         machines[a.userhost] = (machines[a.userhost] ||= 0) + a.audits  # Gesamtmenge je Maschine merken für Sortierung nach Top x
 
-        rec[:os_users][a.os_username] = (rec[:os_users][a.os_username] ||=0) + a.audits
-        os_users[a.os_username] = (os_users[a.os_username] ||= 0) + a.audits
+        rec[:os_users][a.os_user] = (rec[:os_users][a.os_user] ||=0) + a.audits
+        os_users[a.os_user] = (os_users[a.os_user] ||= 0) + a.audits
 
-        rec[:db_users][a.username] = (rec[:db_users][a.username] ||=0) + a.audits
-        db_users[a.username] = (db_users[a.username] ||= 0) + a.audits
+        rec[:db_users][a.db_user] = (rec[:db_users][a.db_user] ||=0) + a.audits
+        db_users[a.db_user] = (db_users[a.db_user] ||= 0) + a.audits
 
-        rec[:actions][a.action_name] = (rec[:actions][a.action_name] ||=0) + a.audits
-        actions[a.action_name] = (actions[a.action_name] ||= 0) + a.audits
+        rec[:actions][a.statement_type] = (rec[:actions][a.statement_type] ||=0) + a.audits
+        actions[a.statement_type] = (actions[a.statement_type] ||= 0) + a.audits
 
       end
     end
@@ -1833,7 +1788,7 @@ WHERE RowNum < 100
 
     @actions = []
     actions.each do |key, value|
-      @actions << { :action_name=>key, :audits=>value}
+      @actions << { :statement_type=>key, :audits=>value}
     end
     @actions.sort!{ |x,y| y[:audits] <=> x[:audits] }
     while @actions.count > top_x

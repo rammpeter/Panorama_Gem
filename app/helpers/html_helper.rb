@@ -4,7 +4,7 @@
 module HtmlHelper
 
   # Anzeige eines start und ende-datetimepickers (neue Variante für display:flex)
-  def include_start_end_timepicker(id_suffix = "default", additional_title = nil)
+  def include_start_end_timepicker(id_suffix: "default", additional_title:  nil, line_feed_after_lable: false)
     start_id = "time_selection_start_#{id_suffix}"
     end_id   = "time_selection_end_#{id_suffix}"
 
@@ -12,11 +12,11 @@ module HtmlHelper
 
     "
     <div class='flex-row-element' title=\"#{t :time_selection_start_hint, :default=>"Start of considered time period in format"} '#{human_datetime_minute_mask}'#{additional_title}\">
-      #{t :time_selection_start_caption, :default=>"Start"}
+      #{'&nbsp;' if line_feed_after_lable}#{t :time_selection_start_caption, :default=>"Start"}#{'<br/>' if line_feed_after_lable}
     #{ text_field_tag(:time_selection_start, default_time_selection_start, :size=>16, :id=>start_id) }
     </div>
     <div class='flex-row-element' title=\"#{t :time_selection_end_hint, :default=>"End of considered time period in format"} '#{human_datetime_minute_mask}'#{additional_title}\">
-      #{t :time_selection_end_caption, :default=>"End"}
+      #{'&nbsp;' if line_feed_after_lable}#{t :time_selection_end_caption, :default=>"End"}#{'<br/>' if line_feed_after_lable}
     #{ text_field_tag(:time_selection_end, default_time_selection_end, :size=>16, :id=>end_id) }
     </div>
 
@@ -34,7 +34,7 @@ module HtmlHelper
     end
 
     "<div class='flex-row-element' title='#{t(:instance_filter_hint, default: 'Filter on specific RAC instance')} (#{required ? "#{t(:mandatory, default: 'mandatory')}" : 'Optional'})'>
-       Inst.#{'<br/>' if line_feed}
+       #{'&nbsp;' if line_feed}Inst.#{'<br/>' if line_feed}
        #{text_field_tag(:instance, instance, size: 1, style: "text-align:right;")}
     </div>".html_safe
   end
