@@ -1940,8 +1940,16 @@ oradebug setorapname diag
       where_values << Time.at(start_range_ms/1000).utc.strftime("%Y/%m/%d %H:%M:%S")
       where_values << Time.at(end_range_ms/1000).utc.strftime("%Y/%m/%d %H:%M:%S")
 
-      min_ash_time = sql_select_one ["SELECT MIN(Sample_Time) FROM gv$Active_Session_History#{" WHERE Inst_ID = ?" if @instance}"]
-                                      .concat(@instance ? [@instance] : [])
+      # Possible CPU hang on Oracle 12.1 if executing simple SELECT MIN(Sample_Time) FROM gv$Active_Session_History
+      # access per instance fixes this problem
+      min_ash_time = sql_select_one ["SELECT MIN(Min_Sample_Time)
+                                      FROM   (
+                                              SELECT Inst_ID,
+                                                  (SELECT MIN(h.Sample_Time) FROM gv$Active_Session_history h WHERE h.Inst_ID = i.Inst_ID) Min_Sample_Time
+                                              FROM gv$Instance i
+                                              #{" WHERE Inst_ID = ?" if @instance}
+                                             )
+                                      "].concat(@instance ? [@instance] : [])
       if min_ash_time > Time.at(start_range_ms/1000).utc
         show_popup_message("Needed data has already been flushed from ASH in SGA!
 Please use function at menu 'Session-Waits/Historic' instead for analysis with access on persisted ASH in AWR.

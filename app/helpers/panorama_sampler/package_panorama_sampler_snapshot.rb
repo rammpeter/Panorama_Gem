@@ -610,7 +610,7 @@ END Panorama_Sampler_Snapshot;
                                             METRIC_ID, VALUE, CON_DBID, CON_ID)
     SELECT p_SNAP_ID, p_DBID, p_INSTANCE, BEGIN_TIME, END_TIME, INTSIZE_CSEC, GROUP_ID,
            METRIC_ID, VALUE, p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "sm.Con_ID" : "0"}
-    FROM   v$SysMetric_History sm
+      FROM   v$SysMetric_History sm
     JOIN   panorama_owner.Panorama_Snapshot ss ON ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.Instance_Number = p_Instance
     WHERE  sm.End_Time >= ss.Begin_Interval_Time
     AND    sm.End_Time < ss.End_Interval_Time
