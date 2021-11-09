@@ -1940,7 +1940,7 @@ oradebug setorapname diag
       where_values << Time.at(start_range_ms/1000).utc.strftime("%Y/%m/%d %H:%M:%S")
       where_values << Time.at(end_range_ms/1000).utc.strftime("%Y/%m/%d %H:%M:%S")
 
-      # Possible CPU hang on Oracle 12.1 if executing simple SELECT MIN(Sample_Time) FROM gv$Active_Session_History
+      # Possible CPU hang on Oracle 12.1 if executing simple SELECT MIN(Sample_Time) FROM gv$Active_Session_History, Doc ID 2299480.1
       # access per instance fixes this problem
       min_ash_time = sql_select_one ["SELECT MIN(Min_Sample_Time)
                                       FROM   (
