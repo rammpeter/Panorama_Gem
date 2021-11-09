@@ -369,7 +369,7 @@ FROM   gv$Session s
 LEFT OUTER JOIN gv$PX_Session pxs ON pxs.Inst_ID = s.Inst_ID AND pxs.SID = s.SID AND pxs.Serial#=s.Serial#
 WHERE  s.Type = 'USER'
 AND    pxs.SID IS NULL
-    AND    Program NOT LIKE '%(PP%)'    /* Exclude own PQ processes that don't appear gv$PX_Session in while selecting from multiple RAC instances */
+    AND    Program NOT LIKE '%(PP%)'    /* Exclude own PQ processes that don't appear in gv$PX_Session while selecting from multiple RAC instances */
     AND    Logon_Time > SYSDATE-1/(86400/?) /* Session not older than x seconds */
            ",
           :parameter=>[
