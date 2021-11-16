@@ -2015,7 +2015,7 @@ Oldest remaining ASH record in SGA is from #{localeDateTime(min_ash_time)} but c
     end
 
     @top_sqls = sql_select_all ["\
-      SELECT h.*, SUBSTR(s.SQL_Text, 1, 80) SQL_SubText, s.OSUSer,
+      SELECT h.*, SUBSTR(sql.SQL_Text, 1, 80) SQL_SubText, s.OSUSer,
              CASE WHEN User_IDs = 1 THEN (SELECT u.UserName FROM All_Users u WHERE u.User_ID = h.Min_User_ID) END UserName
       FROM   (
               SELECT /*+ NO_MERGE */ *
@@ -2042,7 +2042,7 @@ Oldest remaining ASH record in SGA is from #{localeDateTime(min_ash_time)} but c
                      ) h
               WHERE  RowNum <= 10
              ) h
-      JOIN   gv$SQL s ON s.Inst_ID = h.Inst_ID AND s.SQL_ID = h.SQL_ID AND s.Child_Number = h.SQL_Child_Number
+      LEFT OUTER JOIN gv$SQL sql ON sql.Inst_ID = h.Inst_ID AND sql.SQL_ID = h.SQL_ID AND sql.Child_Number = h.SQL_Child_Number
       LEFT OUTER JOIN gv$Session s ON s.Inst_ID = h.Min_QInst_ID and s.SID = h.Min_QSession_ID AND s.Serial# = h.Min_QSession_Serial_No
       ORDER BY Wait_Time_secs DESC
     "].concat(where_values)

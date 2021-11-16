@@ -50,7 +50,11 @@
   end
 
   link_session_sql = proc do |rec|
-    link_sql_id(@update_area, rec.qinst_id, rec.max_sql_id, childno: rec.max_sql_child_number, additional_onclick_js: refresh_off)
+    link_sql_id(@update_area, rec.qinst_id, rec.max_sql_id, childno: rec.max_sql_child_number,
+                additional_onclick_js: refresh_off,
+                time_selection_start: localeDateTime(rec.first_occurrence),
+                time_selection_end:   localeDateTime(rec.last_occurrence)
+    )
   end
 
   column_options_sessions = []
@@ -66,7 +70,11 @@
   column_options_sessions << {caption: 'Action',           data: proc{|rec| rec.max_action},            title: "Action identifier with highest wait time in considered time period", data_title: proc{|rec| "%t\n\n#{rec.max_action}"}}
 
   link_sql_sql = proc do |rec|
-    link_sql_id(@update_area, rec.inst_id, rec.sql_id, childno: rec.sql_child_number, additional_onclick_js: refresh_off)
+    link_sql_id(@update_area, rec.inst_id, rec.sql_id, childno: rec.sql_child_number,
+                additional_onclick_js: refresh_off,
+                time_selection_start: localeDateTime(rec.first_occurrence),
+                time_selection_end:   localeDateTime(rec.last_occurrence)
+    )
   end
 
   link_sql_session = proc do |rec|

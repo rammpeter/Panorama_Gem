@@ -4,6 +4,12 @@ class StorageController < ApplicationController
   # Groesse und Füllung der Tabelspaces
   def tablespace_usage
     @tablespaces = sql_select_all("\
+      WITH free AS (SELECT /*+ NO_MERGE MATERIALIZE */
+                           f.TABLESPACE_NAME, #{"f.Con_ID," if is_cdb?}
+                           Sum(f.BYTES)/1048576     MBFree
+                    FROM   #{dba_or_cdb('DBA_FREE_SPACE')} f
+                    GROUP BY f.TABLESPACE_NAME #{", f.Con_ID" if is_cdb?}
+                   )
       SELECT /* Panorama-Tool Ramm */
              t.TableSpace_Name, NULL Inst_ID,
              t.contents,
@@ -23,17 +29,10 @@ class StorageController < ApplicationController
              #{ ", t.Def_InMemory" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
              #{", t.Con_ID" if is_cdb?}
       FROM  #{dba_or_cdb('DBA_Tablespaces')} t
+      LEFT OUTER JOIN free ON free.Tablespace_Name = t.Tablespace_Name #{" AND free.Con_ID = t.Con_ID" if is_cdb?}
       LEFT OUTER JOIN
             (
-            SELECT /* Panorama-Tool Ramm */
-                   f.TABLESPACE_NAME, #{"f.Con_ID," if is_cdb?}
-                   Sum(f.BYTES)/1048576     MBFree
-            FROM   #{dba_or_cdb('DBA_FREE_SPACE')} f
-            GROUP BY f.TABLESPACE_NAME #{", f.Con_ID" if is_cdb?}
-            ) free ON free.Tablespace_Name = t.Tablespace_Name #{" AND free.Con_ID = t.Con_ID" if is_cdb?}
-      LEFT OUTER JOIN
-            (
-            SELECT d.TableSpace_Name, #{"d.Con_ID," if is_cdb?} SUM(d.Bytes)/1048576 FileSize,
+            SELECT /*+ NO_MERGE */ d.TableSpace_Name, #{"d.Con_ID," if is_cdb?} SUM(d.Bytes)/1048576 FileSize,
                    CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
                    SUM(DECODE(d.AutoExtensible, 'YES', d.MaxBytes, d.Bytes))/1048576 Max_Size_MB,
                    COUNT(*) File_Count
@@ -58,14 +57,14 @@ class StorageController < ApplicationController
              #{ ", t.Def_InMemory" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
              #{", t.Con_ID" if is_cdb?}
       FROM  #{dba_or_cdb('DBA_Tablespaces')} t
-      LEFT OUTER JOIN (SELECT Tablespace_Name, #{"Con_ID," if is_cdb?} SUM(Bytes)/1048576 MBTotal, SUM(Bytes)/SUM(Blocks) BlockSize,
+      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Tablespace_Name, #{"Con_ID," if is_cdb?} SUM(Bytes)/1048576 MBTotal, SUM(Bytes)/SUM(Blocks) BlockSize,
                               CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
                               SUM(DECODE(AutoExtensible, 'YES', MaxBytes, Bytes))/1048576 Max_Size_MB,
                               COUNT(*) File_Count
                        FROM #{dba_or_cdb('DBA_Temp_Files')}
                        GROUP BY Tablespace_Name #{", Con_ID" if is_cdb?}
                       ) f ON f.Tablespace_Name = t.TableSpace_Name #{" AND f.Con_ID = t.Con_ID" if is_cdb?}
-      LEFT OUTER JOIN (SELECT Tablespace_Name, #{"Con_ID," if is_cdb?} SUM(Total_Blocks) Used_Blocks
+      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Tablespace_Name, #{"Con_ID," if is_cdb?} SUM(Total_Blocks) Used_Blocks
                        FROM   GV$Sort_Segment
                        GROUP BY Tablespace_Name #{", Con_ID" if is_cdb?}
                       ) s ON s.Tablespace_Name = t.TableSpace_Name #{" AND s.Con_ID = t.Con_ID" if is_cdb?}

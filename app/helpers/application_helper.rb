@@ -381,7 +381,7 @@ module ApplicationHelper
   end
 
   # Sichern der Parameter time_selection_start und time_selection_end in session, Prüfen auf Valides Format
-  def save_session_time_selection
+  def save_session_time_selection(cache_values: false)
     def check_timestamp_picture(ts)    # Test auf struktur DD.MM.YYYY HH:MM or DD.MM.YYYY HH:MM:SS
       # Test auf Identität der Trennzeichen zwischen Maske und Prüftext
       index = 0
@@ -437,10 +437,10 @@ module ApplicationHelper
     @time_selection_start = params[:time_selection_start].rstrip.gsub(/\u2011/, '-')  # replace unbreakable hyphen with '-'
     @time_selection_end   = params[:time_selection_end].rstrip.gsub(/\u2011/, '-')    # replace unbreakable hyphen with '-'
 
-    if @time_selection_start && @time_selection_start != ''
+    if @time_selection_start && @time_selection_start != '' && cache_values
       set_cached_time_selection_start(check_timestamp_picture(@time_selection_start))
     end
-    if @time_selection_end && @time_selection_end != ''
+    if @time_selection_end && @time_selection_end != '' && cache_values
       set_cached_time_selection_end(check_timestamp_picture(@time_selection_end))
     end
     # Check if endtime is greater than starttime

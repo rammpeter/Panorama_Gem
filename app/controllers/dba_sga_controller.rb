@@ -604,6 +604,8 @@ class DbaSgaController < ApplicationController
   end
 
   def list_sql_detail_sql_id_childno
+    @time_selection_start = prepare_param :time_selection_start                 # alternative time range if SQL is not in SGA
+    @time_selection_end   = prepare_param :time_selection_end                   # alternative time range if SQL is not in SGA
     @modus = "GV$SQL"   # Detaillierung SQL-ID, ChildNo
     @dbid         = prepare_param_dbid
     @instance     = prepare_param_instance
@@ -643,12 +645,18 @@ class DbaSgaController < ApplicationController
 
       render_partial :list_sql_detail_sql_id_childno
     else
-      show_popup_message("#{t(:dba_sga_list_sql_detail_sql_id_childno_no_hit_msg, :default=>'No record found in GV$SQL for')} SQL_ID='#{@sql_id}', Instance=#{@instance}, Child_Number=#{@child_number}")
+      if @time_selection_start && @time_selection_end
+        redirect_to url_for(controller: :dba_history, action: :list_sql_detail_historic, params: params.permit!, method: :post)
+      else
+        show_popup_message("#{t(:dba_sga_list_sql_detail_sql_id_childno_no_hit_msg, :default=>'No record found in GV$SQL for')} SQL_ID='#{@sql_id}', Instance=#{@instance}, Child_Number=#{@child_number}")
+      end
     end
   end
 
   # Details auf Ebene SQL_ID kumuliert über Child-Cursoren
   def list_sql_detail_sql_id
+    @time_selection_start = prepare_param :time_selection_start                 # alternative time range if SQL is not in SGA
+    @time_selection_end   = prepare_param :time_selection_end                   # alternative time range if SQL is not in SGA
     @dbid         = prepare_param_dbid
     @instance = prepare_param_instance
     @sql_id   = params[:sql_id].strip
@@ -661,8 +669,12 @@ class DbaSgaController < ApplicationController
     @sqls = sql_select_all ["SELECT Inst_ID, Child_Number FROM gv$SQL WHERE SQL_ID = ?#{" AND Inst_ID = ?" if @instance}", @sql_id].concat(@instance ? [@instance]: [])
 
     if @sqls.count == 0
-      show_popup_message "SQL-ID '#{@sql_id}' not found in GV$SQL for instance = #{@instance} !"
-      return
+      if @time_selection_start && @time_selection_end
+        redirect_to url_for(controller: :dba_history, action: :list_sql_detail_historic, params: params.permit!, method: :post)
+      else
+        show_popup_message "SQL-ID '#{@sql_id}' not found in GV$SQL for instance = #{@instance} !"
+        return
+      end
     end
 
 

@@ -225,7 +225,11 @@ module AjaxHelper
 
   # Erzeugen eines Links aus den Parametern auf Detail-Darstellung des SQL
   # Aktualisieren des title(hint) erst, wenn das erste mal mit Maus darüber gefahren wird
-  def link_sql_id(update_area, instance, sql_id, childno: nil, parsing_schema_name: nil, object_status: nil, child_address: nil, con_id: nil, additional_onclick_js: nil)
+  def link_sql_id(update_area, instance, sql_id, childno: nil, parsing_schema_name: nil, object_status: nil, child_address: nil, con_id: nil,
+                  additional_onclick_js:  nil,
+                  time_selection_start:   nil,                                  # Switch to historic SQL if time range is set and no hit in SGA
+                  time_selection_end:     nil
+  )
     unique_id = get_unique_area_id
     prefix = "#{t(:ajax_helper_link_sql_id_title_prefix, :default=>"Show details in SGA for")} SQL-ID = '#{sql_id}', Instance = #{instance}"
     prefix << ", ChildNo=#{childno} : " if childno
@@ -239,7 +243,9 @@ module AjaxHelper
               :child_address  => child_address,               # mittels RAWTOHEX auslesen
               :parsing_schema_name => parsing_schema_name,   # Sichern der Eindeutigkeit bei mehrfachem Vorkommen identischer SQL in verschiedenen Schemata
               :object_status  => object_status,
-              :con_id         => con_id
+              :con_id         => con_id,
+              time_selection_start: time_selection_start,
+              time_selection_end:   time_selection_end
               },
                {:title       => "#{prefix} <#{t :link_historic_sql_id_coming_soon, :default=>"Text of SQL is loading, please hold mouse over object again"}>",
                 :id          =>  unique_id,
