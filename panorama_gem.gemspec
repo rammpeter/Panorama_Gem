@@ -39,6 +39,7 @@ Aims to issues that are inadequately analyzed and presented by other existing to
 
   # sass-rails pinned to 5.0 which depends on sass, current sass-rails (6.0) depends on sassc which is incompatible with warbler
   #s.add_dependency  'sass-rails', '~> 5.0'
+  s.add_dependency  'sass-rails'
 
   # TODO: i18n 1.8.8, 1.8.9 leads to Uncaught exception: undefined method `deep_merge!' for {}:Concurrent::Hash
   # Check if following versions fix this error
