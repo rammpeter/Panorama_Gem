@@ -2,8 +2,6 @@
   @update_area = get_unique_area_id
 
   show_payload = proc do |rec|
-    #payload = rec.payload.delete("\n") if !rec.payload.nil?
-
     payload = rec.payload.gsub("\n", ' ') if !rec.payload.nil?
 
     if !rec.payload.nil? && (payload['PARSE #'] || payload['EXEC #'] || payload['FETCH #'] || payload['STAT #'] || payload['CLOSE #'] || payload['ERROR #'])
@@ -119,13 +117,35 @@ Times are in microseconds
       ]
 
 %>
-<%= gen_slickgrid(@content, column_options, {
-    :caption => "Trace file content for #{@adr_home}/trace/#{@trace_filename}, Con-ID = #{@con_id} (from GV$Diag_Trace_File_Contents)",
+<%=
+  caption = "Trace file content for #{@adr_home}/trace/#{@trace_filename}, Con-ID = #{@con_id} (from GV$Diag_Trace_File_Contents)\n"
+  caption << check_box_tag(:dont_show_sys, 1, @dont_show_sys=='1', onclick: "toggle_dont_show_sys();")
+  caption << " Exclude recursive SQLs executed as user SYS\n"
+  caption << check_box_tag(:dont_show_stat, 1, @dont_show_stat=='1', onclick: "toggle_dont_show_stat();")
+  caption << " Exclude STAT records with execution plan lines"
+  gen_slickgrid(@content, column_options, {
+    :caption => caption,
     :max_height=>450,
     show_pin_icon: 1,
     update_area: @update_area
 })
 %>
 
+<script type=application/javascript>
+  function recall_list(dont_show_sys, dont_show_stat){
+      ajax_html('<%= @org_update_area %>', 'dba', 'list_trace_file_content', {
+          'update_area':    '<%= @org_update_area %>',
+          'instance':       '<%= @instance %>',
+          'adr_home':       '<%= @adr_home %>',
+          'trace_filename': '<%= @trace_filename %>',
+          'con_id':         '<%= @con_id%>',
+          'dont_show_sys':  dont_show_sys,
+          'dont_show_stat': dont_show_stat
+  });
+  }
 
+  function toggle_dont_show_sys()   { recall_list('<%= @dont_show_sys == '1' ? 0 : 1 %>', '<%= @dont_show_stat %>'); }
+  function toggle_dont_show_stat()  { recall_list('<%= @dont_show_sys %>',                '<%= @dont_show_stat == '1' ? 0 : 1 %>'); }
+
+</script>
 

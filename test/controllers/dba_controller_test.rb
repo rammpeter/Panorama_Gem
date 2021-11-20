@@ -195,8 +195,15 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
       end
 
       if !@trace_file.nil?
-        post '/dba/list_trace_file_content', params: {format: :html, instance: @trace_file.inst_id, adr_home: @trace_file.adr_home, trace_filename: @trace_file.trace_filename, con_id: @trace_file.con_id, update_area: :hugo }
-        assert_response :success
+        [0,1].each do |dont_show_sys|
+          [0,1].each do |dont_show_stat|
+            post '/dba/list_trace_file_content', params: {format: :html, instance: @trace_file.inst_id, adr_home: @trace_file.adr_home,
+                                                          trace_filename: @trace_file.trace_filename, con_id: @trace_file.con_id,
+                                                          dont_show_sys: dont_show_sys, dont_show_stat: dont_show_stat,
+                                                          update_area: :hugo }
+            assert_response :success
+          end
+        end
       end
 
       post '/dba/list_trace_file_content', params: {format: :html, instance: 1, adr_home: 'hugo', trace_filename: 'hugo', con_id: 1, update_area: :hugo }

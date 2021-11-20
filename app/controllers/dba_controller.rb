@@ -1758,10 +1758,13 @@ oradebug setorapname diag
 
   MAX_TRACE_FILE_LINES_TO_SHOW=10000
   def list_trace_file_content
-    @instance       = prepare_param_instance
-    @adr_home       = prepare_param(:adr_home)
-    @trace_filename = prepare_param(:trace_filename)
-    @con_id         = prepare_param(:con_id)
+    @instance         = prepare_param_instance
+    @adr_home         = prepare_param(:adr_home)
+    @trace_filename   = prepare_param(:trace_filename)
+    @con_id           = prepare_param(:con_id)
+    @dont_show_sys    = prepare_param(:dont_show_sys)
+    @dont_show_stat   = prepare_param(:dont_show_stat)
+    @org_update_area  = prepare_param(:update_area)
 
     counts = sql_select_first_row ["SELECT COUNT(*) lines, MAX(Line_Number) Max_Line_Number
                                     FROM   gv$Diag_Trace_File_Contents c
@@ -1773,20 +1776,67 @@ oradebug setorapname diag
                                    ", @instance, @adr_home, @trace_filename, @con_id]
 
     if counts.lines > MAX_TRACE_FILE_LINES_TO_SHOW
-      add_statusbar_message("Trace file #{@trace_filename} contains #{fn(counts.lines)} rows!\nShowing only the last #{fn(MAX_TRACE_FILE_LINES_TO_SHOW)} rows.")
+      add_statusbar_message("Trace file #{@trace_filename} contains #{fn(counts.lines)} rows!\nEvaluating only the last #{fn(MAX_TRACE_FILE_LINES_TO_SHOW)} rows.")
     end
 
-    @content = sql_select_iterator ["SELECT *
-                                     FROM   (SELECT /*+ NO_MERGE */ c.*, c.Serial# SerialNo, RowNum Row_Num
-                                             FROM   gv$Diag_Trace_File_Contents c
-                                             WHERE  c.Inst_ID        = ?
-                                             AND    c.ADR_Home       = ?
-                                             AND    c.Trace_FileName = ?
-                                             AND    c.Con_ID         = ?
-                                             ORDER BY c.Line_Number
-                                            )
-                                     WHERE  Row_Num > ?
-                                  ", @instance, @adr_home, @trace_filename, @con_id, counts.lines - MAX_TRACE_FILE_LINES_TO_SHOW]
+    content_iter = sql_select_iterator ["SELECT *
+                                         FROM   (SELECT /*+ NO_MERGE */ c.*, c.Serial# SerialNo, RowNum Row_Num
+                                                 FROM   gv$Diag_Trace_File_Contents c
+                                                 WHERE  c.Inst_ID        = ?
+                                                 AND    c.ADR_Home       = ?
+                                                 AND    c.Trace_FileName = ?
+                                                 AND    c.Con_ID         = ?
+                                                 ORDER BY c.Line_Number
+                                                )
+                                         WHERE  Row_Num > ?
+                                      ", @instance, @adr_home, @trace_filename, @con_id, counts.lines - MAX_TRACE_FILE_LINES_TO_SHOW]
+
+    @content = []
+    if @dont_show_sys == '1'
+      sys_cursors = {}
+      sys_sql_lines = false                                                     # mark the lines between PARSING IN CURSOR # and END OF STMT
+      sys_binds = false                                                         # mark the following lines as binds of SYS SQL
+      content_iter.each do |line|
+        if line.payload && line.payload.strip != '' && line.payload.strip != '=====================' # suppress empty lines for @dont_show_sys
+          # cursor id starts with # and ends with : except for PARSING IN CURSOR
+          cursor_id = line.payload['#'] && line.payload[':']? line.payload[line.payload.index('#')+1, 20].split(':')[0] : nil
+          cursor_id = nil if cursor_id.to_i == 0                                # no trailing : found for cursor_id
+          if line.payload['PARSING IN CURSOR #'] || line.payload['STAT #']
+            cursor_id = line.payload[line.payload.index('#')+1, 20].split(' ')[0] # in this case cursor id ends with blank
+          end
+
+          sys_binds = false if cursor_id                                        # Bind lines end with next valid cursor id in line
+          if line.payload['PARSING IN CURSOR #']
+            uid = line.payload[line.payload.index('uid=')+4, 20].split[0]
+            if uid == '0'
+              sys_cursors[cursor_id] = 1                                        # mark cursor as sys cursor
+              sys_sql_lines = true                                              # suppress the following lines
+            else
+              sys_cursors.delete(cursor_id) if sys_cursors.has_key?(cursor_id)  # next reuse of cursor with user != SYS end exclusion
+            end
+          end
+
+          if !sys_cursors.has_key?(cursor_id) && !sys_sql_lines && !sys_binds &&
+            !(line.payload['STAT #'] && @dont_show_stat == '1')
+              @content << line
+          end
+
+          # suppress known sys cursor actions
+          sys_sql_lines = false if line.payload['END OF STMT']                  # now show all not sys cursor lines
+          sys_binds = true if line.payload['BINDS #'] && sys_cursors.has_key?(cursor_id)
+        end
+      end
+    else
+      if @dont_show_stat == '1'                                                  # only filtering on @dont_show_stat
+        content_iter.each do |line|
+          if !line.payload['STAT #']
+            @content << line
+          end
+        end
+       else
+        @content = content_iter                                                   # don't do any filtering
+      end
+    end
 
     render_partial
   end

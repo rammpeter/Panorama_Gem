@@ -253,7 +253,7 @@ class PanoramaSamplerSampling
 
   def do_blocking_locks_sampling(snapshot_time)
     if @sampler_config.get_select_any_table                                     # call PL/SQL package ?
-      sql = "BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_Block_Locks.Create_Block_Locks_Snapshot(?, ?); END;"
+      sql = "BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_Block_Locks.Create_Block_Locks_Snapshot(?); END;"
     else
       sql = "
         DECLARE
