@@ -37,23 +37,6 @@
     end
   end
 
-  @last_tim = nil
-  show_tim = proc do |rec|
-    pattern = 'tim='
-    tim_index = rec.payload&.index(pattern)
-    if tim_index
-      tim_end_index = rec.payload[tim_index + pattern.length, rec.payload.length].index(' ')
-      tim_end_index = rec.payload[tim_index + pattern.length, rec.payload.length].index(',') if tim_end_index.nil?    # check for , if no space at end
-      tim_end_index = rec.payload.length if tim_end_index.nil? # up to the end of payload
-      tim = rec.payload[tim_index + pattern.length, tim_end_index].to_i rescue nil   # ,tim= is the last element in payload
-      retval = @last_tim.nil? || tim.nil? ? nil : (tim - @last_tim) / 1000.0
-      @last_tim = tim
-      fn(retval, 3)
-    else
-      nil
-    end
-  end
-
   link_session = proc do |rec|
     if rec.session_id == 0
       "#{rec.session_id},#{rec.serialno}"
@@ -101,19 +84,20 @@ Times are in microseconds
   column_options =
       [
           {caption: 'Line',             data: proc{|rec| rec.line_number},                    title: 'Line number in the code file which produced this trace record', align: :right},
+          {caption: 'Timestamp',        data: proc{|rec| localeDateTime(rec.timestamp)},      title: 'Timestamp when the trace record was produced in client time zone'},
+          {caption: 'Payload',          data: show_payload,                                   title: payload_title, max_wrap_width: 400 },
+          {caption: 'Elapsed (ms)',     data: proc{|rec| fn(rec.elapsed_ms, 3)},              title: "Elapsed time in milliseconds according to \"e=x\"", align: :right},
+          {caption: 'Delay (ms)',       data: proc{|rec| fn(rec.delay_ms, 3)},                title: "Time in milliseconds between end of last operation and end of current operation.\nDifference between previous record and this record if \"tim=x\" provided", align: :right},
+          {caption: 'Session',          data: link_session,                                   title: 'User session ID and serial number which generated the trace record'},
           {caption: 'L.',               data: proc{|rec| rec.record_level},                   title: 'Level of the trace record', align: :right},
           {caption: 'P.',               data: proc{|rec| rec.parent_level},                   title: 'Top parent level of trace record', align: :right},
           {caption: 'T.',               data: proc{|rec| rec.record_type},                    title: "Type of the trace record. Possible values include:\n1: Regular trace record\n2: Freeform trace record\n3: Begin Section trace record\n4: Begin Dump trace record\n5: Bucket Dump Begin trace record\n6: Section End trace record\n7: Dump End trace record\n8: Bucket Dump End trace record", align: :right},
-          {caption: 'Timestamp',        data: proc{|rec| localeDateTime(rec.timestamp)},      title: 'Timestamp when the trace record was produced in client time zone'},
-          {caption: 'Payload',          data: show_payload,                                   title: payload_title, max_wrap_width: 400 },
-          {caption: 'Delay (ms)',       data: show_tim,                                       title: "Time in milliseconds between end of last operation and end of current operation.\nDifference between previous record and this record if 'tim=x' provided", align: :right},
           {caption: 'S',                data: proc{|rec| rec.section_id},                     title: 'Section ID / dump ID of the trace record', data_title: proc{|rec| "%t\n#{rec.section_name}"}, align: :right},
           {caption: 'Component',        data: proc{|rec| rec.component_name},                 title: 'Component name which produced the trace record'},
           {caption: 'Operation',        data: proc{|rec| rec.operation_name},                 title: 'Operation name which produced the trace record'},
           {caption: 'File',             data: proc{|rec| rec.file_name},                      title: 'Name of the code file where this trace record is produced'},
           {caption: 'Function',         data: proc{|rec| rec.function_name},                  title: 'Function which produced the trace record'},
           {caption: 'Thread',           data: proc{|rec| rec.thread_id},                      title: 'Operating system thread ID of the process which produced the trace record'},
-          {caption: 'Session',          data: link_session,                                   title: 'User session ID and serial number which generated the trace record'},
       ]
 
 %>

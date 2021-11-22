@@ -1779,7 +1779,7 @@ oradebug setorapname diag
       add_statusbar_message("Trace file #{@trace_filename} contains #{fn(counts.lines)} rows!\nEvaluating only the last #{fn(MAX_TRACE_FILE_LINES_TO_SHOW)} rows.")
     end
 
-    content_iter = sql_select_iterator ["SELECT *
+    content_iter = sql_select_iterator ["SELECT x.*, NULL elapsed_ms, Null delay_ms
                                          FROM   (SELECT /*+ NO_MERGE */ c.*, c.Serial# SerialNo, RowNum Row_Num
                                                  FROM   gv$Diag_Trace_File_Contents c
                                                  WHERE  c.Inst_ID        = ?
@@ -1787,55 +1787,66 @@ oradebug setorapname diag
                                                  AND    c.Trace_FileName = ?
                                                  AND    c.Con_ID         = ?
                                                  ORDER BY c.Line_Number
-                                                )
+                                                ) x
                                          WHERE  Row_Num > ?
                                       ", @instance, @adr_home, @trace_filename, @con_id, counts.lines - MAX_TRACE_FILE_LINES_TO_SHOW]
 
     @content = []
-    if @dont_show_sys == '1'
-      sys_cursors = {}
-      sys_sql_lines = false                                                     # mark the lines between PARSING IN CURSOR # and END OF STMT
-      sys_binds = false                                                         # mark the following lines as binds of SYS SQL
-      content_iter.each do |line|
-        if line.payload && line.payload.strip != '' && line.payload.strip != '=====================' # suppress empty lines for @dont_show_sys
+    sys_cursors = {}
+    sys_sql_lines = false                                                       # mark the lines between PARSING IN CURSOR # and END OF STMT
+    sys_binds     = false                                                       # mark the following lines as binds of SYS SQL
+    last_tim      = nil                                                         # last timestamp mark
+
+    content_iter.each do |line|
+      if line.payload.nil?
+        line.payload = ''                                                       # Ensure line.payload is valid
+      else
+        line.payload = line.payload.strip                                       # remove leading and trailing blanks or line feeds
+      end
+
+      # calculate elapsed time
+      pattern = ',e='
+      pattern = ' ela= ' if line.payload['WAIT #']
+      line.elapsed_ms = line.payload[pattern] ? line.payload[line.payload.index(pattern)+pattern.length, 20].split(' ')[0].split(',')[0].to_i/1000.0 : nil rescue nil
+      line.elapsed_ms = nil if line.elapsed_ms == 0
+
+      # calculate timestamp delay
+      tim = line.payload['tim='] ? line.payload[line.payload.index('tim=')+4, 20].split(' ')[0].split(',')[0] : nil rescue nil
+      unless tim.nil?
+        line.delay_ms = last_tim.nil? ? nil : (tim.to_i - last_tim) / 1000.0 rescue nil
+        last_tim = tim.to_i
+      end
+
+      cursor_id = nil                                                           # default if no calculation of cursor_id is needed
+      if @dont_show_sys == '1'
           # cursor id starts with # and ends with : except for PARSING IN CURSOR
-          cursor_id = line.payload['#'] && line.payload[':']? line.payload[line.payload.index('#')+1, 20].split(':')[0] : nil
-          cursor_id = nil if cursor_id.to_i == 0                                # no trailing : found for cursor_id
-          if line.payload['PARSING IN CURSOR #'] || line.payload['STAT #']
-            cursor_id = line.payload[line.payload.index('#')+1, 20].split(' ')[0] # in this case cursor id ends with blank
-          end
+        cursor_id = line.payload['#'] && line.payload[':']? line.payload[line.payload.index('#')+1, 20].split(':')[0] : nil rescue nil
+        cursor_id = nil if cursor_id.to_i == 0                                  # no trailing : found for cursor_id
+        if line.payload['PARSING IN CURSOR #'] || line.payload['STAT #']
+          cursor_id = line.payload[line.payload.index('#')+1, 20].split(' ')[0] # in this case cursor id ends with blank
+        end
 
-          sys_binds = false if cursor_id                                        # Bind lines end with next valid cursor id in line
-          if line.payload['PARSING IN CURSOR #']
-            uid = line.payload[line.payload.index('uid=')+4, 20].split[0]
-            if uid == '0'
-              sys_cursors[cursor_id] = 1                                        # mark cursor as sys cursor
-              sys_sql_lines = true                                              # suppress the following lines
-            else
-              sys_cursors.delete(cursor_id) if sys_cursors.has_key?(cursor_id)  # next reuse of cursor with user != SYS end exclusion
-            end
+        sys_binds = false if cursor_id                                          # Bind lines end with next valid cursor id in line
+        if line.payload['PARSING IN CURSOR #']
+          uid = line.payload[line.payload.index('uid=')+4, 20].split[0]
+          if uid == '0'
+            sys_cursors[cursor_id] = 1                                          # mark cursor as sys cursor
+            sys_sql_lines = true                                                # suppress the following lines
+          else
+            sys_cursors.delete(cursor_id) if sys_cursors.has_key?(cursor_id)    # next reuse of cursor with user != SYS end exclusion
           end
-
-          if !sys_cursors.has_key?(cursor_id) && !sys_sql_lines && !sys_binds &&
-            !(line.payload['STAT #'] && @dont_show_stat == '1')
-              @content << line
-          end
-
-          # suppress known sys cursor actions
-          sys_sql_lines = false if line.payload['END OF STMT']                  # now show all not sys cursor lines
-          sys_binds = true if line.payload['BINDS #'] && sys_cursors.has_key?(cursor_id)
         end
       end
-    else
-      if @dont_show_stat == '1'                                                  # only filtering on @dont_show_stat
-        content_iter.each do |line|
-          if !line.payload['STAT #']
-            @content << line
-          end
-        end
-       else
-        @content = content_iter                                                   # don't do any filtering
+
+      if !sys_cursors.has_key?(cursor_id) && !sys_sql_lines && !sys_binds &&
+        !(@dont_show_stat == '1' && line.payload['STAT #'] ) &&
+        !(@dont_show_sys  == '1' && (line.payload == '' || line.payload == '=====================' ) ) # suppress empty lines for @dont_show_sys
+          @content << line
       end
+
+      # suppress known sys cursor actions
+      sys_sql_lines = false if @dont_show_sys == '1' && line.payload['END OF STMT'] # now show all not sys cursor lines
+      sys_binds = true      if @dont_show_sys == '1' && line.payload['BINDS #'] && sys_cursors.has_key?(cursor_id)
     end
 
     render_partial
