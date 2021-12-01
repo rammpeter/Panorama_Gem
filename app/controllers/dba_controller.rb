@@ -1779,7 +1779,7 @@ oradebug setorapname diag
       add_statusbar_message("Trace file #{@trace_filename} contains #{fn(counts.lines)} rows!\nEvaluating only the last #{fn(MAX_TRACE_FILE_LINES_TO_SHOW)} rows.")
     end
 
-    content_iter = sql_select_iterator ["SELECT x.*, NULL elapsed_ms, Null delay_ms
+    content_iter = sql_select_iterator ["SELECT x.*, NULL elapsed_ms, Null delay_ms, NULL parse_line_no, NULL SQL_ID
                                          FROM   (SELECT /*+ NO_MERGE */ c.*, c.Serial# SerialNo, RowNum Row_Num
                                                  FROM   gv$Diag_Trace_File_Contents c
                                                  WHERE  c.Inst_ID        = ?
@@ -1792,6 +1792,7 @@ oradebug setorapname diag
                                       ", @instance, @adr_home, @trace_filename, @con_id, counts.lines - MAX_TRACE_FILE_LINES_TO_SHOW]
 
     @content = []
+    all_cursors = {}
     sys_cursors = {}
     sys_sql_lines = false                                                       # mark the lines between PARSING IN CURSOR # and END OF STMT
     sys_binds     = false                                                       # mark the following lines as binds of SYS SQL
@@ -1807,25 +1808,29 @@ oradebug setorapname diag
       # calculate elapsed time
       pattern = ',e='
       pattern = ' ela= ' if line.payload['WAIT #']
-      line.elapsed_ms = line.payload[pattern] ? line.payload[line.payload.index(pattern)+pattern.length, 20].split(' ')[0].split(',')[0].to_i/1000.0 : nil rescue nil
-      line.elapsed_ms = nil if line.elapsed_ms == 0
+      line['elapsed_ms'] = line.payload[pattern] ? line.payload[line.payload.index(pattern)+pattern.length, 20].split(' ')[0].split(',')[0].to_i/1000.0 : nil rescue nil
+      line['elapsed_ms'] = nil if line['elapsed_ms'] == 0
 
       # calculate timestamp delay
       tim = line.payload['tim='] ? line.payload[line.payload.index('tim=')+4, 20].split(' ')[0].split(',')[0] : nil rescue nil
       unless tim.nil?
-        line.delay_ms = last_tim.nil? ? nil : (tim.to_i - last_tim) / 1000.0 rescue nil
+        line['delay_ms'] = last_tim.nil? ? nil : (tim.to_i - last_tim) / 1000.0 rescue nil
         last_tim = tim.to_i
       end
 
       cursor_id = nil                                                           # default if no calculation of cursor_id is needed
-      if @dont_show_sys == '1'
-          # cursor id starts with # and ends with : except for PARSING IN CURSOR
-        cursor_id = line.payload['#'] && line.payload[':']? line.payload[line.payload.index('#')+1, 20].split(':')[0] : nil rescue nil
-        cursor_id = nil if cursor_id.to_i == 0                                  # no trailing : found for cursor_id
-        if line.payload['PARSING IN CURSOR #'] || line.payload['STAT #']
-          cursor_id = line.payload[line.payload.index('#')+1, 20].split(' ')[0] # in this case cursor id ends with blank
-        end
+      # cursor id starts with # and ends with : except for PARSING IN CURSOR
+      cursor_id = line.payload['#'] && line.payload[':']? line.payload[line.payload.index('#')+1, 20].split(':')[0] : nil rescue nil
+      cursor_id = nil if cursor_id.to_i == 0                                    # no trailing : found for cursor_id
+      if line.payload['PARSING IN CURSOR #'] || line.payload['STAT #']
+        cursor_id = line.payload[line.payload.index('#')+1, 20].split(' ')[0]   # in this case cursor id ends with blank
+      end
 
+      if line.payload['PARSING IN CURSOR #']                                    # Remember the first occurrence of this sql
+        all_cursors[cursor_id] = { parse_line_no: line.line_number, sql_id: line.payload[line.payload.index('sqlid=')+7, 20].split("'")[0] }
+      end
+
+      if @dont_show_sys == '1'
         sys_binds = false if cursor_id                                          # Bind lines end with next valid cursor id in line
         if line.payload['PARSING IN CURSOR #']
           uid = line.payload[line.payload.index('uid=')+4, 20].split[0]
@@ -1841,12 +1846,20 @@ oradebug setorapname diag
       if !sys_cursors.has_key?(cursor_id) && !sys_sql_lines && !sys_binds &&
         !(@dont_show_stat == '1' && line.payload['STAT #'] ) &&
         !(@dont_show_sys  == '1' && (line.payload == '' || line.payload == '=====================' ) ) # suppress empty lines for @dont_show_sys
-          @content << line
+
+        if all_cursors.has_key?(cursor_id)                                      # we met PARSING IN CURSOR for this cursor in file before
+          line['parse_line_no'] = all_cursors[cursor_id][:parse_line_no]
+          line['sql_id']        = all_cursors[cursor_id][:sql_id]
+        end
+        @content << line
       end
 
       # suppress known sys cursor actions
       sys_sql_lines = false if @dont_show_sys == '1' && line.payload['END OF STMT'] # now show all not sys cursor lines
       sys_binds = true      if @dont_show_sys == '1' && line.payload['BINDS #'] && sys_cursors.has_key?(cursor_id)
+
+      all_cursors.delete(cursor_id) if line.payload['CLOSE #'] && all_cursors.has_key?(cursor_id)    # forget all about this cursor
+
     end
 
     render_partial
@@ -1857,10 +1870,34 @@ oradebug setorapname diag
     @adr_home       = prepare_param(:adr_home)
     @trace_filename = prepare_param(:trace_filename)
     @con_id         = prepare_param(:con_id)
+    @parse_line_no  = prepare_param :parse_line_no
+    @sql_id         = prepare_param :sql_id
     @line_number    = prepare_param_int :line_number
     @cursor_id      = prepare_param :cursor_id
 
-    content = sql_select_all [ "WITH lines AS (SELECT *
+    if @parse_line_no
+      content = sql_select_all [ "WITH lines AS (SELECT *
+                                               FROM   gv$Diag_Trace_File_Contents
+                                               WHERE  Inst_ID        = ?
+                                               AND    ADR_Home       = ?
+                                               AND    Trace_FileName = ?
+                                               AND    Con_ID         = ?
+                                               AND    Line_Number    >= ?
+                                               AND    Line_Number    < ?
+                                              ),
+                                     end_line AS (SELECT MIN(l.Line_Number) Line_Number
+                                                  FROM   Lines l
+                                                  WHERE  l.Line_Number > ?
+                                                  AND  Payload LIKE 'END OF STMT%'
+                                                 )
+                                SELECT l.Line_Number, l.Payload
+                                FROM   Lines l
+                                CROSS JOIN end_line
+                                WHERE  l.Line_Number > ?
+                                AND    l.Line_Number < end_line.line_number
+                               ", @instance, @adr_home, @trace_filename, @con_id, @parse_line_no, @line_number, @parse_line_no, @parse_line_no]
+    else
+      content = sql_select_all [ "WITH lines AS (SELECT *
                                                FROM   gv$Diag_Trace_File_Contents
                                                WHERE  Inst_ID        = ?
                                                AND    ADR_Home       = ?
@@ -1885,6 +1922,7 @@ oradebug setorapname diag
                                 WHERE  l.Line_Number > start_line.line_number
                                 AND    l.Line_Number < end_line.line_number
                                ", @instance, @adr_home, @trace_filename, @con_id, @line_number]
+    end
     result = ''
     content.each do |rec|
       result << rec.payload

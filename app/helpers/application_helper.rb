@@ -249,7 +249,8 @@ module ApplicationHelper
     when :days    then timestamp.strftime(strftime_format_with_days)
     when :seconds then timestamp.strftime(strftime_format_with_seconds)
     when :minutes then timestamp.strftime(strftime_format_with_minutes)
-    when :fractions then timestamp.strftime(strftime_format_with_fractions)
+    when :fractions3 then timestamp.strftime(strftime_format_with_fractions3)
+    when :fractions6 then timestamp.strftime(strftime_format_with_fractions6)
     else
       raise "Unknown parameter format = #{format} in localeDateTime"
     end

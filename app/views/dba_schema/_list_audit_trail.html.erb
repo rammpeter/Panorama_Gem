@@ -22,7 +22,7 @@
 
   column_options =
   [
-    {:caption=> 'Time',              :data=>proc{|rec| localeDateTime(rec.extended_timestamp, :fractions)},  :title=> 'Timestamp of recorded action'},
+    {:caption=> 'Time',              :data=>proc{|rec| localeDateTime(rec.extended_timestamp, :fractions6)},  :title=> 'Timestamp of recorded action'},
     {:caption=> 'Audit type',        :data=>proc{|rec| rec.audit_type},                          :title=> 'Type of audit record source'},
     {:caption=> 'Machine',           :data=>proc{|rec| link_machine_ip_info(@update_area, rec.userhost)},      :title=> 'Client machine'},
     {:caption=> 'OS-User',           :data=>proc{|rec| rec.os_user},                             :title=> 'Client OS user name'},
