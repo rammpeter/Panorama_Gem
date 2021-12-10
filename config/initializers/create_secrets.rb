@@ -1,4 +1,5 @@
-require '../../app/helpers/env_helper'
+require_relative '../../app/helpers/env_helper'                                 # requires so that path is still valid if engine is used in other project
+
 # create secrets for encryption
 
 secrets_file = File.join(Rails.root, 'config', 'secrets.yml')
