@@ -1,9 +1,9 @@
 # Activate background-processing for Panorama-Sampler
 
 require_relative '../../config/engine_config'
-require '../../app/jobs/connection_terminate_job'
-require '../../app/jobs/initialization_job'
-require '../../app/jobs/panorama_sampler_job'
+require_relative '../../app/jobs/connection_terminate_job'
+require_relative '../../app/jobs/initialization_job'
+require_relative '../../app/jobs/panorama_sampler_job'
 
 # Wait async to proceed rails startup before first job execution
 
