@@ -1,4 +1,6 @@
 require 'panorama_sampler_config'
+require 'application_job'
+require_relative '../helpers/exception_helper'
 
 class PanoramaSamplerJob < ApplicationJob
   include ExceptionHelper

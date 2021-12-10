@@ -1,3 +1,4 @@
+require '../../app/helpers/env_helper'
 # create secrets for encryption
 
 secrets_file = File.join(Rails.root, 'config', 'secrets.yml')

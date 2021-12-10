@@ -1,3 +1,6 @@
+require 'application_job'
+require_relative '../helpers/exception_helper'
+
 class ConnectionTerminateJob < ApplicationJob
   include ExceptionHelper
 

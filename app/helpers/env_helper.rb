@@ -4,6 +4,8 @@ require "zlib"
 require 'encryption'
 require 'java'
 require_relative '../../config/engine_config'
+require 'database_helper'
+require 'env_extension_helper'
 
 module EnvHelper
   include DatabaseHelper
