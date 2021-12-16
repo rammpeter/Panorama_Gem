@@ -90,7 +90,7 @@
       controller:     :active_session_history,
       action:         :list_session_statistic_historic_grouping,
       update_area:    @update_area,
-      groupby:        'Session/Sn.',
+      groupby:        'SQL-ID',
       groupfilter:    {
         'SQL-ID'.to_sym =>    rec.sql_id,
         DBID:                 @dbid,
