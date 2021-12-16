@@ -23,14 +23,15 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   # s.add_dependency "rails", "6.1.3"
 
   # Alternative instead of complete rails including actioncable etc., prev. version was 6.0.4
-  s.add_dependency  "activerecord",   "6.1.4.1"
-  s.add_dependency  "activemodel",    "6.1.4.1"
-  s.add_dependency  "actionpack",     "6.1.4.1"
-  s.add_dependency  "actionview",     "6.1.4.1"
-  s.add_dependency  "actionmailer",   "6.1.4.1"
-  s.add_dependency  "activejob",      "6.1.4.1"
-  s.add_dependency  "activesupport",  "6.1.4.1"
-  s.add_dependency  "railties",       "6.1.4.1"
+  rails_version = "6.1.4.2"
+  s.add_dependency  "activerecord",   rails_version
+  s.add_dependency  "activemodel",    rails_version
+  s.add_dependency  "actionpack",     rails_version
+  s.add_dependency  "actionview",     rails_version
+  s.add_dependency  "actionmailer",   rails_version
+  s.add_dependency  "activejob",      rails_version
+  s.add_dependency  "activesupport",  rails_version
+  s.add_dependency  "railties",       rails_version
 
   s.add_dependency 'activerecord-nulldb-adapter'
   s.add_dependency 'activerecord-oracle_enhanced-adapter'     
