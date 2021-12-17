@@ -21,6 +21,26 @@
       "note": "Uses params for redirect only"
     },
     {
+      "warning_type": "Command Injection",
+      "warning_code": 14,
+      "fingerprint": "449695c5a4eb46b0bb6abf702da26fb88c5f9af667f077cc2bf4443323a0c7e9",
+      "check_name": "Execute",
+      "message": "Possible command injection",
+      "file": "app/helpers/exception_helper.rb",
+      "line": 48,
+      "link": "https://brakemanscanner.org/docs/warning_types/command_injection/",
+      "code": "` #{\"cat /proc/meminfo 2>/dev/null | grep #{key_linux}\"} `",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "ExceptionHelper",
+        "method": "s(:self).gb_value_from_proc"
+      },
+      "user_input": "key_linux",
+      "confidence": "Medium",
+      "note": ""
+    },
+    {
       "warning_type": "Mass Assignment",
       "warning_code": 70,
       "fingerprint": "81bf6ebc381db4d75c3982b806798daf222631e144168b3529baae8a11cdb984",
@@ -81,6 +101,26 @@
       "note": ""
     },
     {
+      "warning_type": "Command Injection",
+      "warning_code": 14,
+      "fingerprint": "c3c829b05c992677158978ee25cb10469704dfc423023175fa70b538cfcf4d9e",
+      "check_name": "Execute",
+      "message": "Possible command injection",
+      "file": "app/helpers/exception_helper.rb",
+      "line": 52,
+      "link": "https://brakemanscanner.org/docs/warning_types/command_injection/",
+      "code": "` #{\"sysctl -a | grep '#{key_darwin}'\"} `",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "ExceptionHelper",
+        "method": "s(:self).gb_value_from_proc"
+      },
+      "user_input": "key_darwin",
+      "confidence": "Medium",
+      "note": ""
+    },
+    {
       "warning_type": "Mass Assignment",
       "warning_code": 70,
       "fingerprint": "c92f90edcaff7c06fade1082a5373e7984c532da649540f98a3416a018b2f1bd",
@@ -121,6 +161,6 @@
       "note": "Uses params for redirect only"
     }
   ],
-  "updated": "2021-12-01 15:38:26 +0100",
-  "brakeman_version": "5.1.2"
+  "updated": "2021-12-17 10:34:39 +0100",
+  "brakeman_version": "5.2.0"
 }
