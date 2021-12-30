@@ -80,7 +80,7 @@ class EnvController < ApplicationController
     end
     result << "</select>"
 
-    result << "<input type='text' id='#{target_object}_filter' title='#{t(:combobox_filter_title, default: 'Filter for selection list')}' style='margin-left:4px; width: 10%;'>"
+    result << "<input type='search' placeholder='Filter' id='#{target_object}_filter' title='#{t(:combobox_filter_title, default: 'Filter for selection list')}' style='margin-left:4px; width: 12%;'>"
 
     result << "<script type='application/javascript'>$(function(){ initialize_combobox_filter('#{target_object}_tns', '#{target_object}_filter'); })</script>"
 

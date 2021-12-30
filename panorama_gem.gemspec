@@ -23,7 +23,7 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   # s.add_dependency "rails", "6.1.3"
 
   # Alternative instead of complete rails including actioncable etc., prev. version was 6.0.4
-  rails_version = "6.1.4.2"
+  rails_version = "6.1.4.4"
   s.add_dependency  "activerecord",   rails_version
   s.add_dependency  "activemodel",    rails_version
   s.add_dependency  "actionpack",     rails_version
