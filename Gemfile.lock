@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    panorama_gem (2.11.07)
+    panorama_gem (2.11.08)
       actionmailer (= 6.1.4.4)
       actionpack (= 6.1.4.4)
       actionview (= 6.1.4.4)
@@ -165,7 +165,7 @@ GEM
       selenium-webdriver (~> 4.0)
     xpath (3.2.0)
       nokogiri (~> 1.8)
-    zeitwerk (2.5.2)
+    zeitwerk (2.5.3)
 
 PLATFORMS
   universal-java-17
