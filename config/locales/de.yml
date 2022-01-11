@@ -1726,6 +1726,22 @@
   dragnet_helper_164_param_2_hint:                          Maximale Anzahl eindeutiger Werte für die Spalte um als potentieller Partition-Key betrachtet zu werden
   dragnet_helper_164_param_2_name:                          Maximale Anzahl eindeutiger Werte für die Spalte
 
+  dragnet_helper_165_desc: |-
+    Automatic list partitiong (verfügbar ab Rel. 12.2) ist ein einfacher Weg die Datenmenge für Full Table Scans zu reduzieren mit wenig Aufwand und geringem Risiko.
+    Diese Selektion zeigt Tabellen- bzw. Indexzugriff durch SQL mit Filterung durch Spalten mit einer starken Selektivität, sortiert nach der Laufzeit der Operation.
+    Auto list partitioning kann gewählt werden für Tabellen, wenn die geringe und stabile Zahl der distinct values für diese Filterspalte die gleiche Anzahl an Partitionen zulässt.
+    Mehrere Spalten können kombiniert werden als Partition-Keys, so ist oft keine Notwendigkeit mehr für Sub-Partitionierung gegeben.
+      Auto list partitioning hilft:
+    - Die Menge an verarbeiteten DB-Blöcken bei Full Table Scan zu reduzieren
+    - Indizes zu entfernen auf den potentiellen Partition-Keys
+    - Indizes zu reduzieren um die potentiellen Partition-Keys als führende Spalten (kombiniert mit LOCAL-Partitionierung des Index)
+  dragnet_helper_165_name:                                  Empfehlungen für automatic LIST partitioning
+  dragnet_helper_165_param_1_name:                          Max. akzeptierte Anzahl Partitionen je Tabelle
+  dragnet_helper_165_param_1_hint:                          Maximale Anzahl Partitionen je Tabelle akzeptiert für dieses System. Nur Spalten mit weniger distinct values werden betrachtet.
+  dragnet_helper_165_param_2_name:                          Minimale Wartezeit je Operation(Sekunden)
+  dragnet_helper_165_param_2_hint:                          Minimale Wartezeit je Operation in Sekunden um in Selektion berücksichtigt zu werden. Berechnet aus ASH pro Zeile des Execution Plan.
+
+
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 
   dragnet_show_personal_selection_form_caption:             Erweitern der Rasterfahndungs-SQLs um persönliche Abfragen

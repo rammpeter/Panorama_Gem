@@ -267,6 +267,76 @@ ORDER BY x.Waiting_Secs DESC
             {:name=>t(:dragnet_helper_164_param_2_name, :default=>'Maximum number of dictinct values for column'), :size=>8, :default=>4000, title: t(:dragnet_helper_164_param_2_hint, :default=>'Maximum number of distinct values for column to be considered as possible partition key') },
           ]
         },
+        {
+          :name  => t(:dragnet_helper_165_name, :default=> 'Recommendations for automatic LIST partitioning'),
+          :desc  => t(:dragnet_helper_165_desc, :default=> "\
+Automatic list partitiong (available from Rel. 12.2) is an easy way to reduce the data amount for full table scans with low effort and tiny impact.
+This selection shows table or index access by SQL with filtering by columns with strong selectivity ordered by the runtime of the operation.
+You may choose auto list partitioning for this tables if the low and stable number of distinct values for this filter columns allows to have the same number of partitions.
+Multiple columns can be combined as partition keys, so often there is no need for subpartitioning in this case.
+Auto list partitioning helps to:
+- reduce the amount of processed DB blocks at full table scan
+- remove indexes on potential partition key columns
+- reduce index columns by potential partition key columns as leading columns (combined with LOCAL partitioning of this indexes)
+"),
+          :sql=> "\
+WITH Indexes AS     (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name
+                     FROM   DBA_Indexes
+                     WHERE  Owner NOT IN (SELECT /*+ NO_MERGE */ UserName FROM All_Users WHERE Oracle_Maintained = 'Y')
+                    ),
+     Tables  AS     (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Num_Rows
+                     FROM   DBA_Tables
+                     WHERE  Owner NOT IN (SELECT /*+ NO_MERGE */ UserName FROM All_Users WHERE Oracle_Maintained = 'Y')
+                    ),
+     Ind_and_Tab AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner Object_Owner, Table_Name Object_Name, Owner Table_Owner, Table_Name, Num_Rows
+                     FROM   Tables
+                     UNION ALL
+                     SELECT i.Owner Object_Owner, i.Index_Name Object_Name, i.Table_Owner, i.Table_Name, t.Num_Rows
+                     FROM  Indexes i
+                     JOIN  Tables t ON t.Owner = i.Table_Owner AND t.Table_Name = i.Table_Name
+                    ),
+     Plans   AS     (SELECT /*+ NO_MERGE MATERIALIZE */ DISTINCT SQL_ID, Plan_Hash_Value, ID, Operation, Options, Object_Owner, Object_Name, Access_Predicates, Filter_Predicates,
+                            SUBSTR(UPPER(Access_Predicates), 1, 1500)||' '||SUBSTR(UPPER(Filter_Predicates), 1, 1500) Upper_Predicates
+                     FROM   gv$SQL_PLan p
+                     WHERE  Access_Predicates IS NOT NULL OR Filter_Predicates IS NOT NULL
+                    ),
+     Tab_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ tc.Owner, tc.Table_Name, tc.Column_Name, tc.Data_Type, tc.Num_Distinct, tc.Num_Nulls
+                     FROM   DBA_Tab_Columns tc
+                     LEFT OUTER JOIN DBA_Part_Key_Columns pc ON pc.Owner = tc.Owner AND pc.Name = tc.Table_Name AND pc.Column_Name = tc.Column_Name
+                     WHERE  tc.Owner NOT IN (SELECT /*+ NO_MERGE */ UserName FROM All_Users WHERE Oracle_Maintained = 'Y')
+                     AND    pc.Column_Name IS NULL /* Don't show colums that are already used as partition key */
+                     AND    tc.Num_Distinct + tc.Num_Nulls > 1 /* There should be more than 1 partition in result */
+                     AND    tc.Num_Distinct < ?
+                    ),
+     Load AS        (SELECT /*+ NO_MERGE MATERIALIZE */ SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID, COUNT(*) Wait_Seconds
+                     FROM   gv$Active_Session_History
+                     GROUP BY SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID
+                     HAVING COUNT(*) > ?
+                    ),
+     Part_Keys AS   (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Name Table_Name, LISTAGG(Column_Name, ',') WITHIN GROUP (ORDER BY Column_Position) Partition_Keys
+                     FROM   DBA_Part_Key_Columns
+                     WHERE  Owner NOT IN (SELECT /*+ NO_MERGE */ UserName FROM All_Users WHERE Oracle_Maintained = 'Y')
+                     GROUP BY Owner, Name
+                    )
+SELECT /*+ LEADING(p l t tc pc) USE_HASH(p l t tc pc) OPT_PARAM('_bloom_filter_enabled' 'false')*/
+       p.SQL_ID, p.Plan_Hash_Value \"Plan Hash Value\", p.ID \"Plan Line ID\", t.Table_Owner, t.Table_Name, t.Num_Rows,
+       pc.Partition_Keys \"Already Used Partition Keys\", tc.Column_Name \"Filter Column from SQL\",
+       tc.Num_Distinct \"Distinct values of column\", tc.Num_Nulls \"Nulls\",
+       l.Wait_Seconds \"Waited seconds\",
+       p.Operation||' '||p.Options Operation, p.Access_Predicates, p.Filter_Predicates
+FROM   Plans p
+JOIN   Load l                 ON l.SQL_ID = p.SQL_ID AND l.SQL_Plan_Hash_Value = p.Plan_Hash_Value AND l.SQL_Plan_Line_ID = p.ID
+JOIN   Ind_and_Tab t          ON t.Object_Owner = p.Object_Owner AND t.Object_Name = p.Object_Name
+JOIN   Tab_Columns tc         ON tc.Owner = t.Table_Owner AND tc.Table_Name = t.Table_Name
+LEFT OUTER JOIN Part_Keys pc  ON pc.Owner = t.Table_Owner AND pc.Table_Name = t.Table_Name
+WHERE  Regexp_LIKE(p.Upper_Predicates, '(^|=|\\+|-| |\")'||tc.Column_Name||'($|=|\\+|-| |\")')
+ORDER BY l.Wait_Seconds DESC
+          ",
+          :parameter=>[
+            {:name=>t(:dragnet_helper_165_param_1_name, :default=>'Max. accepted number of partitions per table '), :size=>8, :default=>10000, title: t(:dragnet_helper_165_param_1_hint, :default=>'Maximum number of partitions per table accepted for this system. Only columns with less distinct values are considered') },
+            {:name=>t(:dragnet_helper_165_param_2_name, :default=>'Minimum wait time for operation (seconds)'), :size=>8, :default=>60, title: t(:dragnet_helper_165_param_2_hint, :default=>'Minimum wait time for operation in seconds to be considered in selection. Calculated from ASH for particular execution plan line.') },
+          ]
+        },
     ]
   end # partitioning
 
