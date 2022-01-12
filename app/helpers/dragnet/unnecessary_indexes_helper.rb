@@ -166,34 +166,48 @@ If none of the four reasons really requires the existence, the index can be remo
 "),
             :sql=> "
                     WITH Constraints AS        (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Constraint_Type, Table_Name, R_Owner, R_Constraint_Name FROM DBA_Constraints),
-                         Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Num_Rows, Last_Analyzed, Uniqueness, Index_Type, Tablespace_Name, Prefix_Length, Compression, Distinct_Keys
+                         Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Num_Rows, Last_Analyzed, Uniqueness, Index_Type, Tablespace_Name, Prefix_Length, Compression, Distinct_Keys, Partitioned
                                      FROM   DBA_Indexes
+                                     WHERE  Owner NOT IN (#{system_schema_subselect})
                                     ),
-                         Ind_Columns AS        (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Table_Owner, Table_Name, Column_name, Column_Position FROM DBA_Ind_Columns),
+                         Ind_Columns AS        (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Table_Owner, Table_Name, Column_name, Column_Position, Column_Length
+                                                FROM DBA_Ind_Columns
+                                                WHERE  Index_Owner NOT IN (#{system_schema_subselect})
+                                               ),
                          Ind_Columns_Group AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name,
                                                        LISTAGG(Column_name, ', ') WITHIN GROUP (ORDER BY Column_Position) Columns
-                                                FROM   DBA_Ind_Columns
+                                                FROM   Ind_Columns
                                                 GROUP BY Index_Owner, Index_Name),
-                         Cons_Columns AS       (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Column_name, Position, Constraint_Name, COUNT(*) OVER (PARTITION BY Owner, Table_Name, Constraint_Name) Column_Count FROM DBA_Cons_Columns),
-                         Tables AS             (SELECT /*+ NO_MERGE MATERIALIZE */  Owner, Table_Name, Num_Rows, Last_analyzed, IOT_Type FROM DBA_Tables),
-                         Tab_Modifications AS  (SELECT /*+ NO_MERGE MATERIALIZE */  Table_Owner, Table_Name, Inserts, Updates, Deletes FROM DBA_Tab_Modifications WHERE Partition_Name IS NULL /* Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen */),
+                         Cons_Columns AS       (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Column_name, Position, Constraint_Name, COUNT(*) OVER (PARTITION BY Owner, Table_Name, Constraint_Name) Column_Count
+                                                FROM DBA_Cons_Columns
+                                                WHERE  Owner NOT IN (#{system_schema_subselect})
+                                               ),
+                         Tables AS             (SELECT /*+ NO_MERGE MATERIALIZE */  Owner, Table_Name, Num_Rows, Last_analyzed, IOT_Type, Partitioned
+                                                FROM DBA_Tables
+                                                WHERE  Owner NOT IN (#{system_schema_subselect})
+                                               ),
+                         Tab_Modifications AS  (SELECT /*+ NO_MERGE MATERIALIZE */  Table_Owner, Table_Name, Inserts, Updates, Deletes
+                                                FROM DBA_Tab_Modifications
+                                                WHERE Partition_Name IS NULL /* Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen */
+                                                AND   Table_Owner NOT IN (#{system_schema_subselect})
+                                               ),
                          PE_Tables AS (SELECT /*+ NO_MERGE MATERIALIZE */ tc.Owner, tc.Table_Name, COUNT(*) Columns,
                                               SUM(ORA_HASH(tc.Data_Type) * tc.Column_ID * tc.Data_Length *
                                               NVL(tc.Data_Precision,1) * NVL(DECODE(tc.Data_Scale, 0, -1, tc.Data_Scale),1)) Structure_Hash
                                        FROM   DBA_Tab_Columns tc
-                                       JOIN   DBA_Tables t ON t.Owner = tc.Owner AND t.Table_Name = tc.Table_Name /* exclude views */
+                                       JOIN   Tables t ON t.Owner = tc.Owner AND t.Table_Name = tc.Table_Name /* exclude views */
                                        WHERE  tc.Owner NOT IN (#{system_schema_subselect})
                                        GROUP BY tc.Owner, tc.Table_Name
                                       ),
                          PE_Part_Tables AS (SELECT /*+ NO_MERGE MATERIALIZE */ t.Owner, t.Table_Name, t.Partitioned
-                                            FROM   DBA_Tables t
+                                            FROM   Tables t
                                             WHERE  t.Partitioned = 'YES'
                                             AND    t.Owner NOT IN (#{system_schema_subselect})
-                                            AND NOT EXISTS (SELECT 1 FROM DBA_Indexes i WHERE i.Table_Owner = t.Owner AND i.Table_Name = t.Table_Name AND i.Partitioned = 'NO')
+                                            AND NOT EXISTS (SELECT 1 FROM Indexes i WHERE i.Table_Owner = t.Owner AND i.Table_Name = t.Table_Name AND i.Partitioned = 'NO')
                                            ),
                          PE_Indexes as (SELECT /*+ NO_MERGE MATERIALIZE */ ic.Table_Owner, ic.Table_Name, COUNT(DISTINCT ic.Index_Name) Indexes, COUNT(*) Ind_Columns,
                                                SUM(ic.Column_Position * ic.Column_Length ) Structure_Hash
-                                        FROM   DBA_Ind_Columns ic
+                                        FROM   Ind_Columns ic
                                         GROUP BY ic.Table_Owner, ic.Table_Name
                                        ),
                          PE_Result_Tables AS (SELECT /*+ NO_MERGE MATERIALIZE */ t.Owner, t.Table_Name,
@@ -219,8 +233,41 @@ If none of the four reasons really requires the existence, the index can be remo
                                                                      AND t.Columns               = p.Columns
                                                                      AND t.Indexes               = p.Indexes
                                                                      AND t.Ind_Columns           = p.Ind_Columns
-                                           )
-                    SELECT /*+ USE_HASH(u i t ic icg cc uc c seg pec) */ u.Owner, u.Table_Name, u.Index_Name,
+                                           ),
+                         I_Object_Usage AS (
+#{
+              if get_db_version >= '12.1'
+                "
+                            SELECT /*+ NO_MERGE MATERIALIZE */ ou.Owner, ou.Index_Name, ou.Table_Name, ou.Monitoring, ou.Used,
+                                   TO_DATE(ou.Start_Monitoring, 'MM/DD/YYYY HH24:MI:SS') \"Start monitoring\",
+                                   TO_DATE(ou.End_Monitoring, 'MM/DD/YYYY HH24:MI:SS')   \"End monitoring\"
+                            FROM   DBA_Object_Usage ou
+                            CROSS JOIN (SELECT UPPER(?) Name FROM DUAL) schema
+                            WHERE  TO_DATE(ou.Start_Monitoring, 'MM/DD/YYYY HH24:MI:SS') < SYSDATE-?
+                            AND    (schema.name IS NULL OR schema.Name = ou.Owner)
+                            AND    ou.Used='NO' AND ou.Monitoring='YES'
+    "
+              else
+                "
+                            SELECT /*+ NO_MERGE MATERIALIZE */ u.UserName Owner, io.name Index_Name, t.name Table_Name,
+                                   decode(bitand(i.flags, 65536), 0, 'NO', 'YES') Monitoring,
+                                   decode(bitand(ou.flags, 1), 0, 'NO', 'YES') Used,
+                                   TO_DATE(ou.Start_Monitoring, 'MM/DD/YYYY HH24:MI:SS') \"Start monitoring\",
+                                   TO_DATE(ou.End_Monitoring, 'MM/DD/YYYY HH24:MI:SS')   \"End monitoring\"
+                            FROM   sys.object_usage ou
+                            JOIN   sys.ind$ i  ON i.obj# = ou.obj#
+                            JOIN   sys.obj$ io ON io.obj# = ou.obj#
+                            JOIN   sys.obj$ t  ON t.obj# = i.bo#
+                            JOIN   DBA_Users u ON u.User_ID = io.owner#  --
+                            CROSS JOIN (SELECT UPPER(?) Name FROM DUAL) schema
+                            WHERE  TO_DATE(ou.Start_Monitoring, 'MM/DD/YYYY HH24:MI:SS') < SYSDATE-?
+                            AND    (schema.name IS NULL OR schema.Name = u.UserName)
+                            AND    decode(bitand(ou.flags, 1), 0, 'NO', 'YES') = 'NO'
+                            AND    decode(bitand(i.flags, 65536), 0, 'NO', 'YES') = 'YES'
+    "
+              end
+}                           )
+                    SELECT /*+ NOPARALLEL USE_HASH(u i t ic icg cc uc c seg pec) OPT_PARAM('_bloom_filter_enabled' 'false') */ u.Owner, u.Table_Name, u.Index_Name,
                            icg.Columns                                                                \"Index Columns\",
                            u.\"Start monitoring\",
                            ROUND(NVL(u.\"End monitoring\", SYSDATE)-u.\"Start monitoring\", 1) \"Days without usage\",
@@ -241,21 +288,7 @@ If none of the four reasons really requires the existence, the index can be remo
                            u.\"End monitoring\",
                            i.Index_Type,
                            t.IOT_Type                                                                 \"IOT Type\"
-                    FROM   (
-                            SELECT /*+ NO_MERGE */ u.UserName Owner, io.name Index_Name, t.name Table_Name,
-                                   decode(bitand(i.flags, 65536), 0, 'NO', 'YES') Monitoring,
-                                   decode(bitand(ou.flags, 1), 0, 'NO', 'YES') Used,
-                                   TO_DATE(ou.Start_Monitoring, 'MM/DD/YYYY HH24:MI:SS') \"Start monitoring\",
-                                   TO_DATE(ou.End_Monitoring, 'MM/DD/YYYY HH24:MI:SS')   \"End monitoring\"
-                            FROM   sys.object_usage ou
-                            JOIN   sys.ind$ i  ON i.obj# = ou.obj#
-                            JOIN   sys.obj$ io ON io.obj# = ou.obj#
-                            JOIN   sys.obj$ t  ON t.obj# = i.bo#
-                            JOIN   DBA_Users u ON u.User_ID = io.owner#  --
-                            CROSS JOIN (SELECT UPPER(?) Name FROM DUAL) schema
-                            WHERE  TO_DATE(ou.Start_Monitoring, 'MM/DD/YYYY HH24:MI:SS') < SYSDATE-?
-                            AND    (schema.name IS NULL OR schema.Name = u.UserName)
-                           )u
+                    FROM   I_Object_Usage u
                     JOIN Indexes i                        ON i.Owner = u.Owner AND i.Index_Name = u.Index_Name AND i.Table_Name=u.Table_Name
                     JOIN Tables t                         ON t.Owner = i.Table_Owner AND t.Table_Name = i.Table_Name
                     LEFT OUTER JOIN Ind_Columns ic        ON ic.Index_Owner = u.Owner AND ic.Index_Name = u.Index_Name AND ic.Column_Position = 1
@@ -286,8 +319,7 @@ If none of the four reasons really requires the existence, the index can be remo
                          ) seg ON seg.Owner = u.Owner AND seg.Segment_Name = u.Index_Name
                     LEFT OUTER JOIN PE_Candidates pec ON pec.Owner = i.Table_Owner AND pec.Table_Name = i.Table_Name
                     CROSS JOIN (SELECT ? value FROM DUAL) Max_DML
-                    WHERE u.Used='NO' AND u.Monitoring='YES'
-                    AND   (cc.r_Num_Rows IS NULL OR cc.r_Num_Rows < ?)
+                    WHERE (cc.r_Num_Rows IS NULL OR cc.r_Num_Rows < ?)
                     AND   (? = 'YES' OR i.Uniqueness != 'UNIQUE')
                     AND   (Max_DML.Value IS NULL OR NVL(cc.Inserts + cc.Updates + cc.Deletes, 0) < Max_DML.Value)
                     ORDER BY seg.MBytes DESC NULLS LAST
@@ -317,16 +349,27 @@ Index usage can be evaluated than via v$Object_Usage or with previous selection.
                     LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name
                                     ) seg ON seg.Owner = i.Owner AND seg.Segment_Name = i.Index_Name
                     LEFT OUTER JOIN (
+#{
+              if get_db_version >= '12.1'
+                "
+                                      SELECT Owner, Index_Name
+                                      FROM   DBA_Object_Usage ou
+    "
+              else
+"
                                       SELECT /*+ NO_MERGE */ u.UserName Owner, io.name Index_Name
                                       FROM   sys.object_usage ou
                                       JOIN   sys.ind$ i  ON i.obj# = ou.obj#
                                       JOIN   sys.obj$ io ON io.obj# = ou.obj#
                                       JOIN   DBA_Users u ON u.User_ID = io.owner#
-                                    ) u ON u.Owner = i.Owner AND u.Index_Name = i.Index_Name
+"
+              end
+            }                                    ) u ON u.Owner = i.Owner AND u.Index_Name = i.Index_Name
                     LEFT OUTER JOIN DBA_Objects o ON o.Owner = i.Owner AND o.Object_Name = i.Index_Name AND o.Object_Type = 'INDEX'
                     CROSS JOIN (SELECT ? Schema FROM DUAL) s
                     WHERE u.Owner IS NULL AND u.Index_Name IS NULL
                     AND   i.Owner NOT IN (#{system_schema_subselect})
+                    AND   i.Index_Type != 'IOT - TOP'
                     AND   seg.MBytes > ?
                     AND   (s.Schema IS NULL OR i.Owner = UPPER(s.Schema))
                     ORDER BY seg.MBytes DESC NULLS LAST
