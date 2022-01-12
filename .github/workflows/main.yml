@@ -1,3 +1,16 @@
+# GitHub action recipe
+# preconditions:
+#   - Install Google Chrome:
+#     > wget "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
+#     > yum install liberation-fonts libXScrnSaver.x86_64 libappindicator-gtk3.x86_64 vulkan libgbm xdg-utils alsa-lib nspr nss
+#     > rpm -i google-chrome-stable_current_x86_64.rpm
+#   - Install jRuby
+#     > curl -sSL https://get.rvm.io | bash
+#     > source $HOME/.rvm/scripts/rvm
+#     > rvm install ${JRUBY_VERSION}
+#     > rvm --default use ${JRUBY_VERSION}
+#     > gem install bundler
+
 name: Panorama_Gem CI
 
 on: [push]
@@ -26,25 +39,9 @@ jobs:
         docker images
         java -version
 
-    - name: Set up RVM
-      run: |
-        curl -sSL https://get.rvm.io | bash
-
-    - name: Install JRuby
-      run: |
-        source $HOME/.rvm/scripts/rvm
-        rvm install ${JRUBY_VERSION}
-        rvm --default use ${JRUBY_VERSION}
-        gem install bundler
-        bundle --version
-
-    - name: Install Chrome
-      run: |
-        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        sudo dpkg -i google-chrome-stable_current_amd64.deb || apt-get -y -f install
-
     - name: bundle install
       run: |
+        bundle --version
         source $HOME/.rvm/scripts/rvm
         cd ${PANORAMA_PATH} && bundle install
 
