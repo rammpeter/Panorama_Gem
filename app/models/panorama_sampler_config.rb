@@ -113,6 +113,12 @@ class PanoramaSamplerConfig
       # Ensure using anonymous PL/SQL instead of package if user is system
       @config_hash[:select_any_table] = false if @config_hash[:user].upcase == 'SYSTEM' || @config_hash[:owner].upcase == 'SYSTEM'
       @config_hash[:select_any_table] = true if @config_hash[:user].upcase == 'SYS' # no DBA_Sys_Privs exists for SYS
+
+      if @config_hash[:select_any_table]
+        Rails.logger.debug("Panorama-Sampler PL/SQL used as Packages because acccess on V$-tables is possible in packages for user '#{@config_hash[:user]}'")
+      else
+        Rails.logger.debug("Panorama-Sampler PL/SQL used as anonymous PL/SQL because no acccess on V$-tables is possible in packages for user '#{@config_hash[:user]}'")
+      end
     end
     @config_hash[:select_any_table]
   end
