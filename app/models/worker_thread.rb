@@ -87,6 +87,7 @@ class WorkerThread
         PanoramaConnection.sql_execute "DROP TABLE #{@sampler_config.get_owner}.#{check_table_name}"  # drop table if remaining from former test
       end
       PanoramaConnection.sql_execute "CREATE TABLE #{@sampler_config.get_owner}.#{check_table_name}(ID NUMBER)"
+      PanoramaConnection.sql_execute "INSERT INTO #{@sampler_config.get_owner}.#{check_table_name} VALUES (1)"  # Check if quota exists for tablespace at deferred extent allocation
       PanoramaConnection.sql_execute "DROP TABLE #{@sampler_config.get_owner}.#{check_table_name}"
 
       controller.add_statusbar_message("Trial connect to '#{@sampler_config.get_name}' successful")
