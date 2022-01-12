@@ -26,7 +26,8 @@ jobs:
     env:
       JRUBY_VERSION: jruby-9.3.2.0
       # Panorama dir after git clone
-      PANORAMA_PATH: /home/runner/work/Panorama_Gem/Panorama_Gem
+      # PANORAMA_PATH: /home/runner/work/Panorama_Gem/Panorama_Gem
+      PANORAMA_PATH: /home/pramm/actions-runner/_work/Panorama_Gem
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
 
     steps:
