@@ -1,5 +1,8 @@
 # GitHub action recipe
 # preconditions:
+#   - Install Java
+#     > wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.rpm
+#     > rpm -Uvh jdk-17_linux-x64_bin.rpm && rm jdk-17_linux-x64_bin.rpm
 #   - Install Google Chrome:
 #     > wget "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
 #     > yum install liberation-fonts libXScrnSaver.x86_64 libappindicator-gtk3.x86_64 vulkan libgbm xdg-utils alsa-lib nspr nss
@@ -10,6 +13,7 @@
 #     > rvm install ${JRUBY_VERSION}
 #     > rvm --default use ${JRUBY_VERSION}
 #     > gem install bundler
+
 
 name: Panorama_Gem CI
 
