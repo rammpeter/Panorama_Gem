@@ -74,6 +74,7 @@ jobs:
         cd ${PANORAMA_PATH} && rake test
 
     - name: Archive test results
+      if: always()
       uses: actions/upload-artifact@v1
       with:
         name: test.log
