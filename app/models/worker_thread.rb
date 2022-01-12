@@ -81,8 +81,13 @@ class WorkerThread
       owner_exists = PanoramaConnection.sql_select_one ["SELECT COUNT(*) FROM All_Users WHERE UserName = ?", @sampler_config.get_owner.upcase]
       raise "Schema-owner #{@sampler_config.get_owner} does not exists in database" if owner_exists == 0
 
-      PanoramaConnection.sql_execute "CREATE TABLE #{@sampler_config.get_owner}.Panorama_Resource_Test(ID NUMBER)"
-      PanoramaConnection.sql_execute "DROP TABLE #{@sampler_config.get_owner}.Panorama_Resource_Test"
+      # Check if create table is allowed
+      check_table_name = 'Panorama_Resource_Test'
+      if PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM DBA_Tables WHERE Owner = ? AND Table_Name = ?", @sampler_config.get_owner, check_table_name]) > 0
+        PanoramaConnection.sql_execute "DROP TABLE #{@sampler_config.get_owner}.#{check_table_name}"  # drop table if remaining from former test
+      end
+      PanoramaConnection.sql_execute "CREATE TABLE #{@sampler_config.get_owner}.#{check_table_name}(ID NUMBER)"
+      PanoramaConnection.sql_execute "DROP TABLE #{@sampler_config.get_owner}.#{check_table_name}"
 
       controller.add_statusbar_message("Trial connect to '#{@sampler_config.get_name}' successful")
     end
