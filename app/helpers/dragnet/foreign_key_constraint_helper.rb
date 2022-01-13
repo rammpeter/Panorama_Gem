@@ -41,8 +41,8 @@ module Dragnet::ForeignKeyConstraintHelper
             :parameter=>[{:name=>t(:dragnet_helper_5_param_1_name, :default=> 'Min. no. of rows of referenced table'), :size=>8, :default=>1000, :title=>t(:dragnet_helper_5_param_1_hint, :default=> 'Minimum number of rows of referenced table') },]
         },
         {
-            :name  => t(:dragnet_helper_5_name, :default=> 'Non validated foreign key constraints'),
-            :desc  => t(:dragnet_helper_5_desc, :default=> 'Non validated foreign key constraints prevent the usage of some optimizer features like JOIN ELIMINATION.
+            :name  => t(:dragnet_helper_155_name, :default=> 'Non validated foreign key constraints'),
+            :desc  => t(:dragnet_helper_155_desc, :default=> 'Non validated foreign key constraints prevent the usage of some optimizer features like JOIN ELIMINATION.
 For full availability of all optimizer features foreign key constraints should be regularly validated.
 
 Missing validation can be effectively made up by temporary setting parallel degree for table:
@@ -64,8 +64,8 @@ AND    c.Owner NOT IN ('SYSTEM')
 ORDER BY t.Num_Rows DESC",
         },
         {
-          :name  => t(:dragnet_helper_5_name, :default=> 'Unnecessary primary keys without referencing foreign keys'),
-          :desc  => t(:dragnet_helper_5_desc, :default=> 'Primary key constraint including PK-index and PK-column may be obsolete and can be dropped if:
+          :name  => t(:dragnet_helper_162_name, :default=> 'Unnecessary primary keys without referencing foreign keys'),
+          :desc  => t(:dragnet_helper_162_desc, :default=> 'Primary key constraint including PK-index and PK-column may be obsolete and can be dropped if:
 - Purpose of this primary key is only technical nature (not ensuring business-driven uniqueness)
 - No foreign keys are referencing this primary key
 - No access occurs by using the primary key index
@@ -81,16 +81,27 @@ WITH Cons AS (SELECT /*+ NO_MERGE MATERIALIZE */ cc.Owner, cc.Constraint_Name, c
               HAVING COUNT(*) = 1
              ),
      RefCons AS (SELECT /*+ NO_MERGE  MATERIALIZE */ r_Owner, r_Constraint_Name FROM DBA_Constraints WHERE Constraint_Type = 'R'),
-     Usage AS (SELECT /*+ NO_MERGE  MATERIALIZE */ u.UserName Owner, io.name Index_Name, t.name Table_Name,
-               decode(bitand(i.flags, 65536), 0, 'NO', 'YES') Monitoring,
-               decode(bitand(ou.flags, 1), 0, 'NO', 'YES') Used,
-               ou.start_monitoring, ou.end_monitoring
-        FROM   sys.object_usage ou
-        JOIN   sys.ind$ i  ON i.obj# = ou.obj#
-        JOIN   sys.obj$ io ON io.obj# = ou.obj#
-        JOIN   sys.obj$ t  ON t.obj# = i.bo#
-        JOIN   DBA_Users u ON u.User_ID = io.owner#
-       )
+     Usage AS (
+#{
+   if get_db_version >= '12.1'
+     "
+                SELECT Owner, Index_Name, Table_Name, Monitoring, Used, Start_Monitoring, End_Monitoring
+                FROM   DBA_Object_Usage
+     "
+   else
+     "
+                SELECT /*+ NO_MERGE  MATERIALIZE */ u.UserName Owner, io.name Index_Name, t.name Table_Name,
+                       decode(bitand(i.flags, 65536), 0, 'NO', 'YES') Monitoring,
+                       decode(bitand(ou.flags, 1), 0, 'NO', 'YES') Used,
+                       ou.start_monitoring, ou.end_monitoring
+                FROM   sys.object_usage ou
+                JOIN   sys.ind$ i  ON i.obj# = ou.obj#
+                JOIN   sys.obj$ io ON io.obj# = ou.obj#
+                JOIN   sys.obj$ t  ON t.obj# = i.bo#
+                JOIN   DBA_Users u ON u.User_ID = io.owner#
+     "
+   end
+}              )
 SELECT c.Owner, c.Table_Name, c.Constraint_Name, c.Column_Name, c.Index_Name, i.Index_Type, i.Num_Rows, u.Start_Monitoring
 FROM   Cons c
 JOIN   DBA_Indexes i ON i.Owner = c.Index_Owner AND i.Index_Name = c.Index_name
