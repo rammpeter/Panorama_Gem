@@ -21,10 +21,10 @@ LEFT OUTER JOIN gv$Session s ON s.Inst_ID = p.QCInst_ID  AND s.SID=p.QCSID AND s
 ORDER BY p.PQ_Sessions DESC"
       },
       {
-        :name  => t(:dragnet_helper_160_name, :default=>'Active PQ sessions from Active Session History (ASH)'),
+        :name  => t(:dragnet_helper_160_name, :default=>'Active parallel query slave (PQ) sessions from Active Session History (ASH)'),
         :desc  => t(:dragnet_helper_160_desc, :default=>"This selection shows the number of active sessions from PQ servers"),
         :sql =>  "\
-SELECT x.*, u.UserName
+SELECT x.*, u.UserName Max_UserName
 FROM   (SELECT Start_Sample, MIN(Min_Sessions) Min_active_PQ_Sessions, MAX(Max_Sessions) Max_active_PQ_Sessions,
                MAX(Max_SQL_ID)  KEEP (DENSE_RANK LAST ORDER BY Max_SQLID_User_Sessions) Max_SQL_ID,
                MAX(Max_User_ID) KEEP (DENSE_RANK LAST ORDER BY Max_SQLID_User_Sessions) Max_User_ID,
@@ -37,11 +37,17 @@ FROM   (SELECT Start_Sample, MIN(Min_Sessions) Min_active_PQ_Sessions, MAX(Max_S
                 FROM   (
                         SELECT Instance_Number, Sample_Time, SQL_ID, User_ID, COUNT(*) Sessions
                         FROM   (
+                                WITH ASH_Time AS (SELECT /*+ NO_MERGE MATERIALIZE */ i.Inst_ID, NVL(Min_Sample_Time, SYSTIMESTAMP) Min_Sample_Time
+                                                  FROM   gv$Instance i
+                                                  LEFT OUTER JOIN (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time
+                                                                   FROM gv$Active_Session_History
+                                                                   GROUP BY Inst_ID
+                                                                  ) ash ON ash.Inst_ID = i.Inst_ID
+                                                 )
                                 SELECT /*+ NO_MERGE ORDERED */
                                        Instance_Number, Sample_Time, SQL_ID, User_ID
                                 FROM   DBA_Hist_Active_Sess_History s
-                                LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
-                                WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
+                                WHERE  s.Sample_Time < (SELECT Min_Sample_Time FROM Ash_Time a WHERE a.Inst_ID = s.Instance_Number)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen */
                                 AND    DBID = (SELECT DBID FROM v$Database) /* Suppress multiple occurrence of records in PDB environment */
                                 AND    QC_SESSION_ID IS NOT NULL
                                 UNION ALL

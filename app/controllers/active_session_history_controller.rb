@@ -228,12 +228,19 @@ class ActiveSessionHistoryController < ApplicationController
 
     # Mysteriös: LEFT OUTER JOIN per s.Current_Obj# funktioniert nicht gegen ALL_Objects, wenn s.PLSQL_Entry_Object_ID != NULL
     @sessions= sql_select_iterator(["\
-      WITH procs AS (SELECT /*+ NO_MERGE */ Object_ID, SubProgram_ID, Object_Type, Owner, Object_Name, Procedure_name FROM DBA_Procedures),
+      WITH procs AS (SELECT /*+ NO_MERGE MATERIALIZE */ Object_ID, SubProgram_ID, Object_Type, Owner, Object_Name, Procedure_name FROM DBA_Procedures),
+           ASH_Time AS (SELECT /*+ NO_MERGE MATERIALIZE */ i.Inst_ID, NVL(Min_Sample_Time, SYSTIMESTAMP) Min_Sample_Time
+                        FROM   gv$Instance i
+                        LEFT OUTER JOIN (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time
+                                         FROM gv$Active_Session_History
+                                         GROUP BY Inst_ID
+                                        ) ash ON ash.Inst_ID = i.Inst_ID
+                       ),
            ash AS  (SELECT /*+ NO_MERGE MATERIALIZE ORDERED */
                            10 Sample_Cycle, Instance_Number, #{rounded_sample_time_sql(10, 's.Sample_Time')} Rounded_Sample_Time, #{get_ash_default_select_list}
                     FROM   DBA_Hist_Active_Sess_History s
                     LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History  #{@sga_ash_where_string} GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
-                    WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen */
+                    WHERE  s.Sample_Time < (SELECT Min_Sample_Time FROM Ash_Time a WHERE a.Inst_ID = s.Instance_Number)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen */
                     #{@dba_hist_where_string}
                     UNION ALL
                     SELECT /*+ NO_MERGE */ 1 Sample_Cycle, Inst_ID Instance_Number, #{rounded_sample_time_sql(1)} Rounded_Sample_Time,#{get_ash_default_select_list}

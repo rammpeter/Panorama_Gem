@@ -1681,7 +1681,7 @@
   dragnet_helper_159_name:                                  Aktuelle Nutzung von Parallel Query durch PQ Koordinator-Sessions
 
   dragnet_helper_160_desc:                                  Diese Selection zeit die Anzahl aktiver Sessions von PQ-Servern
-  dragnet_helper_160_name:                                  Aktive PQ-Sessions aus Active Session History (ASH)
+  dragnet_helper_160_name:                                  Aktive Parallel Query Slave (PQ) Sessions aus Active Session History (ASH)
 
   dragnet_helper_161_desc: |-
     Exzessive Anzahlen von Logon-Operationen können signifikant CPU-Last verursachen und evtl. Write-I/O (z.B. durch Auditing).
