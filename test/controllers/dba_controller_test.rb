@@ -80,7 +80,7 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "show_session_detail with xhr: true" do
-    get  '/dba/show_session_detail', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
+    get  '/dba/show_session_detail', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serial_no=>@serial_no, :update_area=>:hugo }
     assert_response :success
 
     if get_db_version >= '12.2'
@@ -88,19 +88,19 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
     end
 
-    post  '/dba/render_session_detail_sql_monitor', params: {format: :html, dbid: @dbid, instance: @instance, sid: @sid, serialno: @serialno, time_selection_start: localeDateTime(Time.now-200, :minutes), time_selection_end: localeDateTime(Time.now, :minutes), :update_area=>:hugo }
+    post  '/dba/render_session_detail_sql_monitor', params: {format: :html, dbid: @dbid, instance: @instance, sid: @sid, serial_no: @serial_no, time_selection_start: localeDateTime(Time.now-200, :minutes), time_selection_end: localeDateTime(Time.now, :minutes), :update_area=>:hugo }
     assert_response :success
 
-    post '/dba/show_session_details_waits', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
+    post '/dba/show_session_details_waits', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serial_no=>@serial_no, :update_area=>:hugo }
     assert_response :success
 
-    post '/dba/show_session_details_locks', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
+    post '/dba/show_session_details_locks', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serial_no=>@serial_no, :update_area=>:hugo }
     assert_response :success
 
-    post '/dba/show_session_details_temp', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :saddr=>@saddr, :update_area=>:hugo }
+    post '/dba/show_session_details_temp', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serial_no=>@serial_no, :saddr=>@saddr, :update_area=>:hugo }
     assert_response :success
 
-    post '/dba/list_open_cursor_per_session', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serialno=>@serialno, :update_area=>:hugo }
+    post '/dba/list_open_cursor_per_session', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :serial_no=>@serial_no, :update_area=>:hugo }
     assert_response :success
 
     post '/dba/list_accessed_objects', :params => {:format=>:html, :instance=>@instance, :sid=>@sid, :update_area=>:hugo }

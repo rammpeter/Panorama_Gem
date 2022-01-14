@@ -2,11 +2,11 @@
   @update_area = get_unique_area_id
 
   link_column_sid = proc do |rec|
-    ajax_link("#{rec.sid},#{rec.serialno}", {
+    ajax_link("#{rec.sid},#{rec.serial_no}", {
                             :action => "show_session_detail",
                             :instance => rec.inst_id,
                             :sid      => rec.sid,
-                            :serialno => rec.serialno,
+                            :serial_no => rec.serial_no,
                             :update_area => @update_area
                            },
                     :title=> "Anzeige Details zu Session"

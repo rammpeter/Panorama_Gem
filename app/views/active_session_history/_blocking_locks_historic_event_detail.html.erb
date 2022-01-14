@@ -3,12 +3,12 @@
   @update_area_timechart  = get_unique_area_id
 
   link_session = proc do |rec, title|
-    ajax_link("#{rec.instance}: #{rec.sid} / #{rec.serialno}", {
+    ajax_link("#{rec.instance}: #{rec.sid} / #{rec.serial_no}", {
         action: :list_session_statistic_historic_grouping,
         groupfilter: {
             Instance:             rec.instance,
             Session_ID:           rec.sid,
-            SerialNo:             rec.serialno,
+            Serial_No:             rec.serial_no,
             Idle_Wait1:           'PX Deq Credit: send blkd',
             DBID:                 @dbid,
             time_selection_start: @time_selection_start,
@@ -33,7 +33,7 @@
         time_selection_end:   @time_selection_end,
         waiting_instance:     rec.instance,
         waiting_session:      rec.sid,
-        waiting_serialno:     rec.serialno,
+        waiting_serial_no:     rec.serial_no,
         update_area:          @update_area
     }.merge(@blocking_instance ? {blocking_instance: @blocking_instance} : {}),
               title: "Show blocking sessions for this combination of blocking and waiting event"
@@ -56,7 +56,7 @@
               :time_selection_end   => @time_selection_end,
               :blocking_instance    => rec.instance,
               :blocking_session     => rec.sid,
-              :blocking_session_serialno => rec.serialno
+              :blocking_session_serial_no => rec.serial_no
              }, title: 'Show all waiting sessions blocked by this session. No matter which event the waiting session is waiting for.')
 
   end
@@ -67,8 +67,8 @@
 
   link_column_samples = proc do |rec|
     session_info = case @role
-                   when :blocking then {Blocking_Instance: rec.instance, Blocking_Session: rec.sid, Blocking_Session_Serial_No: rec.serialno}
-                   when :waiting then  {Instance:          rec.instance, Session_ID:       rec.sid, SerialNo:                   rec.serialno}
+                   when :blocking then {Blocking_Instance: rec.instance, Blocking_Session: rec.sid, Blocking_Session_Serial_No: rec.serial_no}
+                   when :waiting then  {Instance:          rec.instance, Session_ID:       rec.sid, Serial_No:                   rec.serial_no}
                    end
     ajax_link(fn(rec.samples), {
         :action           => :list_session_statistic_historic_single_record,
@@ -127,7 +127,7 @@
   caption = "#{@role.to_s.capitalize} sessions for event combination '#{@waiting_event}' -> '#{@blocking_event}'"
   caption << ", blocking instance = #{@blocking_instance}" if @blocking_instance
   caption << ", waiting instance = #{@waiting_instance}" if @waiting_instance
-  caption << ", waiting session = #{@waiting_session} / #{@waiting_serialno}" if @waiting_session && @waiting_serialno
+  caption << ", waiting session = #{@waiting_session} / #{@waiting_serial_no}" if @waiting_session && @waiting_serial_no
   caption << " between #{@time_selection_start} and #{@time_selection_end}"
 
   @hidden_link_timeline_id = get_unique_area_id

@@ -54,7 +54,7 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
     post '/addition/list_blocking_locks_history_hierarchy_detail', :params => { :format=>:html,
          :blocking_instance => 1,
          :blocking_sid => 1,
-         :blocking_serialno => 1,
+         :blocking_serial_no => 1,
          :snapshot_timestamp =>"01.01.2011 00:00:00",
          :update_area=>:hugo } if get_db_version >= '11.2'
     assert_response :success

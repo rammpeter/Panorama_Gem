@@ -2215,7 +2215,7 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     @instance    = prepare_param_instance
     @sql_id      = params[:sql_id]    == '' ? nil : params[:sql_id]
     @sid         = params[:sid]       == '' ? nil : params[:sid]
-    @serialno    = params[:serialno]  == '' ? nil : params[:serialno]
+    @serial_no    = params[:serial_no]  == '' ? nil : params[:serial_no]
     save_session_time_selection   # werte in session puffern
 
     where_string_hist = ''
@@ -2240,10 +2240,10 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
       where_values << @sid
     end
 
-    if @serialno
+    if @serial_no
       where_string_sga  << " AND Session_Serial# = ?"
       where_string_hist << " AND Session_Serial# = ?"
-      where_values << @serialno
+      where_values << @serial_no
     end
 
     # at first look for gv$SQL_Monitor
@@ -2251,7 +2251,7 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
 
     sql_stmt << "\
       SELECT #{get_db_version >= '12.1' ? 'Report_ID' : '0'} Report_ID,
-             Inst_ID Instance_Number, SID Session_ID, Session_Serial# Session_SerialNo,
+             Inst_ID Instance_Number, SID Session_ID, Session_Serial# Session_Serial_No,
              First_Refresh_Time Period_Start_time, Last_Refresh_Time Period_End_Time, SQL_ID, SQL_Exec_ID, NULL Generation_Time,
              Last_Refresh_Time -  First_Refresh_Time Duration, SQL_Exec_Start, #{get_db_version >= '12.1' ? 'UserName' : "''"} UserName,
              Status,
@@ -2280,7 +2280,7 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
       sql_stmt << "\
       UNION ALL
         SELECT r.Report_ID, r.Instance_Number, r.Session_ID,
-               r.Session_Serial#                                                                  Session_SerialNo,
+               r.Session_Serial#                                                                  Session_Serial_No,
                r.Period_Start_time, r.Period_End_Time, r.Key1 SQL_ID, TO_NUMBER(r.Key2) SQL_Exec_ID, r.Generation_Time,
                (r.Period_End_Time - r.Period_Start_Time) * 86400                                  Duration,
                TO_DATE(r.Key3, 'MM:DD:YYYY HH24:MI:SS')                                           SQL_Exec_Start,
@@ -2319,7 +2319,7 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     report_id   = prepare_param_int(:report_id)                                 # only for 'DBA_HIST_REPORTS'
     instance    = prepare_param_int(:instance)
     sid         = prepare_param_int(:sid)
-    serialno    = prepare_param_int(:serialno)
+    serial_no    = prepare_param_int(:serial_no)
     sql_id      = prepare_param(:sql_id)
     sql_exec_id = prepare_param_int(:sql_exec_id)
     origin      = params[:origin]
@@ -2357,7 +2357,7 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
                                       type            => ?,
                                       report_level    => 'ALL'
                                     )
-                             FROM Dual", sql_id, sid, serialno, sql_exec_id, instance, type]
+                             FROM Dual", sql_id, sid, serial_no, sql_exec_id, instance, type]
     end
 
 

@@ -2,7 +2,7 @@
    @update_area = get_unique_area_id
 
    def link_column_sid(rec, value)
-      link_session_details(@update_area, @instance, rec.sid, rec.serialno)
+      link_session_details(@update_area, @instance, rec.sid, rec.serial_no)
    end
 
 
@@ -21,7 +21,7 @@
 column_options =
 [
   {:caption=>"Aktiv",    :data=>proc{|rec| rec.stmt_active},      :title=>"Wird das Statement in der Session gerade ausgeführt"},
-  {:caption=>"SID/SN",   :data=>proc{|rec| link_column_sid(rec, "#{rec.inst_id}/#{rec.sid}/#{rec.serialno}")},  :title=>"Inst./SID/Serial No."},
+  {:caption=>"SID/SN",   :data=>proc{|rec| link_column_sid(rec, "#{rec.inst_id}/#{rec.sid}/#{rec.serial_no}")},  :title=>"Inst./SID/Serial No."},
   {:caption=>"User",     :data=>proc{|rec| rec.user_name},        :title=>"DB-Username"},
   {:caption=>"OS-User",  :data=>proc{|rec| rec.osuser},           :title=>"User im Client-OS"},
   {:caption=>"Process",  :data=>proc{|rec| rec.process},          :title=>"Process im Client-OS"},

@@ -123,7 +123,7 @@ WHERE  indx = (SELECT name_ksrcctx FROM x$ksrcctx WHERE addr like '%'||TRIM(TO_C
     origin
   end
 
-  def get_sql_monitor_count(dbid, instance, sql_id, time_selection_start, time_selection_end, sid=nil, serialno=nil)
+  def get_sql_monitor_count(dbid, instance, sql_id, time_selection_start, time_selection_end, sid=nil, serial_no=nil)
     if get_db_version >= '11.1' && PackLicense.tuning_pack_licensed?
       where_string_sga = ''
       where_string_awr = ''
@@ -147,10 +147,10 @@ WHERE  indx = (SELECT name_ksrcctx FROM x$ksrcctx WHERE addr like '%'||TRIM(TO_C
         where_values << sid
       end
 
-      if serialno
+      if serial_no
         where_string_sga << " AND Session_Serial# = ?"
         where_string_awr << " AND Session_Serial# = ?"
-        where_values << serialno
+        where_values << serial_no
       end
 
       sql_monitor_reports_count = sql_select_one ["\

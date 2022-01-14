@@ -2,6 +2,7 @@
 class DbaWaitsController < ApplicationController
   
   include DbaHelper
+  include ActiveSessionHistoryHelper
   
   def show_system_events
     filter = params[:filter]
@@ -103,7 +104,7 @@ class DbaWaitsController < ApplicationController
     @event   = params[:event]
     @session_waits = sql_select_all ["\
         SELECT /* Panorama-Tool Ramm */
-          sw.Event, sw.Inst_ID, sw.Sid, s.Serial# SerialNo, sw.State,
+          sw.Event, sw.Inst_ID, sw.Sid, s.Serial# Serial_No, sw.State,
           #{get_db_version >= '11.2' ? 'sw.Wait_Time_Micro/1000' : 'sw.Seconds_in_Wait*1000'} Wait_Time_ms,
           sw.p1text, sw.p1, RawToHex(sw.p1raw) P1Raw,
           sw.p2text, sw.p2, RawToHex(sw.p2raw) P2Raw,
@@ -243,7 +244,7 @@ class DbaWaitsController < ApplicationController
       b.grant_level, b.request_level, b.resource_name1, b.resource_name2,
       SUBSTR(b.Resource_Name1, LENGTH(b.Resource_Name1)-3, 2) LockType,
       b.blocked, b.blocker, b.state,
-      s.SID, s.Serial# SerialNo, s.UserName, s.Process, s.Machine, s.Terminal, s.Program, s.SQL_ID, s.SQL_Child_Number, s.Module, s.Action, s.Client_info,
+      s.SID, s.Serial# Serial_No, s.UserName, s.Process, s.Machine, s.Terminal, s.Program, s.SQL_ID, s.SQL_Child_Number, s.Module, s.Action, s.Client_info,
       s.Event, s.status
       from   gv$ges_blocking_enqueue b
       JOIN   gv$Process p ON p.Inst_ID = b.Inst_ID AND p.spid = b.pid
@@ -258,11 +259,11 @@ class DbaWaitsController < ApplicationController
     save_session_time_selection    # Werte puffern fuer spaetere Wiederverwendung
     @instance = prepare_param_instance
 
-    where_string = "s.Sample_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') AND s.Sample_Time <  TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')"
+    where_string = "Sample_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}') AND Sample_Time <  TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')"
     where_values = [@time_selection_start, @time_selection_end]
 
     if @instance
-      where_string << ' AND s.Instance_Number = ?'
+      where_string << ' AND Instance_Number = ?'
       where_values << @instance
     end
 
@@ -275,29 +276,15 @@ class DbaWaitsController < ApplicationController
       else raise "Unknwown value #{@grouping} for grouping"
     end
 
-    ash_select_list = 'Sample_Time, Event, Session_State,
-                       TM_Delta_CPU_Time/1000000 CPU_Time_Secs,
-                       TM_Delta_DB_Time/1000000  DB_Time_Secs   '
-
     @waits = sql_select_iterator ["\
       SELECT /*+ ORDERED Panorama-Tool Ramm */
              -- Beginn eines zu betrachtenden Zeitabschnittes
              TRUNC(s.Sample_Time, '#{params[:grouping]}')   Start_Sample,
              COUNT(1)                                       Count_Samples,
-             SUM(s.CPU_Time_Secs)                           CPU_Time_Secs,
-             SUM(s.DB_Time_Secs)                            DB_Time_Secs,
+             SUM(s.TM_Delta_CPU_Time_Secs)                  CPU_Time_Secs,
+             SUM(s.TM_Delta_DB_Time_Secs)                   DB_Time_Secs,
              SUM(CASE WHEN NVL(Event, Session_State)='ON CPU' THEN Sample_Cycle ELSE 0 END) On_CPU_Secs
-      FROM   (SELECT /*+ NO_MERGE ORDERED */
-                     10 Sample_Cycle, Instance_Number, #{ash_select_list}
-              FROM   DBA_Hist_Active_Sess_History s
-              LEFT OUTER JOIN   (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
-              WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
-              #{@dba_hist_where_string}
-              UNION ALL
-              SELECT 1 Sample_Cycle,  Inst_ID Instance_Number, #{ash_select_list}
-              FROM   (SELECT s.Inst_ID Instance_Number, s.* FROM gv$Active_Session_History s) s
-             )s
-      WHERE  #{where_string}
+      FROM   (#{ash_select(global_filter: where_string)})s
       GROUP BY TRUNC(Sample_Time, '#{params[:grouping]}')
       ORDER BY 1
     "].concat where_values

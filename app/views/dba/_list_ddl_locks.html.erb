@@ -1,12 +1,12 @@
 <%
   @update_area = get_unique_area_id
 
-  link_column_session = proc do |instance, sid, serialno|
-    ajax_link("#{instance}:#{sid},#{serialno}", {
+  link_column_session = proc do |instance, sid, serial_no|
+    ajax_link("#{instance}:#{sid},#{serial_no}", {
               :action            => "show_session_detail",
               :instance          => instance,
               :sid               => sid,
-              :serialno          => serialno,
+              :serial_no          => serial_no,
               :update_area       => @update_area
              },
       :title => "Details zur Session"
@@ -15,7 +15,7 @@
 
     column_options =
       [
-        {:caption=>"Blocking session",  :data=>proc{|rec| link_column_session.call(rec.b_inst_id, rec.b_sid, rec.b_serialno)},  :title=>"Instance : SID, SerialNo of blocking session"},
+        {:caption=>"Blocking session",  :data=>proc{|rec| link_column_session.call(rec.b_inst_id, rec.b_sid, rec.b_serial_no)},  :title=>"Instance : SID, Serial_No of blocking session"},
         {:caption=>"Blocking status",   :data=>proc{|rec| rec.b_status},                                                   :title=>"Status of blocking session"},
         {:caption=>"Blocking PID",      :data=>proc{|rec| rec.b_pid},                                                      :title=>"Process-ID on DB server of blocking session"},
         {:caption=>"Blocking user",     :data=>proc{|rec| rec.b_user},                                                     :title=>"DB-user of blocking session"},
@@ -23,7 +23,7 @@
         {:caption=>"Blocking OS user",  :data=>proc{|rec| rec.b_osuser},                                                   :title=>"OS user on client machine of blocking session"},
         {:caption=>"Blocking process",  :data=>proc{|rec| rec.b_process},                                                  :title=>"process ID on client machine of blocking session"},
         {:caption=>"Blocking program",  :data=>proc{|rec| rec.b_program},                                                  :title=>"program on client machine of blocking session"},
-        {:caption=>"Waiting session",   :data=>proc{|rec| link_column_session.call(rec.w_inst_id, rec.w_sid, rec.w_serialno)},  :title=>"Instance : SID, SerialNo of waiting session"},
+        {:caption=>"Waiting session",   :data=>proc{|rec| link_column_session.call(rec.w_inst_id, rec.w_sid, rec.w_serial_no)},  :title=>"Instance : SID, Serial_No of waiting session"},
         {:caption=>"Waiting PID",       :data=>proc{|rec| rec.w_pid},                                                      :title=>"Process-ID on DB server of waiting session"},
         {:caption=>"Waiting user",      :data=>proc{|rec| rec.w_user},                                                     :title=>"DB-user of waiting session"},
         {:caption=>"Waiting machine",   :data=>proc{|rec| rec.w_machine},                                                  :title=>"client machine of waiting session"},

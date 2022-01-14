@@ -1,5 +1,5 @@
 <div style="clear:both; padding: 5px;"></div>
-<%= render_page_caption("#{t(:dba_list_session_details_caption, :default=>'Details for session')} SID=#{@sid}, Serial#=#{@serialno}, Instance=#{@instance}, #{"CDB=#{@dbsessions[0].con_id} (#{@dbsessions[0].container_name}), " if get_current_database[:cdb]}#{localeDateTime(Time.now)}", get_recall_params_info_for_render_page_caption) %>
+<%= render_page_caption("#{t(:dba_list_session_details_caption, :default=>'Details for session')} SID=#{@sid}, Serial#=#{@serial_no}, Instance=#{@instance}, #{"CDB=#{@dbsessions[0].con_id} (#{@dbsessions[0].container_name}), " if get_current_database[:cdb]}#{localeDateTime(Time.now)}", get_recall_params_info_for_render_page_caption) %>
 
 <% @prev_update_area = @update_area
    @update_area = get_unique_area_id
@@ -18,7 +18,7 @@
               action:     :list_undo_transactions,
               instance:   @instance,
               sid:        @sid,
-              serialno:   @serialno,
+              serial_no:   @serial_no,
               update_area:@update_area
              },
       :title=> "Show transaction details")
@@ -57,11 +57,11 @@ column_options << {:caption=>'Client driver',       :data=>proc{|rec| rec.client
     <%
 
        def link_session(rec)
-         ajax_link("#{rec.sid},#{rec.serialno}", {
+         ajax_link("#{rec.sid},#{rec.serial_no}", {
                    :action => "show_session_detail",
                    :instance => rec.inst_id,
                    :sid      => rec.sid,
-                   :serialno => rec.serialno,
+                   :serial_no => rec.serial_no,
                    :update_area => @update_area
                   },
            :title=> "Show details of database session")
@@ -87,7 +87,7 @@ column_options << {:caption=>'Client driver',       :data=>proc{|rec| rec.client
      ]
 
     %>
-    <%= gen_slickgrid(@pq_coordinator, column_options, {:caption=>"Considered session SID=#{@sid}, Serial#=#{@serialno}, Instance=#{@instance} is PQ-slave, details for PQ-coordinator are:" }) %>
+    <%= gen_slickgrid(@pq_coordinator, column_options, {:caption=>"Considered session SID=#{@sid}, Serial#=#{@serial_no}, Instance=#{@instance} is PQ-slave, details for PQ-coordinator are:" }) %>
 
 <% end %>
 
@@ -171,7 +171,7 @@ column_options << {:caption=>'Client driver',       :data=>proc{|rec| rec.client
                :update_area => @update_area,
                :instance => @instance,
                :sid      => @sid,
-               :serialno => @serialno
+               :serial_no => @serial_no
         }, :title => t(:dba_list_session_details_link_wait, :default=>'Show current wait status of session') )
     %>
   </div>
@@ -181,7 +181,7 @@ column_options << {:caption=>'Client driver',       :data=>proc{|rec| rec.client
                :update_area => @update_area,
                :instance => @instance,
                :sid      => @sid,
-               :serialno => @serialno
+               :serial_no => @serial_no
         }, :title => t(:dba_list_session_details_link_locks, :default=>'Show locks of session') )
     %>
   </div>
@@ -192,7 +192,7 @@ column_options << {:caption=>'Client driver',       :data=>proc{|rec| rec.client
                :instance => @instance,
                :saddr      => @dbsession.saddr,
                :sid        => @sid,
-               :serialno   => @serialno
+               :serial_no   => @serial_no
         }, :title => t(:dba_list_session_details_link_temp, :default=>'Show TEMP-usage of session') )
     %>
   </div>
@@ -204,7 +204,7 @@ column_options << {:caption=>'Client driver',       :data=>proc{|rec| rec.client
                    :update_area => @update_area,
                    :instance  => @instance,
                    :sid       => @sid,
-                   :serialno  => @serialno
+                   :serial_no  => @serial_no
         }, :title=> t(:dba_list_session_details_link_open_cursor_hint, :default=>'Show open cursor of session (GV$OPEN_CURSOR) %{own_saddr} with identical SAddr', :own_saddr=>@open_cursor_counts.own_saddr))
       %>
   </div>
@@ -227,7 +227,7 @@ column_options << {:caption=>'Client driver',       :data=>proc{|rec| rec.client
                    :update_area => @update_area,
                    :instance  => @instance,
                    :sid       => @sid,
-                   :serialno  => @serialno
+                   :serial_no  => @serial_no
         }, :title=> t(:dba_list_session_details_link_ash, :default=>'Show wait history of session from Active Session History'))
       %>
   </div>
@@ -271,7 +271,7 @@ column_options << {:caption=>'Client driver',       :data=>proc{|rec| rec.client
           dbid:                 @dbid,
           instance:             @instance,
           sid:                  @sid,
-          serialno:             @serialno,
+          serial_no:             @serial_no,
           time_selection_start: localeDateTime(@dbsession.logon_time, :minutes),
           time_selection_end:   localeDateTime(Time.now, :minutes),
           update_area:          @update_area

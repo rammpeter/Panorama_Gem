@@ -655,7 +655,7 @@ class StorageController < ApplicationController
     @segment_id = prepare_param(:segment_id)
     @instance   = prepare_param_instance
     @sid        = prepare_param(:sid)
-    @serialno   = prepare_param(:serialno)
+    @serial_no   = prepare_param(:serial_no)
 
     @where_string = ''
     @where_values = []
@@ -675,14 +675,14 @@ class StorageController < ApplicationController
       @where_values << @sid
     end
 
-    if @serialno
+    if @serial_no
       @where_string << " AND s.Serial# = ?"
-      @where_values << @serialno
+      @where_values << @serial_no
     end
 
     @undo_transactions = sql_select_iterator ["\
       SELECT /* Panorama-Tool Ramm */
-             s.Inst_ID, s.SID, s.Serial# SerialNo, s.UserName, s.Program, s.Machine, s.Status, s.OSUser, s.Client_Info, s.Module, s.Action,
+             s.Inst_ID, s.SID, s.Serial# Serial_No, s.UserName, s.Program, s.Machine, s.Status, s.OSUser, s.Client_Info, s.Module, s.Action,
              t.Start_Date, (SYSDATE-t.Start_Date) * 86400 Age_Secs, t.Recursive, t.Used_Ublk Used_Undo_Blocks, t.Used_URec Used_Undo_Records, t.Log_IO, t.Phy_IO, RawToHex(t.XID) XID,
              t.XIDUSN Segment, t.XIDSLOT Slot, t.XIDSQN Sequence, t.CR_get, t.CR_Change
       FROM   gv$Transaction t
@@ -750,7 +750,7 @@ class StorageController < ApplicationController
     @data = sql_select_all "\
         SELECT /* Panorama-Tool Ramm */ t.INST_ID,
         s.SID,
-        s.Serial# SerialNo,
+        s.Serial# Serial_No,
         NVL(s.SQL_ID, s.Prev_SQL_ID) SQL_ID,
         NVL(s.SQL_Child_Number, s.Prev_Child_Number) Child_Number,
         s.UserName,

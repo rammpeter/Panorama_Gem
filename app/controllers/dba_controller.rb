@@ -66,7 +66,7 @@ class DbaController < ApplicationController
                 RowNum                                                      ,
                 l.Inst_ID                                                   Instance_Number,
                 s.SID,
-                s.Serial#                                                   SerialNo,
+                s.Serial#                                                   Serial_No,
                 s.SQL_ID, s.SQL_Child_Number,
                 s.Prev_SQL_ID, s.Prev_Child_Number, l.Inst_ID,
                 s.Status                                                    Status,
@@ -96,7 +96,7 @@ class DbaController < ApplicationController
                 RowNum      /* fuer Ajax-Aktualisierung der Zeile */        Row_Num,
                bs.Inst_ID             Blocking_Instance_Number,
                bs.SID                 Blocking_SID,
-               bs.Serial#             Blocking_SerialNo
+               bs.Serial#             Blocking_Serial_No
               FROM    RawLock l
               JOIN    gv$session s              ON s.Inst_ID = l.Inst_ID AND s.SID = l.SID
               JOIN    GV$Process p              ON p.Inst_ID = s.Inst_ID AND p.Addr = s.pAddr
@@ -130,7 +130,7 @@ class DbaController < ApplicationController
               SELECT /*+ LEADING(l) */ /* Panorama-Tool Ramm */
                      l.Inst_ID,
                      s.SID,
-                     s.Serial# SerialNo,
+                     s.Serial# Serial_No,
                      s.SQL_ID,
                      s.SQL_Child_Number,
                      s.Status, s.Event,
@@ -165,7 +165,7 @@ class DbaController < ApplicationController
                      l.lmode   LockMode,
                      s.Blocking_Instance    Blocking_Instance_Number,
                      s.Blocking_Session     Blocking_SID,
-                     bs.Serial#             Blocking_SerialNo,
+                     bs.Serial#             Blocking_Serial_No,
                      bs.Status              Blocking_Status,
                      bs.Event               Blocking_Event,
                      bs.Client_Info         Blocking_Client_Info,
@@ -196,11 +196,11 @@ class DbaController < ApplicationController
               SELECT /*+ NO_MERGE */ RowNum Row_Num, Level HLevel, l.*,
                      CONNECT_BY_ROOT Blocking_Instance_Number Root_Blocking_Instance_Number,
                      CONNECT_BY_ROOT Blocking_SID             Root_Blocking_SID,
-                     CONNECT_BY_ROOT Blocking_SerialNo        Root_Blocking_SerialNo
+                     CONNECT_BY_ROOT Blocking_Serial_No        Root_Blocking_Serial_No
               FROM   Locks l
               CONNECT BY NOCYCLE PRIOR  sid     = blocking_sid
                              AND PRIOR Inst_ID  = blocking_instance_number
-                             AND PRIOR serialno = blocking_serialNo
+                             AND PRIOR serial_no = blocking_serial_no
              )
       SELECT l.*, NULL Waiting_App_Desc, NULL Blocking_App_Desc
       FROM   HLocks l
@@ -208,7 +208,7 @@ class DbaController < ApplicationController
       WHERE NOT EXISTS (SELECT 1 FROM HLocks t
                         WHERE  t.sid      = l.sid
                         AND    t.Inst_ID  = l.Inst_ID
-                        AND    t.SerialNo = l.SerialNo
+                        AND    t.Serial_No = l.Serial_No
                         AND    t.HLevel   > l.HLevel
                        )
        ORDER BY Row_Num"
@@ -307,7 +307,7 @@ oradebug setorapname diag
       SELECT /*+ ordered */ /* Panorama-Tool Ramm */
         hs.Inst_ID                                                  B_Inst_ID,
         hs.SID                                                      B_SID,
-        hs.Serial#                                                  B_SerialNo,
+        hs.Serial#                                                  B_Serial_No,
         hs.Status                                                   B_Status,
         hp.spID                                                     B_PID,
         hs.UserName                                                 B_User,
@@ -317,7 +317,7 @@ oradebug setorapname diag
         hs.Program                                                  B_Program,
         ws.Inst_ID                                                  W_Inst_ID,
         ws.SID                                                      W_SID,
-        ws.Serial#                                                  W_SerialNo,
+        ws.Serial#                                                  W_Serial_No,
         wp.spID                                                     W_PID,
         ws.UserName                                                 W_User,
         ws.Machine                                                  W_Machine,
@@ -718,7 +718,7 @@ oradebug setorapname diag
     @waits = sql_select_iterator "\
       SELECT /* Panorama-Tool Ramm */
         w.SID,                                                    
-        w.Seq# SerialNo,                                          
+        w.Seq# Serial_No,
         Wait_Time,                                                
         Seconds_In_Wait,                                          
         State,                                                    
@@ -784,7 +784,7 @@ oradebug setorapname diag
     @sessions = sql_select_iterator ["\
       SELECT /* Panorama-Tool Ramm */
         s.SID,
-        s.Serial# SerialNo,                                                                                          
+        s.Serial# Serial_No,
         s.Status,
         s.SQL_ID,
         s.SQL_Child_Number,
@@ -823,7 +823,7 @@ oradebug setorapname diag
                                 )                                                                                                         
         )       LongSQL,
         px.Anzahl PQCount,
-        pqc.QCInst_ID, pqc.QCSID, pqc.QCSerial# QCSerialNo,
+        pqc.QCInst_ID, pqc.QCSID, pqc.QCSerial# QCSerial_No,
         p.PGA_Used_Mem     + NVL(pq_mem.PQ_PGA_Used_Mem,0)     PGA_Used_Mem,
         p.PGA_Alloc_Mem    + NVL(pq_mem.PQ_PGA_Alloc_Mem,0)    PGA_Alloc_Mem,
         p.PGA_Freeable_Mem + NVL(pq_mem.PQ_PGA_Freeable_Mem,0) PGA_Freeable_Mem,
@@ -846,7 +846,7 @@ oradebug setorapname diag
                       ) px ON  px.QCInst_ID = s.Inst_ID
                            AND px.QCSID     = s.SID
                            AND px.QCSerial# = s.Serial#
-      LEFT OUTER JOIN GV$PX_Session pqc ON pqc.Inst_ID = s.Inst_ID AND pqc.SID=s.SID --AND pqc.Serial#=s.Serial#    -- PQ Coordinator, SerialNo stimmt in Oracle 12c nicht mehr überein zwischen v$Session und v$px_session
+      LEFT OUTER JOIN GV$PX_Session pqc ON pqc.Inst_ID = s.Inst_ID AND pqc.SID=s.SID --AND pqc.Serial#=s.Serial#    -- PQ Coordinator, Serial_No stimmt in Oracle 12c nicht mehr überein zwischen v$Session und v$px_session
       LEFT OUTER JOIN    GV$sess_io i ON i.Inst_ID = s.Inst_ID AND i.SID = s.SID
       LEFT OUTER JOIN    GV$process p ON p.Addr = s.pAddr AND p.Inst_ID = s.Inst_ID
       LEFT OUTER JOIN
@@ -902,7 +902,7 @@ oradebug setorapname diag
     @dbid        = prepare_param_dbid
     @instance    = prepare_param_instance
     @sid         = params[:sid].to_i
-    @serialno    = params[:serialno].to_i
+    @serial_no    = params[:serial_no].to_i
     @update_area = params[:update_area]
 
     @dbsessions =  sql_select_all ["\
@@ -937,7 +937,7 @@ oradebug setorapname diag
                            )sci
            #{"LEFT OUTER JOIN gv$Containers con ON con.Inst_ID=s.Inst_ID AND con.Con_ID=s.Con_ID" if get_current_database[:cdb]}
            WHERE  s.Inst_ID=? AND s.SID=? AND s.Serial#=?",
-           @instance, @sid].concat( get_db_version >= "11.2" ? [@serialno] : [] ).concat([@instance, @sid, @serialno, @instance, @sid, @serialno])
+           @instance, @sid].concat( get_db_version >= "11.2" ? [@serial_no] : [] ).concat([@instance, @sid, @serial_no, @instance, @sid, @serial_no])
 
     if @dbsessions.length > 0   # Session lebt noch
       @dbsession = @dbsessions[0]
@@ -964,7 +964,7 @@ oradebug setorapname diag
         @sql_data[1][:sql_exec_id]    = @dbsession.prev_exec_id
       end
 
-      @pq_coordinator = sql_select_all ["SELECT s.Inst_ID, s.SID, s.Serial# SerialNo,
+      @pq_coordinator = sql_select_all ["SELECT s.Inst_ID, s.SID, s.Serial# Serial_No,
                                               s.SQL_ID, s.SQL_Child_Number, s.Status, s.Client_Info, s.Module, s.Action,
                                               s.UserName, s.Machine, s.OSUser, s.Process, s.Program,
                                               SYSDATE - (s.Last_Call_Et/86400) Last_Call,
@@ -975,7 +975,7 @@ oradebug setorapname diag
                                        WHERE  ps.Inst_ID = ?
                                        AND    ps.SID     = ?
                                        AND    ps.Serial# = ?
-                                      ", @instance, @sid, @serialno]
+                                      ", @instance, @sid, @serial_no]
 
       @open_cursor_counts = sql_select_first_row ["\
                          SELECT /*+ ORDERED USE_HASH(s) */
@@ -984,7 +984,7 @@ oradebug setorapname diag
                          FROM   GV$Session se
                          JOIN   gv$Open_Cursor oc ON oc.Inst_ID = se.Inst_ID AND oc.SID     = se.SID
                          WHERE  se.Inst_ID=? AND se.SID=? AND se.Serial#=?
-                         ", @instance, @sid, @serialno]
+                         ", @instance, @sid, @serial_no]
 
       @pmems = sql_select_all ["\
             SELECT /*+ ORDERED USE_HASH(s p pm) */ pm.Category,
@@ -1003,7 +1003,7 @@ oradebug setorapname diag
             JOIN   GV$Process p ON p.Inst_ID = s.Inst_ID AND p.Addr = s.pAddr
             JOIN   GV$Process_Memory pm ON pm.Inst_ID = p.Inst_ID AND pm.PID = p.PID AND pm.Serial# = p.Serial#
             GROUP BY pm.Category
-            ", @instance, @sid, @serialno, @instance, @sid, @serialno]
+            ", @instance, @sid, @serial_no, @instance, @sid, @serial_no]
 
       @workareas = sql_select_all ["\
         SELECT wa.*
@@ -1017,7 +1017,7 @@ oradebug setorapname diag
 
       render_partial :list_session_details
     else
-      show_popup_message "Session #{@sid}/#{@serialno} does not exist anymore at instance #{@instance}!"
+      show_popup_message "Session #{@sid}/#{@serial_no} does not exist anymore at instance #{@instance}!"
     end
   end
 
@@ -1049,18 +1049,18 @@ oradebug setorapname diag
     @dbid        = prepare_param_dbid
     @instance     = prepare_param_instance
     @sid          = prepare_param :sid
-    @serialno     = prepare_param :serialno
+    @serial_no     = prepare_param :serial_no
     save_session_time_selection
     @update_area  = prepare_param :update_area
 
-    @sql_monitor_reports_count = get_sql_monitor_count(@dbid, @instance, nil, @time_selection_start, @time_selection_end, @sid, @serialno)
+    @sql_monitor_reports_count = get_sql_monitor_count(@dbid, @instance, nil, @time_selection_start, @time_selection_end, @sid, @serial_no)
 
     render_button("SQL-Monitor (#{@sql_monitor_reports_count})", {
         controller:           :dba_history,
         action:               :list_sql_monitor_reports,
         instance:             @instance,
         sid:                  @sid,
-        serialno:             @serialno,
+        serial_no:             @serial_no,
         time_selection_start: @time_selection_start,
         time_selection_end:   @time_selection_end,
         update_area:      @update_area
@@ -1071,7 +1071,7 @@ oradebug setorapname diag
   def list_open_cursor_per_session
     @instance =  prepare_param_instance
     @sid     =  params[:sid].to_i
-    @serialno = params[:serialno].to_i
+    @serial_no = params[:serial_no].to_i
 
     @opencursors = sql_select_iterator ["
       SELECT /*+ ORDERED USE_HASH(s wa) */
@@ -1079,7 +1079,7 @@ oradebug setorapname diag
              -- oc.SQL_ID oc_SQL_ID, oc.SQL_Text,
              wa.*,
              CASE WHEN se.SAddr = oc.SAddr THEN 'YES' ELSE 'NO' END Own_SAddr,
-             sse.SID SAddr_SID, sse.Serial# SAddr_SerialNo
+             sse.SID SAddr_SID, sse.Serial# SAddr_Serial_No
              #{", s.Child_Number" if get_db_version >= '12.1'}
       FROM   GV$Session se
       JOIN   gv$Open_Cursor oc ON oc.Inst_ID = se.Inst_ID
@@ -1099,7 +1099,7 @@ oradebug setorapname diag
       LEFT OUTER JOIN gv$Session sse ON sse.Inst_ID = oc.Inst_ID AND sse.SAddr = oc.SAddr
       #{"LEFT OUTER JOIN gv$SQL s ON s.Inst_ID = oc.Inst_ID AND s.Child_Address = oc.Child_Address" if get_db_version >= '12.1'}
       WHERE  se.Inst_ID=? AND se.SID=? AND se.Serial#=?
-      ", @instance, @sid, @serialno]
+      ", @instance, @sid, @serial_no]
 
     render_partial :list_open_cursor_per_session
   end
@@ -1107,7 +1107,7 @@ oradebug setorapname diag
   def show_session_details_waits
     @instance = prepare_param_instance
     @sid      = params[:sid]
-    @serialno = params[:serialno]
+    @serial_no = params[:serial_no]
 
     @waits =  sql_select_all ["\
       SELECT w.Inst_ID, w.SID, w.Event,
@@ -1153,7 +1153,7 @@ oradebug setorapname diag
   def show_session_details_locks
     @instance = prepare_param_instance
     @sid      = params[:sid]&.to_i
-    @serialno = params[:serialno]&.to_i
+    @serial_no = params[:serial_no]&.to_i
 
     @locks =  sql_select_all ["\
       WITH RawLock AS (SELECT /*+ MATERIALIZE NO_MERGE */ * FROM gv$Lock)
@@ -1179,10 +1179,10 @@ oradebug setorapname diag
              TO_CHAR(l.lmode)                                            LockMode,
              bs.Inst_ID                                                  Blocking_Instance_Number,
              bs.SID                                                      Blocking_SID,
-             bs.Serial#                                                  Blocking_SerialNo,
+             bs.Serial#                                                  Blocking_Serial_No,
              sblocked.Inst_ID                                            Blocked_Instance_Number,
              sblocked.SID                                                Blocked_SID,
-             sblocked.Serial#                                            Blocked_SerialNo,
+             sblocked.Serial#                                            Blocked_Serial_No,
              oblocked.Owner                                              Blocked_Owner,
              oblocked.Object_Name                                        Blocked_Object_Name,
              oblocked.Data_Object_ID                                     Blocked_Data_Object_ID,
@@ -1200,7 +1200,7 @@ oradebug setorapname diag
      AND    l.SID        = ?
      AND    s.Serial#    = ?
      ORDER BY 1
-     ", @instance, @sid, @serialno]
+     ", @instance, @sid, @serial_no]
 
     render_partial :list_session_details_locks
   end
@@ -1208,7 +1208,7 @@ oradebug setorapname diag
   def show_session_details_temp
     @instance = prepare_param_instance
     @sid      = params[:sid]
-    @serialno = params[:serialno]
+    @serial_no = params[:serial_no]
     @saddr    = params[:saddr]
 
     @temps = sql_select_all ["\
@@ -1424,7 +1424,7 @@ oradebug setorapname diag
               SELECT /* Panorama-Tool Ramm */
                      s.Inst_ID,
                      s.SID,
-                     s.Serial# SerialNo,
+                     s.Serial# Serial_No,
                      s.SQL_ID,
                      s.SQL_Child_Number,
                      s.Status,
@@ -1447,7 +1447,7 @@ oradebug setorapname diag
                      DECODE(bs.State, 'WAITING', bs.Wait_Time_Micro/1000000) Blocking_Seconds_Waiting,
                      s.Blocking_Instance    Blocking_Instance_Number,
                      s.Blocking_Session     Blocking_SID,
-                     bs.Serial#             Blocking_SerialNo,
+                     bs.Serial#             Blocking_Serial_No,
                      bs.Status              Blocking_Status,
                      DECODE(bs.State, 'WAITING', bs.Event, 'ON CPU') Blocking_Event,
                      bs.Client_Info         Blocking_Client_Info,
@@ -1472,11 +1472,11 @@ oradebug setorapname diag
               SELECT /*+ NO_MERGE */ RowNum Row_Num, Level HLevel, l.*,
                      CONNECT_BY_ROOT Blocking_Instance_Number Root_Blocking_Instance_Number,
                      CONNECT_BY_ROOT Blocking_SID             Root_Blocking_SID,
-                     CONNECT_BY_ROOT Blocking_SerialNo        Root_Blocking_SerialNo
+                     CONNECT_BY_ROOT Blocking_Serial_No        Root_Blocking_Serial_No
               FROM   Locks l
               CONNECT BY NOCYCLE PRIOR  sid     = blocking_sid
                              AND PRIOR Inst_ID  = blocking_instance_number
-                             AND PRIOR serialno = blocking_serialNo
+                             AND PRIOR serial_no = blocking_serial_no
              )
       SELECT l.*, NULL Waiting_App_Desc, NULL Blocking_App_Desc
       FROM   HLocks l
@@ -1484,7 +1484,7 @@ oradebug setorapname diag
       WHERE NOT EXISTS (SELECT 1 FROM HLocks t
                         WHERE  t.sid      = l.sid
                         AND    t.Inst_ID  = l.Inst_ID
-                        AND    t.SerialNo = l.SerialNo
+                        AND    t.Serial_No = l.Serial_No
                         AND    t.HLevel   > l.HLevel
                        )
        ORDER BY Row_Num", record_modifier)
@@ -1496,7 +1496,7 @@ oradebug setorapname diag
     @instance = params[:instance]
     @event    = params[:event]
     @waits = sql_select_iterator ["\
-      SELECT Inst_ID, SID, Serial# SerialNo, Event, Wait_Class,
+      SELECT Inst_ID, SID, Serial# Serial_No, Event, Wait_Class,
              P1Text, P1, P1Raw,
              P2Text, P2, P2Raw,
              P3Text, P3, P3Raw,
@@ -1780,7 +1780,7 @@ oradebug setorapname diag
     end
 
     content_iter = sql_select_iterator ["SELECT x.*, NULL elapsed_ms, Null delay_ms, NULL parse_line_no, NULL SQL_ID
-                                         FROM   (SELECT /*+ NO_MERGE */ c.*, c.Serial# SerialNo, RowNum Row_Num
+                                         FROM   (SELECT /*+ NO_MERGE */ c.*, c.Serial# Serial_No, RowNum Row_Num
                                                  FROM   gv$Diag_Trace_File_Contents c
                                                  WHERE  c.Inst_ID        = ?
                                                  AND    c.ADR_Home       = ?

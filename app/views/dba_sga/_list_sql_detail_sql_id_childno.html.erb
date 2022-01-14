@@ -7,8 +7,8 @@
 <div style="padding: 5px"></div>
 
 <%
-   def link_session(instance, sid, serialno)
-     link_session_details(@update_area, instance, sid, serialno)
+   def link_session(instance, sid, serial_no)
+     link_session_details(@update_area, instance, sid, serial_no)
    end
 %>
 
@@ -20,9 +20,9 @@
       {:caption=>"Op.-Type",      :data=>proc{|rec| rec.operation_type },                   :title=>t(:dba_sga_list_sql_detail_sql_id_optype_hint, :default=>'Operation type of work area')},
       {:caption=>"Op.ID",         :data=>proc{|rec| rec.operation_id },                     :title=>t(:dba_sga_list_sql_detail_sql_id_operation_id_hint, :default=>'Operation-ID of work area, reference into execution plan') },
       {:caption=>"Pol.",          :data=>proc{|rec| rec.policy },                           :title=>t(:dba_sga_list_sql_detail_sql_id_policy_hint, :default=>'Sizing policy of work area') },
-      {:caption=>"SID",           :data=>proc{|rec| link_session(rec.inst_id, rec.sid, rec.serialno)  },   :title=>t(:dba_sga_list_sql_detail_sql_id_sid_hint, :default=>'SID / serial number of session of work area') },
+      {:caption=>"SID",           :data=>proc{|rec| link_session(rec.inst_id, rec.sid, rec.serial_no)  },   :title=>t(:dba_sga_list_sql_detail_sql_id_sid_hint, :default=>'SID / serial number of session of work area') },
       {:caption=>"QI",            :data=>proc{|rec| rec.qcinst_id },                        :title=>t(:dba_sga_list_sql_detail_sql_id_qcinstance_hint, :default=>'RAC instance of query coordinator if executed with parallel query') },
-      {:caption=>"QSID",          :data=>proc{|rec| link_session(rec.qcinst_id, rec.qcsid, rec.qcserialno)  },   :title=>t(:dba_sga_list_sql_detail_sql_id_qcsid_hint, :default=>'SID /serial number of session of query coordinator if executed with parallel query')},
+      {:caption=>"QSID",          :data=>proc{|rec| link_session(rec.qcinst_id, rec.qcsid, rec.qcserial_no)  },   :title=>t(:dba_sga_list_sql_detail_sql_id_qcsid_hint, :default=>'SID /serial number of session of query coordinator if executed with parallel query')},
       {:caption=>"Act. Time",     :data=>proc{|rec| fn(rec.active_time/1000000.0)  },       :title=>"Average time this PGA work area is active in seconds", data_title:proc{|rec| "%t\n#{seconds_explain(rec.active_time/1000000.0)}"}, :align=>"right"},
       {:caption=>"Work Area Size",:data=>proc{|rec| fn(rec.work_area_size/1048576.0, 3)  }, :title=>"Maximum size of the PGA work area as it is currently used by the operation in MB", data_title:proc{|rec| "%t\n#{size_explain(rec.work_area_size/1048576.0)}"}, :align=>"right"},
       {:caption=>"Exp. Size",     :data=>proc{|rec| fn(rec.expected_size/1048576.0,3)   },  :title=>"Expected size of the PGA work area in MB", data_title:proc{|rec| "%t\n#{size_explain(rec.expected_size/1048576.0)}"}, :align=>"right"},

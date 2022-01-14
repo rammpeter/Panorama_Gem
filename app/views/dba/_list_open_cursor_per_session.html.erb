@@ -18,11 +18,11 @@
      output = rec.own_saddr
      if rec.own_saddr == 'NO'
        output << ": "
-       output << ajax_link("NO: SID=#{rec.saddr_sid}, Serial#=#{rec.saddr_serialno}", {
+       output << ajax_link("NO: SID=#{rec.saddr_sid}, Serial#=#{rec.saddr_serial_no}", {
                                :action => :show_session_detail,
                                :instance => @instance,
                                :sid      => rec.saddr_sid,
-                               :serialno => rec.saddr_serialno,
+                               :serial_no => rec.saddr_serial_no,
                                :update_area => @update_area
                               },
                        :title => "Show details for session referenced by gv$Open_Cursor.SAddr"

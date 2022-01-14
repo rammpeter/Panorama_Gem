@@ -182,17 +182,7 @@ Remind the diagram view via context menu 'Show column in diagram'."),
             :sql=>  "
               SELECT Start_Time \"Start Time\", COUNT(*) \"Number of ASH-Samples\", COUNT(DISTINCT SQL_ID) \"Number of different SQLs\"
               FROM   (SELECT TRUNC(Sample_Time, ?) Start_Time, SQL_ID
-                      FROM   (
-                              SELECT /*+ NO_MERGE ORDERED */
-                                     10 Sample_Cycle, Instance_Number, Sample_Time, SQL_ID
-                              FROM   DBA_Hist_Active_Sess_History s
-                              LEFT OUTER JOIN   (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
-                              WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
-                              UNION ALL
-                              SELECT 1 Sample_Cycle, Inst_ID Instance_Number, Sample_Time, SQL_ID
-                              FROM   gv$Active_Session_History
-                             )
-                             WHERE  Sample_Time > SYSDATE - ?
+                      FROM   (#{ash_select(global_filter: "Sample_Time > SYSDATE - ?")})
                      )s
               GROUP BY Start_Time
               ORDER BY 1

@@ -24,9 +24,9 @@ module ActiveSessionHistoryHelper
       @session_statistics_key_rules_hash["Instance"]        = {:sql => "s.Instance_Number",   :sql_alias => "instance_number",    :Name => 'Inst.',         :Title => 'RAC instance' }
       @session_statistics_key_rules_hash["Con-ID"]          = {:sql => "s.Con_ID",            :sql_alias => "con_id",             :Name => 'Con.-ID',       :Title => 'Container-ID for pluggable database', :info_sql=>"(SELECT MIN(Name) FROM gv$Containers i WHERE i.Con_ID=s.Con_ID)", :info_caption=>'Container name' } if get_current_database[:cdb]
       if get_db_version >= "11.2"
-        @session_statistics_key_rules_hash["Session/Sn."] = {:sql => "DECODE(s.QC_instance_ID, NULL, s.Session_ID||', '||s.Session_Serial_No, s.QC_Session_ID||', '||s.QC_Session_Serial#)",        :sql_alias => "session_sn",        :Name => 'Session / Sn.',    :Title => 'Session-ID, SerialNo. (if executed in parallel query this is SID/sn of PQ-coordinator session)',  :info_sql  => "MIN(s.Session_Type)", :info_caption => "Session type" }
+        @session_statistics_key_rules_hash["Session/Sn."] = {:sql => "DECODE(s.QC_instance_ID, NULL, s.Session_ID||', '||s.Session_Serial_No, s.QC_Session_ID||', '||s.QC_Session_Serial_No)",        :sql_alias => "session_sn",        :Name => 'Session / Sn.',    :Title => 'Session-ID, Serial_No. (if executed in parallel query this is SID/sn of PQ-coordinator session)',  :info_sql  => "MIN(s.Session_Type)", :info_caption => "Session type" }
       else
-        @session_statistics_key_rules_hash["Session/Sn."] = {:sql => "s.Session_ID||', '||s.Session_Serial_No",        :sql_alias => "session_sn",        :Name => 'Session / Sn.',    :Title => 'Session-ID, SerialNo.',  :info_sql  => "MIN(s.Session_Type)", :info_caption => "Session Type" }
+        @session_statistics_key_rules_hash["Session/Sn."] = {:sql => "s.Session_ID||', '||s.Session_Serial_No",        :sql_alias => "session_sn",        :Name => 'Session / Sn.',    :Title => 'Session-ID, Serial_No.',  :info_sql  => "MIN(s.Session_Type)", :info_caption => "Session Type" }
       end
       @session_statistics_key_rules_hash["Session Type"]    = {:sql => "SUBSTR(s.Session_Type,1,1)", :sql_alias => "session_type",              :Name => 'S-T',          :Title      => "Session-type: (U)SER, (F)OREGROUND or (B)ACKGROUND" }
       @session_statistics_key_rules_hash["Transaction"]     = {:sql => "s.Tx_ID",             :sql_alias => "transaction",        :Name => 'Tx.',           :Title => 'Transaction-ID' } if get_db_version >= "11.2"
@@ -108,7 +108,7 @@ module ActiveSessionHistoryHelper
         SQL_ID_or_Top_Level_SQL_ID:       {:name => 'SQL-ID or top level SQL-ID',  :sql => "? IN (s.SQL_ID, s.Top_Level_SQL_ID)", already_bound: true},
         Plan_Hash_Value:                  {:name => 'Plan-Hash-Value',             :sql => "s.SQL_Plan_Hash_Value"},
         Session_ID:                       {:name => 'Session-ID',                  :sql => "s.Session_ID"},
-        SerialNo:                         {:name => 'SerialNo',                    :sql => "s.Session_Serial_No"},
+        Serial_No:                         {:name => 'Serial_No',                    :sql => "s.Session_Serial_No"},
         Idle_Wait1:                       {:name => 'Idle_Wait1',                  :sql => "NVL(s.Event, s.Session_State) != ?", :hide_content =>true, :already_bound => true},
         Owner:                            {:name => 'Owner',                       :sql => "UPPER(o.Owner)"},
         Object_Name:                      {:name => 'Object_Name',                 :sql => "o.Object_Name"},
@@ -162,15 +162,15 @@ module ActiveSessionHistoryHelper
 
   # Belegen des WHERE-Statements aus Hash mit Filter-Bedingungen und setzen Variablen
   def where_from_groupfilter (groupfilter, groupby)
-    @groupfilter = groupfilter             # Instanzvariablen zur nachfolgenden Nutzung
+    @groupfilter = groupfilter                                                  # Instanzvariablen zur nachfolgenden Nutzung
     @groupfilter = @groupfilter.to_unsafe_h.to_h.symbolize_keys  if @groupfilter.class == ActionController::Parameters
     raise "Parameter groupfilter should be of class Hash or ActionController::Parameters" if @groupfilter.class != Hash
-    @groupby    = groupby                  # Instanzvariablen zur nachfolgenden Nutzung
-    @global_where_string  = ""             # Filter-Text für nachfolgendes Statement mit AND-Erweiterung für alle Union-Tabellen
-    @global_where_values = []              # Filter-werte für nachfolgendes Statement für alle Union-Tabellen
-    @dba_hist_where_string  = ""             # Filter-Text für nachfolgendes Statement mit AND-Erweiterung für DBA_Hist_Active_Sess_History
-    @dba_hist_where_values = []              # Filter-werte für nachfolgendes Statement für DBA_Hist_Active_Sess_History
-    @sga_ash_where_string  = ""
+    @groupby    = groupby                                                       # Instanzvariablen zur nachfolgenden Nutzung
+    @global_where_string  = ''                                                  # Filter-Text für nachfolgendes Statement mit AND-Erweiterung für alle Union-Tabellen
+    @global_where_values = []                                                   # Filter-werte für nachfolgendes Statement für alle Union-Tabellen
+    @dba_hist_where_string  = ''                                                # Filter-Text für nachfolgendes Statement mit AND-Erweiterung für DBA_Hist_Active_Sess_History
+    @dba_hist_where_values = []                                                 # Filter-werte für nachfolgendes Statement für DBA_Hist_Active_Sess_History
+    @sga_ash_where_string  = ''
     @sga_ash_where_values = []
 
     # convert integers from strings
@@ -197,21 +197,23 @@ module ActiveSessionHistoryHelper
     end
 
     # Switch table access to no result if records are not needed
-    @sga_ash_where_string << " WHERE 1=2" unless sga_ash_needed?(@groupfilter)
+    @sga_ash_where_string << "1=2" unless sga_ash_needed?(@groupfilter)
 
     @groupfilter.each do |key,value|
       sql = groupfilter_value(key, value)[:sql]
       case key
       when :DBID, :Min_Snap_ID, :Max_Snap_ID
-        @dba_hist_where_string << " AND #{sql}"  # Filter weglassen, wenn nicht belegt
-        if value && value != ''
+        @dba_hist_where_string << " AND "  if @dba_hist_where_string != ''      # suppress leading AND
+        @dba_hist_where_string << sql
+          if value && value != ''     # Filter weglassen, wenn nicht belegt
           @dba_hist_where_values << value   # Wert nur binden wenn nicht im :sql auf NULL getestet wird
         else
           @dba_hist_where_values << 0                    # Wenn kein valides Alter festgestellt über DBA_Hist_Snapshot, dann reicht gv$Active_Session_History aus für Zugriff,
           @dba_hist_where_string << "/* Zugriff auf DBA_Hist_Active_Sess_History ausblenden, da kein Wert für #{key} gefunden wurde (alle Daten kommen aus gv$Active_Session_History)*/"
         end
       when :con_id
-        @sga_ash_where_string << "#{@sga_ash_where_string == '' ? " WHERE" : " AND"} #{sql} "
+        @sga_ash_where_string << ' AND ' if @sga_ash_where_string != ''          # suppress leading AND
+        @sga_ash_where_string << sql
         @sga_ash_where_values << value
       else
         @global_where_string << " AND #{sql}" if sql
@@ -243,33 +245,52 @@ module ActiveSessionHistoryHelper
     min_snap_id, max_snap_id = get_min_max_snap_ids(start_time, end_time, dbid)
     raise "No AWR snapshot found for DBID=#{@dbid}" if min_snap_id.nil? || max_snap_id.nil?
     sql = "WITH /* Panorama-Tool Ramm */
-           TSSel AS (SELECT /*+ NO_MERGE MATERIALIZE */ h.*, h.Time_Waited/1000000 Seconds_in_Wait
-                     FROM   (
-                              SELECT 10 Sample_Cycle,
-                                     #{rounded_sample_time_sql(10, 'h.Sample_Time')}  Rounded_Sample_Time,
-                                     Snap_ID, h.Instance_Number, Session_ID, Session_Serial#,
-                                     Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, Current_File#, Current_Block#,
-                                     #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
-                                     p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Session_State, Module, Action, Program, Machine, Service_Hash
-                              FROM   DBA_Hist_Active_Sess_History h
-                              LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = h.Instance_Number
-                              WHERE  (v.Min_Sample_Time IS NULL OR h.Sample_Time < v.Min_Sample_Time)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen  */
-                              AND    h.DBID = ?
-                              AND    h.Snap_ID BETWEEN ? AND ?
-                              AND    h.Sample_Time >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND h.Sample_Time < TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
-                              UNION ALL
-                              SELECT 1 Sample_Cycle,
-                                     #{rounded_sample_time_sql(1)} Rounded_Sample_Time, /* auf eine Sekunde genau gerundete Zeit */
-                                     NULL Snap_ID, h.Inst_ID Instance_Number, Session_ID, Session_Serial#,
-                                     Blocking_Session,Blocking_Session_Serial#, Blocking_Session_Status, Current_File#, Current_Block#,
-                                     #{'Blocking_Inst_ID, Current_Row#, ' if get_db_version >= '11.2' }
-                                     p2, p2Text, Time_Waited, Current_Obj#, SQL_ID, User_ID, Event, Session_State, Module, Action, Program, Machine, Service_Hash
-                              FROM   gv$Active_Session_History h
-                              WHERE  Sample_Time >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND Sample_Time < TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
-                            ) h
-                    )
+           #{ash_select(awr_filter:     "DBID = ? AND Snap_ID BETWEEN ? AND ?",
+                        global_filter:  "Sample_Time >= TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND Sample_Time < TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')",
+                        select_rounded_sample_time: true,
+                        with_cte_alias: 'TSSel'
+                       )}
     "
-    return sql, [dbid, min_snap_id, max_snap_id, start_time, end_time, start_time, end_time]
+    return sql, [dbid, min_snap_id, max_snap_id, start_time, end_time]
+  end
+
+  # Felder, die generell von DBA_Hist_Active_Sess_History und gv$Active_Session_History selektiert werden
+  def get_ash_default_select_list
+    retval = 'Sample_ID, Sample_Time, Session_id, Session_Type, Session_serial# Session_Serial_No, User_ID, SQL_Child_Number, SQL_Plan_Hash_Value, SQL_Opcode,
+              Session_State, Blocking_Session, Blocking_session_Status, Blocking_Session_Serial# Blocking_session_Serial_No,
+              Blocking_Hangchain_Info, NVL(Event, Session_State) Event, Event_ID, Seq# Sequence, P1Text, P1, P2Text, P2, P3Text, P3,
+              Wait_Class, Wait_Time, Time_waited, Time_Waited/1000000 Seconds_in_Wait, Program, Module, Action, Client_ID, Current_Obj# Current_Obj_No, Current_File#  Current_File_No, Current_Block# Current_Block_No, RawToHex(XID) Tx_ID,
+              PLSQL_Entry_Object_ID, PLSQL_Entry_SubProgram_ID, PLSQL_Object_ID, PLSQL_SubProgram_ID, Service_Hash, QC_Session_ID, QC_Instance_ID '
+    if get_db_version >= '11.2'
+      retval << ", NVL(SQL_ID, Top_Level_SQL_ID) SQL_ID,  /* Wenn keine SQL-ID, dann wenigstens Top-Level SQL-ID zeigen */
+                 QC_Session_Serial# QC_Session_Serial_No, Is_SQLID_Current, Top_Level_SQL_ID, SQL_Plan_Line_ID, SQL_Plan_Operation, SQL_Plan_Options, SQL_Exec_ID, SQL_Exec_Start,
+                 Blocking_Inst_ID, Current_Row# Current_Row_No, Remote_Instance# Remote_Instance_No, Machine, Port, PGA_Allocated, Temp_Space_Allocated,
+                 TM_Delta_Time/1000000 TM_Delta_Time_Secs, TM_Delta_CPU_Time/1000000 TM_Delta_CPU_Time_Secs, TM_Delta_DB_Time/1000000 TM_Delta_DB_Time_Secs,
+                 Delta_Time/1000000 Delta_Time_Secs, Delta_Read_IO_Requests, Delta_Write_IO_Requests,
+                 Delta_Read_IO_Bytes/1024 Delta_Read_IO_kBytes, Delta_Write_IO_Bytes/1024 Delta_Write_IO_kBytes, Delta_Interconnect_IO_Bytes/1024 Delta_Interconnect_IO_kBytes,
+                 SUBSTR(DECODE(In_Connection_Mgmt,   'Y', ', connection management') ||
+                 DECODE(In_Parse,             'Y', ', parse') ||
+                 DECODE(In_Hard_Parse,        'Y', ', hard parse') ||
+                 DECODE(In_SQL_Execution,     'Y', ', SQL exec') ||
+                 DECODE(In_PLSQL_Execution,   'Y', ', PL/SQL exec') ||
+                 DECODE(In_PLSQL_RPC,         'Y', ', exec inbound PL/SQL RPC calls') ||
+                 DECODE(In_PLSQL_Compilation, 'Y', ', PL/SQL compile') ||
+                 DECODE(In_Java_Execution,    'Y', ', Java exec') ||
+                 DECODE(In_Bind,              'Y', ', bind') ||
+                 DECODE(In_Cursor_Close,      'Y', ', close cursor') ||
+                 DECODE(In_Sequence_Load,     'Y', ', load sequence') ||
+                 DECODE(Capture_Overhead,     'Y', ', capture overhead') ||
+                 DECODE(Replay_Overhead,      'Y', ', replay overhead') ||
+                 DECODE(Is_Captured,          'Y', ', session captured') ||
+                 DECODE(Is_Replayed,          'Y', ', session replayed'), 3) Modus
+                "
+    else
+      retval << ', SQL_ID' # für 10er DB keine Top_Level_SQL_ID verfügbar
+    end
+    if get_db_version >= '12.1'
+      retval << ", Con_ID"
+    end
+    retval
   end
 
   # round sample time for ASH so that samples from different RAC instances are comparable/matchable
@@ -281,4 +302,48 @@ module ActiveSessionHistoryHelper
     end
   end
 
+  # get SELECT for combination of V$Active_Session_History and DBA_Hist_Active_Sess_History
+  # @param sga_columns: Additional columns for V$Active_Session_History
+  # @param awr_columns: Additional columns for DBA_Hist_Active_Sess_History
+  # @param sga_filter: Additional WHERE conditions for V$Active_Session_History, should not start with WHERE or AND
+  # @param awr_filter: Additional WHERE conditions for DBA_Hist_Active_Sess_History, should not start with WHERE or AND
+  # @param additional_hints: Optimizer hints for SQL
+  def ash_select(awr_columns:                 get_ash_default_select_list,
+                 sga_columns:                 get_ash_default_select_list,
+                 awr_filter:                  nil,
+                 sga_filter:                  nil,
+                 global_filter:               nil,
+                 additional_hints:            nil,
+                 select_rounded_sample_time:  false,
+                 dbid:                        nil,                              # value for pseudo-column in gv$Active_Session_History if needed in result
+                 with_cte_alias:              nil                               # shape as CTE in WITH-clause
+  )
+    awr_filter = nil if  awr_filter == ''
+    sga_filter = nil if  sga_filter == ''
+    # if used within existing CTE, don't double WITH, only if first WITH element "WITH" must preceed
+    "
+     #{"WITH" unless with_cte_alias }
+          ASH_Time AS (SELECT /*+ NO_MERGE MATERIALIZE */ i.Inst_ID, NVL(Min_Sample_Time, SYSTIMESTAMP) Min_Sample_Time
+                       FROM   gv$Instance i
+                       LEFT OUTER JOIN (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time
+                                        FROM gv$Active_Session_History
+                                        GROUP BY Inst_ID
+                                       ) ash ON ash.Inst_ID = i.Inst_ID
+                      )#{", #{with_cte_alias} AS (" if with_cte_alias}
+     SELECT /*+ NO_MERGE #{"MATERIALIZE" if with_cte_alias} #{additional_hints} */ *
+     FROM   (SELECT 10 Sample_Cycle, Instance_Number, Snap_ID, #{awr_columns}#{", dbid" if dbid}
+                    #{", #{rounded_sample_time_sql(10)} Rounded_Sample_Time" if select_rounded_sample_time}
+             FROM   DBA_Hist_Active_Sess_History s
+             WHERE  s.Sample_Time < (SELECT Min_Sample_Time FROM Ash_Time a WHERE a.Inst_ID = s.Instance_Number)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen */
+             #{awr_filter.nil? ? '' : " AND #{awr_filter}"}
+             UNION ALL
+             SELECT 1 Sample_Cycle,  Inst_ID Instance_Number, NULL Snap_ID, #{sga_columns}#{", #{dbid}" if dbid}
+                    #{", #{rounded_sample_time_sql(1)} Rounded_Sample_Time /* auf eine Sekunde genau gerundete Zeit */" if select_rounded_sample_time}
+             FROM gv$Active_Session_History
+             #{sga_filter.nil? ? '' : " WHERE #{sga_filter}"}
+            )
+     #{global_filter.nil? ? '' : " WHERE #{global_filter}"}
+     #{")" if with_cte_alias}
+    "
+  end
 end

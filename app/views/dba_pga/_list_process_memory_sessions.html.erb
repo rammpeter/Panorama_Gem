@@ -4,7 +4,7 @@
   column_options =
       [
           {:caption=>'I',                                   :data=>proc{|rec| rec.inst_id},                   :title=>"RAC-Instance", :align=>:right},
-          {:caption=>'SID / Sn.',                           :data=>proc{|rec| link_session_details(@update_area, rec.inst_id, rec.sid, rec.serialno)},              :title=>"Session-ID / serial number"},
+          {:caption=>'SID / Sn.',                           :data=>proc{|rec| link_session_details(@update_area, rec.inst_id, rec.sid, rec.serial_no)},              :title=>"Session-ID / serial number"},
           {:caption=>'Status',                              :data=>proc{|rec| rec.status},                    :title=>"Database session status" },
           {:caption=>"Allocated PGA (MB '#{@category}')",   :data=>proc{|rec| fn(rec.allocated_mb, 2)},       :title=>"MBytes of PGA memory for category = \'#{@category}\' allocated by the process for the category.\nFor the 'Freeable' category, it is the amount of free PGA memory eligible to be released to the operating system.", :align=>:right},
           {:caption=>"Used PGA (MB '#{@category})",         :data=>proc{|rec| fn(rec.used_mb, 2)},            :title=>"MBytes of PGA memory for category = \'#{@category}\' used by the process for the category.\nFor 'Freeable', the value is zero.\nFor 'Other', the value is NULL for performance reasons.", :align=>:right},

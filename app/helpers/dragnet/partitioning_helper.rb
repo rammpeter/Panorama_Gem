@@ -91,15 +91,21 @@ This way partition pruning may be used for access on unique indexes plus possibl
 For frequently used indexes with high partition count this may result in unnecessary high access on database buffers.
 Solution for such situations is global (not) partitioning of index.'),
             :sql=> "WITH  Days_Back AS (SELECT SYSDATE-? Limit FROM DUAL),
+                          ASH_Time AS (SELECT /*+ NO_MERGE MATERIALIZE */ i.Inst_ID, NVL(Min_Sample_Time, SYSTIMESTAMP) Min_Sample_Time
+                                       FROM   gv$Instance i
+                                       LEFT OUTER JOIN (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time
+                                                        FROM gv$Active_Session_History
+                                                        GROUP BY Inst_ID
+                                                       ) ash ON ash.Inst_ID = i.Inst_ID
+                                      ),
                     Ash AS (SELECT /*+ NO_MERGE MATERIALIZE */ SUM(Sample_Cycle) Elapsed_Secs, Instance_Number, SQL_ID, SQL_Plan_Hash_Value, SQL_plan_Line_ID
                             FROM   (
-                                    SELECT /*+ NO_MERGE ORDERED */
+                                     SELECT /*+ NO_MERGE ORDERED */
                                            10 Sample_Cycle, s.Instance_Number, SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID
                                     FROM   DBA_Hist_Active_Sess_History s
-                                    LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
                                     JOIN   DBA_Hist_Snapshot ss ON ss.DBID = s.DBID AND ss.Instance_Number = s.Instance_Number AND ss.Snap_ID = s.Snap_ID
                                     CROSS JOIN Days_Back
-                                    WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
+                                    WHERE  s.Sample_Time < (SELECT Min_Sample_Time FROM Ash_Time a WHERE a.Inst_ID = s.Instance_Number)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen */
                                     AND    ss.Begin_Interval_Time > Days_Back.Limit
                                     UNION ALL
                                     SELECT 1 Sample_Cycle, Inst_ID Instance_Number, SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID
@@ -176,11 +182,18 @@ SELECT h.SQL_ID, h.SQL_Plan_Line_ID \"SQL plan line id\", h.SQL_Plan_Hash_Value,
        NVL(p.Filter_Predicates, '[Not known because SQL plan is not in SGA]') Filter_Predicates
 FROM   (
         SELECT /*+ NO_MERGE */ SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID, Current_Obj#, SUM(Wait_Time_Sec) Wait_Time_Sec
-        FROM   (SELECT /*+ NO_MERGE ORDERED */
+        FROM   (
+                 WITH ASH_Time AS (SELECT /*+ NO_MERGE MATERIALIZE */ i.Inst_ID, NVL(Min_Sample_Time, SYSTIMESTAMP) Min_Sample_Time
+                                   FROM   gv$Instance i
+                                   LEFT OUTER JOIN (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time
+                                                    FROM gv$Active_Session_History
+                                                    GROUP BY Inst_ID
+                                                   ) ash ON ash.Inst_ID = i.Inst_ID
+                                  )
+                SELECT /*+ NO_MERGE ORDERED */
                        10 Wait_Time_Sec, Sample_Time, SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID, SQL_Child_Number, SQL_Plan_Operation, SQL_Plan_Options, User_ID, Current_Obj#
                 FROM   DBA_Hist_Active_Sess_History s
-                LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
-                WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
+                WHERE  s.Sample_Time < (SELECT Min_Sample_Time FROM Ash_Time a WHERE a.Inst_ID = s.Instance_Number)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen */
                 AND    DBID = (SELECT DBID FROM v$Database) /* Suppress multiple occurrence of records in PDB environment */
                 UNION ALL
                 SELECT 1 Wait_Time_Sec,  Sample_Time, SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID, SQL_Child_Number, SQL_Plan_Operation, SQL_Plan_Options, User_ID, Current_Obj#

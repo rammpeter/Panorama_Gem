@@ -79,14 +79,14 @@ class ActiveSupport::TestCase
 
     connect_oracle_db
 
-    db_session = sql_select_first_row "SELECT s.Inst_ID, s.SID, s.Serial# SerialNo, RawToHex(s.Saddr)Saddr, p.PID
+    db_session = sql_select_first_row "SELECT s.Inst_ID, s.SID, s.Serial# Serial_No, RawToHex(s.Saddr)Saddr, p.PID
                                        FROM   gV$Session s
                                        JOIN   gv$Process p ON p.Inst_ID=s.Inst_ID AND p.Addr = s.pAddr
                                        WHERE  s.SID=UserEnv('SID')  AND s.Inst_ID = USERENV('INSTANCE')"
     @dbid     = PanoramaConnection.dbid
     @instance = db_session.inst_id
     @sid      = db_session.sid
-    @serialno = db_session.serialno
+    @serial_no = db_session.serial_no
     @saddr    = db_session.saddr
     @pid      = db_session.pid
 

@@ -166,44 +166,44 @@ class PanoramaSamplerSampling
   end
 
   def do_object_size_sampling(snapshot_time)
-    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config.get_owner}.Panorama_Object_Sizes (Owner, Segment_Name, Segment_Type, Tablespace_Name, Gather_Date, Bytes, Num_Rows)
-                                     SELECT s.*, n.Num_Rows
-                                     FROM   (
-                                             SELECT Owner, Segment_Name, Segment_Type, Tablespace_Name, TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS'), NVL(SUM(Bytes), 0)
-                                             FROM   DBA_Segments
-                                             WHERE  Segment_Type NOT IN ('TYPE2 UNDO', 'TEMPORARY')
-                                             GROUP BY Owner, Segment_Name, Segment_Type, Tablespace_Name
-                                            ) s
-                                     LEFT OUTER JOIN (
-                                                      SELECT Owner, Index_Name Object_Name, Num_Rows, 'INDEX' Type
-                                                      FROM DBA_Indexes
-                                                      WHERE Num_Rows IS NOT NULL
-                                                      UNION ALL
-                                                      SELECT Owner, Table_Name Object_Name, Num_Rows, 'TABLE' Type
-                                                      FROM DBA_Tables
-                                                      WHERE Num_Rows IS NOT NULL
-                                                      UNION ALL /* Num_Rows from table for LOBs */
-                                                      SELECT l.Owner, l.Segment_Name Object_Name, t.Num_Rows, 'LOB' Type
-                                                      FROM DBA_Lobs l
-                                                      JOIN DBA_Tables  t ON t.Owner = l.Owner AND t.Table_Name = l.Table_Name
-                                                      UNION ALL /* Num_Rows from table for LOB indexes because LOB-indexes themself does not contain valid num_rows after analysis */
-                                                      SELECT l.Owner, l.Index_Name Object_Name, t.Num_Rows, 'LOBINDEX' Type
-                                                      FROM DBA_Lobs l
-                                                      JOIN DBA_Tables  t ON t.Owner = l.Owner AND t.Table_Name = l.Table_Name
-                                                     ) n ON n.Owner = s.Owner AND n.Object_Name = s.Segment_Name
-                                                     --AND INSTR(s.Segment_Type, n.Type) > 0
-                                                     AND DECODE(s.Segment_Type,
-                                                                'TABLE PARTITION',      'TABLE',
-                                                                'TABLE SUBPARTITION',   'TABLE',
-                                                                'INDEX PARTITION',      'INDEX',
-                                                                'INDEX SUBPARTITION',   'INDEX',
-                                                                'LOBSEGMENT',           'LOB',
-                                                                'LOB PARTITION',        'LOB',
-                                                                s.Segment_Type
-                                                                ) = n.Type
-                                    ",
-                                    snapshot_time.strftime('%Y-%m-%d %H:%M:%S')
-                                   ]
+    PanoramaConnection.sql_execute ["\
+      INSERT INTO #{@sampler_config.get_owner}.Panorama_Object_Sizes (Owner, Segment_Name, Segment_Type, Tablespace_Name, Gather_Date, Bytes, Num_Rows)
+      WITH Tables      AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name Object_Name, Num_Rows, 'TABLE' Type FROM DBA_Tables  WHERE Num_Rows IS NOT NULL),
+           Indexes     AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name Object_Name, Num_Rows, 'INDEX' Type FROM DBA_Indexes WHERE Num_Rows IS NOT NULL),
+           Lobs        AS (SELECT /*+ NO_MERGE MATERIALIZE */ l.Owner, l.Segment_Name Object_Name, t.Num_Rows, 'LOB' Type
+                           FROM   DBA_Lobs l
+                           JOIN   Tables  t ON t.Owner = l.Owner AND t.Object_Name = l.Table_Name
+                          ),
+           Lob_Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ l.Owner, l.Index_Name Object_Name, t.Num_Rows, 'LOBINDEX' Type
+                           FROM   DBA_Lobs l
+                           JOIN   Tables  t ON t.Owner = l.Owner AND t.Object_Name = l.Table_Name
+                          )
+      SELECT s.*, n.Num_Rows
+      FROM   (
+              SELECT /*+ NO_MERGE */ Owner, Segment_Name, Segment_Type, Tablespace_Name, TO_DATE(?, 'YYYY-MM-DD HH24:MI:SS'), NVL(SUM(Bytes), 0)
+              FROM   DBA_Segments
+              WHERE  Segment_Type NOT IN ('TYPE2 UNDO', 'TEMPORARY')
+              GROUP BY Owner, Segment_Name, Segment_Type, Tablespace_Name
+             ) s
+      LEFT OUTER JOIN (
+                       SELECT * FROM Indexes
+                       UNION ALL
+                       SELECT * FROM Tables
+                       UNION ALL /* Num_Rows from table for LOBs */
+                       SELECT * FROM Lobs
+                       UNION ALL /* Num_Rows from table for LOB indexes because LOB-indexes themself does not contain valid num_rows after analysis */
+                       SELECT * FROM Lob_Indexes
+                      ) n ON n.Owner = s.Owner AND n.Object_Name = s.Segment_Name
+                               AND DECODE(s.Segment_Type,
+                                          'TABLE PARTITION',      'TABLE',
+                                          'TABLE SUBPARTITION',   'TABLE',
+                                          'INDEX PARTITION',      'INDEX',
+                                          'INDEX SUBPARTITION',   'INDEX',
+                                          'LOBSEGMENT',           'LOB',
+                                          'LOB PARTITION',        'LOB',
+                                          s.Segment_Type
+                                          ) = n.Type
+      ", snapshot_time.strftime('%Y-%m-%d %H:%M:%S')]
   end
 
   def do_object_size_housekeeping(shrink_space)

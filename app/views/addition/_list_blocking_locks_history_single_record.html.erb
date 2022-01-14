@@ -16,14 +16,14 @@ end
                             DBID:                 get_dbid,
                             Instance:             rec.blocking_instance_number,
                             Session_ID:           rec.blocking_sid,
-                            SerialNo:             rec.blocking_serialno,
+                            Serial_No:             rec.blocking_serial_no,
                             Idle_Wait1:           'PX Deq Credit: send blkd',
                             time_selection_start: localeDateTime(rec.snapshot_timestamp),
                             time_selection_end:   localeDateTime(rec.snapshot_timestamp),
                           },
                           :groupby      => 'Session/Sn.',
                           :update_area  => @update_area
-                        }, title: "Show Active Session History of this session with serial# = '#{rec.blocking_serialno}' "
+                        }, title: "Show Active Session History of this session with serial# = '#{rec.blocking_serial_no}' "
       )
 
       retval << ' '
@@ -33,7 +33,7 @@ end
                              :snapshot_timestamp => localeDateTime(rec.snapshot_timestamp),
                              :instance     => rec.instance_number,
                              :sid          => rec.sid,
-                             :serialno     => rec.serialno
+                             :serial_no     => rec.serial_no
                             },
                             :title => "Show full cascade of blockers for this session"
       )
@@ -48,7 +48,7 @@ def link_column_blocking_reason_cascade(rec, value)
                  :snapshot_timestamp => localeDateTime(rec.snapshot_timestamp),
                  :instance     => rec.instance_number,
                  :sid          => rec.sid,
-                 :serialno     => rec.serialno
+                 :serial_no     => rec.serial_no
                 },
          :title => "Show full cascade of blockers for this session")
 end
@@ -57,7 +57,7 @@ column_options =
   [
     {:caption=>"Snapshot",              :data=>proc{|rec| localeDateTime(rec.snapshot_timestamp)},   :title=>"Snapshot timestamp"},
     {:caption=>"B. I",                  :data=>proc{|rec| rec.blocking_instance_number},     :title=>"RAC-Instance of blocking session"},
-    {:caption=>"B. SID",                :data=>link_ash_blocking_sid,                         :title=>"Session-ID of blocking session", :data_title=>proc{|rec| "%t\nSerialNo=#{rec.blocking_serialno}"}},
+    {:caption=>"B. SID",                :data=>link_ash_blocking_sid,                         :title=>"Session-ID of blocking session", :data_title=>proc{|rec| "%t\nSerial_No=#{rec.blocking_serial_no}"}},
     {:caption=>"B. SQL-ID Prev.SQL-ID", :data=>proc{|rec| "#{link_column_sql_id(rec.blocking_instance_number, rec.blocking_sql_id, rec.blocking_sql_child_number, rec.blocking_user_name)} #{link_column_sql_id(rec.blocking_instance_number, rec.blocking_prev_sql_id, rec.blocking_prev_child_number, rec.blocking_user_name)}"}, :title=>"Last and previous executed SQL of blocking session"},
     {:caption=>"B. Event",              :data=>proc{|rec| rec.blocking_event},               :title=>"Wait event of blocking session"},
     {:caption=>"B. Status",             :data=>proc{|rec| rec.blocking_status},              :title=>"Status of blocking session"},
@@ -68,7 +68,7 @@ column_options =
     {:caption=>"Blocking Object",       :data=>proc{|rec| link_object_description(@update_area, rec.blocking_object_owner, rec.blocking_object_name)},  :title=>"Schema and name of blocking object"},
     {:caption=>"RowID / Primary Key",   :data=>proc{|rec| "#{rec.blocking_rowid} #{rec.waiting_for_pk_column_name}#{" = #{rec.waiting_for_pk_value}" if rec.waiting_for_pk_value}"}, :title=>"RowID as well as primary key columns and values of blocking object"},
     {:caption=>"W. I",                  :data=>proc{|rec| rec.instance_number},              :title=>"RAC-Instance of blocked session"},
-    {:caption=>"W. SID",                :data=>proc{|rec| link_column_blocking_reason_cascade(rec, rec.sid)}, :title=>"Session-ID of blocked session", :data_title=>proc{|rec| "%t\nSerialNo=#{rec.serialno}"}},
+    {:caption=>"W. SID",                :data=>proc{|rec| link_column_blocking_reason_cascade(rec, rec.sid)}, :title=>"Session-ID of blocked session", :data_title=>proc{|rec| "%t\nSerial_No=#{rec.serial_no}"}},
     {:caption=>"W. SQL-ID Prev.SQL-ID", :data=>proc{|rec| "#{link_column_sql_id(rec.instance_number, rec.sql_id, rec.sql_child_number, rec.user_name)} #{link_column_sql_id(rec.instance_number, rec.prev_sql_id, rec.prev_child_number, rec.user_name)}"}, :title=>"SQL-ID of current and previous SQL of blocked session"},
     {:caption=>"W. Event",              :data=>proc{|rec| rec.event},                        :title=>"Wait event of blocked session", data_title: proc{|rec| "%t\n\n#{explain_wait_event(rec.event)}"}},
     {:caption=>"W. Status",             :data=>proc{|rec| rec.status},                       :title=>"Status of blocked session"},

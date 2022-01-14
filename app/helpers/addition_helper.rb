@@ -27,7 +27,7 @@ module AdditionHelper
       "Max_Timestamp"     => {:sql => "l.Snapshot_Timestamp<=TO_DATE(?, '#{sql_datetime_second_mask}')", :already_bound => true  },
       "Instance"          => {:sql => "l.Instance_Number",          alias: 'instance_number' },
       "SID"               => {:sql => "l.SID"},
-      "SerialNo"          => {:sql => "l.SerialNo"},
+      "Serial_No"          => {:sql => "l.Serial_No"},
       "Hide_Non_Blocking" => {:sql => "NVL(l.Blocking_SID, '0') != ?", :already_bound => true },
       "Blocking Object"   => {:sql => "LOWER(l.Blocking_Object_Owner)||'.'||l.Blocking_Object_Name", alias: 'blocking_object' },
       "SQL-ID"            => {:sql => "l.SQL_ID",                   alias: 'sql_id'},

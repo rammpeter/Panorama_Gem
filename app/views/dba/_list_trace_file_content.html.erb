@@ -41,14 +41,14 @@
 
   link_session = proc do |rec|
     if rec.session_id == 0
-      "#{rec.session_id},#{rec.serialno}"
+      "#{rec.session_id},#{rec.serial_no}"
     else
-        ajax_link("#{rec.session_id},#{rec.serialno}", {
+        ajax_link("#{rec.session_id},#{rec.serial_no}", {
                    controller:            :active_session_history,
                    action:                :show_prepared_active_session_history,
                    instance:              rec.inst_id,
                    sid:                   rec.session_id,
-                   serialno:              rec.serialno,
+                   serial_no:              rec.serial_no,
                    time_selection_start:  localeDateTime(rec.timestamp),
                    time_selection_end:    localeDateTime(rec.timestamp),
                    update_area:           @update_area,

@@ -2,11 +2,11 @@
    @update_area = get_unique_area_id
 
     link_blocking_sid = proc do |rec|
-        ajax_link(rec.blocking_instance_number ? "#{rec.blocking_instance_number}:#{rec.blocking_sid},#{rec.blocking_serialno}" : "", {
+        ajax_link(rec.blocking_instance_number ? "#{rec.blocking_instance_number}:#{rec.blocking_sid},#{rec.blocking_serial_no}" : "", {
                  :action            => :show_session_detail,
                  :instance          => rec.blocking_instance_number,
                  :sid               => rec.blocking_sid,
-                 :serialno          => rec.blocking_serialno,
+                 :serial_no          => rec.blocking_serial_no,
                  :update_area       => @update_area
                 },
          :title => "Show details for blocking session"
@@ -26,11 +26,11 @@
     end
 
    link_blocked_sid = proc do |rec|
-     ajax_link(rec.blocked_instance_number ? "#{rec.blocked_instance_number}:#{rec.blocked_sid},#{rec.blocked_serialno}" : "", {
+     ajax_link(rec.blocked_instance_number ? "#{rec.blocked_instance_number}:#{rec.blocked_sid},#{rec.blocked_serial_no}" : "", {
          :action            => :show_session_detail,
          :instance          => rec.blocked_instance_number,
          :sid               => rec.blocked_sid,
-         :serialno          => rec.blocked_serialno,
+         :serial_no          => rec.blocked_serial_no,
          :update_area       => @update_area
      },
                :title => "Show details for blocked session"

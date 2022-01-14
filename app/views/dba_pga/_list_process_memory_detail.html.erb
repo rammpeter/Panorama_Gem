@@ -3,7 +3,7 @@
 
   column_options =
       [
-          {caption: 'Serial no',              data: proc{|rec| fn(rec.serialno)},               title: "Oracle process serial number", align: :right },
+          {caption: 'Serial no',              data: proc{|rec| fn(rec.serial_no)},               title: "Oracle process serial number", align: :right },
           {caption: 'Category',               data: proc{|rec| rec.category},                   title: "Category name. Categories include:\nSQL\nPL/SQL\nOLAP\nJAVA\nFreeable\nOther" },
           {caption: 'Name',                   data: proc{|rec| rec.name},                       title: "PGA memory allocation comment. Small allocations may be grouped together with NAME set to Miscellaneous for performance reasons." },
           {caption: 'Heap name',              data: proc{|rec| rec.heap_name},                  title: "Name of heap or heaps (if same name) containing the allocations" },

@@ -629,8 +629,8 @@ class DbaSgaController < ApplicationController
     # PGA-Workarea-Nutzung
     @workareas = sql_select_all ["\
       SELECT /* Panorama Ramm */ w.*,
-             s.Serial# SerialNo,
-             sq.Serial# QCSerialNo
+             s.Serial# Serial_No,
+             sq.Serial# QCSerial_No
       FROM   gv$SQL_Workarea_Active w
       JOIN   gv$Session s ON s.Inst_ID=w.Inst_ID AND s.SID=w.SID
       LEFT OUTER JOIN gv$Session sq ON sq.Inst_ID=w.QCInst_ID AND sq.SID=w.QCSID
@@ -796,7 +796,7 @@ class DbaSgaController < ApplicationController
        SELECT /* Panorama-Tool Ramm */
               o.*,
               s.SID,
-              s.Serial# SerialNo,
+              s.Serial# Serial_No,
               s.OSUser,
               s.Process,
               s.Machine,
@@ -1043,7 +1043,7 @@ class DbaSgaController < ApplicationController
   def list_cursor_memory
     @instance =  prepare_param_instance
     @sid      =  params[:sid].to_i
-    @serialno = params[:serialno].to_i
+    @serial_no = params[:serial_no].to_i
     @sql_id   = params[:sql_id]
 
         @workareas = sql_select_all ["

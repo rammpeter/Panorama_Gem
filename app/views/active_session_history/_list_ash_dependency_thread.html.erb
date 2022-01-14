@@ -83,7 +83,7 @@
                                                    :time_selection_end     => localeDateTime(rec.rounded_sample_time),
                                                    :Instance               => rec.blocking_inst_id,
                                                    :Session_ID             => rec.blocking_session,
-                                                   :SerialNo               => rec.blocking_session_serial_no
+                                                   :Serial_No               => rec.blocking_session_serial_no
                                  },
                                  :groupby      => 'Session/Sn.',
                                  :update_area  => @update_area,
@@ -140,7 +140,7 @@
   column_options <<  {caption: 'O',                data: proc{|rec| rec.sql_opcode},                  title: "SQL-Opcode", data_title: proc{|rec| "%t\nSQL-Operation=#{rec.sql_operation}" } }
   column_options <<  {caption: 'Exec.',            data: proc{|rec| "ID=#{rec.sql_exec_id} #{localeDateTime(rec.sql_exec_start)}" },  title: "SQL Execution-ID, Start of Execution" }                     if get_db_version >= "11.2"
   column_options <<  {caption: 'Oper.',            data: proc{|rec| "Line=#{rec.sql_plan_line_id} #{rec.sql_plan_operation} #{rec.sql_plan_options}" }, title: "Operation in execution plan line" }   if get_db_version >= "11.2"
-  column_options <<  {caption: 'Block.',           data: link_blocking_sid,                           title: "Blocking session SID, GLOBAL=blocked from other RAC-instance", :data_title=>proc{|rec| "Blocking Session SID\nBlocking Session-Status=#{rec.blocking_session_status}\nBlocking Session SerialNo=#{rec.blocking_session_serial_no}"} }
+  column_options <<  {caption: 'Block.',           data: link_blocking_sid,                           title: "Blocking session SID, GLOBAL=blocked from other RAC-instance", :data_title=>proc{|rec| "Blocking Session SID\nBlocking Session-Status=#{rec.blocking_session_status}\nBlocking Session Serial_No=#{rec.blocking_session_serial_no}"} }
   column_options <<  {caption: 'Wait Event',       data: proc{|rec| rec.event ? rec.event : rec.session_state },      title: 'Session wait event during sample', :data_title=>proc{|rec| "%t\nEvent-ID=#{rec.event_id}\nWait class=#{rec.wait_class}\nSequence=#{rec.sequence}.\n#{explain_wait_event(rec.event)}"} }
   column_options <<  {caption: 'Param.',           data: local_link_wait_params,                      title: "Parameter of wait event"}
   column_options <<  {caption: 'Wait-Time',        data: proc{|rec| fn(rec.wait_time/1000.0,2) },     title: "Total wait time in milliseconds for the event for which the session last waited (0 if currently waiting)\nFrom ash.Wait_Time", data_title: proc{|rec| "%t\n#{seconds_explain(rec.wait_time.to_f/1000000)}"}, :align=>"right"}

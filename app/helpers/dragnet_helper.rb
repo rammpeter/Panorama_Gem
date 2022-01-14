@@ -2,6 +2,9 @@
 
 require 'json'
 
+# especially for ash_select
+include ActiveSessionHistoryHelper
+
 # Liste der Rasterfahndungs-SQL
 include Dragnet::CascadingViewsHelper
 include Dragnet::DragnetSqlsLogwriterRedoHelper

@@ -269,7 +269,7 @@ class AdditionController < ApplicationController
                       WHERE  l.Snapshot_Timestamp BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
                       AND    l.Blocking_SID IS NOT NULL  -- keine langdauernden Locks beruecksichtigen
                     )
-      SELECT Root_Snapshot_Timestamp, Root_Blocking_Instance_Number, Root_Blocking_SID, Root_Blocking_SerialNo,
+      SELECT Root_Snapshot_Timestamp, Root_Blocking_Instance_Number, Root_Blocking_SID, Root_Blocking_Serial_No,
              COUNT(DISTINCT SID) Blocked_Sessions_Total,
              COUNT(DISTINCT CASE WHEN cLevel=1 THEN SID ELSE NULL END) Blocked_Sessions_Direct,
              SUM(Seconds_In_Wait)                                      Seconds_in_wait_Total,
@@ -310,7 +310,7 @@ class AdditionController < ApplicationController
               SELECT CONNECT_BY_ROOT Snapshot_Timestamp       Root_Snapshot_Timestamp,
                      CONNECT_BY_ROOT Blocking_Instance_Number Root_Blocking_Instance_Number,
                      CONNECT_BY_ROOT Blocking_SID             Root_Blocking_SID,
-                     CONNECT_BY_ROOT Blocking_SerialNo        Root_Blocking_SerialNo,
+                     CONNECT_BY_ROOT Blocking_Serial_No        Root_Blocking_Serial_No,
                      CONNECT_BY_ROOT Blocking_Object_Owner    Root_Blocking_Object_Owner,
                      CONNECT_BY_ROOT Blocking_Object_Name     Root_Blocking_Object_Name,
                      CONNECT_BY_ROOT Blocking_RowID           Root_Blocking_RowID,
@@ -336,16 +336,16 @@ class AdditionController < ApplicationController
               CONNECT BY NOCYCLE PRIOR Snapshot_Timestamp   = Snapshot_Timestamp
                      AND PRIOR sid                          = blocking_sid
                      AND PRIOR instance_number              = blocking_instance_number
-                     AND PRIOR serialno                     = blocking_serialNo
+                     AND PRIOR serial_no                     = blocking_serial_no
              ) l
 
       WHERE NOT EXISTS (SELECT 1 FROM TSSel i -- Nur die Knoten ohne Parent-Blocker darstellen
                         WHERE  i.Snapshot_Timestamp = l.Snapshot_Timestamp
                         AND    i.Instance_Number    = l.Root_Blocking_Instance_Number
                         AND    i.SID                = l.Root_Blocking_SID
-                        AND    i.SerialNo           = l.Root_Blocking_SerialNo
+                        AND    i.Serial_No           = l.Root_Blocking_Serial_No
                        )
-      GROUP BY Root_Snapshot_Timestamp, Root_Blocking_Instance_Number, Root_Blocking_SID, Root_Blocking_SerialNo,
+      GROUP BY Root_Snapshot_Timestamp, Root_Blocking_Instance_Number, Root_Blocking_SID, Root_Blocking_Serial_No,
                Root_Blocking_SQL_ID, Root_Blocking_SQL_Child_Number, Root_Blocking_Prev_SQL_ID, Root_Block_Prev_Child_Number,
                Root_Blocking_Event, Root_Blocking_Status, Root_Blocking_Client_Info,
                Root_Blocking_Module, Root_Blocking_Action, Root_Blocking_User_Name, Root_Blocking_Machine, Root_Blocking_OS_User,
@@ -368,7 +368,7 @@ class AdditionController < ApplicationController
     @snapshot_timestamp = params[:snapshot_timestamp]
     @blocking_instance  = params[:blocking_instance]
     @blocking_sid       = params[:blocking_sid]
-    @blocking_serialno  = params[:blocking_serialno]
+    @blocking_serial_no  = params[:blocking_serial_no]
 
     @locks= sql_select_all ["\
       WITH TSel AS (SELECT /*+ NO_MERGE */ *
@@ -376,7 +376,7 @@ class AdditionController < ApplicationController
                     WHERE  l.Snapshot_Timestamp = TO_DATE(?, '#{sql_datetime_second_mask}')
                     AND    l.Blocking_SID IS NOT NULL  -- keine langdauernden Locks beruecksichtigen
                    )
-      SELECT o.Instance_Number, o.Sid, o.SerialNo, o.Seconds_In_Wait, o.SQL_ID, o.SQL_Child_Number,
+      SELECT o.Instance_Number, o.Sid, o.Serial_No, o.Seconds_In_Wait, o.SQL_ID, o.SQL_Child_Number,
              o.Prev_SQL_ID, o.Prev_Child_Number, o.Event, o.Status, o.Client_Info, o.Module, o.Action, o.user_name, o.program,
              o.machine, o.os_user, o.process,
              CASE
@@ -391,33 +391,33 @@ class AdditionController < ApplicationController
              NULL Waiting_App_Desc,
              cs.*,
              (SELECT COUNT(*) FROM TSel li
-              WHERE li.Instance_Number=o.Instance_Number AND li.SID=o.SID AND li.SerialNo=o.SerialNo
+              WHERE li.Instance_Number=o.Instance_Number AND li.SID=o.SID AND li.Serial_No=o.Serial_No
              ) Samples
       FROM   TSel o
       JOIN   (-- Alle gelockten Sessions incl. mittelbare
-              SELECT Root_Instance_Number, Root_SID, Root_SerialNo,
+              SELECT Root_Instance_Number, Root_SID, Root_Serial_No,
                      COUNT(DISTINCT CASE WHEN cLevel>1 THEN SID ELSE NULL END) Blocked_Sessions_Total,
                      COUNT(DISTINCT CASE WHEN cLevel=2 THEN SID ELSE NULL END) Blocked_Sessions_Direct,
                      SUM(CASE WHEN CLevel>1 THEN Seconds_In_Wait ELSE 0 END ) Seconds_in_Wait_Blocked_Total
               FROM   (SELECT CONNECT_BY_ROOT Instance_Number Root_Instance_Number,
                              CONNECT_BY_ROOT SID             Root_SID,
-                             CONNECT_BY_ROOT SerialNo        Root_SerialNo,
+                             CONNECT_BY_ROOT Serial_No        Root_Serial_No,
                              LEVEL cLevel,
                              l.*
                       FROM   tSel l
                       CONNECT BY NOCYCLE PRIOR Snapshot_Timestamp = Snapshot_Timestamp
                                      AND PRIOR sid                = blocking_sid
                                      AND PRIOR instance_number    = blocking_instance_number
-                                     AND PRIOR serialno           = blocking_serialNo
-                      START WITH Blocking_Instance_Number=? AND Blocking_SID=? AND Blocking_SerialNo=?
+                                     AND PRIOR serial_no           = blocking_serial_no
+                      START WITH Blocking_Instance_Number=? AND Blocking_SID=? AND Blocking_Serial_No=?
                      )
-              GROUP BY Root_Instance_Number, Root_SID, Root_SerialNo
-             ) cs ON cs.Root_Instance_Number = o.Instance_Number AND cs.Root_SID = o.SID AND cs.Root_SerialNo = o.SerialNo
+              GROUP BY Root_Instance_Number, Root_SID, Root_Serial_No
+             ) cs ON cs.Root_Instance_Number = o.Instance_Number AND cs.Root_SID = o.SID AND cs.Root_Serial_No = o.Serial_No
       WHERE  o.Blocking_Instance_Number = ?
       AND    o.Blocking_SID             = ?
-      AND    o.Blocking_SerialNo        = ?
+      AND    o.Blocking_Serial_No        = ?
       ORDER BY o.Seconds_In_Wait+cs.Seconds_In_Wait_Blocked_Total DESC",
-                            @snapshot_timestamp, @blocking_instance, @blocking_sid, @blocking_serialno, @blocking_instance, @blocking_sid, @blocking_serialno]
+                            @snapshot_timestamp, @blocking_instance, @blocking_sid, @blocking_serial_no, @blocking_instance, @blocking_sid, @blocking_serial_no]
 
     # Erweitern der Daten um Informationen, die nicht im originalen Statement selektiert werden können,
     # da die Tabellen nicht auf allen DB zur Verfügung stehen
@@ -435,7 +435,7 @@ class AdditionController < ApplicationController
       SELECT /* Panorama-Tool Ramm */
              Snapshot_Timestamp,
              Instance_Number,
-             SID,         SerialNo,
+             SID,         Serial_No,
              SQL_ID,      SQL_Child_Number,
              Prev_SQL_ID, Prev_Child_Number,
              Event, Status,
@@ -459,7 +459,7 @@ class AdditionController < ApplicationController
              END Blocking_Object_Name,
              CAST(Blocking_RowID AS VARCHAR2(18)) Blocking_RowID,
              Waiting_For_PK_Column_Name, Waiting_For_PK_Value,
-             Blocking_Instance_Number, Blocking_SID, Blocking_SerialNo,
+             Blocking_Instance_Number, Blocking_SID, Blocking_Serial_No,
              Blocking_SQL_ID, Blocking_SQL_Child_Number,
              Blocking_Prev_SQL_ID, Blocking_Prev_Child_Number,
              Blocking_Event, Blocking_Status,
@@ -508,7 +508,7 @@ class AdditionController < ApplicationController
     @snapshot_timestamp = params[:snapshot_timestamp]
     @instance           = params[:instance]
     @sid                = params[:sid]
-    @serialno           = params[:serialno]
+    @serial_no           = params[:serial_no]
 
     @locks= sql_select_all ["\
       WITH TSel AS (SELECT /*+ NO_MERGE */ *
@@ -517,7 +517,7 @@ class AdditionController < ApplicationController
                     AND    l.Blocking_SID IS NOT NULL  -- keine langdauernden Locks beruecksichtigen
                    )
       SELECT Level,
-             Instance_Number, SID, SerialNo, SQL_ID, Event, Module, Action, Object_Name, User_Name, Lock_Type, Seconds_in_Wait, ID1, ID2, Request, Lock_Mode,
+             Instance_Number, SID, Serial_No, SQL_ID, Event, Module, Action, Object_Name, User_Name, Lock_Type, Seconds_in_Wait, ID1, ID2, Request, Lock_Mode,
              Blocking_Object_Owner||'.'||
              CASE
                WHEN Blocking_Object_Name LIKE 'SYS_LOB%%' THEN
@@ -525,7 +525,7 @@ class AdditionController < ApplicationController
                WHEN Blocking_Object_Name LIKE 'SYS_IL%%' THEN
                  Blocking_Object_Name||' ('||(SELECT Object_Name FROM DBA_Objects WHERE Object_ID=TO_NUMBER(SUBSTR(Blocking_Object_Name, 7, 10)) )||')'
                ELSE Blocking_Object_Name
-             END  Blocking_Object, CAST(Blocking_RowID AS VARCHAR2(18)) Blocking_RowID, Blocking_instance_Number, Blocking_SID, Blocking_SerialNo,
+             END  Blocking_Object, CAST(Blocking_RowID AS VARCHAR2(18)) Blocking_RowID, Blocking_instance_Number, Blocking_SID, Blocking_Serial_No,
              Blocking_SQL_ID, Blocking_SQL_Child_Number, Blocking_Prev_SQL_ID, Blocking_Prev_Child_Number, Blocking_Status,
              Blocking_Client_Info, Blocking_Module, Blocking_Action, Blocking_User_Name, Blocking_Machine, Blocking_OS_User, Blocking_Process, Blocking_Program,
              Waiting_For_PK_Column_Name, Waiting_For_PK_Value,
@@ -533,9 +533,9 @@ class AdditionController < ApplicationController
       FROM   TSel l
       CONNECT BY NOCYCLE PRIOR blocking_sid             = sid
                      AND PRIOR blocking_instance_number = instance_number
-                     AND PRIOR blocking_serialno        = serialNo
-      START WITH Instance_Number=? AND SID=? AND SerialNo=?",
-                            @snapshot_timestamp, @instance, @sid,@serialno]
+                     AND PRIOR blocking_serial_no        = serial_no
+      START WITH Instance_Number=? AND SID=? AND Serial_No=?",
+                            @snapshot_timestamp, @instance, @sid,@serial_no]
 
     # Erweitern der Daten um Informationen, die nicht im originalen Statement selektiert werden können,
     # da die Tabellen nicht auf allen DB zur Verfügung stehen
@@ -941,7 +941,7 @@ COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) #{column_alias}_Cnt"
   def distinct_expr_for_blocking_locks
     "#{distinct_expr('Instance_Number',         0)},
      #{distinct_expr('SID',                     0)},
-     #{distinct_expr('SerialNo',                0)},
+     #{distinct_expr('serial_No',                0)},
      #{distinct_expr('SQL_ID',                  '-1')},
      #{distinct_expr('SQL_Child_Number',        -1)},
      #{distinct_expr('Event',                   '-1')},
@@ -954,7 +954,7 @@ COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) #{column_alias}_Cnt"
      #{distinct_expr('Blocking_RowID',          '', 'Blocking_RowID', 'CAST(MIN(Blocking_RowID) AS VARCHAR2(18))')},
      #{distinct_expr('Blocking_Instance_Number', 0)},
      #{distinct_expr('Blocking_SID',             0)},
-     #{distinct_expr('Blocking_SerialNo',        0)},
+     #{distinct_expr('Blocking_Serial_No',        0)},
      #{distinct_expr('Blocking_SQL_ID',          '-1')},
      #{distinct_expr('Blocking_SQL_Child_Number',-1)},
      #{distinct_expr('Blocking_Event',           '-1')},

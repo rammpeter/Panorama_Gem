@@ -127,14 +127,20 @@ WITH   Procs AS (SELECT /*+ NO_MERGE MATERIALIZE */ p.Object_ID, p.SubProgram_ID
                         GROUP BY Referenced_Owner, Referenced_Name, Referenced_Type
                        ),
        UDF AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Name, Type FROM DBA_Source WHERE UPPER(Text) LIKE '%PRAGMA%UDF%'),
+       ASH_Time AS (SELECT /*+ NO_MERGE MATERIALIZE */ i.Inst_ID, NVL(Min_Sample_Time, SYSTIMESTAMP) Min_Sample_Time
+                    FROM   gv$Instance i
+                    LEFT OUTER JOIN (SELECT Inst_ID, MIN(Sample_Time) Min_Sample_Time
+                                     FROM gv$Active_Session_History
+                                     GROUP BY Inst_ID
+                                    ) ash ON ash.Inst_ID = i.Inst_ID
+                   ),
        Ash AS (SELECT /*+ NO_MERGE MATERIALIZE */ SUM(Sample_Cycle) Elapsed_Secs, Top_Level_SQL_ID, SQL_ID, PLSQL_ENTRY_OBJECT_ID, PLSQL_ENTRY_SUBPROGRAM_ID, PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID
                FROM   (
                        SELECT /*+ NO_MERGE ORDERED */
                               10 Sample_Cycle, Top_Level_SQL_ID, SQL_ID, Top_Level_SQL_OpCode, PLSQL_ENTRY_OBJECT_ID, PLSQL_ENTRY_SUBPROGRAM_ID, PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID
                        FROM   DBA_Hist_Active_Sess_History s
-                       LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time FROM gv$Active_Session_History GROUP BY Inst_ID) v ON v.Inst_ID = s.Instance_Number
                        JOIN   DBA_Hist_Snapshot ss ON ss.DBID = s.DBID AND ss.Instance_Number = s.Instance_Number AND ss.Snap_ID = s.Snap_ID
-                       WHERE  (v.Min_Sample_Time IS NULL OR s.Sample_Time < v.Min_Sample_Time)  -- Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen
+                       WHERE  s.Sample_Time < (SELECT Min_Sample_Time FROM Ash_Time a WHERE a.Inst_ID = s.Instance_Number)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen */
                        AND    ss.Begin_Interval_Time > SYSDATE - ?
                        UNION ALL
                        SELECT 1 Sample_Cycle, Top_Level_SQL_ID, SQL_ID, Top_Level_SQL_OpCode, PLSQL_ENTRY_OBJECT_ID, PLSQL_ENTRY_SUBPROGRAM_ID, PLSQL_OBJECT_ID, PLSQL_SUBPROGRAM_ID

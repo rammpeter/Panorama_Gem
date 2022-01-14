@@ -15,7 +15,7 @@
                                :time_selection_end   => @time_selection_end,
                                :blocking_instance    => rec.instance_number,
                                :blocking_session     => rec.session_id,
-                               :blocking_session_serialno => rec.session_serialno
+                               :blocking_session_serial_no => rec.session_serial_no
                              },
                       :title=>t(:active_session_history_list_blocking_locks_historic_detail_sessions_direct_hint, :default=>"Show sessions blocked by this blocking session")
                       )
@@ -35,7 +35,7 @@
               :groupfilter  => {
                                 :Instance                 => rec.instance_number,
                                 :Session_ID               => rec.session_id,
-                                :SerialNo                 => rec.session_serialno,
+                                :Serial_No                 => rec.session_serial_no,
                                 :Idle_Wait1               => "PX Deq Credit: send blkd",
                                 :DBID                     => get_dbid,
                                 :time_selection_start     => localeDateTime(rec.min_sample_time),
@@ -60,7 +60,7 @@
               :groupfilter  => {
                                 :Instance             => rec.instance_number,
                                 :Session_ID           => rec.session_id,
-                                :SerialNo             => rec.session_serialno,
+                                :Serial_No             => rec.session_serial_no,
                                 :Idle_Wait1           => "PX Deq Credit: send blkd",
                                 :DBID                 => get_dbid,
                                 :time_selection_start => localeDateTime(rec.min_sample_time),
@@ -82,7 +82,7 @@
                               :groupfilter      => {
                                 :Instance                 => rec.instance_number,
                                 :Session_ID               => rec.session_id,
-                                :SerialNo                 => rec.session_serialno,
+                                :Serial_No                 => rec.session_serial_no,
                                 :Blocking_Session         => @blocking_session,
                                 :Blocking_Session_Status  => rec.root_blocking_session_status,
                                 :Idle_Wait1               => "PX Deq Credit: send blkd",
@@ -151,7 +151,7 @@
       {:caption=>"Session wait (sec.)",       :data=>proc{|rec| fn(rec.max_seconds_in_wait_direct,1)},          :title=>t(:active_session_history_list_blocking_locks_historic_detail_session_waiting_hint, :default => "Number of seconds this session is waiting in blocked state for the blocking sessions.\nMaximum value at one time in considered period.\nFrom v$Session.Time_Waited\nMay contain cumulated wait time also from before start of considered time period" ), data_title: proc{|rec| "%t\nTime waited = #{fn(rec.max_seconds_in_wait_direct*1000, 2)} milliseconds"}, :align=>"right"},
       {:caption=>"Waiting (sec.)",            :data=>proc{|rec| fn(rec.seconds_in_wait_sample_direct) },        :title=>t(:active_session_history_list_blocking_locks_historic_detail_session_wait_sample_hint, :default=>"Time in seconds this session is waiting in blocked state for blocking session within the considered time range.\nWeighted value calculated by the number of sample records in active session history.\nCounts waited time only for the duration of the considered period. Sessions may wait much longer if blocking wait started before the considered period.")  , :align=>"right"},
       {:caption=>"I.",                        :data=>proc{|rec| rec.instance_number },                          :title=>t(:active_session_history_list_blocking_locks_historic_detail_instance_hint, :default=>"Instance of waiting blocked session")},
-      {:caption=>"SID",                       :data=>link_column_sid,                                           :title=>t(:active_session_history_list_blocking_locks_historic_detail_sid_hint, :default=>'SID of blocked session' ), :data_title=>proc{|rec| "%t\nSerialNo=#{rec.session_serialno}"} },
+      {:caption=>"SID",                       :data=>link_column_sid,                                           :title=>t(:active_session_history_list_blocking_locks_historic_detail_sid_hint, :default=>'SID of blocked session' ), :data_title=>proc{|rec| "%t\nSerial_No=#{rec.session_serial_no}"} },
       {:caption=>"User",                      :data=>proc{|rec| rec.username },                                 :title=>t(:active_session_history_list_blocking_locks_historic_detail_user_hint, :default=>'User of blocked session') },
       {:caption=>"SQL-ID",                    :data=>link_column_sql_id,                                        :title=>t(:active_session_history_list_blocking_locks_historic_detail_sql_id_hint, :default=>'Active SQL of blocked session (or number if multiple SQLs were active in period') },
       {:caption=>"Event",                     :data=>proc{|rec| rec.event },                                    :title=>t(:active_session_history_list_blocking_locks_historic_detail_event_hint, :default=>"Wait event of blocked session (or number if multiple)"), :data_title=>proc{|rec| "%t\n#{explain_wait_event(rec.event)}"} },
@@ -174,7 +174,7 @@
   caption = 'Sessions locked by '
   caption << "Instance=#{@blocking_instance}"             if @blocking_instance
   caption << ", SID=#{@blocking_session}"                 if @blocking_session
-  caption << ", SerialNo=#{@blocking_session_serialno}"   if @blocking_session_serialno
+  caption << ", Serial_No=#{@blocking_session_serial_no}"   if @blocking_session_serial_no
 
   caption << "GLOBAL (unknown sessions from other RAC-instances)" unless @blocking_session
   %>

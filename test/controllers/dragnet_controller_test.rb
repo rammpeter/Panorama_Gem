@@ -59,8 +59,12 @@ class DragnetControllerTest < ActionController::TestCase
             #start_time = Time.now
             post  :exec_dragnet_sql, :params => params                          # call execution of SQL
 
+            errmsg = "Error testing dragnet SQL #{entry['id']} #{full_entry[:name]}, result should be '#{expected_result}'"
+            if @response.response_code != expected_result
+              Rails.logger.debug errmsg
+            end
             # Without management pack license execution should result in error if SQL contains DBA_HIST
-            assert_response(expected_result, "Error testing dragnet SQL #{entry['id']} #{full_entry[:name]}, result should be '#{expected_result}'")
+            assert_response(expected_result, errmsg)
             # puts "%6.1f secs: #{entry['id']} Dragnet execution time for #{full_entry[:name]}" % (Time.now - start_time)
           end
 

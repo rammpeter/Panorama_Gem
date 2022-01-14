@@ -278,17 +278,17 @@ module AjaxHelper
     )
   end
 
-  def link_session_details(update_area, instance, sid, serialno, print_val: nil, additional_onclick_js: nil)
-    if instance.nil? || sid.nil? || serialno.nil?
+  def link_session_details(update_area, instance, sid, serial_no, print_val: nil, additional_onclick_js: nil)
+    if instance.nil? || sid.nil? || serial_no.nil?
       ''
     else
-      print_val = "#{sid}, #{serialno}" if print_val.nil?
+      print_val = "#{sid}, #{serial_no}" if print_val.nil?
       ajax_link(print_val,
                 {       :controller   => :dba,
                         :action       => :show_session_detail,
                         :instance     => instance,
                         :sid          => sid,
-                        :serialno     => serialno,
+                        :serial_no     => serial_no,
                         :update_area  => update_area
                 },
                 {:title=>t(:dba_list_sessions_show_session_hint, :default=>'Show current session details in SGA')},

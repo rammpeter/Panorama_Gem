@@ -26,12 +26,12 @@
 
 <%
   def link_column_sid(rec)
-    ajax_link("#{rec.sid},#{rec.serialno}", {
+    ajax_link("#{rec.sid},#{rec.serial_no}", {
                             :controller     => :dba,
                             :action         => :show_session_detail,
                             :instance       => rec.inst_id,
                             :sid            => rec.sid,
-                            :serialno       => rec.serialno,
+                            :serial_no       => rec.serial_no,
                             :update_area    => @update_area
                            },
                     :title=> "Anzeige Details zu Session"

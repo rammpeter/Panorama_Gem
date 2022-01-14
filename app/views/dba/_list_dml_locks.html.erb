@@ -2,11 +2,11 @@
    @update_area = get_unique_area_id
 
     def link_column_sid(rec)
-      ajax_link("#{rec.instance_number}:#{rec.sid},#{rec.serialno}", {
+      ajax_link("#{rec.instance_number}:#{rec.sid},#{rec.serial_no}", {
                  :action            => "show_session_detail",
                  :instance          => rec.inst_id,
                  :sid               => rec.sid,
-                 :serialno          => rec.serialno,
+                 :serial_no          => rec.serial_no,
                  :update_area       => @update_area
                 },
          :title => t(:dba_list_dml_locks_link_sid_hint, :default=>'List details for session')
@@ -35,11 +35,11 @@
    end
 
    def link_column_blocking_sid(rec)
-     ajax_link(rec.blocking_instance_number ? "#{rec.blocking_instance_number}:#{rec.blocking_sid},#{rec.blocking_serialno}" : "", {
+     ajax_link(rec.blocking_instance_number ? "#{rec.blocking_instance_number}:#{rec.blocking_sid},#{rec.blocking_serial_no}" : "", {
               :action            => "show_session_detail",
               :instance          => rec.blocking_instance_number,
               :sid               => rec.blocking_sid,
-              :serialno          => rec.blocking_serialno,
+              :serial_no          => rec.blocking_serial_no,
               :update_area       => @update_area
              },
       :title => t(:dba_list_dml_locks_link_sid_hint, :default=>'List details for session')
@@ -79,7 +79,7 @@
 
   column_options =
     [
-      {:caption=>"SID/SN",      :data=>proc{|rec| link_column_sid(rec)},                  :title=>"Instance : SID, SerialNo"},
+      {:caption=>"SID/SN",      :data=>proc{|rec| link_column_sid(rec)},                  :title=>"Instance : SID, Serial_No"},
       {:caption=>"Client-Info", :data=>proc{|rec| rec.client_info},                       :title=>t(:dba_list_dml_locks_client_info_hint, :default=>'Client info of session') },
       {:caption=>"Module",      :data=>proc{|rec| link_column_module(rec)},               :title=>t(:dba_list_dml_locks_module_hint, :default=>'Module info of session') },
       {:caption=>"Action",      :data=>proc{|rec| link_column_action(rec)},               :title=>t(:dba_list_dml_locks_action_hint, :default=>'Action info of session') },

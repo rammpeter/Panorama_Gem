@@ -228,7 +228,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
                                                              role: role, blocking_event: 'Hugo1', waiting_event: 'Hugo2', blocking_instance: blocking_instance
         }.merge(
             if role == :blocking
-              { waiting_instance:1, waiting_session: 1, waiting_serialno: 1}
+              { waiting_instance:1, waiting_session: 1, waiting_serial_no: 1}
             else
               {}
             end

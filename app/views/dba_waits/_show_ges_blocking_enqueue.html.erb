@@ -9,7 +9,7 @@ column_options =
     {:caption=>"LT",               :data=>proc{|rec| rec.locktype},                     :title=>"Lock-type", :data_title=>'#{lock_types(rec.locktype)}'},
     {:caption=>"Blocked",          :data=>proc{|rec| rec.blocked},                      :title=>"Session is blocked"},
     {:caption=>"Blocker",          :data=>proc{|rec| rec.blocker},                      :title=>"Session is blocker"},
-    {:caption=>"SID, SerialNo",    :data=>proc{|rec| link_session_details(@update_area, rec.inst_id, rec.sid, rec.serialno) },  :title=>"Session-ID"},
+    {:caption=>"SID, Serial_No",    :data=>proc{|rec| link_session_details(@update_area, rec.inst_id, rec.sid, rec.serial_no) },  :title=>"Session-ID"},
     {:caption=>"User",             :data=>proc{|rec| rec.username},                     :title=>"DB-Username"},
     {:caption=>"Process",          :data=>proc{|rec| rec.process},                      :title=>"Client-Process"},
     {:caption=>"Machine",          :data=>proc{|rec| rec.machine},                      :title=>"Client-Machine"},

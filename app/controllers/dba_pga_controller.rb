@@ -37,7 +37,7 @@ class DbaPgaController < ApplicationController
     order_by  = prepare_param :order_by
 
     @sessions = sql_select_iterator ["\
-      SELECT m.Inst_ID, m.Category, s.SID, p.SPID, p.Program p_Program, s.Serial# SerialNo, s.OSUser, s.UserName DB_User, s.Machine, s.Program, s.Status, s.Logon_Time,
+      SELECT m.Inst_ID, m.Category, s.SID, p.SPID, p.Program p_Program, s.Serial# Serial_No, s.OSUser, s.UserName DB_User, s.Machine, s.Program, s.Status, s.Logon_Time,
              p.PGA_Used_Mem       / (1024*1024) PGA_Used_MB,
              p.PGA_Alloc_Mem      / (1024*1024) PGA_Alloc_MB,
              p.PGA_Freeable_Mem   / (1024*1024) PGA_Freeable_MB,
@@ -200,7 +200,7 @@ class DbaPgaController < ApplicationController
     @category = prepare_param :category
 
     @details = sql_select_iterator ["\
-SELECT m.*, m.Serial# SerialNo,
+SELECT m.*, m.Serial# Serial_No,
        RawToHex(m.Heap_Descriptor) Hex_Heap_Descriptor,
        RawToHex(m.Parent_Heap_Descriptor) Hex_Parent_Heap_Descriptor
 FROM   gv$Process_Memory_Detail m

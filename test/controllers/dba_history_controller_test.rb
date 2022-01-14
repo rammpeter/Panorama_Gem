@@ -382,8 +382,8 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
   test "list_sql_monitor_reports with xhr: true" do
     if get_db_version >= '11.1' && management_pack_license == :diagnostics_and_tuning_pack && !@hist_sql_id.nil?  # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
       [nil,1].each do |instance |
-        [{sql_id: @hist_sql_id}, {sid: 1, serialno: 2}].each do |p|
-          post '/dba_history/list_sql_monitor_reports', params: {format: :html, instance: instance, sql_id: p[:sql_id], sid: p[:sid], serialno: p[:serialno],
+        [{sql_id: @hist_sql_id}, {sid: 1, serial_no: 2}].each do |p|
+          post '/dba_history/list_sql_monitor_reports', params: {format: :html, instance: instance, sql_id: p[:sql_id], sid: p[:sid], serial_no: p[:serial_no],
                                                                  time_selection_start: @time_selection_start, time_selection_end: @time_selection_end, update_area: :hugo }
           assert_response management_pack_license == :none ? :error : :success
         end
@@ -407,7 +407,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
                                                                        report_id:             origin == 'GV$SQL_MONITOR' ? 0 : report_id_hist,
                                                                        instance:              1,
                                                                        sid:                   1,
-                                                                       serialno:              1,
+                                                                       serial_no:              1,
                                                                        sql_id:                '1',
                                                                        sql_exec_id:           1,
                                                                        origin:                origin,
