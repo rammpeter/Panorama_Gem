@@ -100,18 +100,26 @@ class PackLicense
   # raise Exception if SQL contains content violating missing diagnostic pack license
   def check_for_diagnostics_pack_usage(sql)
     allowed_array = [
-        'DBA_HIST_BLOCKING_LOCKS',                                              # private table
-        'DBA_HIST_DATABASE_INSTANCE',
-        'DBA_HIST_SEG_STAT',
-        'DBA_HIST_SEG_STAT_OBJ',
-        'DBA_HIST_SNAPSHOT',
-        'DBA_HIST_SNAP_ERROR',
-        'DBA_HIST_UNDOSTAT'
+      'CDB_HIST_BLOCKING_LOCKS',                                              # private table
+      'CDB_HIST_DATABASE_INSTANCE',
+      'CDB_HIST_SEG_STAT',
+      'CDB_HIST_SEG_STAT_OBJ',
+      'CDB_HIST_SNAPSHOT',
+      'CDB_HIST_SNAP_ERROR',
+      'CDB_HIST_UNDOSTAT',
+      'DBA_HIST_BLOCKING_LOCKS',                                              # private table
+      'DBA_HIST_DATABASE_INSTANCE',
+      'DBA_HIST_SEG_STAT',
+      'DBA_HIST_SEG_STAT_OBJ',
+      'DBA_HIST_SNAPSHOT',
+      'DBA_HIST_SNAP_ERROR',
+      'DBA_HIST_UNDOSTAT'
     ]
 
 
     # Packages Tables etc. belonging to diagnostic pack
     test_array = [
+        'CDB_HIST_',
         'DBA_HIST_',
         'DBA_ADDM_',
         'DBA_ADVISOR_',                                                         #  if queries to these views return rows with the value ADDM in the ADVISOR_NAME column or a value of ADDM* in the TASK_NAME column or the corresponding TASK_ID.
@@ -146,6 +154,7 @@ class PackLicense
 
     # Packages Tables etc. belonging to tuning pack
     test_array = [
+        'CDB_HIST_REPORTS',                                                     # SQL-Monitoring: CDB_HIST_REPORTS, CDB_HIST_REPORTS_DETAILS
         'DBA_HIST_REPORTS',                                                     # SQL-Monitoring: DBA_HIST_REPORTS, DBA_HIST_REPORTS_DETAILS
         'DBMS_ADVISOR',                                                         # DIAGNOSTIC PACK if advisor_name => ADDM OR task_name LIKE ADDM% TUNING PACK - where advisor_name => SQL Tuning Advisor
         'DBMS_SQLTUNE.ADD_SQLSET_REFERENCE',                                    # Only this methods are part of Tuning Pack

@@ -12,8 +12,8 @@ class PanoramaSamplerStructureCheckTest < ActiveSupport::TestCase
   end
 
   test "replacement_table" do
-    assert_equal('Panorama_Snapshot', PanoramaSamplerStructureCheck.replacement_table('DBA_Hist_Snapshot'))
-    assert_nil(PanoramaSamplerStructureCheck.replacement_table('Dummy'))
+    assert_equal('Panorama_Snapshot', PanoramaSamplerStructureCheck.panorama_sampler_replacement_table('DBA_Hist_Snapshot'))
+    assert_nil(PanoramaSamplerStructureCheck.panorama_sampler_replacement_table('Dummy'))
   end
 
   test 'tables' do
