@@ -1498,33 +1498,6 @@ ORDER BY Column_ID
     sql
   end
 
-  # Replace DBA_Hist tablename in HTML-templates with corresponding Panorama-Sampler table and schema
-  def self.adjust_table_name(org_table_name)
-    replacement = org_table_name                                                # Default if no replacement happens
-    if PanoramaConnection.get_threadlocal_config[:management_pack_license] == :panorama_sampler
-      return "#{PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema].downcase}.#{panorama_sampler_replacement_table(org_table_name)}" # Table replaced by sampler
-    end
-    if PanoramaConnection.autonomous_database?                                  # Use CDB-prefix for autonomous DB (Access on DBA_Hist leads to session termination)
-      replacement['DBA_HIST'] = 'CDB_HIST' if replacement['DBA_HIST']
-    end
-    replacement
-  end
-
-  # Check existence of DBA_Hist-alternative in Panorama
-  def self.panorama_sampler_replacement_table(dba_hist_tablename)
-    search_table_name = dba_hist_tablename.upcase
-    return nil if dba_hist_tablename.length < 8
-
-    # fake gv$Active_Session_History in SQL so translation will hit it
-    search_table_name.gsub!(/gv\$Active_Session_History/i, 'DBA_HIST_V$ACTIVE_SESS_HISTORY')
-
-    search_table_name['DBA_HIST'] = 'PANORAMA' if search_table_name['DBA_HIST']
-    get_table_and_view_names.each do |table|
-      return table[:table_name]  if table[:table_name].upcase == search_table_name
-    end
-    dba_hist_tablename                                                          # return original name if no replacement exists for Panorama-Sampler
-  end
-
   def self.has_column?(table_name, column_name)
     TABLES.each do |table|
       if table[:table_name].upcase == table_name.upcase                         # table exists

@@ -788,8 +788,8 @@ module ApplicationHelper
                                      ', dbid
                                     ]
     end
-    Rails.logger.debug "No snapshot found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')} for DBID=#{dbid}!" if min_snap_id.nil?
-    Rails.logger.debug "No snapshot found in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Snapshot')} for DBID=#{dbid}!" if max_snap_id.nil?
+    Rails.logger.debug "No snapshot found in #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')} for DBID=#{dbid}!" if min_snap_id.nil?
+    Rails.logger.debug "No snapshot found in #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')} for DBID=#{dbid}!" if max_snap_id.nil?
     return min_snap_id, max_snap_id
   end
 

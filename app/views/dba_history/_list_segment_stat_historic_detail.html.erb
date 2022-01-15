@@ -22,7 +22,7 @@ column_options =
 %>
 
   <%=
-      caption = "Segment statistics from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Seg_Stat')}#{", Inst_ID=#{@instance}" if @instance}#{", from #{@time_selection_start} until #{@time_selection_end}" if @time_selection_start} for '#{@owner}.#{@object_name}#{@subobject_name ? " ("+@subobject_name+")" : ""}'"
+      caption = "Segment statistics from #{PanoramaConnection.adjust_table_name('DBA_Hist_Seg_Stat')}#{", Inst_ID=#{@instance}" if @instance}#{", from #{@time_selection_start} until #{@time_selection_end}" if @time_selection_start} for '#{@owner}.#{@object_name}#{@subobject_name ? " ("+@subobject_name+")" : ""}'"
       gen_slickgrid(@segment_details, column_options, { :caption        => caption.html_safe,
                                                         :max_height     => 450,
                                                         show_pin_icon: 1

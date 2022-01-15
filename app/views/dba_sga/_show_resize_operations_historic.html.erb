@@ -1,6 +1,6 @@
 <% @update_area = get_unique_area_id %>
 
-<%= render_page_caption("Historic SGA resize operations from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Memory_Resize_Ops')}") %>
+<%= render_page_caption("Historic SGA resize operations from #{PanoramaConnection.adjust_table_name('DBA_Hist_Memory_Resize_Ops')}") %>
 
 
 <%= ajax_form(controller: :dba_sga, action: :list_resize_operations_historic, update_area: @update_area) do %>

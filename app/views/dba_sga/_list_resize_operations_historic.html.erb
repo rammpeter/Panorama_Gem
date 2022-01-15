@@ -15,7 +15,7 @@
 %>
 
 <%= gen_slickgrid(@result, column_options, {
-    :caption => "Memory resize operations from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Memory_Resize_Ops')} from #{@time_selection_start} until #{@time_selection_end}#{" for instance = #{@instance}" if @instance}",
+    :caption => "Memory resize operations from #{PanoramaConnection.adjust_table_name('DBA_Hist_Memory_Resize_Ops')} from #{@time_selection_start} until #{@time_selection_end}#{" for instance = #{@instance}" if @instance}",
     :max_height => 450, show_pin_icon: 1
 }) %>
 

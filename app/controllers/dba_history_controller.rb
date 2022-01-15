@@ -502,7 +502,7 @@ class DbaHistoryController < ApplicationController
 
       @sql_monitor_reports_count = get_sql_monitor_count(@dbid, @instance, @sql_id, @time_selection_start, @time_selection_end)
     else
-      add_statusbar_message "No samples found for this SQL in considered time period in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat')}!\nTherefore no metrics are available.\nYou may enlarge considered time period by button 'Full history' or look for SQL-statistics in current SGA."
+      add_statusbar_message "No samples found for this SQL in considered time period in #{PanoramaConnection.adjust_table_name('DBA_Hist_SQLStat')}!\nTherefore no metrics are available.\nYou may enlarge considered time period by button 'Full history' or look for SQL-statistics in current SGA."
     end
 
     sql_statement = sql_select_first_row(["\
@@ -1899,7 +1899,7 @@ FROM (
      ", @dbid, @resource_name].concat(@instance ? [@instance] : [])
 
     if @limits.length == 0
-      show_popup_message("No content available in #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Resource_Limit')} for your connection!
+      show_popup_message("No content available in #{PanoramaConnection.adjust_table_name('DBA_Hist_Resource_Limit')} for your connection!
   For PDB please connect to database with CDB-user instead of PDB-user.")
     else
       render_partial

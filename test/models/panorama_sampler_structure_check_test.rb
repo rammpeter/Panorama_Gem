@@ -37,11 +37,11 @@ class PanoramaSamplerStructureCheckTest < ActiveSupport::TestCase
 
     config[:management_pack_license] = :none
     PanoramaConnection.set_connection_info_for_request(config)
-    assert_equal(PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat'), 'DBA_Hist_SQLStat')
+    assert_equal(PanoramaConnection.adjust_table_name('DBA_Hist_SQLStat'), 'DBA_Hist_SQLStat')
 
     config[:management_pack_license] = :panorama_sampler
     PanoramaConnection.set_connection_info_for_request(config)
-    assert_equal(PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat'), "#{config[:panorama_sampler_schema]}.Panorama_SQLStat")
+    assert_equal(PanoramaConnection.adjust_table_name('DBA_Hist_SQLStat'), "#{config[:panorama_sampler_schema]}.Panorama_SQLStat")
 
   end
 

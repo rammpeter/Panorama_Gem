@@ -1,4 +1,4 @@
-<%= render_page_caption("UNDO usage history from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_UndoStat')}") %>
+<%= render_page_caption("UNDO usage history from #{PanoramaConnection.adjust_table_name('DBA_Hist_UndoStat')}") %>
 
 <% update_area = get_unique_area_id %>
 <%= ajax_form(:controller=>:storage, :action=>:list_undo_history, :update_area=>update_area) do %>

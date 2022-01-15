@@ -73,7 +73,7 @@
 <%=
     gen_slickgrid(@sqls, column_options, {
         :max_height => 450, show_pin_icon: 1,
-        :caption    => "Statement history from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat')} executed between #{@time_selection_start} and #{@time_selection_end} #{"with access on object '#{"#{@object_owner}." if @object_owner}#{@object_name}'" if defined?(@object_name) && !@object_name.nil?}",
+        :caption    => "Statement history from #{PanoramaConnection.adjust_table_name('DBA_Hist_SQLStat')} executed between #{@time_selection_start} and #{@time_selection_end} #{"with access on object '#{"#{@object_owner}." if @object_owner}#{@object_name}'" if defined?(@object_name) && !@object_name.nil?}",
         update_area: @update_area
 })
 %>

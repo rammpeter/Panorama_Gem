@@ -22,7 +22,7 @@ column_options =
 
 %>
 <%= gen_slickgrid(@sqls, column_options, {
-    :caption => "SQL-Statements from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLPlan')} with access on '#{@owner}.#{@object_name}', Inst_ID=#{@instance}, from #{@time_selection_start} until #{@time_selection_end}",
+    :caption => "SQL-Statements from #{PanoramaConnection.adjust_table_name('DBA_Hist_SQLPlan')} with access on '#{@owner}.#{@object_name}', Inst_ID=#{@instance}, from #{@time_selection_start} until #{@time_selection_end}",
     :max_height=>450,
     show_pin_icon: 1,
     update_area: @update_area

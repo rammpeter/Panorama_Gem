@@ -36,32 +36,39 @@ class PackLicense
     sql                                                                         # return transformed SQL
   end
 
-
-  # Filter SQL string for unlicensed Table Access
-  def filter_sql_string_for_pack_license(sql)
-
-    case @license_type
-      when :diagnostics_and_tuning_pack
-        nil
-      when :diagnostics_pack then
-        check_for_tuning_pack_usage(sql)
-      when :panorama_sampler then
-        raise "config[:panorama_sampler_schema] must be defined if config[:management_pack_license] == :panorama_sampler" if PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema].nil?
-        # !!! Puma stops here if another thread is active, jetty does not stop here
-        sql = PanoramaSamplerStructureCheck.transform_sql_for_sampler(sql)
-        check_for_diagnostics_pack_usage(sql)
-        check_for_tuning_pack_usage(sql)
-      when :none, nil then
-        check_for_diagnostics_pack_usage(sql)
-        check_for_tuning_pack_usage(sql)
-      else
-        raise "Unknown license type #{@license_type}"
+  # replace table_names in SQL according to license type
+  def self.translate_sql_table_names(sql, license_type)
+    case license_type
+    when :panorama_sampler
+      raise "config[:panorama_sampler_schema] must be defined if config[:management_pack_license] == :panorama_sampler" if PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema].nil?
+      # !!! Puma stops here if another thread is active, jetty does not stop here
+      sql = PanoramaSamplerStructureCheck.transform_sql_for_sampler(sql)
+    else
+      if PanoramaConnection.autonomous_database?                                # Use CDB-prefix for autonomous DB (Access on DBA_Hist leads to session termination)
+        sql.gsub!(/DBA_Hist/i, 'CDB_Hist')
+      end
     end
     sql
   end
 
-  def self.replace_dba_hist_in_html_for_panorama_sampler!(rendered_html)
-    rendered_html.gsub!(/DBA_HIST/i, 'Panorama')
+  # Filter SQL string for unlicensed Table Access
+  def filter_sql_string_for_pack_license(sql)
+    sql = PackLicense.translate_sql_table_names(sql, @license_type)             # Replace table names according to license type
+    case @license_type
+    when :diagnostics_and_tuning_pack
+      nil
+    when :diagnostics_pack then
+      check_for_tuning_pack_usage(sql)
+    when :panorama_sampler then
+      check_for_diagnostics_pack_usage(sql)
+      check_for_tuning_pack_usage(sql)
+    when :none, nil then
+      check_for_diagnostics_pack_usage(sql)
+      check_for_tuning_pack_usage(sql)
+    else
+      raise "Unknown license type #{@license_type}"
+    end
+    sql
   end
 
   private

@@ -1,4 +1,4 @@
-<%= render_page_caption("SQLs #{t(:from, :default=>'from')} #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat')}") %>
+<%= render_page_caption("SQLs #{t(:from, :default=>'from')} #{PanoramaConnection.adjust_table_name('DBA_Hist_SQLStat')}") %>
 
 
 <%= ajax_form(:controller=>:dba_history, :action=>:list_sql_area_historic, :update_area=>:list_sql_historic_area) do %>

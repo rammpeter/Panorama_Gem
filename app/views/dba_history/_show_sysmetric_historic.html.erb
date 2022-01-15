@@ -1,7 +1,7 @@
 <%= render_page_caption("#{t(:dba_history_show_sysmetric_historic_header,
                              :default=>"SysMetric-history from %{sysmetric_history_table}/GV$SysMetric_History or %{sysmetric_summary_table}/GV$SysMetric_Summary",
-                             sysmetric_history_table: PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SysMetric_History'),
-                             sysmetric_summary_table: PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SysMetric_Summary'),
+                             sysmetric_history_table: PanoramaConnection.adjust_table_name('DBA_Hist_SysMetric_History'),
+                             sysmetric_summary_table: PanoramaConnection.adjust_table_name('DBA_Hist_SysMetric_Summary'),
                              )}") %>
 
 <% @update_area = get_unique_area_id %>

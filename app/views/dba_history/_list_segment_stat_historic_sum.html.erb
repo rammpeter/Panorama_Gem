@@ -13,7 +13,7 @@ def link_column_stmt(rec, value)
                         :time_selection_end   => @time_selection_end,
                         :update_area    => @update_area
                         },
-                :title => t(:dba_history_list_segment_stat_historic_sum_link_sql_hint, :default=>"show SQLs in time slice from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_SQLStat')} with usage of object in explain plan")
+                :title => t(:dba_history_list_segment_stat_historic_sum_link_sql_hint, :default=>"show SQLs in time slice from #{PanoramaConnection.adjust_table_name('DBA_Hist_SQLStat')} with usage of object in explain plan")
 )
 end
 
@@ -98,7 +98,7 @@ column_options =
 
 <%= gen_slickgrid(@segment_sums, column_options, {
         :max_height => 450,
-        :caption => "Segment statistics from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Seg_Stat')}#{", Inst_ID=#{@instance}" if @instance}, from #{@time_selection_start} until #{@time_selection_end}",
+        :caption => "Segment statistics from #{PanoramaConnection.adjust_table_name('DBA_Hist_Seg_Stat')}#{", Inst_ID=#{@instance}" if @instance}, from #{@time_selection_start} until #{@time_selection_end}",
         show_pin_icon: 1,
         update_area: @update_area
 }) %>

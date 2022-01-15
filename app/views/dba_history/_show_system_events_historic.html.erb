@@ -1,4 +1,4 @@
-<%= render_page_caption("History of System-Events from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_System_Event')} <a target=\"_blank\" href=\"https://docs.oracle.com/cloud/latest/db121/REFRN/waitevents003.htm\">(Oracle-Doku)</a>".html_safe) %>
+<%= render_page_caption("History of System-Events from #{PanoramaConnection.adjust_table_name('DBA_Hist_System_Event')} <a target=\"_blank\" href=\"https://docs.oracle.com/cloud/latest/db121/REFRN/waitevents003.htm\">(Oracle-Doku)</a>".html_safe) %>
 
 <%= ajax_form(:controller => :dba_history, :action => :list_system_events_historic, :update_area => :list_system_events_historic_area) do %>
   <div class="flex-row-container">

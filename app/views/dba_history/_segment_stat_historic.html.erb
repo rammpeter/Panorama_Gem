@@ -1,4 +1,4 @@
-<%= render_page_caption("#{t(:dba_history_segment_stat_historic_caption, :default=>'Historic segment statistics from ')} #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Seg_Stat')}") %>
+<%= render_page_caption("#{t(:dba_history_segment_stat_historic_caption, :default=>'Historic segment statistics from ')} #{PanoramaConnection.adjust_table_name('DBA_Hist_Seg_Stat')}") %>
 
 
 <%= ajax_form(:controller => :dba_history, :action => :list_segment_stat_historic_sum, :update_area => :list_segment_stat_hist_sum_area) do %>

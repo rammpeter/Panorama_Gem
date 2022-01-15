@@ -1,4 +1,4 @@
-<%= render_page_caption("Blocking Locks #{t(:from, :default=>'from')} #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_Active_Sess_History')}") %>
+<%= render_page_caption("Blocking Locks #{t(:from, :default=>'from')} #{PanoramaConnection.adjust_table_name('DBA_Hist_Active_Sess_History')}") %>
 
 
 <%= ajax_form(:controller  => :active_session_history,

@@ -35,7 +35,7 @@
 
 <%= gen_slickgrid(@undo_history, column_options, {
         :max_height => 450,
-        :caption => "UNDO usage history from #{PanoramaSamplerStructureCheck.adjust_table_name('DBA_Hist_UndoStat')} and gv$UndoStat",
+        :caption => "UNDO usage history from #{PanoramaConnection.adjust_table_name('DBA_Hist_UndoStat')} and gv$UndoStat",
         show_pin_icon: 1
 
 }) %>
