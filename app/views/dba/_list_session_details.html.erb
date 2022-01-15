@@ -87,7 +87,7 @@ column_options << {:caption=>'Client driver',       :data=>proc{|rec| rec.client
      ]
 
     %>
-    <%= gen_slickgrid(@pq_coordinator, column_options, {:caption=>"Considered session SID=#{@sid}, Serial#=#{@serial_no}, Instance=#{@instance} is PQ-slave, details for PQ-coordinator are:" }) %>
+    <%= gen_slickgrid(@pq_coordinator, column_options, {:caption=>"Considered session SID=#{@sid}, Serial#=#{@serial_no}, Instance=#{@instance} is a PQ-slave session, details for PQ-coordinator are:" }) %>
 
 <% end %>
 

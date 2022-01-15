@@ -1126,6 +1126,7 @@ oradebug setorapname diag
       SELECT s.Program,
              px.Inst_ID,
              px.SID,
+             px.Serial# Serial_No,
              px.req_degree,
              px.degree,
              w.Event,
