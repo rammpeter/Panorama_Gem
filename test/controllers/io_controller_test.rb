@@ -31,7 +31,7 @@ class IoControllerTest < ActionController::TestCase
       post :list_io_file_history, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
       assert_response management_pack_license == :none ? :error : :success
 
-      post :list_io_file_history, :params => { :format=>:html, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
+      post :list_io_file_history, :params => { :format=>:html, :instance=>@instance, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
       assert_response management_pack_license == :none ? :error : :success
     end
   end
@@ -72,7 +72,7 @@ class IoControllerTest < ActionController::TestCase
         post :list_iostat_detail_history, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
         assert_response management_pack_license == :none ? :error : :success
 
-        post :list_iostat_detail_history, :params => { :format=>:html, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
+        post :list_iostat_detail_history, :params => { :format=>:html, :instance=>@instance, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
         assert_response management_pack_license == :none ? :error : :success
       end
     end
@@ -110,7 +110,7 @@ class IoControllerTest < ActionController::TestCase
         post :list_iostat_filetype_history, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
         assert_response management_pack_license == :none ? :error : :success
 
-        post :list_iostat_filetype_history, :params => { :format=>:html, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
+        post :list_iostat_filetype_history, :params => { :format=>:html, :instance=>@instance, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
         assert_response management_pack_license == :none ? :error : :success
       end
     end

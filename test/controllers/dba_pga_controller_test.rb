@@ -16,12 +16,12 @@ class DbaPgaControllerTest < ActionDispatch::IntegrationTest
 
 
   test "list_pga_stat_historic with xhr: true" do
-    post '/dba_pga/list_pga_stat_historic', :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :instance =>1 }
+    post '/dba_pga/list_pga_stat_historic', :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :instance =>@instance }
     assert_response management_pack_license == :none ? :error : :success
   end
 
   test "list_process_memory_detail with xhr: true" do
-    post '/dba_pga/list_process_memory_detail', params: { format: :html, instance: 1, pid: 1, category: 'Others' }
+    post '/dba_pga/list_process_memory_detail', params: { format: :html, instance: @instance, pid: 1, category: 'Others' }
     assert_response :success
   end
 

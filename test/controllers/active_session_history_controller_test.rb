@@ -69,7 +69,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
     session_statistics_key_rules.each do |groupby, value|
       counter += 1
       if counter % 2 == 0                                                       # use alternating attributes
-        instance = 1
+        instance = @instance
         filter = 'sys'
       else
         instance = ''
@@ -87,7 +87,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
     session_statistics_key_rules.each do |groupby, value_inner|
       counter += 1
       if counter % 2 == 0                                                       # use alternating attributes
-        add_filter = {Additional_Filter: 'sys', Instance: 1}
+        add_filter = {Additional_Filter: 'sys', Instance: @instance}
       else
         add_filter = {}
       end
@@ -180,9 +180,9 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
   test "show_prepared_active_session_history with xhr: true" do
-    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>1, :sql_id=>@hist_sql_id }
+    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>@instance, :sql_id=>@hist_sql_id }
     assert_response :success
-    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>1, :sid=>@sid }
+    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>@instance, :sid=>@sid }
     assert_response :success
   end
 
@@ -190,7 +190,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
     post :list_prepared_active_session_history, :params => {:format=>:html, :groupby=>"SQL-ID",
          :groupfilter => {
                          :DBID     => get_dbid,
-                         :Instance => 1,
+                         :Instance => @instance,
                          "SQL-ID"  => @hist_sql_id
          },
          :time_selection_start => @time_selection_start,
@@ -228,7 +228,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
                                                              role: role, blocking_event: 'Hugo1', waiting_event: 'Hugo2', blocking_instance: blocking_instance
         }.merge(
             if role == :blocking
-              { waiting_instance:1, waiting_session: 1, waiting_serial_no: 1}
+              { waiting_instance:@instance, waiting_session: 1, waiting_serial_no: 1}
             else
               {}
             end

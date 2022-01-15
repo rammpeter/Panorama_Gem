@@ -26,25 +26,25 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
 
   test "redologs with xhr: true"       do
 
-    post  '/dba/show_redologs', :params => {:format=>:html, :update_area=>:hugo, instance: 1 }
+    post  '/dba/show_redologs', :params => {:format=>:html, :update_area=>:hugo, instance: @instance }
     assert_response :success
 
-    post  '/dba/list_redolog_members', :params => {:format=>:html, :update_area=>:hugo, instance: 1, group: 1 }
+    post  '/dba/list_redolog_members', :params => {:format=>:html, :update_area=>:hugo, instance: @instance, group: 1 }
     assert_response :success
 
     [:single, :second, :second_10, :minute, :minute_10, :hour, :day, :week].each do |time_groupby|
       post '/dba/list_redologs_log_history', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, time_groupby: time_groupby, :update_area=>:hugo }
       assert_response :success
     end
-    post '/dba/list_redologs_log_history', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, time_groupby: :single, instance: 1, :update_area=>:hugo }
+    post '/dba/list_redologs_log_history', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, time_groupby: :single, instance: @instance, :update_area=>:hugo }
     assert_response :success
 
-    post '/dba/list_redologs_log_history', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, time_groupby: :single, instance: 1, :update_area=>:hugo }
+    post '/dba/list_redologs_log_history', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, time_groupby: :single, instance: @instance, :update_area=>:hugo }
     assert_response :success
 
     post '/dba/list_redologs_historic', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
     assert_response management_pack_license == :none ? :error : :success
-    post '/dba/list_redologs_historic', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>1, :update_area=>:hugo }
+    post '/dba/list_redologs_historic', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>@instance, :update_area=>:hugo }
     assert_response management_pack_license == :none ? :error : :success
   end
 
@@ -72,10 +72,10 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
     post '/dba/list_sessions', :params => {:format=>:html, :update_area=>:hugo }
     assert_response :success
 
-    post '/dba/list_sessions', :params => {:format=>:html, :onlyActive=>1, :showOnlyUser=>1, :instance=>1, :filter=>'hugo', :object_owner=>'SYS', :object_name=>'HUGO', :update_area=>:hugo }
+    post '/dba/list_sessions', :params => {:format=>:html, :onlyActive=>1, :showOnlyUser=>1, :instance=>@instance, :filter=>'hugo', :object_owner=>'SYS', :object_name=>'HUGO', :update_area=>:hugo }
     assert_response :success
 
-    post '/dba/list_sessions', :params => {:format=>:html, :onlyActive=>1, :showOnlyUser=>1, :instance=>1, :filter=>'hugo', :object_owner=>'SYS', :object_name=>'HUGO', object_type: 'TABLE', :update_area=>:hugo }
+    post '/dba/list_sessions', :params => {:format=>:html, :onlyActive=>1, :showOnlyUser=>1, :instance=>@instance, :filter=>'hugo', :object_owner=>'SYS', :object_name=>'HUGO', object_type: 'TABLE', :update_area=>:hugo }
     assert_response :success
   end
 
@@ -124,7 +124,7 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
   end
 
     test "list_waits_per_event with xhr: true" do
-    get '/dba/list_waits_per_event', :params => {:format=>:html, :event=>"db file sequential read", :instance=>"1", :update_area=>"hugo" }
+    get '/dba/list_waits_per_event', :params => {:format=>:html, :event=>"db file sequential read", :instance=>@instance, :update_area=>"hugo" }
     assert_response :success
   end
 
@@ -206,7 +206,7 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
         end
       end
 
-      post '/dba/list_trace_file_content', params: {format: :html, instance: 1, adr_home: 'hugo', trace_filename: 'hugo', con_id: 1, update_area: :hugo }
+      post '/dba/list_trace_file_content', params: {format: :html, instance: @instance, adr_home: 'hugo', trace_filename: 'hugo', con_id: 1, update_area: :hugo }
       assert_response :success
 
     end

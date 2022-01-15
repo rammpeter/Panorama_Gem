@@ -58,7 +58,7 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
   # Ermittlung der zum Typ passenden Werte für Bindevariablen
   def bind_value_from_key_rule(key)
     case key
-    when 'Instance'     then 1
+    when 'Instance'     then @instance
     when 'Wait Event'   then 'ON CPU'
     when 'Wait Class'   then 'CPU'
     when 'User-Name'    then 'SYS'
@@ -83,7 +83,7 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
     longterm_trend_key_rules.each do |groupby, value|
       counter += 1
       if counter % 2 == 0                                                       # use alternating attributes
-        instance = 1
+        instance = @instance
         filter = 'sys'
       else
         instance = ''
@@ -100,7 +100,7 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
     longterm_trend_key_rules.each do |groupby, value_inner|
       counter += 1
       if counter % 2 == 0                                                       # use alternating attributes
-        add_filter = {additional_filter: 'sys', Instance: 1}
+        add_filter = {additional_filter: 'sys', Instance: @instance}
       else
         add_filter = {}
       end

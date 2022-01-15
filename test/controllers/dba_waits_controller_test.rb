@@ -21,7 +21,7 @@ class DbaWaitsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "show_session_waits with xhr: true" do
-    post '/dba_waits/show_session_waits', :params => {:format=>:html, :instance=>1, :event=>"Hugo", :update_area=>:hugo }
+    post '/dba_waits/show_session_waits', :params => {:format=>:html, :instance=>@instance, :event=>"Hugo", :update_area=>:hugo }
     assert_response :success
   end
 
@@ -32,7 +32,7 @@ class DbaWaitsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_gc_request_latency_history with xhr: true" do
-    get '/dba_waits/list_gc_request_latency_history', :params => {:format=>:html, :instance=>1, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo }
+    get '/dba_waits/list_gc_request_latency_history', :params => {:format=>:html, :instance=>@instance, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :update_area=>:hugo }
     assert_response management_pack_license == :none ? :error : :success
   end
 
@@ -51,7 +51,7 @@ class DbaWaitsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     [[nil,nil], [@time_selection_start, @time_selection_end]].each do |times|
-      [nil, 1].each do |target_instance|
+      [nil, @instance].each do |target_instance|
         [[nil, nil, nil], ['sys', 'obj$', nil], ['sys', 'dummy', 'dummy']].each do |objects|
           post  '/dba_waits/list_drm_historic_single_records', params: {format: :html, target_instance: target_instance, time_selection_start: times[0], time_selection_end: times[1], owner: objects[0], object_name: objects[1], subobject_name: objects[2], policy_event: 'initiate_affinity', update_area: :hugo }
           assert_response :success
