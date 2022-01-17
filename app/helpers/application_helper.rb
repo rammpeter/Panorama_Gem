@@ -659,14 +659,9 @@ module ApplicationHelper
     PanoramaConnection.sql_select_one(sql, query_name)
   end
 
-  # Is database a container DB?
-  def is_cdb?
-    get_current_database[:cdb]
-  end
-
   # Switch between DBA_xxx and CDB_xxx for CDBs
   def dba_or_cdb(tablename)
-    if is_cdb?
+    if PanoramaConnection.is_cdb?
       tablename.gsub(/^DBA/i, "CDB")
     else
       tablename

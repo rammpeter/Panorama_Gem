@@ -114,6 +114,7 @@ class PanoramaConnection
   attr_accessor :last_used_time
   attr_accessor :last_used_query_timeout
   attr_reader :block_common_header_size
+  attr_reader :cdb
   attr_reader :control_management_pack_access
   attr_reader :con_id
   attr_reader :database_name
@@ -127,6 +128,7 @@ class PanoramaConnection
   attr_reader :instance_number
   attr_reader :jdbc_connection
   attr_reader :last_used_action_name
+  attr_reader :login_container_dbid                                             # DBID of the PDB where user is connected to
   attr_reader :logon_time
   attr_reader :password_hash
   attr_reader :rowid_size
@@ -187,6 +189,7 @@ class PanoramaConnection
     @edition                          = (db_config['enterprise_edition_count'] > 0  ? :enterprise : :standard)
     @instance_count                   = db_config['instance_count']
     @instance_number                  = db_config['instance_number']
+    @login_container_dbid             = db_config['dbid']                       # Default is DB's DBID, specified later for CDBs
     @logon_time                       = db_config['logon_time']
     @rowid_size                       = db_config['rowid_size']
     @sid                              = db_config['sid']                          # Session-ID on DB-Server
@@ -199,10 +202,12 @@ class PanoramaConnection
     @db_version = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT Version_Full FROM v$Instance")['version_full'] if @db_version >= '19'
 
     if @db_version >= '12.1'
-      con_id_data   = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT Con_ID FROM v$Session WHERE audsid = userenv('sessionid')") # Con_ID of connected session
-      @con_id       = con_id_data['con_id']
+      @con_id               = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT Con_ID FROM v$Session WHERE audsid = userenv('sessionid')")['con_id'] # Con_ID of connected session
+      @cdb                  = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT CDB FROM v$Database")['cdb']
+      @login_container_dbid = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT DBID FROM v$Containers WHERE Con_ID = (SELECT Con_ID FROM v$Session WHERE SID = SYS_CONTEXT('userenv', 'sid'))")['dbid']
     else
       @con_id        = 0
+      @cdb           = 'NO'
     end
   end
 
@@ -304,6 +309,16 @@ class PanoramaConnection
     return :none
   end
 
+  # set the initial value for used dbid at login time (DB's DBID or CDB's DBID)
+  def self.select_initial_dbid
+    return PanoramaConnection.dbid unless PanoramaConnection.is_cdb?            # used DB's DBID if not CDB
+    if sql_select_one(["SELECT COUNT(*) FROM DBA_Hist_Snapshot WHERE DBID = ?", PanoramaConnection.login_container_dbid]) == 0 # Check if AWR for container is really sampled
+      return PanoramaConnection.dbid                                            # Use connections DBID if container has no AWR data
+    else
+      return PanoramaConnection.login_container_dbid                            # Use containers DBID if container has AWR data
+    end
+  end
+
   # Each user of one PanoramaConnection can have different setting
   def self.set_management_pack_license_from_db_in_connection
     get_threadlocal_config[:management_pack_license] = get_management_pack_license_from_db_as_symbol
@@ -374,6 +389,8 @@ class PanoramaConnection
   def self.db_wordsize;                     check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_wordsize;                       end
   def self.edition;                         check_for_open_connection;        Thread.current[:panorama_connection_connection_object].edition;                           end
   def self.instance_number;                 check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_number;                   end
+  def self.is_cdb?;                         check_for_open_connection;        Thread.current[:panorama_connection_connection_object].cdb == 'YES';                      end
+  def self.login_container_dbid;            check_for_open_connection(false); Thread.current[:panorama_connection_connection_object].login_container_dbid;              end
   def self.pdbs;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].pdbs;                              end
   def self.rac?;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_count > 1;                end
   def self.rowid_size;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].rowid_size;                        end

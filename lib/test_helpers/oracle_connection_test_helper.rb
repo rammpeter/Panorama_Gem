@@ -62,11 +62,15 @@ class ActiveSupport::TestCase
 
 
     # TODO Sollte so nicht mehr notwendig sein
-    #open_oracle_connection                                                      # Connection zur Test-DB aufbauen, um Parameter auszulesen
+    #open_oracle_connection                                                     # Connection zur Test-DB aufbauen, um Parameter auszulesen
     set_connection_info_for_request(current_database)
 
     # DBID is set at first request after login normally
-    set_cached_dbid(PanoramaConnection.dbid)
+    if PanoramaConnection.autonomous_database?
+      set_cached_dbid(PanoramaConnection.select_initial_dbid)                   # Use Container-DB because SELECT FROM DBA_Hist_Active_Sess_History may kill session in autonomous DB
+    else
+      set_cached_dbid(PanoramaConnection.dbid)                                  # Use DBID of root container because AWR snapshots are done in root container for Oracle test images
+    end
 
     set_I18n_locale('de')
   end

@@ -404,15 +404,15 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
       end
     end
 
-
-
-
     # Set management pack according to 'control_management_pack_access' only after DB selects,
     # Until now get_current_database[:management_pack_license] is :none for first time login, so no management pack license is violated until now
     # User has to acknowlede management pack licensing at next screen
     set_current_database(get_current_database.merge( {:management_pack_license  => init_management_pack_license(get_current_database) } ))
 
     write_connection_to_last_logins
+
+    set_cached_dbid(PanoramaConnection.select_initial_dbid)
+
 
     timepicker_regional = ""
     if get_locale == "de"  # Deutsche Texte für DateTimePicker
@@ -487,39 +487,16 @@ public
   end
 
   def list_dbids
-    set_new_dbid = true                                                         # Set DBID of current connected database if not choosen different one from history
-    if PackLicense.diagnostics_pack_licensed? || PackLicense.panorama_sampler_active?  # Check for historic DBIDs requires access on diagnostics pack
-
-      @dbids = sql_select_all ["SELECT s.DBID, MIN(Begin_Interval_Time) Min_TS, MAX(End_Interval_Time) Max_TS,
-                                         (SELECT MIN(DB_Name) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) DB_Name,
-                                         (SELECT COUNT(DISTINCT Instance_Number) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) Instances,
-                                         #{"(SELECT MIN(i.Con_ID) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) Con_ID," if get_db_version >= '12.1'}
-                                         MIN(EXTRACT(MINUTE FROM w.Snap_Interval)) Snap_Interval_Minutes,
-                                         MIN(EXTRACT(DAY FROM w.Retention))        Snap_Retention_Days
-                                  FROM   DBA_Hist_Snapshot s
-                                  LEFT OUTER JOIN DBA_Hist_WR_Control w ON w.DBID = s.DBID
-                                  GROUP BY s.DBID
-                                  ORDER BY MIN(Begin_Interval_Time)"]
-
-      @dbids.each do |d|
-        set_new_dbid = false if get_dbid == d.dbid                              # Reuse alread set dbid because it is valid
-      end
-    else
-      @dbids = nil
-    end
-    if set_new_dbid # dbid has not been set before or is not valid, necessary to retain the already choosen DBID at new login
-      if is_cdb?
-        dbid = sql_select_one "SELECT DBID FROM v$Containers WHERE Con_ID = (SELECT Con_ID FROM v$Session WHERE SID = SYS_CONTEXT('userenv', 'sid'))"
-        if sql_select_one(["SELECT COUNT(*) FROM DBA_Hist_Snapshot WHERE DBID = ?", dbid]) == 0 # Check if AWR for container is really sampled
-          set_cached_dbid(PanoramaConnection.dbid)                              # Use connections DBID if container has no AWR data
-        else
-          set_cached_dbid(dbid)                                                 # Use containers DBID if container has AWR data
-        end
-      else
-        set_cached_dbid(PanoramaConnection.dbid)                                # Use connections DBID
-      end
-    end
-
+    @dbids = sql_select_all "SELECT /* NO_CDB_TRANSFORMATION */ s.DBID, MIN(Begin_Interval_Time) Min_TS, MAX(End_Interval_Time) Max_TS,
+                                   (SELECT MIN(DB_Name) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) DB_Name,
+                                   (SELECT COUNT(DISTINCT Instance_Number) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) Instances,
+                                   #{"(SELECT MIN(i.Con_ID) FROM DBA_Hist_Database_Instance i WHERE i.DBID=s.DBID) Con_ID," if get_db_version >= '12.1'}
+                                   MIN(EXTRACT(MINUTE FROM w.Snap_Interval)) Snap_Interval_Minutes,
+                                   MIN(EXTRACT(DAY FROM w.Retention))        Snap_Retention_Days
+                            FROM   DBA_Hist_Snapshot s
+                            LEFT OUTER JOIN DBA_Hist_WR_Control w ON w.DBID = s.DBID
+                            GROUP BY s.DBID
+                            ORDER BY MIN(Begin_Interval_Time)"
     render_partial :list_dbids
   end
 

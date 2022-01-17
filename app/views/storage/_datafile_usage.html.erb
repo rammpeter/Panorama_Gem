@@ -15,7 +15,7 @@ column_options =
     {:caption=>'Block size',       :data=>proc{|rec| fn(rec.block_size)},                   :title=>"Block size in byte for whole tablespace", align: :right},
     {:caption=>"Status",           :data=>proc{|rec| rec.online_status},                    :title=>"Online-Status"},
   ]
-  column_options << {:caption=>"Con-ID",  :data=>proc{|rec| rec.con_id},           :title=>"Container-ID", align: :right} if is_cdb?
+  column_options << {:caption=>"Con-ID",  :data=>proc{|rec| rec.con_id},           :title=>"Container-ID", align: :right} if PanoramaConnection.is_cdb?
 
 %>
 <div>
@@ -58,7 +58,7 @@ column_options =
         DNFS_LIB - The file is accessed through direct NFS library"},
         {:caption=>"Retries",          :data=>proc{|rec| formattedNumber(rec.retries_on_error)},        :title=>"Number of read retries on error",    :align=>:right},
       ]
-    column_options << {:caption=>"Con-ID",  :data=>proc{|rec| rec.con_id},           :title=>"Container-ID", align: :right} if is_cdb?
+    column_options << {:caption=>"Con-ID",  :data=>proc{|rec| rec.con_id},           :title=>"Container-ID", align: :right} if PanoramaConnection.is_cdb?
 
     %>
 

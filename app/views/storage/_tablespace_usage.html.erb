@@ -255,7 +255,7 @@ column_options <<  {:caption=>'Total MB',  :data=>proc{|rec| link_mb(rec)}, :tit
         [
             {:caption=>"Tablespace",          :data=>proc{|rec| rec.tablespace_name},             :title=>t(:storage_tablespace_usage_tablespace_name_hint, :default=>'Name of tablespace')},
         ]
-    column_options << {:caption=>"Con-ID",  :data=>proc{|rec| rec.con_id},           :title=>"Container-ID", align: :right} if is_cdb?
+    column_options << {:caption=>"Con-ID",  :data=>proc{|rec| rec.con_id},           :title=>"Container-ID", align: :right} if PanoramaConnection.is_cdb?
 
     column_options.concat [
             {:caption=>"Contents",            :data=>proc{|rec| rec.contents},                    :title=>t(:storage_tablespace_usage_tablespace_content_hint, :default=>'Type/content of tablespace'), data_title: proc{|rec| "%t: #{rec.content_hint}"} },
