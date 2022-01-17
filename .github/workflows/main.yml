@@ -78,6 +78,6 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: test.log
-        path:
-          - test/dummy/log/test.log
-          - test/dummy/tmp/screenshots/*
+        path: |
+          test/dummy/log/test.log
+          test/dummy/tmp/screenshots/*
