@@ -84,7 +84,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
   test "show_object_size with xhr: true"       do get  :show_object_size, :params => {:format=>:html, :update_area=>:hugo };   assert_response :success; end
 
   test "list_objects with xhr: true"  do
-    post :list_objects, :params => {:format=>:html, :tablespace=>{:name=>"USERS"}, :schema=>{:name=>"SCOTT"}, :update_area=>:hugo };
+    post :list_objects, :params => {format: :html, tablespace: {name: "USERS"}, schema: {name: @object_owner}, update_area: :hugo };
     assert_response :success;
 
     post :list_objects, :params => {:format=>:html, sql_id: 'abcd', :update_area=>:hugo };
