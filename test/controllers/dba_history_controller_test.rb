@@ -300,10 +300,11 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
 
   test "genuine_oracle_reports with xhr: true" do
     def management_pack_license_ok?
+      return false if PanoramaConnection.autonomous_database?                   # Only admin is allowed to execute this functions in autonomous DB, therefore call of DBMS_WORKLOAD_REPOSITORY raises error for panorama_test
       [:diagnostics_pack, :diagnostics_and_tuning_pack].include? management_pack_license
     end
 
-    if get_db_version >= '12.1' && !PanoramaConnection.autonomous_database?
+    if get_db_version >= '12.1'
       [nil, @instance].each do |instance|
         # download_oracle_com_reachable: simulate test from previous dialog
         begin
