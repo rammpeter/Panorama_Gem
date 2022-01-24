@@ -80,4 +80,4 @@ jobs:
         name: test.log
         path: |
           test/dummy/log/test.log
-          test/dummy/tmp/screenshots/*
+          test/dummy/tmp/*

@@ -45,7 +45,7 @@ class PackLicense
       sql = PanoramaSamplerStructureCheck.transform_sql_for_sampler(sql)
     else
       if PanoramaConnection.autonomous_database?                                # Use CDB-prefix for autonomous DB (Access on DBA_Hist leads to session termination)
-        sql.gsub!(/DBA_Hist/i, 'CDB_Hist')
+        sql.gsub!(/DBA_Hist/i, 'CDB_Hist') unless sql['NO_CDB_TRANSFORMATION']  # Translate only if not supressed
       end
     end
     sql

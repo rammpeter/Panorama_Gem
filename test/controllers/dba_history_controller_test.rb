@@ -303,7 +303,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       [:diagnostics_pack, :diagnostics_and_tuning_pack].include? management_pack_license
     end
 
-    if get_db_version >= '12.1'
+    if get_db_version >= '12.1' && !PanoramaConnection.autonomous_database?
       [nil, @instance].each do |instance|
         # download_oracle_com_reachable: simulate test from previous dialog
         begin

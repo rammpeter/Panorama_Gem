@@ -1526,7 +1526,7 @@ ORDER BY Column_ID
     end
 
     @ora_tab_pkeys    = {}
-    ora_tab_pkeys = PanoramaConnection.sql_select_all ["SELECT Table_Name, Constraint_Name, Index_Name FROM All_Constraints WHERE Owner = ? AND Constraint_Type='P'", @sampler_config.get_owner.upcase]
+    ora_tab_pkeys = PanoramaConnection.sql_select_all ["SELECT /*+ NOPARALLEL */ Table_Name, Constraint_Name, Index_Name FROM All_Constraints WHERE Owner = ? AND Constraint_Type='P'", @sampler_config.get_owner.upcase]
     ora_tab_pkeys.each do |p|
       @ora_tab_pkeys[p.table_name] = p
     end

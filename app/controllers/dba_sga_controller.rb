@@ -127,7 +127,7 @@ class DbaSgaController < ApplicationController
                     ROUND((s.CPU_TIME / 1000000) / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS), 3) AS CPU_TIME_SECS_PER_EXECUTE,
                     s.SQL_ID, s.Plan_Hash_Value, s.Object_Status,
                     c.Child_Count, c.Plans
-                    #{modus=="GV$SQL" ? ", s.Child_Number, RAWTOHEX(s.Child_Address) Child_Address, s.Last_Active_Time" : ", c.Child_Number, c.Child_Address, s.Version_Count, TO_DATE(s.Last_Active_Time, 'YYYY-MM-DD/HH24:MI:SS') Last_Active_Time" }
+                    #{modus=="GV$SQL" ? ", s.Child_Number, RAWTOHEX(s.Child_Address) Child_Address, s.Last_Active_Time" : ", c.Child_Number, c.Child_Address, s.Version_Count, s.Last_Active_Time" }
             FROM   #{modus} s
             JOIN DBA_USERS u ON u.User_ID = s.Parsing_User_ID
             JOIN (SELECT /*+ NO_MERGE */ Inst_ID, SQL_ID, COUNT(*) Child_Count, MIN(Child_Number) Child_Number, MIN(RAWTOHEX(Child_Address)) Child_Address,
