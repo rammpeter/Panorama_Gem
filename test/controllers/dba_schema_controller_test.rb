@@ -8,53 +8,72 @@ class DbaSchemaControllerTest < ActionController::TestCase
     set_session_test_db_context
 
     initialize_min_max_snap_id_and_times
+    @object_owner   = PanoramaConnection.username
+    @lob_table_name = 'LOB_TEST_TABLE'
+    @index_name     = "IX_#{@lob_table_name}"
+
+    PanoramaConnection.sql_execute "DROP TABLE #{@lob_table_name}" if PanoramaConnection.user_table_exists? @lob_table_name
+    PanoramaConnection.sql_execute "CREATE TABLE #{@lob_table_name} (ID NUMBER, Lob_Column CLOB) LOB (Lob_Column) STORE AS (DISABLE STORAGE IN ROW)"
+    PanoramaConnection.sql_execute "INSERT INTO #{@lob_table_name} VALUES (1, 'My_Test_Lob')"
+    PanoramaConnection.sql_execute "CREATE INDEX #{@index_name} ON #{@lob_table_name}(ID)"
 
     # Use LOB for test from Panorama itself (if already created)m suppress ORA-10614: Operation not allowed on this segment
-    lob_table = sql_select_first_row "SELECT Owner, Table_Name, Segment_Name FROM DBA_Lobs WHERE Segment_Created = 'YES' AND Owner NOT IN ('SYS', 'SYSTEM') AND Table_Name LIKE 'PANORAMA%' AND RowNum < 2"
-    if lob_table
-      @lob_owner        = lob_table.owner
-      @lob_table_name   = lob_table.table_name
-      @lob_segment_name = lob_table.segment_name
-    else
-      puts "DbaSchemaControllerTest.setup: There are no LOB tables in database"
-    end
+    @lob_segment_name = sql_select_one ["SELECT Segment_Name FROM User_Lobs WHERE Segment_Created = 'YES' AND Table_Name = UPPER(?) AND RowNum < 2", @lob_table_name]
 
-    lob_part_table = sql_select_first_row "SELECT Table_Owner, Table_Name, Lob_Name, LOB_Partition_Name FROM DBA_Lob_Partitions WHERE Segment_Created = 'YES' AND Table_Owner NOT IN ('SYS', 'SYSTEM') AND RowNum < 2"
-    if lob_part_table
-      @lob_part_owner           = lob_part_table.table_owner
-      @lob_part_table_name      = lob_part_table.table_name
+    if PanoramaConnection.edition == :enterprise                                # Precondition for partitioning
+      @part_table_table_name  = 'LOB_PART_TEST_TABLE'
+      @part_index_index_name  = "IX_#{@part_table_table_name}"
+      PanoramaConnection.sql_execute "DROP TABLE #{@part_table_table_name}" if PanoramaConnection.user_table_exists? @part_table_table_name
+      PanoramaConnection.sql_execute "CREATE TABLE #{@part_table_table_name} (ID NUMBER, Lob_Column CLOB) LOB (Lob_Column) STORE AS (DISABLE STORAGE IN ROW)
+                                      PARTITION BY HASH(ID) PARTITIONS 2"
+      PanoramaConnection.sql_execute "INSERT INTO #{@part_table_table_name} VALUES (1, 'My_Test_Lob')"
+      PanoramaConnection.sql_execute "CREATE INDEX #{@part_index_index_name} ON #{@part_table_table_name}(ID) LOCAL"
+
+      lob_part_table = sql_select_first_row ["SELECT Lob_Name, LOB_Partition_Name FROM User_Lob_Partitions WHERE Segment_Created = 'YES' AND Table_Name = ? AND RowNum < 2", @part_table_table_name]
       @lob_part_lob_name        = lob_part_table.lob_name
       @lob_part_partition_name  = lob_part_table.lob_partition_name
-    else
-      puts "DbaSchemaControllerTest.setup: There are no partitioned LOB tables in database"
-    end
 
-    subpart_table = sql_select_first_row "SELECT Table_Owner, Table_Name, Partition_Name, SubPartition_Name FROM DBA_Tab_SubPartitions WHERE Segment_Created = 'YES' AND RowNum < 2"
-    if subpart_table
-      @subpart_table_owner              = subpart_table.table_owner
-      @subpart_table_table_name         = subpart_table.table_name
+      @subpart_table_table_name = 'LOB_SUBPART_TEST_TABLE'
+      @subpart_index_index_name = "IX_#{@subpart_table_table_name}"
+      PanoramaConnection.sql_execute "DROP TABLE #{@subpart_table_table_name}" if PanoramaConnection.user_table_exists? @subpart_table_table_name
+      PanoramaConnection.sql_execute "CREATE TABLE #{@subpart_table_table_name} (ID1 NUMBER, ID2 NUMBER, Lob_Column CLOB) LOB (Lob_Column) STORE AS (DISABLE STORAGE IN ROW)
+        PARTITION BY RANGE (ID1) SUBPARTITION BY HASH (ID2) SUBPARTITIONS 2
+        ( PARTITION P1 VALUES LESS THAN (1), PARTITION P2 VALUES LESS THAN (2) )
+      "
+      PanoramaConnection.sql_execute "INSERT INTO #{@subpart_table_table_name} VALUES (1, 1, 'MyTestLOB')"
+      PanoramaConnection.sql_execute "CREATE INDEX #{@subpart_index_index_name} ON #{@subpart_table_table_name}(ID1, ID2) LOCAL"
+
+      subpart_table = sql_select_first_row ["SELECT Partition_Name, SubPartition_Name FROM User_Tab_SubPartitions
+                                             WHERE Table_Name = ? AND Segment_Created = 'YES' AND RowNum < 2", @subpart_table_table_name]
       @subpart_table_partition_name     = subpart_table.partition_name
       @subpart_table_subpartition_name  = subpart_table.subpartition_name
     else
-      puts "DbaSchemaControllerTest.setup: There are no table subpartitions in database"
+      puts "DbaSchemaControllerTest.setup: There are no table partitions or subpartitions in database because edition = #{PanoramaConnection.edition}"
     end
 
-    index = sql_select_first_row "SELECT Owner, Index_Name, Table_Owner, Table_Name FROM DBA_Indexes WHERE Segment_Created = 'YES' AND RowNum < 2"
-    @index_owner        = index.owner
-    @index_name         = index.index_name
-    @index_table_owner  = index.table_owner
-    @index_table_name   = index.table_name
+    part_index = sql_select_first_row ["SELECT Partition_Name FROM User_Ind_Partitions WHERE Segment_Created = 'YES' AND Index_Name = ? AND RowNum < 2", @part_index_index_name]
+    if part_index
+      @part_index_partition_name     = part_index.partition_name
+    else
+      puts "DbaSchemaControllerTest.setup: There are no index subpartitions in database"
+    end
 
-    subpart_index = sql_select_first_row "SELECT Index_Owner, Index_Name, Partition_Name, SubPartition_Name FROM DBA_Ind_SubPartitions WHERE Segment_Created = 'YES' AND RowNum < 2"
+    subpart_index = sql_select_first_row ["SELECT Partition_Name, SubPartition_Name FROM User_Ind_SubPartitions
+                                           WHERE Segment_Created = 'YES' AND Index_Name = ? AND RowNum < 2", @subpart_index_index_name]
     if subpart_index
-      @subpart_index_owner              = subpart_index.index_owner
-      @subpart_index_index_name         = subpart_index.index_name
       @subpart_index_partition_name     = subpart_index.partition_name
       @subpart_index_subpartition_name  = subpart_index.subpartition_name
     else
       puts "DbaSchemaControllerTest.setup: There are no index subpartitions in database"
     end
 
+  end
+
+  teardown do
+    set_session_test_db_context
+    PanoramaConnection.sql_execute "DROP TABLE #{@lob_table_name}"            if PanoramaConnection.user_table_exists? @lob_table_name
+    PanoramaConnection.sql_execute "DROP TABLE #{@part_table_table_name}"     if PanoramaConnection.user_table_exists? @part_table_table_name
+    PanoramaConnection.sql_execute "DROP TABLE #{@subpart_table_table_name}"  if PanoramaConnection.user_table_exists? @subpart_table_table_name
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
@@ -107,11 +126,11 @@ class DbaSchemaControllerTest < ActionController::TestCase
     post :list_indexes, :params => {:format=>:html, :owner=>"SYS", :table_name=>"AUD$", :update_area=>:hugo }
     assert_response :success
 
-    post :list_indexes, params: {format: :html, owner: @index_table_owner, table_name: @index_table_name, index_name: @index_name, :update_area=>:hugo }
+    post :list_indexes, params: {format: :html, owner: @object_owner, table_name: @lob_table_name, index_name: @index_name, :update_area=>:hugo }
     assert_response :success
 
     if get_db_version >= '12.2'
-      post :list_index_usage, :params => {:format=>:html, owner: @index_owner, index_name: @index_name, :update_area=>:hugo }
+      post :list_index_usage, :params => {:format=>:html, owner: @object_owner, index_name: @index_name, :update_area=>:hugo }
       assert_response :success
     end
 
@@ -127,7 +146,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
     post :list_references_from, :params => {:format=>:html, :owner=>"SYS", :table_name=>"HS$_INST_DD", :update_area=>:hugo }
     assert_response :success
 
-    post :list_references_from, :params => {:format=>:html, :owner=>@index_table_owner, :table_name=>@index_table_name, index_owner: @index_owner, index_name: @index_name, :update_area=>:hugo }
+    post :list_references_from, :params => {:format=>:html, :owner=>@object_owner, :table_name=>@lob_table_name, index_owner: @object_owner, index_name: @index_name, :update_area=>:hugo }
     assert_response :success
 
     post :list_references_from, :params => {:format=>:html, :owner=>"SYS", :table_name=>"HS$_INST_DD", :update_area=>:hugo }
@@ -147,30 +166,39 @@ class DbaSchemaControllerTest < ActionController::TestCase
     post :list_lobs, :params => {:format=>:html, :owner=>"SYS", :table_name=>"AUD$", :update_area=>:hugo }
     assert_response :success
 
-    if defined? @lob_part_owner                                                          # if lob partitions exists in this database
-      get :list_lob_partitions, :params => {:format=>:html, :owner=>@lob_part_owner, :table_name=>@lob_part_table_name, :lob_name=>@lob_part_lob_name, :update_area=>:hugo }
+    if defined? @lob_part_partition_name                                                          # if lob partitions exists in this database
+      get :list_lob_partitions, :params => {:format=>:html, :owner=>@object_owner, :table_name=>@lob_part_table_name, :lob_name=>@lob_part_lob_name, :update_area=>:hugo }
       assert_response :success
     end
 
     get :list_table_partitions, :params => {:format=>:html, :owner=>"SYS", :table_name=>"WRH$_SQLSTAT", :update_area=>:hugo }
     assert_response :success
 
-    if defined? @subpart_table_owner
-      get :list_table_subpartitions, :params => {:format=>:html, :owner=>@subpart_table_owner, :table_name=>@subpart_table_table_name, :update_area=>:hugo }
+    if defined? @subpart_table_table_name
+      get :list_table_subpartitions, :params => {:format=>:html, :owner=>@object_owner, :table_name=>@subpart_table_table_name, :update_area=>:hugo }
       assert_response :success
 
-      get :list_table_subpartitions, :params => {:format=>:html, :owner=>@subpart_table_owner, :table_name=>@subpart_table_table_name, :partition_name => @subpart_table_partition_name, :update_area=>:hugo }
+      get :list_table_subpartitions, :params => {:format=>:html, :owner=>@object_owner, :table_name=>@subpart_table_table_name, :partition_name => @subpart_table_partition_name, :update_area=>:hugo }
       assert_response :success
     end
 
     get :list_index_partitions, :params => {:format=>:html, :owner=>"SYS", :index_name=>"WRH$_SQLSTAT_PK", :update_area=>:hugo }
     assert_response :success
 
-    if defined? @subpart_index_owner
-      get :list_index_subpartitions, :params => {:format=>:html, :owner=>@subpart_index_owner, :index_name=>@subpart_index_index_name, :update_area=>:hugo }
+    if defined? @part_index_index_name
+      get :list_index_partitions, :params => {:format=>:html, :owner=>@object_owner, :index_name=>@part_index_index_name, :update_area=>:hugo }
       assert_response :success
 
-      get :list_index_subpartitions, :params => {:format=>:html, :owner=>@subpart_index_owner, :index_name=>@subpart_index_index_name, :partition_name => @subpart_table_partition_name, :update_area=>:hugo }
+      get :list_index_partitions, :params => {:format=>:html, :owner=>@object_owner, :index_name=>@part_index_index_name, :partition_name => @part_index_partition_name, :update_area=>:hugo }
+      assert_response :success
+    end
+
+
+    if defined? @subpart_index_index_name
+      get :list_index_subpartitions, :params => {:format=>:html, :owner=>@object_owner, :index_name=>@subpart_index_index_name, :update_area=>:hugo }
+      assert_response :success
+
+      get :list_index_subpartitions, :params => {:format=>:html, :owner=>@object_owner, :index_name=>@subpart_index_index_name, :partition_name => @subpart_index_partition_name, :update_area=>:hugo }
       assert_response :success
     end
 
@@ -226,39 +254,51 @@ class DbaSchemaControllerTest < ActionController::TestCase
   end
 
   test "list_space  _usage with xhr: true" do
-    if defined?(@lob_owner)
-      Rails.logger.info "Table-Name for next LOB test is #{@lob_owner}.#{@lob_table_name}"
-      get :list_space_usage, params: {format: :html, owner: @lob_owner, segment_name: @lob_segment_name , update_area: :hugo }
+    get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @lob_segment_name , update_area: :hugo }
+    assert_response :success
+
+    if defined?(@lob_part_partition_name)
+      # all partitions
+      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @lob_part_lob_name , update_area: :hugo }
+      assert_response :success
+      # one partition
+      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @lob_part_lob_name, partition_name: @lob_part_partition_name , update_area: :hugo }
       assert_response :success
     end
 
-    if defined?(@lob_part_owner)
-      Rails.logger.info "Table-Name for next LOB Partition test is #{@lob_part_owner}.#{@lob_part_table_name}"
+    if defined?(@part_table_table_name)
       # all partitions
-      get :list_space_usage, params: {format: :html, owner: @lob_part_owner, segment_name: @lob_part_lob_name , update_area: :hugo }
+      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @part_table_table_name , update_area: :hugo }
       assert_response :success
       # one partition
-      get :list_space_usage, params: {format: :html, owner: @lob_part_owner, segment_name: @lob_part_lob_name, partition_name: @lob_part_partition_name , update_area: :hugo }
+      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @part_table_table_name, partition_name: @part_table_partition_name , update_area: :hugo }
       assert_response :success
     end
 
-    if defined?(@subpart_table_owner)
-      Rails.logger.info "Table-Name for next table subpartition test is #{@subpart_table_owner}.#{@subpart_table_table_name}"
+    if defined?(@part_index_index_name)
       # all partitions
-      get :list_space_usage, params: {format: :html, owner: @subpart_table_owner, segment_name: @subpart_table_table_name , update_area: :hugo }
+      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @part_index_index_name , update_area: :hugo }
       assert_response :success
       # one partition
-      get :list_space_usage, params: {format: :html, owner: @subpart_table_owner, segment_name: @subpart_table_table_name, partition_name: @subpart_table_subpartition_name , update_area: :hugo }
+      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @part_index_index_name, partition_name: @part_index_partition_name , update_area: :hugo }
       assert_response :success
     end
 
-    if defined?(@subpart_index_owner)
-      Rails.logger.info "Index-Name for next index subpartition test is #{@subpart_index_owner}.#{@subpart_index_index_name}"
+    if defined?(@subpart_table_table_name)
       # all partitions
-      get :list_space_usage, params: {format: :html, owner: @subpart_index_owner, segment_name: @subpart_index_index_name , update_area: :hugo }
+      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @subpart_table_table_name , update_area: :hugo }
       assert_response :success
       # one partition
-      get :list_space_usage, params: {format: :html, owner: @subpart_index_owner, segment_name: @subpart_index_index_name, partition_name: @subpart_index_subpartition_name , update_area: :hugo }
+      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @subpart_table_table_name, partition_name: @subpart_table_subpartition_name , update_area: :hugo }
+      assert_response :success
+    end
+
+    if defined?(@subpart_index_index_name)
+      # all partitions
+      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @subpart_index_index_name , update_area: :hugo }
+      assert_response :success
+      # one partition
+      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @subpart_index_index_name, partition_name: @subpart_index_subpartition_name , update_area: :hugo }
       assert_response :success
     end
   end

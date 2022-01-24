@@ -773,6 +773,7 @@ oradebug setorapname diag
       where_string << " OR s.UserName           LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
       where_string << " OR UPPER(s.OSUser)      LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
       where_string << " OR UPPER(s.Machine)     LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
+      where_string << " OR UPPER(s.SQL_ID)      LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
       where_string << " OR UPPER(s.Client_Info) LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
       where_string << " OR UPPER(s.Client_Identifier) LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
       where_string << " OR UPPER(s.Module)      LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]

@@ -27,7 +27,7 @@
     <%= instance_tag %>
     <div class="flex-row-element" title="">
       Filter
-      <%= text_field_tag(:filter, "", :size=>12, :title=>t(:dba_show_sessions_filter_hint, :default=>"Optional like-filter for client/shadow-process on: session-ID, process-ID, username, client info, client-ID, module, action, machine, program")) %>
+      <%= text_field_tag(:filter, "", :size=>12, :title=>t(:dba_show_sessions_filter_hint, :default=>"Optional like-filter for client/shadow-process on: session-ID, process-ID, username, SQL ID, client info, client-ID, module, action, machine, program")) %>
     </div>
     <div class="flex-row-element">
       <%= submit_tag(t(:dba_show_sessions_submit_caption, :default=>"Show sessions"), :title => t(:dba_show_sessions_submit_hint, :default=>"Show sessions according to given filters")) %>

@@ -401,6 +401,7 @@ class PanoramaConnection
   def self.transaction_fixed_header_size;   check_for_open_connection;        Thread.current[:panorama_connection_connection_object].transaction_fixed_header_size;     end
   def self.transaction_variable_header_size;check_for_open_connection;        Thread.current[:panorama_connection_connection_object].transaction_variable_header_size;  end
   def self.unsigned_byte_4_size;            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].unsigned_byte_4_size;              end
+  def self.username;                        check_for_open_connection;        get_threadlocal_config[:user].upcase;    end
 
   private
 
@@ -599,6 +600,9 @@ class PanoramaConnection
     Thread.current[:panorama_connection_connect_info]
   end
 
+  def self.user_table_exists?(table_name)
+    self.sql_select_one(["SELECT COUNT(*) FROM User_Tables WHERE Table_Name = UPPER(?)", table_name]) > 0
+  end
 
   private
   # ensure that Oracle-Connection exists and DBMS__Application_Info is executed
