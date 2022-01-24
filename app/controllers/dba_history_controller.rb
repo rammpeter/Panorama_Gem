@@ -1941,8 +1941,8 @@ FROM (
 
     end
 
-    raise PopupMessageException.new("No AWR snapshots are found for your database / instance!") if @min_snap_id.nil? || @max_snap_id.nil?
-    raise PopupMessageException.new("Only one or less AWR snapshots found for time period '#{time_selection_start}' until '#{time_selection_end}' and instance=#{instance}! Min. Snap_ID = #{@min_snap_id}, max. Snap_ID = #{@max_snap_id}\nPlease use larger time period!") if @min_snap_id >= @max_snap_id
+    raise PopupMessageException.new("No AWR snapshots are found for your DBID = #{get_dbid}#{", instance = #{@instance}" if @instance} in #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')}!") if @min_snap_id.nil? || @max_snap_id.nil?
+    raise PopupMessageException.new("Only one or less AWR snapshots found for DBID = #{get_dbid} in time period '#{time_selection_start}' until '#{time_selection_end}'#{", instance = #{@instance}" if @instance}! Table = #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')}, Min. Snap_ID = #{@min_snap_id}, max. Snap_ID = #{@max_snap_id}\nPlease use larger time period!") if @min_snap_id >= @max_snap_id
   end
 
   public
