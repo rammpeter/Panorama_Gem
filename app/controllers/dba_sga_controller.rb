@@ -1401,9 +1401,13 @@ class DbaSgaController < ApplicationController
     @object_name = params[:object_name]
 
     @caches = sql_select_all ["
+      WITH Tablespaces AS (SELECT /*+ NO_MERGE MATERIALIZE */ DISTINCT v.TS#, v.Name, t.Block_Size
+                           FROM   v$Tablespace v
+                           JOIN   DBA_Tablespaces t ON t.Tablespace_Name = v.Name
+                          )
       SELECT x.Inst_ID, Owner, Object_Name, SubObject_Name, Object_Type,
-             SUM(x.Blocks * ts.BlockSize)/(1024*1024) MB_Total,
-             SUM(x.Blocks * ts.BlockSize)/(SELECT Value FROM gv$SGA s WHERE s.Inst_ID = x.Inst_ID AND s.Name = 'Database Buffers')*100 Pct,
+             SUM(x.Blocks * ts.Block_Size)/(1024*1024) MB_Total,
+             SUM(x.Blocks * ts.Block_Size)/(SELECT Value FROM gv$SGA s WHERE s.Inst_ID = x.Inst_ID AND s.Name = 'Database Buffers')*100 Pct,
              SUM(Blocks) Blocks,
              SUM(Dirty)  Dirty,
              SUM(xcur)   xcur,
@@ -1431,7 +1435,7 @@ class DbaSgaController < ApplicationController
               JOIN   gv$BH c ON c.Objd = o.Data_Object_ID
               GROUP BY c.Inst_ID, TS#, o.Owner, o.Object_Name, o.SubObject_Name, o.Object_Type
              ) x
-      JOIN   sys.TS$ ts ON ts.TS# = x.TS#
+      JOIN   Tablespaces ts ON ts.TS# = x.TS#
       GROUP BY Inst_ID, Owner, Object_Name, SubObject_Name, Object_Type
       ORDER BY MB_Total DESC
     ", @owner, @object_name, @owner, @object_name]

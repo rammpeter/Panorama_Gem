@@ -73,11 +73,16 @@ jobs:
         cat $TNS_ADMIN/tnsnames.ora
         cd ${PANORAMA_PATH} && rake test
 
-    - name: Archive test results
+    - name: Archive test log
       if: always()
       uses: actions/upload-artifact@v1
       with:
         name: test.log
-        path: |
-          test/dummy/log/test.log
-          test/dummy/tmp/*
+        path: test/dummy/log/test.log
+
+    - name: Archive test results
+      if: always()
+      uses: actions/upload-artifact@v1
+      with:
+        name: tmp
+        path: test/dummy/tmp
