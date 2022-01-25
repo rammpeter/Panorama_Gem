@@ -13,6 +13,8 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
 
     initialize_min_max_snap_id_and_times
 
+    @autonomous_database =  PanoramaConnection.autonomous_database?             # No access to DB possible within test code ???
+
     if management_pack_license == :none                                         # Fake defaults if no management pack license
       @sga_sql_id_without_history = '12345'
       @hist_sql_id                = '12345'
@@ -300,7 +302,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
 
   test "genuine_oracle_reports with xhr: true" do
     def management_pack_license_ok?
-      return false if PanoramaConnection.autonomous_database?                   # Only admin is allowed to execute this functions in autonomous DB, therefore call of DBMS_WORKLOAD_REPOSITORY raises error for panorama_test
+                          return false if @autonomous_database                  # Only admin is allowed to execute this functions in autonomous DB, therefore call of DBMS_WORKLOAD_REPOSITORY raises error for panorama_test
       [:diagnostics_pack, :diagnostics_and_tuning_pack].include? management_pack_license
     end
 
