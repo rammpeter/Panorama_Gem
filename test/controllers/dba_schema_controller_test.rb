@@ -109,7 +109,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
         {owner: 'PUBLIC',   segment_name: 'V$ARCHIVE'},                         # Synonym
         {owner: 'SYS',      segment_name: 'DBMS_SESSION'},                      # Package oder Body
     ]
-        .concat(get_db_version >= '12.1' ? [{owner: 'XDB',      segment_name: 'XDB$ANY'}] :  [])    # XML-Table instead of relational table
+        .concat(get_db_version >= '12.1' ? [{owner: 'XDB',      segment_name: 'XDB$XTAB'}] :  [])    # XML-Table instead of relational table
         .each do |object|
       get :list_object_description, :params => {format: :html, owner: object[:owner], segment_name: object[:segment_name], :update_area=>:hugo }
       assert_response :success
