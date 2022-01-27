@@ -41,13 +41,19 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
     test_config = PanoramaTestConfig.test_config
     @page.goto("http://#{@host}:#{@port}")
     # page.screenshot(path: '/tmp/playwright.png')
-    @page.query_selector("#database_modus_host").check
-    @page.query_selector('#database_host').fill(test_config[:host])
+    #
+    if test_config[:tns_or_host_port_sn] == :TNS
+      @page.query_selector("#database_modus_tns").check
+      @page.select_option('#database_tns', value=test_config[:tns])
+    else
+      @page.query_selector("#database_modus_host").check
+      @page.query_selector('#database_host').fill(test_config[:host])
 
-    @page.query_selector('#database_port').fill(test_config[:port])
+      @page.query_selector('#database_port').fill(test_config[:port])
 
-    @page.query_selector('#database_sid_usage_SERVICE_NAME').check
-    @page.query_selector('#database_sid').fill(test_config[:sid])
+      @page.query_selector('#database_sid_usage_SERVICE_NAME').check
+      @page.query_selector('#database_sid').fill(test_config[:sid])
+    end
 
     @page.query_selector('#database_user').fill(test_config[:user])
     @page.query_selector('#database_password').fill(test_config[:password_decrypted])
