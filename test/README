@@ -9,3 +9,10 @@ TEST_SERVICENAME        Default: ORCLPDB1
 TEST_USERNAME           Default: panorama_test
 TEST_PASSWORD           Default: panorama_test
 TEST_SYSPASSWORD        Default: oracle
+TEST_TNS                Default: combined from host/port/sid/servicename
+
+
+Additional grants needed for the database user on autonomous DB
+---------------------------------------------------------------
+GRANT SELECT ON V$DIAG_ALERT_EXT
+GRANT READ ON SYS.DBMS_LOCK_ALLOCATED

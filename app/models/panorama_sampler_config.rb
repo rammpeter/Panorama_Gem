@@ -103,7 +103,7 @@ class PanoramaSamplerConfig
   def get_last_domain_snapshot_end(domain);   get_config_value("last_#{domain.downcase}_snapshot_end".to_sym);    end
 
   # Does the user have SELECT ANY TABLE? This ensures that user may select V$-Tables from within packages
-  def get_select_any_table
+  def get_select_any_table?
     if !@config_hash.key?(:select_any_table)
       # Check if accessing v$-tables from within PL/SQL-Package is possible
       # don't persist config change because config may be pending (not saved) for new sampler configuration

@@ -67,7 +67,7 @@ class PanoramaSamplerSampling
                                     p_SQL_Min_Runtime_MilliSecs => ?
                                    )"
 
-    if @sampler_config.get_select_any_table                                       # call PL/SQL package ?
+    if @sampler_config.get_select_any_table?                                       # call PL/SQL package ?
       sql = " BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_Snapshot.#{do_snapshot_call}; END;"
     else
       # replace PANORAMA. with the real owner in PL/SQL-Source
@@ -149,7 +149,7 @@ class PanoramaSamplerSampling
     next_snapshot_start_seconds = @sampler_config.get_awr_ash_snapshot_cycle * 60 - start_delay_from_snapshot # Number of seconds until next snapshot start
     next_snapshot_start_seconds += 5                                            # Assume 5 seconds delay until start of sampling to fill with previous daemon
 
-    if @sampler_config.get_select_any_table                                     # call PL/SQL package ?
+    if @sampler_config.get_select_any_table?                                     # call PL/SQL package ?
       sql = " BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_ASH.Run_Sampler_Daemon(?, ?, ?); END;"
     else
       sql = "
@@ -252,7 +252,7 @@ class PanoramaSamplerSampling
   end
 
   def do_blocking_locks_sampling(snapshot_time)
-    if @sampler_config.get_select_any_table                                     # call PL/SQL package ?
+    if @sampler_config.get_select_any_table?                                     # call PL/SQL package ?
       sql = "BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_Block_Locks.Create_Block_Locks_Snapshot(?); END;"
     else
       sql = "
