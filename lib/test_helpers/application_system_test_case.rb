@@ -111,19 +111,25 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     test_sid          = nil
     test_service_name = test_config[:sid]
 
-    page.find_by_id('database_modus_host').set(true)                            # Choose host/port/sid for entry
+    if test_config[:tns_or_host_port_sn] == :TNS
+      page.find_by_id('database_modus_tns').set(true)                           # Choose TNS for entry
+      within '#database_tns' do
+        find("option[value='#{test_config[:tns]}']").click
+      end
+    else
+      page.find_by_id('database_modus_host').set(true)                          # Choose host/port/sid for entry
+      fill_in('database[host]', with: test_config[:host])
+      fill_in('database[port]', with: test_config[:port])
+      if test_sid
+        page.find_by_id('database_sid_usage_SID').set(true)
+        fill_in('database_sid', with: test_sid)
+      end
+      if test_service_name
+        find_by_id('database_sid_usage_SERVICE_NAME').set(true)
+        fill_in('database_sid', with: test_service_name)
+      end
+    end
 #print page.html
-
-    fill_in('database[host]', with: test_config[:host])
-    fill_in('database[port]', with: test_config[:port])
-    if test_sid
-      page.find_by_id('database_sid_usage_SID').set(true)
-      fill_in('database_sid', with: test_sid)
-    end
-    if test_service_name
-      find_by_id('database_sid_usage_SERVICE_NAME').set(true)
-      fill_in('database_sid', with: test_service_name)
-    end
     fill_in('database_user', with: test_config[:user])
     fill_in('database_password', with: test_config[:password_decrypted])
     click_button('submit_login_dialog')

@@ -154,34 +154,40 @@ Free space in DB-blocks declared by PCT_FREE may be used for:
 This selection shows candidates without any update statements since last analyze.
 If you can exclude the need for allowing concurrent transactions in ITL-list above INI_TRANS than the recommendation is to set PCT_FREE=0.
 "),
-            :sql=> "SELECT *
-                    FROM   (
-                            SELECT t.Owner, t.Table_Name, NULL Partition_Name, NULL SubPartition_Name, t.PCT_Free, t.Num_Rows, t.Avg_Row_Len, t.Last_Analyzed,
-                                   ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024), 2) Size_MB_Netto,
-                                   ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024)*t.PCT_Free/100, 2) Size_MB_For_PctFree, t.INI_Trans, t.Max_Trans,
-                                   m.Inserts, m.Updates, m.Deletes, m.Truncated, m.Drop_Segments, m.Timestamp Last_DML_Timestamp
-                            FROM   DBA_Tables t
-                            JOIN   DBA_Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL AND m.SubPartition_Name IS NULL
-                            UNION ALL
-                            SELECT t.Table_Owner, t.Table_Name, t.Partition_Name, NULL SubPartition_Name,  t.PCT_Free, t.Num_Rows, t.Avg_Row_Len, t.Last_Analyzed,
-                                   ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024), 2) Size_MB_Netto,
-                                   ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024)*t.PCT_Free/100, 2) Size_MB_For_PctFree, t.INI_Trans, t.Max_Trans,
-                                   m.Inserts, m.Updates, m.Deletes, m.Truncated, m.Drop_Segments, m.Timestamp Last_DML_Timestamp
-                            FROM   DBA_Tab_Partitions t
-                            JOIN   DBA_Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name AND m.SubPartition_Name IS NULL
-                            UNION ALL
-                            SELECT t.Table_Owner, t.Table_Name, t.Partition_Name, t.SubPartition_Name,  t.PCT_Free, t.Num_Rows, t.Avg_Row_Len, t.Last_Analyzed,
-                                   ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024), 2) Size_MB_Netto,
-                                   ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024)*t.PCT_Free/100, 2) Size_MB_For_PctFree, t.INI_Trans, t.Max_Trans,
-                                   m.Inserts, m.Updates, m.Deletes, m.Truncated, m.Drop_Segments, m.Timestamp Last_DML_Timestamp
-                            FROM   DBA_Tab_SubPartitions t
-                            JOIN   DBA_Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name AND m.SubPartition_Name = t.SubPartition_Name
-                           )
-                    WHERE  PCT_Free > 0
-                    AND    Updates = 0
-                    AND    Last_Analyzed < SYSDATE - ?
-                    AND    Owner NOT IN (#{system_schema_subselect})
-                    ORDER BY Num_Rows*Avg_Row_Len*PCT_Free DESC ",
+            :sql=> "\
+WITH Tab_Modifications AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, Partition_Name, SubPartition_Name,
+                                  Inserts, Updates, Deletes, Truncated, Drop_Segments, Timestamp Last_DML_Timestamp
+                           FROM   DBA_Tab_Modifications
+                           WHERE  Table_Owner NOT IN (#{system_schema_subselect})
+                           AND    Updates = 0
+                          )
+SELECT *
+FROM   (
+        SELECT t.Owner, t.Table_Name, NULL Partition_Name, NULL SubPartition_Name, t.PCT_Free, t.Num_Rows, t.Avg_Row_Len, t.Last_Analyzed,
+               ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024), 2) Size_MB_Netto,
+               ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024)*t.PCT_Free/100, 2) Size_MB_For_PctFree, t.INI_Trans, t.Max_Trans,
+               m.Inserts, m.Updates, m.Deletes, m.Truncated, m.Drop_Segments, m.Last_DML_Timestamp
+        FROM   DBA_Tables t
+        JOIN   Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL AND m.SubPartition_Name IS NULL
+        UNION ALL
+        SELECT t.Table_Owner, t.Table_Name, t.Partition_Name, NULL SubPartition_Name,  t.PCT_Free, t.Num_Rows, t.Avg_Row_Len, t.Last_Analyzed,
+               ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024), 2) Size_MB_Netto,
+               ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024)*t.PCT_Free/100, 2) Size_MB_For_PctFree, t.INI_Trans, t.Max_Trans,
+               m.Inserts, m.Updates, m.Deletes, m.Truncated, m.Drop_Segments, m.Last_DML_Timestamp
+        FROM   DBA_Tab_Partitions t
+        JOIN   Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name AND m.SubPartition_Name IS NULL
+        UNION ALL
+        SELECT t.Table_Owner, t.Table_Name, t.Partition_Name, t.SubPartition_Name,  t.PCT_Free, t.Num_Rows, t.Avg_Row_Len, t.Last_Analyzed,
+               ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024), 2) Size_MB_Netto,
+               ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024)*t.PCT_Free/100, 2) Size_MB_For_PctFree, t.INI_Trans, t.Max_Trans,
+               m.Inserts, m.Updates, m.Deletes, m.Truncated, m.Drop_Segments, m.Last_DML_Timestamp
+        FROM   DBA_Tab_SubPartitions t
+        JOIN   Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name AND m.SubPartition_Name = t.SubPartition_Name
+       )
+WHERE  PCT_Free > 0
+AND    Last_Analyzed < SYSDATE - ?
+ORDER BY Num_Rows*Avg_Row_Len*PCT_Free DESC
+            ",
             :parameter=>[{:name=>t(:dragnet_helper_140_param_1_name, :default=> 'Min. no. days since last analyze'), :size=>8, :default=>8, :title=>t(:dragnet_helper_140_param_1_hint, :default=> 'Minimum number of days since last analyze timestamp for object') },]
         },
         {
