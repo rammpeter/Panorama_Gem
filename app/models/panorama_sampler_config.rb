@@ -104,6 +104,8 @@ class PanoramaSamplerConfig
 
   # Does the user have SELECT ANY TABLE? This ensures that user may select V$-Tables from within packages
   def get_select_any_table?
+    # TODO: Remove after test
+    Rails.logger.debug "get_select_any_table? before #{@config_hash}"
     if !@config_hash.key?(:select_any_table)
       # Check if accessing v$-tables from within PL/SQL-Package is possible
       # don't persist config change because config may be pending (not saved) for new sampler configuration
