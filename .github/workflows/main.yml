@@ -64,7 +64,7 @@ jobs:
       env:
         TEST_USERNAME: panorama_test
         TEST_PASSWORD: TryItOut2019
-        TEST_TNS: panoramatest_tpurgent
+        TEST_TNS: PANORAMATEST_TPURGENT
       run: |
         source $HOME/.rvm/scripts/rvm
         export TNS_ADMIN=${PANORAMA_PATH}/.github
