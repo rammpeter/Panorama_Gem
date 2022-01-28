@@ -20,11 +20,13 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       @hist_sql_id                = '12345'
       @hist_parsing_schema_name   = 'HUGO'
     else
-      @sga_sql_id_without_history = sql_select_one "SELECT SQL_ID
-                                                    FROM   v$SQLArea
-                                                    WHERE  SQL_ID NOT IN (SELECT SQL_ID FROM DBA_Hist_SQLText)
-                                                    AND    RowNum < 2"
-
+      @sga_sql_id_without_history = sql_select_one ["\
+        SELECT /*+ USE_NL(s ht) INDEX_RS_ASC(ht) */ s.SQL_ID
+        FROM   v$SQLArea s
+        LEFT OUTER JOIN CDB_Hist_SQLText ht ON ht.SQL_ID = s.sql_ID and ht.DBID = ?
+        WHERE ht.SQL_ID IS NULL
+        AND    RowNum < 2
+      ", get_dbid]
       raise "No SQL-ID found in SGA" if @sga_sql_id_without_history.nil?
 
       # Find a SQL_ID that surely exists in History
