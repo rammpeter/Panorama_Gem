@@ -458,16 +458,10 @@ class PanoramaConnection
         bind_index = bind_index + 1
         bind_alias = ":A#{bind_index}"
         stmt['?'] = bind_alias          # Ersetzen ? durch Host-Variable
-        if sql.count <= bind_index
-          binds = sql.clone                                                     # Dont change sql in origin
-          binds.delete(0)                                                       # remove SQL from binds array at first position
-          raise "bind value at position #{bind_index} missing for '#{bind_alias}' in binds-array!\nBinds: #{binds}\nSQL:\n #{stmt}"
-        end
-        unless sql[bind_index]
-          binds = sql.clone                                                     # Dont change sql in origin
-          binds.delete(0)                                                       # remove SQL from binds array at first position
-          raise "bind value at position #{bind_index} is NULL for '#{bind_alias}' in binds-array!\nBinds: #{binds}\nSQL:\n #{stmt}"
-        end
+
+        raise "bind value at position #{bind_index} missing for '#{bind_alias}' in binds-array!\nBinds: #{sql.drop(1)}\nSQL:\n #{stmt}" if sql.count <= bind_index
+        raise "bind value at position #{bind_index} is NULL for '#{bind_alias}' in binds-array!\nBinds: #{sql.drop(1)}\nSQL:\n #{stmt}" unless sql[bind_index]
+
         binds << ActiveRecord::Relation::QueryAttribute.new(bind_alias, sql[bind_index], ActiveRecord::Type::Value.new)   # Ab Rails 5
         # binds << [ ActiveRecord::ConnectionAdapters::Column.new(bind_alias, nil, ActiveRecord::Type::Value.new), sql[bind_index]] # Neu ab Rails 4.2.0, Abstrakter Typ muss angegeben werden
       end
