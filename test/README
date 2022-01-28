@@ -16,3 +16,4 @@ Additional grants needed for the database user on autonomous DB
 ---------------------------------------------------------------
 GRANT SELECT ON V$DIAG_ALERT_EXT
 GRANT READ ON SYS.DBMS_LOCK_ALLOCATED
+GRANT READ ON gv$BH

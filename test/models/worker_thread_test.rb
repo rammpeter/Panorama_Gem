@@ -19,8 +19,15 @@ class WorkerThreadTest < ActiveSupport::TestCase
   end
 
   test "check_structure" do
-    [nil, 'SYS', 'SYSTEM'].each do |connection_user|                            # Use different user for connect
-      [true, false].each do |select_any_table|                                  # Test package and anonymous PL/SQL
+    connection_users = [nil]                                                    # Default with test user
+    select_any_tables = [false]                                                 # Default without CREATE PACKAGE
+    unless PanoramaConnection.autonomous_database?
+      # Check SYS/SYSTEM and CREATE PACKAGE only if not autonomous
+      connection_users = connection_users.concat ['SYS', 'SYSTEM']
+      select_any_tables << true
+    end
+    connection_users.each do |connection_user|                                  # Use different user for connect
+      select_any_tables.each do |select_any_table|                              # Test package and anonymous PL/SQL
         @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
         @sampler_config.set_select_any_table(select_any_table)
 
@@ -34,10 +41,17 @@ class WorkerThreadTest < ActiveSupport::TestCase
   end
 
   test "do_sampling_awr_ash" do
-    [nil, 'SYS', 'SYSTEM'].each do |connection_user|                            # Use different user for connect
+    connection_users = [nil]                                                    # Default with test user
+    select_any_tables = [false]                                                 # Default without CREATE PACKAGE
+    unless PanoramaConnection.autonomous_database?
+      # Check SYS/SYSTEM and CREATE PACKAGE only if not autonomous
+      connection_users = connection_users.concat ['SYS', 'SYSTEM']
+      select_any_tables << true
+    end
 
+    connection_users.each do |connection_user|                                  # Use different user for connect
       # Test-user needs SELECT ANY TABLE for read access on V$-Tables from PL/SQL-Packages
-      [true, false].each do |select_any_table|                                  # Test package and anonymous PL/SQL
+      select_any_tables.each do |select_any_table|                                  # Test package and anonymous PL/SQL
         @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
         Rails.logger.info "######### Testing for connection_user=#{connection_user}, select_any_table=#{select_any_table}"
 

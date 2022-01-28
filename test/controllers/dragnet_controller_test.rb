@@ -55,7 +55,9 @@ class DragnetControllerTest < ActionController::TestCase
             expected_result = :error
           end
 
-          if !full_entry[:not_executable] && (full_entry[:min_db_version].nil? || full_entry[:min_db_version] <= get_db_version)
+          if !full_entry[:not_executable] &&
+            (full_entry[:min_db_version].nil? || full_entry[:min_db_version] <= get_db_version) &&
+            !full_entry[:not_for_autonomous]
             #start_time = Time.now
             post  :exec_dragnet_sql, :params => params                          # call execution of SQL
 

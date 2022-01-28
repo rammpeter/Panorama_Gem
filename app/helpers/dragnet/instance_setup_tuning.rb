@@ -24,6 +24,7 @@ Solution: recompile affected dependent objects
                       LEFT OUTER JOIN DBA_Objects d ON d.Object_ID = dep.d_Obj#
                       WHERE TO_DATE(po.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') != dep.p_Timestamp
                      ",
+            not_for_autonomous: true
         },
         {
           :name  => t(:dragnet_helper_103_name, :default=>'System-statistics: Check for up-to-date system analyze info'),
