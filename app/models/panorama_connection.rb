@@ -796,6 +796,9 @@ class PanoramaConnection
     jdbc_connection.raw_connection.setStatementCacheSize(100)
 
     jdbc_connection
+  rescue Exception => e
+    Rails.logger.error "Exception #{e.class}:#{e.message} while connecting to URL='#{url}', user='#{username}'"
+    raise
   end
 
   def self.dump_connection_pool_to_log
