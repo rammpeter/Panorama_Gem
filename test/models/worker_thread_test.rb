@@ -9,25 +9,27 @@ class WorkerThreadTest < ActiveSupport::TestCase
 
   setup do
     @sampler_config = prepare_panorama_sampler_thread_db_config
+
+    @connection_users = [nil]                                                   # Default with test user
+    @select_any_tables = [false]                                                # Default without CREATE PACKAGE
+    unless PanoramaConnection.autonomous_database?
+      # Check SYS/SYSTEM and CREATE PACKAGE only if not autonomous
+      @connection_users = connection_users.concat ['SYS', 'SYSTEM']             # No connection as SYS or SYSTEM possible for autonomous
+      @select_any_tables << true                                                # use CREATE PACKAGE not for autonomous
+    end
+
   end
 
   test "check_connection" do
-    [nil, 'SYS', 'SYSTEM'].each do |connection_user|                            # Use different user for connect
+    @connection_users.each do |connection_user|                            # Use different user for connect
       @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
       WorkerThread.new(@sampler_config, 'test_check_connection').check_connection_internal(FakeController.new)
     end
   end
 
   test "check_structure" do
-    connection_users = [nil]                                                    # Default with test user
-    select_any_tables = [false]                                                 # Default without CREATE PACKAGE
-    unless PanoramaConnection.autonomous_database?
-      # Check SYS/SYSTEM and CREATE PACKAGE only if not autonomous
-      connection_users = connection_users.concat ['SYS', 'SYSTEM']
-      select_any_tables << true
-    end
-    connection_users.each do |connection_user|                                  # Use different user for connect
-      select_any_tables.each do |select_any_table|                              # Test package and anonymous PL/SQL
+    @connection_users.each do |connection_user|                                  # Use different user for connect
+      @select_any_tables.each do |select_any_table|                              # Test package and anonymous PL/SQL
         @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
         @sampler_config.set_select_any_table(select_any_table)
 
@@ -41,17 +43,9 @@ class WorkerThreadTest < ActiveSupport::TestCase
   end
 
   test "do_sampling_awr_ash" do
-    connection_users = [nil]                                                    # Default with test user
-    select_any_tables = [false]                                                 # Default without CREATE PACKAGE
-    unless PanoramaConnection.autonomous_database?
-      # Check SYS/SYSTEM and CREATE PACKAGE only if not autonomous
-      connection_users = connection_users.concat ['SYS', 'SYSTEM']
-      select_any_tables << true
-    end
-
-    connection_users.each do |connection_user|                                  # Use different user for connect
+    @connection_users.each do |connection_user|                                  # Use different user for connect
       # Test-user needs SELECT ANY TABLE for read access on V$-Tables from PL/SQL-Packages
-      select_any_tables.each do |select_any_table|                                  # Test package and anonymous PL/SQL
+      @select_any_tables.each do |select_any_table|                                  # Test package and anonymous PL/SQL
         @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
         Rails.logger.info "######### Testing for connection_user=#{connection_user}, select_any_table=#{select_any_table}"
 
@@ -82,7 +76,7 @@ class WorkerThreadTest < ActiveSupport::TestCase
     PanoramaSamplerStructureCheck.do_check(@sampler_config, :AWR)               # Existing structure is precondition for test
     PanoramaSamplerStructureCheck.do_check(@sampler_config, :LONGTERM_TREND)    # Existing structure is precondition for test
 
-    [nil, 'SYS', 'SYSTEM'].each do |connection_user|                            # Use different user for connect
+    @connection_users.each do |connection_user|                            # Use different user for connect
       [true, false].each do |log_item|
         @sampler_config = prepare_panorama_sampler_thread_db_config(connection_user)
 
@@ -104,7 +98,7 @@ class WorkerThreadTest < ActiveSupport::TestCase
 
 
   test "do_sampling_other_than_AWR_ASH" do
-    [nil, 'SYS', 'SYSTEM'].each do |connection_user|                            # Use different user for connect
+    @connection_users.each do |connection_user|                                 # Use different user for connect
       sleep(1)                                                                  # Ensure that at least 1 second is between executions to supress unique key violations
       [:OBJECT_SIZE, :CACHE_OBJECTS, :BLOCKING_LOCKS ].each do |domain|
         if domain != :AWR_ASH
