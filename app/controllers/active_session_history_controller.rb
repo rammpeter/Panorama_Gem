@@ -1305,7 +1305,7 @@ class ActiveSessionHistoryController < ApplicationController
       AND    s.Sample_Time <  TO_TIMESTAMP(?, '#{sql_datetime_mask(@groupfilter[:time_selection_end])}')      -- Nochmal Filtern nach der Rundung auf ganze Sekunden
       GROUP BY #{group_by_value}
       ORDER BY #{group_by_value}
-                                  "].concat(@dba_hist_where_values).concat(@global_where_values).concat([@groupfilter[:time_selection_start], @groupfilter[:time_selection_end]])
+                                  "].concat(@dba_hist_where_values).concat(@sga_ash_where_values).concat(@global_where_values).concat([@groupfilter[:time_selection_start], @groupfilter[:time_selection_end]])
 
 
     render_partial :list_pga_usage_historic
