@@ -238,7 +238,7 @@ class PanoramaSamplerSampling
                                              GROUP BY Inst_ID, ObjD, TS#
                                             ) bh
                                      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Data_Object_ID, Owner, Object_Name, Subobject_Name FROM DBA_Objects )o ON o.Data_Object_ID=bh.ObjD
-                                     LEFT OUTER JOIN sys.TS$ ts ON ts.TS# = bh.TS#
+                                     LEFT OUTER JOIN v$Tablespace ts ON ts.TS# = bh.TS#
                                      GROUP BY Inst_ID, NVL(o.Owner,'[UNKNOWN]'), NVL(o.Object_Name,'TS='||ts.Name), o.SubObject_Name
                                      HAVING SUM(bh.Blocks) > 1000 /* Geringfuegigkeits-Grenze */
                                     ", snapshot_time.strftime('%Y-%m-%d %H:%M:%S') ]
