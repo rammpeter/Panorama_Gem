@@ -167,7 +167,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
     assert_response :success
 
     if defined? @lob_part_partition_name                                                          # if lob partitions exists in this database
-      get :list_lob_partitions, :params => {:format=>:html, :owner=>@object_owner, :table_name=>@lob_part_table_name, :lob_name=>@lob_part_lob_name, :update_area=>:hugo }
+      get :list_lob_partitions, :params => {:format=>:html, :owner=>@object_owner, :table_name=>@part_table_table_name, :lob_name=>@lob_part_lob_name, :update_area=>:hugo }
       assert_response :success
     end
 
@@ -271,7 +271,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
       get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @part_table_table_name , update_area: :hugo }
       assert_response :success
       # one partition
-      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @part_table_table_name, partition_name: @part_table_partition_name , update_area: :hugo }
+      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @part_table_table_name, partition_name: @lob_part_partition_name , update_area: :hugo }
       assert_response :success
     end
 

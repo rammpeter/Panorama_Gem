@@ -252,7 +252,7 @@ See also: https://richardfoote.wordpress.com/2020/06/30/oracle-19c-automatic-ind
 "
 
    data_title_part_def = proc do |value, text=nil|
-     prefix = text.nil? ? "%t#{"\n\nPartition default = #{value}" if !value.nil? }" : "#{"\n#{text} = #{value}" if !value.nil?}"
+     text.nil? ? "%t#{"\n\nPartition default = #{value}" if !value.nil? }" : "#{"\n#{text} = #{value}" if !value.nil?}"
    end
 
    data_title_ini_trans = proc do |rec|
