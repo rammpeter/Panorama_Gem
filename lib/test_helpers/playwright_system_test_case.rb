@@ -44,7 +44,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
     #
     if test_config[:tns_or_host_port_sn] == :TNS
       @page.query_selector("#database_modus_tns").check
-      @page.select_option('#database_tns', value=test_config[:tns])
+      @page.select_option(element: '#database_tns', value: test_config[:tns])
     else
       @page.query_selector("#database_modus_host").check
       @page.query_selector('#database_host').fill(test_config[:host])

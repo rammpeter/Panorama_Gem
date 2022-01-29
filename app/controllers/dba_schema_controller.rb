@@ -872,12 +872,27 @@ class DbaSchemaController < ApplicationController
                                      FROM   DBA_Constraints
                                      WHERE  Owner = ? AND Table_Name = ?
                                      AND    Constraint_Type = 'R'
-                                    )
+                                    ),
+                 ObjectUsage AS (#{if get_db_version >= '12.1'
+                                      "SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Start_Monitoring, End_Monitoring, Monitoring, Used
+                                       FROM   DBA_Object_Usage
+                                      "
+                                    else
+                                      "SELECT /*+ NO_MERGE MATERIALIZE */ u.UserName Owner, o.Name Index_Name, Start_Monitoring, End_Monitoring,
+                                              DECODE(bitand(io.flags, 65536), 0, 'NO', 'YES') Monitoring,
+                                              DECODE(bitand(ou.flags, 1), 0, 'NO', NULL, 'Unknown', 'YES') Used
+                                       FROM   sys.object_usage ou
+                                       JOIN   sys.Ind$ io ON io.Obj# = ou.Obj#
+                                       JOIN   sys.Obj$ o  ON o.Obj# = ou.Obj#
+                                       JOIN   DBA_Users u ON u.User_ID = o.Owner#
+                                      "
+                                    end
+                                })
                  SELECT /*+ Panorama Ramm */ i.*,
                         p.Partition_Number, sp.SubPartition_Number,
                         NULL Size_MB, NULL Extents, NULL Segment_Blocks, /* this columns are selected separately */
-                        DECODE(bitand(io.flags, 65536), 0, 'NO', 'YES') Monitoring,
-                        DECODE(bitand(ou.flags, 1), 0, 'NO', NULL, 'Unknown', 'YES') Used,
+                        ou.Monitoring,
+                        ou.Used,
                         TO_DATE(ou.start_monitoring, 'MM/DD/YYYY HH24:MI:SS') Start_Monitoring,
                         TO_DATE(ou.end_monitoring,   'MM/DD/YYYY HH24:MI:SS') End_Monitoring,
                         do.Created, do.Last_DDL_Time, TO_DATE(do.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Spec_TS,
@@ -911,9 +926,6 @@ class DbaSchemaController < ApplicationController
                         sp.SP_Max_Extents_Count,  sp.SP_Max_Extents
                         #{", mi.GC_Mastering_Policy, mi.GC_Mastering_Policy_Cnt, mi.Current_Master, mi.Current_Master, mi.Current_Master_Cnt, mi.Previous_Master, mi.Previous_Master_Cnt, mi.Remaster_Cnt" if PanoramaConnection.rac?}
                  FROM   Indexes i
-                 JOIN   DBA_Users   u  ON u.UserName  = i.owner
-                 JOIN   sys.Obj$    o  ON o.Owner# = u.User_ID AND o.Name = i.Index_Name
-                 JOIN   sys.Ind$    io ON io.Obj# = o.Obj#
                  LEFT OUTER JOIN DBA_Objects do ON do.Owner = i.Owner AND do.Object_Name = i.Index_Name AND do.Object_Type = 'INDEX'
                  LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ic.Index_Owner, ic.Index_Name, SUM(tc.Avg_Col_Len) Sum_Col_Len
                                   FROM Ind_Columns ic
@@ -927,7 +939,7 @@ class DbaSchemaController < ApplicationController
                                   LEFT OUTER JOIN Ref_Constraints c ON c.Constraint_Name = cc.Constraint_Name
                                   GROUP BY ii.Index_Name
                                  ) c ON c.Index_Name = i.Index_Name
-                 LEFT OUTER JOIN sys.object_usage ou ON ou.Obj# = o.Obj#
+                 LEFT OUTER JOIN ObjectUsage ou ON ou.Owner = i.Owner AND ou.Index_Name = i.Index_Name
                  LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ ii.Index_Name, COUNT(*) Partition_Number,
                                   COUNT(DISTINCT ip.Status)          P_Status_Count,          MIN(ip.Status)           P_Status,
                                   COUNT(DISTINCT ip.Compression)     P_Compression_Count,     MIN(ip.Compression)      P_Compression,
