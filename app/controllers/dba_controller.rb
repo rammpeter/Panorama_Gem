@@ -1672,7 +1672,16 @@ oradebug setorapname diag
   end
 
   def list_patch_history
-    @patches  = sql_select_iterator "SELECT * FROM sys.Registry$History ORDER BY Action_Time"
+    begin
+      @patches  = sql_select_all "SELECT * FROM sys.Registry$History ORDER BY Action_Time"
+    rescue Exception => e
+      if e.message['ORA-00942']
+        add_statusbar_message "No access allowed on sys.Registry$History! Not all information is shown now!"
+        @patches = []
+      else
+        raise
+      end
+    end
     @registry = sql_select_iterator "SELECT r.*, TO_DATE(Modified, 'DD-MON-YYYY HH24:MI:SS') date_modified FROM DBA_Registry r ORDER BY Comp_ID"
     if get_db_version >= '12.1'
       @sql_patches = sql_select_all "SELECT * FROM DBA_REGISTRY_SQLPATCH"
