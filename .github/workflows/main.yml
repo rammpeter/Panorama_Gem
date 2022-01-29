@@ -60,6 +60,9 @@ jobs:
         cd ${PANORAMA_PATH}/.github && ./decrypt_DB_wallet.sh
         cd ${PANORAMA_PATH}/.github && unzip Wallet_panoramatest.zip
 
+    - name: Ensure playwright installed
+      run: npx playwright install
+
     - name: run Test
       env:
         TEST_USERNAME: panorama_test

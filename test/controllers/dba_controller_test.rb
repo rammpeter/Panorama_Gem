@@ -148,7 +148,7 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
                                                       excl_filter:          filter,
                                                       :update_area          => :hugo
             }
-            assert_response(@autonomous_database ? :error : :success)  # access denied for autonomous database
+            assert_response(:success)
           end
         end
       end
