@@ -13,9 +13,9 @@ class DbaSchemaControllerTest < ActionController::TestCase
     @index_name     = "IX_#{@lob_table_name}"
 
     PanoramaConnection.sql_execute "DROP TABLE #{@lob_table_name}" if PanoramaConnection.user_table_exists? @lob_table_name
-    PanoramaConnection.sql_execute "CREATE TABLE #{@lob_table_name} (ID NUMBER, Lob_Column CLOB) LOB (Lob_Column) STORE AS (DISABLE STORAGE IN ROW)"
-    PanoramaConnection.sql_execute "INSERT INTO #{@lob_table_name} VALUES (1, 'My_Test_Lob')"
-    PanoramaConnection.sql_execute "CREATE INDEX #{@index_name} ON #{@lob_table_name}(ID)"
+    PanoramaConnection.sql_execute "CREATE TABLE #{@lob_table_name} (ID NUMBER PRIMARY KEY, ID2 NUMBER, Lob_Column CLOB) LOB (Lob_Column) STORE AS (DISABLE STORAGE IN ROW)"
+    PanoramaConnection.sql_execute "INSERT INTO #{@lob_table_name} VALUES (1, 1, 'My_Test_Lob')"
+    PanoramaConnection.sql_execute "CREATE INDEX #{@index_name} ON #{@lob_table_name}(ID, ID2)"
 
     # Use LOB for test from Panorama itself (if already created)m suppress ORA-10614: Operation not allowed on this segment
     @lob_segment_name = sql_select_one ["SELECT Segment_Name FROM User_Lobs WHERE Segment_Created = 'YES' AND Table_Name = UPPER(?) AND RowNum < 2", @lob_table_name]
@@ -134,10 +134,10 @@ class DbaSchemaControllerTest < ActionController::TestCase
       assert_response :success
     end
 
-    post :list_current_index_stats, :params => {:format=>:html, :table_owner=>"SYS", :table_name=>"DIR$", :index_owner=>'SYS', :index_name=>'I_DIR1', :leaf_blocks=>1, :update_area=>:hugo }
+    post :list_current_index_stats, :params => {:format=>:html, table_owner: @object_owner, table_name: @lob_table_name, index_owner: @object_owner, index_name: @index_name, :leaf_blocks=>1, :update_area=>:hugo }
     assert_response :success
 
-    post :list_primary_key, :params => {:format=>:html, :owner=>"SYS", :table_name=>"HS$_INST_DD", :update_area=>:hugo }
+    post :list_primary_key, params: {format: :html, owner: @object_owner, table_name: @lob_table_name, :update_area=>:hugo }
     assert_response :success
 
     post :list_check_constraints, :params => {:format=>:html, :owner=>"SYS", :table_name=>"HS$_INST_DD", :update_area=>:hugo }
