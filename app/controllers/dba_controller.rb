@@ -942,19 +942,19 @@ oradebug setorapname diag
 
     if @dbsessions.length > 0   # Session lebt noch
       @dbsession = @dbsessions[0]
-      @current_sql  = get_sga_sql_statement(@instance, @dbsession.sql_id)       if @dbsession.sql_id
-      @previous_sql = get_sga_sql_statement(@instance, @dbsession.prev_sql_id)  if @dbsession.prev_sql_id
+      current_sql  = get_sga_sql_statement(@instance, @dbsession.sql_id)       if @dbsession.sql_id
+      previous_sql = get_sga_sql_statement(@instance, @dbsession.prev_sql_id)  if @dbsession.prev_sql_id
 
       @sql_data = [
           {:caption           => "Aktuelles SQL-Statement",
            :sql_id            => @dbsession.sql_id,
            :sql_child_number  => @dbsession.sql_child_number,
-           :sql_text          => (@current_sql.html_safe if @current_sql)
+           :sql_text          => (current_sql.html_safe if current_sql)
           },
           {:caption           => "Vorheriges SQL-Statement",
            :sql_id            => @dbsession.prev_sql_id,
            :sql_child_number  => @dbsession.prev_child_number,
-           :sql_text          => (@previous_sql.html_safe if @previous_sql)
+           :sql_text          => (previous_sql.html_safe if previous_sql)
           }
       ]
 
