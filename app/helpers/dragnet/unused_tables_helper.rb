@@ -11,15 +11,26 @@ module Dragnet::UnusedTablesHelper
 This includes tables that were written, but never read.
 This selections scans SGA as well as AWR history.
 '),
-            :sql=> "WITH Days AS (SELECT ? backward FROM DUAL)
+            :sql=> "WITH Days AS (SELECT ? backward FROM DUAL),
+                         Selects AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, SQL_ID
+                                     FROM   CDB_Hist_SQLText
+                                     WHERE  SQL_Text NOT LIKE '%dbms_stats cursor_sharing_exact%' /* DBMS-Stats-Statement */
+                                     AND    Command_Type = 3 /* SELECT */
+                                    ),
+                         Tab_Modifications AS (SELECT /*+ NO_MERGE MATERIALIZE */ *
+                                               FROM   DBA_Tab_Modifications
+                                               WHERE  Table_Owner NOT IN (#{system_schema_subselect})
+                                              )
                     SELECT /* DB-Tools Ramm not used tables */ o.*, sz.MBytes, ob.Created, ob.Last_DDL_Time, tm.Timestamp Last_DML_Timestamp, tm.Inserts, tm.Updates, tm.Deletes
                     FROM ( SELECT /*+ NO_MERGE */ 'TABLE' Object_Type, Owner, Table_Name Object_Name, Last_Analyzed, Num_Rows
                            FROM   DBA_Tables
                            WHERE  IOT_TYPE IS NULL AND Temporary='N'
+                           AND    Owner NOT IN (#{system_schema_subselect})
                            UNION ALL
                            SELECT /*+ NO_MERGE */ 'INDEX' Object_Type, Owner, Index_Name Object_Name, Last_Analyzed, Num_Rows
                            FROM   DBA_Indexes
                            WHERE  Index_Type = 'IOT - TOP'
+                           AND    Owner NOT IN (#{system_schema_subselect})
                          ) o
                     LEFT OUTER JOIN
                          (
@@ -32,10 +43,8 @@ This selections scans SGA as well as AWR history.
                            JOIN   DBA_Hist_SnapShot ss  ON  ss.DBID      = s.DBID
                                                         AND ss.Snap_ID = s.Snap_ID
                                                         AND ss.Instance_Number = s.Instance_Number
-                           JOIN   DBA_Hist_SQLText t    ON  t.DBID   = p.DBID AND t.SQL_ID = p.SQL_ID
+                           JOIN   Selects t    ON  t.DBID   = p.DBID AND t.SQL_ID = p.SQL_ID
                            WHERE  ss.Begin_Interval_Time > SYSDATE - (SELECT Backward FROM Days)
-                           AND    t.SQL_Text NOT LIKE '%dbms_stats cursor_sharing_exact%' /* DBMS-Stats-Statement */
-                           AND    t.Command_Type = 3 /* SELECT */
                            UNION
                            SELECT /*+ NO_MERGE */ DISTINCT p.Object_Type, p.Object_Owner, p.Object_Name
                            FROM   gv$SQL_Plan p
@@ -46,13 +55,13 @@ This selections scans SGA as well as AWR history.
                          ) used ON used.Object_Owner = o.Owner AND used.Object_Name = o.Object_Name
                     LEFT OUTER JOIN (SELECT Segment_Name, Owner, SUM(bytes)/(1024*1024) MBytes
                                      FROM   DBA_SEGMENTS
+                                     WHERE  Owner NOT IN (#{system_schema_subselect})
                                      GROUP BY Segment_Name, Owner
                                     ) sz ON sz.SEGMENT_NAME = o.Object_Name AND sz.Owner = o.Owner
                     LEFT OUTER JOIN DBA_Objects ob ON ob.Owner = o.Owner AND ob.Object_Name = o.Object_Name AND ob.SubObject_Name IS NULL
-                    LEFT OUTER JOIN DBA_Tab_Modifications tm ON tm.Table_Owner = o.Owner AND tm.Table_Name = o.Object_Name AND tm.Partition_Name IS NULL AND tm.SubPartition_Name IS NULL
+                    LEFT OUTER JOIN Tab_Modifications tm ON tm.Table_Owner = o.Owner AND tm.Table_Name = o.Object_Name AND tm.Partition_Name IS NULL AND tm.SubPartition_Name IS NULL
                     WHERE  used.Object_Owner IS NULL
                     AND    used.Object_Name IS NULL
-                    AND    o.Owner NOT IN (#{system_schema_subselect})
                     ORDER BY sz.MBytes DESC NULLS LAST",
             :parameter=>[{:name=> t(:dragnet_helper_64_param_1_name, :default=>'Number of days backward in AWR-Historie for SQL'), :size=>8, :default=>8, :title=> t(:dragnet_helper_64_param_1_hint, :default=>'Number of days backward for evaluation of AWR-history regarding usage of table in execution plans of SQL-statements')},
             ]
