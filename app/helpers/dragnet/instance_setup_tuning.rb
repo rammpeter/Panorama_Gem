@@ -30,6 +30,7 @@ Solution: recompile affected dependent objects
           :name  => t(:dragnet_helper_103_name, :default=>'System-statistics: Check for up-to-date system analyze info'),
           :desc  => t(:dragnet_helper_103_desc, :default=>'For cost-based optimizer system statistics should be enough up-to-date and describe reality'),
           :sql=> 'SELECT * FROM sys.Aux_Stats$',
+          not_for_autonomous: true
         },
         {
           :name  => t(:dragnet_helper_104_name, :default=>'Objekt statistics: Check on up-to-date analyze info (Tables)'),
