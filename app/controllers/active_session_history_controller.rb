@@ -68,7 +68,7 @@ class ActiveSessionHistoryController < ApplicationController
       WHERE 1=1 #{@global_where_string}
       GROUP BY TRUNC(Sample_Time) + TRUNC(TO_NUMBER(TO_CHAR(Sample_Time, 'SSSSS'))/#{group_seconds})*#{group_seconds}/86400, #{session_statistics_key_rule(@groupby)[:sql]}
       ORDER BY 1
-     "].concat(@sga_ash_where_values).concat(@dba_hist_where_values).concat(@sga_ash_where_values).concat([@dbid]).concat(@global_where_values))
+     "].concat(@dba_hist_where_values).concat(@sga_ash_where_values).concat([@dbid]).concat(@global_where_values))
 
 
     # Anzeige der Filterbedingungen im Caption des Diagrammes
