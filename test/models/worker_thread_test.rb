@@ -14,7 +14,7 @@ class WorkerThreadTest < ActiveSupport::TestCase
     @select_any_tables = [false]                                                # Default without CREATE PACKAGE
     unless PanoramaConnection.autonomous_database?
       # Check SYS/SYSTEM and CREATE PACKAGE only if not autonomous
-      @connection_users = connection_users.concat ['SYS', 'SYSTEM']             # No connection as SYS or SYSTEM possible for autonomous
+      @connection_users = @connection_users.concat ['SYS', 'SYSTEM']             # No connection as SYS or SYSTEM possible for autonomous
       @select_any_tables << true                                                # use CREATE PACKAGE not for autonomous
     end
 
