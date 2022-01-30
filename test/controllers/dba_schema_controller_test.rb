@@ -26,12 +26,13 @@ class DbaSchemaControllerTest < ActionController::TestCase
       PanoramaConnection.sql_execute "DROP TABLE #{@part_table_table_name}" if PanoramaConnection.user_table_exists? @part_table_table_name
       PanoramaConnection.sql_execute "CREATE TABLE #{@part_table_table_name} (ID NUMBER, Lob_Column CLOB) LOB (Lob_Column) STORE AS (DISABLE STORAGE IN ROW)
                                       PARTITION BY HASH(ID) PARTITIONS 2"
-      PanoramaConnection.sql_execute "INSERT INTO #{@part_table_table_name} VALUES (1, 'My_Test_Lob')"
+      PanoramaConnection.sql_execute ["INSERT INTO #{@part_table_table_name} VALUES (1, ?)", '1'*10]
       PanoramaConnection.sql_execute "CREATE INDEX #{@part_index_index_name} ON #{@part_table_table_name}(ID) LOCAL"
 
-      lob_part_table = sql_select_first_row ["SELECT Lob_Name, LOB_Partition_Name FROM User_Lob_Partitions WHERE Segment_Created = 'YES' AND Table_Name = ? AND RowNum < 2", @part_table_table_name]
-      @lob_part_lob_name        = lob_part_table.lob_name
-      @lob_part_partition_name  = lob_part_table.lob_partition_name
+      lob_part_table = sql_select_first_row ["SELECT Lob_Name, Partition_Name, LOB_Partition_Name FROM User_Lob_Partitions WHERE Segment_Created = 'YES' AND Table_Name = ? AND RowNum < 2", @part_table_table_name]
+      @lob_part_lob_name            = lob_part_table.lob_name
+      @lob_part_partition_name      = lob_part_table.partition_name
+      @lob_part_lob_partition_name  = lob_part_table.lob_partition_name
 
       @subpart_table_table_name = 'LOB_SUBPART_TEST_TABLE'
       @subpart_index_index_name = "IX_#{@subpart_table_table_name}"
@@ -166,7 +167,7 @@ class DbaSchemaControllerTest < ActionController::TestCase
     post :list_lobs, :params => {:format=>:html, :owner=>"SYS", :table_name=>"AUD$", :update_area=>:hugo }
     assert_response :success
 
-    if defined? @lob_part_partition_name                                                          # if lob partitions exists in this database
+    if defined? @part_table_table_name                                                          # if lob partitions exists in this database
       get :list_lob_partitions, :params => {:format=>:html, :owner=>@object_owner, :table_name=>@part_table_table_name, :lob_name=>@lob_part_lob_name, :update_area=>:hugo }
       assert_response :success
     end
@@ -253,16 +254,16 @@ class DbaSchemaControllerTest < ActionController::TestCase
     assert_response :success
   end
 
-  test "list_space  _usage with xhr: true" do
+  test "list_space_usage with xhr: true" do
     get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @lob_segment_name , update_area: :hugo }
     assert_response :success
 
-    if defined?(@lob_part_partition_name)
+    if defined?(@part_table_table_name)
       # all partitions
       get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @lob_part_lob_name , update_area: :hugo }
       assert_response :success
       # one partition
-      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @lob_part_lob_name, partition_name: @lob_part_partition_name , update_area: :hugo }
+      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @lob_part_lob_name, partition_name: @lob_part_lob_partition_name , update_area: :hugo }
       assert_response :success
     end
 
