@@ -23,7 +23,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       @sga_sql_id_without_history = sql_select_one ["\
         SELECT /*+ USE_NL(s ht) INDEX_RS_ASC(ht) */ s.SQL_ID
         FROM   v$SQLArea s
-        LEFT OUTER JOIN CDB_Hist_SQLText ht ON ht.SQL_ID = s.sql_ID and ht.DBID = ?
+        LEFT OUTER JOIN DBA_Hist_SQLText ht ON ht.SQL_ID = s.sql_ID and ht.DBID = ?
         WHERE ht.SQL_ID IS NULL
         AND    RowNum < 2
       ", get_dbid]
