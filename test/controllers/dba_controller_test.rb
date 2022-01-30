@@ -134,24 +134,23 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_server_logs with xhr: true" do
-    ['SS', 'MI', 'HH24', 'DD'].each do |tag|
-      ['all', 'tnslsnr', 'rdbms', 'asm'].each do |log_type|
-        [:group, :detail].each do |button|
-          [nil, 'hugo', 'erster|zweiter'].each do |filter|
-            post '/dba/list_server_logs', :params => {format:               :html,
-                                                      time_selection_start: @time_selection_start,
-                                                      time_selection_end:   @time_selection_end,
-                                                      log_type:             log_type,
-                                                      verdichtung:          {tag: tag},
-                                                      button                => 'hugo',
-                                                      incl_filter:          filter,
-                                                      excl_filter:          filter,
-                                                      :update_area          => :hugo
-            }
-            assert_response(:success)
-          end
-        end
-      end
+    [
+      {tag: 'SS',   log_type: 'all',      button: :group,   filter: nil},
+      {tag: 'MI',   log_type: 'tnslsnr',  button: :detail,  filter: 'hugo' },
+      {tag: 'HH24', log_type: 'rdbms',    button: :group,   filter: 'erster|zweiter' },
+      {tag: 'DD',   log_type: 'asm',      button: :detail,  filter: nil }
+    ].each do |variant|
+      post '/dba/list_server_logs', :params => {format:               :html,
+                                                time_selection_start: @time_selection_start,
+                                                time_selection_end:   @time_selection_end,
+                                                log_type:             variant[:log_type],
+                                                verdichtung:          {tag: variant[:tag]},
+                                                button:               variant[:button],
+                                                incl_filter:          variant[:filter],
+                                                excl_filter:          variant[:filter],
+                                                :update_area          => :hugo
+      }
+      assert_response(:success)
     end
   end
 
