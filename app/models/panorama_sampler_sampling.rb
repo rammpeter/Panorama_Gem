@@ -36,7 +36,7 @@ class PanoramaSamplerSampling
                                                     FROM   #{@sampler_config.get_owner}.Panorama_Snapshot
                                                     WHERE  DBID=? AND Instance_Number=?
                                                     AND    Snap_ID = (SELECT MAX(Snap_ID) FROM #{@sampler_config.get_owner}.Panorama_Snapshot WHERE DBID=? AND Instance_Number=?)
-                                                   ", PanoramaConnection.dbid, PanoramaConnection.instance_number, PanoramaConnection.dbid, PanoramaConnection.instance_number]
+                                                   ", PanoramaConnection.login_container_dbid, PanoramaConnection.instance_number, PanoramaConnection.login_container_dbid, PanoramaConnection.instance_number]
 
     if last_snap.nil?                                                           # First access
       @snap_id = 1
@@ -53,7 +53,7 @@ class PanoramaSamplerSampling
                                                            SUBSTR(TO_CHAR(SYSTIMESTAMP, 'TZH'), 2)||':'||TO_CHAR(SYSTIMESTAMP, 'TZM')||':00'
                                                           ),
                                              ? FROM v$Instance",
-                                    @snap_id, PanoramaConnection.dbid, PanoramaConnection.instance_number, begin_interval_time, PanoramaConnection.con_id]
+                                    @snap_id, PanoramaConnection.login_container_dbid, PanoramaConnection.instance_number, begin_interval_time, PanoramaConnection.con_id]
 
     do_snapshot_call = "Do_Snapshot(p_Snap_ID                   => ?,
                                     p_Instance                  => ?,
@@ -86,7 +86,7 @@ class PanoramaSamplerSampling
     PanoramaConnection.sql_execute [sql,
                                     @snap_id,
                                     PanoramaConnection.instance_number,
-                                    PanoramaConnection.dbid,
+                                    PanoramaConnection.login_container_dbid,
                                     con_dbid,
                                     PanoramaConnection.con_id,
                                     begin_interval_time,
@@ -98,49 +98,50 @@ class PanoramaSamplerSampling
   end
 
   def do_awr_housekeeping(shrink_space)
-    max_snap_id = PanoramaConnection.sql_select_one ["SELECT Max(Snap_ID)
+    sampled_dbids = []
+    PanoramaConnection.sql_select_all("SELECT DISTINCT DBID FROM #{@sampler_config.get_owner}.Panorama_Snapshot").each {|d| sampled_dbids << d.dbid}
+    sampled_dbids.each do |sampled_dbid|
+      max_snap_id = PanoramaConnection.sql_select_one ["SELECT Max(Snap_ID)
                                                       FROM   #{@sampler_config.get_owner}.Panorama_Snapshot
                                                       WHERE  DBID = ?
                                                       AND    Instance_Number = ?
                                                       AND    Begin_Interval_Time < SYSDATE - ?
-                                                     ", PanoramaConnection.dbid, PanoramaConnection.instance_number, @sampler_config.get_awr_ash_snapshot_retention]
+                                                     ", sampled_dbid, PanoramaConnection.instance_number, @sampler_config.get_awr_ash_snapshot_retention]
 
-    Rails.logger.info("PanoramaSampler_Sampling.do_awr_housekeeping with awr_ash_snapshot_retention=#{@sampler_config.get_awr_ash_snapshot_retention} Max. Snap_ID to delete = #{max_snap_id}")
+      Rails.logger.info("PanoramaSampler_Sampling.do_awr_housekeeping with awr_ash_snapshot_retention=#{@sampler_config.get_awr_ash_snapshot_retention} Max. Snap_ID to delete = #{max_snap_id}")
 
-    if !max_snap_id.nil?                                                        # Snaps to delete exists
-      # Delete from tables with columns DBID and SNAP_ID and Instance_Number
-      PanoramaSamplerStructureCheck.tables.each do |table|
-        if table[:domain] == :AWR && PanoramaSamplerStructureCheck.has_column?(table[:table_name], 'Snap_ID')
-          execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.#{table[:table_name]} WHERE DBID = ? AND Instance_Number = ? AND Snap_ID <= ?", PanoramaConnection.dbid, PanoramaConnection.instance_number, max_snap_id]
+      if !max_snap_id.nil?                                                        # Snaps to delete exists
+        # Delete from tables with columns DBID and SNAP_ID and Instance_Number
+        PanoramaSamplerStructureCheck.tables.each do |table|
+          if table[:domain] == :AWR && PanoramaSamplerStructureCheck.has_column?(table[:table_name], 'Snap_ID')
+            execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.#{table[:table_name]} WHERE DBID = ? AND Instance_Number = ? AND Snap_ID <= ?", sampled_dbid, PanoramaConnection.instance_number, max_snap_id]
+          end
         end
       end
-    end
 
-    # Delete from tables without columns DBID and SNAP_ID
-    execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.Panorama_SQL_Plan p
+      # Delete from tables without columns DBID and SNAP_ID
+      execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.Panorama_SQL_Plan p
                            WHERE  DBID      = ?
-                           AND    Con_DBID  = ?
                            AND    (SQL_ID, Plan_Hash_Value) NOT IN (SELECT SQL_ID, Plan_Hash_Value FROM #{@sampler_config.get_owner}.Panorama_SQLStat s
-                                                 WHERE  s.DBID      = ?
-                                                 AND    s.Con_DBID  = ?
+                                                 WHERE  s.DBID      = p.DBID
+                                                 AND    s.Con_DBID  = p.Con_ID
                                                 )
-                          ", PanoramaConnection.dbid, con_dbid, PanoramaConnection.dbid, con_dbid]
+                          ", sampled_dbid]
 
-    execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.Panorama_SQLText t
+      execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.Panorama_SQLText t
                            WHERE  DBID      = ?
-                           AND    Con_DBID  = ?
                            AND    SQL_ID NOT IN (SELECT SQL_ID FROM #{@sampler_config.get_owner}.Panorama_SQLStat s
-                                                 WHERE  s.DBID      = ?
-                                                 AND    s.Con_DBID  = ?
+                                                 WHERE  s.DBID      = t.DBID
+                                                 AND    s.Con_DBID  = t.Con_DBID
                                                 )
-                          ", PanoramaConnection.dbid, con_dbid, PanoramaConnection.dbid, con_dbid]
+                          ", sampled_dbid]
+    end
 
     if shrink_space
       PanoramaSamplerStructureCheck.tables.each do |table|
         exec_shrink_space(table[:table_name]) if table[:domain] == :AWR
       end
     end
-
   end
 
   # Run daemon, daeomon returns 1 second before next snapshot timestamp
@@ -489,7 +490,7 @@ class PanoramaSamplerSampling
 
   private
   def con_dbid
-    PanoramaConnection.dbid
+    PanoramaConnection.login_container_dbid
   end
 
   # Limit transaction size to prevent unnecessary UNDO traffic and ORA-1550 snapshot too old

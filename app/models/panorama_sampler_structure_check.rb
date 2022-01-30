@@ -1387,7 +1387,7 @@ ORDER BY Column_ID
                                       h.ECID, h.DBREPLAY_FILE_ID, h.DBREPLAY_CALL_COUNTER, h.TM_DELTA_TIME, h.TM_DELTA_CPU_TIME, h.TM_DELTA_DB_TIME, h.DELTA_TIME, h.DELTA_READ_IO_REQUESTS, h.DELTA_WRITE_IO_REQUESTS, h.DELTA_READ_IO_BYTES,
                                       h.DELTA_WRITE_IO_BYTES, h.DELTA_INTERCONNECT_IO_BYTES, h.PGA_ALLOCATED, h.TEMP_SPACE_ALLOCATED, h.CON_ID
                                FROM   Internal_V$Active_Sess_History h
-                               #{"LEFT OUTER JOIN Panorama_TopLevelCall_Name tlcn ON tlcn.DBID = #{PanoramaConnection.dbid} AND tlcn.Top_Level_Call# = h.Top_Level_Call# AND tlcn.Con_DBID = #{PanoramaConnection.dbid}" if PanoramaConnection.db_version >= '11.2'}
+                               #{"LEFT OUTER JOIN Panorama_TopLevelCall_Name tlcn ON tlcn.DBID = #{PanoramaConnection.login_container_dbid} AND tlcn.Top_Level_Call# = h.Top_Level_Call# AND tlcn.Con_DBID = #{PanoramaConnection.login_container_dbid}" if PanoramaConnection.db_version >= '11.2'}
                               "}
         },
         {

@@ -66,11 +66,7 @@ class ActiveSupport::TestCase
     set_connection_info_for_request(current_database)
 
     # DBID is set at first request after login normally
-    if PanoramaConnection.autonomous_database?
-      set_cached_dbid(PanoramaConnection.select_initial_dbid)                   # Use Container-DB because SELECT FROM DBA_Hist_Active_Sess_History may kill session in autonomous DB
-    else
-      set_cached_dbid(PanoramaConnection.dbid)                                  # Use DBID of root container because AWR snapshots are done in root container for Oracle test images
-    end
+    set_cached_dbid(PanoramaConnection.select_initial_dbid)                   # Use Container-DB because SELECT FROM DBA_Hist_Active_Sess_History may kill session in autonomous DB
 
     set_I18n_locale('de')
   end
@@ -87,7 +83,6 @@ class ActiveSupport::TestCase
                                        FROM   gV$Session s
                                        JOIN   gv$Process p ON p.Inst_ID=s.Inst_ID AND p.Addr = s.pAddr
                                        WHERE  s.SID=UserEnv('SID')  AND s.Inst_ID = USERENV('INSTANCE')"
-    @dbid     = PanoramaConnection.dbid
     @instance = db_session.inst_id
     @sid      = db_session.sid
     @serial_no = db_session.serial_no

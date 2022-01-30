@@ -81,7 +81,7 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_sql_detail_sql_id with xhr: true" do
-    get  '/dba_sga/list_sql_detail_sql_id' , :params => {:format=>:html, :instance => @instances, :sql_id => @hist_sql_id, :update_area=>:hugo }
+    get  '/dba_sga/list_sql_detail_sql_id' , :params => {:format=>:html, :instance => @instance, :sql_id => @hist_sql_id, :update_area=>:hugo }
     assert_response :success
 
     get  '/dba_sga/list_sql_detail_sql_id' , :params => {:format=>:html, :sql_id => @hist_sql_id, :update_area=>:hugo }

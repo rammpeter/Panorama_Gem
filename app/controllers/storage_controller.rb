@@ -534,7 +534,7 @@ class StorageController < ApplicationController
     end
 
     @datafiles = sql_select_iterator ["\
-      SELECT /* Panorama-Tool Ramm */
+      SELECT /*+ PARALLEL(2) Panorama-Tool Ramm */
              d.*,
              NVL(f.BYTES,0)/1048576            MBFree,
              (d.BYTES-NVL(f.BYTES,0))/1048576  MBUsed,
@@ -554,7 +554,7 @@ class StorageController < ApplicationController
               FROM   #{dba_or_cdb('DBA_Temp_Files')} f
               LEFT OUTER JOIN #{dba_or_cdb('DBA_Tablespaces')} t ON t.Tablespace_Name = f.Tablespace_Name #{"AND t.Con_ID = f.Con_ID" if PanoramaConnection.is_cdb?}
              )d
-      LEFT JOIN (SELECT File_ID, Tablespace_Name, SUM(Bytes) Bytes
+      LEFT JOIN (SELECT /*+ NO_MERGE */ File_ID, Tablespace_Name, SUM(Bytes) Bytes
                  FROM   #{dba_or_cdb('DBA_FREE_SPACE')}
                  GROUP BY File_ID, Tablespace_Name
                 ) f ON f.FILE_ID = d.FILE_ID AND f.Tablespace_Name = d.Tablespace_Name -- DATA und Temp verwenden File_ID redundant
