@@ -33,37 +33,45 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_sql_area_sql_id with xhr: true" do
-    sql_area_sort_criteria.each do |ts, value|
-      post '/dba_sga/list_sql_area_sql_id', :params => {:format=>:html, :maxResultCount=>"100", :topSort=>ts, :update_area=>:hugo }
-      assert_response :success
+    top_sorts = sql_area_sort_criteria.map{|key, value| key}
+    top_sorts << nil
+    sql_ids   = [nil, '22424824']
+    instances = [nil, @instance]
+    loop_count = 0
+    top_sorts.each do |ts|
+      sql_id    = sql_ids[loop_count % sql_ids.length]
+      instance  = instances[loop_count % instances.length]
 
-      post '/dba_sga/list_sql_area_sql_id', :params => {:format=>:html, :maxResultCount=>"100", :instance=>@instance, :topSort=>ts, :update_area=>:hugo }
+      post '/dba_sga/list_sql_area_sql_id', params: {format: :html,
+                                                     maxResultCount: "100",
+                                                     sql_id: sql_id,
+                                                     instance: instance,
+                                                     topSort: ts,
+                                                     update_area: :hugo
+      }
       assert_response :success
-
-      post '/dba_sga/list_sql_area_sql_id', :params => {:format=>:html, :maxResultCount=>"100", :instance=>@instance, :username=>'hugo', :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
-      assert_response :success
-
-      post '/dba_sga/list_sql_area_sql_id', :params => {:format=>:html, :maxResultCount=>"100", :instance=>@instance, :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
-      assert_response :success
-
-      post '/dba_sga/list_sql_area_sql_id', :params => {:format=>:html, sql_profile: 'hugo', :update_area=>:hugo }
-      assert_response :success
+      loop_count += 1
     end
   end
 
   test "list_sql_area_sql_id_childno with xhr: true" do
-    sql_area_sort_criteria.each do |ts, value|
-      post '/dba_sga/list_sql_area_sql_id_childno', :params => {:format=>:html, :maxResultCount=>"100", :topSort=>ts, :update_area=>:hugo }
-      assert_response :success
+    top_sorts = sql_area_sort_criteria.map{|key, value| key}
+    top_sorts << nil
+    sql_ids   = [nil, '22424824']
+    instances = [nil, @instance]
+    loop_count = 0
+    top_sorts.each do |ts|
+      sql_id    = sql_ids[loop_count % sql_ids.length]
+      instance  = instances[loop_count % instances.length]
 
-      post '/dba_sga/list_sql_area_sql_id_childno', :params => {:format=>:html, :maxResultCount=>"100", :instance=>@instance, :topSort=>ts, :update_area=>:hugo }
+      post '/dba_sga/list_sql_area_sql_id_childno', params: {format: :html,
+                                                             maxResultCount: '100',
+                                                             sql_id: sql_id,
+                                                             instance: instance,
+                                                             topSort: ts,
+                                                             update_area: :hugo }
       assert_response :success
-
-      post '/dba_sga/list_sql_area_sql_id_childno', :params => {:format=>:html, :maxResultCount=>"100", :instance=>"", :username=>'hugo', :topSort=>ts, :update_area=>:hugo }
-      assert_response :success
-
-      post '/dba_sga/list_sql_area_sql_id_childno', :params => {:format=>:html, :maxResultCount=>"100", :instance=>"", :username=>'hugo', :sql_id=>"", :topSort=>ts, :update_area=>:hugo }
-      assert_response :success
+      loop_count += 1
     end
   end
 
