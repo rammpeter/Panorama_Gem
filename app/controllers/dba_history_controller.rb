@@ -1047,6 +1047,22 @@ FROM (
     end
 
     @events = sql_select_iterator ["
+      WITH Snaps AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, Instance_Number, Snap_ID,
+                            Min(Snap_ID) OVER (PARTITION BY DBID, Instance_Number) Min_Snap_ID,
+                            MAX(Snap_ID) OVER (PARTITION BY DBID, Instance_Number) Max_Snap_ID
+                     FROM   DBA_Hist_Snapshot ss
+                     WHERE  DBID = ? #{additional_where1}
+                     AND    Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                     AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
+             ),
+      All_snaps AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, Instance_Number, Snap_ID, Min_Snap_ID, Max_Snap_ID
+                    FROM   Snaps
+                    UNION ALL
+                    SELECT DBID, Instance_Number, MIN(Snap_ID-1) Snap_ID, /* Vorgänger des ersten mit auswerten für Differenz per LAG */
+                           MIN(Min_Snap_ID) Min_Snap_ID,  MAX(Max_Snap_ID) Max_Snap_ID
+                    FROM   Snaps
+                    GROUP BY DBID, Instance_Number
+                   )
       SELECT /* Panorama-Tool Ramm */ *
       FROM   (
               SELECT DBID, Instance_Number, Event_ID, MIN(Event_Name) Event_Name, MIN(Wait_Class) Wait_Class,
@@ -1063,24 +1079,17 @@ FROM (
               FROM   (
                       SELECT ev.DBID, ev.Instance_Number, ev.Snap_ID, ev.Event_Id, ss.Min_Snap_ID, ss.Max_Snap_ID,
                              ev.Event_Name, ev.Wait_Class,
-                             Total_Waits        - LAG(Total_Waits,        1, Total_Waits)       OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Waits,
-                             Total_Timeouts     - LAG(Total_Timeouts,     1, Total_Timeouts)    OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Timeouts,
-                             Time_Waited_Micro  - LAG(Time_Waited_Micro,  1, Time_Waited_Micro) OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Time_Waited_Micro
+                             Total_Waits        - LAG(Total_Waits,        1, Total_Waits)       OVER (PARTITION BY ev.Instance_Number, ev.Event_ID ORDER BY ev.Snap_ID) Waits,
+                             Total_Timeouts     - LAG(Total_Timeouts,     1, Total_Timeouts)    OVER (PARTITION BY ev.Instance_Number, ev.Event_ID ORDER BY ev.Snap_ID) Timeouts,
+                             Time_Waited_Micro  - LAG(Time_Waited_Micro,  1, Time_Waited_Micro) OVER (PARTITION BY ev.Instance_Number, ev.Event_ID ORDER BY ev.Snap_ID) Time_Waited_Micro
                              #{ "\
-                             ,Total_Waits_FG        - LAG(Total_Waits_FG,        1, Total_Waits_FG)       OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Waits_FG
-                             ,Total_Timeouts_FG     - LAG(Total_Timeouts_FG,     1, Total_Timeouts_FG)    OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Timeouts_FG
-                             ,Time_Waited_Micro_FG  - LAG(Time_Waited_Micro_FG,  1, Time_Waited_Micro_FG) OVER (PARTITION BY ev.Instance_Number, Event_ID ORDER BY Snap_ID) Time_Waited_Micro_FG
+                             ,Total_Waits_FG        - LAG(Total_Waits_FG,        1, Total_Waits_FG)       OVER (PARTITION BY ev.Instance_Number, ev.Event_ID ORDER BY ev.Snap_ID) Waits_FG
+                             ,Total_Timeouts_FG     - LAG(Total_Timeouts_FG,     1, Total_Timeouts_FG)    OVER (PARTITION BY ev.Instance_Number, ev.Event_ID ORDER BY ev.Snap_ID) Timeouts_FG
+                             ,Time_Waited_Micro_FG  - LAG(Time_Waited_Micro_FG,  1, Time_Waited_Micro_FG) OVER (PARTITION BY ev.Instance_Number, ev.Event_ID ORDER BY ev.Snap_ID) Time_Waited_Micro_FG
                              " if get_db_version >= "11.1"
                              }
-                      FROM   (SELECT DBID, Instance_Number, Min(Snap_ID) Min_Snap_ID, MAX(Snap_ID) Max_Snap_ID
-                              FROM   DBA_Hist_Snapshot ss
-                              WHERE  DBID = ? #{additional_where1}
-                              AND    Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
-                              AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
-                              GROUP BY DBID, Instance_Number
-                             ) ss
-                      JOIN   DBA_Hist_System_Event ev ON ev.DBID = ss.DBID AND ev.Instance_Number = ss.Instance_Number
-                      WHERE  ev.Snap_ID BETWEEN ss.Min_Snap_ID-1 AND ss.Max_Snap_ID /* Vorgänger des ersten mit auswerten für Differenz per LAG */
+                      FROM   All_Snaps ss
+                      JOIN   DBA_Hist_System_Event ev ON ev.DBID = ss.DBID AND ev.Instance_Number = ss.Instance_Number AND ev.Snap_ID = ss.Snap_ID
                     ) hist
               WHERE  hist.Waits >= 0    /* Ersten Snap nach Reboot ausblenden */
               AND    hist.Snap_ID >= hist.Min_Snap_ID  /* Vorgaenger des ersten Snap fuer LAG wieder ausblenden */
@@ -1177,27 +1186,34 @@ FROM (
     binds.concat [@time_selection_start, @time_selection_end]
 
     single_stats = sql_select_iterator ["
-              SELECT /* Panorama-Tool Ramm */ TRUNC(so.Begin_Interval_Time, '#{trunc_tag}') Begin_Interval_Time, hist.Stat_ID, SUM(hist.Value) Value
-              FROM   (
-                      SELECT /*+ NO_MERGE */ ss.DBID, st.Instance_Number, st.Snap_ID, st.Stat_Id, ss.Min_Snap_ID,
-                             Value - LAG(Value, 1, Value) OVER (PARTITION BY st.Instance_Number, st.Stat_ID ORDER BY Snap_ID) Value
-                      FROM   (SELECT /*+ NO_MERGE */ DBID, Instance_Number, MIN(Snap_ID) Min_Snap_ID, MAX(Snap_ID) Max_Snap_ID
-                              FROM   DBA_Hist_Snapshot ss
-                              WHERE  DBID = ? #{additional_where}
-                              AND    Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
-                              AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
-                              GROUP BY DBID, Instance_Number
-                             ) ss
-                      JOIN   DBA_Hist_SysStat st ON st.DBID=ss.DBID AND st.Instance_Number=ss.Instance_Number
-                      #{"JOIN v$StatName sn ON sn.Stat_ID = st.Stat_ID AND BITAND(sn.Class, #{@stat_class_bit.to_i}) = #{@stat_class_bit.to_i}" if @stat_class_bit}
-                      WHERE  st.Snap_ID BETWEEN ss.Min_Snap_ID-1 AND ss.Max_Snap_ID /* Vorgänger des ersten mit auswerten für Differenz per LAG */
-                    ) hist
-              JOIN DBA_Hist_Snapshot so ON so.DBID = hist.DBID AND so.Instance_Number=hist.Instance_Number AND so.Snap_ID=hist.Snap_ID
-              WHERE  hist.Value >= 0    /* Ersten Snap nach Reboot ausblenden */
-              AND    hist.Snap_ID >= hist.Min_Snap_ID /* Vorgaenger des ersten Snap fuer LAG wieder ausblenden */
-              GROUP BY TRUNC(so.Begin_Interval_Time, '#{trunc_tag}'), hist.Stat_ID
-              ORDER BY 1, Stat_ID"].concat(binds)
-
+      WITH Snaps AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, Instance_Number, Snap_ID, Begin_Interval_Time,
+                            Min(Snap_ID) OVER (PARTITION BY DBID, Instance_Number) Min_Snap_ID,
+                            MAX(Snap_ID) OVER (PARTITION BY DBID, Instance_Number) Max_Snap_ID
+                     FROM   DBA_Hist_Snapshot ss
+                     WHERE  DBID = ? #{additional_where}
+                     AND    Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                     AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
+             ),
+      All_snaps AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, Instance_Number, Snap_ID, Min_Snap_ID, Max_Snap_ID, Begin_Interval_Time
+                    FROM   Snaps
+                    UNION ALL
+                    SELECT DBID, Instance_Number, MIN(Snap_ID-1) Snap_ID, /* Vorgänger des ersten mit auswerten für Differenz per LAG */
+                           MIN(Min_Snap_ID) Min_Snap_ID,  MAX(Max_Snap_ID) Max_Snap_ID, MIN(Begin_Interval_time)
+                    FROM   Snaps
+                    GROUP BY DBID, Instance_Number
+                   )
+      SELECT /* Panorama-Tool Ramm */ TRUNC(hist.Begin_Interval_Time, '#{trunc_tag}') Begin_Interval_Time, hist.Stat_ID, SUM(hist.Value) Value
+      FROM   (
+              SELECT /*+ NO_MERGE */ ss.DBID, ss.Begin_Interval_Time, st.Instance_Number, st.Snap_ID, st.Stat_Id, ss.Min_Snap_ID,
+                     Value - LAG(Value, 1, Value) OVER (PARTITION BY st.Instance_Number, st.Stat_ID ORDER BY st.Snap_ID) Value
+              FROM   All_Snaps ss
+              JOIN   DBA_Hist_SysStat st ON st.DBID=ss.DBID AND st.Instance_Number=ss.Instance_Number AND st.Snap_ID = ss.Snap_ID
+              #{"JOIN v$StatName sn ON sn.Stat_ID = st.Stat_ID AND BITAND(sn.Class, #{@stat_class_bit.to_i}) = #{@stat_class_bit.to_i}" if @stat_class_bit}
+            ) hist
+      WHERE  hist.Value >= 0    /* Ersten Snap nach Reboot ausblenden */
+      AND    hist.Snap_ID >= hist.Min_Snap_ID /* Vorgaenger des ersten Snap fuer LAG wieder ausblenden */
+      GROUP BY TRUNC(hist.Begin_Interval_Time, '#{trunc_tag}'), hist.Stat_ID
+      ORDER BY 1, Stat_ID"].concat(binds)
 
     statnames = sql_select_all ["
               SELECT /* Panorama-Tool Ramm */ h.Stat_ID, h.Stat_Name, n.Class Class_ID
@@ -1259,23 +1275,32 @@ FROM (
     binds.concat [@time_selection_start, @time_selection_end]
 
     @statistics = sql_select_iterator ["
+      WITH Snaps AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, Instance_Number, Snap_ID,
+                            Min(Snap_ID) OVER (PARTITION BY DBID, Instance_Number) Min_Snap_ID,
+                            MAX(Snap_ID) OVER (PARTITION BY DBID, Instance_Number) Max_Snap_ID
+                     FROM   DBA_Hist_Snapshot ss
+                     WHERE  DBID = ? #{additional_where}
+                     AND    Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                     AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
+             ),
+      All_snaps AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, Instance_Number, Snap_ID, Min_Snap_ID, Max_Snap_ID
+                    FROM   Snaps
+                    UNION ALL
+                    SELECT DBID, Instance_Number, MIN(Snap_ID-1) Snap_ID, /* Vorgänger des ersten mit auswerten für Differenz per LAG */
+                           MIN(Min_Snap_ID) Min_Snap_ID,  MAX(Max_Snap_ID) Max_Snap_ID
+                    FROM   Snaps
+                    GROUP BY DBID, Instance_Number
+                   )
       SELECT /* Panorama-Tool Ramm */ name.Stat_Name, hist.Instance_Number, hist.Stat_ID, hist.Value, Min_Snap_ID, Max_Snap_ID, sn.Class Class_ID, hist.Snapshots
       FROM   (
               SELECT /*+ NO_MERGE*/ DBID, Instance_Number, Stat_ID,
                      SUM(Value) Value, MIN(Min_Snap_ID) Min_Snap_ID, MAX(Max_Snap_ID) Max_Snap_ID, COUNT(DISTINCT hist.Snap_ID) Snapshots
               FROM   (
                       SELECT /*+ NO_MERGE*/ st.DBID, st.Instance_Number, st.Snap_ID, st.Stat_Id, ss.Min_Snap_ID, ss.Max_Snap_ID,
-                             Value - LAG(Value, 1, Value) OVER (PARTITION BY st.Instance_Number, st.Stat_ID ORDER BY Snap_ID) Value
-                      FROM   (SELECT /*+ NO_MERGE*/ DBID, Instance_Number, Min(Snap_ID) Min_Snap_ID, MAX(Snap_ID) Max_Snap_ID
-                              FROM   DBA_Hist_Snapshot ss
-                              WHERE  DBID = ? #{additional_where}
-                              AND    Begin_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
-                              AND    Begin_Interval_Time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
-                              GROUP BY DBID, Instance_Number
-                             ) ss
-                      JOIN   DBA_Hist_SysStat st ON st.DBID=ss.DBID AND st.Instance_Number=ss.Instance_Number
+                             Value - LAG(Value, 1, Value) OVER (PARTITION BY st.Instance_Number, st.Stat_ID ORDER BY st.Snap_ID) Value
+                      FROM   All_Snaps ss
+                      JOIN   DBA_Hist_SysStat st ON st.DBID=ss.DBID AND st.Instance_Number=ss.Instance_Number AND st.Snap_ID = ss.Snap_ID
                       #{"JOIN v$StatName sn ON sn.Stat_ID = st.Stat_ID AND BITAND(sn.Class, #{@stat_class_bit.to_i}) = #{@stat_class_bit.to_i}" if @stat_class_bit}
-                      WHERE  st.Snap_ID BETWEEN ss.Min_Snap_ID-1 AND ss.Max_Snap_ID /* Vorgänger des ersten mit auswerten für Differenz per LAG */
                     ) hist
               WHERE  hist.Value >= 0    /* Ersten Snap nach Reboot ausblenden */
               AND    hist.Snap_ID >= hist.Min_Snap_ID /* Vorgaenger des ersten Snap fuer LAG wieder ausblenden */
