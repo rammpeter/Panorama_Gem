@@ -79,22 +79,32 @@ class ActiveSupport::TestCase
 
     connect_oracle_db
 
-    db_session = sql_select_first_row "SELECT s.Inst_ID, s.SID, s.Serial# Serial_No, RawToHex(s.Saddr)Saddr, p.PID
+    if !defined? @@set_session_test_db_context
+      @@set_session_test_db_context = true
+
+
+      db_session = sql_select_first_row "SELECT s.Inst_ID, s.SID, s.Serial# Serial_No, RawToHex(s.Saddr)Saddr, p.PID
                                        FROM   gV$Session s
                                        JOIN   gv$Process p ON p.Inst_ID=s.Inst_ID AND p.Addr = s.pAddr
                                        WHERE  s.SID=UserEnv('SID')  AND s.Inst_ID = USERENV('INSTANCE')"
-    @dbid     = PanoramaConnection.login_container_dbid
-    @instance = db_session.inst_id
-    @sid      = db_session.sid
-    @serial_no = db_session.serial_no
-    @saddr    = db_session.saddr
-    @pid      = db_session.pid
+      @@dbid     = PanoramaConnection.login_container_dbid
+      @@instance = db_session.inst_id
+      @@sid      = db_session.sid
+      @@serial_no = db_session.serial_no
+      @@saddr    = db_session.saddr
+      @@pid      = db_session.pid
+
+    end
+    @dbid       = @@dbid
+    @instance   = @@instance
+    @sid        = @@sid
+    @serial_no  = @@serial_no
+    @saddr      = @@saddr
+    @pid        = @@pid
 
     ensure_panorama_sampler_tables_exist_with_content if management_pack_license == :panorama_sampler && ensure_sampler_tables_if_needed
 
     yield if block_given?                                                       # Ausführen optionaler Blöcke mit Anweisungen, die gegen die Oracle-Connection verarbeitet werden
-
-    # Rückstellen auf NullDB kann man sich hier sparen
   end
 
   def ensure_panorama_sampler_tables_exist_with_content

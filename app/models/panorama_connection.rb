@@ -220,11 +220,12 @@ class PanoramaConnection
   end
 
   def set_module_action(action_name)
+    if !defined?(@last_used_action_name) || @last_used_action_name != action_name
+      @jdbc_connection.exec_update("call dbms_application_info.set_Module('Panorama', :action)", 'set_application_info',
+                                   [ActiveRecord::Relation::QueryAttribute.new(':action', action_name, ActiveRecord::Type::Value.new)]
+      )
+    end
     @last_used_action_name = action_name
-
-    @jdbc_connection.exec_update("call dbms_application_info.set_Module('Panorama', :action)", 'set_application_info',
-                                 [ActiveRecord::Relation::QueryAttribute.new(':action', action_name, ActiveRecord::Type::Value.new)]
-    )
   end
 
   def get_config_from_jdbc_connection
@@ -312,11 +313,14 @@ class PanoramaConnection
   # set the initial value for used dbid at login time (DB's DBID or CDB's DBID)
   def self.select_initial_dbid
     return PanoramaConnection.dbid unless PanoramaConnection.is_cdb?            # used DB's DBID if not CDB
-    if sql_select_one(["SELECT COUNT(*) FROM DBA_Hist_Snapshot WHERE DBID = ?", PanoramaConnection.login_container_dbid]) == 0 # Check if AWR for container is really sampled
-      return PanoramaConnection.dbid                                            # Use connections DBID if container has no AWR data
-    else
-      return PanoramaConnection.login_container_dbid                            # Use containers DBID if container has AWR data
+    if !defined? @@select_initial_dbid
+      if sql_select_one(["SELECT COUNT(*) FROM DBA_Hist_Snapshot WHERE DBID = ?", PanoramaConnection.login_container_dbid]) == 0 # Check if AWR for container is really sampled
+        @@select_initial_dbid = PanoramaConnection.dbid                         # Use connections DBID if container has no AWR data
+      else
+        @@select_initial_dbid =  PanoramaConnection.login_container_dbid        # Use containers DBID if container has AWR data
+      end
     end
+    @@select_initial_dbid
   end
 
   # Each user of one PanoramaConnection can have different setting
