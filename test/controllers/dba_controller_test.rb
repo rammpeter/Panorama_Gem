@@ -15,7 +15,8 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
 
     @trace_file = sql_select_first_row "SELECT Inst_ID, ADR_Home, Trace_Filename, Con_ID FROM gv$Diag_Trace_File" if get_db_version >= '12.2'
 
-    @autonomous_database = PanoramaConnection.autonomous_database?
+    # Connection is valid only before first request processed
+    @autonomous_database  = PanoramaConnection.autonomous_database?
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
@@ -123,7 +124,7 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
     #test "show_segment_statistics" do get  :show_segment_statistics;  assert_response :success; end
   end
 
-    test "list_waits_per_event with xhr: true" do
+  test "list_waits_per_event with xhr: true" do
     get '/dba/list_waits_per_event', :params => {:format=>:html, :event=>"db file sequential read", :instance=>@instance, :update_area=>"hugo" }
     assert_response :success
   end

@@ -79,7 +79,7 @@ class ActiveSupport::TestCase
 
     connect_oracle_db
 
-    if !defined? @@set_session_test_db_context || @@sid != PanoramaConnection.sid # First access or conenction has changed
+    if !defined?(@@set_session_test_db_context) || @@sid != PanoramaConnection.sid # First access or conenction has changed
       @@set_session_test_db_context = true
 
 
