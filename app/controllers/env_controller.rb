@@ -493,7 +493,13 @@ public
                                    MIN(EXTRACT(MINUTE FROM w.Snap_Interval)) Snap_Interval_Minutes,
                                    MIN(EXTRACT(DAY FROM w.Retention))        Snap_Retention_Days
                             FROM   DBA_Hist_Snapshot s
-                            LEFT OUTER JOIN DBA_Hist_WR_Control w ON w.DBID = s.DBID
+#{
+  if PackLicense.diagnostics_pack_licensed?
+    "LEFT OUTER JOIN DBA_Hist_WR_Control w ON w.DBID = s.DBID"
+  else
+    "CROSS JOIN (SELECT NULL Snap_Interval, NULL Retention FROM DUAL) w"
+  end
+}
                             GROUP BY s.DBID
                             ORDER BY MIN(Begin_Interval_Time)"
     render_partial :list_dbids
