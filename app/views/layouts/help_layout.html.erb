@@ -12,7 +12,7 @@
                 " data-no-turbolink="true">
         <div class="usage_help_head_block">
             <h2 style="margin: 10px; padding: 15px; color:white; ">
-              <div>Panorama for Oracle: <%= @help_title %></div>
+              <div>Panorama for Oracle: <%= @help_title if defined? @help_title %></div>
             </h2>
         </div>
     <%= yield %>
