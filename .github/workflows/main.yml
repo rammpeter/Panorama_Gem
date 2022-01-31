@@ -29,9 +29,6 @@ jobs:
         management_pack_license: ["diagnostics_and_tuning_pack", "diagnostics_pack", "panorama_sampler", "none"]
     env:
       JRUBY_VERSION: jruby-9.3.2.0
-      # Panorama dir after git clone
-      # PANORAMA_PATH: /home/runner/work/Panorama_Gem/Panorama_Gem
-      PANORAMA_PATH: /home/pramm/actions-runner/_work/Panorama_Gem/Panorama_Gem
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
 
     steps:
@@ -57,8 +54,7 @@ jobs:
       env:
         GPG_KEY_FOR_DB_WALLET_ENCRYPTION: ${{ secrets.GPG_KEY_FOR_DB_WALLET_ENCRYPTION }}
       run: |
-        cd ${PANORAMA_PATH}/.github && ./decrypt_DB_wallet.sh
-        cd ${PANORAMA_PATH}/.github && unzip Wallet_panoramatest.zip
+        cd .github && ./decrypt_DB_wallet.sh && unzip Wallet_panoramatest.zip
 
     - name: Ensure playwright installed
       run: npx playwright install
@@ -70,11 +66,11 @@ jobs:
         TEST_TNS: PANORAMATEST_TPURGENT
       run: |
         source $HOME/.rvm/scripts/rvm
-        export TNS_ADMIN=${PANORAMA_PATH}/.github
+        export TNS_ADMIN=\$PWD/.github
         echo "TNS_ADMIN=$TNS_ADMIN"
         echo "tnsnames.ora="
         cat $TNS_ADMIN/tnsnames.ora
-        cd ${PANORAMA_PATH} && rake test
+        rake test
 
     - name: Archive test log
       if: always()
