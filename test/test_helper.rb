@@ -175,8 +175,9 @@ class ActiveSupport::TestCase
 
   def initialize_min_max_snap_id_and_times(time_format = :minutes)
 
-    if !defined? @@initialize_min_max_snap_id_and_times
+    if !defined?(@@initialize_min_max_snap_id_and_times) || @@initialize_locale != get_locale
       @@initialize_min_max_snap_id_and_times = true
+      @@initialize_locale = get_locale
 
       @@instance = sql_select_one "SELECT MIN(Instance_Number) FROM DBA_Hist_Snapshot"
       two_snaps_sql = "SELECT s2.Snap_ID Max_Snap_ID, s3.Snap_ID Min_Snap_ID, s2.Begin_Interval_Time End_Time, s3.Begin_Interval_Time Start_Time
