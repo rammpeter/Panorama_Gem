@@ -13,7 +13,7 @@ This selections scans SGA as well as AWR history.
 '),
             :sql=> "WITH Days AS (SELECT ? backward FROM DUAL),
                          Selects AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, SQL_ID
-                                     FROM   CDB_Hist_SQLText
+                                     FROM   DBA_Hist_SQLText
                                      WHERE  SQL_Text NOT LIKE '%dbms_stats cursor_sharing_exact%' /* DBMS-Stats-Statement */
                                      AND    Command_Type = 3 /* SELECT */
                                     ),
