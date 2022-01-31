@@ -2,7 +2,7 @@
     <head>
       <%= stylesheet_link_tag 'application' %>
       <%=javascript_include_tag 'application' %>
-      <title>Panorama : <%= @help_title %></title>
+      <title>Panorama : <%= @help_title if defined? @help_title %></title>
     </head>
     <body style="background-color: #ccccff;
                  color: #333;

@@ -8,7 +8,7 @@
               :action     => :list_session_statistic_historic_grouping,
               :groupfilter  => {
                                 :Session_ID           => rec.root_blocking_session,
-                                :Serial_No             => rec.root_blocking_session_serial_no,
+                                :Serial_No             => rec.root_blocking_session_serialno,
                                 :Idle_Wait1           => "PX Deq Credit: send blkd",
                                 :DBID                 => get_dbid,
                                 :time_selection_start => @time_selection_start,
@@ -49,7 +49,7 @@
               :time_selection_end   => @time_selection_end,
               :blocking_instance    => rec["root_blocking_inst_id"] ? rec.root_blocking_inst_id : nil,
               :blocking_session     => rec.root_blocking_session,
-              :blocking_session_serial_no => rec.root_blocking_session_serial_no,
+              :blocking_session_serial_no => rec.root_blocking_session_serialno,
               blocking_session_status: rec.root_blocking_session_status
             },
      :title=>t(:active_session_history_list_blocking_locks_historic_link_blocked_hint, :default=>'Show waiting sessions blocked by this session') )
@@ -86,7 +86,7 @@
                               :update_area      => @update_area,
                               :groupfilter      => {
                                 :Blocking_Session           => rec.root_blocking_session,
-                                :Blocking_Session_Serial_No => rec.root_blocking_session_serial_no,
+                                :Blocking_Session_Serial_No => rec.root_blocking_session_serialno,
                                 :Blocking_Session_Status    => rec.root_blocking_session_status,
                                 :DBID                       => get_dbid,
                                 :time_selection_start       => localeDateTime(rec.min_sample_time),
@@ -107,7 +107,7 @@
     column_options << {:caption=>'Dead lock',       :data=>proc{|rec| rec.deadlock },                                         :title=>'Deadlock between this session and another preceding session?' }
     column_options << {:caption=>'Samples direct',  :data=>proc{|rec| @link_column_sample_count_direct.call(rec)},            :title=>t(:active_session_history_list_blocking_locks_historic_samples_direct_hint, :default => 'Number of records in active session history with this session blocking other sessions' ), :align=>"right"}
     column_options << {:caption=>"B. I.",           :data=>proc{|rec| rec.root_blocking_inst_id },                            :title=>"Instance of blocking session" }
-    column_options << {:caption=>"B.SID",           :data=>proc{|rec| @link_column_blocking_sid.call(rec) },                  :title=>t(:active_session_history_list_blocking_locks_historic_blocking_sid_hint, :default=>'SID of blocking session'), :data_title=>proc{|rec| "Serial_No=#{rec.root_blocking_session_serial_no}#{", Program=#{rec.root_blocking_program}" if get_db_version >= '11.2'}" } }
+    column_options << {:caption=>"B.SID",           :data=>proc{|rec| @link_column_blocking_sid.call(rec) },                  :title=>t(:active_session_history_list_blocking_locks_historic_blocking_sid_hint, :default=>'SID of blocking session'), :data_title=>proc{|rec| "Serial_No=#{rec.root_blocking_session_serialno}#{", Program=#{rec.root_blocking_program}" if get_db_version >= '11.2'}" } }
     column_options << {:caption=>"B.User",          :data=>proc{|rec| rec.root_blocking_username },                           :title=>t(:active_session_history_list_blocking_locks_historic_blocking_user_hint, :default=>'User name of blocking session') }             if get_db_version >= '11.2'
     column_options << {:caption=>"B.SQL-ID",        :data=>proc{|rec| @link_blocking_sql_id.call(rec) },                      :title=>t(:active_session_history_list_blocking_locks_historic_blocking_sqlid_hint, :default=>'SQL-ID of blocking session') }             if get_db_version >= '11.2'
     column_options << {:caption=>"B.Event",         :data=>proc{|rec| rec.root_blocking_event },                              :title=>t(:active_session_history_list_blocking_locks_historic_blocking_event_hint, :default=>'Wait event of blocking session'), :data_title=>proc{|rec| explain_wait_event(rec.root_blocking_event)} }             if get_db_version >= '11.2'
