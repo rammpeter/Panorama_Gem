@@ -295,11 +295,11 @@ Auto list partitioning helps to:
           :sql=> "\
 WITH Indexes AS     (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name
                      FROM   DBA_Indexes
-                     WHERE  Owner NOT IN (#{system_userid_subselect})
+                     WHERE  Owner NOT IN (#{system_schema_subselect})
                     ),
      Tables  AS     (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Num_Rows
                      FROM   DBA_Tables
-                     WHERE  Owner NOT IN (#{system_userid_subselect})
+                     WHERE  Owner NOT IN (#{system_schema_subselect})
                     ),
      Ind_and_Tab AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner Object_Owner, Table_Name Object_Name, Owner Table_Owner, Table_Name, Num_Rows
                      FROM   Tables
@@ -316,7 +316,7 @@ WITH Indexes AS     (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table
      Tab_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ tc.Owner, tc.Table_Name, tc.Column_Name, tc.Data_Type, tc.Num_Distinct, tc.Num_Nulls
                      FROM   DBA_Tab_Columns tc
                      LEFT OUTER JOIN DBA_Part_Key_Columns pc ON pc.Owner = tc.Owner AND pc.Name = tc.Table_Name AND pc.Column_Name = tc.Column_Name
-                     WHERE  tc.Owner NOT IN (#{system_userid_subselect})
+                     WHERE  tc.Owner NOT IN (#{system_schema_subselect})
                      AND    pc.Column_Name IS NULL /* Don't show colums that are already used as partition key */
                      AND    tc.Num_Distinct + tc.Num_Nulls > 1 /* There should be more than 1 partition in result */
                      AND    tc.Num_Distinct < ?
@@ -328,7 +328,7 @@ WITH Indexes AS     (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table
                     ),
      Part_Keys AS   (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Name Table_Name, LISTAGG(Column_Name, ',') WITHIN GROUP (ORDER BY Column_Position) Partition_Keys
                      FROM   DBA_Part_Key_Columns
-                     WHERE  Owner NOT IN (#{system_userid_subselect})
+                     WHERE  Owner NOT IN (#{system_schema_subselect})
                      GROUP BY Owner, Name
                     )
 SELECT /*+ LEADING(p l t tc pc) USE_HASH(p l t tc pc) OPT_PARAM('_bloom_filter_enabled' 'false')*/
