@@ -49,23 +49,25 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
 
 
   test "segment_stat_historic with xhr: true" do
+    instance = PanoramaConnection.instance_number
     post '/dba_history/list_segment_stat_historic_sum', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
     assert_response_success_or_management_pack_violation('list_segment_stat_historic_sum')
-    post '/dba_history/list_segment_stat_historic_sum', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>@instance, :update_area=>:hugo }
+    post '/dba_history/list_segment_stat_historic_sum', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>instance, :update_area=>:hugo }
     assert_response_success_or_management_pack_violation('list_segment_stat_historic_sum with instance')
 
-    post '/dba_history/list_segment_stat_hist_detail', :params => {:format=>:html, :instance=>@instance, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
+    post '/dba_history/list_segment_stat_hist_detail', :params => {:format=>:html, :instance=>instance, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
          :owner=>'sys', :object_name=>'SEG$', :update_area=>:hugo }
     assert_response :success  # DBA_Hist_Seg_Stat does not require diagnostics pack
 
     post '/dba_history/list_segment_stat_hist_detail', :params => {:format=>:html, :owner=>'sys', :object_name=>'SEG$', :update_area=>:hugo } # called from list_object_description
     assert_response :success  # DBA_Hist_Seg_Stat does not require diagnostics pack
 
-    post '/dba_history/list_segment_stat_hist_sql', :params => {:format=>:html, :instance=>@instance,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :owner =>"sys", :object_name=> "all_tables", :update_area=>:hugo }
+    post '/dba_history/list_segment_stat_hist_sql', :params => {:format=>:html, :instance=>instance,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :owner =>"sys", :object_name=> "all_tables", :update_area=>:hugo }
     assert_response_success_or_management_pack_violation('list_segment_stat_hist_sql')
   end
 
   test "sql_area_historic with xhr: true" do
+    instances = [nil, PanoramaConnection.instance_number]
     def do_test(topSort, filter, sql_id, instance)
       post '/dba_history/list_sql_area_historic', :params => {:format=>:html,
                                                               :time_selection_start => @time_selection_start,
@@ -91,7 +93,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       do_test('ElapsedTimePerExecute', nil, sql_id, nil)
     end
 
-    [nil, @instance].each do |instance|
+    instances.each do |instance|
       do_test('ElapsedTimePerExecute', nil, nil, instance)
     end
   end
@@ -100,13 +102,15 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
     if @hist_sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
       Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
     else
-      post '/dba_history/list_sql_historic_execution_plan', :params => {:format=>:html, :sql_id=>@hist_sql_id, :instance=>@instance, :parsing_schema_name=>@hist_parsing_schema_name,
+      post '/dba_history/list_sql_historic_execution_plan', :params => {:format=>:html, :sql_id=>@hist_sql_id, :instance=>PanoramaConnection.instance_number, :parsing_schema_name=>@hist_parsing_schema_name,
                                                                         :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :update_area=>:hugo }
       assert_response management_pack_license == :none ? :error : :success
     end
   end
 
   test 'list_sql_history_snapshots with xhr: true' do
+    instances = [nil, PanoramaConnection.instance_number]
+
     def do_test(ts, instance, groupby, parsing_schema_name)
       post '/dba_history/list_sql_history_snapshots', :params => {:format=>:html,
                                                                   :sql_id               => @hist_sql_id,
@@ -124,7 +128,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
     else
       default_ts = {:time_selection_start => @time_selection_start, :time_selection_end =>@time_selection_end}
 
-      [nil, @instance].each do |instance|
+      instances.each do |instance|
         do_test(default_ts, instance, 'snap', nil)
       end
 
@@ -143,6 +147,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'sql_detail_historic with xhr: true' do
+    instances = [nil, PanoramaConnection.instance_number]
     def do_test(instance, sql_id, parsing_schema_name)
       if sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
         Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
@@ -166,7 +171,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    [nil, @instance].each do |instance|
+    instances.each do |instance|
       do_test(instance, @hist_sql_id, nil)
     end
 
@@ -189,30 +194,32 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
 
   test "list_system_events_historic with xhr: true" do
     post '/dba_history/list_system_events_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-         :instance=>@instance, :update_area=>:hugo }
+         :instance=>PanoramaConnection.instance_number, :update_area=>:hugo }
     assert_response management_pack_license == :none ? :error : :success
   end
 
   test "list_system_events_historic_detail with xhr: true" do
     post '/dba_history/list_system_events_historic_detail', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-         :instance=>@instance, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :event_id=>1, :event_name=>"Hugo", :update_area=>:hugo }
+         :instance=>PanoramaConnection.instance_number, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :event_id=>1, :event_name=>"Hugo", :update_area=>:hugo }
     assert_response management_pack_license == :none ? :error : :success
   end
 
   test "list_system_statistics_historic with xhr: true" do
+    instance = PanoramaConnection.instance_number
     [nil, 'MI', 'HH24', 'DD'].each do |tag|
-      post '/dba_history/list_system_statistics_historic', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :stat_class=> {:bit => 1}, :instance=>@instance, :full=>1, :verdichtung=>{tag: tag}, :update_area=>:hugo }
+      post '/dba_history/list_system_statistics_historic', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :stat_class=> {:bit => 1}, :instance=>instance, :full=>1, :verdichtung=>{tag: tag}, :update_area=>:hugo }
       assert_response management_pack_license == :none ? :error : :success
     end
   end
 
   test "list_system_statistics_historic_detail with xhr: true" do
-    post '/dba_history/list_system_statistics_historic_detail', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>@instance,
+    post '/dba_history/list_system_statistics_historic_detail', :params => {:format=>:html,  :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>PanoramaConnection.instance_number,
          :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id, :stat_id=>1, :stat_name=>"Hugo", :update_area=>:hugo }
     assert_response management_pack_license == :none ? :error : :success
   end
 
   test "list_sysmetric_historic with xhr: true" do
+    instance = PanoramaConnection.instance_number
     # Evtl. als sysdba auf Test-DB Table loeschen wenn noetig: truncate table sys.WRH$_SYSMETRIC_HISTORY;
 
     if get_current_database[:host] == "ramm.osp-dd.de"                              # Nur auf DB ausführen wo Test-User ein ALTER-Grant auf sys.WRH$_SYSMETRIC_HISTORY hat
@@ -229,58 +236,62 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
 
      post '/dba_history/list_sysmetric_historic', :params => {:format=>:html,  :time_selection_start =>time_selection_start, :time_selection_end =>time_selection_end, :detail=>1, :grouping=>{:tag =>grouping}, :update_area=>:hugo }
      assert_response management_pack_license == :none ? :error : :success
-     post '/dba_history/list_sysmetric_historic', :params => {:format=>:html,  :time_selection_start =>time_selection_start, :time_selection_end =>time_selection_end, :instance=>@instance, :detail=>1, :grouping=>{:tag =>grouping}, :update_area=>:hugo }
+     post '/dba_history/list_sysmetric_historic', :params => {:format=>:html,  :time_selection_start =>time_selection_start, :time_selection_end =>time_selection_end, :instance=>instance, :detail=>1, :grouping=>{:tag =>grouping}, :update_area=>:hugo }
      assert_response management_pack_license == :none ? :error : :success
      post '/dba_history/list_sysmetric_historic', :params => {:format=>:html,  :time_selection_start =>time_selection_start, :time_selection_end =>time_selection_end, :summary=>1, :grouping=>{:tag =>grouping}, :update_area=>:hugo }
      assert_response management_pack_license == :none ? :error : :success
-     post '/dba_history/list_sysmetric_historic', :params => {:format=>:html,  :time_selection_start =>time_selection_start, :time_selection_end =>time_selection_end, :instance=>@instance, :summary=>1, :grouping=>{:tag =>grouping}, :update_area=>:hugo }
+     post '/dba_history/list_sysmetric_historic', :params => {:format=>:html,  :time_selection_start =>time_selection_start, :time_selection_end =>time_selection_end, :instance=>instance, :summary=>1, :grouping=>{:tag =>grouping}, :update_area=>:hugo }
      assert_response management_pack_license == :none ? :error : :success
    end
   end
 
   test "mutex_statistics_historic with xhr: true" do
+    instance = PanoramaConnection.instance_number
     sid = PanoramaConnection.sid
     if management_pack_license != :none
       [:Blocker, :Waiter, :Timeline].each do |submit_name|
-        post '/dba_history/list_mutex_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>@instance, submit_name=>"Hugo", :update_area=>:hugo }
+        post '/dba_history/list_mutex_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>instance, submit_name=>"Hugo", :update_area=>:hugo }
         assert_response management_pack_license == :none ? :error : :success
         post '/dba_history/list_mutex_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, submit_name=>"Hugo", :update_area=>:hugo }
         assert_response :success
       end
 
-      get '/dba_history/list_mutex_statistics_historic_samples', :params => {:format=>:html, :instance=>@instance, :mutex_type=>:Hugo, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
+      get '/dba_history/list_mutex_statistics_historic_samples', :params => {:format=>:html, :instance=>instance, :mutex_type=>:Hugo, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
                                                                              :filter=>:Blocking_Session, :filter_session=>sid, :update_area=>:hugo }
       assert_response :success
 
-      get '/dba_history/list_mutex_statistics_historic_samples', :params => {:format=>:html, :instance=>@instance, :mutex_type=>:Hugo, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
+      get '/dba_history/list_mutex_statistics_historic_samples', :params => {:format=>:html, :instance=>instance, :mutex_type=>:Hugo, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
                                                                              :filter=>:Requesting_Session, :filter_session=>sid, :update_area=>:hugo }
       assert_response :success
     end
   end
 
   test "latch_statistics_historic with xhr: true" do
-    post '/dba_history/list_latch_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>@instance }
+    instance = PanoramaConnection.instance_number
+    post '/dba_history/list_latch_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>instance }
     assert_response management_pack_license == :none ? :error : :success
 
-    post '/dba_history/list_latch_statistics_historic_details', :params => {:format=>:html, :instance=>@instance, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id,
+    post '/dba_history/list_latch_statistics_historic_details', :params => {:format=>:html, :instance=>instance, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id,
          :latch_hash => 12313123, :latch_name=>"Hugo" }
     assert_response management_pack_license == :none ? :error : :success
   end
 
   test "enqueue_statistics_historic with xhr: true" do
-    post '/dba_history/list_enqueue_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_start, :instance=>@instance }
+    instance = PanoramaConnection.instance_number
+    post '/dba_history/list_enqueue_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_start, :instance=>instance }
     assert_response management_pack_license == :none ? :error : :success
 
-    post '/dba_history/list_enqueue_statistics_historic_details', :params => {:format=>:html, :instance=>@instance, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id,
+    post '/dba_history/list_enqueue_statistics_historic_details', :params => {:format=>:html, :instance=>instance, :min_snap_id=>@min_snap_id, :max_snap_id=>@max_snap_id,
          :eventno => 12313123, :reason=>"Hugo", :description=>"Hugo" }
     assert_response management_pack_license == :none ? :error : :success
   end
 
   test "list_os_statistics_historic with xhr: true" do
+    instance = PanoramaConnection.instance_number
     post '/dba_history/list_os_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_start }
     assert_response management_pack_license == :none ? :error : :success
 
-    post '/dba_history/list_os_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_start, :instance=>@instance }
+    post '/dba_history/list_os_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_start, :instance=>instance }
     assert_response management_pack_license == :none ? :error : :success
   end
 
@@ -290,20 +301,22 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
     else
       tag1 = Time.new
-      post '/dba_history/list_compare_sql_area_historic', :params => {:format=>:html, :instance=>@instance, :filter=>"Hugo", :sql_id=>@hist_sql_id, :minProzDiff=>50,
+      post '/dba_history/list_compare_sql_area_historic', :params => {:format=>:html, :instance=>PanoramaConnection.instance_number, :filter=>"Hugo", :sql_id=>@hist_sql_id, :minProzDiff=>50,
                                                                       :tag1=> tag1.strftime("%d.%m.%Y"), :tag2=>(tag1-86400).strftime("%d.%m.%Y") }
       assert_response management_pack_license == :none ? :error : :success
     end
   end
 
   test "genuine_oracle_reports with xhr: true" do
+    instance = PanoramaConnection.instance_number
+    instances = [nil, PanoramaConnection.instance_number]
     def management_pack_license_ok?
                           return false if @autonomous_database                  # Only admin is allowed to execute this functions in autonomous DB, therefore call of DBMS_WORKLOAD_REPOSITORY raises error for panorama_test
       [:diagnostics_pack, :diagnostics_and_tuning_pack].include? management_pack_license
     end
 
     if get_db_version >= '12.1'
-      [nil, @instance].each do |instance|
+      instances.each do |instance|
         # download_oracle_com_reachable: simulate test from previous dialog
         begin
           post '/dba_history/list_performance_hub_report', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>instance, download_oracle_com_reachable: true }
@@ -316,28 +329,28 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    post '/dba_history/list_awr_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>@instance }
+    post '/dba_history/list_awr_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>instance }
     assert_response management_pack_license_ok? ? :success : :error
 
         post '/dba_history/list_awr_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end }
     assert_response management_pack_license_ok? ? :success : :error
 
-    post '/dba_history/list_awr_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>@instance }
+    post '/dba_history/list_awr_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>instance }
     assert_response management_pack_license_ok? ? :success : :error
 
-    post '/dba_history/list_ash_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>@instance }
+    post '/dba_history/list_ash_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>instance }
     assert_response management_pack_license_ok? ? :success : :error
 
     post '/dba_history/list_ash_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end }
     assert_response management_pack_license_ok? ? :success : :error
 
-    post '/dba_history/list_ash_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>@instance }
+    post '/dba_history/list_ash_global_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>instance }
     assert_response management_pack_license_ok? ? :success : :error
 
     if @hist_sql_id.nil?                                                        # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
       Rails.logger.info 'DBA_Hist_SQLStat is empty, function not testable. This is the case for 18.4.0-XE'
     else
-      post '/dba_history/list_awr_sql_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>@instance, :sql_id=>@hist_sql_id }
+      post '/dba_history/list_awr_sql_report_html', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>instance, :sql_id=>@hist_sql_id }
       assert_response management_pack_license_ok? ? :success : :error
     end
   end
@@ -363,9 +376,10 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_resource_limits_historic with xhr: true" do
+    instances = [nil, PanoramaConnection.instance_number]
     if management_pack_license != :none
       sql_select_all("SELECT DISTINCT Resource_Name FROM DBA_Hist_Resource_Limit").each do |resname_rec|
-        [@instance, nil].each do |instance|
+        instances.each do |instance|
           post '/dba_history/list_resource_limits_historic', params: {
               format:               :html,
               instance:             instance,
@@ -380,7 +394,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
 
   test "list_sql_monitor_reports with xhr: true" do
     if get_db_version >= '11.1' && management_pack_license == :diagnostics_and_tuning_pack && !@hist_sql_id.nil?  # 18c XE does not sample DBA_HIST_SQLSTAT during AWR-snapshots
-      [nil,@instance].each do |instance |
+      [nil,PanoramaConnection.instance_number].each do |instance |
         [{sql_id: @hist_sql_id}, {sid: 1, serial_no: 2}].each do |p|
           post '/dba_history/list_sql_monitor_reports', params: {format: :html, instance: instance, sql_id: p[:sql_id], sid: p[:sid], serial_no: p[:serial_no],
                                                                  time_selection_start: @time_selection_start, time_selection_end: @time_selection_end, update_area: :hugo }
@@ -404,7 +418,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       origins.each do |origin|
         post '/dba_history/list_awr_sql_monitor_report_html', params: {format: :html,
                                                                        report_id:             origin == 'GV$SQL_MONITOR' ? 0 : report_id_hist,
-                                                                       instance:              @instance,
+                                                                       instance:              PanoramaConnection.instance_number,
                                                                        sid:                   1,
                                                                        serial_no:              1,
                                                                        sql_id:                '1',

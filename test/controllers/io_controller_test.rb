@@ -27,11 +27,12 @@ class IoControllerTest < ActionController::TestCase
 
   ################### io_file ######################
   test "list_io_file_history with xhr: true" do
+    instance = PanoramaConnection.instance_number
     io_file_key_rules.each do |groupby, value|
       post :list_io_file_history, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
       assert_response management_pack_license == :none ? :error : :success
 
-      post :list_io_file_history, :params => { :format=>:html, :instance=>@instance, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
+      post :list_io_file_history, :params => { :format=>:html, :instance=>instance, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
       assert_response management_pack_license == :none ? :error : :success
     end
   end
@@ -67,12 +68,13 @@ class IoControllerTest < ActionController::TestCase
 
   #################### iostat_detail #######################
   test "list_iostat_detail_history with xhr: true" do
+    instance = PanoramaConnection.instance_number
     iostat_detail_key_rules.each do |groupby, value|
       if get_db_version >= '11.2'
         post :list_iostat_detail_history, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
         assert_response management_pack_license == :none ? :error : :success
 
-        post :list_iostat_detail_history, :params => { :format=>:html, :instance=>@instance, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
+        post :list_iostat_detail_history, :params => { :format=>:html, :instance=>instance, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
         assert_response management_pack_license == :none ? :error : :success
       end
     end
@@ -105,12 +107,13 @@ class IoControllerTest < ActionController::TestCase
 
   #################### iostat_filetype #######################
   test "list_iostat_filetype_history with xhr: true" do
+    instance = PanoramaConnection.instance_number
     iostat_filetype_key_rules.each do |groupby, value|
       if get_db_version >= '11.2'
         post :list_iostat_filetype_history, :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
         assert_response management_pack_license == :none ? :error : :success
 
-        post :list_iostat_filetype_history, :params => { :format=>:html, :instance=>@instance, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
+        post :list_iostat_filetype_history, :params => { :format=>:html, :instance=>instance, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, :update_area=>:hugo }
         assert_response management_pack_license == :none ? :error : :success
       end
     end

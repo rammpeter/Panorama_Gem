@@ -179,13 +179,12 @@ class ActiveSupport::TestCase
       @@initialize_min_max_snap_id_and_times = true
       @@initialize_locale = get_locale
 
-      @@instance = sql_select_one "SELECT MIN(Instance_Number) FROM DBA_Hist_Snapshot"
       two_snaps_sql = "SELECT s2.Snap_ID Max_Snap_ID, s3.Snap_ID Min_Snap_ID, s2.Begin_Interval_Time End_Time, s3.Begin_Interval_Time Start_Time
                      FROM   DBA_Hist_Snapshot s1
                      JOIN   DBA_Hist_Snapshot s2 ON s2.Instance_Number = s1.Instance_Number AND s2.DBID = s1.DBID AND s2.Snap_ID = s1.Snap_ID -1 AND s2.Startup_Time = s1.Startup_Time
                      JOIN   DBA_Hist_Snapshot s3 ON s3.Instance_Number = s1.Instance_Number AND s3.DBID = s1.DBID AND s3.Snap_ID = s1.Snap_ID -2 AND s3.Startup_Time = s1.Startup_Time
                      JOIN   DBA_Hist_Snapshot s4 ON s4.Instance_Number = s1.Instance_Number AND s4.DBID = s1.DBID AND s4.Snap_ID = s1.Snap_ID -3 AND s4.Startup_Time = s1.Startup_Time
-                     WHERE  s1.Instance_Number = #{@@instance}
+                     WHERE  s1.Instance_Number = #{PanoramaConnection.instance_number}
                      AND    EXTRACT (MINUTE FROM s2.End_Interval_Time-s3.Begin_Interval_Time) > 0  /* At least one minute should be between the two snapshots */
                      ORDER BY s1.Snap_ID DESC"
 
@@ -260,7 +259,6 @@ class ActiveSupport::TestCase
       Rails.logger.info "initialize_min_max_snap_id_and_times: Selected Snap_IDs: #{@@min_snap_id}, #{@@max_snap_id} Times: #{@@time_selection_start}, #{@@time_selection_end}"
     end
 
-    @instance               = @@instance
     @min_snap_id            = @@min_snap_id
     @max_snap_id            = @@max_snap_id
     @time_selection_start   = @@time_selection_start

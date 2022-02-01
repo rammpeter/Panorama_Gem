@@ -114,10 +114,11 @@ class StorageControllerTest < ActionController::TestCase
   end
 
   test "list_undo_transactions with xhr: true" do
+    instance = PanoramaConnection.instance_number
     post :list_undo_transactions, params: {format: :html, segment_id: 1}
     assert_response :success
 
-    post :list_undo_transactions, params: {format: :html, instance: @instance, sid: 1, serial_no: 1}
+    post :list_undo_transactions, params: {format: :html, instance: instance, sid: 1, serial_no: 1}
     assert_response :success
 
   end

@@ -64,30 +64,28 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
   test "list_session_statistics_historic with xhr: true" do
+    instances = [nil, PanoramaConnection.instance_number]
+    filters   = [nil, 'sys']
     # Iteration über Gruppierungskriterien
     counter = 0
     session_statistics_key_rules.each do |groupby, value|
-      counter += 1
-      if counter % 2 == 0                                                       # use alternating attributes
-        instance = @instance
-        filter = 'sys'
-      else
-        instance = ''
-        filter = ''
-      end
+      instance = instances[counter % instances.length]
+      filter   = filters[counter % filters.length]
 
       post :list_session_statistic_historic, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, instance: instance, filter: filter, :update_area=>:hugo }
       assert_response_success_or_management_pack_violation('list_session_statistic_historic')
+      counter += 1
     end
   end
 
   test "list_session_statistic_historic_grouping with xhr: true" do
+    instance = PanoramaConnection.instance_number
     # Iteration über Gruppierungskriterien
     counter = 0
     session_statistics_key_rules.each do |groupby, value_inner|
-      counter += 1
+
       if counter % 2 == 0                                                       # use alternating attributes
-        add_filter = {Additional_Filter: 'sys', Instance: @instance}
+        add_filter = {Additional_Filter: 'sys', Instance: instance}
       else
         add_filter = {}
       end
@@ -101,6 +99,8 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
       add_filter[groupby]= nil
       post :list_session_statistic_historic_grouping, :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
       assert_response_success_or_management_pack_violation('list_session_statistic_historic_grouping groupby => nil')
+
+      counter += 1
     end
   end
 
@@ -174,10 +174,12 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
   test "show_prepared_active_session_history with xhr: true" do
-    sid = PanoramaConnection.sid
-    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>@instance, :sql_id=>@hist_sql_id }
+    instance  = PanoramaConnection.instance_number
+    sid       = PanoramaConnection.sid
+
+    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>instance, :sql_id=>@hist_sql_id }
     assert_response :success
-    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>@instance, :sid=>sid }
+    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>instance, :sid=>sid }
     assert_response :success
   end
 
@@ -185,7 +187,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
     post :list_prepared_active_session_history, :params => {:format=>:html, :groupby=>"SQL-ID",
          :groupfilter => {
                          :DBID     => get_dbid,
-                         :Instance => @instance,
+                         :Instance => instance,
                          "SQL-ID"  => @hist_sql_id
          },
          :time_selection_start => @time_selection_start,
@@ -202,6 +204,8 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
   test "list_blocking_locks_historic_event_dependency with xhr: true" do
+    instance  = PanoramaConnection.instance_number
+
     [nil, '1'].each do |show_instances|
       post :fork_blocking_locks_historic_call, :params => {:format=>:html,
                                                            :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
@@ -223,7 +227,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
                                                              role: role, blocking_event: 'Hugo1', waiting_event: 'Hugo2', blocking_instance: blocking_instance
         }.merge(
             if role == :blocking
-              { waiting_instance:@instance, waiting_session: 1, waiting_serial_no: 1}
+              { waiting_instance:instance, waiting_session: 1, waiting_serial_no: 1}
             else
               {}
             end

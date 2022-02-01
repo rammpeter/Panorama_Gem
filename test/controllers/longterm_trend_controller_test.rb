@@ -56,9 +56,9 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Ermittlung der zum Typ passenden Werte für Bindevariablen
-  def bind_value_from_key_rule(key)
+  def bind_value_from_key_rule(key, instance)
     case key
-    when 'Instance'     then @instance
+    when 'Instance'     then  instance
     when 'Wait Event'   then 'ON CPU'
     when 'Wait Class'   then 'CPU'
     when 'User-Name'    then 'SYS'
@@ -78,35 +78,34 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_longterm_trend with xhr: true" do
+    instances = [nil, PanoramaConnection.instance_number]
+    filters   = [nil, 'sys']
     # Iteration über Gruppierungskriterien
     counter = 0
     longterm_trend_key_rules.each do |groupby, value|
-      counter += 1
-      if counter % 2 == 0                                                       # use alternating attributes
-        instance = @instance
-        filter = 'sys'
-      else
-        instance = ''
-        filter = ''
-      end
+      instance  = instances[counter % instances.length]
+      filter    = filters[counter % filters.length]
 
       post '/longterm_trend/list_longterm_trend', :params => { :format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :groupby=>groupby, instance: instance, filter: filter, :update_area=>:hugo }
       assert_response(:success, "list_longterm_trend #{groupby}")
+
+      counter += 1
     end
   end
 
   test "list_longterm_trend_grouping with xhr: true" do
+    instance = PanoramaConnection.instance_number
     counter = 0
     longterm_trend_key_rules.each do |groupby, value_inner|
       counter += 1
       if counter % 2 == 0                                                       # use alternating attributes
-        add_filter = {additional_filter: 'sys', Instance: @instance}
+        add_filter = {additional_filter: 'sys', Instance: instance}
       else
         add_filter = {}
       end
 
       # Test mit realem Wert
-      add_filter[groupby] = bind_value_from_key_rule(groupby)
+      add_filter[groupby] = bind_value_from_key_rule(groupby, instance)
       post '/longterm_trend/list_longterm_trend_grouping', :params => {:format=>:html, :groupby=>groupby, :groupfilter => @groupfilter.merge(add_filter), :update_area=>:hugo }
       assert_response(:success, "list_longterm_trend_grouping #{groupby}")
 
@@ -124,9 +123,10 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_longterm_trend_historic_timeline with xhr: true" do
+    instance = PanoramaConnection.instance_number
     longterm_trend_key_rules.each do |groupby, value|
       [:week, :day, :hour].each do |point_group|
-        add_filter = {groupby => bind_value_from_key_rule(groupby)}
+        add_filter = {groupby => bind_value_from_key_rule(groupby, instance)}
         post  '/longterm_trend/list_longterm_trend_historic_timeline', :params => {:format=>:html, :groupby=>groupby,
                                                                                    :groupfilter=>@groupfilter.merge(add_filter),
                                                                                    point_group: point_group, :update_area=>:hugo }
@@ -136,8 +136,9 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_longterm_trend_single_record with xhr: true" do
+    instance = PanoramaConnection.instance_number
     longterm_trend_key_rules.each do |groupby, value|
-      add_filter = {groupby => bind_value_from_key_rule(groupby)}
+      add_filter = {groupby => bind_value_from_key_rule(groupby, instance)}
       post  '/longterm_trend/list_longterm_trend_single_record', :params => {:format=>:html,
                                                                        :groupfilter=>@groupfilter.merge(add_filter), :update_area=>:hugo }
       assert_response(:success, "list_longterm_trend_single_record #{groupby}")
