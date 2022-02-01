@@ -12,45 +12,52 @@ This includes tables that were written, but never read.
 This selections scans SGA as well as AWR history.
 '),
             :sql=> "WITH Days AS (SELECT ? backward FROM DUAL),
-                         Selects AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, SQL_ID
-                                     FROM   DBA_Hist_SQLText
-                                     WHERE  SQL_Text NOT LIKE '%dbms_stats cursor_sharing_exact%' /* DBMS-Stats-Statement */
-                                     AND    Command_Type = 3 /* SELECT */
-                                    ),
-                         Tab_Modifications AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM   DBA_Tab_Modifications)
+                         Tab_Modifications AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM   DBA_Tab_Modifications),
+                         Tabs_Inds AS (SELECT /*+ NO_MERGE MATERIALIZE */ 'TABLE' Object_Type, Owner, Table_Name Object_Name, Last_Analyzed, Num_Rows
+                                       FROM   DBA_Tables
+                                       WHERE  IOT_TYPE IS NULL AND Temporary='N'
+                                       AND    Owner NOT IN (#{system_schema_subselect})
+                                       UNION ALL
+                                       SELECT /*+ NO_MERGE */ 'INDEX' Object_Type, Owner, Index_Name Object_Name, Last_Analyzed, Num_Rows
+                                       FROM   DBA_Indexes
+                                       WHERE  Index_Type = 'IOT - TOP'
+                                       AND    Owner NOT IN (#{system_schema_subselect})
+                                      ),
+                         Hist_Plans AS (SELECT /*+ NO_MERGE MATERIALIZE */ DISTINCT DBID, SQL_ID, Plan_Hash_Value,  Object_Type, Object_Owner, Object_Name
+                                        FROM   DBA_Hist_SQL_Plan
+                                        WHERE Object_Type IS NOT NULL AND Object_Owner IS NOT NULL AND Object_Name IS NOT NULL
+                                       ),
+                         SGA_Plans AS (SELECT /*+ NO_MERGE MATERIALIZE */ DISTINCT Inst_ID, SQL_ID, Plan_Hash_Value,  Object_Type, Object_Owner, Object_Name
+                                       FROM  gv$SQL_Plan
+                                       WHERE Object_Type IS NOT NULL AND Object_Owner IS NOT NULL AND Object_Name IS NOT NULL
+                                      ),
+                         SQL_Stat AS (SELECT /*+ NO_MERGE MATERIALIZE */ ss.DBID, s.SQL_ID, s.Plan_Hash_Value
+                                      FROM   DBA_Hist_SQLStat s
+                                      JOIN   DBA_Hist_SnapShot ss  ON  ss.DBID      = s.DBID
+                                                                   AND ss.Snap_ID = s.Snap_ID
+                                                                   AND ss.Instance_Number = s.Instance_Number
+                                      WHERE  ss.Begin_Interval_Time > SYSDATE - (SELECT Backward FROM Days)
+                                     ),
+                         Used AS ( SELECT /*+ NO_MERGE MATERIALIZE */
+                                          DISTINCT Object_Type, Object_Owner, Object_Name
+                                   FROM   (SELECT p.Object_Type, p.Object_Owner, p.Object_Name
+                                           FROM   Hist_Plans p
+                                           JOIN   SQL_Stat s   ON  s.DBID            = p.DBID
+                                                               AND s.SQL_ID          = p.SQL_ID
+                                                               AND s.Plan_Hash_Value = p.Plan_Hash_Value
+                                           UNION ALL
+                                           SELECT /*+ NO_MERGE */ p.Object_Type, p.Object_Owner, p.Object_Name
+                                           FROM   SGA_Plans p
+                                           JOIN   gv$SQLArea s ON s.Inst_ID=p.Inst_ID AND s.SQL_ID=p.SQL_ID AND s.Plan_Hash_Value=p.Plan_Hash_Value
+                                           WHERE  s.Last_Active_Time > SYSDATE-(SELECT Backward FROM Days)
+                                           AND    s.SQL_FullText NOT LIKE '%dbms_stats cursor_sharing_exact%' /* DBMS-Stats-Statement */
+                                           AND    s.Command_Type = 3 /* SELECT */
+                                          )
+                                 )
                     SELECT /* DB-Tools Ramm not used tables */ o.*, sz.MBytes, ob.Created, ob.Last_DDL_Time, tm.Timestamp Last_DML_Timestamp, tm.Inserts, tm.Updates, tm.Deletes
-                    FROM ( SELECT /*+ NO_MERGE */ 'TABLE' Object_Type, Owner, Table_Name Object_Name, Last_Analyzed, Num_Rows
-                           FROM   DBA_Tables
-                           WHERE  IOT_TYPE IS NULL AND Temporary='N'
-                           AND    Owner NOT IN (#{system_schema_subselect})
-                           UNION ALL
-                           SELECT /*+ NO_MERGE */ 'INDEX' Object_Type, Owner, Index_Name Object_Name, Last_Analyzed, Num_Rows
-                           FROM   DBA_Indexes
-                           WHERE  Index_Type = 'IOT - TOP'
-                           AND    Owner NOT IN (#{system_schema_subselect})
-                         ) o
-                    LEFT OUTER JOIN
-                         (
-                           SELECT /*+ NO_MERGE PARALLEL(p,2) FULL(p) PARALLEL(s,2) FULL(s) PARALLEL(t,2) FULL(t)*/
-                                  DISTINCT p.Object_Type, p.Object_Owner, p.Object_Name
-                           FROM   DBA_Hist_SQL_Plan p
-                           JOIN   DBA_Hist_SQLStat s    ON  s.DBID            = p.DBID
-                                                        AND s.SQL_ID          = p.SQL_ID
-                                                        AND s.Plan_Hash_Value = p.Plan_Hash_Value
-                           JOIN   DBA_Hist_SnapShot ss  ON  ss.DBID      = s.DBID
-                                                        AND ss.Snap_ID = s.Snap_ID
-                                                        AND ss.Instance_Number = s.Instance_Number
-                           JOIN   Selects t    ON  t.DBID   = p.DBID AND t.SQL_ID = p.SQL_ID
-                           WHERE  ss.Begin_Interval_Time > SYSDATE - (SELECT Backward FROM Days)
-                           UNION
-                           SELECT /*+ NO_MERGE */ DISTINCT p.Object_Type, p.Object_Owner, p.Object_Name
-                           FROM   gv$SQL_Plan p
-                           JOIN   gv$SQLArea s ON (s.Inst_ID=p.Inst_ID AND s.SQL_ID=p.SQL_ID AND s.Plan_Hash_Value=p.Plan_Hash_Value)
-                           WHERE  s.Last_Active_Time > SYSDATE-(SELECT Backward FROM Days)
-                           AND    s.SQL_FullText NOT LIKE '%dbms_stats cursor_sharing_exact%' /* DBMS-Stats-Statement */
-                           AND    s.Command_Type = 3 /* SELECT */
-                         ) used ON used.Object_Owner = o.Owner AND used.Object_Name = o.Object_Name
-                    LEFT OUTER JOIN (SELECT Segment_Name, Owner, SUM(bytes)/(1024*1024) MBytes
+                    FROM Tabs_Inds o
+                    LEFT OUTER JOIN used ON used.Object_Owner = o.Owner AND used.Object_Name = o.Object_Name
+                    LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Segment_Name, Owner, SUM(bytes)/(1024*1024) MBytes
                                      FROM   DBA_SEGMENTS
                                      WHERE  Owner NOT IN (#{system_schema_subselect})
                                      GROUP BY Segment_Name, Owner
@@ -60,7 +67,7 @@ This selections scans SGA as well as AWR history.
                     WHERE  used.Object_Owner IS NULL
                     AND    used.Object_Name IS NULL
                     ORDER BY sz.MBytes DESC NULLS LAST",
-            :parameter=>[{:name=> t(:dragnet_helper_64_param_1_name, :default=>'Number of days backward in AWR-Historie for SQL'), :size=>8, :default=>8, :title=> t(:dragnet_helper_64_param_1_hint, :default=>'Number of days backward for evaluation of AWR-history regarding usage of table in execution plans of SQL-statements')},
+            :parameter=>[{:name=> t(:dragnet_helper_64_param_1_name, :default=>'Number of days backward in AWR-Historie for SQL'), :size=>8, :default=>2, :title=> t(:dragnet_helper_64_param_1_hint, :default=>'Number of days backward for evaluation of AWR-history regarding usage of table in execution plans of SQL-statements')},
             ]
         },
         {
