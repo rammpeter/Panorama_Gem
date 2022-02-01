@@ -17,10 +17,7 @@ This selections scans SGA as well as AWR history.
                                      WHERE  SQL_Text NOT LIKE '%dbms_stats cursor_sharing_exact%' /* DBMS-Stats-Statement */
                                      AND    Command_Type = 3 /* SELECT */
                                     ),
-                         Tab_Modifications AS (SELECT /*+ NO_MERGE MATERIALIZE */ *
-                                               FROM   DBA_Tab_Modifications
-                                               WHERE  Table_Owner NOT IN (#{system_schema_subselect})
-                                              )
+                         Tab_Modifications AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM   DBA_Tab_Modifications)
                     SELECT /* DB-Tools Ramm not used tables */ o.*, sz.MBytes, ob.Created, ob.Last_DDL_Time, tm.Timestamp Last_DML_Timestamp, tm.Inserts, tm.Updates, tm.Deletes
                     FROM ( SELECT /*+ NO_MERGE */ 'TABLE' Object_Type, Owner, Table_Name Object_Name, Last_Analyzed, Num_Rows
                            FROM   DBA_Tables
