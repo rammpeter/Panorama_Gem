@@ -131,7 +131,10 @@ class PanoramaConnection
   attr_reader :login_container_dbid                                             # DBID of the PDB where user is connected to
   attr_reader :logon_time
   attr_reader :password_hash
+  attr_reader :pid
   attr_reader :rowid_size
+  attr_reader :saddr
+  attr_reader :serial_no
   attr_reader :sid
   attr_reader :sql_stmt_in_execution
   attr_reader :table_directory_entry_size
@@ -201,8 +204,17 @@ class PanoramaConnection
 
     @db_version = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT Version_Full FROM v$Instance")['version_full'] if @db_version >= '19'
 
+    session_info = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT s.Serial# Serial_No #{", s.Con_ID" if @db_version >= '12.1'},
+                                                                                  RawToHex(s.Saddr) Saddr, p.PID
+                                                                           FROM   v$Session s
+                                                                           JOIN   v$Process p ON p.Addr = s.pAddr
+                                                                           WHERE s.audsid = SYS_CONTEXT('USERENV', 'sessionid')")
+    @serial_no  = session_info['serial_no']
+    @saddr      = session_info['saddr']
+    @pid        = session_info['pid']
+
     if @db_version >= '12.1'
-      @con_id               = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT Con_ID FROM v$Session WHERE audsid = userenv('sessionid')")['con_id'] # Con_ID of connected session
+      @con_id               = session_info['con_id']
       @cdb                  = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT CDB FROM v$Database")['cdb']
       @login_container_dbid = PanoramaConnection.direct_select_one(@jdbc_connection, "SELECT DBID FROM v$Containers WHERE Con_ID = (SELECT Con_ID FROM v$Session WHERE SID = SYS_CONTEXT('userenv', 'sid'))")['dbid']
     else
@@ -313,14 +325,11 @@ class PanoramaConnection
   # set the initial value for used dbid at login time (DB's DBID or CDB's DBID)
   def self.select_initial_dbid
     return PanoramaConnection.dbid unless PanoramaConnection.is_cdb?            # used DB's DBID if not CDB
-    if !defined? @@select_initial_dbid
-      if sql_select_one(["SELECT COUNT(*) FROM DBA_Hist_Snapshot WHERE DBID = ?", PanoramaConnection.login_container_dbid]) == 0 # Check if AWR for container is really sampled
-        @@select_initial_dbid = PanoramaConnection.dbid                         # Use connections DBID if container has no AWR data
-      else
-        @@select_initial_dbid =  PanoramaConnection.login_container_dbid        # Use containers DBID if container has AWR data
-      end
+    if sql_select_one(["SELECT COUNT(*) FROM DBA_Hist_Snapshot WHERE DBID = ?", PanoramaConnection.login_container_dbid]) == 0 # Check if AWR for container is really sampled
+      return PanoramaConnection.dbid                                            # Use connections DBID if container has no AWR data
+    else
+      return PanoramaConnection.login_container_dbid                            # Use containers DBID if container has AWR data
     end
-    @@select_initial_dbid
   end
 
   # Each user of one PanoramaConnection can have different setting
@@ -396,8 +405,11 @@ class PanoramaConnection
   def self.is_cdb?;                         check_for_open_connection;        Thread.current[:panorama_connection_connection_object].cdb == 'YES';                      end
   def self.login_container_dbid;            check_for_open_connection(false); Thread.current[:panorama_connection_connection_object].login_container_dbid;              end
   def self.pdbs;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].pdbs;                              end
+  def self.pid;                             check_for_open_connection;        Thread.current[:panorama_connection_connection_object].pid;                               end
   def self.rac?;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_count > 1;                end
   def self.rowid_size;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].rowid_size;                        end
+  def self.saddr;                           check_for_open_connection;        Thread.current[:panorama_connection_connection_object].saddr;                             end
+  def self.serial_no;                       check_for_open_connection;        Thread.current[:panorama_connection_connection_object].serial_no;                         end
   def self.sid;                             check_for_open_connection;        Thread.current[:panorama_connection_connection_object].sid;                               end
   def self.stat_id_consistent_gets;         check_for_open_connection;        Thread.current[:panorama_connection_connection_object].stat_id_consistent_gets;           end
   def self.table_directory_entry_size;      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].table_directory_entry_size;        end

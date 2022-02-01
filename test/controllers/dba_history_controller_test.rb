@@ -239,6 +239,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "mutex_statistics_historic with xhr: true" do
+    sid = PanoramaConnection.sid
     if management_pack_license != :none
       [:Blocker, :Waiter, :Timeline].each do |submit_name|
         post '/dba_history/list_mutex_statistics_historic', :params => {:format=>:html, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end, :instance=>@instance, submit_name=>"Hugo", :update_area=>:hugo }
@@ -248,11 +249,11 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       end
 
       get '/dba_history/list_mutex_statistics_historic_samples', :params => {:format=>:html, :instance=>@instance, :mutex_type=>:Hugo, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-                                                                             :filter=>:Blocking_Session, :filter_session=>@sid, :update_area=>:hugo }
+                                                                             :filter=>:Blocking_Session, :filter_session=>sid, :update_area=>:hugo }
       assert_response :success
 
       get '/dba_history/list_mutex_statistics_historic_samples', :params => {:format=>:html, :instance=>@instance, :mutex_type=>:Hugo, :time_selection_start =>@time_selection_start, :time_selection_end =>@time_selection_end,
-                                                                             :filter=>:Requesting_Session, :filter_session=>@sid, :update_area=>:hugo }
+                                                                             :filter=>:Requesting_Session, :filter_session=>sid, :update_area=>:hugo }
       assert_response :success
     end
   end

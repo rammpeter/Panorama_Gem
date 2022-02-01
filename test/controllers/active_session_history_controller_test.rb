@@ -174,9 +174,10 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
   test "show_prepared_active_session_history with xhr: true" do
+    sid = PanoramaConnection.sid
     post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>@instance, :sql_id=>@hist_sql_id }
     assert_response :success
-    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>@instance, :sid=>@sid }
+    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>@instance, :sid=>sid }
     assert_response :success
   end
 

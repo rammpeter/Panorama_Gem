@@ -66,7 +66,7 @@ class ActiveSupport::TestCase
     set_connection_info_for_request(current_database)
 
     # DBID is set at first request after login normally
-    set_cached_dbid(PanoramaConnection.select_initial_dbid)                   # Use Container-DB because SELECT FROM DBA_Hist_Active_Sess_History may kill session in autonomous DB
+    set_cached_dbid(PanoramaConnection.login_container_dbid)                    # Use Container-DB because SELECT FROM DBA_Hist_Active_Sess_History may kill session in autonomous DB
 
     set_I18n_locale('de')
   end
@@ -78,29 +78,6 @@ class ActiveSupport::TestCase
     cookies['client_key']  = Encryption.encrypt_value(100, cookies['client_salt'])
 
     connect_oracle_db
-
-    if !defined?(@@set_session_test_db_context) || @@sid != PanoramaConnection.sid # First access or conenction has changed
-      @@set_session_test_db_context = true
-
-
-      db_session = sql_select_first_row "SELECT s.Inst_ID, s.SID, s.Serial# Serial_No, RawToHex(s.Saddr)Saddr, p.PID
-                                       FROM   gV$Session s
-                                       JOIN   gv$Process p ON p.Inst_ID=s.Inst_ID AND p.Addr = s.pAddr
-                                       WHERE  s.SID=UserEnv('SID')  AND s.Inst_ID = USERENV('INSTANCE')"
-      @@dbid     = PanoramaConnection.login_container_dbid
-      @@instance = db_session.inst_id
-      @@sid      = db_session.sid
-      @@serial_no = db_session.serial_no
-      @@saddr    = db_session.saddr
-      @@pid      = db_session.pid
-
-    end
-    @dbid       = @@dbid
-    @instance   = @@instance
-    @sid        = @@sid
-    @serial_no  = @@serial_no
-    @saddr      = @@saddr
-    @pid        = @@pid
 
     ensure_panorama_sampler_tables_exist_with_content if management_pack_license == :panorama_sampler && ensure_sampler_tables_if_needed
 
