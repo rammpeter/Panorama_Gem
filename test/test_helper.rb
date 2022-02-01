@@ -175,7 +175,7 @@ class ActiveSupport::TestCase
 
   def initialize_min_max_snap_id_and_times(time_format = :minutes)
 
-    if !defined?(@@initialize_min_max_snap_id_and_times) || @@initialize_locale != get_locale
+    if !defined?(@@initialize_min_max_snap_id_and_times) || @@initialize_locale != get_locale || management_pack_license == :panorama_sampler
       @@initialize_min_max_snap_id_and_times = true
       @@initialize_locale = get_locale
 
