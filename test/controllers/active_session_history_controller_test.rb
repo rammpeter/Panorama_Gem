@@ -19,10 +19,10 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
                 :Max_Snap_ID     => @max_snap_id
         }
 
-      sql_row = sql_select_first_row "SELECT SQL_ID, Child_Number, Parsing_Schema_Name FROM v$sql WHERE SQL_Text LIKE '%OBJ$%' AND Object_Status = 'VALID' ORDER BY Executions DESC"
-      @hist_sql_id = sql_row.sql_id
-      @sga_child_number = sql_row.child_number
-      @hist_parsing_schema_name = sql_row.parsing_schema_name
+      # Find an SQL which remains in SGA
+      if !defined? @@hist_sql_id
+        @@hist_sql_id = sql_select_one "SELECT SQL_ID FROM v$sql WHERE SQL_Text LIKE '%OBJ$%' AND Object_Status = 'VALID' ORDER BY Executions DESC"
+      end
     }
   end
 
@@ -177,7 +177,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
     instance  = PanoramaConnection.instance_number
     sid       = PanoramaConnection.sid
 
-    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>instance, :sql_id=>@hist_sql_id }
+    post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>instance, :sql_id=>@@hist_sql_id }
     assert_response :success
     post :show_prepared_active_session_history, :params => {:format=>:html, :instance=>instance, :sid=>sid }
     assert_response :success
@@ -188,7 +188,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
          :groupfilter => {
                          :DBID     => get_dbid,
                          :Instance => instance,
-                         "SQL-ID"  => @hist_sql_id
+                         "SQL-ID"  => @@hist_sql_id
          },
          :time_selection_start => @time_selection_start,
          :time_selection_end   => @time_selection_end, :update_area=>:hugo }
