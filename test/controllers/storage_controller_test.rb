@@ -7,7 +7,6 @@ class StorageControllerTest < ActionController::TestCase
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context
     initialize_min_max_snap_id_and_times
-    @tablespace_name = sql_select_one "SELECT MIN(Tablespace_Name) FROM DBA_Tablespaces"
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
@@ -101,7 +100,8 @@ class StorageControllerTest < ActionController::TestCase
   end
 
   test "extents with xhr: true" do
-    post :list_free_extents, :params => { :format=>:html, :tablespace => @tablespace_name}
+    tablespace_name = sql_select_one "SELECT MIN(Tablespace_Name) FROM DBA_Tablespaces"
+    post :list_free_extents, :params => { :format=>:html, :tablespace => tablespace_name}
     assert_response :success
 
     post :list_object_extents, :params => { :format=>:html, :owner => 'SYS', :segment_name => 'OBJ$'}  # Test-name must be upper case
