@@ -8,9 +8,6 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
     set_session_test_db_context
 
-    # Only for testing snapshot creation
-    # PanoramaSamplerStructureCheck.remove_tables(prepare_panorama_sampler_thread_db_config)                # ensure missing objects is tested
-
     initialize_min_max_snap_id_and_times
 
     @autonomous_database =  PanoramaConnection.autonomous_database?             # No access to DB possible within test code ???

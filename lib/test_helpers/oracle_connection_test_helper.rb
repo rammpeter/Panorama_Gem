@@ -105,6 +105,11 @@ class ActiveSupport::TestCase
     ensure_panorama_sampler_tables_exist_with_content if management_pack_license == :panorama_sampler && ensure_sampler_tables_if_needed
 
     yield if block_given?                                                       # Ausführen optionaler Blöcke mit Anweisungen, die gegen die Oracle-Connection verarbeitet werden
+    if sql_select_one("SELECT COUNT(*) FROM User_Tables WHERE Table_Name = 'PANORAMA_SNAPSHOT'") == 0
+      msg = "######################## PANORAMA_SNAPSHOT missing"
+      Rails.logger.debug(msg)
+      puts msg
+    end
   end
 
   def ensure_panorama_sampler_tables_exist_with_content
