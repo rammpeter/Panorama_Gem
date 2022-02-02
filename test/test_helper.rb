@@ -174,7 +174,7 @@ class ActiveSupport::TestCase
   end
 
   def initialize_min_max_snap_id_and_times(time_format = :minutes)
-   two_snaps_sql = "SELECT s2.Snap_ID Max_Snap_ID, s3.Snap_ID Min_Snap_ID, s2.Begin_Interval_Time End_Time, s3.Begin_Interval_Time Start_Time
+   two_snaps_sql = "SELECT DBID, s2.Snap_ID Max_Snap_ID, s3.Snap_ID Min_Snap_ID, s2.Begin_Interval_Time End_Time, s3.Begin_Interval_Time Start_Time
                    FROM   DBA_Hist_Snapshot s1
                    JOIN   DBA_Hist_Snapshot s2 ON s2.Instance_Number = s1.Instance_Number AND s2.DBID = s1.DBID AND s2.Snap_ID = s1.Snap_ID -1 AND s2.Startup_Time = s1.Startup_Time
                    JOIN   DBA_Hist_Snapshot s3 ON s3.Instance_Number = s1.Instance_Number AND s3.DBID = s1.DBID AND s3.Snap_ID = s1.Snap_ID -2 AND s3.Startup_Time = s1.Startup_Time
@@ -229,9 +229,10 @@ class ActiveSupport::TestCase
                                            )
                                     WHERE RowNum <= 10"
 
+    Rails.logger.debug "DBIDs in AWR are: #{PanoramaConnection.all_awr_dbids}"
     Rails.logger.info "Last 10 snapshots are:"
     last_10_snaps.each do |s|
-      Rails.logger.info "Snap_ID = #{s.snap_id}, Instance = #{s.instance_number}, Startup = #{localeDateTime(s.startup_time)}, Begin_Interval_Time = #{localeDateTime(s.begin_interval_time)}, End_Interval_Time = #{localeDateTime(s.end_interval_time)}"
+      Rails.logger.info "DBID = #{s.dbid}, Snap_ID = #{s.snap_id}, Instance = #{s.instance_number}, Startup = #{localeDateTime(s.startup_time)}, Begin_Interval_Time = #{localeDateTime(s.begin_interval_time)}, End_Interval_Time = #{localeDateTime(s.end_interval_time)}"
     end
 
     if snaps.nil? || snaps.min_snap_id.nil? || snaps.max_snap_id.nil? || snaps.start_time.nil? || snaps.end_time.nil?
