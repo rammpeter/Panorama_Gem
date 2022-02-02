@@ -174,129 +174,83 @@ class ActiveSupport::TestCase
   end
 
   def initialize_min_max_snap_id_and_times(time_format = :minutes)
+   two_snaps_sql = "SELECT s2.Snap_ID Max_Snap_ID, s3.Snap_ID Min_Snap_ID, s2.Begin_Interval_Time End_Time, s3.Begin_Interval_Time Start_Time
+                   FROM   DBA_Hist_Snapshot s1
+                   JOIN   DBA_Hist_Snapshot s2 ON s2.Instance_Number = s1.Instance_Number AND s2.DBID = s1.DBID AND s2.Snap_ID = s1.Snap_ID -1 AND s2.Startup_Time = s1.Startup_Time
+                   JOIN   DBA_Hist_Snapshot s3 ON s3.Instance_Number = s1.Instance_Number AND s3.DBID = s1.DBID AND s3.Snap_ID = s1.Snap_ID -2 AND s3.Startup_Time = s1.Startup_Time
+                   JOIN   DBA_Hist_Snapshot s4 ON s4.Instance_Number = s1.Instance_Number AND s4.DBID = s1.DBID AND s4.Snap_ID = s1.Snap_ID -3 AND s4.Startup_Time = s1.Startup_Time
+                   WHERE  s1.Instance_Number = #{PanoramaConnection.instance_number}
+                   AND    EXTRACT (MINUTE FROM s2.End_Interval_Time-s3.Begin_Interval_Time) > 0  /* At least one minute should be between the two snapshots */
+                   ORDER BY s1.Snap_ID DESC"
 
-    if !defined?(@@initialize_min_max_snap_id_and_times) || @@initialize_locale != get_locale || management_pack_license == :panorama_sampler
-      @@initialize_min_max_snap_id_and_times = true
-      @@initialize_locale = get_locale
+    # Ensure existence of panorama_sampler_snapshots
+    if management_pack_license == :panorama_sampler
+      # Ensure existence of structure
+      sampler_config = prepare_panorama_sampler_thread_db_config
 
-      two_snaps_sql = "SELECT s2.Snap_ID Max_Snap_ID, s3.Snap_ID Min_Snap_ID, s2.Begin_Interval_Time End_Time, s3.Begin_Interval_Time Start_Time
-                     FROM   DBA_Hist_Snapshot s1
-                     JOIN   DBA_Hist_Snapshot s2 ON s2.Instance_Number = s1.Instance_Number AND s2.DBID = s1.DBID AND s2.Snap_ID = s1.Snap_ID -1 AND s2.Startup_Time = s1.Startup_Time
-                     JOIN   DBA_Hist_Snapshot s3 ON s3.Instance_Number = s1.Instance_Number AND s3.DBID = s1.DBID AND s3.Snap_ID = s1.Snap_ID -2 AND s3.Startup_Time = s1.Startup_Time
-                     JOIN   DBA_Hist_Snapshot s4 ON s4.Instance_Number = s1.Instance_Number AND s4.DBID = s1.DBID AND s4.Snap_ID = s1.Snap_ID -3 AND s4.Startup_Time = s1.Startup_Time
-                     WHERE  s1.Instance_Number = #{PanoramaConnection.instance_number}
-                     AND    EXTRACT (MINUTE FROM s2.End_Interval_Time-s3.Begin_Interval_Time) > 0  /* At least one minute should be between the two snapshots */
-                     ORDER BY s1.Snap_ID DESC"
+      PanoramaSamplerStructureCheck.domains.each do |domain|
+        PanoramaSamplerStructureCheck.do_check(sampler_config, domain)
+      end
 
-      # Ensure existence of panorama_sampler_snapshots
-      if management_pack_license == :panorama_sampler
-        # Ensure existence of structure
-        sampler_config = prepare_panorama_sampler_thread_db_config
+      snaps = sql_select_first_row two_snaps_sql                                # Look for 2 subsequent snapshots in the middle of 4 snapshots with same startup time
+      if snaps.nil? ||
+        snaps.min_snap_id.nil? ||
+        snaps.max_snap_id.nil? ||
+        snaps.start_time.nil?  ||
+        snaps.end_time.nil?    ||                                             # Not enough snapshots exists, create 4 subsequent
+        (snaps.end_time - snaps.start_time) < 61                              # at least one minute should be between snapshots
 
-        PanoramaSamplerStructureCheck.domains.each do |domain|
-          PanoramaSamplerStructureCheck.do_check(sampler_config, domain)
+        if !snaps.nil? && !snaps.start_time.nil? && !snaps.end_time.nil? && (snaps.end_time - snaps.start_time) < 61
+          Rails.logger.info "initialize_min_max_snap_id_and_times: new snaps executed because duration between snapshots is only #{} seconds"
         end
 
-        snaps = sql_select_first_row two_snaps_sql                                # Look for 2 subsequent snapshots in the middle of 4 snapshots with same startup time
-        if snaps.nil? ||
-          snaps.min_snap_id.nil? ||
-          snaps.max_snap_id.nil? ||
-          snaps.start_time.nil?  ||
-          snaps.end_time.nil?    ||                                             # Not enough snapshots exists, create 4 subsequent
-          (snaps.end_time - snaps.start_time) < 61                              # at least one minute should be between snapshots
+        saved_config = Thread.current[:panorama_connection_connect_info]        # store current config before being reset by WorkerThread.create_snapshot_internal
 
-          if !snaps.nil? && !snaps.start_time.nil? && !snaps.end_time.nil? && (snaps.end_time - snaps.start_time) < 61
-            Rails.logger.info "initialize_min_max_snap_id_and_times: new snaps executed because duration between snapshots is only #{} seconds"
-          end
+        WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
+        sleep(61)                                                               # Wait until next minute
+        WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
+        sleep(61)                                                               # Wait until next minute
+        WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
+        sleep(61)                                                               # Wait until next minute
+        WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
 
-          saved_config = Thread.current[:panorama_connection_connect_info]        # store current config before being reset by WorkerThread.create_snapshot_internal
+        PanoramaConnection.set_connection_info_for_request(saved_config)        # reconnect because create_snapshot_internal freed the connection
 
-          WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
-          sleep(61)                                                               # Wait until next minute
-          WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
-          sleep(61)                                                               # Wait until next minute
-          WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
-          sleep(61)                                                               # Wait until next minute
-          WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
-
-          PanoramaConnection.set_connection_info_for_request(saved_config)        # reconnect because create_snapshot_internal freed the connection
-
-        end
       end
-
-      # Get 2 subsequent snapshots in the middle of 4 snapshots with same startup time
-      snaps = sql_select_first_row two_snaps_sql
-
-      last_10_snaps = sql_select_all "SELECT *
-                                      FROM   (SELECT *
-                                              FROM DBA_Hist_Snapshot
-                                              ORDER BY Begin_Interval_Time DESC
-                                             )
-                                      WHERE RowNum <= 10"
-
-      Rails.logger.info "Last 10 snapshots are:"
-      last_10_snaps.each do |s|
-        Rails.logger.info "Snap_ID = #{s.snap_id}, Instance = #{s.instance_number}, Startup = #{localeDateTime(s.startup_time)}, Begin_Interval_Time = #{localeDateTime(s.begin_interval_time)}, End_Interval_Time = #{localeDateTime(s.end_interval_time)}"
-      end
-
-      if snaps.nil? || snaps.min_snap_id.nil? || snaps.max_snap_id.nil? || snaps.start_time.nil? || snaps.end_time.nil?
-        message = "No 4 subsequent snapshots with same startup_time found in #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')}"
-        puts message
-        Rails.logger.debug message
-
-        raise message
-      end
-
-      @@min_snap_id = snaps.min_snap_id
-      @@max_snap_id = snaps.max_snap_id
-
-      @@time_selection_start = localeDateTime(snaps.start_time-1, time_format)
-      snaps_between = snaps.start_time+60
-      @@time_selection_between = localeDateTime(snaps_between, time_format)   # a timestamp within the snapshot
-      snaps_end = snaps.end_time+(time_format == :minutes ? 60 : 0)
-      @@time_selection_end   = localeDateTime(snaps_end, time_format)      # Add at least one minute to be sure timestamp is after snaps.end_time even if time_format is :minutes
-      raise "@@time_selection_between (#{@@time_selection_between}) not between @@time_selection_start (#{@@time_selection_start}) and @@time_selection_end (#{@@time_selection_end})" if snaps_between >= snaps_end
-      Rails.logger.info "initialize_min_max_snap_id_and_times: Selected Snap_IDs: #{@@min_snap_id}, #{@@max_snap_id} Times: #{@@time_selection_start}, #{@@time_selection_end}"
     end
 
-    @min_snap_id            = @@min_snap_id
-    @max_snap_id            = @@max_snap_id
-    @time_selection_start   = @@time_selection_start
-    @time_selection_between = @@time_selection_between
-    @time_selection_end     = @@time_selection_end
-  end
+    # Get 2 subsequent snapshots in the middle of 4 snapshots with same startup time
+    snaps = sql_select_first_row two_snaps_sql
 
-end
+    last_10_snaps = sql_select_all "SELECT *
+                                    FROM   (SELECT *
+                                            FROM DBA_Hist_Snapshot
+                                            ORDER BY Begin_Interval_Time DESC
+                                           )
+                                    WHERE RowNum <= 10"
 
-=begin
-class PanoramaTestConfig
-  def self.test_config
-    test_host         = ENV['TEST_HOST']        || 'localhost'
-    test_port         = ENV['TEST_PORT']        || '1521'
-    test_servicename  = ENV['TEST_SERVICENAME'] || 'ORCLPDB1'
-    test_username     = ENV['TEST_USERNAME']    || 'panorama_test'
-    test_password     = ENV['TEST_PASSWORD']    || 'panorama_test'
-    test_syspassword  = ENV['TEST_SYSPASSWORD'] || 'oracle'
-    test_tns          = ENV['TEST_TNS']         || "#{test_host}:#{test_port}/#{test_servicename}"
+    Rails.logger.info "Last 10 snapshots are:"
+    last_10_snaps.each do |s|
+      Rails.logger.info "Snap_ID = #{s.snap_id}, Instance = #{s.instance_number}, Startup = #{localeDateTime(s.startup_time)}, Begin_Interval_Time = #{localeDateTime(s.begin_interval_time)}, End_Interval_Time = #{localeDateTime(s.end_interval_time)}"
+    end
 
-    config = {
-        adapter:                  'nulldb',
-        host:                     test_host,
-        management_pack_license:  ENV['MANAGEMENT_PACK_LICENSE'] ? ENV['MANAGEMENT_PACK_LICENSE'].to_sym : :diagnostics_and_tuning_pack,
-        modus:                    ENV['TEST_TNS'].nil? ? 'host' : 'tns',
-        panorama_sampler_schema:  test_username,                                # Use test user for panorama-sampler if not specified
-        password_decrypted:       test_password,
-        port:                     test_port,
-        privilege:                'normal',
-        query_timeout:            600,                                          # Allow 10 minutes for query and 20 minutes for socket read timeout in tests
-        sid:                      test_servicename,
-        sid_usage:                :SERVICE_NAME,
-        syspassword_decrypted:    test_syspassword,
-        user:                     test_username,
-        tns:                      test_tns,
-    }
+    if snaps.nil? || snaps.min_snap_id.nil? || snaps.max_snap_id.nil? || snaps.start_time.nil? || snaps.end_time.nil?
+      message = "No 4 subsequent snapshots with same startup_time found in #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')}"
+      puts message
+      Rails.logger.debug message
 
-    config
+      raise message
+    end
+
+    @min_snap_id = snaps.min_snap_id
+    @max_snap_id = snaps.max_snap_id
+
+    @time_selection_start = localeDateTime(snaps.start_time-1, time_format)
+    snaps_between = snaps.start_time+60
+    @time_selection_between = localeDateTime(snaps_between, time_format)   # a timestamp within the snapshot
+    snaps_end = snaps.end_time+(time_format == :minutes ? 60 : 0)
+    @time_selection_end   = localeDateTime(snaps_end, time_format)      # Add at least one minute to be sure timestamp is after snaps.end_time even if time_format is :minutes
+    raise "@time_selection_between (#{@time_selection_between}) not between @time_selection_start (#{@time_selection_start}) and @time_selection_end (#{@time_selection_end})" if snaps_between >= snaps_end
+    Rails.logger.info "initialize_min_max_snap_id_and_times: Selected Snap_IDs: #{@min_snap_id}, #{@max_snap_id} Times: #{@time_selection_start}, #{@time_selection_end}"
   end
 end
-=end
