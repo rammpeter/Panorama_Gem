@@ -408,6 +408,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_awr_sql_monitor_report_html with xhr: true" do
+    instance = PanoramaConnection.instance_number
     if get_db_version >= '11.1' && management_pack_license == :diagnostics_and_tuning_pack
       origins = ['GV$SQL_MONITOR']
 
@@ -421,7 +422,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
       origins.each do |origin|
         post '/dba_history/list_awr_sql_monitor_report_html', params: {format: :html,
                                                                        report_id:             origin == 'GV$SQL_MONITOR' ? 0 : report_id_hist,
-                                                                       instance:              PanoramaConnection.instance_number,
+                                                                       instance:              instance,
                                                                        sid:                   1,
                                                                        serial_no:              1,
                                                                        sql_id:                '1',
