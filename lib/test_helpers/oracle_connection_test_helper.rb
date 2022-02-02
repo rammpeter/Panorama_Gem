@@ -60,9 +60,6 @@ class ActiveSupport::TestCase
     }
     write_to_client_info_store(:browser_tab_ids, browser_tab_ids)
 
-
-    # TODO Sollte so nicht mehr notwendig sein
-    #open_oracle_connection                                                     # Connection zur Test-DB aufbauen, um Parameter auszulesen
     set_connection_info_for_request(current_database)
 
     # DBID is set at first request after login normally

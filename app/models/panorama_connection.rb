@@ -325,7 +325,16 @@ class PanoramaConnection
   # set the initial value for used dbid at login time (DB's DBID or CDB's DBID)
   def self.select_initial_dbid
     return PanoramaConnection.dbid unless PanoramaConnection.is_cdb?            # used DB's DBID if not CDB
-    if sql_select_one(["SELECT COUNT(*) FROM DBA_Hist_Snapshot WHERE DBID = ?", PanoramaConnection.login_container_dbid]) == 0 # Check if AWR for container is really sampled
+    begin
+      login_container_snapshot_count=  sql_select_one(["SELECT COUNT(*) FROM DBA_Hist_Snapshot WHERE DBID = ?", PanoramaConnection.login_container_dbid])
+    rescue Exception => e
+      if e.message['ORA-00942']
+        return PanoramaConnection.dbid                                          # DBA_Hist_Snapshot does not already exists! Should happen only if Panorama_Snapshot is used for sampler and DB structures are not yet created
+      else
+        raise
+      end
+    end
+    if login_container_snapshot_count == 0                                      # Check if AWR for container is really sampled
       return PanoramaConnection.dbid                                            # Use connections DBID if container has no AWR data
     else
       return PanoramaConnection.login_container_dbid                            # Use containers DBID if container has AWR data
