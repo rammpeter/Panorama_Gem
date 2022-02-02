@@ -70,7 +70,7 @@ jobs:
         echo "TNS_ADMIN=$TNS_ADMIN"
         echo "tnsnames.ora="
         cat $TNS_ADMIN/tnsnames.ora
-        rake test
+        bundle exec rake test
 
     - name: Archive test log
       if: always()
