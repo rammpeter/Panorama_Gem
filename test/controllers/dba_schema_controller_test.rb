@@ -71,9 +71,9 @@ class DbaSchemaControllerTest < ActionController::TestCase
 
   teardown do
     set_session_test_db_context
-    PanoramaConnection.sql_execute "DROP TABLE #{@lob_table_name}"            if PanoramaConnection.user_table_exists? @lob_table_name
-    PanoramaConnection.sql_execute "DROP TABLE #{@part_table_table_name}"     if PanoramaConnection.user_table_exists? @part_table_table_name
-    PanoramaConnection.sql_execute "DROP TABLE #{@subpart_table_table_name}"  if PanoramaConnection.user_table_exists? @subpart_table_table_name
+    PanoramaConnection.sql_execute "DROP TABLE #{@lob_table_name}"            if defined?(@lob_table_name)            && PanoramaConnection.user_table_exists?(@lob_table_name)
+    PanoramaConnection.sql_execute "DROP TABLE #{@part_table_table_name}"     if defined?(@part_table_table_name)     && PanoramaConnection.user_table_exists?(@part_table_table_name)
+    PanoramaConnection.sql_execute "DROP TABLE #{@subpart_table_table_name}"  if defined?(@subpart_table_table_name)  && PanoramaConnection.user_table_exists?(@subpart_table_table_name)
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
@@ -257,49 +257,65 @@ class DbaSchemaControllerTest < ActionController::TestCase
     get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @lob_segment_name , update_area: :hugo }
     assert_response :success
 
-    if defined?(@part_table_table_name)
+    if defined?(@lob_part_lob_name)
       # all partitions
       get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @lob_part_lob_name , update_area: :hugo }
       assert_response :success
-      # one partition
-      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @lob_part_lob_name, partition_name: @lob_part_lob_partition_name , update_area: :hugo }
-      assert_response :success
+
+      if defined?(@lob_part_lob_partition_name)
+        # one partition
+        get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @lob_part_lob_name, partition_name: @lob_part_lob_partition_name , update_area: :hugo }
+        assert_response :success
+      end
     end
+
 
     if defined?(@part_table_table_name)
       # all partitions
       get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @part_table_table_name , update_area: :hugo }
       assert_response :success
-      # one partition
-      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @part_table_table_name, partition_name: @lob_part_partition_name , update_area: :hugo }
-      assert_response :success
+
+      if defined?(@lob_part_partition_name)
+        # one partition
+        get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @part_table_table_name, partition_name: @lob_part_partition_name , update_area: :hugo }
+        assert_response :success
+      end
     end
 
     if defined?(@part_index_index_name)
       # all partitions
       get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @part_index_index_name , update_area: :hugo }
       assert_response :success
-      # one partition
-      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @part_index_index_name, partition_name: @part_index_partition_name , update_area: :hugo }
-      assert_response :success
+
+      if defined?(@part_index_partition_name)
+        # one partition
+        get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @part_index_index_name, partition_name: @part_index_partition_name , update_area: :hugo }
+        assert_response :success
+      end
     end
 
     if defined?(@subpart_table_table_name)
       # all partitions
       get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @subpart_table_table_name , update_area: :hugo }
       assert_response :success
-      # one partition
-      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @subpart_table_table_name, partition_name: @subpart_table_subpartition_name , update_area: :hugo }
-      assert_response :success
+
+      if defined?(@subpart_table_subpartition_name)
+        # one partition
+        get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @subpart_table_table_name, partition_name: @subpart_table_subpartition_name , update_area: :hugo }
+        assert_response :success
+      end
     end
 
     if defined?(@subpart_index_index_name)
       # all partitions
       get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @subpart_index_index_name , update_area: :hugo }
       assert_response :success
-      # one partition
-      get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @subpart_index_index_name, partition_name: @subpart_index_subpartition_name , update_area: :hugo }
-      assert_response :success
+
+      if defined?(@subpart_index_subpartition_name)
+        # one partition
+        get :list_space_usage, params: {format: :html, owner: @object_owner, segment_name: @subpart_index_index_name, partition_name: @subpart_index_subpartition_name , update_area: :hugo }
+        assert_response :success
+      end
     end
   end
 
