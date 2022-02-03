@@ -48,26 +48,25 @@ class DbaSchemaControllerTest < ActionController::TestCase
                                              WHERE Table_Name = ? AND Segment_Created = 'YES' AND RowNum < 2", @subpart_table_table_name]
       @subpart_table_partition_name     = subpart_table.partition_name
       @subpart_table_subpartition_name  = subpart_table.subpartition_name
+
+      part_index = sql_select_first_row ["SELECT Partition_Name FROM User_Ind_Partitions WHERE Segment_Created = 'YES' AND Index_Name = ? AND RowNum < 2", @part_index_index_name]
+      if part_index
+        @part_index_partition_name     = part_index.partition_name
+      else
+        puts "DbaSchemaControllerTest.setup: There are no index subpartitions in database"
+      end
+
+      subpart_index = sql_select_first_row ["SELECT Partition_Name, SubPartition_Name FROM User_Ind_SubPartitions
+                                           WHERE Segment_Created = 'YES' AND Index_Name = ? AND RowNum < 2", @subpart_index_index_name]
+      if subpart_index
+        @subpart_index_partition_name     = subpart_index.partition_name
+        @subpart_index_subpartition_name  = subpart_index.subpartition_name
+      else
+        puts "DbaSchemaControllerTest.setup: There are no index subpartitions in database"
+      end
     else
       puts "DbaSchemaControllerTest.setup: There are no table partitions or subpartitions in database because edition = #{PanoramaConnection.edition}"
     end
-
-    part_index = sql_select_first_row ["SELECT Partition_Name FROM User_Ind_Partitions WHERE Segment_Created = 'YES' AND Index_Name = ? AND RowNum < 2", @part_index_index_name]
-    if part_index
-      @part_index_partition_name     = part_index.partition_name
-    else
-      puts "DbaSchemaControllerTest.setup: There are no index subpartitions in database"
-    end
-
-    subpart_index = sql_select_first_row ["SELECT Partition_Name, SubPartition_Name FROM User_Ind_SubPartitions
-                                           WHERE Segment_Created = 'YES' AND Index_Name = ? AND RowNum < 2", @subpart_index_index_name]
-    if subpart_index
-      @subpart_index_partition_name     = subpart_index.partition_name
-      @subpart_index_subpartition_name  = subpart_index.subpartition_name
-    else
-      puts "DbaSchemaControllerTest.setup: There are no index subpartitions in database"
-    end
-
   end
 
   teardown do
