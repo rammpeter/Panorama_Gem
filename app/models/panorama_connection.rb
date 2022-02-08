@@ -1,7 +1,12 @@
 # hold open SQL-Cursor and iterate over SQL-result without storing whole result in Array
 # Peter Ramm, 02.03.2016
 
+
+# resolve ActiveRecord::ConnectionAdapters::NullPool in active_record/connection_adapters/abstract_adapter:90
+require 'active_record/connection_adapters/abstract/connection_pool'
+
 require 'active_record/connection_adapters/abstract_adapter'
+
 require 'active_record/connection_adapters/oracle_enhanced/connection'
 require 'active_record/connection_adapters/oracle_enhanced_adapter'
 require 'active_record/connection_adapters/oracle_enhanced/quoting'
