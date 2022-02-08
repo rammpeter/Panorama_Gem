@@ -83,8 +83,9 @@ ActiveRecord::ConnectionAdapters::OracleEnhanced::JDBCConnection.class_eval do
       end
 
       Rails.logger.debug "#{row_count} records "
-      cursor.close
       nil
+    ensure
+      cursor.close if defined?(cursor) && !cursor.nil?
     end
   end #iterate_query
 
@@ -96,8 +97,9 @@ ActiveRecord::ConnectionAdapters::OracleEnhanced::JDBCConnection.class_eval do
       cursor = prepare(sql)
       cursor.bind_params(type_casted_binds) if !binds.empty?
       res = cursor.exec_update
-      cursor.close
       res
+    ensure
+      cursor.close if defined?(cursor) && !cursor.nil?
     end
   end
 end #class_eval
