@@ -600,7 +600,7 @@ class PanoramaConnection
     end
 
     # Ensure stacktrace of first exception is show
-    msg = "Error while executing SQL:\n#{PanoramaConnection.get_nested_exception_message(e)}\nSQL-Statement:\n#{sql}\n#{bind_text.length > 0 ? "Bind-Values:\n#{bind_text}" : ''}"
+    msg = "Error while executing SQL:\n#{PanoramaConnection.get_nested_exception_message(e)}\nSQL-Statement:\n#{stmt}\n#{bind_text.length > 0 ? "Bind-Values:\n#{bind_text}" : ''}"
     # Rails.logger.error("PanoramaConnection.sql_execute: #{msg}")  # Logging is done in outer exception handler
     new_ex = Exception.new(msg)
     new_ex.set_backtrace(e.backtrace)
