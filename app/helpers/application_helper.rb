@@ -67,12 +67,13 @@ module ApplicationHelper
   # Parameter:
   #     key: Key to find
   #     default_proc: proc to kalkulate value if does not yet exists
-  def read_from_client_info_store(key)
+  def read_from_client_info_store(key, suppress_non_existing_error: false)
     if !defined?(@buffered_client_info_store) || @buffered_client_info_store.nil?                                           # First access after initiation of object
       @buffered_client_info_store = EngineConfig.get_client_info_store.read(get_decrypted_client_key)    # Auslesen des kompletten Hashes aus Cache
     end
     if @buffered_client_info_store.nil? || @buffered_client_info_store.class != Hash                       # Abbruch wenn Struktur nicht passt
-      Rails.logger.error "read_from_client_info_store: No data found in client_info_store while looking for key=#{key}"
+      msg = "read_from_client_info_store: No data found in client_info_store while looking for key=#{key}"
+      suppress_non_existing_error ? Rails.logger.debug(msg) : Rails.logger.error(msg)
       return nil
     end
     @buffered_client_info_store[key]                                              # return value regardless it's nil or not
@@ -106,8 +107,8 @@ module ApplicationHelper
   end
 
   # Cachen diverser Client-Einstellungen in lokalen Variablen
-  def get_locale
-    @buffered_locale = read_from_client_info_store(:locale) if !defined?(@buffered_locale) || @buffered_locale.nil?
+  def get_locale(suppress_non_existing_error: false)
+    @buffered_locale = read_from_client_info_store(:locale, suppress_non_existing_error: suppress_non_existing_error) if !defined?(@buffered_locale) || @buffered_locale.nil?
     @buffered_locale
   end
 

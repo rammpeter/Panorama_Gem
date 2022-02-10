@@ -28,7 +28,7 @@ class EnvController < ApplicationController
   def index
     # Ensure client browser has unique client_key stored as cookie (create new one if not already exists)
     initialize_client_key_cookie
-    initialize_browser_tab_id                                                   # Helper to distiguish browser tabs
+    initialize_browser_tab_id(suppress_non_existing_error: true)                                                   # Helper to distiguish browser tabs
     write_to_browser_tab_client_info_store(:current_database, nil)              # Overwrite previous setting from last session
 
     set_I18n_locale('en') if get_locale.nil?                                    # Locale not yet specified, set default

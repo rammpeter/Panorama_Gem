@@ -54,7 +54,7 @@ class ApplicationController < ActionController::Base
   # Ausführung vor jeden Request
   def begin_request
     begin
-      if get_locale
+      if get_locale(suppress_non_existing_error: true)
         I18n.locale = get_locale                                                # fuer laufende Action Sprache aktivieren
       else
         I18n.locale = 'en'                                                      # Use english for first conversation
