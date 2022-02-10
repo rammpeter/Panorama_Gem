@@ -125,9 +125,6 @@ END Panorama_Sampler_ASH;
   TYPE StatNameTableType IS TABLE OF NUMBER INDEX BY VARCHAR2(64);
   StatNameTable           StatNameTableType;
 
-  TYPE DoubleCheckTableType IS TABLE OF NUMBER(1) INDEX BY BINARY_INTEGER;
-  DoubleCheckTable        DoubleCheckTableType;
-
   v_SysTimestamp          TIMESTAMP(3);
   v_Mod_Seconds           NUMBER(2);
   v_Preserve_10Secs       CHAR(1);
@@ -145,6 +142,7 @@ END Panorama_Sampler_ASH;
     p_Con_ID          IN NUMBER,
     p_Sample_ID       IN OUT NUMBER
   ) IS
+      v_DoubleCheck_SID NUMBER := -1;                                                 -- suppress double records
     BEGIN
       p_Sample_ID := p_Sample_ID + 1;
       AshTable4Select.DELETE;
@@ -291,13 +289,12 @@ END Panorama_Sampler_ASH;
       ORDER BY s.SID  -- sorted order needed for suppression of doublettes in next step
       ;
 
-      FOR Idx IN 1 .. AshTable4Select.COUNT LOOP                              -- Move selected records into memory buffer for x Seconds
-        IF NOT DoubleCheckTable.EXISTS(AshTable4Select(Idx).Session_ID) THEN  -- Insert each SID ony one time, doublettes may be caused by v$Transaction
+      FOR Idx IN 1 .. AshTable4Select.COUNT LOOP                                -- Move selected records into memory buffer for x Seconds
+        IF AshTable4Select(Idx).Session_ID != v_DoubleCheck_SID THEN            -- Insert each SID only one time, doublettes may be caused by v$Transaction
           AshTable(AshTable.COUNT+1) := AshTable4Select(Idx);
-          DoubleCheckTable(AshTable4Select(Idx).Session_ID) := 1;             -- mark this SID as existing
         END IF;
+        v_DoubleCheck_SID := AshTable4Select(Idx).Session_ID;                   -- Remember the last used SID
       END LOOP;
-      DoubleCheckTable.DELETE;
     END CreateSample;
 
   PROCEDURE Persist_Samples(
@@ -390,8 +387,8 @@ END Panorama_Sampler_ASH;
         DBMS_LOCK.SLEEP(1-MOD(EXTRACT(SECOND FROM SYSTIMESTAMP), 1));
 
         -- Reduce Bulk_Size before end of snapshot so last records are so commited that they are visible for snapshot creation and don't fall into the next snapshot
-        IF v_Seconds_Run > p_Next_Snapshot_Start_Seconds - v_Bulk_Size THEN   -- less than v_Bulk_Size seconds until next snapshot
-          v_Bulk_Size := p_Next_Snapshot_Start_Seconds - v_Seconds_Run;       -- reduce bulk size
+        IF v_Seconds_Run > p_Next_Snapshot_Start_Seconds - v_Bulk_Size THEN     -- less than v_Bulk_Size seconds until next snapshot
+          v_Bulk_Size := p_Next_Snapshot_Start_Seconds - v_Seconds_Run;         -- reduce bulk size
           IF v_Bulk_Size < 1 THEN
             v_Bulk_Size := 1;
           END IF;
@@ -399,12 +396,12 @@ END Panorama_Sampler_ASH;
 
         CreateSample(p_Instance_Number, p_Con_ID, v_Sample_ID);
         v_Counter := v_Counter + 1;
-        IF v_Counter >= v_Bulk_Size THEN
+        IF v_Counter >= v_Bulk_Size THEN                                        -- Persist into DB each x seconds
           v_Counter := 0;
-          Persist_Samples(p_Instance_Number, p_Con_ID);
+          Persist_Samples(p_Instance_Number, p_Con_ID);                         -- write content of AshTable into DB
         END IF;
 
-        EXIT WHEN SYSDATE >= v_LastSampleTime;
+        EXIT WHEN SYSDATE >= v_LastSampleTime;                                  -- return control to Panorama server
 
         v_Seconds_Run := v_Seconds_Run + 1;
 
