@@ -75,14 +75,15 @@ class PanoramaSamplerJob < ApplicationJob
     snapshot_cycle_minutes  = config.get_domain_snapshot_cycle(domain) * minute_factor
     last_snapshot_start     = config.get_last_domain_snapshot_start(domain)
 
-    if config.get_domain_active(domain) && (snapshot_time.min % snapshot_cycle_minutes == 0  ||  # exact startup time at full hour + x*snapshot_cycle
-        snapshot_time.min == 0 && snapshot_time.hour % snapshot_cycle_minutes/60 == 0)  # Full hour for snapshot cycle = n*hour
+    if config.get_domain_active(domain) &&
+      ((snapshot_cycle_minutes <= 60 && snapshot_time.min % snapshot_cycle_minutes == 0 ) ||  # exact startup time at full hour + x*snapshot_cycle minutes
+        (snapshot_time.min == 0 && snapshot_time.hour % snapshot_cycle_minutes/60 == 0))  # Full hour for snapshot cycle = n*hour
       if  last_snapshot_start.nil? || (last_snapshot_start + snapshot_cycle_minutes.minutes <= snapshot_time+SECONDS_LATE_ALLOWED)  # snapshot_cycle expired ?, 2 seconds delay are allowed
         config.set_domain_last_snapshot_start(domain, snapshot_time)
         WorkerThread.create_snapshot(config, snapshot_time, domain)
       else
-        Rails.logger.error "#{Time.now}: Last #{domain} snapshot start (#{last_snapshot_start}) not old enough to expire next snapshot after #{snapshot_cycle_minutes} minutes for ID=#{config.get_id} '#{config.get_name}'"
-        Rails.logger.error "May be sampling is done by multiple Panorama instances?"
+        Rails.logger.warn "#{Time.now}: Last #{domain} snapshot start (#{last_snapshot_start}) not old enough to expire next snapshot after #{snapshot_cycle_minutes} minutes for ID=#{config.get_id} '#{config.get_name}'"
+        Rails.logger.warn "May be sampling is done by multiple Panorama instances or snapshot cycle is > 24 hours?"
       end
     end
   end
