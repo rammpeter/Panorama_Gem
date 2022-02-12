@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    panorama_gem (2.13.6)
+    panorama_gem (2.13.7)
       actionmailer (= 6.1.4.4)
       actionpack (= 6.1.4.4)
       actionview (= 6.1.4.4)
@@ -81,7 +81,7 @@ GEM
       concurrent-ruby (~> 1.0)
     launchy (2.5.0)
       addressable (~> 2.7)
-    loofah (2.13.0)
+    loofah (2.14.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     mail (2.7.1)
@@ -100,7 +100,7 @@ GEM
       concurrent-ruby (>= 1.1.6)
       mime-types (>= 3.0)
     public_suffix (4.0.6)
-    puma (5.6.1-java)
+    puma (5.6.2-java)
       nio4r (~> 2.0)
     racc (1.6.0-java)
     rack (2.2.3)
@@ -121,7 +121,7 @@ GEM
     rb-fsevent (0.11.1)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
-    regexp_parser (2.2.0)
+    regexp_parser (2.2.1)
     rexml (3.2.5)
     ruby-plsql (0.8.0)
     rubyzip (2.3.2)

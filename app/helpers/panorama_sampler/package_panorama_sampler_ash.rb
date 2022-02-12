@@ -290,6 +290,9 @@ END Panorama_Sampler_ASH;
       ;
 
       FOR Idx IN 1 .. AshTable4Select.COUNT LOOP                                -- Move selected records into memory buffer for x Seconds
+        IF AshTable4Select(Idx).Session_ID < v_DoubleCheck_SID
+          RAISE_APPLICATION_ERROR(-20999, 'CreateSample; Wrong oder after SELECT ORDER BY! Test-SID < v_DoubleCheck_SID '||AshTable4Select(Idx).Session_ID||' / '||v_DoubleCheck_SID);
+        END IF;
         IF AshTable4Select(Idx).Session_ID != v_DoubleCheck_SID THEN            -- Insert each SID only one time, doublettes may be caused by v$Transaction
           AshTable(AshTable.COUNT+1) := AshTable4Select(Idx);
         END IF;
@@ -301,6 +304,7 @@ END Panorama_Sampler_ASH;
     p_Instance_Number IN NUMBER,
     p_Con_ID IN NUMBER
   ) IS
+      Msg VARCHAR2(2000);
     BEGIN
       FORALL Idx IN 1 .. AshTable.COUNT
       INSERT INTO panorama_owner.Internal_V$Active_Sess_History (
@@ -352,6 +356,15 @@ END Panorama_Sampler_ASH;
       );
       COMMIT;
       AshTable.DELETE;
+   EXCEPTION
+      WHEN OTHERS THEN
+        Msg := SQLERRMSG||':';
+        FOR Idx IN 1 .. AshTable.COUNT LOOP
+          IF Idx < 50                                                           -- Ensure max. VARCHAR2 size is not exceeded
+            Msg := Msg||AshTable(Idx).Sample_ID||'.'||AshTable(Idx).Session_ID||'/';
+          END IF;
+        END LOOP;
+        RAISE_APPLICATION_ERROR(-20999, Msg);
     END Persist_Samples;
 
   PROCEDURE Run_Sampler_Daemon(

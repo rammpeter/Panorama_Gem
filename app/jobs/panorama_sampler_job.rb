@@ -84,6 +84,7 @@ class PanoramaSamplerJob < ApplicationJob
       else
         Rails.logger.warn "#{Time.now}: Last #{domain} snapshot start (#{last_snapshot_start}) not old enough to expire next snapshot after #{snapshot_cycle_minutes} minutes for ID=#{config.get_id} '#{config.get_name}'"
         Rails.logger.warn "May be sampling is done by multiple Panorama instances or snapshot cycle is > 24 hours?"
+        Rails.logger.warn "This can also happen one time after startup of Panorama."
       end
     end
   end
