@@ -360,7 +360,7 @@ END Panorama_Sampler_ASH;
       WHEN OTHERS THEN
         Msg := SQLERRMSG||':';
         FOR Idx IN 1 .. AshTable.COUNT LOOP
-          IF Idx < 50                                                           -- Ensure max. VARCHAR2 size is not exceeded
+          IF Idx < 50 THEN                                                      -- Ensure max. VARCHAR2 size is not exceeded
             Msg := Msg||AshTable(Idx).Sample_ID||'.'||AshTable(Idx).Session_ID||'/';
           END IF;
         END LOOP;
