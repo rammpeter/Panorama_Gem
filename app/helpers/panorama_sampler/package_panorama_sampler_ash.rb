@@ -290,7 +290,7 @@ END Panorama_Sampler_ASH;
       ;
 
       FOR Idx IN 1 .. AshTable4Select.COUNT LOOP                                -- Move selected records into memory buffer for x Seconds
-        IF AshTable4Select(Idx).Session_ID < v_DoubleCheck_SID
+        IF AshTable4Select(Idx).Session_ID < v_DoubleCheck_SID THEN
           RAISE_APPLICATION_ERROR(-20999, 'CreateSample; Wrong oder after SELECT ORDER BY! Test-SID < v_DoubleCheck_SID '||AshTable4Select(Idx).Session_ID||' / '||v_DoubleCheck_SID);
         END IF;
         IF AshTable4Select(Idx).Session_ID != v_DoubleCheck_SID THEN            -- Insert each SID only one time, doublettes may be caused by v$Transaction
