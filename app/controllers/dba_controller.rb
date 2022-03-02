@@ -124,6 +124,7 @@ class DbaController < ApplicationController
 
   def list_blocking_dml_locks
 
+    # TODO: Use v$Session.Final_Blocking_Instance and Final_Blocking_Session instead of CONNECT BY. Check if result is comparable before!
     @locks = sql_select_all "\
       WITH RawLock AS (SELECT /*+ MATERIALIZE NO_MERGE */ * FROM gv$Lock),
            Locks AS (
@@ -909,6 +910,7 @@ oradebug setorapname diag
     @dbsessions =  sql_select_all ["\
            SELECT s.SQL_ID, s.Prev_SQL_ID, RawToHex(s.SAddr) SAddr, #{"s.Con_ID, con.Name Container_Name, " if get_current_database[:cdb]}
                   s.SQL_Child_Number, s.Prev_Child_Number,
+                  CASE WHEN s.State = 'WAITING' THEN s.Event ELSE 'ON CPU' END Wait_Event,
                   s.Status, s.Client_Info, s.Module, s.Action, s.AudSID,
                   s.UserName, s.Machine, s.OSUser, s.Process, s.Program,
                   SYSDATE - (s.Last_Call_Et/86400) Last_Call,
@@ -917,11 +919,15 @@ oradebug setorapname diag
                   p.spID, p.PID,
                   RawToHex(tx.XID) Tx_ID,
                   tx.Start_Time,
-                  c.AUTHENTICATION_TYPE
-                  #{", c.Client_CharSet, c.Client_Connection, c.Client_OCI_Library, c.Client_Version, c.Client_Driver" if get_db_version >= "11.2" }
-                  #{", s.SQL_Exec_Start, s.SQL_Exec_ID, s.Prev_Exec_Start, s.Prev_Exec_ID" if get_db_version >= '11.1' }
+                  c.AUTHENTICATION_TYPE,
+                  c.Client_CharSet, c.Client_Connection, c.Client_OCI_Library, c.Client_Version, c.Client_Driver,
+                  s.SQL_Exec_Start, s.SQL_Exec_ID, s.Prev_Exec_Start, s.Prev_Exec_ID,
+                  s.Blocking_Session_Status, s.Blocking_Instance, s.Blocking_Session, b.Serial# Blocking_Serial_No,
+                  s.Final_Blocking_Session_Status, s.Final_Blocking_Instance, s.Final_Blocking_Session, fb.Serial# Final_Blocking_Serial_No
            FROM   GV$Session s
            JOIN   GV$process p                       ON p.Addr = s.pAddr AND p.Inst_ID = s.Inst_ID
+           LEFT OUTER JOIN GV$Session b  ON b.Inst_ID = s.Blocking_Instance AND b.SID = s.Blocking_Session
+           LEFT OUTER JOIN GV$Session fb ON fb.Inst_ID = s.Final_Blocking_Instance AND fb.SID = s.Final_Blocking_Session
            LEFT OUTER JOIN (SELECT Inst_ID, SID#{', Serial#' if get_db_version >= '11.2'}, AUTHENTICATION_TYPE
                                    #{", Client_CharSet, Client_Connection, Client_OCI_Library, Client_Version, Client_Driver" if get_db_version >= "11.2" }
                             FROM   GV$Session_Connect_Info
