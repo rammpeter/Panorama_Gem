@@ -28,7 +28,7 @@
      output = explain_wait_event(rec.wait_event).clone(freeze: false)
      if rec.blocking_session
        output << "\n\nSession is blocked by: #{"Instance = #{rec.blocking_instance}, " if PanoramaConnection.rac?}SID = #{rec.blocking_session}, Status = #{rec.blocking_session_status}"
-       output << "\n\nFinal blocking session is: #{"Instance = #{rec.final_blocking_instance}, " if PanoramaConnection.rac?}SID = #{rec.final_blocking_session}, Status = #{rec.final_blocking_session_status}" if get_db_version >= '12.1' && rec.final_blocking_session != rec.blocking_session
+       output << "\n\nFinal blocking session is: #{"Instance = #{rec.final_blocking_instance}, " if PanoramaConnection.rac?}SID = #{rec.final_blocking_session}, Status = #{rec.final_blocking_session_status}" if get_db_version >= '12.1'
      end
      output
    end

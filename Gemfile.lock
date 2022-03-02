@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    panorama_gem (2.13.11)
+    panorama_gem (2.13.13)
       actionmailer (= 6.1.4.6)
       actionpack (= 6.1.4.6)
       actionview (= 6.1.4.6)

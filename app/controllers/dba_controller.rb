@@ -1111,16 +1111,20 @@ oradebug setorapname diag
     @serial_no = params[:serial_no]
 
     @waits =  sql_select_all ["\
-      SELECT w.Inst_ID, w.SID, w.Event,
-             w.P1Text, w.P1, w.P1Raw,
-             w.P2Text, w.P2, w.P2Raw,
-             w.P3Text, w.P3, w.P3Raw,
-             w.wait_Class,
-             #{get_db_version >= '11.2' ? 'w.Wait_Time_Micro/1000' : 'w.Seconds_in_Wait*1000'} Wait_Time_ms,
-             w.State
-      FROM   GV$Session_Wait w
-      WHERE  w.Inst_ID = ?
-      AND    w.SID     = ?
+      SELECT s.Inst_ID, s.SID, s.Event,
+             s.P1Text, s.P1, s.P1Raw,
+             s.P2Text, s.P2, s.P2Raw,
+             s.P3Text, s.P3, s.P3Raw,
+             s.wait_Class,
+             #{get_db_version >= '11.2' ? 's.Wait_Time_Micro/1000' : 's.Seconds_in_Wait*1000'} Wait_Time_ms,
+             s.State,
+             s.Blocking_Session_Status, s.Blocking_Instance, s.Blocking_Session, b.Serial# Blocking_Serial_No,
+             s.Final_Blocking_Session_Status, s.Final_Blocking_Instance, s.Final_Blocking_Session, fb.Serial# Final_Blocking_Serial_No
+      FROM   GV$Session s
+      LEFT OUTER JOIN GV$Session b  ON b.Inst_ID = s.Blocking_Instance AND b.SID = s.Blocking_Session
+      LEFT OUTER JOIN GV$Session fb ON fb.Inst_ID = s.Final_Blocking_Instance AND fb.SID = s.Final_Blocking_Session
+      WHERE  s.Inst_ID = ?
+      AND    s.SID     = ?
       ", @instance, @sid]
 
     @pq_waits =  sql_select_all ["\
@@ -1130,23 +1134,21 @@ oradebug setorapname diag
              px.Serial# Serial_No,
              px.req_degree,
              px.degree,
-             w.Event,
-             w.P1Text, w.P1, w.P1Raw,
-             w.P2Text, w.P2, w.P2Raw,
-             w.P3Text, w.P3, w.P3Raw,
-             w.wait_Class,
-             #{get_db_version >= '11.2' ? 'w.Wait_Time_Micro/1000' : 'w.Seconds_in_Wait*1000'} Wait_Time_ms,
-             w.State
-      FROM   GV$PX_Session px,
-             GV$Session s,
-             GV$Session_Wait w
+             s.Event,
+             s.P1Text, s.P1, s.P1Raw,
+             s.P2Text, s.P2, s.P2Raw,
+             s.P3Text, s.P3, s.P3Raw,
+             s.wait_Class,
+             #{get_db_version >= '11.2' ? 's.Wait_Time_Micro/1000' : 's.Seconds_in_Wait*1000'} Wait_Time_ms,
+             s.State,
+             s.Blocking_Session_Status, s.Blocking_Instance, s.Blocking_Session, b.Serial# Blocking_Serial_No,
+             s.Final_Blocking_Session_Status, s.Final_Blocking_Instance, s.Final_Blocking_Session, fb.Serial# Final_Blocking_Serial_No
+      FROM   GV$PX_Session px
+      JOIN   GV$Session s ON s.Inst_ID = px.Inst_ID AND s.SID = px.SID AND s.Serial# = px.serial#
+      LEFT OUTER JOIN GV$Session b  ON b.Inst_ID = s.Blocking_Instance AND b.SID = s.Blocking_Session
+      LEFT OUTER JOIN GV$Session fb ON fb.Inst_ID = s.Final_Blocking_Instance AND fb.SID = s.Final_Blocking_Session
       WHERE  px.QCInst_ID = ?
       AND    px.QCSID     = ?
-      AND    s.Inst_ID    = px.Inst_ID
-      AND    s.SID        = px.SID
-      AND    s.Serial#    = px.serial#
-      AND    w.Inst_ID(+) = px.Inst_ID
-      AND    w.SID(+)     = px.SID
       ", @instance, @sid]
 
     render_partial :list_session_details_waits
