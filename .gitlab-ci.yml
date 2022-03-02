@@ -25,7 +25,7 @@ brakeman_analysis:
     - sh -c "git clone https://github.com/rammpeter/Panorama_Gem"
     - sh -c "cd Panorama_Gem && bundle install --jobs 4"
     - gem install --no_doc brakeman
-    - sh -c "cd Panorama_Gem && jruby -J-Xmx3000M -S brakeman -A"
+    - sh -c "cd Panorama_Gem && jruby -J-Xmx3500M -S brakeman -A"
 
 .tests:
   resource_group: SINGLE
