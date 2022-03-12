@@ -70,6 +70,7 @@ class EnvController < ApplicationController
   def get_tnsnames_content
     tnsnames      = read_tnsnames
     target_object = params[:target_object]
+    raise "Unsupported target '#{target_object}' for env/get_tnsnames_content" unless ['config', 'database'].include?(target_object) # prevent from XSS
     selected      = params[:selected]
 
     result = "jQuery('##{target_object}_tns').replaceWith(\"<select id='#{target_object}_tns' name='#{target_object}[tns]' style='width: 85%;'>"

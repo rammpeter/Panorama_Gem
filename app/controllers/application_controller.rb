@@ -53,6 +53,7 @@ class ApplicationController < ActionController::Base
 
   # Ausführung vor jeden Request
   def begin_request
+    check_params_4_vulnerability(params)
     begin
       if get_locale(suppress_non_existing_error: true)
         I18n.locale = get_locale                                                # fuer laufende Action Sprache aktivieren
@@ -174,5 +175,22 @@ class ApplicationController < ActionController::Base
     @url = url
     @html_options = html_options
     render_partial :render_button, controller: :application
+  end
+
+  # Check request parameters for possibly vulnerable content / XSS
+  EVIL_PARAM_CONTENT = ['<SCRIPT', '&lt;SCRIPT']
+  def check_params_4_vulnerability(parameters)
+    parameters.keys.each do |k|
+      if parameters[k].class == ActionController::Parameters
+        check_params_4_vulnerability(parameters[k])                                 # nested parameters
+      else                                                                      # single string parameter
+        unless parameters[k].nil?
+          norm_param = parameters[k].upcase.delete(" \t\r\n")
+          EVIL_PARAM_CONTENT.each do |evil|
+            raise "Not supported parameter content detected" if norm_param[evil]
+          end
+        end
+      end
+    end
   end
 end
