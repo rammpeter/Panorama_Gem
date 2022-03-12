@@ -18,6 +18,8 @@
        In order to handle this requirement the driver looks for two meta tags that must be defined in your page's head.
   -->
   <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
 
   <script type="text/javascript">
       var browser_tab_id = <%= @browser_tab_id %>;                                // Unique identifier for browser tab

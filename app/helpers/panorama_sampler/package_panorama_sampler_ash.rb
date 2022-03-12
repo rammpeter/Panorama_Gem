@@ -364,6 +364,7 @@ END Panorama_Sampler_ASH;
             Msg := Msg||AshTable(Idx).Sample_ID||'.'||AshTable(Idx).Session_ID||'/';
           END IF;
         END LOOP;
+        AshTable.DELETE;                                                        -- Delete double content in case of exception
         RAISE_APPLICATION_ERROR(-20999, Msg);
     END Persist_Samples;
 
