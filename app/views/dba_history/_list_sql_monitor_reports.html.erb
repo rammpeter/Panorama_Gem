@@ -17,7 +17,11 @@
                   {method: 'post', target: '_blank'}
                   ) do                                     # internen Rails-Helper verwenden
                     hidden_field_tag("download_oracle_com_reachable_#{@hidden_id}", 'false', name: 'download_oracle_com_reachable') + # Field is set at submit click with reachable state
-                    submit_tag('Show report', {title: "Show generated SQL-Monitor report in separate browser tab (requires internet connection and Adobe Flash)", onclick: "on_submit_click('download_oracle_com_reachable_#{@hidden_id}');"})
+                    submit_tag('Show report',
+                               {title: "Show generated SQL-Monitor report in separate browser tab (requires internet connection).\n\nLoading the new page may last some seconds, don't worry.",
+                                onclick: "on_submit_click('download_oracle_com_reachable_#{@hidden_id}');"
+                               }
+                    )
                   end
 
   end

@@ -18,7 +18,10 @@
     </div>
     <div class="flex-row-element">
       <%= hidden_field_tag('download_oracle_com_reachable', 'false') %>
-      <%= submit_tag('Generate performance hub report', :title =>"Generate performance hub report by executing DBMS_PERF.REPORT_PERFHUB\nRequires the role DBA or EM_EXPRESS_BASIC for the connected user", onclick: "on_submit_click();") %>
+      <%= submit_tag('Generate performance hub report',
+                     title: "Generate performance hub report by executing DBMS_PERF.REPORT_PERFHUB\nRequires the role DBA or EM_EXPRESS_BASIC for the connected user.\n\nLoading the new page may last some seconds, don't worry.",
+                     onclick: "on_submit_click();")
+      %>
     </div>
   </div>
 <% end %>

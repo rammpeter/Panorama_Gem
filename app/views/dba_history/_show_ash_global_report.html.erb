@@ -5,7 +5,9 @@
     <%= include_start_end_timepicker %>
     <%= instance_tag %>
     <div class="flex-row-element">
-      <%= submit_tag('Generate ASH report', :title =>"Generate ASH-report by executing DBMS_WORKLOAD_REPOSITORY.ASH_GLOBAL_REPORT_HTML\nRequires the role DBA or OEM_MONITOR for the connected user") %>
+      <%= submit_tag('Generate ASH report',
+                     title: "Generate ASH-report by executing DBMS_WORKLOAD_REPOSITORY.ASH_GLOBAL_REPORT_HTML\nRequires the role DBA or OEM_MONITOR for the connected user\n\nLoading the new page may last some seconds, don't worry.")
+      %>
     </div>
   </div>
 <% end %>

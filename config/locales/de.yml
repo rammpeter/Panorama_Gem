@@ -260,7 +260,10 @@
   dba_history_list_sql_detail_historic_plan_count_hint:               Anzahl unterschiedliche Ausführungspläne im Zeitraum (wenn > 1)
   dba_history_list_sql_detail_historic_current_sga_caption:           SQL in aktueller SGA
   dba_history_list_sql_detail_historic_current_sga_hint:              Anlistung der Daten des SQL in der aktuellen SGA der DB (wenn vorhanden)
-  dba_history_list_sql_detail_historic_sql_report_hint:               Generieren des originalen Oracle SQL-Report durch Ausführung von DBMS_WORKLOAD_REPOSITORY.AWR_SQL_REPORT_HTML
+  dba_history_list_sql_detail_historic_sql_report_hint: |-              
+    Generieren des originalen Oracle SQL-Report durch Ausführung von DBMS_WORKLOAD_REPOSITORY.AWR_SQL_REPORT_HTML.
+    
+    Laden der neuen Seite braucht einige Sekunden, bitte nicht wundern.
 
   dba_history_list_sql_history_snapshots_caption:           Aufkommen an Daten aus %{table_name} von für SQL-ID = '%{sql_id}'
   dba_history_list_sql_history_snapshots_execs_hint:        Anzahl der Ausführungen des SQL im Intervall
