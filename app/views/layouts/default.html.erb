@@ -20,19 +20,8 @@
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
 
-
-  <script type="text/javascript">
+  <script type="text/javascript" nonce="<%= request.content_security_policy_nonce %>">
       var browser_tab_id = <%= @browser_tab_id %>;                                // Unique identifier for browser tab
-
-      var supportsES6 = function() {
-          try {
-              new Function("(a = 0) => a");
-              return true;
-          }
-          catch (err) {
-              return false;
-          }
-      }();
 
       if (supportsES6){
           /* Initialisierung von Objekten bei startup der Seite */
@@ -128,7 +117,7 @@
         </select>
         </label>
         <input type="search" placeholder="Filter" id="saved_logins_id_filter" style="width: 10%;" title="<%= t(:combobox_filter_title, default: 'Filter for selection list') %>">
-        <script type="application/javascript">
+        <script type="application/javascript" nonce="<%= request.content_security_policy_nonce %>">
             $(function(){ initialize_combobox_filter('saved_logins_id', 'saved_logins_id_filter'); })
         </script>
         <%= hidden_field_tag('browser_tab_id', @browser_tab_id) %>
@@ -145,10 +134,10 @@
         <td class="login_dialog_lhead"><%= t :login_lang_caption, :default=>"Language" %></td>
         <td align="center">
           <!-- Wechsel der Sprache und neu laden der gesamten Seite -->
-          <img src="assets/british-flag-small.gif" style="border-width:3px; border-color: <%= get_locale == 'en' ? 'gray' : '#eee' %>; border-style: <%= get_locale == 'en' ? 'outset' : 'solid' %>; cursor:pointer; height: 16pt" title="Set language to english"   onclick="jQuery.ajax({type: 'POST', url: 'env/set_locale', data: {locale: 'en'}});">
-          <img src="assets/german-flag-small.gif"  style="border-width:3px; border-color: <%= get_locale == 'de' ? 'gray' : '#eee' %>; border-style: <%= get_locale == 'de' ? 'outset' : 'solid' %>; cursor:pointer; height: 16pt" title="Setze Sprache auf deutsch" onclick="jQuery.ajax({type: 'POST', url: 'env/set_locale', data: {locale: 'de'}});">
-          <img src="assets/ukrain.png"  style="border-width:3px; border-color: #eee; border-style: solid; cursor:pointer; height: 16pt" title="There is no language support for Russian or Ukrainian so far, but essential things to mention. Click to see." onclick="flag_msg('Russia', 'Ukraine')">
-          <img src="assets/taiwan.png"  style="border-width:3px; border-color: #eee; border-style: solid; cursor:pointer; height: 16pt" title="There is no language support for Chinese so far, but essential things to mention. Click to see." onclick="flag_msg('China', 'Taiwan')">
+          <img src="assets/british-flag-small.gif" style="border-width:3px; border-color: <%= get_locale == 'en' ? 'gray' : '#eee' %>; border-style: <%= get_locale == 'en' ? 'outset' : 'solid' %>; cursor:pointer; height: 20pt" title="Set language to english"   onclick="jQuery.ajax({type: 'POST', url: 'env/set_locale', data: {locale: 'en'}});">
+          <img src="assets/german-flag-small.gif"  style="border-width:3px; border-color: <%= get_locale == 'de' ? 'gray' : '#eee' %>; border-style: <%= get_locale == 'de' ? 'outset' : 'solid' %>; cursor:pointer; height: 20pt" title="Setze Sprache auf deutsch" onclick="jQuery.ajax({type: 'POST', url: 'env/set_locale', data: {locale: 'de'}});">
+          <img src="assets/ukrain.png"  style="border-width:3px; border-color: #eee; border-style: solid; cursor:pointer; height: 20pt" title="There is no language support for Russian or Ukrainian so far, but essential things to mention. Click to see." onclick="flag_msg('Russia', 'Ukraine')">
+          <img src="assets/taiwan.png"  style="border-width:3px; border-color: #eee; border-style: solid; cursor:pointer; height: 20pt" title="There is no language support for Chinese so far, but essential things to mention. Click to see." onclick="flag_msg('China', 'Taiwan')">
         </td>
       </tr>
       <tr>
@@ -298,7 +287,7 @@
   <div id="length_control_dummy" style="width: 10px; visibility: hidden"></div>  <!-- Element für Javascript-Funktion rpad -->
 </div>
 
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%= request.content_security_policy_nonce %>">
     // this js snippet must be behind the div missing_browser_support_msg
     if (!supportsES6){
         console.log('Please use modern browser with support for ES 6');

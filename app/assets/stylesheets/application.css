@@ -10,7 +10,7 @@
  *
  *= require_self
  *= require jquery-ui-timepicker-addon
- *= require jquery-ui
+ *= require jquery-ui.min
  *= require slick.grid
  *= require superfish
  *= require jstree

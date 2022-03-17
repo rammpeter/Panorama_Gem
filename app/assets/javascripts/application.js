@@ -3,8 +3,8 @@
 
 // Eigenes jQuery verwenden, da Version aus jquery_rails $.browser nicht unterstützte
 // jquery_3.1.0 statt 2.1.4 führt zu Problemen beim Ändern der Spaltenbreite
-//= require jquery-3.5.1
-//= require jquery-ui
+//= require jquery-3.6.0.min
+//= require jquery-ui.min
 //= require jquery.ui.touch-punch.js
 // jquery_ujs.js aus gem jquery-rails nach vendor/assets/javascript kopiert, da im gem selbst nicht gefunden, statt dessen: sprocket-Error
 //= require jquery_ujs
@@ -53,6 +53,18 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 
     alert('Error: '+msg+'\nURL: '+url+'\nLine-No.: '+lineNo+'\nColumn-No.: '+columnNo+'\n'+ (error.stack ? error.stack : "" ) );
     return false;
+};
+
+// does the browser support ES6 ?
+function supportsES6() {
+    try {
+        new Function("(a = 0) => a");
+        return true;
+    }
+    catch (err) {
+        console.log('supportsES6: ' + err);
+        return false;
+    }
 };
 
 

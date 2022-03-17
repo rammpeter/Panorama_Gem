@@ -7,6 +7,7 @@
 
 class ApplicationController < ActionController::Base
   include ActionView::Helpers::JavaScriptHelper                                 # u.a. zur Nutzung von escape_javascript(j) im Controllern
+  include ApplicationHelper # Erweiterung der Controller um Helper-Methoden des GUI's
 
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
@@ -15,9 +16,11 @@ class ApplicationController < ActionController::Base
   # cross site scripting verhindern, ausser fuer Tests
   protect_from_forgery with: :null_session unless Rails.env.test?
 
-  # force_ssl
-
-  include ApplicationHelper # Erweiterung der Controller um Helper-Methoden des GUI's
+  # content security policy is defined in config/initializers/content_security_policy.rb
+  # get request-specific nonce to allow inline script in templates
+  def csp_nonce
+    request.content_security_policy_nonce
+  end
 
   before_action :begin_request # , :except -Liste wird direkt in begin_request gehandelt
   after_action  :after_request
@@ -54,6 +57,7 @@ class ApplicationController < ActionController::Base
   # Ausführung vor jeden Request
   def begin_request
     check_params_4_vulnerability(params)
+
     begin
       if get_locale(suppress_non_existing_error: true)
         I18n.locale = get_locale                                                # fuer laufende Action Sprache aktivieren
@@ -127,7 +131,6 @@ class ApplicationController < ActionController::Base
 
   # Aktivitäten nach Requestbearbeitung
   def after_request
-    response.set_header('content-security-policy', "frame-ancestors 'none'")    # suppress embedding in iFrame
     PanoramaConnection.release_connection # Free DB connection
   end
 
@@ -180,16 +183,32 @@ class ApplicationController < ActionController::Base
   # Check request parameters for possibly vulnerable content / XSS
   EVIL_PARAM_CONTENT = ['<SCRIPT', '&lt;SCRIPT']
   def check_params_4_vulnerability(parameters)
+    raise "ApplicationController.check_params_4_vulnerability: Wrong class '#{parameters.class}' for parameters" unless parameters.is_a?(Hash) || parameters.is_a?(ActionController::Parameters)
+
+    check_string = proc do |param_key, param_value|
+      norm_param = param_value.upcase.delete(" \t\r\n")
+      EVIL_PARAM_CONTENT.each do |evil|
+        Rails.logger.error('ApplicationController.check_params_4_vulnerability'){ "Evil content detected for parameter '#{param_key}' with content '#{param_value}'"}
+        raise "Not supported parameter content detected" if norm_param[evil]
+      end
+    end
+
     parameters.keys.each do |k|
-      if parameters[k].class == ActionController::Parameters
-        check_params_4_vulnerability(parameters[k])                                 # nested parameters
-      else                                                                      # single string parameter
-        unless parameters[k].nil?
-          norm_param = parameters[k].upcase.delete(" \t\r\n")
-          EVIL_PARAM_CONTENT.each do |evil|
-            raise "Not supported parameter content detected" if norm_param[evil]
+      case parameters[k].class.name
+      when 'ActionController::Parameters' then check_params_4_vulnerability(parameters[k]) # nested parameters
+      when 'String'                       then check_string.call(k, parameters[k])
+      when 'NilClass'                     then # nothing
+      when 'Array'                        then
+        parameters[k].each do |p|
+          case p.class.name
+          when 'String'                       then check_string.call(k, p)
+          when 'ActionController::Parameters' then check_params_4_vulnerability(p) # recursive check
+          else
+            raise "ApplicationController.check_params_4_vulnerability: Unsupported class '#{p.class}' for parameter array element '#{p}'"
           end
         end
+      else
+        raise "ApplicationController.check_params_4_vulnerability: Unsupported class '#{parameters[k].class}' for parameter '#{parameters[k]}'"
       end
     end
   end
