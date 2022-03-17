@@ -119,7 +119,8 @@ class DbaSgaController < ApplicationController
                     s.PARSE_CALLS, s.SORTS, s.LOADS,
                     s.ROWS_PROCESSED,
                     s.Rows_Processed / DECODE(s.EXECUTIONS, 0, 1, s.EXECUTIONS) Rows_Processed_PER_EXECUTE,
-                    100 * (s.Buffer_Gets - s.Disk_Reads) / GREATEST(s.Buffer_Gets, 1) Hit_Ratio,
+                    CASE WHEN s.Buffer_Gets > 0 AND s.Disk_Reads < s.Buffer_Gets THEN
+                    100 * (s.Buffer_Gets - s.Disk_Reads) / GREATEST(s.Buffer_Gets, 1) END Hit_Ratio,
                     TO_DATE(s.First_Load_Time, 'YYYY-MM-DD/HH24:MI:SS') First_Load_Time,
                     s.SHARABLE_MEM, s.PERSISTENT_MEM, s.RUNTIME_MEM,
                     ROUND(s.CPU_TIME / 1000000, 3) CPU_TIME_SECS,
@@ -191,7 +192,8 @@ class DbaSgaController < ApplicationController
                 s.PARSE_CALLS, s.SORTS,
                 s.Loads, s.Locked_Total, s.Pinned_Total,
                 s.ROWS_PROCESSED, s.Invalidations,
-                100 * (s.Buffer_Gets - s.Disk_Reads) / GREATEST(s.Buffer_Gets, 1) Hit_Ratio,
+                CASE WHEN s.Buffer_Gets > 0 AND s.Disk_Reads < s.Buffer_Gets THEN
+                100 * (s.Buffer_Gets - s.Disk_Reads) / GREATEST(s.Buffer_Gets, 1) END Hit_Ratio,
                 TO_DATE(s.First_Load_Time, 'YYYY-MM-DD/HH24:MI:SS') First_Load_Time,
                 TO_DATE(s.Last_Load_Time, 'YYYY-MM-DD/HH24:MI:SS') Last_Load_Time,
                 s.SHARABLE_MEM, s.PERSISTENT_MEM, s.RUNTIME_MEM,

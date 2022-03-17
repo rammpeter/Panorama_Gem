@@ -122,7 +122,7 @@ end
             </tr>
           <% end %>
           <tr title="<%= t(:dba_sga_list_sql_sga_stat_last_active_hint, :default=>'End of last execution of SQL') %>">            <td>Last Active Time</td><td align="center"><%= localeDateTime(@sql.last_active_time) %></td>        </tr>
-          <tr title="<%= t(:dba_sga_list_sql_sga_stat_hit_ration_hint, :default=>'Ratio cache hits to buffer gets') %>">            <td>Buffer cache hit ratio</td><td align="center"><%= fn(@sql.hit_ratio, 2) %> %</td>        </tr>
+          <tr title="<%= t(:dba_sga_list_sql_sga_stat_hit_ration_hint, :default=>"Ratio cache hits to buffer gets\n\nEmpty if not valid calculation possible.") %>">            <td>Buffer cache hit ratio</td><td align="center"><%= fn(@sql.hit_ratio, 2) %> %</td>        </tr>
         </table>
 
         <table style="font-size:small; width: 100%;">

@@ -429,7 +429,8 @@ class DbaHistoryController < ApplicationController
                  SUM(Sorts_Delta)                   Sorts,
                  SUM(Loads_Delta)                   Loads,
                  SUM(Invalidations_Delta)           Invalidations,
-                 100 * (SUM(s.Buffer_Gets_Delta) - SUM(s.Disk_Reads_Delta)) / GREATEST(SUM(s.Buffer_Gets_Delta), 1) Hit_Ratio,
+                 CASE WHEN SUM(s.Buffer_Gets_Delta) > 0 AND SUM(s.Disk_Reads_Delta) < SUM(s.Buffer_Gets_Delta) THEN
+                 100 * (SUM(s.Buffer_Gets_Delta) - SUM(s.Disk_Reads_Delta)) / GREATEST(SUM(s.Buffer_Gets_Delta), 1) END Hit_Ratio,
                  SUM(Elapsed_Time_Delta)/1000000    Elapsed_Time_Secs,
                  SUM(ELAPSED_TIME_Delta/1000000) / DECODE(SUM(EXECUTIONS_Delta), 0, 1, SUM(EXECUTIONS_Delta)) ELAPSED_TIME_SECS_PER_EXECUTE,
                  SUM(CPU_Time_Delta)/1000000        CPU_Time_Secs,
@@ -923,7 +924,8 @@ class DbaHistoryController < ApplicationController
              SUM(CCWait_Delta)      /1000000    Concurrency_Wait_Time_secs,
              SUM(IOWait_Delta)      /1000000    User_IO_Wait_Time_secs,
              SUM(PLSExec_Time_Delta)/1000000    PLSQL_Exec_Time_secs,
-             100 * (SUM(s.Buffer_Gets_Delta) - SUM(s.Disk_Reads_Delta)) / GREATEST(SUM(s.Buffer_Gets_Delta), 1) Hit_Ratio,
+             CASE WHEN SUM(s.Buffer_Gets_Delta) > 0 AND SUM(s.Disk_Reads_Delta) < SUM(s.Buffer_Gets_Delta) THEN
+             100 * (SUM(s.Buffer_Gets_Delta) - SUM(s.Disk_Reads_Delta)) / GREATEST(SUM(s.Buffer_Gets_Delta), 1) END Hit_Ratio,
              MIN(s.Snap_ID)                     Min_Snap_ID,
              MAX(s.Snap_ID)                     Max_Snap_ID
       FROM  (SELECT  /*+ ORDERED */ s.DBID, s.Instance_Number, NVL(StartMin, StartMax) Start_Snap_ID, NVL(EndMax, EndMin) End_Snap_ID,
