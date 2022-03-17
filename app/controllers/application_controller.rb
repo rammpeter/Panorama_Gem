@@ -188,8 +188,10 @@ class ApplicationController < ActionController::Base
     check_string = proc do |param_key, param_value|
       norm_param = param_value.upcase.delete(" \t\r\n")
       EVIL_PARAM_CONTENT.each do |evil|
-        Rails.logger.error('ApplicationController.check_params_4_vulnerability'){ "Evil content detected for parameter '#{param_key}' with content '#{param_value}'"}
-        raise "Not supported parameter content detected" if norm_param[evil]
+        if norm_param[evil]
+          Rails.logger.error('ApplicationController.check_params_4_vulnerability'){ "Evil content detected for parameter '#{param_key}' with content '#{param_value}'"}
+          raise "Not supported parameter content detected"
+        end
       end
     end
 
