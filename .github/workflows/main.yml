@@ -46,6 +46,7 @@ jobs:
         source $HOME/.rvm/scripts/rvm
         bundle --version
         pwd
+        bundle config set deployment 'true'
         bundle install
 
     # create encypted wallet zip file to store in repository, add passphrase
