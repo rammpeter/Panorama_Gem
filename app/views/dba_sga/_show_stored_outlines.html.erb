@@ -1,6 +1,4 @@
 <%
-   @update_area = get_unique_area_id
-
    column_options = [
        {:caption=>"Name",          :data=>proc{|rec| rec.name},                            :title=>"Name of the outline"},
        {:caption=>"Owner",         :data=>proc{|rec| rec.owner},                           :title=>"User who created the outline"},
@@ -19,5 +17,3 @@
 <%=
     gen_slickgrid(@outlines, column_options, :caption => @caption, :max_height=>450, show_pin_icon: 1) if !@single_sql || @outlines.count > 0
 %>
-
-<div id="<%= @update_area %>"></div>

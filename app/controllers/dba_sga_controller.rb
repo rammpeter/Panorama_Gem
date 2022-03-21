@@ -930,7 +930,38 @@ class DbaSgaController < ApplicationController
 
     # Konkrete Objekte im Cache
     @objects = sql_select_all ["
-      SELECT /*+ RULE */ /* Panorama-Tool Ramm */
+      WITH BH AS (SELECT /*+ NO_MERGE MATERIALIZE*/
+                         ObjD, TS#,
+                         Count(*) Blocks,
+                         SUM(DECODE(Dirty,'Y',1,0))  DirtyBlocks,
+                         SUM(DECODE(Temp,'Y',1,0))   TempBlocks,
+                         SUM(DECODE(Ping,'Y',1,0))   Ping,
+                         SUM(DECODE(Stale,'Y',1,0))  Stale,
+                         SUM(DECODE(Direct,'Y',1,0)) Direct,
+                         SUM(Forced_Reads)           Forced_Reads,
+                         SUM(Forced_Writes)          Forced_Writes,
+                         SUM(DECODE(Status, 'cr', 1, 0))    Status_cr,
+                         SUM(DECODE(Status, 'pi', 1, 0))    Status_pi,
+                         SUM(DECODE(Status, 'read', 1, 0))    Status_read,
+                         SUM(DECODE(Status, 'scur', 1, 0))    Status_scur,
+                         SUM(DECODE(Status, 'xcur', 1, 0))    Status_xcur
+                  FROM   GV$BH
+                  WHERE  Status != 'free'  /* dont show blocks of truncated tables */
+                  AND   Inst_ID = ?
+                  GROUP BY ObjD, TS#
+      ),
+      Plan_SQLs AS (SELECT /*+ NO_MERGE MATERIALIZE */ o.Owner, o.Object_Name, COUNT(DISTINCT p.SQL_ID) SQL_ID_Count
+                           FROM   gv$SQL_Plan p
+                           JOIN   DBA_Objects o ON o.Object_ID = p.Object#
+                           WHERE  p.Object# IS NOT NULL
+                           AND    p.Inst_ID = ?
+                           GROUP BY o.Owner, o.Object_Name
+                   ),
+      Tablespaces AS (SELECT /*+ NO_MERGE MATERIALIZE */ t.ts#, t.Name, d.Block_Size BlockSize
+                             FROM   v$Tablespace t
+                             JOIN   DBA_Tablespaces d ON d.Tablespace_Name = t.Name
+                     )
+      SELECT /* Panorama-Tool Ramm */
              NVL(o.Owner,'[UNKNOWN]') Owner,
              NVL(o.Object_Name,'TS='||ts.Name) Object_Name,
              #{@show_partitions=="1" ? "o.SubObject_Name" : "''"} SubObject_Name,
@@ -953,38 +984,10 @@ class DbaSgaController < ApplicationController
              SUM(Status_read)    Status_read,
              SUM(Status_scur)    Status_scur,
              SUM(Status_xcur)    Status_xcur
-      FROM   (SELECT /*+ NO_MERGE */
-                     ObjD, TS#,
-                     Count(*) Blocks,
-                     SUM(DECODE(Dirty,'Y',1,0))  DirtyBlocks,
-                     SUM(DECODE(Temp,'Y',1,0))   TempBlocks,
-                     SUM(DECODE(Ping,'Y',1,0))   Ping,
-                     SUM(DECODE(Stale,'Y',1,0))  Stale,
-                     SUM(DECODE(Direct,'Y',1,0)) Direct,
-                     SUM(Forced_Reads)           Forced_Reads,
-                     SUM(Forced_Writes)          Forced_Writes,
-                     SUM(DECODE(Status, 'cr', 1, 0))    Status_cr,
-                     SUM(DECODE(Status, 'pi', 1, 0))    Status_pi,
-                     SUM(DECODE(Status, 'read', 1, 0))    Status_read,
-                     SUM(DECODE(Status, 'scur', 1, 0))    Status_scur,
-                     SUM(DECODE(Status, 'xcur', 1, 0))    Status_xcur
-              FROM   GV$BH
-              WHERE  Status != 'free'  /* dont show blocks of truncated tables */
-              AND   Inst_ID = ?
-              GROUP BY ObjD, TS#
-             ) BH
-      LEFT OUTER JOIN DBA_Objects o ON o.Data_Object_ID = bh.ObjD
-      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ t.ts#, t.Name, d.Block_Size BlockSize
-                       FROM   v$Tablespace t
-                       JOIN   DBA_Tablespaces d ON d.Tablespace_Name = t.Name
-                      ) ts ON ts.TS# = bh.TS#
-      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ o.Owner, o.Object_Name, COUNT(DISTINCT p.SQL_ID) SQL_ID_Count
-                       FROM   gv$SQL_Plan p
-                       JOIN   DBA_Objects o ON o.Object_ID = p.Object#
-                       WHERE  p.Object# IS NOT NULL
-                       AND    p.Inst_ID = ?
-                       GROUP BY o.Owner, o.Object_Name
-                      ) sqls ON sqls.Owner = o.Owner AND sqls.Object_Name = o.Object_Name
+      FROM   BH
+      LEFT OUTER JOIN DBA_Objects o  ON o.Data_Object_ID = bh.ObjD
+      LEFT OUTER JOIN Tablespaces ts ON ts.TS# = bh.TS#
+      LEFT OUTER JOIN Plan_SQLs sqls ON sqls.Owner = o.Owner AND sqls.Object_Name = o.Object_Name
       GROUP BY NVL(o.Owner,'[UNKNOWN]'), NVL(o.Object_Name,'TS='||ts.Name)#{@show_partitions=="1" ? ", o.SubObject_Name" : ""}
       ORDER BY 7 DESC", @instance, @instance]
     @total_blocks = 0                  # Summation der Blockanzahl des Caches
@@ -1615,8 +1618,10 @@ class DbaSgaController < ApplicationController
         sql_select_one(["SELECT COUNT(*) FROM DBA_SQL_Plan_Baselines b #{where_string}"].concat(where_values)) == 0
       @baselines = []                                                           # Suppress long running SQL if there is no result
     else
-      @baselines = sql_select_all ["SELECT b.*, em.SGA_Usages, em.SQL_ID, em.Inst_ID, NVL(so.comp_data_count, 0) comp_data_count
+      @baselines = sql_select_all ["SELECT b.*, em.SGA_Usages, em.SQL_ID, em.Inst_ID,
+                                           #{ PanoramaConnection.autonomous_database? ? "NULL" : "NVL(so.comp_data_count, 0)" }  comp_data_count
                                     FROM   DBA_SQL_Plan_Baselines b
+                                    #{ "\
                                     LEFT OUTER JOIN (SELECT so.Name, so.Signature, COUNT(*) Comp_Data_Count
                                                      FROM   sys.SQLOBJ$ so
                                                      JOIN sys.sqlobj$data sod ON   sod.signature = so.signature
@@ -1626,6 +1631,8 @@ class DbaSgaController < ApplicationController
                                                       WHERE so.Obj_Type = 2 /* SQL plan baseline */
                                                       GROUP BY so.Name, so.Signature
                                                     ) so ON so.Name = b.Plan_Name AND so.Signature = b.Signature
+                                      " unless PanoramaConnection.autonomous_database?
+                                    }
                                     LEFT OUTER JOIN   (SELECT /*+ NO_MERGE */ SQL_Plan_Baseline, COUNT(*) SGA_Usages,
                                                               MIN(SQL_ID) SQL_ID,
                                                               MIN(Inst_ID) KEEP (DENSE_RANK FIRST ORDER BY SQL_ID) Inst_ID /* Inst_ID according to MIN(SQL_ID) */

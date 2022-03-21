@@ -1,5 +1,9 @@
 <%
-  @update_area = get_unique_area_id
+  if prepare_param(:update_area_for_target)
+    @update_area = prepare_param(:update_area_for_target)                       # target DIV already exists, don't create an own div
+  else
+    @update_area = get_unique_area_id                                           # no target div given, create my own
+  end
 
   def list_sql_text(rec)
     ajax_link(rec.sql_text.html_safe,
@@ -58,4 +62,6 @@
   gen_slickgrid(@translations, column_options, :caption => caption, :max_height=>450, show_pin_icon: 1) if @translated_sql_id.nil? || @translations.count > 0
 %>
 
-<div id="<%= @update_area %>"></div>
+<% unless prepare_param(:update_area_for_target) %>
+  <div id="<%= @update_area %>"></div>
+<% end %>

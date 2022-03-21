@@ -1,5 +1,9 @@
 <%
-   @update_area = get_unique_area_id
+  if prepare_param(:update_area_for_target)
+    @update_area = prepare_param(:update_area_for_target)                       # target DIV already exists, don't create an own div
+  else
+    @update_area = get_unique_area_id                                           # no target div given, create my own
+  end
 
    link_sql_text = proc do |rec|
      ajax_link(rec.sql_text[0, 30], {
@@ -18,7 +22,7 @@
 
   link_comp_data = proc do |rec|
     data = "<&nbsp;#{rec.comp_data_count}&nbsp;>".html_safe
-    if rec.comp_data_count > 0
+    if !rec.comp_data_count.nil? && rec.comp_data_count > 0
       ajax_link(data, {
                          :controller    => :dba_sga,
                          :action        => :list_plan_baseline_hints,
@@ -64,7 +68,7 @@
     {:caption=>'Optim. costs',  :data=>proc{|rec| fn(rec.optimizer_cost)},              :title=>"Optimizer cost at the time the plan baseline was created", :align=>:right },
     {:caption=>'Usages in SGA', :data=>link_sql_id,                                     :title=>"Number of current usage of this baseline in SGA (by gv$SQLArea.SQL_Plan_Baseline)\nand SQL-ID of one usage", :align=>:right },
     {:caption=>"SQL",           :data=>link_sql_text,                                   :title=>"Un-normalized SQL text (first 30 characters)" },
-    {:caption=>"Hints",         :data=>link_comp_data,                                  :title=>"Number of optimizer-hints of plan baseline" },
+    {:caption=>"Hints",         :data=>link_comp_data,                                  :title=>"Number of optimizer-hints of plan baseline\n\nRequires access on sys.SQLObj$Data which is not possible in autonomous DB" },
     {:caption=>'Module',        :data=>proc{|rec| rec.module},                          :title=>"Module at plan create" },
     {:caption=>'Action',        :data=>proc{|rec| rec.action},                          :title=>"Action at plan create" },
     {:caption=>"Executions",    :data=>proc{|rec| fn(rec.executions)},                  :title=>"Number of executions at the time the plan baseline was created", :align=>:right },
@@ -84,4 +88,6 @@
   gen_slickgrid(@baselines, column_options, :caption => caption, :max_height=>450, show_pin_icon: 1) if @force_matching_signature.nil? || @baselines.count > 0
 %>
 
+<% unless prepare_param(:update_area_for_target) %>
 <div id="<%= @update_area %>"></div>
+<% end %>

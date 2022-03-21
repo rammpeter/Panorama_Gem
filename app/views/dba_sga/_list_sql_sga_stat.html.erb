@@ -175,7 +175,6 @@ end
   render_async(:dba_sga, :show_stored_outlines, {
       force_matching_signature: @sql.force_signature,
       exact_matching_signature: @sql.exact_signature,
-      update_area:              @update_area
   })
 %>
 
@@ -184,7 +183,7 @@ end
       force_matching_signature: @sql.force_signature,
       exact_matching_signature: @sql.exact_signature,
       sql_profile:              @sql.sql_profile,
-      update_area:              @update_area
+      update_area_for_target:   @update_area
   })
 %>
 
@@ -194,7 +193,7 @@ end
     render_async(:dba_sga, :show_plan_baselines, {
         force_matching_signature: @sql.force_signature,
         exact_matching_signature: @sql.exact_signature,
-        update_area:              @update_area
+        update_area_for_target:   @update_area
     })
   %>
 <% end %>
@@ -204,7 +203,7 @@ end
   <%=
     render_async(:dba_sga, :show_sql_translations, {
         translated_sql_id:  @sql_id,
-        update_area:        @update_area
+        update_area_for_target:   @update_area
     })
   %>
 <% end %>
@@ -214,7 +213,7 @@ end
     render_async(:dba_sga, :show_sql_patches, {
         exact_signature:    @sql.exact_signature,
         force_signature:    @sql.force_signature,
-        update_area:        @update_area
+        update_area_for_target:   @update_area
     })
   %>
 <% end %>

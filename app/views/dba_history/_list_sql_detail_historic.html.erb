@@ -114,7 +114,7 @@ Hash-value over total optimizer environment + Number of different optimizer envi
     render_async(:dba_sga, :show_profiles, {
         force_matching_signature: @sql.force_matching_signature,
         exact_matching_signature: @exact_matching_signature,
-        update_area:              @update_area
+        update_area_for_target:   @update_area
     })
   end
 %>
@@ -125,7 +125,7 @@ Hash-value over total optimizer environment + Number of different optimizer envi
     render_async(:dba_sga, :show_stored_outlines, {
         force_matching_signature: @sql.force_matching_signature,
         exact_matching_signature: @exact_matching_signature,
-        update_area:              @update_area
+        update_area_for_target:   @update_area
     })
   end
 %>
@@ -137,7 +137,7 @@ Hash-value over total optimizer environment + Number of different optimizer envi
       render_async(:dba_sga, :show_plan_baselines, {
           force_matching_signature: @sql.force_matching_signature,
           exact_matching_signature: @exact_matching_signature,
-          update_area:              @update_area
+          update_area_for_target:   @update_area
       })
     end
   %>
@@ -146,8 +146,8 @@ Hash-value over total optimizer environment + Number of different optimizer envi
 <% if get_db_version >= '12.1' %>
   <%=
     render_async(:dba_sga, :show_sql_translations, {
-        translated_sql_id:  @sql_id,
-        update_area:        @update_area
+        translated_sql_id:      @sql_id,
+        update_area_for_target: @update_area
     })
   %>
 <% end %>
@@ -156,9 +156,9 @@ Hash-value over total optimizer environment + Number of different optimizer envi
   <%=
     if @sql.force_matching_signature || @exact_matching_signature
       render_async(:dba_sga, :show_sql_patches, {
-          force_signature: @sql.force_matching_signature,
-          exact_signature: @exact_matching_signature,
-          update_area:     @update_area
+          force_signature:        @sql.force_matching_signature,
+          exact_signature:        @exact_matching_signature,
+          update_area_for_target: @update_area
       })
     end
   %>
