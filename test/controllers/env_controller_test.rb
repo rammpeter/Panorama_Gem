@@ -34,14 +34,14 @@ class EnvControllerTest <  ActionDispatch::IntegrationTest
     post '/env/list_services', :params => {:format=>:html }
     assert_response :success
 
-    post '/env/list_services', :params => {:format=>:html, instance: 1 }
+    post '/env/list_services', :params => {:format=>:html, instance: PanoramaConnection.instance_number }
     assert_response :success
 
     if get_db_version >= '12.1'
       post '/env/list_services', :params => {:format=>:html, pdb_name: 'ORCLPDB1' }
       assert_response :success
 
-      post '/env/list_services', :params => {:format=>:html, instance: 1, pdb_name: 'ORCLPDB1' }
+      post '/env/list_services', :params => {:format=>:html, instance: PanoramaConnection.instance_number, pdb_name: 'ORCLPDB1' }
       assert_response :success
     end
   end

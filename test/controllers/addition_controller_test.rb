@@ -52,7 +52,7 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     post '/addition/list_blocking_locks_history_hierarchy_detail', :params => { :format=>:html,
-         :blocking_instance => 1,
+         :blocking_instance => PanoramaConnection.instance_number,
          :blocking_sid => 1,
          :blocking_serial_no => 1,
          :snapshot_timestamp =>"01.01.2011 00:00:00",
@@ -82,7 +82,7 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
       get '/addition/list_db_cache_historic_detail', :params => { :format               =>:html,
                                                                   :time_selection_start =>"01.01.2011 00:00",
                                                                   :time_selection_end   =>"01.01.2011 01:00",
-                                                                  :instance             => 1,
+                                                                  :instance             => PanoramaConnection.instance_number,
                                                                   :owner                => "sysp",
                                                                   :name                 => "Employee",
                                                                   show_partitions:      show_partitions,
@@ -108,7 +108,7 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
     [nil,1].each do |show_partitions|
       get '/addition/list_db_cache_historic_snap', :params => { :format=>:html,
                                                                 :snapshot_timestamp =>"01.01.2011 00:00",
-                                                                :instance  => "1",
+                                                                :instance  => PanoramaConnection.instance_number,
                                                                 show_partitions: show_partitions,
                                                                 :update_area=>:hugo } if get_db_version >= '11.2'
       assert_response :success
