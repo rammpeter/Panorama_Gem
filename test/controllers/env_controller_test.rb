@@ -3,11 +3,11 @@ require 'test_helper'
 include MenuHelper
 include ActionView::Helpers::TranslationHelper
 
-#class EnvControllerTest < ActionController::TestCase
 class EnvControllerTest <  ActionDispatch::IntegrationTest
 
   setup do
     set_session_test_db_context
+    @instance = PanoramaConnection.instance_number
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
@@ -34,14 +34,14 @@ class EnvControllerTest <  ActionDispatch::IntegrationTest
     post '/env/list_services', :params => {:format=>:html }
     assert_response :success
 
-    post '/env/list_services', :params => {:format=>:html, instance: PanoramaConnection.instance_number }
+    post '/env/list_services', :params => {:format=>:html, instance: @instance }
     assert_response :success
 
     if get_db_version >= '12.1'
       post '/env/list_services', :params => {:format=>:html, pdb_name: 'ORCLPDB1' }
       assert_response :success
 
-      post '/env/list_services', :params => {:format=>:html, instance: PanoramaConnection.instance_number, pdb_name: 'ORCLPDB1' }
+      post '/env/list_services', :params => {:format=>:html, instance: @instance, pdb_name: 'ORCLPDB1' }
       assert_response :success
     end
   end
