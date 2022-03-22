@@ -750,7 +750,7 @@ module ApplicationHelper
   end
 
   # Ermitteln der Min- und Max-Abgrenzungen auf Basis Snap_ID für Zeitraum über alle Instanzen hinweg
-  def get_min_max_snap_ids(time_selection_start, time_selection_end, dbid)
+  def get_min_max_snap_ids(time_selection_start, time_selection_end, dbid, raise_if_not_found: false)
     min_snap_id = sql_select_one ["SELECT /*+ Panorama-Tool Ramm */ MIN(Snap_ID)
                                     FROM   (SELECT MAX(Snap_ID) Snap_ID
                                             FROM   DBA_Hist_Snapshot
@@ -786,6 +786,9 @@ module ApplicationHelper
     end
     Rails.logger.debug "No snapshot found in #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')} for DBID=#{dbid}!" if min_snap_id.nil?
     Rails.logger.debug "No snapshot found in #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')} for DBID=#{dbid}!" if max_snap_id.nil?
+    if raise_if_not_found && (@min_snap_id.nil? || @max_snap_id.nil?)
+      raise "No AWR snapshot found for DBID=#{@dbid} in table #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')}\nMin. Snap_ID = #{@min_snap_id}, max. Snap_ID = #{@max_snap_id}"
+    end
     return min_snap_id, max_snap_id
   end
 
