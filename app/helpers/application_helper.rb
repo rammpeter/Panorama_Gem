@@ -786,8 +786,8 @@ module ApplicationHelper
     end
     Rails.logger.debug "No snapshot found in #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')} for DBID=#{dbid}!" if min_snap_id.nil?
     Rails.logger.debug "No snapshot found in #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')} for DBID=#{dbid}!" if max_snap_id.nil?
-    if raise_if_not_found && (@min_snap_id.nil? || @max_snap_id.nil?)
-      raise "No AWR snapshot found for DBID=#{@dbid} in table #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')}\nMin. Snap_ID = #{@min_snap_id}, max. Snap_ID = #{@max_snap_id}"
+    if raise_if_not_found && (min_snap_id.nil? || max_snap_id.nil?)
+      raise "No AWR snapshot found for DBID=#{dbid} in table #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')}\nMin. Snap_ID = #{min_snap_id}, max. Snap_ID = #{max_snap_id}"
     end
     return min_snap_id, max_snap_id
   end
