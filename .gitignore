@@ -1,6 +1,7 @@
 .idea/
 coverage/*
 Panorama.war
+secret_key_base
 client_info.store/*
 .bundle/
 log/*.log
