@@ -21,13 +21,9 @@ class DbaGeneralPwTest < PlaywrightSystemTestCase
     page.click '#button_dml_locks:visible'
     unless assert_ajax_success_and_test_for_access_denied                       # Error dialog for "Access denied" called?
       assert_text 'DML Database locks (from GV$Lock)'                           # Check only if not error "Access denied" raised before
-      slick_cell = page.query_selector('.slick-cell, .l0, .r0:visible')
-      href = slick_cell.query_selector('a:visible')
-      unless href.nil?                                                          # Session may not exists anymore
-        puts href.inspect
-        Dir.mkdir("#{Rails.root}/tmp/screenshots") unless File.exists?("#{Rails.root}/tmp/screenshots")
-        page.screenshot(path: "#{Rails.root}/tmp/screenshots/peter.png")
-        href.click
+      session_link_selector = '.slick-cell.l0.r0 a:visible'
+      unless page.query_selector(session_link_selector)                         # Session may not exists anymore
+        page.click(session_link_selector)
         assert_ajax_success
         assert_text 'Details for session SID='
       else
