@@ -21,8 +21,8 @@ class DbaGeneralPwTest < PlaywrightSystemTestCase
     page.click '#button_dml_locks'
     unless assert_ajax_success_and_test_for_access_denied                       # Error dialog for "Access denied" called?
       assert_text 'DML Database locks (from GV$Lock)'                           # Check only if not error "Access denied" raised before
-      slick_cell = page.query_selector('.slick-cell, .l0, .r0')
-      href = slick_cell.query_selector('a')
+      slick_cell = page.query_selector('.slick-cell, .l0, .r0:visible')
+      href = slick_cell.query_selector('a:visible')
       unless href.nil?                                                          # Session may not exists anymore
         href.click
         assert_ajax_success
