@@ -22,7 +22,19 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
   end
 
   def teardown
-    # TODO: Screenshot at exception
+    unless self.passed?
+      unless @@pw_page.nil?
+        screenshot_dir = "#{Rails.root}/tmp/screenshots"
+        Dir.mkdir(screenshot_dir) unless File.exists?(screenshot_dir)
+        filename = method_name.clone
+        filename.gsub!(/\//, '_') if filename['/']
+        filepath = "#{screenshot_dir}/#{filename}.png"
+        @@pw_page.screenshot(path: filepath)
+        Rails.logger.debug(PlaywrightSystemTestCase.teardown){"Screenshot created at '#{filepath}'"}
+      else
+        Rails.logger.error(PlaywrightSystemTestCase.teardown){"Screenshot not possible because @@pw_page not initialized"}
+      end
+    end
     super
   end
 
@@ -37,7 +49,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
       playwright = Playwright.create(playwright_cli_executable_path: 'npx playwright')
       @@pw_browser  = playwright.playwright.chromium.launch(headless: RbConfig::CONFIG['host_os'] != 'darwin')
       @@pw_page = @@pw_browser.new_page(viewport: { width: 800, height: 500 })
-      @@pw_page.set_default_timeout(30000)
+      @@pw_page.set_default_timeout(60000)
       @@pw_page.goto("http://#{host}:#{port}")
       do_login
 

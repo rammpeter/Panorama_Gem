@@ -23,18 +23,14 @@ class DbaGeneralPwTest < PlaywrightSystemTestCase
       assert_text 'DML Database locks (from GV$Lock)'                           # Check only if not error "Access denied" raised before
       slick_cell = page.query_selector('.slick-cell, .l0, .r0')
       href = slick_cell.query_selector('a')
-      href.click
-      # assert_text 'Details for session SID='                                  # Session may not exists anymore
+      unless href.nil?                                                          # Session may not exists anymore
+        href.click
+        assert_ajax_success
+        assert_text 'Details for session SID='
+      else
+        Rails.logger.debug('DbaGeneralPwTest.DB-Locks / current'){"No session found with DML locks for test"}
+      end
     end
-
-
-    # Click on Module removes title
-    #    click_first_xpath_hit("//div[contains(@class, 'slick-inner-cell') and contains(@row, '0') and contains(@column, 'col2')]",
-    #                          'click first row column "Module" in grid')
-
-    # Action is not always set
-    #    click_first_xpath_hit("//div[contains(@class, 'slick-inner-cell') and contains(@row, '0') and contains(@column, 'col3')]",
-    #                          'click first row column "Action" in grid')
 
     page.click '#button_blocking_dml_locks'
     unless assert_ajax_success_and_test_for_access_denied                       # Error dialog for "Access denied" called?
