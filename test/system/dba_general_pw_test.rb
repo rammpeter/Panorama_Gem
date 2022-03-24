@@ -25,6 +25,7 @@ class DbaGeneralPwTest < PlaywrightSystemTestCase
       href = slick_cell.query_selector('a:visible')
       unless href.nil?                                                          # Session may not exists anymore
         puts href.inspect
+        Dir.mkdir("#{Rails.root}/tmp/screenshots") unless File.exists?("#{Rails.root}/tmp/screenshots")
         page.screenshot(path: "#{Rails.root}/tmp/screenshots/peter.png")
         href.click
         assert_ajax_success
