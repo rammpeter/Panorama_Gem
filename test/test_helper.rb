@@ -17,7 +17,6 @@ require 'fileutils'
 # Load own helpers
 require File.expand_path("../../lib/test_helpers/oracle_connection_test_helper.rb", __FILE__)       # requires config/environment.rb loaded
 require File.expand_path("../../lib/test_helpers/menu_test_helper.rb", __FILE__)
-require File.expand_path("../../lib/test_helpers/application_system_test_case", __FILE__)
 require File.expand_path("../../lib/test_helpers/panorama_test_config.rb", __FILE__)
 
 require File.expand_path("../../lib/test_helpers/playwright_system_test_case", __FILE__)

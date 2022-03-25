@@ -11,8 +11,6 @@ npx playwright install
 
 class PlaywrightSystemTestCase < ActiveSupport::TestCase
 
-
-
   def setup
     set_session_test_db_context
     set_I18n_locale('en')
@@ -48,8 +46,8 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
       pw_puma_server.run
       playwright = Playwright.create(playwright_cli_executable_path: 'npx playwright')
       @@pw_browser  = playwright.playwright.chromium.launch(headless: RbConfig::CONFIG['host_os'] != 'darwin')
-      @@pw_page = @@pw_browser.new_page(viewport: { width: 800, height: 500 })
-      @@pw_page.set_default_timeout(60000)
+      @@pw_page = @@pw_browser.new_page(viewport: { width: 800, height: 600 })
+      @@pw_page.set_default_timeout(10000)
       @@pw_page.goto("http://#{host}:#{port}")
       do_login
 
@@ -84,30 +82,45 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
 
     page.query_selector('#database_user').fill(test_config[:user])
     page.query_selector('#database_password').fill(test_config[:password_decrypted])
-    page.query_selector('#submit_login_dialog').click
+    page.click('#submit_login_dialog')
     page.wait_for_selector('#management_pack_license_diagnostics_pack')   # dialog shown
-    sleep(0.1)
     page.query_selector("#management_pack_license_#{management_pack_license}").check
-    page.query_selector('text="Acknowledge and proceed"').click
+    page.click('text="Acknowledge and proceed"')
     page.wait_for_selector('#main_menu')
   end
 
   # Call menu, last argument is DOM-ID of menu entry to click on
   # previous arguments are captions of submenus for hover to open submenu
-  def menu_call(*args)
-    if page.visible?('#main_menu >> #menu_node_0')                              #  menu 'Menu' if exists (small window width)
-      page.query_selector('#main_menu >> #menu_node_0').hover                   # Open first level menu under "Menu"
+  def menu_call(entries, retries: 0)
+    raise "Parameter entries should be of type Array, not #{entries.class}" unless entries.instance_of?(Array)
+    if page.visible?('#main_menu >> #menu_node_0')                              # menu 'Menu' if exists (small window width)
+      log_exception('menu_call: hover for #menu_node_0') do
+        page.hover('#main_menu >> #menu_node_0')                                # Open first level menu under "Menu"
+      end
     end
 
-    args.each_index do |i|
-      if i < args.length-1                                                      # SubMenu
-        submenu = page.query_selector("#main_menu >> .sf-with-ul >> text =\"#{args[i]}\"")
-        submenu.hover        # Expand menu node
+    entries.each_index do |i|
+      if i < entries.length-1                                                   # SubMenu
+        log_exception("menu_call: hover at submenu #{entries[i]}") do
+          page.hover("#main_menu >> .sf-with-ul >> text =\"#{entries[i]}\"", timeout: 2000) # Expand menu node
+        end
       else                                                                      # last argument is DOM-ID of menu entry to click on
-        page.query_selector("##{args[i]}").click                                # click menu
+        log_exception("menu_call: click at menu'#{entries[i]}'") do
+          page.click("##{entries[i]}", timeout: 2000)                           # click menu
+        end
       end
     end
     assert_ajax_success
+  rescue Exception=>e
+    if retries < 10
+      msg = "#{e.class}:#{e.message}: Starting #{retries+1}. retry"
+      puts msg
+      Rails.logger.warn("#{self.class}.menu_call"){ msg }
+      menu_call(entries, retries: retries+1)
+    else
+      raise
+    end
+
   end
 
   def wait_for_ajax(timeout_secs = 5)
@@ -150,7 +163,8 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
   end
 
   def error_dialog_open?
-    page.query_selector('#error_dialog:visible')
+    # Visibility of role="dialog" cannot be checked by playwright
+    page.evaluate("jQuery('#error_dialog').is(':visible')")
   end
 
   # accept error due to missing management pack license
@@ -189,5 +203,27 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
     end
   end
 
+  def close_possible_popup_message
+    # Visibility of role="dialog" cannot be checked by playwright
+    log_exception('close_possible_popup_message') do
+      page.evaluate("
+        if (jQuery('.ui-dialog-titlebar-close').length){
+          jQuery('.ui-dialog-titlebar-close').click();
+        }"
+      )
+    end
+  end
+
+
+  def log_exception(context)
+    yield
+  rescue Exception => e
+    msg = "#{e.class}:#{e.message}: at #{context}"
+    puts msg
+    Rails.logger.error("#{self.class}.log_exception"){ msg }
+    raise
+  end
+
+  private
 
 end

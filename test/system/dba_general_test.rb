@@ -1,9 +1,9 @@
 require "test_helper"
 
-class DbaGeneralPwTest < PlaywrightSystemTestCase
+class DbaGeneralTest < PlaywrightSystemTestCase
 
   test "Start page" do
-    menu_call('DBA general', 'menu_env_start_page')
+    menu_call(['DBA general', 'menu_env_start_page'])
     content = page.content
     assert content['Current database']
     assert content['Server versions']
@@ -14,7 +14,7 @@ class DbaGeneralPwTest < PlaywrightSystemTestCase
   end
 
   test "DB-Locks / current" do
-    menu_call('DBA general', 'DB-Locks', 'menu_dba_show_locks')
+    menu_call(['DBA general', 'DB-Locks', 'menu_dba_show_locks'])
     assert_ajax_success
     assert_text 'List current locks of different types'
 
@@ -27,7 +27,7 @@ class DbaGeneralPwTest < PlaywrightSystemTestCase
         assert_ajax_success
         assert_text 'Details for session SID='
       else
-        Rails.logger.debug('DbaGeneralPwTest.DB-Locks / current'){"No session found with DML locks for test"}
+        Rails.logger.debug('DbaGeneralTest.DB-Locks / current'){"No session found with DML locks for test"}
       end
     end
 
@@ -48,7 +48,7 @@ class DbaGeneralPwTest < PlaywrightSystemTestCase
   end
 
   test "DB-Locks / Blocking locks historic" do
-    menu_call('DBA general', 'DB-Locks', 'menu_active_session_history_show_blocking_locks_historic')
+    menu_call(['DBA general', 'DB-Locks', 'menu_active_session_history_show_blocking_locks_historic'])
     assert_ajax_success
 
     assert_text 'Blocking Locks from '

@@ -1,13 +1,9 @@
 require "test_helper"
 
-class SpecAdditionsTest < ApplicationSystemTestCase
-  setup do
-    set_session_test_db_context                                                 # Ensure existence of Panorama-Sampler tables at least
-  end
-
+class SpecAdditionsTest < PlaywrightSystemTestCase
   test "Dragnet investigation" do
     # Call menu entry
-    login_and_menu_call('Spec. additions', 'menu_dragnet_show_selection')
+    menu_call('Spec. additions', 'menu_dragnet_show_selection')
     assert_ajax_success
 
     assert_text 'Dragnet investigation for performance bottlenecks and usage of anti-pattern'
