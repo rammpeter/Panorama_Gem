@@ -3,7 +3,7 @@ require "test_helper"
 class SpecAdditionsTest < PlaywrightSystemTestCase
   test "Dragnet investigation" do
     # Call menu entry
-    menu_call('Spec. additions', 'menu_dragnet_show_selection')
+    menu_call(['Spec. additions', 'menu_dragnet_show_selection'])
     assert_ajax_success
 
     assert_text 'Dragnet investigation for performance bottlenecks and usage of anti-pattern'
