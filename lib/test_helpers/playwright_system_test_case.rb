@@ -113,9 +113,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
     assert_ajax_success
   rescue Exception=>e
     if retries < 10
-      msg = "#{e.class}:#{e.message}: Starting #{retries+1}. retry"
-      puts msg
-      Rails.logger.warn("#{self.class}.menu_call"){ msg }
+      Rails.logger.warn("#{self.class}.menu_call"){ "#{e.class}:#{e.message}: Starting #{retries+1}. retry" }
       menu_call(entries, retries: retries+1)
     else
       raise
@@ -218,9 +216,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
   def log_exception(context)
     yield
   rescue Exception => e
-    msg = "#{e.class}:#{e.message}: at #{context}"
-    puts msg
-    Rails.logger.error("#{self.class}.log_exception"){ msg }
+    Rails.logger.error("#{self.class}.log_exception"){ "#{e.class}:#{e.message}: at #{context}" }
     raise
   end
 
