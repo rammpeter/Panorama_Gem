@@ -68,23 +68,23 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
     # page.screenshot(path: '/tmp/playwright.png')
     #
     if test_config[:tns_or_host_port_sn] == :TNS
-      page.query_selector("#database_modus_tns").check
+      page.check("#database_modus_tns")
       page.select_option('#database_tns', value: test_config[:tns])
     else
-      page.query_selector("#database_modus_host").check
-      page.query_selector('#database_host').fill(test_config[:host])
+      page.check("#database_modus_host")
+      page.fill('#database_host', test_config[:host])
 
-      page.query_selector('#database_port').fill(test_config[:port])
+      page.fill('#database_port', test_config[:port])
 
-      page.query_selector('#database_sid_usage_SERVICE_NAME').check
-      page.query_selector('#database_sid').fill(test_config[:sid])
+      page.check('#database_sid_usage_SERVICE_NAME')
+      page.fill('#database_sid', test_config[:sid])
     end
 
-    page.query_selector('#database_user').fill(test_config[:user])
-    page.query_selector('#database_password').fill(test_config[:password_decrypted])
+    page.fill('#database_user', test_config[:user])
+    page.fill('#database_password', test_config[:password_decrypted])
     page.click('#submit_login_dialog')
     page.wait_for_selector('#management_pack_license_diagnostics_pack')   # dialog shown
-    page.query_selector("#management_pack_license_#{management_pack_license}").check
+    page.check("#management_pack_license_#{management_pack_license}")
     page.click('text="Acknowledge and proceed"')
     page.wait_for_selector('#main_menu')
   end
@@ -137,7 +137,6 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
 
     # Wait until indicator dialog becomes really unvisible
     loop_count = 0
-    #    sleep(0.1)                                                                  # Allow browser to update DOM after setting ajax_indicator invisible
     while page.query_selector('#ajax_indicator:visible') && loop_count < timeout_secs   # only visible elements evaluate to true in has_css?
       Rails.logger.info "wait_for_ajax: ajax_indicator is still visible, retrying..."
       sleep(0.1)                                                                # Allow browser to update DOM after setting ajax_indicator invisible
@@ -181,10 +180,10 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
       end
 
       raise_error = true
-      error_dialog = page.query_selector('#error_dialog')
+      error_dialog = page.query_selector('#error_dialog')                       # ErrorDialog already checked to be open
       err_dialog_text_content = error_dialog.text_content
       allowed_msg_content.each do |amc|
-        if err_dialog_text_content[amc]                                            # No error if dialog contains any of the strings
+        if err_dialog_text_content[amc]                                         # No error if dialog contains any of the strings
           raise_error = false
           begin
             page.click('#error_dialog_close_button')                            # Close the error dialog to ensure next actions may see the target, use ID for identification
