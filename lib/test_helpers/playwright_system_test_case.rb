@@ -110,9 +110,9 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
         end
       end
     end
-    assert_ajax_success
+    assert_ajax_success_and_test_for_access_denied                              # Accept error dur to missing rights on Diagnostics or Tuning pack
   rescue Exception=>e
-    if retries < 10
+    if retries < 3
       Rails.logger.warn("#{self.class}.menu_call"){ "#{e.class}:#{e.message}: Starting #{retries+1}. retry" }
       menu_call(entries, retries: retries+1)
     else
@@ -182,8 +182,9 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
 
       raise_error = true
       error_dialog = page.query_selector('#error_dialog')
+      err_dialog_text_content = error_dialog.text_content
       allowed_msg_content.each do |amc|
-        if error_dialog.content[amc]                                            # No error if dialog contains any of the strings
+        if err_dialog_text_content[amc]                                            # No error if dialog contains any of the strings
           raise_error = false
           begin
             page.click('#error_dialog_close_button')                            # Close the error dialog to ensure next actions may see the target, use ID for identification
@@ -194,7 +195,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
         end
       end
 
-      assert(!raise_error, "ApplicationSystemTestCase.assert_ajax_success_or_access_denied: Error dialog raised but not because missing management pack license.\nmanagement_pack_license = #{management_pack_license} (#{management_pack_license.class})\nError dialog:\n#{error_dialog.text}")
+      assert(!raise_error, "ApplicationSystemTestCase.assert_ajax_success_or_access_denied: Error dialog raised but not because missing management pack license.\nmanagement_pack_license = #{management_pack_license} (#{management_pack_license.class})\nError dialog:\n#{err_dialog_text_content}")
       return true
     else
       return false                                                              # Error dialog not shown

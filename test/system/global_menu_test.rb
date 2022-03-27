@@ -15,7 +15,6 @@ class GlobalMenuTest < PlaywrightSystemTestCase
         curr_sub_menu_list << "menu_#{entry[:controller]}_#{entry[:action]}"
         begin
           menu_call(curr_sub_menu_list)
-          assert_ajax_success_and_test_for_access_denied
           close_possible_popup_message                                            # close potential popup message from call
         rescue Exception => e
           msg = "Exception #{e.class}: #{e.message}\nProcessing menu entry #{curr_sub_menu_list}"
