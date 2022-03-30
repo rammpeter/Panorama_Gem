@@ -102,7 +102,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
     entries.each_index do |i|
       if i < entries.length-1                                                   # SubMenu
         log_exception("menu_call: hover at submenu #{entries[i]}") do
-          page.hover("#main_menu >> .sf-with-ul >> text =\"#{entries[i]}\"", timeout: 10000) # Expand menu node
+          page.hover("#main_menu >> .sf-with-ul >> text =\"#{entries[i]}\"", timeout: 30000) # Expand menu node
         end
       else                                                                      # last argument is DOM-ID of menu entry to click on
         log_exception("menu_call: click at menu'#{entries[i]}'") do
