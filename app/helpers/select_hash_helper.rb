@@ -4,6 +4,7 @@ module SelectHashHelper
 
   # Ermittelns Spaltenwert aus korrespondierendem Hash-Value, Parameter wird als String erwartet
   def get_hash_value(key_value)
+    raise "SelectHashHelper.get_hash_value: class should be of Hash but is #{self.class.name}, called with parameter #{key_value.inspect}" unless self.is_a? Hash
     if has_key?(key_value)
       self[key_value]
     else
