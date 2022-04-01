@@ -106,7 +106,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
         end
       else                                                                      # last argument is DOM-ID of menu entry to click on
         log_exception("menu_call: click at menu'#{entries[i]}'") do
-          page.click("##{entries[i]}", timeout: 2000)                           # click menu
+          page.click("##{entries[i]}", timeout: 10000)                          # click menu
         end
       end
     end
