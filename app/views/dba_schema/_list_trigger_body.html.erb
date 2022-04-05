@@ -13,6 +13,16 @@
     }, :title => "Show object dependencies for trigger #{@owner}.#{@trigger_name}")
     %>
   </div>
+  <div class="flex-row-element">
+    <%= ajax_submit("Settings", {
+      :update_area  => @update_area,
+      :action       => :list_stored_settings,
+      :owner        => @owner,
+      :object_name  => @trigger_name,
+      :object_type  => 'TRIGGER'
+    }, :title => "Show stored settings for trigger #{@owner}.#{@trigger_name}")
+    %>
+  </div>
 </div>
 
 <div id="<%= @update_area %>"></div>

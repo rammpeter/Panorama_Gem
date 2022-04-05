@@ -319,4 +319,8 @@ class DbaSchemaControllerTest < ActionController::TestCase
     end
   end
 
+  test 'list stored settings' do
+    get :list_stored_settings, params: {format: :html, owner: 'SYS', object_name: 'DBMS_STATS', object_type: 'PACKAGE BODY' }
+    assert_response :success
+  end
 end

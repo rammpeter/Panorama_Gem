@@ -6,6 +6,19 @@ class DbaSchemaController < ApplicationController
   include DbaHelper
   include DbaSchemaHelper
 
+  def list_stored_settings
+    @owner        = prepare_param(:owner)
+    @object_name  = prepare_param(:object_name)
+    @object_type  = prepare_param(:object_type)
+    @settings = sql_select_all ["SELECT *
+                                 FROM   DBA_Stored_Settings
+                                 WHERE  Owner       = ?
+                                 AND    Object_Name = ?
+                                 AND    Object_Type = ?",
+                                @owner, @object_name, @object_type]
+    render_partial
+  end
+
   def list_db_users
     @users = sql_select_iterator "SELECT u.*
                                   FROM   DBA_Users u

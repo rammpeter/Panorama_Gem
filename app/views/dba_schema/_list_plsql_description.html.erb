@@ -62,6 +62,16 @@
     %>
   </div>
   <div class="flex-row-element">
+    <%= ajax_submit("Settings", {
+      :update_area  => @update_area,
+      :action       => :list_stored_settings,
+      :owner        => @owner,
+      :object_name  => @object_name,
+      :object_type  => @object_type
+    }, :title => "Show stored settings for trigger #{@owner}.#{@trigger_name}")
+    %>
+  </div>
+  <div class="flex-row-element">
     <%= ajax_submit("Sessions accessing", {
         :update_area   => @update_area,
         :controller    => :dba,
