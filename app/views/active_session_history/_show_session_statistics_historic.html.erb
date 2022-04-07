@@ -11,7 +11,7 @@
       <%= check_box_tag(:idle_waits, 1, false) %>
     </div>
 
-    <%= instance_tag %>
+    <%= instance_tag(rac_only: true) %>
     <div class="flex-row-element" title="<%= t(:grouping_hint, :default=>'Group listing by attribute') %>">
       <%= t(:grouping, :default=>'Grouping')%>
       <select name="groupby">

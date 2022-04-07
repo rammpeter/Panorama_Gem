@@ -7,7 +7,7 @@ module IoHelper
     if !defined?(@io_file_key_rules_hash) || @io_file_key_rules_hash.nil?
       @io_file_key_rules_hash = {}
       @io_file_key_rules_hash["Database"]    = {:sql => "SYS_CONTEXT('USERENV', 'DB_NAME')",   :sql_alias => "database",    :Name => 'DB',         :Title => 'Sums over whole database' }
-      @io_file_key_rules_hash["Instance"]    = {:sql => "f.Instance_Number",   :sql_alias => "instance_number",    :Name => 'Inst.',         :Title => 'RAC-Instance' }
+      @io_file_key_rules_hash["Instance"]    = {:sql => "f.Instance_Number",   :sql_alias => "instance_number",    :Name => 'Inst.',         :Title => 'RAC-Instance' } if PanoramaConnection.rac?
       @io_file_key_rules_hash["Tablespace"]  = {:sql => "f.TSName",            :sql_alias => "tsname",             :Name => 'Tablespace',    :Title => 'Tablespace-Name' }
       @io_file_key_rules_hash["FileName"]    = {:sql => "f.FileName",          :sql_alias => "filename",           :Name => 'Filename',      :Title => 'Datafile- / Tempfile-Name' }
       @io_file_key_rules_hash["FileType"]    = {:sql => "f.File_Type",         :sql_alias => "filetype",           :Name => 'File-Type',     :Title => 'Datafile- / Tempfile' }
@@ -63,7 +63,7 @@ module IoHelper
     if !defined?(@iostat_detail_key_rules_hash) || @iostat_detail_key_rules_hash.nil?
       @iostat_detail_key_rules_hash = {}
       @iostat_detail_key_rules_hash["Database"]       = {:sql => "SYS_CONTEXT('USERENV', 'DB_NAME')",   :sql_alias => "database",    :Name => 'DB',   :Title => 'Sums over whole database' }
-      @iostat_detail_key_rules_hash["Instance"]       = {:sql => "f.Instance_Number", :sql_alias => "instance_number",    :Name => 'Inst.',           :Title => 'RAC-Instance' }
+      @iostat_detail_key_rules_hash["Instance"]       = {:sql => "f.Instance_Number", :sql_alias => "instance_number",    :Name => 'Inst.',           :Title => 'RAC-Instance' } if PanoramaConnection.rac?
       @iostat_detail_key_rules_hash["Function-Name"]  = {:sql => "f.Function_Name",   :sql_alias => "function_name",      :Name => 'Function-Name',   :Title => 'Name of function' }
       @iostat_detail_key_rules_hash["Filetype-Name"]  = {:sql => "f.Filetype_Name",   :sql_alias => "filetype_name",      :Name => 'Filetype-Name',   :Title => 'Name of file type' }
     end
@@ -120,7 +120,7 @@ module IoHelper
     if  !defined?(@iostat_filetype_key_rules_hash) || @iostat_filetype_key_rules_hash.nil?
       @iostat_filetype_key_rules_hash = {}
       @iostat_filetype_key_rules_hash["Database"]       = {:sql => "SYS_CONTEXT('USERENV', 'DB_NAME')",   :sql_alias => "database",    :Name => 'DB',   :Title => 'Sums over whole database' }
-      @iostat_filetype_key_rules_hash["Instance"]       = {:sql => "f.Instance_Number", :sql_alias => "instance_number",    :Name => 'Inst.',           :Title => 'RAC-Instance' }
+      @iostat_filetype_key_rules_hash["Instance"]       = {:sql => "f.Instance_Number", :sql_alias => "instance_number",    :Name => 'Inst.',           :Title => 'RAC-Instance' } if PanoramaConnection.rac?
       @iostat_filetype_key_rules_hash["Filetype-Name"]  = {:sql => "f.Filetype_Name",   :sql_alias => "filetype_name",      :Name => 'Filetype-Name',   :Title => 'Name of file type' }
     end
     @iostat_filetype_key_rules_hash

@@ -15,7 +15,7 @@
       <%= text_field_tag(:filter, @filter, :size=>30) %>
     </div>
 
-    <%= instance_tag %>
+    <%= instance_tag(rac_only: true) %>
 
     <div class="flex-row-element" title="<%= t(:dba_history_show_sql_area_historic_schema_hint, :default=>'Filter result on username at cursor creation (Parsing_Schema_Name)') %>">
       User

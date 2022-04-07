@@ -13,7 +13,7 @@
                      ) do%>
   <div class="flex-row-container">
     <%= include_start_end_timepicker %>
-    <%= instance_tag %>
+    <%= instance_tag(rac_only: true)%>
     <div class="flex-row-element">
       <div title="<%= t(:dba_history_show_sysmetric_historic_grouping_hint, :default=>"Grouping of values by time slice")%>">     <!-- special IE-Hack because of bug http://bugs.jqueryui.com/ticket/8798  -->
         <%=  t(:grouping, :default=>"Grouping") %>

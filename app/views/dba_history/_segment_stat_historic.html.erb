@@ -5,7 +5,7 @@
   <div class="flex-row-container">
     <%= include_start_end_timepicker %>
 
-    <%= instance_tag %>
+    <%= instance_tag(rac_only: true) %>
     <div class="flex-row-element">
       Part.
       <%= check_box_tag(:show_partitions, 1, false, :title=>t(:dba_history_segment_stat_historic_show_partition_hint, :default=>'Show partition details?')) %>

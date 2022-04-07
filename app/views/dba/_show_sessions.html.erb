@@ -24,7 +24,7 @@
       Timer
       <%= check_box_tag(:showTimer, 1, false) %>
     </div>
-    <%= instance_tag %>
+    <%= instance_tag(rac_only: true) %>
     <div class="flex-row-element" title="">
       Filter
       <%= text_field_tag(:filter, "", :size=>12, :title=>t(:dba_show_sessions_filter_hint, :default=>"Optional like-filter for client/shadow-process on: session-ID, process-ID, username, SQL ID, client info, client-ID, module, action, machine, program")) %>
