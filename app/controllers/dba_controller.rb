@@ -2167,4 +2167,41 @@ Oldest remaining ASH record in SGA is from #{localeDateTime(min_ash_time)} but c
 
     render_partial
   end
+
+  def list_dba_scheduler_jobs
+    @jobs = sql_select_iterator "SELECT j.*,
+                                        EXTRACT(DAY FROM j.Last_Run_Duration * 86400 * 1000)/1000 Last_Run_Duration_Seconds,
+                                        EXTRACT(DAY FROM j.Schedule_Limit    * 86400 * 1000)/1000 Schedule_Limit_Seconds,
+                                        EXTRACT(DAY FROM j.Max_Run_Duration  * 86400 * 1000)/1000 Max_Run_Duration_Seconds,
+                                        NVL(j.Job_Type, p.Program_Type)     Job_or_Program_Type,
+                                        NVL(j.Job_Action, p.Program_Action) Job_or_Program_Action
+                                 FROM   DBA_Scheduler_Jobs j
+                                 LEFT OUTER JOIN DBA_Scheduler_Programs p ON p.Owner = j.Program_Owner AND p.Program_Name = j.Program_Name
+                                "
+    render_partial
+  end
+
+  def list_dba_scheduler_job_run_details
+    @owner        = prepare_param :owner
+    @job_name     = prepare_param :job_name
+    @job_subname  = prepare_param :job_subname
+
+    where_string = ''
+    where_values = []
+    if @job_subname
+      where_string << " AND Job_SubName = ?"
+      where_values << @job_subname
+    end
+
+    @job_runs = sql_select_iterator ["SELECT d.*,
+                                             Error# Error_no,
+                                             EXTRACT(DAY FROM d.Run_Duration * 86400 * 1000)/1000 Run_Duration_Seconds,
+                                             EXTRACT(DAY FROM d.CPU_Used     * 86400 * 1000)/1000 CPU_Used_Seconds
+                                      FROM   DBA_Scheduler_Job_Run_Details d
+                                      WHERE  Owner = ?
+                                      AND    Job_Name = ?
+                                      #{where_string}
+                                     ", @owner, @job_name].concat(where_values)
+    render_partial
+  end
 end # Class

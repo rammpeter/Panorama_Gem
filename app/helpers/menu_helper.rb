@@ -45,7 +45,8 @@ module MenuHelper
             },
             {class: 'item', caption: 'Database Triggers', controller: :dba, action: :list_database_triggers, hint: t(:menu_dba_database_triggers_hint, :default => 'Show global database triggers (like LOGON etc.)')},
             {:class => 'menu', :caption => 'Scheduled Jobs', :content => [
-                {:class => 'item', :caption => 'DBA autotask jobs', :controller => :dba, :action => :show_dba_autotask_jobs, :hint => 'Show jobs from DBA_Autotask_Client', :min_db_version => '11.2'},
+                {:class => 'item', :caption => 'Autotask jobs', :controller => :dba, :action => :show_dba_autotask_jobs, :hint => 'Show jobs from DBA_Autotask_Client', :min_db_version => '11.2'},
+                {class: 'item', caption: 'Scheduler jobs', controller: :dba, action: :list_dba_scheduler_jobs, hint: 'Show jobs from DBA_Scheduler_Jobs' },
             ]
             },
             {:class => 'item', :caption => 'Feature usage', :controller => :dba, :action => :list_feature_usage, :hint => t(:menu_dba_feature_usage_hint, :default => 'Statistics about usage of features and packs of Oracle-DB')},
