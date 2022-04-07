@@ -415,6 +415,16 @@ END Panorama_Sampler_Snapshot;
     COMMIT;
   END Snap_Service_Name;
 
+  PROCEDURE Snap_SGAStat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO panorama_owner.Panorama_SGAStat (SNAP_ID, DBID, INSTANCE_NUMBER, NAME, Pool, Bytes, CON_DBID, CON_ID
+    ) SELECT p_Snap_ID, p_DBID, p_Instance, Name, Pool, Bytes, p_Con_DBID,
+             #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+      FROM   v$SGAStat
+    ;
+    COMMIT;
+  END Snap_SGAStat;
+
   PROCEDURE Snap_SQLBind(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
     INSERT INTO panorama_owner.Panorama_SQLBind(
@@ -788,8 +798,9 @@ END Panorama_Sampler_Snapshot;
     Snap_PGAStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Process_Mem_Summary  (p_Snap_ID,   p_DBID,     p_Instance);
     Snap_Resource_Limit       (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
-    Snap_Service_Name         (p_DBID,      p_Con_DBID);
     Snap_Seg_Stat             (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
+    Snap_Service_Name         (p_DBID,      p_Con_DBID);
+    Snap_SGAStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     -- call Snap_SQLStat before any dependent statistic, because dependents record only for SQLs already in SQLStat
     Snap_SQLStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Begin_Interval_Time,     p_SQL_Min_No_of_Execs,      p_SQL_Min_Runtime_MilliSecs);
     Snap_SQLBind              (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);

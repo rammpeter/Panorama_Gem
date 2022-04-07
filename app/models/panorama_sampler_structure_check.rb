@@ -932,6 +932,22 @@ class PanoramaSamplerStructureCheck
           primary_key: { columns: ['DBID', 'Service_Name', 'Con_DBID'] },
       },
       {
+        table_name: 'Panorama_SGAStat',
+        domain: :AWR,
+        columns: [
+          { column_name:  'SNAP_ID',                        column_type:   'NUMBER',    not_null: true },
+          { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+          { column_name:  'INSTANCE_NUMBER',                column_type:   'NUMBER',    not_null: true },
+          { column_name:  'Name',                           column_type:   'VARCHAR2',  not_null: true, precision: 64 },
+          { column_name:  'Pool',                           column_type:   'VARCHAR2',  not_null: false, precision: 30 },
+          { column_name:  'Bytes',                          column_type:   'NUMBER',    not_null: true },
+          { column_name:  'CON_DBID',                       column_type:   'NUMBER',    not_null: true },
+          { column_name:  'CON_ID',                         column_type:   'NUMBER' },
+        ],
+        # Pool can be NULL therefore no PK is possible
+        indexes: [ {index_name: 'Panorama_SGAStat_Unique', columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'Name', 'Pool', 'CON_DBID'], compress: 3, unique: true } ]
+      },
+      {
           table_name: 'Panorama_Snapshot',
           domain: :AWR,
           columns: [
@@ -1801,7 +1817,7 @@ ORDER BY Column_ID
 
 
       ########### Check PK-Index existence
-      check_index(table[:table_name], pk_name, table[:primary_key][:columns], table[:primary_key][:compress])
+      check_index(table[:table_name], pk_name, table[:primary_key][:columns], table[:primary_key][:compress], true)
 
       ######## Check existence of PK-Constraint
       if !@ora_tab_pkeys[table[:table_name].upcase]   # PKey does not exist
@@ -1836,14 +1852,14 @@ ORDER BY Column_ID
   ############ Check Indexes
     if table[:indexes]
       table[:indexes].each do |index|
-        check_index(table[:table_name], index[:index_name], index[:columns], index[:compress])
+        check_index(table[:table_name], index[:index_name], index[:columns], index[:compress], index[:unique])
       end
     end
 
   end
 
   # compress - Number of columns to compress
-  def check_index(table_name, index_name, columns, compress)
+  def check_index(table_name, index_name, columns, compress, uniqueness)
     if @ora_indexes[index_name.upcase] && @ora_indexes[index_name.upcase].table_name == table_name.upcase # Index exists
       # if @ora_indexes.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase})  # Index exists
 
@@ -1871,7 +1887,7 @@ ORDER BY Column_ID
     ########### Check existence of index
     if @ora_indexes[index_name.upcase].nil? || @ora_indexes[index_name.upcase].table_name != table_name.upcase
     #if !@ora_indexes.include?({'table_name' => table_name.upcase, 'index_name' => index_name.upcase}) # Index does not exists
-      sql = "CREATE INDEX #{@sampler_config.get_owner}.#{index_name} ON #{@sampler_config.get_owner}.#{table_name}("
+      sql = "CREATE #{'UNIQUE ' if uniqueness}INDEX #{@sampler_config.get_owner}.#{index_name} ON #{@sampler_config.get_owner}.#{table_name}("
       columns.each do |column|
         sql << "#{column},"
       end
