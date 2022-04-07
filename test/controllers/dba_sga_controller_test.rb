@@ -249,4 +249,11 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "list historic SGA components" do
+    [nil, PanoramaConnection.instance_number].each do |instance|
+      post '/dba_sga/list_historic_sga_components', params: {format: :html, time_selection_start: @time_selection_start, time_selection_end: @time_selection_end, instance: instance, update_area: :hugo }
+      assert_response_success_or_management_pack_violation
+    end
+  end
+
 end

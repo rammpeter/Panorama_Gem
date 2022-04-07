@@ -165,7 +165,8 @@ module MenuHelper
             {:class=> 'item', :caption=>t(:menu_sga_pga_day_compare_caption, :default=> 'SQL-Area day comparison'),         :controller=> 'dba_history', :action=> 'compare_sql_area_historic',     :hint=>t(:menu_sga_pga_day_compare_hint, :default=> 'Comparison of SQL-statements from two different days') },
 
             { :class=> 'menu', :caption=> 'SGA Memory', :content=>[
-                {:class=> 'item', :caption=>t(:menu_sga_pga_sga_components_caption, :default=> 'SGA-components'),                 :controller=> 'dba_sga',     :action=> 'show_sga_components',           :hint=>t(:menu_sga_pga_sga_components_hint, :default=> 'Show components of current SGA') },
+                {:class=> 'item', :caption=>t(:menu_sga_pga_sga_components_current_caption, :default=> 'SGA-components current'),  :controller=> 'dba_sga',     :action=> 'show_sga_components',           :hint=>t(:menu_sga_pga_sga_components_current_hint, :default=> 'Show components of current SGA') },
+                {:class=> 'item', :caption=>t(:menu_sga_pga_sga_components_historic_caption, :default=> 'SGA-components historic'),  :controller=> 'dba_sga',     :action=> 'show_historic_sga_components',           :hint=>t(:menu_sga_pga_sga_components_historic_hint, :default=> 'Show history of components of SGA') },
                 {:class=> 'item', :caption=>t(:menu_sga_pga_resize_operations_historic_caption, :default=>'SGA resize operations historic'), controller: :dba_sga,  action: :show_resize_operations_historic, hint: t(:menu_sga_pga_resize_operations_historic_hint, :default=>'Show historic evolution of SGA resize operations'), min_db_version: '11.1' },
               ]
             },

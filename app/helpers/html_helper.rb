@@ -27,7 +27,8 @@ module HtmlHelper
     ".html_safe
   end
 
-  def instance_tag(required: false, line_feed: false)
+  def instance_tag(required: false, line_feed: false, rac_only: false)
+    return '' if rac_only && !PanoramaConnection.rac?
     if required
       instance = read_from_client_info_store(:instance)
       instance = PanoramaConnection.instance_number if instance.nil?

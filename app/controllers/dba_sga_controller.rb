@@ -2219,4 +2219,55 @@ END;
 
   end
 
+  def list_historic_sga_components
+    @instance = prepare_param_instance
+    save_session_time_selection  # werte in session puffern
+    pool_details  = prepare_param(:pool_details) == '1'
+    @con_id       = prepare_param :con_id
+
+    where_string = ''
+    where_values = []
+    if @instance
+      where_string << " AND s.Instance_Number = ?"
+      where_values << @instance
+    end
+    if @con_id
+      where_string << " AND s.Con_ID = ?"
+      where_values << @con_id
+    end
+
+    sgastat = sql_select_iterator ["SELECT ROUND(ss.Begin_Interval_Time, 'MI') Rounded_Begin_Interval_Time,
+                                           #{pool_details ? "DECODE(s.Pool, NULL, '', s.Pool||' / ')||s.Name" : "NVL(s.Pool, s.Name) "} Pool,
+                                           s.Bytes/(1024*1024) MBytes
+                                    FROM   DBA_Hist_SGAStat s
+                                    JOIN   DBA_hist_Snapshot ss ON ss.DBID = s.DBID AND ss.Instance_Number = s.Instance_Number AND ss.Snap_ID = s.Snap_ID
+                                    WHERE  ss.Begin_Interval_Time  >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                                    AND    ss.End_Interval_Time    <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
+                                    #{where_string}
+                                    ORDER BY 1
+                                    ", @time_selection_start, @time_selection_end].concat(where_values)
+    pools = {}
+    result_hash ={}                                                             # Rounded_Begin_Interval_Time as key
+    sgastat.each do |s|
+      unless result_hash.has_key?(s.rounded_begin_interval_time)
+        result_hash[s.rounded_begin_interval_time] = {
+          rounded_begin_interval_time: s.rounded_begin_interval_time,
+          total_mb: 0
+        }.extend(SelectHashHelper)
+      end
+
+      target_hash = result_hash[s.rounded_begin_interval_time]
+      target_hash[:total_mb] += s.mbytes
+      unless target_hash.has_key?(s.pool)
+        target_hash[s.pool] = 0
+      end
+      target_hash[s.pool] += s.mbytes
+
+      pools[s.pool] = 0 unless pools.has_key?(s.pool)
+      pools[s.pool] += s.mbytes
+    end
+    @sga_stats = result_hash.map{|key, value| value}
+    @pools = pools.sort_by {|key,value| value}.map{|x| x[0]}    # pool-names sorted by MBytes
+    render_partial
+  end
 end

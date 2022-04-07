@@ -1908,8 +1908,10 @@
   menu_sga_pga_cache_usage_historic_hint:                   Rückwirkende Anlistung des Inhalts des DB-Cache aus Panorama_Cache_Objects
   menu_sga_pga_compare_execution_plans:                     Vergleich der Execution-Pläne zweier Cursoren in SGA
   menu_sga_pga_compare_execution_plans_historic:            Vergleich zweier Execution-Pläne aus der ARW-Historie
-  menu_sga_pga_sga_components_caption:                      SGA-Komponenten
-  menu_sga_pga_sga_components_hint:                         Anlistung der Komponenten der aktuellen SGA
+  menu_sga_pga_sga_components_current_caption:              SGA-Komponenten aktuell
+  menu_sga_pga_sga_components_current_hint:                 Anlistung der Komponenten der aktuellen SGA
+  menu_sga_pga_sga_components_historic_caption:             SGA-Komponenten historisch
+  menu_sga_pga_sga_components_historic_hint:                Anlistung der Historie der Komponenten der SGA
   menu_sga_pga_day_compare_caption:                         SQL-Area Tagesvergleich
   menu_sga_pga_day_compare_hint:                            Vergleich der SQL-statements zweier Tage
   menu_sga_pga_object_by_file_and_block_caption:            Objekt nach File und Block

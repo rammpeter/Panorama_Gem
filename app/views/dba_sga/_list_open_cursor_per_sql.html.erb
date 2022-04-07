@@ -13,21 +13,21 @@
                 :update_area  => update_area_module,
                 :org_text     => rec.module
               },
-       :title=>"Detaillierung des Modul-Namens")+
+       :title=>"Details of module name")+
               "<div id=\"#{update_area_module}\"></div>".html_safe
     end
 
 
 column_options =
 [
-  {:caption=>"Aktiv",    :data=>proc{|rec| rec.stmt_active},      :title=>"Wird das Statement in der Session gerade ausgeführt"},
+  {:caption=>"Active",   :data=>proc{|rec| rec.stmt_active},      :title=>"Is statement just executed?"},
   {:caption=>"SID/SN",   :data=>proc{|rec| link_column_sid(rec, "#{rec.inst_id}/#{rec.sid}/#{rec.serial_no}")},  :title=>"Inst./SID/Serial No."},
   {:caption=>"User",     :data=>proc{|rec| rec.user_name},        :title=>"DB-Username"},
-  {:caption=>"OS-User",  :data=>proc{|rec| rec.osuser},           :title=>"User im Client-OS"},
-  {:caption=>"Process",  :data=>proc{|rec| rec.process},          :title=>"Process im Client-OS"},
-  {:caption=>"Maschine", :data=>proc{|rec| link_machine_ip_info(@update_area, rec.machine)}, :title=>"Client-Maschine"},
-  {:caption=>"Programm", :data=>proc{|rec| rec.program},          :title=>"Programm auf Client-Maschine"},
-  {:caption=>"Modul",    :data=>proc{|rec| link_column_module(rec, rec.module)},          :title=>"Programm.Module auf Client-Maschine"},
+  {:caption=>"OS-User",  :data=>proc{|rec| rec.osuser},           :title=>"User of client OS"},
+  {:caption=>"Process",  :data=>proc{|rec| rec.process},          :title=>"Process of client OS"},
+  {:caption=>"Machine",  :data=>proc{|rec| link_machine_ip_info(@update_area, rec.machine)}, :title=>"Client machine"},
+  {:caption=>"Program",  :data=>proc{|rec| rec.program},          :title=>"Program of client machine"},
+  {:caption=>"Module",   :data=>proc{|rec| link_column_module(rec, rec.module)},          :title=>"Program module of client machine"},
 ]
   column_options << {caption: 'Last active',    data: proc{|rec| localeDateTime(rec.last_sql_active_time)},     title: "Time when this cursor was last executed"} if get_db_version >= '11.1'
   column_options << {caption: 'SQL exec ID',    data: proc{|rec| fn(rec.sql_exec_id)}, align: :right,           title: "If the open cursor is executing, then the SQL execution identifier for that execution"} if get_db_version >= '11.1'
@@ -37,7 +37,7 @@ column_options =
 %>
 
 <%= gen_slickgrid(@open_cursors, column_options, {
-        :caption => "Open Cursor für Instance=#{@instance}, SQL-ID=#{@sql_id}",
+        :caption => "Open Cursor for Instance=#{@instance}, SQL-ID=#{@sql_id}",
         :max_height=>450,
         :width=>:auto, show_pin_icon: 1
 }) %>
