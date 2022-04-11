@@ -793,7 +793,7 @@ class PanoramaConnection
     privilege     = get_threadlocal_config[:privilege]
     query_timeout = get_threadlocal_config[:query_timeout]
     if query_timeout.nil?
-      Rails.logger.info "PanoramaConenction.do_login: query_timeout not set in thread, assuming default value = 300"
+      Rails.logger.info "PanoramaConnection.do_login: query_timeout not set in thread, assuming default value = 300"
       query_timeout = 300
     end
 
@@ -802,13 +802,17 @@ class PanoramaConnection
     raise "PanoramaConnection.do_login: password missing"       if  password.nil?
     privilege = 'normal'                                        if  privilege.nil?
     jdbc_connection = ActiveRecord::ConnectionAdapters::OracleEnhanced::JDBCConnection.new(
-        :adapter    => "oracle_enhanced",
-        :driver     => "oracle.jdbc.driver.OracleDriver",
-        :url        => url,
-        :username   => username,
-        :password   => password,
-        :privilege  => privilege,
-        :cursor_sharing => :exact             # oracle_enhanced_adapter setzt cursor_sharing per Default auf force
+        adapter:          "oracle_enhanced",
+        driver:           "oracle.jdbc.driver.OracleDriver",
+        url:              url,
+        username:         username,
+        password:         password,
+        privilege:        privilege,
+        cursor_sharing:  :exact,                                                # oracle_enhanced_adapter setzt cursor_sharing per Default auf force
+        jdbc_connect_properties: {                                              # Needs acceptance of Pull-request for oracle_enhanced_adapter: https://github.com/rsim/oracle-enhanced/pull/2284
+          'oracle.net.encryption_client'      => 'REQUESTED',
+          'oracle.net.crypto_checksum_client' => 'REQUESTED'
+        }
     )
     Rails.logger.info "New database connection created: URL='#{jdbc_thin_url}' User='#{get_threadlocal_config[:user]}' Pool size=#{@@connection_pool.count+1}"
 

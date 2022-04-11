@@ -21,10 +21,10 @@ default: &default
 development:
   <<: *default
 #  adapter:  oracle_enhanced
-#  url:      jdbc:oracle:thin:@ramm.osp-dd.de:1521:RAMM
+#  url:      jdbc:oracle:thin:@localhost:1521/ORCLPDB1
 #  driver:   oracle.jdbc.driver.OracleDriver
 #  username: system
-#  password: xxx
+#  password: oracle
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
