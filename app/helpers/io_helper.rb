@@ -63,7 +63,7 @@ module IoHelper
     if !defined?(@iostat_detail_key_rules_hash) || @iostat_detail_key_rules_hash.nil?
       @iostat_detail_key_rules_hash = {}
       @iostat_detail_key_rules_hash["Database"]       = {:sql => "SYS_CONTEXT('USERENV', 'DB_NAME')",   :sql_alias => "database",    :Name => 'DB',   :Title => 'Sums over whole database' }
-      @iostat_detail_key_rules_hash["Instance"]       = {:sql => "f.Instance_Number", :sql_alias => "instance_number",    :Name => 'Inst.',           :Title => 'RAC-Instance' } if PanoramaConnection.rac?
+      @iostat_detail_key_rules_hash["Instance"]       = {:sql => "f.Instance_Number", :sql_alias => "instance_number",    :Name => 'Inst.',           :Title => 'RAC-Instance' }
       @iostat_detail_key_rules_hash["Function-Name"]  = {:sql => "f.Function_Name",   :sql_alias => "function_name",      :Name => 'Function-Name',   :Title => 'Name of function' }
       @iostat_detail_key_rules_hash["Filetype-Name"]  = {:sql => "f.Filetype_Name",   :sql_alias => "filetype_name",      :Name => 'Filetype-Name',   :Title => 'Name of file type' }
     end
