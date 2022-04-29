@@ -166,7 +166,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
 
   # accept error due to missing management pack license
   # Error message "Access denied" called for _management_pack_license = :none ?
-  def assert_ajax_success_and_test_for_access_denied(timeout_secs = 60)
+  def assert_ajax_success_and_test_for_access_denied(timeout_secs = 120)
     wait_for_ajax(timeout_secs)
 
     if  error_dialog_open?
