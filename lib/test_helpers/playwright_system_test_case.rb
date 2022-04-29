@@ -130,7 +130,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
       # puts "After #{loop_count} seconds: indicator_call_stack_depth = #{page.evaluate_script('indicator_call_stack_depth')}"
     end
     if loop_count >= timeout_secs
-      message = "Timeout raised in wait_for_ajax after #{loop_count} seconds, indicator_call_stack_depth=#{page.evaluate_script('indicator_call_stack_depth') }"
+      message = "Timeout raised in wait_for_ajax after #{loop_count} seconds, indicator_call_stack_depth=#{page.evaluate('indicator_call_stack_depth') }"
       Rails.logger.error "############ #{message}"
       raise message
     end
