@@ -11,7 +11,7 @@
     <div class="flex-row-element" title="<%= t(:grouping_hint, :default=>'Group result by attribute') %>">
       <select name="groupby">
         <% iostat_filetype_key_rules.each do |key, value| %>
-          <%=  "<option value='#{key}' #{"selected='selected'" if key=="Instance"}>#{key}</option>".html_safe %>
+          <%=  "<option value='#{key}' #{"selected='selected'" if key=="Instance"}>#{key}</option>".html_safe if key != 'Instance' || PanoramaConnection.rac? %>
         <% end %>
       </select>
     </div>

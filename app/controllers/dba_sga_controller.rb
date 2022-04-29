@@ -2257,14 +2257,14 @@ END;
       end
 
       target_hash = result_hash[s.rounded_begin_interval_time]
-      target_hash[:total_mb] += s.mbytes
+      target_hash[:total_mb] += s.mbytes unless s.mbytes.nil?
       unless target_hash.has_key?(s.pool)
         target_hash[s.pool] = 0
       end
-      target_hash[s.pool] += s.mbytes
+      target_hash[s.pool] += s.mbytes unless s.mbytes.nil?
 
       pools[s.pool] = 0 unless pools.has_key?(s.pool)
-      pools[s.pool] += s.mbytes
+      pools[s.pool] += s.mbytes unless s.mbytes.nil?
     end
     @sga_stats = result_hash.map{|key, value| value}
     @pools = pools.sort_by {|key,value| value}.map{|x| x[0]}    # pool-names sorted by MBytes
