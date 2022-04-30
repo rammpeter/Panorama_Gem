@@ -196,7 +196,7 @@ SELECT p.Owner, p.Object_Name, p.Inst_ID,
        SUM(a.Executions)                  \"No. of executions in SQL\",
        COUNT(DISTINCT p.SQL_ID)           \"No. of different SQLs\",
        MAX(a.SQL_ID) KEEP (DENSE_RANK LAST ORDER BY a.Elapsed_Time NULLS FIRST) \"SQL_ID with max. elapsed time\"
-FROM   (SELECT p.Owner, p.Object_Name, s.Inst_ID, s.SQL_ID
+FROM   (SELECT /*+ NO_MERGE */ p.Owner, p.Object_Name, s.Inst_ID, s.SQL_ID
         FROM   Procs p
         LEFT OUTER JOIN   SQLs s ON s.SQL_Text LIKE '%'||p.Object_Name||'%'
         GROUP BY p.Owner, p.Object_Name, s.Inst_ID, s.SQL_ID
