@@ -27,11 +27,17 @@ jobs:
       max-parallel: 4
       matrix:
         management_pack_license: ["diagnostics_and_tuning_pack", "diagnostics_pack", "panorama_sampler", "none"]
-        db_version: ["autonomous", "12.1"]
+        db_version: ["autonomous", "12.2.0.1-ee"]
     env:
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
       DB_VERSION: ${{ matrix.db_version }}
 
+    services:
+      oracle:
+        if: ${{ env.DB_VERSION != 'autonomous' }}
+        image: harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{env.DB_VERSION}}
+        ports:
+          - 1521:1521
     steps:
     - uses: actions/checkout@v1
 
@@ -48,6 +54,7 @@ jobs:
             echo "TEST_USERNAME=panorama_test4" >> $GITHUB_ENV
           fi
           echo "TEST_PASSWORD=Panorama_test9" >> $GITHUB_ENV
+          echo "TEST_TNS=PANORAMATEST_TPURGENT" >> $GITHUB_ENV
         else
           echo "TEST_USERNAME=panorama_test" >> $GITHUB_ENV
           echo "TEST_PASSWORD=panorama_test" >> $GITHUB_ENV
@@ -83,10 +90,6 @@ jobs:
         npx playwright install
 
     - name: run Test
-      env:
-        # TEST_USERNAME: panorama_test
-        # TEST_PASSWORD: TryItOut2019
-        TEST_TNS: PANORAMATEST_TPURGENT
       run: |
         source $HOME/.rvm/scripts/rvm
         export TNS_ADMIN=$PWD/.github
