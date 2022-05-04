@@ -24,7 +24,7 @@ jobs:
     runs-on: self-hosted
 
     strategy:
-      max-parallel: 1
+      max-parallel: 4
       matrix:
         management_pack_license: ["diagnostics_and_tuning_pack", "diagnostics_pack", "panorama_sampler", "none"]
         db_version: ["autonomous", "12.1"]
@@ -78,7 +78,9 @@ jobs:
         cd .github && ./decrypt_DB_wallet.sh && unzip Wallet_panoramatest.zip
 
     - name: Ensure playwright installed
-      run: npx playwright install
+      run: |
+        npm install @playwright/test  
+        npx playwright install
 
     - name: run Test
       env:
