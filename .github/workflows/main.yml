@@ -36,7 +36,7 @@ jobs:
       oracle:
         image: harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{  matrix.db_version }}
         ports:
-          - 1521:1521
+          - 1522:1521
     steps:
     - uses: actions/checkout@v1
 
