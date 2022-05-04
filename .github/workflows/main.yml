@@ -27,12 +27,32 @@ jobs:
       max-parallel: 1
       matrix:
         management_pack_license: ["diagnostics_and_tuning_pack", "diagnostics_pack", "panorama_sampler", "none"]
+        db_version: ["autonomous", "12.1"]
     env:
-      JRUBY_VERSION: jruby-9.3.2.0
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
+      DB_VERSION: ${{ matrix.db_version }}
 
     steps:
     - uses: actions/checkout@v1
+
+    - name: Set environment for subsequent steps
+      run: |
+        if [[ "$DB_VERSION" == "autonomous" ]]; then
+          if [[ "$MANAGEMENT_PACK_LICENSE" == "diagnostics_and_tuning_pack" ]]; then
+            echo "TEST_USERNAME=panorama_test1" >> $GITHUB_ENV
+          elif [[ "$MANAGEMENT_PACK_LICENSE" == "diagnostics_pack" ]]; then
+            echo "TEST_USERNAME=panorama_test2" >> $GITHUB_ENV
+          elif [[ "$MANAGEMENT_PACK_LICENSE" == "panorama_sampler" ]]; then
+            echo "TEST_USERNAME=panorama_test3" >> $GITHUB_ENV
+          elif [[ "$MANAGEMENT_PACK_LICENSE" == "none" ]]; then
+            echo "TEST_USERNAME=panorama_test4" >> $GITHUB_ENV
+          fi
+          echo "TEST_PASSWORD=Panorama_test9" >> $GITHUB_ENV
+        Panorama_test9
+        else
+          echo "TEST_USERNAME=panorama_test" >> $GITHUB_ENV
+          echo "TEST_PASSWORD=panorama_test" >> $GITHUB_ENV
+        fi
 
     - name: Check OS prerequisites
       run: |
@@ -52,6 +72,7 @@ jobs:
     # create encypted wallet zip file to store in repository, add passphrase
     # gpg --symmetric --cipher-algo AES256 Wallet_panoramatest.zip
     - name: Decrypt Wallet for database access
+      if: {{ env.DB_VERSION == 'autonomous' }}
       env:
         GPG_KEY_FOR_DB_WALLET_ENCRYPTION: ${{ secrets.GPG_KEY_FOR_DB_WALLET_ENCRYPTION }}
       run: |
@@ -62,8 +83,8 @@ jobs:
 
     - name: run Test
       env:
-        TEST_USERNAME: panorama_test
-        TEST_PASSWORD: TryItOut2019
+        # TEST_USERNAME: panorama_test
+        # TEST_PASSWORD: TryItOut2019
         TEST_TNS: PANORAMATEST_TPURGENT
       run: |
         source $HOME/.rvm/scripts/rvm
