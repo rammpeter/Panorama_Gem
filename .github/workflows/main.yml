@@ -34,7 +34,6 @@ jobs:
 
     services:
       oracle:
-        if: ${{ env.DB_VERSION != 'autonomous' }}
         image: harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{env.DB_VERSION}}
         ports:
           - 1521:1521
