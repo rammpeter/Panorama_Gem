@@ -34,7 +34,7 @@ jobs:
 
     services:
       oracle:
-        image: harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{env.DB_VERSION}}
+        image: harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{DB_VERSION}}
         ports:
           - 1521:1521
     steps:
