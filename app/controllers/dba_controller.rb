@@ -1279,7 +1279,7 @@ oradebug setorapname diag
             params[:p3], params[:p3raw], params[:p3text]
           )
     respond_to do |format|
-      format.html {render :html => @object }
+      format.html {render :html => my_html_escape(@object).html_safe }
     end
   end
 
