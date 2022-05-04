@@ -72,7 +72,7 @@ jobs:
     # create encypted wallet zip file to store in repository, add passphrase
     # gpg --symmetric --cipher-algo AES256 Wallet_panoramatest.zip
     - name: Decrypt Wallet for database access
-      if: {{ DB_VERSION == 'autonomous' }}
+      if: {{ 'autonomous' == 'autonomous' }}
       env:
         GPG_KEY_FOR_DB_WALLET_ENCRYPTION: ${{ secrets.GPG_KEY_FOR_DB_WALLET_ENCRYPTION }}
       run: |
