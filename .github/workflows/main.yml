@@ -48,7 +48,6 @@ jobs:
             echo "TEST_USERNAME=panorama_test4" >> $GITHUB_ENV
           fi
           echo "TEST_PASSWORD=Panorama_test9" >> $GITHUB_ENV
-        Panorama_test9
         else
           echo "TEST_USERNAME=panorama_test" >> $GITHUB_ENV
           echo "TEST_PASSWORD=panorama_test" >> $GITHUB_ENV
