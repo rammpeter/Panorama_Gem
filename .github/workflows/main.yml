@@ -54,6 +54,7 @@ jobs:
           fi
           echo "TEST_PASSWORD=Panorama_test9" >> $GITHUB_ENV
           echo "TEST_TNS=PANORAMATEST_TPURGENT" >> $GITHUB_ENV
+          echo "TNS_ADMIN=$PWD/.github" >> $GITHUB_ENV
         else
           echo "TEST_USERNAME=panorama_test" >> $GITHUB_ENV
           echo "TEST_PASSWORD=panorama_test" >> $GITHUB_ENV
@@ -91,10 +92,11 @@ jobs:
     - name: run Test
       run: |
         source $HOME/.rvm/scripts/rvm
-        export TNS_ADMIN=$PWD/.github
         echo "TNS_ADMIN=$TNS_ADMIN"
-        echo "tnsnames.ora="
-        cat $TNS_ADMIN/tnsnames.ora
+        if [[ -n "$TNS_ADMIN ]]; then
+          echo "tnsnames.ora="
+          cat $TNS_ADMIN/tnsnames.ora
+        fi
         bundle exec rake test
 
     - name: Archive test log
