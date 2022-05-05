@@ -30,17 +30,29 @@ jobs:
         db_version: [autonomous, 12.2.0.1-ee]
         include:
           - management_pack_license: diagnostics_and_tuning_pack
-            port_major: 10
+            db_version: autonomous
+            port: 1522
           - management_pack_license: diagnostics_pack
-            port_major: 20
+            db_version: autonomous
+            port: 1523
           - management_pack_license: panorama_sampler
-            port_major: 30
+            db_version: autonomous
+            port: 1524
+          - management_pack_license: none
+            db_version: autonomous
+            port: 1525
+          - management_pack_license: diagnostics_and_tuning_pack
+            db_version: 12.2.0.1-ee
+            port: 1526
+          - management_pack_license: diagnostics_pack
+            db_version: 12.2.0.1-ee
+            port: 1527
           - management_pack_license: panorama_sampler
-            port_major: 40
-          - db_version: autonomous
-            port_minor: 1
-          - db_version: 12.2.0.1-ee
-            port_minor: 2
+            db_version: 12.2.0.1-ee
+            port: 1528
+          - management_pack_license: none
+            db_version: 12.2.0.1-ee
+            port: 1529
     env:
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
       DB_VERSION: ${{ matrix.db_version }}
