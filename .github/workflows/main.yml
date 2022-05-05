@@ -24,19 +24,33 @@ jobs:
     runs-on: self-hosted
 
     strategy:
-      max-parallel: 1
+      max-parallel: 4
       matrix:
-        management_pack_license: ["diagnostics_and_tuning_pack", "diagnostics_pack", "panorama_sampler", "none"]
-        db_version: ["autonomous", "12.2.0.1-ee"]
+        management_pack_license: [diagnostics_and_tuning_pack, diagnostics_pack, panorama_sampler, none]
+        db_version: [autonomous, 12.2.0.1-ee]
+        include:
+          - management_pack_license: diagnostics_and_tuning_pack
+            port_major: 10
+          - management_pack_license: diagnostics_pack
+            port_major: 20
+          - management_pack_license: panorama_sampler
+            port_major: 30
+          - management_pack_license: panorama_sampler
+            port_major: 40
+          - db_version: autonomous
+            port_minor: 1
+          - db_version: 12.2.0.1-ee
+            port_minor: 2
     env:
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
       DB_VERSION: ${{ matrix.db_version }}
+      TEST_PORT: ${{ 1521 + matrix.port_major + matrix.port_minor }}
 
     services:
       oracle:
         image: harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{  matrix.db_version }}
         ports:
-          - 1522:1521
+          - ${{ matrix.TEST_PORT }}:1521
     steps:
     - uses: actions/checkout@v1
 
