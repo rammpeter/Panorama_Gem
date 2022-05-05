@@ -93,7 +93,7 @@ jobs:
       run: |
         source $HOME/.rvm/scripts/rvm
         echo "TNS_ADMIN=$TNS_ADMIN"
-        if [[ -n "$TNS_ADMIN ]]; then
+        if [[ -n "$TNS_ADMIN" ]]; then
           echo "tnsnames.ora="
           cat $TNS_ADMIN/tnsnames.ora
         fi
