@@ -119,6 +119,8 @@ jobs:
     - name: Wait for DB available
       if: ${{ env.DB_VERSION != 'autonomous' }}
       run: |
+        echo $PATH
+        which bundle
         bundle exec rake -f $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake
 
     - name: run Test
