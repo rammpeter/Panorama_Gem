@@ -25,6 +25,7 @@ jobs:
 
     strategy:
       max-parallel: 4
+      fail-fast: false
       matrix:
         management_pack_license: [diagnostics_and_tuning_pack, diagnostics_pack, panorama_sampler, none]
         db_version: [autonomous, 12.2.0.1-ee]
@@ -114,6 +115,11 @@ jobs:
       run: |
         npm install @playwright/test  
         npx playwright install
+
+    - name: Wait for DB available
+      if: ${{ env.DB_VERSION != 'autonomous' }}
+      run: |
+        bundle exec rake -f lib/tasks/wait_for_db_available.rake
 
     - name: run Test
       run: |
