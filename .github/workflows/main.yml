@@ -56,7 +56,7 @@ jobs:
     env:
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
       DB_VERSION: ${{ matrix.db_version }}
-      TEST_PORT: ${{ 1521 + matrix.port_major + matrix.port_minor }}
+      TEST_PORT: ${{ matrix.port }}
 
     services:
       oracle:
