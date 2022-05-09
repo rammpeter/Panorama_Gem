@@ -117,7 +117,7 @@ module AjaxHelper
 
     html_options[:remote] = true              # Ajax-Call verwenden
     html_options['data-type'] = :html
-    html_options[:onsubmit] = "bind_ajax_html_response(jQuery(this), '#{url[:update_area]}');"
+    html_options[:onsubmit] = "bind_ajax_html_response(jQuery(this), '#{url[:update_area]}');#{html_options[:onsubmit]}"
 
     url[:controller] = controller_name unless url[:controller]
     url[:browser_tab_id] = @browser_tab_id                                      # Unique identifier for browser tab

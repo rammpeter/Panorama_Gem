@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    panorama_gem (2.14.5)
+    panorama_gem (2.15.0)
       actionmailer (= 6.1.5.1)
       actionpack (= 6.1.5.1)
       actionview (= 6.1.5.1)
@@ -94,7 +94,7 @@ GEM
     mini_mime (1.1.2)
     minitest (5.15.0)
     nio4r (2.5.8-java)
-    nokogiri (1.13.4-java)
+    nokogiri (1.13.6-java)
       racc (~> 1.4)
     playwright-ruby-client (1.21.0)
       concurrent-ruby (>= 1.1.6)

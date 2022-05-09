@@ -151,7 +151,7 @@ Rails.logger.info "get_selection_list: called render" if  Rails.env.test?
   end
 
   def show_used_sql(dragnet_sql)
-    show_value = PanoramaConnection.transform_sql_by_mgmt_pack_license(dragnet_sql[:sql]) # Default
+    show_value = PackLicense.filter_sql_for_pack_license(dragnet_sql[:sql]) # Default
     if dragnet_sql[:personal]
       show_dn = dragnet_sql.clone
       show_dn.delete(:personal)                                                 # should not be shown

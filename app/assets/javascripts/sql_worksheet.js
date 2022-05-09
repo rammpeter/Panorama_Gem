@@ -23,10 +23,6 @@ class SQL_Worksheet  {
                 return false;                                                       // suppress default alt#Enter-Handling
             }
         });
-
-
-        console.log('cm created');
-
         this.init_tab_container();
     }
 
@@ -86,7 +82,7 @@ class SQL_Worksheet  {
 
         var sql_statement = this.get_sql_at_cursor_position();
         setTimeout(function(){
-            ajax_html(tab_id+'_area_sql_worksheet', controller, action, {update_area: 'result_area_sql_worksheet', sql_statement: sql_statement});
+            ajax_html(tab_id+'_area_sql_worksheet', controller, action, {update_area: tab_id+'_area_sql_worksheet', sql_statement: sql_statement});
         }, 100);                                                                  // Wait until click is processed to hit the visible div
     }
 

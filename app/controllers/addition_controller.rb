@@ -845,24 +845,31 @@ class AdditionController < ApplicationController
 
   def exec_worksheet_sql
     @caption = nil
+
     @sql_statement = prepare_sql_statement(params[:sql_statement])              # remove trailing semicolon if not PL/SQL
     show_popup_message('No SQL statement found') if @sql_statement.nil? || @sql_statement == ''
     # remove comments from SQL
-    stripped_sql_statement = @sql_statement.split("\n").select{|s| s.strip[0,2] != '--'}.join("\n") # remove full line comments
-    stripped_sql_statement.gsub!(/\/\*.*?\*\//m, '')                            # remove /* comments */ also for multiple lines
-    stripped_sql_statement.upcase!
+    stripped_sql_statement = remove_comments_from_sql(@sql_statement)
 
-    # TODO: evaluate binds
-
-    # choose execution type and execute
-    if stripped_sql_statement =~ /^SELECT/ || stripped_sql_statement =~ /^WITH/
-      @res = sql_select_all @sql_statement
-      render_partial :list_dragnet_sql_result, controller: :dragnet
+    @expected_binds = find_binds_in_sql(@sql_statement)
+    @binds = binds_from_params(@expected_binds, params)
+    if all_binds_defined?(@expected_binds, @binds)
+      remember_binds_for_next_usage(@binds)
+      # choose execution type and execute
+      if stripped_sql_statement.upcase =~ /^SELECT/ || stripped_sql_statement.upcase =~ /^WITH/
+        @res = []
+        PanoramaConnection::SqlSelectIterator.new(stmt: PackLicense.filter_sql_for_pack_license(@sql_statement), binds: ar_binds_from_binds(@binds), query_name: 'exec_worksheet_sql').each {|r| @res << r}
+        render_partial :list_dragnet_sql_result, controller: :dragnet
+      else
+        PanoramaConnection.sql_execute_native(sql: PackLicense.filter_sql_for_pack_license(@sql_statement), binds: ar_binds_from_binds(@binds), query_name: 'exec_worksheet_sql')
+        render html: "<div class='page_caption'>Statement executed at #{localeDateTime(Time.now)}</div>
+        #{render_code_mirror(@sql_statement)}\n".html_safe
+      end
     else
-      PanoramaConnection.sql_execute @sql_statement
-      render html: "<div class='page_caption'>Statement executed at #{localeDateTime(Time.now)}</div>
-      #{render_code_mirror(@sql_statement)}
-".html_safe
+      @update_area = prepare_param :update_area
+      @requested_action = action_name                                           # repeat this action after setting binds
+      @modus_name       = 'Execute'
+      render_partial :set_expected_binds
     end
   end
 
@@ -872,32 +879,43 @@ class AdditionController < ApplicationController
       return
     end
     @sql_statement = prepare_sql_statement(params[:sql_statement])       # remove trailing semicolon
+    @expected_binds = find_binds_in_sql(@sql_statement)
+    @binds = binds_from_params(@expected_binds, params)
 
-    statement_id = get_unique_area_id
+    if all_binds_defined?(@expected_binds, @binds)
+      remember_binds_for_next_usage(@binds)
 
-    PanoramaConnection.sql_execute "EXPLAIN PLAN SET Statement_ID='#{statement_id}' FOR #{@sql_statement}"
-    @plans = sql_select_all ["\
-        SELECT p.*,
-               NVL(t.Num_Rows, i.Num_Rows) Num_Rows,
-               NVL(t.Last_Analyzed, i.Last_Analyzed) Last_Analyzed,
-               o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Last_Spec_TS,
-               (SELECT SUM(Bytes)/(1024*1024) FROM DBA_Segments s WHERE s.Owner=p.Object_Owner AND s.Segment_Name=p.Object_Name) MBytes
-        FROM   Plan_Table p
-        LEFT OUTER JOIN DBA_Tables  t ON t.Owner=p.Object_Owner AND t.Table_Name=p.Object_Name
-        LEFT OUTER JOIN DBA_Indexes i ON i.Owner=p.Object_Owner AND i.Index_Name=p.Object_Name
-        -- Object_Type ensures that only one record is gotten from DBA_Objects even if object is partitioned
-        LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Object_Owner AND o.Object_Name = p.Object_Name AND o.Object_Type = p.Object_Type
-        WHERE  Statement_ID = ?
-        ORDER BY ID
-        ", statement_id]
+      statement_id = get_unique_area_id
 
-    raise "Column 'DEPTH' missing in your Plan_Table (old structure)!\nPlease drop your local plan table to ensure usage of builtin public Plan_Table." if @plans.length > 0 && @plans[0]['depth'].nil?
+      PanoramaConnection.sql_execute_native(sql: "EXPLAIN PLAN SET Statement_ID='#{statement_id}' FOR #{@sql_statement}", binds: ar_binds_from_binds(@binds), query_name: 'explain_worksheet_sql')
+      @plans = sql_select_all ["\
+          SELECT p.*,
+                 NVL(t.Num_Rows, i.Num_Rows) Num_Rows,
+                 NVL(t.Last_Analyzed, i.Last_Analyzed) Last_Analyzed,
+                 o.Created, o.Last_DDL_Time, TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Last_Spec_TS,
+                 (SELECT SUM(Bytes)/(1024*1024) FROM DBA_Segments s WHERE s.Owner=p.Object_Owner AND s.Segment_Name=p.Object_Name) MBytes
+          FROM   Plan_Table p
+          LEFT OUTER JOIN DBA_Tables  t ON t.Owner=p.Object_Owner AND t.Table_Name=p.Object_Name
+          LEFT OUTER JOIN DBA_Indexes i ON i.Owner=p.Object_Owner AND i.Index_Name=p.Object_Name
+          -- Object_Type ensures that only one record is gotten from DBA_Objects even if object is partitioned
+          LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Object_Owner AND o.Object_Name = p.Object_Name AND o.Object_Type = p.Object_Type
+          WHERE  Statement_ID = ?
+          ORDER BY ID
+          ", statement_id]
 
-    calculate_execution_order_in_plan(@plans)                                   # Calc. execution order by parent relationship
+      raise "Column 'DEPTH' missing in your Plan_Table (old structure)!\nPlease drop your local plan table to ensure usage of builtin public Plan_Table." if @plans.length > 0 && @plans[0]['depth'].nil?
 
-    render_partial
-    PanoramaConnection.sql_execute ["DELETE FROM Plan_Table WHERE STatement_ID = ?", statement_id]
+      calculate_execution_order_in_plan(@plans)                                   # Calc. execution order by parent relationship
 
+      render_partial
+      PanoramaConnection.sql_execute ["DELETE FROM Plan_Table WHERE STatement_ID = ?", statement_id]
+
+    else
+      @update_area = prepare_param :update_area
+      @requested_action = action_name                                           # repeat this action after setting binds
+      @modus_name       = 'Explain'
+      render_partial :set_expected_binds
+    end
   end
 
   private
@@ -972,4 +990,86 @@ COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) #{column_alias}_Cnt"
     sql
   end
 
+  def remove_comments_from_sql(sql)
+    stripped_sql_statement = sql.split("\n").select{|s| s.strip[0,2] != '--'}.join("\n") # remove full line comments
+    stripped_sql_statement.gsub!(/\/\*.*?\*\//m, '')                            # remove /* comments */ also for multiple lines
+    stripped_sql_statement
+  end
+
+  def remove_string_literals(sql)
+    without_escaped = sql.gsub(/''/m, '')
+    without_escaped.gsub(/'.*'/m, '')
+  end
+
+  # @return Array
+  def find_binds_in_sql(sql)
+    remaining = remove_string_literals(remove_comments_from_sql(sql))
+    result = {}
+    stored_binds = read_from_client_info_store(:bind_aliases) || {}
+    while remaining[':'] do
+      remaining = remaining[remaining.index(':')+1..]
+      end_pos = remaining.length
+      [' ', ')', ']', ';'].each do |end_char|
+        end_pos = remaining.index(end_char) if remaining.index(end_char) && remaining.index(end_char) < end_pos
+      end
+      bind_alias = remaining[0, end_pos]
+      result[bind_alias] =  {
+        value: stored_binds[bind_alias][:value],
+        type:  stored_binds[bind_alias][:type] || 'Content dependent'
+      }
+    end
+    result
+  end
+
+  # Check if all expected aliases are in defined array
+  # @param expected Hash
+  # @param defined Hash
+  def all_binds_defined?(expected, defined)
+    expected.each do |key, _value|
+      return false unless defined.has_key?(key)
+    end
+    true
+  end
+
+  def remember_binds_for_next_usage(binds)
+    stored_binds = read_from_client_info_store(:bind_aliases)
+    stored_binds = {} if stored_binds.nil?
+    binds.each do |key, value|
+      stored_binds[key] = value
+    end
+    write_to_client_info_store(:bind_aliases, stored_binds)
+  end
+
+  # read the bind values from params into Hash
+  # @param expected_binds Hash
+  # @param param Request parameter
+  def binds_from_params(expected_binds, params)
+    result = {}
+    expected_binds.each do |key, value|
+      if params["alias_#{key}"]
+        result[key] = {
+          value: params["alias_#{key}"],
+          type:  params["type_#{key}"]
+        }
+      end
+    end
+    result
+  end
+
+  def ar_binds_from_binds(binds)
+    ar_binds = []
+    binds.each do |key, value|
+      typed_value = Float(value[:value]) rescue value[:value]
+      type = case value[:type]
+             when 'Content dependent' then ActiveRecord::Type::Value
+             when 'String' then ActiveRecord::Type::String
+             when 'Integer' then ActiveRecord::Type::Integer
+             when 'Float' then ActiveRecord::Type::Float
+             else raise "Unsupported type '#{value[:type]}'"
+             end
+      ar_binds << ActiveRecord::Relation::QueryAttribute.new(":#{key}", typed_value, type.new)
+    end
+    ar_binds
+  end
 end
+

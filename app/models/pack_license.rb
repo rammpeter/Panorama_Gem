@@ -24,7 +24,7 @@ class PackLicense
   end
 
   # Filter SQL string or array for unlicensed Table Access
-  def self.filter_sql_for_pack_license(sql, management_pack_license)
+  def self.filter_sql_for_pack_license(sql, management_pack_license: PanoramaConnection.get_threadlocal_config[:management_pack_license])
     case sql.class.name
       when 'Array' then
         sql[0] = self.new(management_pack_license).filter_sql_string_for_pack_license(sql[0]) if sql && sql.count > 0

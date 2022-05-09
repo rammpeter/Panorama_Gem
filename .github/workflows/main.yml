@@ -120,6 +120,8 @@ jobs:
       if: ${{ env.DB_VERSION != 'autonomous' }}
       run: |
         source $HOME/.rvm/scripts/rvm
+        echo $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake
+        ls -l $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake
         bundle exec rake -f $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake
 
     - name: run Test

@@ -509,12 +509,6 @@ class PanoramaConnection
 
   public
 
-  # return SQL with optionally transformed DBA_Hist-Tablenames and check if usage is allowed
-  def self.transform_sql_by_mgmt_pack_license(original_sql)
-    # Check for license violation and possible statement transformation
-    PackLicense.filter_sql_for_pack_license(original_sql, get_threadlocal_config[:management_pack_license])
-  end
-
   # Replace table_name according to license, used for view captions
   def self.adjust_table_name(table_name)
     PackLicense.translate_sql_table_names(table_name, get_threadlocal_config[:management_pack_license])
@@ -539,8 +533,13 @@ class PanoramaConnection
   #            modifier = proc für Anwendung auf die fertige Row
   def self.sql_select_iterator(sql, modifier=nil, query_name = 'sql_select_iterator')
     check_for_open_connection                                                   # ensure opened Oracle-connection
-    stmt, binds = sql_prepare_binds(transform_sql_by_mgmt_pack_license(sql))   # Transform SQL and split SQL and binds
-    SqlSelectIterator.new(translate_sql(stmt), binds, modifier, get_threadlocal_config[:query_timeout], query_name)      # kann per Aufruf von each die einzelnen Records liefern
+    stmt, binds = sql_prepare_binds(PackLicense.filter_sql_for_pack_license(sql))   # Transform SQL and split SQL and binds
+    SqlSelectIterator.new(
+      stmt:           translate_sql(stmt),
+      binds:          binds,
+      modifier:       modifier,
+      query_name:     query_name
+    )      # kann per Aufruf von each die einzelnen Records liefern
   end
 
   # Helper fuer Ausführung SQL-Select-Query,
@@ -571,22 +570,25 @@ class PanoramaConnection
 
   def self.sql_execute(sql, query_name = 'sql_execute')
     # raise 'binds are not yet supported for sql_execute' if sql.class != String
-
-    check_for_open_connection                                                   # ensure opened Oracle-connection
-    management_pack_license = get_threadlocal_config[:management_pack_license]
-    transformed_sql = PackLicense.filter_sql_for_pack_license(sql, management_pack_license)  # Check for lincense violation and possible statement transformation
+    transformed_sql = PackLicense.filter_sql_for_pack_license(sql)  # Check for lincense violation and possible statement transformation
     stmt, binds = sql_prepare_binds(transformed_sql)   # Transform SQL and split SQL and binds
+    sql_execute_native(sql: stmt, binds: binds, query_name: query_name)
+  end
+
+  # Execute with direct AR binds
+  def self.sql_execute_native(sql:, binds:, query_name: 'sql_execute_native')
+    check_for_open_connection                                                   # ensure opened Oracle-connection
     # Without query_timeout because long lasting ASH sampling is executed with this method
-    Thread.current[:panorama_connection_connection_object].register_sql_execution(stmt)
+    Thread.current[:panorama_connection_connection_object].register_sql_execution(sql)
     begin
-      get_connection.exec_update(stmt, query_name, binds)
+      get_connection.exec_update(sql, query_name, binds)
     rescue Exception => e
       if e.message['ORA-10632']
         Rails.logger.error "#{e.class}:#{e.message}! Retrying execution of SQL\n#{sql}"
         sleep(10)
         # reexecute the SQL in case of ORA-10632: invalid rowid
         # this can happen at CREATE TABLE with ENABLE ROW MOVEMENT, especially for 19.10 SE2
-        get_connection.exec_update(stmt, query_name, binds)
+        get_connection.exec_update(sql, query_name, binds)
       else
         raise
       end
@@ -600,7 +602,7 @@ class PanoramaConnection
     end
 
     # Ensure stacktrace of first exception is show
-    msg = "Error while executing SQL:\n#{PanoramaConnection.get_nested_exception_message(e)}\nSQL-Statement:\n#{stmt}\n#{bind_text.length > 0 ? "Bind-Values:\n#{bind_text}" : ''}"
+    msg = "Error while executing SQL:\n#{PanoramaConnection.get_nested_exception_message(e)}\nSQL-Statement:\n#{sql}\n#{bind_text.length > 0 ? "Bind-Values:\n#{bind_text}" : ''}"
     # Rails.logger.error("PanoramaConnection.sql_execute: #{msg}")  # Logging is done in outer exception handler
     new_ex = Exception.new(msg)
     new_ex.set_backtrace(e.backtrace)
@@ -887,7 +889,7 @@ class PanoramaConnection
     # Remember this parameters for execution at method each
     # stmt - SQL-String
     # binds - Parameter-Array
-    def initialize(stmt, binds, modifier, query_timeout, query_name = 'SqlSelectIterator')
+    def initialize(stmt:, binds:, modifier: nil, query_timeout: PanoramaConnection.get_threadlocal_config[:query_timeout], query_name: 'SqlSelectIterator')
       @stmt           = stmt
       @binds          = binds
       @modifier       = modifier              # proc for modifikation of record
