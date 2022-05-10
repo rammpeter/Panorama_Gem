@@ -22,7 +22,7 @@
           <td>:<%= key %></td>
           <td><%= text_field_tag("alias_#{key}",value[:value]) %></td>
           <td>
-            <%= select_tag "type_#{key}", options_for_select([ "Content dependent", "String", "Integer", "Float" ], value[:type]) %>
+            <%= select_tag "type_#{key}", options_for_select(worksheet_bind_types.map{|key, _value| key}, value[:type]) %>
           </td>
         </tr>
       <% end %>

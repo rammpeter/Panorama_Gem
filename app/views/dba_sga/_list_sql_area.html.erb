@@ -36,7 +36,7 @@
   column_options << {:caption=>"Status",      :data=>proc{|rec| rec.object_status},                                    :title=>"Object-Status"}
   column_options << {:caption=>"Memory (KB)", :data=>proc{|rec| fn((rec.sharable_mem+rec.persistent_mem+rec.runtime_mem)/1024.0,2)},  :title=>"Sharable memory + persistent memory + runtime memory in kBytes", :align=>:right, :data_title=>proc{|rec| "%t: Sharable memory = #{fn(rec.sharable_mem/1024.0)} kB, persistent memory = #{fn(rec.persistent_mem/1024.0)} kB, runtime memory = #{fn(rec.runtime_mem/1024.0)} kB"}}
 
-  caption = "#{t(:dba_sga_list_sql_area_caption, :default=>'SQL of current SGA from %{modus}, grouped by', :modus=>@modus)}  #{if @modus == "GV$SQL";  "SQL-ID, Child-Number, Child_Address" else "SQL-ID" end }#{", SQL-ID='#{@filters[:sql_id]}'" if @filters[:sql_id]}#{", Filter='#{@filters[:filter]}'" if @filters[:filter]}"
+  caption = "#{t(:dba_sga_list_sql_area_caption, :default=>'SQL of current SGA from %{modus}, grouped by', :modus=>@modus)}  #{if @modus == "GV$SQL";  "SQL-ID, Child-Number, Child_Address" else "SQL-ID" end }"
   @filters.each do |key, value|
     caption << ", #{key}='#{value}'"
   end

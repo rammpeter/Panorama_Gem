@@ -5,6 +5,7 @@ require 'test_helper'
 
 class AdditionControllerTest < ActionDispatch::IntegrationTest
   include MenuHelper
+  include AdditionHelper
 
   setup do
     #@routes = Engine.routes         # Suppress routing error if only routes for dummy application are active
@@ -161,11 +162,33 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
   test "exec_worksheet_sql with xhr: true" do
     post '/addition/exec_worksheet_sql', params: {format: :html, sql_statement: 'SELECT SYSDATE FROM DUAL', update_area: :hugo }
     assert_response :success
+
+    # Should render dialog for binds
+    post '/addition/exec_worksheet_sql', params: {format: :html, sql_statement: 'SELECT SYSDATE FROM DUAL WHERE 1=:A1', update_area: :hugo }
+    assert_response :success
+
+    # Should execute with for binds
+    # Type 'String' raises ORA-01722: Ungültige Zahl in this case
+    worksheet_bind_types.select{|key, _value| key != 'String'}.each do |key, _value|
+      post '/addition/exec_worksheet_sql', params: {format: :html, sql_statement: "SELECT /* #{key} */ SYSDATE FROM DUAL WHERE :A1 = 1", alias_A1: 2, type_A1: key, update_area: :hugo }
+      assert_response :success
+    end
   end
 
   test "explain_worksheet_sql with xhr: true" do
     post '/addition/explain_worksheet_sql', params: {format: :html, sql_statement: 'SELECT SYSDATE FROM DUAL', update_area: :hugo }
     assert_response :success
+
+    # Should render dialog for binds
+    post '/addition/explain_worksheet_sql', params: {format: :html, sql_statement: 'SELECT SYSDATE FROM DUAL WHERE 1=:A1', update_area: :hugo }
+    assert_response :success
+
+    # Should explain with for binds
+    # Type 'String' raises ORA-01722: Ungültige Zahl in this case
+    worksheet_bind_types.select{|key, _value| key != 'String'}.each do |key, _value|
+      post '/addition/explain_worksheet_sql', params: {format: :html, sql_statement: "SELECT /* #{key} */ SYSDATE FROM DUAL WHERE :A1 = 1", alias_A1: 2, type_A1: key, update_area: :hugo }
+      assert_response :success
+    end
   end
 
   test "exec_recall_params with xhr: true" do

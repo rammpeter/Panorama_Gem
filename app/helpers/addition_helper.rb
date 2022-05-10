@@ -45,5 +45,13 @@ module AdditionHelper
     retval
   end
 
+  def worksheet_bind_types
+    {
+      'Content dependent' => { type_class: ActiveRecord::Type::Value} ,
+      'String'            => { type_class: ActiveRecord::Type::String },
+      'Integer'           => { type_class: ActiveRecord::Type::Integer },
+      'Float'             => { type_class:  ActiveRecord::Type::Float }
+    }
+  end
 end
 

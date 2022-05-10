@@ -1014,8 +1014,8 @@ COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) #{column_alias}_Cnt"
       end
       bind_alias = remaining[0, end_pos]
       result[bind_alias] =  {
-        value: stored_binds[bind_alias][:value],
-        type:  stored_binds[bind_alias][:type] || 'Content dependent'
+        value: stored_binds[bind_alias] ? stored_binds[bind_alias][:value] : nil,
+        type:  stored_binds[bind_alias] ? stored_binds[bind_alias][:type]  : 'Content dependent'
       }
     end
     result
@@ -1060,14 +1060,8 @@ COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) #{column_alias}_Cnt"
     ar_binds = []
     binds.each do |key, value|
       typed_value = Float(value[:value]) rescue value[:value]
-      type = case value[:type]
-             when 'Content dependent' then ActiveRecord::Type::Value
-             when 'String' then ActiveRecord::Type::String
-             when 'Integer' then ActiveRecord::Type::Integer
-             when 'Float' then ActiveRecord::Type::Float
-             else raise "Unsupported type '#{value[:type]}'"
-             end
-      ar_binds << ActiveRecord::Relation::QueryAttribute.new(":#{key}", typed_value, type.new)
+      raise "Unsupported type '#{value[:type]}'" unless worksheet_bind_types.has_key?(value[:type])
+      ar_binds << ActiveRecord::Relation::QueryAttribute.new(":#{key}", typed_value, worksheet_bind_types[value[:type]][:type_class].new)
     end
     ar_binds
   end
