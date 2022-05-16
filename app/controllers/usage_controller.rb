@@ -205,6 +205,7 @@ class UsageController < ApplicationController
     render html: JSON.pretty_generate(read_from_client_info_store(:browser_tab_ids)).gsub(/\n/, "<br/>").gsub(/ /, '&nbsp;').html_safe
   end
 
+
   private
 
   def get_total_elements_no(element)
