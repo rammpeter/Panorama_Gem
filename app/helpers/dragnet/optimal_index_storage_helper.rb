@@ -80,7 +80,29 @@ module Dragnet::OptimalIndexStorageHelper
             :desc  => t(:dragnet_helper_130_desc, :default=> 'For multicolumn-indexes compression of single index columns (beginning from left) may be useful even if this multicolumn-index has overall Num_Rows=Distinct_Keys (selectivity=1).
 Partial index-compression (COMPRESS x) assumes that index-column to be compressed has position 1 in index or all columns before are also compressed.
 This selections shows recommendations for compression of single columns of multicolumn indexes beginning with column-position 1.'),
-            :sql=> "SELECT *
+            :sql=> "WITH Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Owner, Table_Name, Index_Name, Compression, Prefix_Length,
+                                            Num_Rows, Last_Analyzed, Partitioned, Index_Type
+                                     FROM   DBA_Indexes
+                                     WHERE  Owner NOT IN (#{system_schema_subselect})
+                                     AND    Index_Type NOT IN ('BITMAP')
+                                     AND    Num_Rows > ?
+                                    ),
+                         Ind_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Column_Name, Column_Position
+                                         FROM   DBA_Ind_Columns
+                                        ),
+                         Tab_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Column_Name, Num_Distinct, Avg_Col_Len
+                                         FROM   DBA_Tab_Columns
+                                        ),
+                         Grouped_Ind_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, COUNT(*) Columns
+                                                 FROM   Ind_Columns
+                                                 GROUP BY Index_Owner, Index_Name
+                                                 HAVING COUNT(*) > 1
+                                                ),
+                         Segments AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes
+                                      FROM   DBA_Segments
+                                      GROUP BY Owner, Segment_Name
+                                     )
+                    SELECT *
                     FROM   (
                             SELECT i.Owner, i.Table_Name, i.Index_Name, i.Index_Type \"Index Type\", i.Compression, i.Prefix_Length \"Prefix Length\",
                                    i.Num_Rows, i.Last_Analyzed \"Last Analyzed\", i.Partitioned \"Part.\",
@@ -94,20 +116,12 @@ This selections shows recommendations for compression of single columns of multi
                                    tc.Avg_Col_Len   \"Avg Col Len\",
                                    ROUND(i.Num_Rows/DECODE(tc.Num_Distinct,0,1,tc.Num_Distinct)) \"Rows per Key\",
                                    seg.MBytes
-                            FROM   DBA_Indexes i
-                            JOIN   (SELECT Index_Owner, Index_Name, COUNT(*) Columns
-                                    FROM   DBA_Ind_Columns
-                                    GROUP BY Index_Owner, Index_Name
-                                    HAVING COUNT(*) > 1
-                                   ) ica ON ica.Index_Owner = i.Owner AND ica.Index_Name = i.Index_Name
-                            JOIN   DBA_Ind_Columns ic ON ic.Index_Owner = i.Owner AND ic.Index_Name = i.Index_Name
-                            JOIN   DBA_Tab_Columns tc ON tc.Owner = i.Table_Owner AND tc.Table_Name = i.Table_Name AND tc.Column_Name = ic.Column_Name
-                            JOIN   (SELECT Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes FROM DBA_Segments GROUP BY Owner, Segment_Name
-                                   ) seg ON seg.Owner = i.Owner AND seg.Segment_Name = i.Index_Name
-                            WHERE  i.Owner NOT IN (#{system_schema_subselect})
-                            AND    i.Index_Type NOT IN ('BITMAP')
-                            AND    i.Num_Rows > ?
-                            AND    i.Num_Rows/DECODE(tc.Num_Distinct,0,1,tc.Num_Distinct) > ?
+                            FROM   Indexes i
+                            JOIN   Grouped_Ind_Columns ica ON ica.Index_Owner = i.Owner AND ica.Index_Name = i.Index_Name
+                            JOIN   Ind_Columns ic ON ic.Index_Owner = i.Owner AND ic.Index_Name = i.Index_Name
+                            JOIN   Tab_Columns tc ON tc.Owner = i.Table_Owner AND tc.Table_Name = i.Table_Name AND tc.Column_Name = ic.Column_Name
+                            JOIN   Segments  seg ON seg.Owner = i.Owner AND seg.Segment_Name = i.Index_Name
+                            WHERE  i.Num_Rows/DECODE(tc.Num_Distinct,0,1,tc.Num_Distinct) > ?
                             AND    (i.Compression = 'DISABLED' OR i.Prefix_Length < ic.Column_Position)
                            )
                     ORDER BY \"Column Pos.\", NVL(\"Avg Col Len\", 5) * NVL(\"Avg Col Len\", 5) * Num_Rows * Num_Rows/DECODE(\"Num. Distinct\",0,1,\"Num. Distinct\")/DECODE(Partitions, 0, 1, Partitions) DESC NULLS LAST",
