@@ -30,7 +30,9 @@
       <%= t(:sorted_by, :default=>'Sorted by') %>
       <select name="topSort">
         <% sql_area_sort_criteria.each do |key, value| %>
-          <%= "<option value=\"#{key}\"#{" selected" if key == :ElapsedTimeTotal}>#{value[:title]}</option>".html_safe %>
+          <% if !value.has_key?(:modus_only) || value[:modus_only].upcase == @source_table.upcase %>
+            <%= "<option value=\"#{key}\"#{" selected" if key == :ElapsedTimeTotal}>#{value[:title]}</option>".html_safe %>
+          <% end %>
         <% end %>
       </select>
     </div>

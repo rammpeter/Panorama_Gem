@@ -47,6 +47,7 @@ module DbaSgaHelper
         ClusterWaits:           { title: 'Cluster wait time total',             sql: "Cluster_Wait_Time_Secs DESC" },
         LastActive:             { title: t(:dba_sga_show_sql_area_sort_last_active_hint, default: 'Timestamp of last execution'),   sql: "Last_Active_Time DESC NULLS LAST" },
         Memory:                 { title: t(:dba_sga_show_sql_area_sort_memory_hint, default: 'Amount of allocated memory in SGA'),  sql: "SHARABLE_MEM+PERSISTENT_MEM+RUNTIME_MEM DESC" },
+        ChildCount:             { title: 'Number of child cursors',             sql: "Version_Count DESC", modus_only: 'GV$SQLArea'},
     }
   end
 
