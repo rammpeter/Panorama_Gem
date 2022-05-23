@@ -2138,7 +2138,9 @@ Oldest remaining ASH record in SGA is from #{localeDateTime(min_ash_time)} but c
       FROM   (
               SELECT /*+ NO_MERGE */ *
               FROM   (
-                      SELECT Inst_ID, SQL_ID, SQL_Child_Number, COUNT(*) Wait_Time_Secs,
+                      SELECT Inst_ID, SQL_ID,
+                             COUNT(DISTINCT SQL_Child_Number) SQL_Child_Count,
+                             COUNT(*) Wait_Time_Secs,
                              COUNT(DISTINCT QInst_ID||','||QSession_ID||','||QSession_Serial_No) Sessions,
                              COUNT(DISTINCT PQ_Session)   PQ_Sessions,
                              MIN(QInst_ID)                Min_QInst_ID,
@@ -2155,12 +2157,12 @@ Oldest remaining ASH record in SGA is from #{localeDateTime(min_ash_time)} but c
                               FROM   gv$Active_Session_History h
                               #{where_string} AND SQL_ID IS NOT NULL
                              ) h
-                      GROUP BY Inst_ID, SQL_ID, SQL_Child_Number
+                      GROUP BY Inst_ID, SQL_ID
                       ORDER BY Wait_Time_secs DESC
                      ) h
               WHERE  RowNum <= 10
              ) h
-      LEFT OUTER JOIN gv$SQL sql ON sql.Inst_ID = h.Inst_ID AND sql.SQL_ID = h.SQL_ID AND sql.Child_Number = h.SQL_Child_Number
+      LEFT OUTER JOIN gv$SQLArea sql ON sql.Inst_ID = h.Inst_ID AND sql.SQL_ID = h.SQL_ID
       LEFT OUTER JOIN gv$Session s ON s.Inst_ID = h.Min_QInst_ID and s.SID = h.Min_QSession_ID AND s.Serial# = h.Min_QSession_Serial_No
       ORDER BY Wait_Time_secs DESC
     "].concat(where_values)

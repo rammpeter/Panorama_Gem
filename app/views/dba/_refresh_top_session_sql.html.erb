@@ -70,7 +70,7 @@
   column_options_sessions << {caption: 'Action',           data: proc{|rec| rec.max_action},            title: "Action identifier with highest wait time in considered time period", data_title: proc{|rec| "%t\n\n#{rec.max_action}"}}
 
   link_sql_sql = proc do |rec|
-    link_sql_id(@update_area, rec.inst_id, rec.sql_id, childno: rec.sql_child_number,
+    link_sql_id(@update_area, rec.inst_id, rec.sql_id,
                 additional_onclick_js: refresh_off,
                 time_selection_start: localeDateTime(rec.first_occurrence),
                 time_selection_end:   localeDateTime(rec.last_occurrence)
@@ -113,7 +113,7 @@
 
   column_options_sqls = []
   column_options_sqls << {caption: 'I',                data: proc{|rec| rec.inst_id},                     title: "Instance-ID"} if PanoramaConnection.rac?
-  column_options_sqls << {caption: 'SQL ID',           data: link_sql_sql,                                title: "Current SQL-ID of session", data_title: proc{|rec| "%t\nChild-number = #{rec.sql_child_number}"}}
+  column_options_sqls << {caption: 'SQL ID',           data: link_sql_sql,                                title: "Current SQL-ID of session", data_title: proc{|rec| "%t\nNumber of children = #{rec.sql_child_count}"}}
   column_options_sqls << {caption: 'Wait time (sec.)', data: link_wait_time_sql,                          title: "Wait time of SQL in seconds in considered time period", align: :right, show_pct_background: true, data_title: proc{|rec| "%t\n#{seconds_explain(rec.wait_time_secs)}\nBetween #{localeDateTime(rec.first_occurrence)} and #{localeDateTime(rec.last_occurrence)}\nAverage load = #{fn(rec.wait_time_secs / (rec.last_occurrence-rec.first_occurrence),1) rescue nil}"}}
   column_options_sqls << {caption: 'Sess.',            data: link_sql_session,                            title: "Session ID/serial# if only one session was executing this SQL in in considered time period\nor number of different sessions have been executing this SQL in considered time period", align: :right}
   column_options_sqls << {caption: 'User',             data: show_username,                               title: "DB-Username if only one user was executing this SQL in in considered time period\nor number of different users have been executing this SQL in considered time period", align: :right}
