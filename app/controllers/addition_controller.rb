@@ -1009,7 +1009,7 @@ COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) #{column_alias}_Cnt"
     while remaining[':'] do
       remaining = remaining[remaining.index(':')+1..]
       end_pos = remaining.length
-      [' ', ')', ']', ';'].each do |end_char|
+      [' ', ')', ']', ';', "\r", "\n"].each do |end_char|
         end_pos = remaining.index(end_char) if remaining.index(end_char) && remaining.index(end_char) < end_pos
       end
       bind_alias = remaining[0, end_pos]

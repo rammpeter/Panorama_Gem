@@ -8,7 +8,7 @@
                   controller:     :addition,
                   action:         @requested_action,
                   update_area:  @update_area
-                }, { onsubmit: "jQuery('##{dialog_id}').each(function(){$(this).dialog('destroy').hide();});"}
+                }, { onsubmit: "jQuery(\"##{dialog_id}\").dialog(\"destroy\").hide();"}
       ) do %>
     <%= hidden_field_tag('sql_statement', @sql_statement) %>
     <table style="width: 100%">
