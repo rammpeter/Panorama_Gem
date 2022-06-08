@@ -20,10 +20,52 @@ class DbaSchemaController < ApplicationController
   end
 
   def list_db_users
-    @users = sql_select_iterator "SELECT u.*
+    @users = sql_select_iterator "SELECT u.*, p.Granted_Roles
                                   FROM   DBA_Users u
+                                  LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Grantee, COUNT(*) Granted_Roles
+                                                   FROM   DBA_Role_Privs
+                                                   GROUP BY Grantee
+                                                  ) p ON p.Grantee = u.UserName
                                   ORDER BY u.UserName
                                  "
+    render_partial
+  end
+
+  def list_roles
+    @roles = sql_select_iterator "SELECT r.*, p.Grantees
+                                  FROM   DBA_Roles r
+                                  LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Granted_Role, COUNT(*) Grantees
+                                                   FROM   DBA_Role_Privs
+                                                   GROUP BY Granted_Role
+                                                  ) p ON p.Granted_Role = r.Role
+                                  ORDER BY Role
+                                 "
+    render_partial
+  end
+
+  def list_role_grants
+    @role     = prepare_param :role
+    @grantee  = prepare_param :grantee
+    where_string = ''
+    where_values = []
+
+    if @role
+      where_string << (where_string == '' ? "WHERE " : "AND ")
+      where_string << "p.Granted_Role = ?"
+      where_values << @role
+    end
+
+    if @grantee
+      where_string << (where_string == '' ? "WHERE " : "AND ")
+      where_string << "p.Grantee = ?"
+      where_values << @grantee
+    end
+
+    @role_grants =   sql_select_iterator ["SELECT p.*
+                                           FROM   DBA_Role_Privs p
+                                           #{where_string}
+                                           ORDER BY p.Grantee, p.Granted_Role
+                                          "].concat(where_values)
     render_partial
   end
 

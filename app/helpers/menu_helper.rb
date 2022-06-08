@@ -31,7 +31,11 @@ module MenuHelper
               {:class => 'item', :caption => 'Resource limits', :controller => :dba, :action => :resource_limits, :hint => t(:menu_dba_resource_limit_hint, :default => 'Show resource limits from gv$Resource_Limit')},
             ]
             },
-            {:class => 'item', :caption => 'Database users', :controller => :dba_schema, :action => :list_db_users, :hint => t(:menu_dba_schema_list_users_hint, :default => 'Show database users (All_Users)')},
+            {:class => 'menu', :caption => 'User management', :content => [
+              {:class => 'item', :caption => 'Database users', :controller => :dba_schema, :action => :list_db_users, :hint => t(:menu_dba_schema_list_users_hint, :default => 'Show database users (All_Users)')},
+              {:class => 'item', :caption => 'Roles', :controller => :dba_schema, :action => :list_roles, :hint => t(:menu_dba_schema_list_roles_hint, :default => 'Show database roles (DBA_Roles)')},
+            ]
+            },
             {:class => 'menu', :caption => 'Audit Trail', :content => [
               {:class => 'item', :caption => 'Auditing rules',              :controller => :dba_schema, :action => :show_audit_rules, :hint => t(:menu_dba_schema_audit_rules_hint, :default => 'Show rules for standard and fine grain auditing')},
               {:class => 'item', :caption => 'Standard audit trail + FGA',  :controller => :dba_schema, :action => :show_audit_trail, :hint => t(:menu_dba_schema_audit_trail_hint, :default => 'Show activities logged by standard audit trail and fine grain auditing (DBA_Common_Audit_Trail)')},

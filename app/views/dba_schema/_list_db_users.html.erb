@@ -1,6 +1,16 @@
 <% @update_area = get_unique_area_id %>
 
 <%
+  link_granted_roles = proc do |rec|
+    ajax_link(fn(rec.granted_roles),
+              {action:      :list_role_grants,
+               grantee:     rec.username,
+               update_area: @update_area,
+              },
+              title: "Show granted roles for user '#{rec.username}'"
+    )
+  end
+
   column_options = []
   column_options << {caption: 'User ID',      data: proc{|rec| fn(rec.user_id)},              title: 'ID of user', align: :right}
   column_options << {caption: 'User name',    data: proc{|rec| rec.username},                 title: 'Name of user'}
@@ -24,7 +34,8 @@
   column_options << {caption: 'Default collation', data: proc{|rec| rec.default_collation},   title: "Default collation for the user’s schema"} if get_db_version >= '12.2'
   column_options << {caption: 'Impl.',        data: proc{|rec| rec.implicit},                 title: "Indicates whether this user is a common user created by an implicit application (YES) or not (NO)"} if get_db_version >= '12.2'
   column_options << {caption: 'All shard',    data: proc{|rec| rec.all_shard},                title: "In a sharded database, the value in this column indicates whether the user was created with shard DDL enabled. T"} if get_db_version >= '12.2'
-  column_options << {caption: 'Passw. change date', data: proc{|rec| localeDateTime(rec.password_change_date)},title: "Date on which the user's password was last set"} if get_db_version >= '19.0'
+  column_options << {caption: 'Passw. change date', data: proc{|rec| localeDateTime(rec.password_change_date)},title: "Date on which the user’s password was last set"} if get_db_version >= '19.0'
+  column_options << {caption: 'Granted roles', data: link_granted_roles,                      title: 'Number of granted roles for this user', align: :right}
 
 %>
 
