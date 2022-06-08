@@ -20,25 +20,34 @@ class DbaSchemaController < ApplicationController
   end
 
   def list_db_users
-    @users = sql_select_iterator "SELECT u.*, p.Granted_Roles
-                                  FROM   DBA_Users u
-                                  LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Grantee, COUNT(*) Granted_Roles
+    @users = sql_select_iterator "WITH Users AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Users),
+                                       Role_Privs AS (SELECT /*+ NO_MERGE MATERIALIZE */ Grantee, COUNT(*) Granted_Roles
                                                    FROM   DBA_Role_Privs
                                                    GROUP BY Grantee
-                                                  ) p ON p.Grantee = u.UserName
+                                                  ),
+                                       Sys_Privs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Grantee, COUNT(*) Privileges
+                                                      FROM   DBA_Sys_Privs
+                                                      GROUP BY Grantee
+                                                     )
+                                  SELECT u.*, p.Granted_Roles, s.Privileges
+                                  FROM   Users u
+                                  LEFT OUTER JOIN Role_Privs p ON p.Grantee = u.UserName
+                                  LEFT OUTER JOIN Sys_Privs s ON s.Grantee = u.UserName
                                   ORDER BY u.UserName
                                  "
     render_partial
   end
 
   def list_roles
-    @roles = sql_select_iterator "SELECT r.*, p.Grantees
-                                  FROM   DBA_Roles r
-                                  LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Granted_Role, COUNT(*) Grantees
-                                                   FROM   DBA_Role_Privs
-                                                   GROUP BY Granted_Role
-                                                  ) p ON p.Granted_Role = r.Role
-                                  ORDER BY Role
+    @roles = sql_select_iterator "WITH Roles AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Roles),
+                                       Role_Privs AS (SELECT /*+ NO_MERGE MATERIALIZE */ Granted_Role, COUNT(*) Grantees
+                                                      FROM   DBA_Role_Privs
+                                                      GROUP BY Granted_Role
+                                                     )
+                                  SELECT r.*, p.Grantees
+                                  FROM   Roles r
+                                  LEFT OUTER JOIN Role_Privs p ON p.Granted_Role = r.Role
+                                  ORDER BY r.Role
                                  "
     render_partial
   end
@@ -51,21 +60,76 @@ class DbaSchemaController < ApplicationController
 
     if @role
       where_string << (where_string == '' ? "WHERE " : "AND ")
-      where_string << "p.Granted_Role = ?"
+      where_string << "Granted_Role = ?"
       where_values << @role
     end
 
     if @grantee
       where_string << (where_string == '' ? "WHERE " : "AND ")
-      where_string << "p.Grantee = ?"
+      where_string << "Grantee = ?"
       where_values << @grantee
     end
 
-    @role_grants =   sql_select_iterator ["SELECT p.*
-                                           FROM   DBA_Role_Privs p
-                                           #{where_string}
+    @role_grants =   sql_select_iterator ["WITH Role_Privs AS (SELECT /*+ NO_MERGE MATERIALIZE */ *
+                                                               FROM   DBA_Role_Privs p
+                                                               #{where_string}
+                                                              ),
+                                                Users AS (SELECT /*+ NO_MERGE MATERIALIZE */ UserName FROM DBA_Users),
+                                                Roles AS (SELECT /*+ NO_MERGE MATERIALIZE */ Role FROM DBA_Roles)
+                                           SELECT p.*,
+                                                 CASE WHEN u.UserName IS NOT NULL THEN 'USER'
+                                                      WHEN r.Role IS NOT NULL THEN 'ROLE'
+                                                 ELSE 'Unknown' END Grantee_Type
+                                           FROM   Role_Privs p
+                                           LEFT OUTER JOIN Users u ON u.UserName = p.Grantee
+                                           LEFT OUTER JOIN Roles r ON r.Role = p.Grantee
                                            ORDER BY p.Grantee, p.Granted_Role
                                           "].concat(where_values)
+    render_partial
+  end
+
+  def list_sys_privileges
+    @privileges = sql_select_iterator "SELECT Privilege, COUNT(*) Grantees
+                                       FROM   DBA_Sys_Privs
+                                       GROUP BY Privilege
+                                       ORDER BY Privilege
+                                      "
+    render_partial
+  end
+
+  def list_granted_sys_privileges
+    @privilege  = prepare_param :privilege
+    @grantee    = prepare_param :grantee
+    where_string = ''
+    where_values = []
+
+    if @privilege
+      where_string << (where_string == '' ? "WHERE " : "AND ")
+      where_string << "Privilege = ?"
+      where_values << @privilege
+    end
+
+    if @grantee
+      where_string << (where_string == '' ? "WHERE " : "AND ")
+      where_string << "Grantee = ?"
+      where_values << @grantee
+    end
+
+    @privileges =   sql_select_iterator ["WITH Sys_Privs AS (SELECT /*+ NO_MERGE MATERIALIZE */ *
+                                                             FROM   DBA_Sys_Privs
+                                                             #{where_string}
+                                                            ),
+                                                Users AS (SELECT /*+ NO_MERGE MATERIALIZE */ UserName FROM DBA_Users),
+                                                Roles AS (SELECT /*+ NO_MERGE MATERIALIZE */ Role FROM DBA_Roles)
+                                          SELECT p.*,
+                                                 CASE WHEN u.UserName IS NOT NULL THEN 'USER'
+                                                      WHEN r.Role IS NOT NULL THEN 'ROLE'
+                                                 ELSE 'Unknown' END Grantee_Type
+                                          FROM   Sys_Privs p
+                                          LEFT OUTER JOIN Users u ON u.UserName = p.Grantee
+                                          LEFT OUTER JOIN Roles r ON r.Role = p.Grantee
+                                          ORDER BY p.Grantee, p.Privilege
+                                         "].concat(where_values)
     render_partial
   end
 

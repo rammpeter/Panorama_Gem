@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    panorama_gem (2.15.2)
+    panorama_gem (2.15.3)
       actionmailer (= 6.1.6)
       actionpack (= 6.1.6)
       actionview (= 6.1.6)
@@ -96,14 +96,14 @@ GEM
     nio4r (2.5.8-java)
     nokogiri (1.13.6-java)
       racc (~> 1.4)
-    playwright-ruby-client (1.21.0)
+    playwright-ruby-client (1.22.0)
       concurrent-ruby (>= 1.1.6)
       mime-types (>= 3.0)
     public_suffix (4.0.7)
     puma (5.6.4-java)
       nio4r (~> 2.0)
     racc (1.6.0-java)
-    rack (2.2.3)
+    rack (2.2.3.1)
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
     rails-dom-testing (2.0.3)
@@ -121,7 +121,7 @@ GEM
     rb-fsevent (0.11.1)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
-    regexp_parser (2.4.0)
+    regexp_parser (2.5.0)
     rexml (3.2.5)
     ruby-plsql (0.8.0)
     rubyzip (2.3.2)
@@ -182,4 +182,4 @@ DEPENDENCIES
   webdrivers
 
 BUNDLED WITH
-   2.3.10
+   2.3.15

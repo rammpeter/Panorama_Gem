@@ -323,4 +323,20 @@ class DbaSchemaControllerTest < ActionController::TestCase
     get :list_stored_settings, params: {format: :html, owner: 'SYS', object_name: 'DBMS_STATS', object_type: 'PACKAGE BODY' }
     assert_response :success
   end
+
+  test 'list role grants' do
+    post :list_role_grants, params: {format: :html, role: 'CONNECT' }
+    assert_response :success
+
+    post :list_role_grants, params: {format: :html, grantee: 'SYS' }
+    assert_response :success
+  end
+
+  test 'list granted sys privileges' do
+    post :list_granted_sys_privileges, params: {format: :html, privilege: 'SELECT ANY TABLE' }
+    assert_response :success
+
+    post :list_granted_sys_privileges, params: {format: :html, grantee: 'SYS' }
+    assert_response :success
+  end
 end
