@@ -7,7 +7,17 @@
                grantee:     rec.username,
                update_area: @update_area,
               },
-              title: "Show granted roles for user '#{rec.username}'"
+              title: "Show roles granted to user '#{rec.username}'"
+    )
+  end
+
+  link_obj_grants = proc do |rec|
+    ajax_link(fn(rec.obj_grants),
+              {action:      :list_obj_grants,
+               grantee:     rec.username,
+               update_area: @update_area,
+              },
+              title: "Show object privileges granted to user '#{rec.username}'"
     )
   end
 
@@ -17,7 +27,17 @@
                grantee:     rec.username,
                update_area: @update_area,
               },
-              title: "Show system privileges granted for user '#{rec.username}'"
+              title: "Show system privileges granted to user '#{rec.username}'"
+    )
+  end
+
+  link_granted_obj_privs = proc do |rec|
+    ajax_link(fn(rec.granted_obj_grants),
+              {action:      :list_obj_grants,
+               grantor:     rec.username,
+               update_area: @update_area,
+              },
+              title: "Show object privileges granted for others by user '#{rec.username}'"
     )
   end
 
@@ -45,10 +65,12 @@
   column_options << {caption: 'Impl.',        data: proc{|rec| rec.implicit},                 title: "Indicates whether this user is a common user created by an implicit application (YES) or not (NO)"} if get_db_version >= '12.2'
   column_options << {caption: 'All shard',    data: proc{|rec| rec.all_shard},                title: "In a sharded database, the value in this column indicates whether the user was created with shard DDL enabled. T"} if get_db_version >= '12.2'
   column_options << {caption: 'Passw. change date', data: proc{|rec| localeDateTime(rec.password_change_date)},title: "Date on which the user’s password was last set"} if get_db_version >= '19.0'
-  column_options << {caption: 'Granted roles', data: link_granted_roles,                      title: 'Number of granted roles for this user', align: :right}
-  column_options << {caption: 'Granted privs', data: link_privileges,                         title: 'Number of granted system privileges for this user', align: :right}
+  column_options << {caption: 'Roles',        data: link_granted_roles,                       title: 'Number of roles granted to this user', align: :right}
+  column_options << {caption: 'Object privs', data: link_obj_grants,                          title: 'Number of object privileges granted to this user', align: :right}
+  column_options << {caption: 'System privs', data: link_privileges,                          title: 'Number of system privileges granted this user', align: :right}
+  column_options << {caption: 'Granted object privs', data: link_granted_obj_privs,           title: 'Number of object privileges granted to others by this user', align: :right}
 %>
 
-<%= gen_slickgrid(@users, column_options, {caption: "Database users from DBA_Users", max_height: 450, show_pin_icon: 1}) %>
+<%= gen_slickgrid(@users, column_options, {caption: "Database users from DBA_Users#{" filtered for user='#{@username}'" if @username}", max_height: 450, show_pin_icon: 1}) %>
 
 <div id="<%= @update_area %>"></div>

@@ -1,10 +1,42 @@
 <% @update_area = get_unique_area_id %>
 
 <%
+  link_grantee = proc do |rec|
+    case rec.grantee_type
+    when 'USER' then
+      ajax_link(rec.grantee,
+                {action:      :list_db_users,
+                 username:    rec.grantee,
+                 update_area: @update_area,
+                },
+                title: "Show details for user '#{rec.grantee}'"
+      )
+    when 'ROLE' then
+      ajax_link(rec.grantee,
+                {action:      :list_roles,
+                 role:        rec.grantee,
+                 update_area: @update_area,
+                },
+                title: "Show details for role '#{rec.grantee}'"
+      )
+    else rec.grantee
+    end
+  end
+
+  link_granted_role = proc do |rec|
+    ajax_link(rec.granted_role,
+              {action:      :list_roles,
+               role:        rec.granted_role,
+               update_area: @update_area,
+              },
+              title: "Show details for role '#{rec.granted_role}'"
+    )
+  end
+
   column_options = []
-  column_options << {caption: 'Grantee',      data: proc{|rec| rec.grantee},                  title: 'Name of the user or role receiving the grant'}
+  column_options << {caption: 'Grantee',      data: link_grantee,                             title: 'Name of the user or role receiving the grant'}
   column_options << {caption: 'Grantee type', data: proc{|rec| rec.grantee_type},             title: 'Type of grantee'}
-  column_options << {caption: 'Granted role', data: proc{|rec| rec.granted_role},             title: "Granted role name"}
+  column_options << {caption: 'Granted role', data: link_granted_role,                        title: "Granted role name"}
   column_options << {caption: 'Admin option', data: proc{|rec| rec.admin_option},             title: "Indicates whether the grant was with the ADMIN OPTION (YES) or not (NO)"}
   column_options << {caption: 'Delegate option', data: proc{|rec| rec.delegate_option},       title: "Indicates whether the grant was with the DELEGATE OPTION (YES) or not (NO)"}
   column_options << {caption: 'Default role', data: proc{|rec| rec.default_role},             title: "Indicates whether the role is designated as a DEFAULT ROLE for the user (YES) or not (NO)"}

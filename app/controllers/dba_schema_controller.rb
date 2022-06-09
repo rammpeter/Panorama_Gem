@@ -20,35 +20,81 @@ class DbaSchemaController < ApplicationController
   end
 
   def list_db_users
-    @users = sql_select_iterator "WITH Users AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Users),
+    @username     = prepare_param :username
+    where_string = ''
+    where_values = []
+
+    if @username
+      where_string << (where_string == '' ? "WHERE " : "AND ")
+      where_string << "UserName = ?"
+      where_values << @username
+    end
+
+
+    @users = sql_select_iterator ["WITH Users AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Users #{where_string}),
                                        Role_Privs AS (SELECT /*+ NO_MERGE MATERIALIZE */ Grantee, COUNT(*) Granted_Roles
                                                    FROM   DBA_Role_Privs
                                                    GROUP BY Grantee
                                                   ),
+                                       Tab_Privs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Grantee, COUNT(*) Obj_Grants
+                                                      FROM   DBA_Tab_Privs
+                                                      GROUP BY Grantee
+                                                     ),
+                                       Granted_Tab_Privs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Grantor, COUNT(*) Granted_Obj_Grants
+                                                              FROM   DBA_Tab_Privs
+                                                              GROUP BY Grantor
+                                                             ),
                                        Sys_Privs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Grantee, COUNT(*) Privileges
                                                       FROM   DBA_Sys_Privs
                                                       GROUP BY Grantee
                                                      )
-                                  SELECT u.*, p.Granted_Roles, s.Privileges
+                                  SELECT u.*, p.Granted_Roles, s.Privileges, t.Obj_Grants, gt.Granted_Obj_Grants
                                   FROM   Users u
                                   LEFT OUTER JOIN Role_Privs p ON p.Grantee = u.UserName
+                                  LEFT OUTER JOIN Tab_Privs t ON t.Grantee = u.UserName
+                                  LEFT OUTER JOIN Granted_Tab_Privs gt ON gt.Grantor = u.UserName
                                   LEFT OUTER JOIN Sys_Privs s ON s.Grantee = u.UserName
                                   ORDER BY u.UserName
-                                 "
+                                 "].concat(where_values)
     render_partial
   end
 
   def list_roles
-    @roles = sql_select_iterator "WITH Roles AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Roles),
+    @role     = prepare_param :role
+    where_string = ''
+    where_values = []
+
+    if @role
+      where_string << (where_string == '' ? "WHERE " : "AND ")
+      where_string << "Role = ?"
+      where_values << @role
+    end
+
+    @roles = sql_select_iterator ["WITH Roles AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM DBA_Roles #{where_string}),
                                        Role_Privs AS (SELECT /*+ NO_MERGE MATERIALIZE */ Granted_Role, COUNT(*) Grantees
                                                       FROM   DBA_Role_Privs
                                                       GROUP BY Granted_Role
+                                                     ),
+                                       Granted_Role_Privs AS (SELECT /*+ NO_MERGE MATERIALIZE */ Grantee, COUNT(*) Roles_Granted
+                                                              FROM   DBA_Role_Privs
+                                                              GROUP BY Grantee
+                                                             ),
+                                       Tab_Privs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Grantee, COUNT(*) Obj_Grants
+                                                      FROM   DBA_Tab_Privs
+                                                      GROUP BY Grantee
+                                                     ),
+                                       Sys_Privs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Grantee, COUNT(*) Privileges
+                                                      FROM   DBA_Sys_Privs
+                                                      GROUP BY Grantee
                                                      )
-                                  SELECT r.*, p.Grantees
+                                  SELECT r.*, p.Grantees, gp.Roles_Granted, s.Privileges, t.Obj_Grants
                                   FROM   Roles r
-                                  LEFT OUTER JOIN Role_Privs p ON p.Granted_Role = r.Role
+                                  LEFT OUTER JOIN Role_Privs p          ON p.Granted_Role = r.Role
+                                  LEFT OUTER JOIN Granted_Role_Privs gp ON gp.Grantee = r.Role
+                                  LEFT OUTER JOIN Tab_Privs t           ON t.Grantee = r.Role
+                                  LEFT OUTER JOIN Sys_Privs s           ON s.Grantee = r.Role
                                   ORDER BY r.Role
-                                 "
+                                 "].concat(where_values)
     render_partial
   end
 
@@ -126,6 +172,58 @@ class DbaSchemaController < ApplicationController
                                                       WHEN r.Role IS NOT NULL THEN 'ROLE'
                                                  ELSE 'Unknown' END Grantee_Type
                                           FROM   Sys_Privs p
+                                          LEFT OUTER JOIN Users u ON u.UserName = p.Grantee
+                                          LEFT OUTER JOIN Roles r ON r.Role = p.Grantee
+                                          ORDER BY p.Grantee, p.Privilege
+                                         "].concat(where_values)
+    render_partial
+  end
+
+  def list_obj_privileges
+    @privileges = sql_select_iterator "SELECT Privilege, COUNT(*) Granted_Privs
+                                       FROM   DBA_Tab_Privs
+                                       GROUP BY Privilege
+                                       ORDER BY Privilege
+                                      "
+    render_partial
+  end
+
+  def list_obj_grants
+    @privilege  = prepare_param :privilege
+    @grantee    = prepare_param :grantee
+    @grantor    = prepare_param :grantor
+    where_string = ''
+    where_values = []
+
+    if @privilege
+      where_string << (where_string == '' ? "WHERE " : "AND ")
+      where_string << "Privilege = ?"
+      where_values << @privilege
+    end
+
+    if @grantee
+      where_string << (where_string == '' ? "WHERE " : "AND ")
+      where_string << "Grantee = ?"
+      where_values << @grantee
+    end
+
+    if @grantor
+      where_string << (where_string == '' ? "WHERE " : "AND ")
+      where_string << "Grantor = ?"
+      where_values << @grantor
+    end
+
+    @privileges =   sql_select_iterator ["WITH Tab_Privs AS (SELECT /*+ NO_MERGE MATERIALIZE */ *
+                                                             FROM   DBA_Tab_Privs
+                                                             #{where_string}
+                                                            ),
+                                                Users AS (SELECT /*+ NO_MERGE MATERIALIZE */ UserName FROM DBA_Users),
+                                                Roles AS (SELECT /*+ NO_MERGE MATERIALIZE */ Role FROM DBA_Roles)
+                                          SELECT p.*,
+                                                 CASE WHEN u.UserName IS NOT NULL THEN 'USER'
+                                                      WHEN r.Role IS NOT NULL THEN 'ROLE'
+                                                 ELSE 'Unknown' END Grantee_Type
+                                          FROM   Tab_Privs p
                                           LEFT OUTER JOIN Users u ON u.UserName = p.Grantee
                                           LEFT OUTER JOIN Roles r ON r.Role = p.Grantee
                                           ORDER BY p.Grantee, p.Privilege

@@ -339,4 +339,27 @@ class DbaSchemaControllerTest < ActionController::TestCase
     post :list_granted_sys_privileges, params: {format: :html, grantee: 'SYS' }
     assert_response :success
   end
+
+  test 'list granted obj privileges' do
+    post :list_obj_grants, params: {format: :html, privilege: 'SELECT' }
+    assert_response :success
+
+    post :list_obj_grants, params: {format: :html, grantee: 'SYS' }
+    assert_response :success
+
+    post :list_obj_grants, params: {format: :html, grantor: 'SYS' }
+    assert_response :success
+  end
+
+  test 'list db users' do
+    # call without parameters is tested as first level menu entry
+    post :list_db_users, params: {format: :html, username: 'SYS' }
+    assert_response :success
+  end
+
+  test 'list roles' do
+    # call without parameters is tested as first level menu entry
+    post :list_roles, params: {format: :html, role: 'CONNECT' }
+    assert_response :success
+  end
 end

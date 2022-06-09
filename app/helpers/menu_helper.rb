@@ -35,6 +35,7 @@ module MenuHelper
               {:class => 'item', :caption => 'Database users', :controller => :dba_schema, :action => :list_db_users, :hint => t(:menu_dba_schema_list_users_hint, :default => 'Show database users (DBA_Users)')},
               {:class => 'item', :caption => 'Roles', :controller => :dba_schema, :action => :list_roles, :hint => t(:menu_dba_schema_list_roles_hint, :default => 'Show database roles (DBA_Roles)')},
               {:class => 'item', :caption => 'System privileges', :controller => :dba_schema, :action => :list_sys_privileges, :hint => t(:menu_dba_schema_list_sys_privs_hint, :default => 'Show system privileges (DBA_Sys_Privs)')},
+              {:class => 'item', :caption => 'Object privileges', :controller => :dba_schema, :action => :list_obj_privileges, :hint => t(:menu_dba_schema_list_obj_privs_hint, :default => 'Show object privileges (DBA_Tab_Privs)')},
             ]
             },
             {:class => 'menu', :caption => 'Audit Trail', :content => [

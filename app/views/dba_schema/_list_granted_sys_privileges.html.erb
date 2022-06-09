@@ -1,8 +1,30 @@
 <% @update_area = get_unique_area_id %>
 
 <%
+  link_grantee = proc do |rec|
+    case rec.grantee_type
+    when 'USER' then
+      ajax_link(rec.grantee,
+                {action:      :list_db_users,
+                 username:    rec.grantee,
+                 update_area: @update_area,
+                },
+                title: "Show details for user '#{rec.grantee}'"
+      )
+    when 'ROLE' then
+      ajax_link(rec.grantee,
+                {action:      :list_roles,
+                 role:        rec.grantee,
+                 update_area: @update_area,
+                },
+                title: "Show details for role '#{rec.grantee}'"
+      )
+    else rec.grantee
+    end
+  end
+
   column_options = []
-  column_options << {caption: 'Grantee',      data: proc{|rec| rec.grantee},                  title: 'Name of the user or role receiving the grant'}
+  column_options << {caption: 'Grantee',      data: link_grantee,                             title: 'Name of the user or role receiving the grant'}
   column_options << {caption: 'Grantee type', data: proc{|rec| rec.grantee_type},             title: 'Type of grantee'}
   column_options << {caption: 'Privilege',    data: proc{|rec| rec.privilege},                title: "Granted system privilege"}
   column_options << {caption: 'Admin option', data: proc{|rec| rec.admin_option},             title: "Indicates whether the grant was with the ADMIN OPTION (YES) or not (NO)"}
