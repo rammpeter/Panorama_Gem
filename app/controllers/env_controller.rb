@@ -162,7 +162,7 @@ class EnvController < ApplicationController
       @version_info[4][:client_info_title]  = "\n#{client_nls_info}"
 
       @version_info << ({:banner => "SYSDATE = '#{localeDateTime(@database_info.sysdate)}'&nbsp;&nbsp;#{@database_info.sys_offset}",
-                         banner_title: "DB timezone offset given at CREATE DATABASE: #{@database_info.dbtimezone}",
+                         banner_title: "System time and time zone according to OS settings of DB server = '#{localeDateTime(@database_info.sysdate)} #{@database_info.sys_offset}'.\nDB timezone offset for TIMESTAMP WITH LOCAL TIME ZONE given at CREATE DATABASE =  '#{@database_info.dbtimezone}'",
                          :client_info=>"CURRENT_DATE = '#{localeDateTime(@database_info.current_date)}'&nbsp;&nbsp;#{@database_info.current_offset}"
       }.extend SelectHashHelper)
 
