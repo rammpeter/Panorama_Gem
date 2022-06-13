@@ -18,7 +18,7 @@
 name: Panorama_Gem CI
 
 on:
-  push
+  push:
   schedule:
     # * is a special character in YAML so you have to quote this string, runs on Sunday morning
     - cron: '0 0 * * 0'
