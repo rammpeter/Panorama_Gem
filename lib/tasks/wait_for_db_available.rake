@@ -2,6 +2,7 @@ require 'test_helpers/panorama_test_config'
 require 'active_record/connection_adapters/oracle_enhanced/connection'
 require 'active_record/connection_adapters/oracle_enhanced/jdbc_connection'
 
+# call syntax: rake -f lib/tasks/wait_for_db_available.rake ci_preparation:wait_for_db_available[1]
 namespace :ci_preparation do
   desc "Wait for DB to become available in CI pipeline"
 
