@@ -31,22 +31,21 @@ jobs:
       max-parallel: 4
       fail-fast: false
       matrix:
-        management_pack_license: [diagnostics_and_tuning_pack, diagnostics_pack, panorama_sampler, none]
+        # management_pack_license: [diagnostics_and_tuning_pack, diagnostics_pack, panorama_sampler, none]
         # db_version: [autonomous, 12.2.0.1-ee]
-        db_version: [12.2.0.1-ee]
         include:
-          #- management_pack_license: diagnostics_and_tuning_pack
-          #  db_version: autonomous
-          #  port: 1522
-          #- management_pack_license: diagnostics_pack
-          #  db_version: autonomous
-          #  port: 1523
-          #- management_pack_license: panorama_sampler
-          #  db_version: autonomous
-          #  port: 1524
-          #- management_pack_license: none
-          #  db_version: autonomous
-          #  port: 1525
+          - management_pack_license: diagnostics_and_tuning_pack
+            db_version: autonomous
+            port: 1522
+          - management_pack_license: diagnostics_pack
+            db_version: autonomous
+            port: 1523
+          - management_pack_license: panorama_sampler
+            db_version: autonomous
+            port: 1524
+          - management_pack_license: none
+            db_version: autonomous
+            port: 1525
           - management_pack_license: diagnostics_and_tuning_pack
             db_version: 12.2.0.1-ee
             port: 1526
