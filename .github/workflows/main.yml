@@ -34,9 +34,7 @@ jobs:
         # management_pack_license: [diagnostics_and_tuning_pack, diagnostics_pack, panorama_sampler, none]
         # db_version: [autonomous, 12.2.0.1-ee]
         include:
-          - management_pack_license: diagnostics_and_tuning_pack
-            db_version: autonomous
-            port: 1522
+          - {management_pack_license: diagnostics_and_tuning_pack, db_version: autonomous, port: 1522 }
           - management_pack_license: diagnostics_pack
             db_version: autonomous
             port: 1523
