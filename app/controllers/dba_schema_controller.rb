@@ -1833,6 +1833,7 @@ class DbaSchemaController < ApplicationController
     @audits = sql_select_all "SELECT * FROM DBA_Stmt_Audit_Opts ORDER BY Audit_Option"
     @options = sql_select_all "SELECT * FROM gv$Option WHERE Parameter = 'Unified Auditing' ORDER BY Inst_ID"
     @policies = sql_select_iterator "SELECT * from DBA_Audit_Policies"
+    @config_params = sql_select_iterator "SELECT * FROM DBA_Audit_Mgmt_Config_Params ORDER BY Audit_Trail, Parameter_Name"
     render_partial
   end
 

@@ -46,6 +46,26 @@
 
   <div class="flex-row-element">
     <%
+      column_options =
+        [
+          {caption: 'Audit trail',    data: proc{|rec| rec.audit_trail},         title: "Audit trails for which the property is configured"},
+          {caption: 'Name',           data: proc{|rec| rec.parameter_name},      title: "Name of the property"},
+          {caption: 'Value',          data: proc{|rec| rec.parameter_value},     title: "Value of the property"},
+        ]
+    %>
+
+    <%=
+      gen_slickgrid(@config_params, column_options, {
+        :caption    => 'Parameter from DBA_Audit_Mgmg_Config_Params',
+        :max_height => 450,
+        :width      => :auto,
+        show_pin_icon: 3
+      })
+    %>
+  </div>
+
+  <div class="flex-row-element">
+    <%
       focus = proc do |rec|
         retval = ''
         retval = 'Select' if rec.sel == 'YES'
