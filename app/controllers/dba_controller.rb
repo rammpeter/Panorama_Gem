@@ -736,50 +736,75 @@ oradebug setorapname diag
   end
   
   def list_sessions
-    @instance  = prepare_param_instance
+    @instance         = prepare_param_instance
+    @service_name     = prepare_param(:service_name)
+    @pdb_name         = prepare_param(:pdb_name)
+    @show_only_user   = prepare_param(:showOnlyUser)    == '1'
+    @show_pq_server   = prepare_param(:showPQServer)    == '1'
+    @only_avtive      = prepare_param(:onlyActive)      == '1'
+    @show_only_dblink = prepare_param(:showOnlyDbLink)  == '1'
+    @show_timer       = prepare_param(:showTimer)       == '1'
+    @object_owner     = prepare_param(:object_owner)
+    @object_name      = prepare_param(:object_name)
+    @object_type      = prepare_param(:object_type)
+    @filter           = prepare_param(:filter)
+
     where_string = ""
     where_values = []
+
     if @instance
       where_string << " AND s.Inst_ID = ?"
       where_values << @instance
     end
-    if params[:showOnlyUser]=="1"
+
+    if @service_name
+      where_string << " AND s.Service_Name = ?"
+      where_values << @service_name
+    end
+
+    if @pdb_name
+      where_string << "s.Con_ID = (SELECT MIN(Con_ID) FROM gv$Containers WHERE Name = ?)"
+      where_values << @pdb_name
+    end
+
+
+    if @show_only_user
       where_string << " AND s.type = 'USER'"
     end
-    if params[:showPQServer]!="1"
+    unless @show_pq_server
       where_string << ' AND pqc.QCInst_ID IS NULL'   # Nur die QCInst_ID is nicht belegt in gv$PX_Session. Die OCSID ist auch für den Query-Koordinator belegt, der ja kein PQ ist
     end
-    if params[:onlyActive]=="1"
+    if @only_avtive
       where_string << " AND s.Status='ACTIVE'"
     end
-    if params[:showOnlyDbLink]=="1"
+    if @show_only_dblink
       where_string << " AND UPPER(s.program) like 'ORACLE@%' AND UPPER(s.Program) NOT LIKE 'ORACLE@'||(SELECT UPPER(i.Host_Name) FROM gv$Instance i WHERE i.Inst_ID=s.Inst_ID)||'%' "
     end
-    if params[:showTimer]!="1"
+    unless @show_timer
       where_string << " AND w.Event != 'PL/SQL lock timer'"
     end
-    if params[:object_owner] && params[:object_name] && params[:object_owner] != '' && params[:object_name] != ''
+    if @object_owner && @object_name
       where_string << " AND (s.Inst_ID, s.SID) IN (SELECT /*+ NO_MERGE */ Inst_ID, SID FROM GV$Access WHERE Owner = ? AND Object = ?"
-      where_string << " AND Type = ?" if params[:object_type] && params[:object_type] != ''
+      where_string << " AND Type = ?" if @object_type
       where_string << ")"
-      where_values << params[:object_owner]
-      where_values << params[:object_name]
-      where_values << params[:object_type] if params[:object_type] && params[:object_type] != ''
+      where_values << @object_owner
+      where_values << @object_name
+      where_values << @object_type if @object_type
     end
-    if params[:filter] && params[:filter] != ''
+    if @filter
       where_string << " AND ("
-      where_string << "    TO_CHAR(s.SID)       LIKE '%'||?||'%'";   where_values << params[:filter]
-      where_string << " OR TO_CHAR(s.Process)   LIKE '%'||?||'%'";   where_values << params[:filter]
-      where_string << " OR TO_CHAR(p.spid)      LIKE '%'||?||'%'";   where_values << params[:filter]
-      where_string << " OR s.UserName           LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
-      where_string << " OR UPPER(s.OSUser)      LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
-      where_string << " OR UPPER(s.Machine)     LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
-      where_string << " OR UPPER(s.SQL_ID)      LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
-      where_string << " OR UPPER(s.Client_Info) LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
-      where_string << " OR UPPER(s.Client_Identifier) LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
-      where_string << " OR UPPER(s.Module)      LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
-      where_string << " OR UPPER(s.Action)      LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
-      where_string << " OR UPPER(s.Program)     LIKE '%'||UPPER(?)||'%'";   where_values << params[:filter]
+      where_string << "    TO_CHAR(s.SID)       LIKE '%'||?||'%'";   where_values << @filter
+      where_string << " OR TO_CHAR(s.Process)   LIKE '%'||?||'%'";   where_values << @filter
+      where_string << " OR TO_CHAR(p.spid)      LIKE '%'||?||'%'";   where_values << @filter
+      where_string << " OR s.UserName           LIKE '%'||UPPER(?)||'%'";   where_values << @filter
+      where_string << " OR UPPER(s.OSUser)      LIKE '%'||UPPER(?)||'%'";   where_values << @filter
+      where_string << " OR UPPER(s.Machine)     LIKE '%'||UPPER(?)||'%'";   where_values << @filter
+      where_string << " OR UPPER(s.SQL_ID)      LIKE '%'||UPPER(?)||'%'";   where_values << @filter
+      where_string << " OR UPPER(s.Client_Info) LIKE '%'||UPPER(?)||'%'";   where_values << @filter
+      where_string << " OR UPPER(s.Client_Identifier) LIKE '%'||UPPER(?)||'%'";   where_values << @filter
+      where_string << " OR UPPER(s.Module)      LIKE '%'||UPPER(?)||'%'";   where_values << @filter
+      where_string << " OR UPPER(s.Action)      LIKE '%'||UPPER(?)||'%'";   where_values << @filter
+      where_string << " OR UPPER(s.Program)     LIKE '%'||UPPER(?)||'%'";   where_values << @filter
       where_string << ")"
     end
 

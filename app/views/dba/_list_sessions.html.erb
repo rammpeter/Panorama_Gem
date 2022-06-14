@@ -88,6 +88,21 @@
 
 %>
 
-<%= gen_slickgrid(@sessions, column_options, {:caption=> "Sessions", :max_height=>450, show_pin_icon: 1,
-                                              update_area: @update_area}) %>
+<%=
+  caption = "Sessions from gv$Session"
+  caption << ", instance = #{@instance}"          if @instance
+  caption << ", service = #{@service_name}"       if @service_name
+  caption << ", PDB = #{@pdb_name}"               if @pdb_name
+  caption << ", type = 'USER'"                    if @show_only_user
+  caption << ", without PQ slaves"                unless @show_pq_server
+  caption << ", status = 'ACTIVE'"                if @only_avtive
+  caption << ", only DB-Link"                     if @show_only_dblink
+  caption << ", without sleeping by timer"        unless @show_timer
+  caption << ", owner = '#{@object_owner}'"       if @object_owner
+  caption << ", object name = '#{@object_name}'"  if @object_name
+  caption << ", object type = '#{@object_type}'"  if @object_type
+  caption << ", filter = '#{@filter}'"            if @filter
+  gen_slickgrid(@sessions, column_options, {:caption=> caption, :max_height=>450, show_pin_icon: 1,
+                                              update_area: @update_area})
+%>
 

@@ -1,8 +1,23 @@
 <%
+  @update_area = get_unique_area_id
+  link_sessions = proc do |rec|
+    ajax_link(fn(rec.sessions),
+              {controller: :dba,
+               action:      :list_sessions,
+               service_name:rec.name,
+               instance:    @instance,
+               pdb_name:    @pdb_name,
+               update_area: @update_area,
+              },
+              title: "Show currently connected sessions for service #{rec.name}"
+    )
+  end
+
   column_options = []
   column_options << {caption: 'ID',               data: proc{|rec| fn(rec.service_id)},                 title: "Unique ID for the service", align: :right}
   column_options << {caption: 'Name',             data: proc{|rec| rec.name},                           title: "Name of the service"}
   column_options << {caption: 'Network name',     data: proc{|rec| rec.network_name},                   title: "Network name used to connect to the service"}
+  column_options << {caption: 'Sessions',         data: link_sessions,                                  title: "Number of currently connected sessions", align: :right}
   column_options << {caption: 'Creation',         data: proc{|rec| localeDateTime(rec.creation_date)},  title: "Date the service was created"}
   column_options << {caption: 'Failover method',  data: proc{|rec| rec.failover_method},                title: "Failover method (BASIC or NONE) for the service"}
   column_options << {caption: 'Failover type',    data: proc{|rec| rec.failover_type},                  title: "Failover type (SESSION or SELECT) for the service"}
@@ -32,5 +47,5 @@
 
 <%= gen_slickgrid(@services, column_options, {
   caption: "TNS Services from DBA_Services#{" Instance=#{@instance}" if @instance}#{" PDB='#{@pdb_name}'" if @pdb_name}",
-  max_height: 450, show_pin_icon: 1 })
+  max_height: 450, show_pin_icon: 1, update_area:   @update_area })
 %>

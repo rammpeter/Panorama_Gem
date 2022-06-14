@@ -266,22 +266,36 @@ class EnvController < ApplicationController
 
     where_string = ''
     where_values = []
+    session_where_string = ''
+    session_where_values = []
 
     if @instance
-      where_string << " AND Service_ID IN (SELECT Service_ID FROM gv$Services WHERE Inst_ID = ?)"
+      where_string << (where_string == '' ? "WHERE " : " AND ")
+      where_string << "v.Service_ID IN (SELECT Service_ID FROM gv$Services WHERE Inst_ID = ?)"
       where_values << @instance
+      session_where_string << (session_where_string == '' ? "WHERE " : " AND ")
+      session_where_string << "s.Inst_ID = ?"
+      session_where_values << @instance
     end
 
     if @pdb_name
-      where_string << " AND PDB = ?"
+      where_string << (where_string == '' ? "WHERE " : " AND ")
+      where_string << "PDB = ?"
       where_values << @pdb_name
+      session_where_string << (session_where_string == '' ? "WHERE " : " AND ")
+      session_where_string << "s.Con_ID = (SELECT MIN(Con_ID) FROM gv$Containers WHERE Name = ?)"
+      session_where_values << @pdb_name
     end
 
-    @services = sql_select_all ["SELECT *
-                               FROM   DBA_Services
-                               WHERE  1=1
-                               #{where_string}
-                              "].concat(where_values)
+    @services = sql_select_all ["SELECT v.*, s.Sessions
+                                 FROM   DBA_Services v
+                                 LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Service_Name, COUNT(*) Sessions
+                                                  FROM gv$Session s
+                                                  #{session_where_string}
+                                                  GROUP BY Service_Name
+                                                 ) s ON s.Service_Name = v.Name
+                                 #{where_string}
+                                "].concat(session_where_values).concat(where_values)
     render_partial
   end
 

@@ -8,7 +8,7 @@
       <%= t(:dba_show_sessions_only_active_caption, :default=>"Active only") %>
       <%= check_box_tag(:onlyActive, 1, true) %>
     </div>
-    <div class="flex-row-element" title="<%= t(:dba_show_sessions_pq_hint, :default=>"Show parallel query sessions") %>">
+    <div class="flex-row-element" title="<%= t(:dba_show_sessions_pq_hint, :default=>"Show sessions of parallel query slaves") %>">
       Parallel Query
       <%= check_box_tag(:showPQServer, 1, false) %>
     </div>
