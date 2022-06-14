@@ -32,7 +32,8 @@ jobs:
       fail-fast: false
       matrix:
         management_pack_license: [diagnostics_and_tuning_pack, diagnostics_pack, panorama_sampler, none]
-        db_version: [autonomous, 12.2.0.1-ee]
+        # db_version: [autonomous, 12.2.0.1-ee]
+        db_version: [12.2.0.1-ee]
         include:
           - management_pack_license: diagnostics_and_tuning_pack
             db_version: autonomous
@@ -65,9 +66,9 @@ jobs:
 
     services:
       oracle:
-        image: harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{  matrix.db_version }}
-        ports:
-          - ${{ matrix.TEST_PORT }}:1521
+        image: harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{ matrix.db_version }}
+        #ports:
+        #  - ${{ matrix.TEST_PORT }}:1521
     steps:
     - uses: actions/checkout@v1
 
@@ -126,7 +127,7 @@ jobs:
         source $HOME/.rvm/scripts/rvm
         echo $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake
         ls -l $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake
-        bundle exec rake -f $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake ci_preparation:wait_for_db_available[10]
+        bundle exec rake -f $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake ci_preparation:wait_for_db_available[1]
 
     - name: run Test
       run: |
