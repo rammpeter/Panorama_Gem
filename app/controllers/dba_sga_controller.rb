@@ -138,10 +138,10 @@ class DbaSgaController < ApplicationController
             WHERE 1 = 1 -- damit nachfolgende Klauseln mit AND beginnen können
                 #{where_string}
                 #{" AND Rows_Processed>0" if top_sort == 'BufferGetsPerRow'}
-            ORDER BY #{sql_area_sort_criteria[top_sort.to_sym][:sql]}
+            ORDER BY #{sql_area_sort_criteria(modus)[top_sort.to_sym][:sql]}
            )
       WHERE ROWNUM < ?
-      ORDER BY #{sql_area_sort_criteria[top_sort.to_sym][:sql]}
+      ORDER BY #{sql_area_sort_criteria(modus)[top_sort.to_sym][:sql]}
       "
     ].concat(where_values)
   end

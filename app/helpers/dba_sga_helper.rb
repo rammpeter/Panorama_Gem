@@ -32,8 +32,9 @@ module DbaSgaHelper
     end
   end
 
-  def sql_area_sort_criteria
-    {
+  # @param modus: 'GV$SQLArea' or 'GV$SQL'
+  def sql_area_sort_criteria(modus)
+    result = {
         ElapsedTimePerExecute:  { title: 'Elapsed time per execute',            sql: "ELAPSED_TIME_SECS_PER_EXECUTE DESC" },
         ElapsedTimeTotal:       { title: 'Elapsed time total',                  sql: "ELAPSED_TIME_SECS DESC" },
         ExecutionCount:         { title: 'Total number of executions',          sql: "Executions DESC" },
@@ -47,8 +48,9 @@ module DbaSgaHelper
         ClusterWaits:           { title: 'Cluster wait time total',             sql: "Cluster_Wait_Time_Secs DESC" },
         LastActive:             { title: t(:dba_sga_show_sql_area_sort_last_active_hint, default: 'Timestamp of last execution'),   sql: "Last_Active_Time DESC NULLS LAST" },
         Memory:                 { title: t(:dba_sga_show_sql_area_sort_memory_hint, default: 'Amount of allocated memory in SGA'),  sql: "SHARABLE_MEM+PERSISTENT_MEM+RUNTIME_MEM DESC" },
-        ChildCount:             { title: 'Number of child cursors',             sql: "Version_Count DESC", modus_only: 'GV$SQLArea'},
     }
+    result[:ChildCount] = { title: 'Number of child cursors',             sql: "Version_Count DESC" } if modus.upcase == 'GV$SQLAREA'
+    result
   end
 
 end

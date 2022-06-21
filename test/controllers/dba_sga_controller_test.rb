@@ -35,7 +35,7 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_sql_area_sql_id with xhr: true" do
-    top_sorts = sql_area_sort_criteria.map{|key, value| key}
+    top_sorts = sql_area_sort_criteria('gv$SQLArea').map{|key, value| key}
     top_sorts << nil
     sql_ids   = [nil, '22424824']
     instances = [nil, PanoramaConnection.instance_number]
@@ -57,7 +57,7 @@ class DbaSgaControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "list_sql_area_sql_id_childno with xhr: true" do
-    top_sorts = sql_area_sort_criteria.map{|key, value| key}
+    top_sorts = sql_area_sort_criteria('gv$SQL').map{|key, value| key}
     top_sorts << nil
     sql_ids   = [nil, '22424824']
     instances = [nil, PanoramaConnection.instance_number]
