@@ -1549,7 +1549,14 @@ class DbaSchemaController < ApplicationController
     @owner       = params[:owner]
     @object_name = params[:object_name]
 
-    @grants = sql_select_iterator ["SELECT * FROM DBA_Tab_Privs WHERE Owner = ? AND Table_Name = ?", @owner, @object_name]
+    @grants = sql_select_iterator ["SELECT p.*,
+                                           CASE WHEN u.UserName IS NOT NULL THEN 'USER'
+                                                WHEN r.Role IS NOT NULL THEN 'ROLE'
+                                           ELSE 'Unknown' END Grantee_Type
+                                    FROM   DBA_Tab_Privs p
+                                    LEFT OUTER JOIN DBA_Users u ON u.UserName = p.Grantee
+                                    LEFT OUTER JOIN DBA_Roles r ON r.Role = p.Grantee
+                                    WHERE  p.Owner = ? AND p.Table_Name = ?", @owner, @object_name]
     render_partial
   end
 
@@ -1559,7 +1566,10 @@ class DbaSchemaController < ApplicationController
 
     @grants = sql_select_iterator ["\
       SELECT d.d_Level, d.CONNECT_BY_ISCYCLE, d.Owner, d.Name, d.Type, d.Referenced_Owner, d.Referenced_Name, d.Referenced_Link_Name, d.Referenced_Type, d.Dependency_Type,
-             p.Grantee, p.Grantor, p.Privilege, p.Grantable, p.Hierarchy #{", p.Common" if get_db_version >= '12.1'}
+             p.Grantee, p.Grantor, p.Privilege, p.Grantable, p.Hierarchy #{", p.Common" if get_db_version >= '12.1'},
+             CASE WHEN u.UserName IS NOT NULL THEN 'USER'
+             WHEN r.Role IS NOT NULL THEN 'ROLE'
+             ELSE 'Unknown' END Grantee_Type
       FROM   (SELECT /*+ NO_MERGE */ Level d_Level, DECODE(CONNECT_BY_ISCYCLE, 1, 'YES') CONNECT_BY_ISCYCLE, d.*
               FROM   DBA_Dependencies d
               CONNECT BY NOCYCLE PRIOR Owner  = Referenced_Owner
@@ -1569,6 +1579,8 @@ class DbaSchemaController < ApplicationController
                      AND Referenced_Name  = ?
              ) d
       JOIN   DBA_Tab_Privs p ON p.Owner = d.Owner AND p.Table_Name = d.Name AND p.Type = d.Type
+      LEFT OUTER JOIN DBA_Users u ON u.UserName = p.Grantee
+      LEFT OUTER JOIN DBA_Roles r ON r.Role = p.Grantee
     ",  @owner, @object_name]
     render_partial
   end

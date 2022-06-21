@@ -1,6 +1,26 @@
 <%
   @update_area = get_unique_area_id
 
+  link_grantee = proc do |rec|
+    case rec.grantee_type
+    when 'USER' then
+      ajax_link(rec.grantee, {
+        action:       :list_db_users,
+        username:     rec.grantee,
+        update_area:  @update_area
+      }, title: "Show user details"
+      )
+    when 'ROLE' then
+      ajax_link(rec.grantee, {
+        action:       :list_roles,
+        role:         rec.grantee,
+        update_area:  @update_area
+      }, title: "Show role details"
+      )
+    else rec.grantee
+    end
+  end
+
   column_options =
       [
           {caption: 'Level',                data: proc {|rec| rec.d_level},               title: 'Hierarchy-level (depth of dependency)', align: :right},
@@ -13,7 +33,8 @@
           {caption: 'Depends on type',      data: proc {|rec| rec.referenced_type},       title: 'Type of object that it depends on'},
 
           {:caption=> 'Grantor',      :data=>proc{|rec| rec.grantor},             :title=> 'Name of the user who performed the grant'},
-          {:caption=> 'Grantee',      :data=>proc{|rec| rec.grantee},             :title=> 'Name of the user to whom access was granted'},
+          {:caption=> 'Grantee',      data: link_grantee,                         :title=> 'Name of the user to whom access was granted'},
+          {:caption=> 'Grantee type', :data=>proc{|rec| rec.grantee_type},        :title=> 'Type to whom access was granted'},
           {:caption=> 'Privilege',    :data=>proc{|rec| rec.privilege},           :title=> 'Privilege on the object'},
           {:caption=> 'Grantable',    :data=>proc{|rec| rec.grantable},           :title=> 'Indicates whether the privilege was granted with the GRANT OPTION (YES) or not (NO)'},
           {:caption=> 'Hierarchy',    :data=>proc{|rec| rec.hierarchy},           :title=> 'Indicates whether the privilege was granted with the HIERARCHY OPTION (YES) or not (NO)'},
