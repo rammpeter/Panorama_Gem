@@ -649,10 +649,10 @@ oradebug setorapname diag
 
     rescue Exception
       if @name_array.nil?
-        @hint = "Möglicherweise fehlende Zugriffsrechte auf Tabellen X$KSPPI und X$KSPPSV !</br>
-  Es werden deshalb nur die documented Parameter aus GV$Parameter angezeigt.</br></br>
+        @hint = "Access rights on tables X$KSPPI and X$KSPPSV are possibly missing!</br>
+  Therefore only documented parameters from GV$Parameter are shown.</br></br>
 
-  Lösung: Exec als User 'SYS':</br>
+  Possible solution to show underscore parameters also: Execute the following as user 'SYS':</br>
   &nbsp;&nbsp;  create view X_$KSPPI as select * from X$KSPPI;</br>
   &nbsp;&nbsp;  grant select on X_$KSPPI to public;</br>
   &nbsp;&nbsp;  create public synonym X$KSPPI for sys.X_$KSPPI;</br></br>
