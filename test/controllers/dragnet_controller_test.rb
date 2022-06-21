@@ -49,7 +49,7 @@ class DragnetControllerTest < ActionController::TestCase
           # Check if result should by error or success, Without management pack license execution should result in error if SQL contains DBA_HIST etc.
           begin
             prepare_panorama_sampler_thread_db_config                         # Ensure that PanoramaConnection has valid config even outside controller action
-            PackLicense.filter_sql_for_pack_license(full_entry[:sql], management_pack_license)
+            PackLicense.filter_sql_for_pack_license(full_entry[:sql], management_pack_license: management_pack_license)
           rescue Exception => e
             Rails.logger.error "Expected result = error due to exception #{e.class} #{e.message}"
             expected_result = :error
