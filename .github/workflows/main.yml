@@ -126,7 +126,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v1
       with:
-        name: test.log
+        name: ${{ env.DB_VERSION }}_${{ env.MANAGEMENT_PACK_LICENSE }}_test.log
         path: test/dummy/log/test.log
 
     - name: Archive test results
