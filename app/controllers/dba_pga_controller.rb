@@ -1,6 +1,7 @@
 # encoding: utf-8
 class DbaPgaController < ApplicationController
   include DbaHelper
+  include DbaPgaHelper
 
   def show_pga_stat_current
     @stats = sql_select_all "
@@ -28,6 +29,22 @@ class DbaPgaController < ApplicationController
       ORDER BY 3 DESC
     "
 
+    @pgastat = sql_select_all "SELECT * FROM gv$PGAStat ORDER BY Name, Inst_ID"
+
+    @pgastat.each do |p|
+      known_stat = known_pga_stat_columns[p.name]
+      if known_stat
+        p[:caption]     = known_stat[:caption]
+        p[:show_value]  = fn(p.value/known_stat[:divisor], known_stat[:scale])
+        p[:title]       = known_stat[:title]
+        p[:value_title] = size_explain(p.value/known_stat[:divisor])
+      else
+        p[:caption]     = p.name
+        p[:show_value]  = p.value
+        p[:title]       = "No explanation available for PGA area"
+        p[:value_title] = nil
+      end
+    end
     render_partial
   end
 
@@ -134,43 +151,22 @@ Min, Snap_ID = #{snaps.min_snap_id}, max,, Snap_ID = #{snaps.max_snap_id}") if s
 
     @stats.delete_at(0) unless empty # erste Zeile des Result löschen
 
-    million = (1024*1024).to_f
-
-    known_columns = {
-      "aggregate PGA target parameter"      => {:caption=>"aggregate PGA target parameter (MB)",      :data=>proc{|rec| formattedNumber(rec['aggregate PGA target parameter']/million,2)},      :title=>"Current value of the PGA_AGGREGATE_TARGET initialization parameter. If this parameter is not set, then its value is 0 and automatic management of PGA memory is disabled."},
-      "aggregate PGA auto target"           => {:caption=>"aggregate PGA auto target (MB)",           :data=>proc{|rec| formattedNumber(rec['aggregate PGA auto target']/million,2)},           :title=>"Amount of PGA memory the Oracle Database can use for work areas running in automatic mode. This amount is dynamically derived from the value of the PGA_AGGREGATE_TARGET initialization parameter and the current work area workload, and continuously adjusted by the Oracle Database. If this value is small compared to the value of PGA_AGGREGATE_TARGET, then a large amount of PGA memory is used by other components of the system (for example, PL/SQL or Java memory) and little is left for work areas. The DBA must ensure that enough PGA memory is left for work areas running in automatic mode."},
-      "global memory bound"                 => {:caption=>"global memory bound (MB)",                 :data=>proc{|rec| formattedNumber(rec['global memory bound']/million,2)},                 :title=>"Maximum size of a work area executed in automatic mode. This value is continuously adjusted by the Oracle Database to reflect the current state of the work area workload. The global memory bound generally decreases when the number of active work areas is increasing in the system. If the value of the global bound decreases below 1 MB, then the value of PGA_AGGREGATE_TARGET should be increased."},
-      "total PGA inuse"                     => {:caption=>"total PGA in use (MB)",                    :data=>proc{|rec| formattedNumber(rec['total PGA inuse']/million,2)},                     :title=>"Indicates how much PGA memory is currently consumed by work areas. This number can be used to determine how much memory is consumed by other consumers of the PGA memory (for example, PL/SQL or Java)."},
-      "Used_SQL"                            => {:caption=>"PGA used for SQL (MB)",                    :data=>proc{|rec| formattedNumber(rec['Used_SQL']/million,2)},                            :title=>"Used memory for category 'SQL'."},
-      "Used_PL/SQL"                         => {:caption=>"PGA used for PL/SQL (MB)",                 :data=>proc{|rec| formattedNumber(rec['Used_PL/SQL']/million,2)},                         :title=>"Used memory for category 'PL/SQL'."},
-      "Used_Other"                         => {:caption=>"PGA used for Other (MB)",                   :data=>proc{|rec| formattedNumber(rec['Used_Other']/million,2)},                          :title=>"Used memory for category 'Other'."},
-      "Used_Freeable"                         => {:caption=>"PGA used freeable (MB)",                 :data=>proc{|rec| formattedNumber(rec['Used_Freeable']/million,2)},                       :title=>"Used memory for category 'Freeable'."},
-      "total PGA allocated"                 => {:caption=>"total PGA allocated (MB)",                 :data=>proc{|rec| formattedNumber(rec['total PGA allocated']/million,2)},                 :title=>"Current amount of PGA memory allocated by the instance. The Oracle Database attempts to keep this number below the value of the PGA_AGGREGATE_TARGET initialization parameter. However, it is possible for the PGA allocated to exceed that value by a small percentage and for a short period of time when the work area workload is increasing very rapidly or when PGA_AGGREGATE_TARGET is set to a small value."},
-      "maximum PGA allocated"               => {:caption=>"maximum PGA allocated (MB)",               :data=>proc{|rec| formattedNumber(rec['maximum PGA allocated']/million, 2)},              :title=>"Maximum number of bytes of PGA memory allocated at one time since instance startup."},
-      "total PGA used"                      => {:caption=>"total PGA used (MB)",                      :data=>proc{|rec| formattedNumber(rec['total PGA used']/million,2)},                      :title=>"Indicates how much PGA memory is currently consumed by work areas. This number can be used to determine how much memory is consumed by other consumers of the PGA memory (for example, PL/SQL or Java)."},
-      "total PGA used for auto workareas"   => {:caption=>"total PGA used for auto workareas (MB)",   :data=>proc{|rec| formattedNumber(rec['total PGA used for auto workareas']/million,2)},   :title=>"Indicates how much PGA memory is currently consumed by work areas running under the automatic memory management mode. This number can be used to determine how much memory is consumed by other consumers of the PGA memory (for example, PL/SQL or Java)."},
-      "maximum PGA used for auto workareas" => {:caption=>"maximum PGA used for auto workareas (MB)", :data=>proc{|rec| formattedNumber(rec['maximum PGA used for auto workareas']/million,2)}, :title=>"Maximum amount of PGA memory consumed at one time by work areas running under the automatic memory management mode since instance startup."},
-      "total PGA used for manual workareas" => {:caption=>"total PGA used for manual workareas (MB)", :data=>proc{|rec| formattedNumber(rec['total PGA used for manual workareas']/million,2)}, :title=>"Indicates how much PGA memory is currently consumed by work areas running under the manual memory management mode. This number can be used to determine how much memory is consumed by other consumers of the PGA memory (for example, PL/SQL or Java)."},
-      "maximum PGA used for manual workareas"=> {:caption=>"maximum PGA used for manual workareas (MB)",:data=>proc{|rec| formattedNumber(rec['maximum PGA used for manual workareas']/million,2)}, :title=>"Maximum amount of PGA memory consumed at one time by work areas running under the manual memory management mode since instance startup."},
-      "over allocation count"               => {:caption=>"over allocation count",                    :data=>proc{|rec| formattedNumber(rec['over allocation count'])},                         :title=>"This statistic is cumulative since instance startup. Over allocating PGA memory can happen if the value of PGA_AGGREGATE_TARGET is too small. When this happens, the Oracle Database cannot honor the value of PGA_AGGREGATE_TARGET and extra PGA memory needs to be allocated. If over allocation occurs, then increase the value of PGA_AGGREGATE_TARGET using the information provided by the V$PGA_TARGET_ADVICE view."},
-      "bytes processed"                     => {:caption=>"MBytes processed",                         :data=>proc{|rec| formattedNumber(rec['bytes processed']/million,2)},                     :title=>"Number of MBytes processed by memory intensive SQL operators."},
-      "extra bytes read/written"            => {:caption=>"extra MBytes read/written",                :data=>proc{|rec| formattedNumber(rec['extra bytes read/written']/million,2)},            :title=>"Number of MBytes processed during extra passes of the input data. When a work area cannot run optimal, one or more of these extra passes is performed."},
-      "cache hit percentage"                => {:caption=>"cache hit percentage",                     :data=>proc{|rec| formattedNumber(rec['cache hit percentage'],2)},                        :title=>"A metric computed by the Oracle Database to reflect the performance of the PGA memory component, cumulative since instance startup. A value of 100% means that all work areas executed by the system since instance startup have used an optimal amount of PGA memory. When a work area cannot run optimal, one or more extra passes is performed over the input data. This will reduce the cache hit percentage in proportion to the size of the input data and the number of extra passes performed."},
-      "total freeable PGA memory"           => {:caption=>"total freeable PGA memory (MB)",           :data=>proc{|rec| formattedNumber(rec['total freeable PGA memory']/million,2)},           :title=>"Number of MBytes of PGA memory in all processes that could be freed back to the operating system."},
-      "PGA memory freed back to OS"         => {:caption=>"PGA memory freed back to OS (MB)",         :data=>proc{|rec| formattedNumber(rec['PGA memory freed back to OS']/million,2)},         :title=>"Number of MBytes of PGA memory freed back to the operating system."},
-      "recompute count (total)"             => {:caption=>"recompute count",                          :data=>proc{|rec| formattedNumber(rec['recompute count (total)'])},                       :title=>"Number of times the instance bound, which is a cap on the maximum size of each active work area, has been recomputed. Generally, the instance bound is recomputed in the background every 3 seconds, but it could be recomputed by a foreground process when the number of work areas changes rapidly in a short period of time."},
-
-      "process count"                       => {:caption=>"process count",                            :data=>proc{|rec| formattedNumber(rec['process count'])},                                 :title=>"Number of processes active within up to the last 3 seconds."},
-      "max processes count"                 => {:caption=>"max processes count",                      :data=>proc{|rec| formattedNumber(rec['max processes count'])},                           :title=>"Maximum number of processes active at any one time since instance startup."},
-
-    }
-
     column_options =
       [
         {:caption=>"Timestamp",        :data=>proc{|rec| localeDateTime(rec.begin_interval_time)},  :title=>"Start of sampe period", :plot_master_time=>true},
       ]
-    known_columns.each do |key, value|
-      column_options << {:caption=>value[:caption], :data=>value[:data], :name=>key, :title=>value[:title], :align=>"right" } if header[key]  # Spalte hinzufüegen wenn im Result auch wirklich vorhanden
+    known_pga_stat_columns.each do |key, value|
+      if header[key]  # Spalte hinzufügen wenn im Result auch wirklich vorhanden
+        column_option =  {
+          caption:    value[:caption],
+          data:       proc{|rec| fn(rec[key]/value[:divisor], value[:scale])},
+          name:       key,
+          title:      value[:title],
+          align:      :right
+        }
+        column_option[:data_title] = proc{|rec| "%t\n\n#{size_explain(rec[key]/value[:divisor])}"} if value[:divisor] == (1024*1024).to_f
+        column_options << column_option
+      end
     end
 
     # Hinzufügen der Spalten, die nicht vordeklariert sind

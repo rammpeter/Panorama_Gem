@@ -65,6 +65,27 @@
   })
 %>
   </div>
+
+  <%
+    column_options =
+      [
+        {:caption=>"I",             :data=>proc{|rec| rec.inst_id},                   :title=>"RAC-Instance", :align=>:right},
+        {:caption=>"PGA stat name", :data=>proc{|rec| rec.caption},                   :title=>"Name of PGA area or statistic", data_title: proc{|rec| "%t\n\nOriginal name in gv$SQGStat = '#{rec.name}'"}},
+        {:caption=>"Value",         :data=>proc{|rec| rec.show_value},                :title=>"Value of PGA area or statistic", data_title: proc{|rec| "%t\n\n#{rec.value_title}"}, :align=>:right},
+      ]
+    column_options << {caption: "Con. ID", data: proc{|rec| rec.con_id},  title: "Container ID", :align=>:right} if get_db_version >= '12.1'
+
+  %>
+
+  <div class="flex-row-element">
+    <%=
+      gen_slickgrid(@pgastat, column_options, {
+        :caption => "PGA memory #{localeDateTime(Time.now)} (from gv$PGAStat)",
+        :max_height => 450, width: :auto
+      })
+    %>
+  </div>
+
 </div>
 
 

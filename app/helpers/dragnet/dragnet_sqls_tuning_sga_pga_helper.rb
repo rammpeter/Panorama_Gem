@@ -142,7 +142,8 @@ Especially this is true for generated dynamic SQL statements (e.g. from OR-mappe
         {
             :name  => t(:dragnet_helper_110_name, :default=>'Concurrency on memory, latches: insufficient cached sequences from DBA_Sequences'),
             :desc  => t(:dragnet_helper_110_desc, :default=>'Fetching of sequence values / filling the sequence cache causes writes in dictionary and interchange between REC-instances.
-                          Highly frequent access on dictionary structures of sequences leads to unnecessary wait events, therefore you should define reasonable cache sizes for sequences.'),
+                          Highly frequent access on dictionary structures of sequences leads to unnecessary wait events, therefore you should define reasonable cache sizes for sequences.
+                          Starting with Rel. 19.10 the DYNAMIC SEQUENCE CACHE feature will automatically cover this issue if you set the cache size of a sequence > 0.'),
             :sql=>  "SELECT Sequence_Owner, Sequence_Name, Cache_size,
                             ROUND(suggested, 0-LENGTH(TO_CHAR(suggested))+1) \"Suggested Cache Size\",
                             Min_Value, Max_Value, Increment_By, Cycle_flag, Last_Number,

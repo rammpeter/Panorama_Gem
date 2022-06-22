@@ -1232,6 +1232,7 @@
   dragnet_helper_110_desc: |-
     Das Nachlesen von Sequence-Werten / Fuellen des Sequence-Caches ist verbunden mit Schreiben in Dictionary sowie Abgleich der Strukturen zwischen RAC-Instanzen.
     Zu hochfrequenter Zugriff auf Dictionary-Strukturen der Sequences führt zu diversen unnötigen Wartesituationen, daher fachlich und technisch sinnvolle Cache-Größen definieren für Sequences.
+    Ab Rel. 19.10 deckt das Feature DYNAMIC SEQUENCE CACHE dieses Thema automatisch ab wenn die Cache-Size einer Sequence > 0 gesetzt wird.
   dragnet_helper_110_name: |-
     Konkurrenz bzgl. Speicher, Latches: Unzureichend gecachte Sequences aus DBA_Sequences
 
