@@ -74,6 +74,8 @@ jobs:
           echo "TEST_USERNAME=panorama_test" >> $GITHUB_ENV
           echo "TEST_PASSWORD=panorama_test" >> $GITHUB_ENV
         fi
+        # Ensure that each run uses it's own config
+        echo "PANORAMA_VAR_HOME=/tmp/panorama_var_home_$MANAGEMENT_PACK_LICENSE_$DB_VERSION" >> $GITHUB_ENV
 
     - name: Check OS prerequisites
       run: |
@@ -126,12 +128,12 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v1
       with:
-        name: ${{ env.DB_VERSION }}_${{ env.MANAGEMENT_PACK_LICENSE }}_test.log
+        name: ${{ env.MANAGEMENT_PACK_LICENSE }}_${{ env.DB_VERSION }}_test.log
         path: test/dummy/log/test.log
 
     - name: Archive test results
       if: always()
       uses: actions/upload-artifact@v1
       with:
-        name: ${{ env.DB_VERSION }}_${{ env.MANAGEMENT_PACK_LICENSE }}_tmp
+        name: ${{ env.MANAGEMENT_PACK_LICENSE }}_${{ env.DB_VERSION }}_tmp
         path: test/dummy/tmp

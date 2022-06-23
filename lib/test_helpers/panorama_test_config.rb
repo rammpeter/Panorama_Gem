@@ -1,4 +1,5 @@
 class PanoramaTestConfig
+  @@test_config_logged = false
   def self.test_config
     test_host         = ENV['TEST_HOST']        || 'localhost'
     test_port         = ENV['TEST_PORT']        || '1521'
@@ -25,6 +26,15 @@ class PanoramaTestConfig
         tns:                      test_tns,
         tns_or_host_port_sn:      ENV['TEST_TNS'] ? :TNS : :HOST_PORT_SN
     }
+
+    unless @@test_config_logged
+      Rails.logger.debug('Test config'){ "################ Test config #################" }
+      config.each do |key, value|
+        Rails.logger.debug('Test config'){ "#{key.to_s.ljust(20, ' ')}: #{value}" } unless key.to_s['password']
+      end
+      Rails.logger.debug('Test config'){ "##############################################" }
+      @@test_config_logged = true
+    end
 
     config
   end
