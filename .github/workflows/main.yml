@@ -75,7 +75,7 @@ jobs:
           echo "TEST_PASSWORD=panorama_test" >> $GITHUB_ENV
         fi
         # Ensure that each run uses it's own config
-        echo "PANORAMA_VAR_HOME=/tmp/panorama_var_home_$MANAGEMENT_PACK_LICENSE_$DB_VERSION" >> $GITHUB_ENV
+        echo "PANORAMA_VAR_HOME=/tmp/panorama_var_home_${MANAGEMENT_PACK_LICENSE}_${DB_VERSION}" >> $GITHUB_ENV
 
     - name: Check OS prerequisites
       run: |
