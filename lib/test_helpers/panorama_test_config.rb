@@ -28,11 +28,13 @@ class PanoramaTestConfig
     }
 
     unless @@test_config_logged
-      Rails.logger.debug('Test config'){ "################ Test config #################" }
-      config.each do |key, value|
-        Rails.logger.debug('Test config'){ "#{key.to_s.ljust(20, ' ')}: #{value}" } unless key.to_s['password']
+      if defined? Rails                                                         # function is also used in rake tasks where no Rails is present
+        Rails.logger.debug('Test config'){ "################ Test config #################" }
+        config.each do |key, value|
+          Rails.logger.debug('Test config'){ "#{key.to_s.ljust(20, ' ')}: #{value}" } unless key.to_s['password']
+        end
+        Rails.logger.debug('Test config'){ "##############################################" }
       end
-      Rails.logger.debug('Test config'){ "##############################################" }
       @@test_config_logged = true
     end
 
