@@ -74,8 +74,11 @@ jobs:
           echo "TEST_USERNAME=panorama_test" >> $GITHUB_ENV
           echo "TEST_PASSWORD=panorama_test" >> $GITHUB_ENV
         fi
-        # Ensure that each run uses it's own config
-        echo "PANORAMA_VAR_HOME=/tmp/panorama_var_home_${MANAGEMENT_PACK_LICENSE}_${DB_VERSION}" >> $GITHUB_ENV
+        # Ensure that each run uses it's own config without previous artifacts
+        panorama_var_home=/tmp/panorama_var_home_${MANAGEMENT_PACK_LICENSE}_${DB_VERSION}
+        rm -rf $panorama_var_home
+        mkdir $panorama_var_home
+        echo "PANORAMA_VAR_HOME=$panorama_var_home" >> $GITHUB_ENV
 
     - name: Check OS prerequisites
       run: |
