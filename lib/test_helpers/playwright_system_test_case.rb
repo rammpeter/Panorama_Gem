@@ -47,7 +47,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
       playwright = Playwright.create(playwright_cli_executable_path: 'npx playwright')
       @@pw_browser  = playwright.playwright.chromium.launch(headless: RbConfig::CONFIG['host_os'] != 'darwin')
       @@pw_page = @@pw_browser.new_page(viewport: { width: 800, height: 600 })
-      @@pw_page.set_default_timeout(10000)
+      @@pw_page.set_default_timeout(30000)
       @@pw_page.goto("http://#{host}:#{port}")
       do_login
 
@@ -106,7 +106,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
         end
       else                                                                      # last argument is DOM-ID of menu entry to click on
         log_exception("menu_call: click at menu'#{entries[i]}'") do
-          page.click("##{entries[i]}", timeout: 10000)                          # click menu
+          page.click("##{entries[i]}")                                          # click menu
         end
       end
     end
