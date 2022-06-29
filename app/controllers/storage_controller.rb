@@ -1223,6 +1223,8 @@ class StorageController < ApplicationController
       ", @time_selection_start, @time_selection_end, @time_selection_start, @time_selection_end, get_dbid
     ]
 
+    add_statusbar_message("No records found in gv$SysMetric_History or DBA_Hist_SysMetric_Summary!\nPossibly you have to connect to CDB instead of PDB to get a result.") if recs.count == 0
+
     temp_usage = {}
     @instances = {}
     recs.each do |r|

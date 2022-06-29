@@ -221,7 +221,8 @@ class EnvController < ApplicationController
 
     @dictionary_access_problem = true unless select_any_dictionary?(@dictionary_access_msg)
 
-    render_partial :start_page, {:additional_javascript_string => "$('#main_menu').html('#{j render_to_string :partial =>"build_main_menu" }');" }  # Wait until all loogon jobs are processed before showing menu
+    #    render_partial :start_page, {additional_javascript_string: "$('#main_menu').html('#{j render_to_string :partial =>"build_main_menu" }');" }  # Wait until all loogon jobs are processed before showing menu
+    render_partial :start_page
 
   end
 
@@ -393,22 +394,45 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
     #initialize_unique_area_id                                                   # Zaehler für eindeutige IDs ruecksetzen
 
     # Detect existence of Panorama_Sampler
-    panorama_sampler_data = PanoramaSamplerStructureCheck.panorama_sampler_schemas
+    panorama_sampler_data = {}
+    PanoramaSamplerStructureCheck.panorama_sampler_schemas.each do |s|
+      panorama_sampler_data[s.owner] = s
+    end
+
     if panorama_sampler_data.count > 0
-      panorama_sampler_owner = nil                                                # not yet known
+      ps_snapshot_schema_count = 0                                              # Number of schemas with AWR data
+      panorama_sampler_owner = nil                                              # not yet known
+      panorama_sampler_awr_owner = nil                                          # can exist but doesn't must
 
       if panorama_sampler_data.count == 1
-        panorama_sampler_owner = panorama_sampler_data[0].owner
+        panorama_sampler_owner = panorama_sampler_data.first[0]
+        if panorama_sampler_data.first[1].snapshot_count > 0
+          panorama_sampler_awr_owner = panorama_sampler_owner
+          ps_snapshot_schema_count = 1
+        end
       end
 
       if panorama_sampler_data.count > 1
-        panorama_sampler_owner = PanoramaSamplerConfig.sampler_schema_for_dbid(get_dbid)  # Look at sampler config for the right owner
-        panorama_sampler_owner = panorama_sampler_data[0].owner if panorama_sampler_owner.nil?  # Take the first of multiple if not known who is the right one
+        config_owner = PanoramaSamplerConfig.sampler_schema_for_dbid(get_dbid) # Look at sampler config for the right owner
+        if config_owner && panorama_sampler_data[config_owner.upcase]   # config owner by DBID has a local schema
+          panorama_sampler_owner = config_owner.upcase
+          panorama_sampler_awr_owner = panorama_sampler_owner if  panorama_sampler_data[panorama_sampler_owner].snapshot_count > 0
+        end
+
+        panorama_sampler_data.each do |key, value|
+          panorama_sampler_owner = value.owner if panorama_sampler_owner.nil?
+          if value.snapshot_count > 0
+            panorama_sampler_awr_owner = value.owner if panorama_sampler_awr_owner.nil? # Take the first of multiple if not known who is the right one
+            ps_snapshot_schema_count += 1
+          end
+        end
       end
 
       if panorama_sampler_owner
         set_current_database(get_current_database.merge( { :panorama_sampler_schema => panorama_sampler_owner}))
-        add_statusbar_message "Panorama-Sampler history exists in schema '#{panorama_sampler_owner}'.\nPanorama will access Panorama-Sampler's data instead of AWR if you don't have Enterprise Edition with Diagnostics Pack licensed"
+        if panorama_sampler_awr_owner
+          add_statusbar_message "AWR/ASH by Panorama-Sampler exists in schema '#{panorama_sampler_owner}'#{" and #{ps_snapshot_schema_count-1} additional schemas" if ps_snapshot_schema_count>1}.\nPanorama may access Panorama-Sampler's data instead of AWR if you don't have Enterprise Edition with Diagnostics Pack licensed"
+        end
       end
     end
 

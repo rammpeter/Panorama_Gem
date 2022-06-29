@@ -23,7 +23,7 @@ class PanoramaSamplerStructureCheck
 
   # Schemas with valid Panorama-Sampler structures for start
   def self.panorama_sampler_schemas(option = nil)
-    check_tables = ['PANORAMA_SNAPSHOT', 'PANORAMA_WR_CONTROL', 'PANORAMA_OBJECT_SIZES', 'PANORAMA_CACHE_OBJECTS', 'PANORAMA_BLOCKING_LOCKS']
+    check_tables = ['PANORAMA_SNAPSHOT', 'PANORAMA_WR_CONTROL', 'PANORAMA_OBJECT_SIZES', 'PANORAMA_CACHE_OBJECTS', 'PANORAMA_BLOCKING_LOCKS', 'LONGTERM_TREND']
     sql = "\
            WITH Tab_Columns AS (
                                 SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Column_Name
@@ -35,7 +35,8 @@ class PanoramaSamplerStructureCheck
                   NVL(SUM(CASE WHEN Table_Name = 'PANORAMA_WR_CONTROL'      THEN 1 END), 0) wr_control_count,
                   NVL(SUM(CASE WHEN Table_Name = 'PANORAMA_OBJECT_SIZES'    THEN 1 END), 0) object_sizes_count,
                   NVL(SUM(CASE WHEN Table_Name = 'PANORAMA_CACHE_OBJECTS'   THEN 1 END), 0) cache_objects_count,
-                  NVL(SUM(CASE WHEN Table_Name = 'PANORAMA_BLOCKING_LOCKS'  THEN 1 END), 0) blocking_locks_count
+                  NVL(SUM(CASE WHEN Table_Name = 'PANORAMA_BLOCKING_LOCKS'  THEN 1 END), 0) blocking_locks_count,
+                  NVL(SUM(CASE WHEN Table_Name = 'LONGTERM_TREND'           THEN 1 END), 0) longterm_trend_count
            FROM ("
 
     # check existence of table with full set of columns

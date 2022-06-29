@@ -189,7 +189,7 @@ Last specification change = #{localeDateTime(rec.last_spec_ts)}"
      ]
 
 
-     @caption = "Explain Plan"
+     @caption = "Explain Plan from gV$SQL_Plan_Statistics_All:"
      if mp[:plans].length > 0
         if mp.child_count == 1
           @caption << " of Child=#{mp.min_child_number} "
