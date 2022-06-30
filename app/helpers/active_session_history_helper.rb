@@ -205,8 +205,10 @@ module ActiveSessionHistoryHelper
       when :DBID, :Min_Snap_ID, :Max_Snap_ID
         @dba_hist_where_string << " AND "  if @dba_hist_where_string != ''      # suppress leading AND
         @dba_hist_where_string << sql
-          if value && value != ''     # Filter weglassen, wenn nicht belegt
-          @dba_hist_where_values << value   # Wert nur binden wenn nicht im :sql auf NULL getestet wird
+        if value && value != ''     # Filter weglassen, wenn nicht belegt
+          bind_value = value
+          bind_value += 1 if key == :Max_Snap_ID                                # Sometimes ASH Snap_ID is related to the following AWR-Snapshot instead of the current, therefore @max_snap_id+1
+          @dba_hist_where_values << bind_value                                  # Wert nur binden wenn nicht im :sql auf NULL getestet wird
         else
           @dba_hist_where_values << 0                    # Wenn kein valides Alter festgestellt über DBA_Hist_Snapshot, dann reicht gv$Active_Session_History aus für Zugriff,
           @dba_hist_where_string << "/* Zugriff auf DBA_Hist_Active_Sess_History ausblenden, da kein Wert für #{key} gefunden wurde (alle Daten kommen aus gv$Active_Session_History)*/"
