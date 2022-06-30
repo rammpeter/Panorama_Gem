@@ -615,7 +615,9 @@ class DbaHistoryController < ApplicationController
 
   def list_sql_historic_execution_plan
     @instance    = prepare_param_instance         # optional
-    @sql_id      = params[:sql_id]
+    @sql_id      = prepare_param      :sql_id
+    @min_snap_id = prepare_param_int  :min_snap_id
+    @max_snap_id = prepare_param_int  :max_snap_id
     @parsing_schema_name = params[:parsing_schema_name]   # optional, Kann '[UNKNOWN]' enthalten, dann kein Match möglich
     save_session_time_selection   # werte in session puffern
     @show_adative_plans     = params[:show_adaptive_plans] == 'true'
@@ -626,7 +628,7 @@ class DbaHistoryController < ApplicationController
     ash_where_values = []
     if @instance
       where_stmt     << " AND s.Instance_Number = ?"
-      ash_where_stmt << " AND ss.Instance_Number = ?"
+      ash_where_stmt << " AND h.Instance_Number = ?"
       where_values     << @instance
       ash_where_values << @instance
     end
@@ -746,7 +748,7 @@ class DbaHistoryController < ApplicationController
       end
 
       if get_db_version >= "11.2"     # Ab 11.2 sind ASH-Records mit Verweis auf Zeile des Ausführungsplans versehen
-        ash = sql_select_all ["\SELECT SQL_PLan_Line_ID,
+        ash = sql_select_all [" SELECT SQL_PLan_Line_ID,
                                        MIN(Min_Sample_Time)       Min_Sample_Time,
                                        MAX(Max_Sample_Time)       Max_Sample_Time,
                                        SUM(ASH_Time_Seconds)      Ash_Time_Seconds,
@@ -760,32 +762,35 @@ class DbaHistoryController < ApplicationController
                                        MAX(PQ_Sessions)           Max_PQ_Sessions     -- max. Anzahl PQ-Slaves + Koordinator für eine konkrete Koordinator-Session
                                 FROM   (
                                         SELECT /*+ PARALLEL(h,2) #{"FULL(h.ash)" if mp.max_snap_id-mp.min_snap_id > 10}*/
-                                                MIN(Sample_Time)                  Min_Sample_Time,
-                                                MAX(Sample_Time)                  Max_Sample_Time,
-                                                NVL(SQL_PLan_Line_ID, 0)          SQL_PLan_Line_ID,   -- NULL auf den Knoten 0 des Plans zurückführen (0 wird in 11.2.0.3 nicht mit nach DBA_HAS übernommen
+                                                MIN(h.Sample_Time)                Min_Sample_Time,
+                                                MAX(h.Sample_Time)                Max_Sample_Time,
+                                                NVL(h.SQL_PLan_Line_ID, 0)        SQL_PLan_Line_ID,   -- NULL auf den Knoten 0 des Plans zurückführen (0 wird in 11.2.0.3 nicht mit nach DBA_HAS übernommen
                                                 COUNT(*) * 10                     Ash_Time_Seconds,
-                                                SUM(CASE WHEN Session_State = 'ON CPU'  THEN 10 ELSE 0 END) CPU_Seconds,
-                                                SUM(CASE WHEN Session_State = 'WAITING' THEN 10 ELSE 0 END) Waiting_Seconds,
-                                                SUM(Delta_Read_IO_Requests)       Read_IO_Requests,
-                                                SUM(Delta_Write_IO_Requests)      Write_IO_Requests,
-                                                SUM(NVL(Delta_Read_IO_Requests,0)+NVL(Delta_Write_IO_Requests,0)) IO_Requests,
-                                                SUM(Delta_Read_IO_Bytes)          Read_IO_Bytes,
-                                                SUM(Delta_Write_IO_Bytes)         Write_IO_Bytes,
-                                                SUM(Delta_Interconnect_IO_Bytes)  Interconnect_IO_Bytes,
-                                                SUM(Temp_Space_Allocated)         Temp,
-                                                SUM(PGA_Allocated)                PGA,
-                                                COUNT(DISTINCT CASE WHEN QC_Session_ID IS NULL OR QC_Session_ID = Session_ID THEN NULL ELSE Session_ID END) PQ_Sessions   -- Anzahl unterschiedliche PQ-Slaves + Koordinator für diese Koordiantor-Session
-                                         FROM   DBA_Hist_Snapshot ss
-                                         JOIN   DBA_Hist_Active_Sess_History h ON h.DBID = ss.DBID AND h.Instance_Number = ss.Instance_Number AND h.Snap_ID = ss.Snap_ID
-                                         WHERE  ss.DBID = ?
-                                         AND    ss.End_Interval_time   > TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
-                                         AND    ss.Begin_Interval_time < TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
+                                                SUM(CASE WHEN h.Session_State = 'ON CPU'  THEN 10 ELSE 0 END) CPU_Seconds,
+                                                SUM(CASE WHEN h.Session_State = 'WAITING' THEN 10 ELSE 0 END) Waiting_Seconds,
+                                                SUM(h.Delta_Read_IO_Requests)       Read_IO_Requests,
+                                                SUM(h.Delta_Write_IO_Requests)      Write_IO_Requests,
+                                                SUM(NVL(h.Delta_Read_IO_Requests,0)+NVL(h.Delta_Write_IO_Requests,0)) IO_Requests,
+                                                SUM(h.Delta_Read_IO_Bytes)          Read_IO_Bytes,
+                                                SUM(h.Delta_Write_IO_Bytes)         Write_IO_Bytes,
+                                                SUM(h.Delta_Interconnect_IO_Bytes)  Interconnect_IO_Bytes,
+                                                SUM(h.Temp_Space_Allocated)         Temp,
+                                                SUM(h.PGA_Allocated)                PGA,
+                                                COUNT(DISTINCT CASE WHEN h.QC_Session_ID IS NULL OR h.QC_Session_ID = h.Session_ID THEN NULL ELSE Session_ID END) PQ_Sessions   -- Anzahl unterschiedliche PQ-Slaves + Koordinator für diese Koordiantor-Session
+                                         FROM   DBA_Hist_Active_Sess_History h
+                                         WHERE  h.DBID = ?
+                                         AND    h.Snap_ID >= ?
+                                         /* Sometimes ASH Snap_ID is related to the following AWR-Snapshot instead of the current, therefore @max_snap_id+1 */
+                                         AND    h.Snap_ID <= ?
                                          AND    h.SQL_ID  = ?
-                                         AND    h.SQL_Plan_Hash_Value = ? #{ash_where_stmt}
+                                         AND    h.SQL_Plan_Hash_Value = ?
+                                         AND    h.Sample_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_start)}')
+                                         AND    h.Sample_Time <= TO_TIMESTAMP(?, '#{sql_datetime_mask(@time_selection_end)}')
+                                         #{ash_where_stmt}
                                          GROUP BY h.SQL_Plan_Line_ID, NVL(h.QC_Session_ID, h.Session_ID), Sample_ID   -- Alle PQ-Werte mit auf Session kumulieren
                                         )
                                 GROUP BY SQL_Plan_Line_ID
-                              ", mp.dbid, @time_selection_start, @time_selection_end, @sql_id, mp.plan_hash_value].concat(ash_where_values)
+                              ", mp.dbid, @min_snap_id, @max_snap_id+1, @sql_id, mp.plan_hash_value, @time_selection_start, @time_selection_end].concat(ash_where_values)
 
         @min_sample_time = nil
         @max_sample_time = nil
