@@ -40,6 +40,58 @@ module ExplainPlanHelper
     end
   end
 
+  # @param plan_lines Array with plan lines
+  # @param display_map_records XML structure of display maps in array records
+  # @return plan line ids to process and show
+  def ajust_plan_records_for_adaptive(plan:, plan_lines:, display_map_records:, show_adaptive_plans:)
+    return if get_db_version < '12.1'
+
+    display_map = {}                                                            # Hash with key=operation ID
+    # Calculate rows to skip due to adaptive plan
+    display_map_records.each do |m|
+      if m.plan_hash_value == plan.plan_hash_value
+        display_map[m['op']] = m                                                # remember skip info for plan line id
+        plan[:adaptive_plan] = true                                             # Mark plan as adaptive
+      end
+    end
+
+    filtered_plan_lines = []                                                    # Konkreter Ausführungsplan, aus Gesamtmenge aller Pläne auszufiltern
+    plan_lines.each do |p|                                                      # Iterate over all plan lines
+      use_this_line = true                                                      # assume to use it if no contra
+      use_this_line = false if plan['dbid']                && p.dbid                 != plan.dbid
+      use_this_line = false if plan['plan_hash_value']     && p.plan_hash_value      != plan.plan_hash_value
+      use_this_line = false if plan['parsing_schema_name'] && p.parsing_schema_name  != plan.parsing_schema_name
+      use_this_line = false if plan['min_child_number']    && p.child_number         != plan.min_child_number
+
+      if use_this_line
+        p['original_id'] = p.id                                                 # remember the plan line id for matching with ASH before adaptive move of IDs
+        dm = display_map[p.id]                                                  # possible entry in display map for that plan line
+        if dm
+          case show_adaptive_plans
+          when nil then
+            if p['id'] != dm.dis
+              p['id_hint'] = "\nID and parent_ID are adjusted due to adaptive plans!\nOriginal plan line ID in DBA_Hist_SQL_Plan is #{p.id}\nOriginal parent ID in DBA_Hist_SQL_Plan is #{p.parent_id}"
+              p['id']         = dm.dis
+              p['parent_id']  = dm.par
+              p['depth']      = dm.dep
+            end
+            filtered_plan_lines << p if dm.skp != 1
+          when 1 then
+            p[:skipped_adaptive_plan] = dm.skp == 1
+            filtered_plan_lines << p
+          when 2 then
+            # TODO: Evaluate display map so that it can be used to determine and remove the plan lines only relevant for the used plan
+            p[:skipped_adaptive_plan] = dm.skp == 1
+            filtered_plan_lines << p
+          end
+        else
+          filtered_plan_lines << p if dm.nil?                                   # show line in any case no matter if adative or not
+        end
+        plan[:timestamp] = p.timestamp                                          # Timestamp of parse
+      end
+    end
+    filtered_plan_lines
+  end
 
   # Build tree with tabbed inserts for column operation
   def list_tree_column_operation(rec, indent_vector, plan_array)

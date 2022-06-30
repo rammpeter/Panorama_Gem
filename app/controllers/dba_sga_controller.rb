@@ -340,7 +340,7 @@ class DbaSgaController < ApplicationController
     @instance               = prepare_param_instance
     @child_number           = (params[:child_number].nil? || params[:child_number] == '') ? nil : (params[:child_number].to_i rescue nil)
     @child_address          = params[:child_address] == '' ? nil : params[:child_address]
-    @show_adative_plans     = params[:show_adaptive_plans] == 'true'
+    @show_adaptive_plans     = prepare_param_int :show_adaptive_plans
 
     where_string = ''
     where_values = []
@@ -367,7 +367,7 @@ class DbaSgaController < ApplicationController
       ", @sql_id, @instance].concat(where_values)
 
     if get_db_version >= '12.1'
-      display_maps = sql_select_all ["\
+      display_map_records = sql_select_all ["\
         SELECT plan_hash_Value, X.*
         FROM gv$sql_plan,
         XMLTABLE ( '/other_xml/display_map/row' passing XMLTYPE(other_xml ) COLUMNS
@@ -383,6 +383,8 @@ class DbaSgaController < ApplicationController
         #{where_string}
         AND other_xml   IS NOT NULL
         ", @sql_id, @instance].concat(where_values)
+    else
+      display_map_records = []
     end
 
     all_plans = sql_select_all ["\
@@ -484,26 +486,11 @@ class DbaSgaController < ApplicationController
         #{where_string}
         ", @sql_id, @instance, mp.plan_hash_value].concat(where_values)
 
-      display_skip_map = {}
-      if get_db_version >= '12.1'
-        # Calculate rows to skip due to adaptive plan
-        display_maps.each do |m|
-          if m.plan_hash_value == mp.plan_hash_value && m['skp'] == 1
-            display_skip_map[m['op']] = 1
-            mp[:adaptive_plan] = true                                           # Mark plan as adaptive
-          end
-        end
-      end
-
-      mp[:plans] = []
-      all_plans.each do |p|
-        if p.plan_hash_value == mp.plan_hash_value && p.child_number == mp.min_child_number
-            p[:skipped_adaptive_plan] = display_skip_map.has_key?(p['id'])
-            mp[:plans] << p if !display_skip_map.has_key?(p['id']) || @show_adative_plans
-        end
-      end
-
-
+      mp[:plans] = ajust_plan_records_for_adaptive(plan:                  mp,
+                                                   plan_lines:            all_plans,
+                                                   display_map_records:   display_map_records,
+                                                   show_adaptive_plans:    @show_adaptive_plans
+      )
       calculate_execution_order_in_plan(mp[:plans])                             # Calc. execution order by parent relationship
 
       # Segmentation of XML document
@@ -545,6 +532,20 @@ class DbaSgaController < ApplicationController
               :value        => hint.children.text
           }.extend SelectHashHelper)
         end
+
+        xml_doc.xpath('//display_map/row').each do |dm|
+          attributes = ''
+          dm.attributes.each do |key, val|
+            attributes << "#{key}=#{val} "
+          end
+
+          mp[:plan_additions] << ({
+            :record_type  => 'Display Map',
+            :attribute    => nil,
+            :value        => attributes
+          }.extend SelectHashHelper)
+        end
+
       rescue Exception => e
         mp[:plan_additions] << ({
             :record_type  => 'Exception while processing XML document',

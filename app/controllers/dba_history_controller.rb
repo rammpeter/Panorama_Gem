@@ -620,7 +620,7 @@ class DbaHistoryController < ApplicationController
     @max_snap_id = prepare_param_int  :max_snap_id
     @parsing_schema_name = params[:parsing_schema_name]   # optional, Kann '[UNKNOWN]' enthalten, dann kein Match möglich
     save_session_time_selection   # werte in session puffern
-    @show_adative_plans     = params[:show_adaptive_plans] == 'true'
+    @show_adaptive_plans = prepare_param_int :show_adaptive_plans
 
     where_stmt       = ""
     ash_where_stmt   = ""
@@ -661,7 +661,7 @@ class DbaHistoryController < ApplicationController
                                    ", get_dbid, @sql_id, @time_selection_start, @time_selection_end].concat(where_values)
 
     if get_db_version >= '12.1'
-      display_maps = sql_select_all ["\
+      display_map_records = sql_select_all ["\
         SELECT plan_hash_Value, X.*
         FROM DBA_Hist_SQL_Plan,
         XMLTABLE ( '/other_xml/display_map/row' passing XMLTYPE(other_xml ) COLUMNS
@@ -725,27 +725,11 @@ class DbaHistoryController < ApplicationController
 
     # Iteration über unterschiedliche Ausführungspläne
     @multiplans.each do |mp|
-
-      display_skip_map = {}
-      if get_db_version >= '12.1'
-        # Calculate rows to skip due to adaptive plan
-        display_maps.each do |m|
-          if m.plan_hash_value == mp.plan_hash_value && m['skp'] == 1
-            display_skip_map[m['op']] = 1
-            mp[:adaptive_plan] = true                                           # Mark plan as adaptive
-          end
-        end
-      end
-
-
-      mp[:plans] = []   # Konkreter Ausführungsplan, aus Gesamtmenge aller Pläne auszufiltern
-      all_plans.each do |p|
-        if p.dbid == mp.dbid && p.plan_hash_value == mp.plan_hash_value && p.parsing_schema_name == mp.parsing_schema_name
-          p[:skipped_adaptive_plan] = display_skip_map.has_key?(p['id'])
-          mp[:plans] << p if !display_skip_map.has_key?(p['id']) || @show_adative_plans
-          mp[:timestamp] = p.timestamp                                          # Timestamp of parse
-        end
-      end
+      mp[:plans] = ajust_plan_records_for_adaptive(plan:                  mp,
+                                                   plan_lines:            all_plans,
+                                                   display_map_records:   display_map_records,
+                                                   show_adaptive_plans:    @show_adaptive_plans
+      )
 
       if get_db_version >= "11.2"     # Ab 11.2 sind ASH-Records mit Verweis auf Zeile des Ausführungsplans versehen
         ash = sql_select_all [" SELECT SQL_PLan_Line_ID,
@@ -803,7 +787,7 @@ class DbaHistoryController < ApplicationController
 
         # Zuordnen der ASH-Zeilen zu den korrespondierenden Plan-Zeilen
         mp[:plans].each do |p|
-          a = ash_hash[p.id]
+          a = ash_hash[p.original_id]
           if a
             a.each do |key, value|
               p[key] = value
