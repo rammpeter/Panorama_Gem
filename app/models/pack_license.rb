@@ -137,6 +137,7 @@ class PackLicense
         'DBMS_ADVISOR',
         'DBMS_PERF',
         'DBMS_WORKLOAD_REPLAY',                                                 # DIAGNOSTIC PACK if advisor_name => ADDM OR task_name LIKE ADDM% TUNING PACK - where advisor_name => SQL Tuning Advisor
+        'DISPLAY_AWR',                                                          # DBMS_XPLAN.DISPLAY_AWR requires access on DBA_HIST_SQLSTat etc.
         'MGMT$ALERT_',
         'MGMT$AVAILABILITY_',
         'MGMT$BLACKOUT',

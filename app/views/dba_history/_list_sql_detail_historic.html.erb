@@ -237,6 +237,19 @@ Hash-value over total optimizer environment + Number of different optimizer envi
   </div>&nbsp;
   &nbsp;
   <div class="flex-row-element">
+    <%=
+      ajax_submit('DBMS_XPLAN', {
+        :action        => :list_dbms_xplan_display_awr,
+        :sql_id        => @sql_id,
+        :instance      => @instance,
+        min_snap_id:   @sql.min_snap_id,
+        max_snap_id:   @sql.max_snap_id,
+        :update_area=> @update_area
+      }, :title=>'Show execution plan(s) as output from call DBMS_XPLAN.DISPLAY_AWR')
+    %>
+  </div>
+
+  <div class="flex-row-element">
     <%= ajax_submit(t(:dba_history_list_sql_detail_historic_current_sga_caption, :default=>'SQL in current SGA'), {
         :update_area    => @update_area,
         :controller     => :dba_sga,

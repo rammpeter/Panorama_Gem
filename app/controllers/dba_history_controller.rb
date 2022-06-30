@@ -832,6 +832,37 @@ class DbaHistoryController < ApplicationController
     render_partial :list_sql_detail_historic_execution_plan
   end
 
+  def list_dbms_xplan_display_awr
+    instance        = prepare_param_instance
+    sql_id          = params[:sql_id]
+    dbid            = prepare_param_dbid
+    min_snap_id     = prepare_param_int  :min_snap_id
+    max_snap_id     = prepare_param_int  :max_snap_id
+
+    where_string = ''
+    where_values = []
+
+    if instance
+      where_string = " AND Instance_Number = ?"
+      where_values << instance
+    end
+
+    plan_hash_values = sql_select_all ["SELECT DISTINCT Plan_Hash_Value
+                                        FROM   DBA_Hist_SQLStat
+                                        WHERE   DBID = ?
+                                        AND     SQL_ID = ?
+                                        AND     Snap_ID >= ?
+                                        AND     Snap_ID <= ?
+                                        AND     Plan_Hash_Value != 0
+                                       #{where_string}
+                                       ", dbid, sql_id, min_snap_id, max_snap_id].concat(where_values)
+    @plans_array = []
+    plan_hash_values.each do |phv|
+      @plans_array << sql_select_all(["SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_AWR(?, ?, ?, 'ALL'))", sql_id, phv.plan_hash_value, dbid])
+    end
+    render_partial
+  end
+
   # Anzeige aller gespeicherter Werte eines konkreten SQL
   def list_sql_history_snapshots
     @prev_update_area    = params[:update_area]
@@ -888,7 +919,7 @@ class DbaHistoryController < ApplicationController
              #{@end_interval_sql}               End_Interval_Time,
              MIN(ss.Begin_Interval_Time)        First_Occurrence,
              MAX(ss.End_Interval_Time)          Last_Occurrence,
-             COUNT(DISTINCT s.Plan_Hash_Value)  Execution_Plans,
+             COUNT(DISTINCT DECODE(s.Plan_Hash_Value, 0, NULL, s.Plan_Hash_Value)) Execution_Plans,
              MIN(Plan_Hash_Value)               First_Plan_Hash_Value,
              COUNT(DISTINCT s.Optimizer_Env_Hash_Value) Optimizer_Envs,
              MIN(Optimizer_Env_Hash_Value)      First_Opt_Env_Hash_Value,
