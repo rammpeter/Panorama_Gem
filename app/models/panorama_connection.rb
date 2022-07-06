@@ -120,6 +120,7 @@ class PanoramaConnection
   attr_accessor :used_in_thread
   attr_accessor :last_used_time
   attr_accessor :last_used_query_timeout
+  attr_accessor :sql_errors_count
   attr_reader :block_common_header_size
   attr_reader :cdb
   attr_reader :control_management_pack_access
@@ -161,12 +162,13 @@ class PanoramaConnection
   public
 
   ############################ instance methods #########################
-  def initialize(new_jdbc_connection)                                           # Object instantiation is always done within working thread
+  def initialize(new_jdbc_connection)                                    # Object instantiation is always done within working thread
     @jdbc_connection          = new_jdbc_connection
     @used_in_thread           = true
     @last_used_query_timeout  = 600                                             # initial value, should be overwritten in check_for_open_connection
     @last_used_time           = Time.now
     @password_hash            = PanoramaConnection.get_decrypted_password.hash
+    @sql_errors_count         = 0                                               # No errors counted for this SQL
   end
 
   def read_initial_attributes
@@ -594,6 +596,8 @@ class PanoramaConnection
       end
     end
   rescue Exception => e
+    PanoramaConnection.check_for_erroneous_connection_removal                   # check if too much errors occurred for this connection
+
     bind_text = ''
     unless binds.nil?
       binds.each do |b|
@@ -619,6 +623,7 @@ class PanoramaConnection
     PanoramaConnection.get_connection.rollback                                  # only relevant if autocommit is switched off
   end
 
+  # @return JDBC connection object
   def self.get_connection
     check_for_open_connection
     Thread.current[:panorama_connection_connection_object].jdbc_connection
@@ -659,7 +664,18 @@ class PanoramaConnection
 
     # remember last used query timeout for usage in connection_terminate_job
     Thread.current[:panorama_connection_connection_object].last_used_query_timeout = get_threadlocal_config[:query_timeout]
+  end
 
+  # Test if connection should be closed after too many errors during SQL execution
+  # This should prevent from repeated usage of sessions with persisting problems like 'ORA-16000: database or pluggable database open for read-only access'
+  MAX_CONNECTION_SQL_ERRORS_BEFORE_CLOSE=10
+  def self.check_for_erroneous_connection_removal
+    conn = Thread.current[:panorama_connection_connection_object]
+    conn.sql_errors_count =  conn.sql_errors_count + 1                          # remember the error during SQL
+    if conn.sql_errors_count > MAX_CONNECTION_SQL_ERRORS_BEFORE_CLOSE
+      Rails.logger.error('PanoramaConnection.check_for_erroneous_connection_removal') { "DB-Connection '#{conn.sid},#{conn.serial_no}' destroyed due to more than #{MAX_CONNECTION_SQL_ERRORS_BEFORE_CLOSE} SQL errors during this DB session"}
+      PanoramaConnection.destroy_connection                                     # Force reconnect at next operation
+    end
   end
 
   # get existing free connection from pool or create new connection
@@ -902,6 +918,8 @@ class PanoramaConnection
       Thread.current[:panorama_connection_connection_object].register_sql_execution(@stmt)    # Allows to show SQL in usage/connection_pool
       Thread.current[:panorama_connection_connection_object].jdbc_connection.iterate_query(@stmt, @query_name, @binds, @modifier, @query_timeout, &block)
     rescue Exception => e
+      PanoramaConnection.check_for_erroneous_connection_removal                 # check if too much errors occurred for this connection
+
       bind_text = ''
       @binds.each do |b|
         bind_text << "#{b.name} = #{b.value}\n"
@@ -914,7 +932,7 @@ class PanoramaConnection
       new_ex.set_backtrace(e.backtrace)
       raise new_ex
     ensure
-      Thread.current[:panorama_connection_connection_object].unregister_sql_execution   # free current SQL info for usage/connection_pool
+      Thread.current[:panorama_connection_connection_object]&.unregister_sql_execution   # free current SQL info for usage/connection_pool
     end
 
   end
