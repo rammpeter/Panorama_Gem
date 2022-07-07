@@ -596,7 +596,7 @@ class PanoramaConnection
       end
     end
   rescue Exception => e
-    PanoramaConnection.check_for_erroneous_connection_removal                   # check if too much errors occurred for this connection
+    PanoramaConnection.check_for_erroneous_connection_removal(e)                # check if too much errors occurred for this connection
 
     bind_text = ''
     unless binds.nil?
@@ -669,7 +669,16 @@ class PanoramaConnection
   # Test if connection should be closed after too many errors during SQL execution
   # This should prevent from repeated usage of sessions with persisting problems like 'ORA-16000: database or pluggable database open for read-only access'
   MAX_CONNECTION_SQL_ERRORS_BEFORE_CLOSE=10
-  def self.check_for_erroneous_connection_removal
+  def self.check_for_erroneous_connection_removal(exception)
+    immediate_destroy_reasons = [
+      'Closed Connection'
+    ]
+    immediate_destroy_reasons.each do |reason|
+      if exception.message[reason]                                              # Exception message contains searched string
+        Rails.logger.error('PanoramaConnection.check_for_erroneous_connection_removal') { "DB-Connection '#{conn.sid},#{conn.serial_no}' immediately destroyed after SQL error because of '#{reason}' in exception message"}
+        PanoramaConnection.destroy_connection                                     # Force reconnect at next operation
+      end
+    end
     conn = Thread.current[:panorama_connection_connection_object]
     conn.sql_errors_count =  conn.sql_errors_count + 1                          # remember the error during SQL
     if conn.sql_errors_count > MAX_CONNECTION_SQL_ERRORS_BEFORE_CLOSE
@@ -918,7 +927,7 @@ class PanoramaConnection
       Thread.current[:panorama_connection_connection_object].register_sql_execution(@stmt)    # Allows to show SQL in usage/connection_pool
       Thread.current[:panorama_connection_connection_object].jdbc_connection.iterate_query(@stmt, @query_name, @binds, @modifier, @query_timeout, &block)
     rescue Exception => e
-      PanoramaConnection.check_for_erroneous_connection_removal                 # check if too much errors occurred for this connection
+      PanoramaConnection.check_for_erroneous_connection_removal(e)              # check if too much errors occurred for this connection
 
       bind_text = ''
       @binds.each do |b|

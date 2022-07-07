@@ -57,20 +57,15 @@ GEM
       minitest (>= 5.1)
       tzinfo (~> 2.0)
       zeitwerk (~> 2.3)
-    addressable (2.8.0)
-      public_suffix (>= 2.0.2, < 5.0)
     builder (3.2.4)
     concurrent-ruby (1.1.10)
     crass (1.0.6)
-    docile (1.4.0)
     erubi (1.10.0)
     ffi (1.15.5-java)
     globalid (1.0.0)
       activesupport (>= 5.0)
     i18n (1.10.0)
       concurrent-ruby (~> 1.0)
-    launchy (2.5.0)
-      addressable (~> 2.7)
     loofah (2.18.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
@@ -88,7 +83,6 @@ GEM
     playwright-ruby-client (1.22.0)
       concurrent-ruby (>= 1.1.6)
       mime-types (>= 3.0)
-    public_suffix (4.0.7)
     puma (5.6.4-java)
       nio4r (~> 2.0)
     racc (1.6.0-java)
@@ -122,12 +116,6 @@ GEM
       sprockets (>= 2.8, < 4.0)
       sprockets-rails (>= 2.0, < 4.0)
       tilt (>= 1.1, < 3)
-    simplecov (0.21.2)
-      docile (~> 1.1)
-      simplecov-html (~> 0.11)
-      simplecov_json_formatter (~> 0.1)
-    simplecov-html (0.12.3)
-    simplecov_json_formatter (0.1.4)
     sprockets (3.7.2)
       concurrent-ruby (~> 1.0)
       rack (> 1, < 3)
@@ -147,11 +135,9 @@ PLATFORMS
   universal-java-18
 
 DEPENDENCIES
-  launchy
   panorama_gem!
   playwright-ruby-client
   puma
-  simplecov
   tzinfo-data
 
 BUNDLED WITH

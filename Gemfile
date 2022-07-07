@@ -23,8 +23,8 @@ group :test do
   # gem "webdrivers"
 
   # gem "capybara"
-  gem "launchy"
-  gem 'simplecov', require: false
+  # gem "launchy"
+  #gem 'simplecov', require: false
 
   # alternative to selenium
   gem 'playwright-ruby-client'

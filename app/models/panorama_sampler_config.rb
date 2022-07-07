@@ -325,27 +325,21 @@ class PanoramaSamplerConfig
   def self.validate_entry(config_hash, empty_password_allowed = false)
     raise PopupMessageException.new "User name is mandatory" if (config_hash[:user].nil? || config_hash[:user] == '')
     raise PopupMessageException.new "Password is mandatory" if (config_hash[:password].nil? || config_hash[:password] == '') && !empty_password_allowed
-    if config_hash[:awr_ash_snapshot_cycle].nil? || config_hash[:awr_ash_snapshot_cycle] <=0 || (60 % config_hash[:awr_ash_snapshot_cycle] != 0 && config_hash[:awr_ash_snapshot_cycle] % 60 != 0) || config_hash[:awr_ash_snapshot_cycle] % 5 != 0
-      # Allow wrong values if master password is test password
-      raise PopupMessageException.new "AWR/ASH-snapshot cycle must be a multiple of 5 minutes\nand divisible without remainder from 60 minutes or multiple of 60 minutes\ne.g. 5, 10, 15, 20, 30, 60 or 120 minutes" if EngineConfig.config.panorama_sampler_master_password != 'hugo'
-    end
+
+    PanoramaSamplerConfig.validate_cycle_minutes(name: 'AWR/ASH-snapshot', value: config_hash[:awr_ash_snapshot_cycle], min_minutes: 5)
     raise PopupMessageException.new "AWR/ASH-napshot retention must be >= 1 day" if config_hash[:awr_ash_snapshot_retention].nil? || config_hash[:awr_ash_snapshot_retention] < 1
 
-    if config_hash[:object_size_snapshot_cycle].nil? || config_hash[:object_size_snapshot_cycle] <=0 || 24 % config_hash[:object_size_snapshot_cycle] != 0 || config_hash[:object_size_snapshot_cycle]  > 24
-      raise PopupMessageException.new "Object size snapshot cycle must be a divisible without remainder from 24 hours and max. 24 hours\ne.g. 1, 2, 3, 4, 6, 8, 12 or 24 hours"
-    end
-
-    raise PopupMessageException.new "Object size snapshot cycle must be >= 1 hour>"   if config_hash[:object_size_snapshot_cycle].nil?      || config_hash[:object_size_snapshot_cycle]     < 1
+    PanoramaSamplerConfig.validate_cycle_hours(name: 'Object size', value: config_hash[:object_size_snapshot_cycle])
     raise PopupMessageException.new "Object size snapshot retention must be >= 1 day" if config_hash[:object_size_snapshot_retention].nil?  || config_hash[:object_size_snapshot_retention] < 1
 
-    raise PopupMessageException.new "Blocking locks snapshot cycle must be >= 1 minute>" if config_hash[:blocking_locks_snapshot_cycle].nil?      || config_hash[:blocking_locks_snapshot_cycle]     < 1
+    PanoramaSamplerConfig.validate_cycle_minutes(name: 'DB-cache snapshot', value: config_hash[:cache_objects_snapshot_cycle])
+    raise PopupMessageException.new "DB-cache snapshot retention must be >= 1 day" if config_hash[:cache_objects_snapshot_retention].nil?  || config_hash[:cache_objects_snapshot_retention] < 1
+
+    PanoramaSamplerConfig.validate_cycle_minutes(name: 'Blocking locks snapshot', value: config_hash[:blocking_locks_snapshot_cycle])
     raise PopupMessageException.new "Blocking locks snapshot retention must be >= 1 day" if config_hash[:blocking_locks_snapshot_retention].nil?  || config_hash[:blocking_locks_snapshot_retention] < 1
 
     raise PopupMessageException.new "You should also activate AWR/ASH-sampling if activating long-term trend with data-source Panorama-Sampler" if config_hash[:longterm_trend_active] && config_hash[:longterm_trend_data_source] == :panorama_sampler && !config_hash[:awr_ash_active]
-    raise PopupMessageException.new "Long-term trend snapshot cycle must be >= 1 hour" if config_hash[:longterm_trend_snapshot_cycle].nil?      || config_hash[:longterm_trend_snapshot_cycle]     < 1
-    raise PopupMessageException.new "Long-term trend snapshot cycle must be <= 24 hours" if config_hash[:longterm_trend_snapshot_cycle].nil?      || config_hash[:longterm_trend_snapshot_cycle]     > 24
-    raise PopupMessageException.new "Long-term trend snapshot cycle must be integer" if config_hash[:longterm_trend_snapshot_cycle].nil?      || config_hash[:longterm_trend_snapshot_cycle].to_i != config_hash[:longterm_trend_snapshot_cycle]
-    raise PopupMessageException.new "Long-term trend snapshot retention must be >= 1 day" if config_hash[:longterm_trend_snapshot_retention].nil?  || config_hash[:longterm_trend_snapshot_retention] < 1
+    PanoramaSamplerConfig.validate_cycle_hours(name: 'Long-term trend', value: config_hash[:longterm_trend_snapshot_cycle], min_hours: 24)
     raise PopupMessageException.new "Long-term trend subsume limit (per mille) must be between 0 and 1000" if config_hash[:longterm_trend_subsume_limit].nil?  || config_hash[:longterm_trend_subsume_limit] < 0 || config_hash[:longterm_trend_subsume_limit] >= 1000
   end
 
@@ -428,5 +422,29 @@ class PanoramaSamplerConfig
     raise "Exception '#{e.message}' while writing file store at '#{EngineConfig.config.client_info_filename}'"
   end
 
+  def self.validate_cycle_minutes(name:, value:, min_minutes:1)
+    example_values = [1, 2, 4, 5, 10, 15, 30, 60, 120]
+    addition = "!
+E.g. #{example_values.select{|v| v >= min_minutes}.join(', ')} etc. minutes.
+#{value} is not a valid value for #{name}!"
+    raise PopupMessageException.new "#{name} cycle must not be empty#{addition}" if value.nil?
+    raise PopupMessageException.new "#{name} cycle must not be an integer number#{addition}" if value.to_i != value
+    raise PopupMessageException.new "#{name} cycle must be at least #{min_minutes} minutes#{addition}" if value < min_minutes
+    raise PopupMessageException.new "60 must be divisible without remainder by the #{name} cycle if value is < 60#{addition}" if value <= 60  && 60 % value != 0
+    raise PopupMessageException.new "#{name} cycle must be divisible without remainder by 60 if value is > 60#{addition}"     if value > 60   && value % 60 != 0
+    raise PopupMessageException.new "#{name} cycle must be divisible without remainder by 1440 if value is > 1440#{addition}" if value > 1440 && value % 1440 != 0
+  end
+
+  def self.validate_cycle_hours(name:, value:, min_hours:1)
+    example_values = [1, 2, 3, 4, 6, 8, 12, 24, 48, 72]
+    addition = "!
+E.g. #{example_values.select{|v| v >= min_hours}.join(', ')} etc. hours.
+#{value} is not a valid value for #{name}!"
+    raise PopupMessageException.new "#{name} snapshot cycle must be not empty#{addition}" if value.nil?
+    raise PopupMessageException.new "#{name} cycle must not be an integer number#{addition}" if value.to_i != value
+    raise PopupMessageException.new "#{name} cycle must be at least #{min_hours} hours#{addition}" if value < min_hours
+    raise PopupMessageException.new "24 must be divisable without remainder by the #{name} snapshot cycle if value is < 24#{addition}" if value <= 24 && 24 % value != 0
+    raise PopupMessageException.new "#{name} snapshot cycle must be divisible without remainder by 24 if value is > 24#{addition}" if value >= 24 && value % 24 != 0
+  end
 
 end
