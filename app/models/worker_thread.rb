@@ -68,6 +68,7 @@ class WorkerThread
     PanoramaConnection.set_management_pack_license_from_db_in_connection
   rescue Exception => e
     sampler_config.set_error_message e.message
+    raise e
   end
 
   # Check if connection may function and store result in config hash
