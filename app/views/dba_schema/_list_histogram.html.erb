@@ -11,7 +11,7 @@
 %>
 
 <%= gen_slickgrid(@histograms, column_options, {
-    :caption => "Histogram values from DBA_Histograms for #{@owner}.#{@table_name}.#{@column_name}",
+    :caption => "Histogram values from #{dba_or_cdb('DBA_Tab_Histograms')} for #{@owner}.#{@table_name}.#{@column_name}",
     :max_height => 450
 })
 %>

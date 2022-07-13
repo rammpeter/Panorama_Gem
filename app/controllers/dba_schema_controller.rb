@@ -2067,7 +2067,7 @@ class DbaSchemaController < ApplicationController
     @histograms = sql_select_all ["SELECT h.*,
                                           NVL(Endpoint_Number - LAG(Endpoint_Number) OVER (ORDER BY Endpoint_Number), Endpoint_Number) * #{@num_rows} / MAX(Endpoint_Number) OVER () Num_Rows,
                                           #{interpreted_endpoint_value} Interpreted_Endpoint_Value
-                                   FROM   DBA_Histograms h
+                                   FROM   DBA_Tab_Histograms h
                                    WHERE  Owner       = ?
                                    AND    Table_Name  = ?
                                    AND    Column_Name = ?
