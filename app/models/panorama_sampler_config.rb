@@ -326,7 +326,9 @@ class PanoramaSamplerConfig
     raise PopupMessageException.new "User name is mandatory" if (config_hash[:user].nil? || config_hash[:user] == '')
     raise PopupMessageException.new "Password is mandatory" if (config_hash[:password].nil? || config_hash[:password] == '') && !empty_password_allowed
 
-    PanoramaSamplerConfig.validate_cycle_minutes(name: 'AWR/ASH-snapshot', value: config_hash[:awr_ash_snapshot_cycle], min_minutes: 5)
+    min_value_awr_cycle = 5                                                     # Default for production
+    min_value_awr_cycle = 1 if Rails.env.test?                                  # allow smaller cycle for test runs in CI pipeline
+      PanoramaSamplerConfig.validate_cycle_minutes(name: 'AWR/ASH-snapshot', value: config_hash[:awr_ash_snapshot_cycle], min_minutes: min_value_awr_cycle)
     raise PopupMessageException.new "AWR/ASH-napshot retention must be >= 1 day" if config_hash[:awr_ash_snapshot_retention].nil? || config_hash[:awr_ash_snapshot_retention] < 1
 
     PanoramaSamplerConfig.validate_cycle_hours(name: 'Object size', value: config_hash[:object_size_snapshot_cycle])
