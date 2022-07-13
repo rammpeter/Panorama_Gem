@@ -341,7 +341,9 @@ class PanoramaSamplerConfig
     raise PopupMessageException.new "Blocking locks snapshot retention must be >= 1 day" if config_hash[:blocking_locks_snapshot_retention].nil?  || config_hash[:blocking_locks_snapshot_retention] < 1
 
     raise PopupMessageException.new "You should also activate AWR/ASH-sampling if activating long-term trend with data-source Panorama-Sampler" if config_hash[:longterm_trend_active] && config_hash[:longterm_trend_data_source] == :panorama_sampler && !config_hash[:awr_ash_active]
-    PanoramaSamplerConfig.validate_cycle_hours(name: 'Long-term trend', value: config_hash[:longterm_trend_snapshot_cycle], min_hours: 24)
+    min_value_ltt_cycle = 24                                                     # Default for production
+    min_value_ltt_cycle = 1 if Rails.env.test?                                  # allow smaller cycle for test runs in CI pipeline
+    PanoramaSamplerConfig.validate_cycle_hours(name: 'Long-term trend', value: config_hash[:longterm_trend_snapshot_cycle], min_hours: min_value_ltt_cycle)
     raise PopupMessageException.new "Long-term trend subsume limit (per mille) must be between 0 and 1000" if config_hash[:longterm_trend_subsume_limit].nil?  || config_hash[:longterm_trend_subsume_limit] < 0 || config_hash[:longterm_trend_subsume_limit] >= 1000
   end
 
