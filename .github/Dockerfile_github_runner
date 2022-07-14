@@ -1,0 +1,23 @@
+# Create Docker image for self hosted actions runner
+# Peter Ramm, 2022-07-14
+
+# Image stored at docker.io
+# Build image:      docker build -f Dockerfile_github_runner -t docker.io/rammpeter/panorama_gem_github_runner .
+# Run container:    docker run --restart always -e RUNNER_VERSION=2.294.0 -e RUNNER_SUFFIX=1 -e TOKEN=ABXCX docker.io/rammpeter/panorama_gem_github_runner
+
+FROM oraclelinux:8-slim
+
+# set the github runner version
+ARG RUNNER_VERSION="2.294.0"
+ENV RUNNER_VERSION=$RUNNER_VERSION
+
+RUN microdnf install tar gzip libicu
+
+RUN useradd docker
+WORKDIR /home/docker
+RUN chown docker /home/docker
+COPY run_github_runner.sh .
+RUN chmod +x run_github_runner.sh
+USER docker
+# set the entrypoint to the start.sh script
+CMD ["./run_github_runner.sh"]

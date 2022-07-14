@@ -19,7 +19,7 @@ class PanoramaSamplerConfigTest < ActiveSupport::TestCase
         { name: :password,                            value: ''},
         { name: :awr_ash_snapshot_cycle,              value: nil},
         { name: :awr_ash_snapshot_cycle,              value: 0},
-        { name: :awr_ash_snapshot_cycle,              value: 3},
+        { name: :awr_ash_snapshot_cycle,              value: 7},
         { name: :awr_ash_snapshot_cycle,              value: 52},
         { name: :awr_ash_snapshot_cycle,              value: 130},
         { name: :awr_ash_snapshot_retention,          value: nil},
