@@ -9,7 +9,7 @@
 #     > rpm -i google-chrome-stable_current_x86_64.rpm
 #   - Install jRuby
 #     > curl -sSL https://get.rvm.io | bash
-#     > source $HOME/.rvm/scripts/rvm
+#     > source /etc/profile.d/rvm.sh
 #     > rvm install ${JRUBY_VERSION}
 #     > rvm --default use ${JRUBY_VERSION}
 #     > gem install bundler
@@ -84,6 +84,8 @@ jobs:
         TEST_PORT=`comm -23 <(seq 1530 2000 | sort) <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) | shuf | head -n 1`
         echo "TEST_PORT=$TEST_PORT" | tee -a $GITHUB_ENV
         echo "DB_CONTAINER_NAME=DB$TEST_PORT" | tee -a $GITHUB_ENV
+        JRUBY_VERSION=`cat .ruby-version | cut -c 7-13`
+        echo "JRUBY_VERSION=$JRUBY_VERSION" | tee -a $GITHUB_ENV
 
     - name: Check OS prerequisites
       run: |
@@ -92,9 +94,14 @@ jobs:
         docker images
         java -version
 
+    - name: Set jRuby version in rvm
+      run: |
+        source /etc/profile.d/rvm.sh
+        rvm use --default jruby-${{ env.JRUBY_VERSION }}       
+
     - name: bundle install
       run: |
-        source $HOME/.rvm/scripts/rvm
+        source /etc/profile.d/rvm.sh
         bundle --version
         pwd
         bundle config set deployment 'true'
@@ -122,7 +129,7 @@ jobs:
     - name: Wait for DB available
       if: ${{ env.DB_VERSION != 'autonomous' }}
       run: |
-        source $HOME/.rvm/scripts/rvm
+        source /etc/profile.d/rvm.sh
         export TEST_PORT=${{ env.TEST_PORT }}
         echo $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake
         ls -l $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake
@@ -130,7 +137,7 @@ jobs:
 
     - name: run Test
       run: |
-        source $HOME/.rvm/scripts/rvm
+        source /etc/profile.d/rvm.sh
         export TEST_PORT=${{ env.TEST_PORT }}
         echo "TNS_ADMIN=$TNS_ADMIN"
         if [[ -n "$TNS_ADMIN" ]]; then

@@ -21,6 +21,6 @@ echo "Downloading $URL"
 curl -o actions-runner.tar.gz -L $URL
 tar xzf actions-runner.tar.gz
 
-alias docker=podman
+export RUNNER_ALLOW_RUNASROOT="1"
 ./config.sh --url https://github.com/rammpeter/Panorama_Gem --token $TOKEN --name panorama_gem_docker_runner_${RUNNER_SUFFIX} --unattended
 ./run.sh
