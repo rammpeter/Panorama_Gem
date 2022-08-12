@@ -1,9 +1,13 @@
 # Create Docker image for self hosted actions runner
 # Peter Ramm, 2022-07-14
+# podman settings according to: https://www.redhat.com/sysadmin/podman-inside-container
 
 # Image stored at docker.io
 # Build image:      docker build -f Dockerfile_github_runner -t docker.io/rammpeter/panorama_gem_github_runner .
-# Run container:    docker run --restart always -e RUNNER_VERSION=2.294.0 -e RUNNER_SUFFIX=1 -e TOKEN=ABXCX docker.io/rammpeter/panorama_gem_github_runner
+# Run container:    docker run --privileged --restart always --name github-runner1 :q!:q:q!-e RUNNER_VERSION=2.294.0 -e RUNNER_SUFFIX=1 -e TOKEN=ABXCX docker.io/rammpeter/panorama_gem_github_runner
+# Adjust the run command by:
+# - set the RUNNER_SUFFIX to the number of the runner
+# - Get the needed TOKEN from github project: Settings/Actions/Runners in the "Configure" section
 
 FROM oraclelinux:8-slim
 
@@ -11,13 +15,32 @@ FROM oraclelinux:8-slim
 ARG RUNNER_VERSION="2.294.0"
 ENV RUNNER_VERSION=$RUNNER_VERSION
 
-RUN microdnf install tar gzip libicu
+# Package iproute for command ss
+RUN microdnf install yum tar gzip podman podman-docker fuse-overlayfs crun libicu iproute && \
+    rm -rf /var/cache /var/log/dnf* /var/log/yum.*
 
-RUN useradd docker
-WORKDIR /home/docker
-RUN chown docker /home/docker
+RUN useradd podman; \
+echo podman:10000:5000 > /etc/subuid; \
+echo podman:10000:5000 > /etc/subgid;
+
+VOLUME /var/lib/containers
+VOLUME /home/podman/.local/share/containers
+
+ADD https://raw.githubusercontent.com/containers/libpod/master/contrib/podmanimage/stable/containers.conf /etc/containers/containers.conf
+ADD https://raw.githubusercontent.com/containers/libpod/master/contrib/podmanimage/stable/podman-containers.conf /home/podman/.config/containers/containers.conf
+
+# chmod containers.conf and adjust storage.conf to enable Fuse storage.
+    RUN chmod 644 /etc/containers/containers.conf; sed -i -e 's|^#mount_program|mount_program|g' -e '/additionalimage.*/a "/var/lib/shared",' -e 's|^mountopt[[:space:]]*=.*$|mountopt = "nodev,fsync=0"|g' /etc/containers/storage.conf
+RUN mkdir -p /var/lib/shared/overlay-images /var/lib/shared/overlay-layers /var/lib/shared/vfs-images /var/lib/shared/vfs-layers; touch /var/lib/shared/overlay-images/images.lock; touch /var/lib/shared/overlay-layers/layers.lock; touch /var/lib/shared/vfs-images/images.lock; touch /var/lib/shared/vfs-layers/layers.lock
+
+ENV _CONTAINERS_USERNS_CONFIGURED=""
+
+RUN echo "alias docker=podman" >/etc/profile.d/docker.sh
+
+WORKDIR /home/podman
+RUN chown -R podman /home/podman
 COPY run_github_runner.sh .
 RUN chmod +x run_github_runner.sh
-USER docker
+USER podman
 # set the entrypoint to the start.sh script
 CMD ["./run_github_runner.sh"]

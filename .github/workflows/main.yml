@@ -47,11 +47,12 @@ jobs:
       DB_VERSION: ${{ matrix.db_version }}
       #TEST_PORT: ${{ matrix.port }}
 
-    services:
-      oracle:
-        image: harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{ matrix.db_version }}
+    #services:
+     # oracle:
+     #   image: harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{ matrix.db_version }}
         #ports:
         #  - ${{ matrix.port }}:1521
+
     steps:
     - uses: actions/checkout@v1
 
@@ -79,6 +80,10 @@ jobs:
         rm -rf $panorama_var_home
         mkdir $panorama_var_home
         echo "PANORAMA_VAR_HOME=$panorama_var_home" >> $GITHUB_ENV
+        # get a free random port for the database
+        TEST_PORT=`comm -23 <(seq 1530 2000 | sort) <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) | shuf | head -n 1`
+        echo "TEST_PORT=$TEST_PORT" | tee -a $GITHUB_ENV
+        echo "DB_CONTAINER_NAME=DB$TEST_PORT" | tee -a $GITHUB_ENV
 
     - name: Check OS prerequisites
       run: |
@@ -109,10 +114,16 @@ jobs:
         npm install @playwright/test  
         npx playwright install
 
+    - name: Start database
+      if: ${{ env.DB_VERSION != 'autonomous' }}
+      run: |
+        docker run -d --name ${{ env.DB_CONTAINER_NAME }} -p ${{ env.TEST_PORT }}:1521 harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{ matrix.db_version }}
+
     - name: Wait for DB available
       if: ${{ env.DB_VERSION != 'autonomous' }}
       run: |
         source $HOME/.rvm/scripts/rvm
+        export TEST_PORT=${{ env.TEST_PORT }}
         echo $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake
         ls -l $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake
         bundle exec rake -f $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake ci_preparation:wait_for_db_available[1]
@@ -120,12 +131,21 @@ jobs:
     - name: run Test
       run: |
         source $HOME/.rvm/scripts/rvm
+        export TEST_PORT=${{ env.TEST_PORT }}
         echo "TNS_ADMIN=$TNS_ADMIN"
         if [[ -n "$TNS_ADMIN" ]]; then
           echo "tnsnames.ora="
           cat $TNS_ADMIN/tnsnames.ora
         fi
         bundle exec rake test
+
+    - name: stop database
+      if: always()
+      run: |
+        if [[ "${{ env.DB_VERSION }}" != 'autonomous'  ]]: then
+          docker logs ${{ env.DB_CONTAINER_NAME }}
+          docker rm -f ${{ env.DB_CONTAINER_NAME }}
+        fi
 
     - name: Archive test log
       if: always()

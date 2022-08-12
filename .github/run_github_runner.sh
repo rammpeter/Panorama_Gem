@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 if [[ -z "$RUNNER_VERSION" ]]; then
   echo "RUNNER_VERSION should be set in environment"
   exit 1
@@ -20,6 +21,6 @@ echo "Downloading $URL"
 curl -o actions-runner.tar.gz -L $URL
 tar xzf actions-runner.tar.gz
 
-# TODO: set config attributes
+alias docker=podman
 ./config.sh --url https://github.com/rammpeter/Panorama_Gem --token $TOKEN --name panorama_gem_docker_runner_${RUNNER_SUFFIX} --unattended
 ./run.sh
