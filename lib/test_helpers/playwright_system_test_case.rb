@@ -52,8 +52,10 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
         headless: RbConfig::CONFIG['host_os'] != 'darwin',
         args: ['--no-sandbox']
       )
+      Rails.logger.debug('PlaywrightSystemTestCase.ensure_playwright_is_up') { "@@pw_browser.new_page" }
       @@pw_page = @@pw_browser.new_page(viewport: { width: 800, height: 600 })
       @@pw_page.set_default_timeout(30000)
+      Rails.logger.debug('PlaywrightSystemTestCase.ensure_playwright_is_up') { "goto http" }
       @@pw_page.goto("http://#{host}:#{port}")
       do_login
 
