@@ -40,12 +40,18 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
   @@pw_page        = nil
   def ensure_playwright_is_up
     if @@pw_browser.nil?
+      Rails.logger.debug('PlaywrightSystemTestCase.ensure_playwright_is_up') { "@@pw_browser == nil, starting puma" }
       pw_puma_server = Puma::Server.new(Rails.application, Puma::Events.stdio, max_threads:100)
       host = '127.0.0.1'
       port = pw_puma_server.add_tcp_listener(host, 0).addr[1]
       pw_puma_server.run
+      Rails.logger.debug('PlaywrightSystemTestCase.ensure_playwright_is_up') { "Playwright.create" }
       playwright = Playwright.create(playwright_cli_executable_path: 'npx playwright')
-      @@pw_browser  = playwright.playwright.chromium.launch(headless: RbConfig::CONFIG['host_os'] != 'darwin')
+      Rails.logger.debug('PlaywrightSystemTestCase.ensure_playwright_is_up') { "playwright.playwright.chromium.launch" }
+      @@pw_browser  = playwright.playwright.chromium.launch(
+        headless: RbConfig::CONFIG['host_os'] != 'darwin',
+        args: ['--no-sandbox']
+      )
       @@pw_page = @@pw_browser.new_page(viewport: { width: 800, height: 600 })
       @@pw_page.set_default_timeout(30000)
       @@pw_page.goto("http://#{host}:#{port}")
@@ -56,6 +62,8 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
         @@pw_browser&.close
         playwright&.stop
       end
+    else
+      Rails.logger.debug('PlaywrightSystemTestCase.ensure_playwright_is_up') { "@@pw_browser != nil, no action needed" }
     end
   end
 
