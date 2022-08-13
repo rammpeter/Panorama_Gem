@@ -3,7 +3,7 @@
 # podman settings according to: https://www.redhat.com/sysadmin/podman-inside-container
 
 # Image stored at docker.io
-# Build image:      docker build -f Dockerfile_github_runner --build-arg JRUBY_VERSION=`cat ../.ruby-version | cut -c 7-13` -t docker.io/rammpeter/panorama_gem_github_runner .
+# Build image:      docker build -f Dockerfile_github_runner --progress=plain --build-arg JRUBY_VERSION=`cat ../.ruby-version | cut -c 7-13` -t docker.io/rammpeter/panorama_gem_github_runner .
 # Run container:    docker run --privileged --restart always --name github-runner1 -e RUNNER_VERSION=2.295.0 -e RUNNER_SUFFIX=1 -e TOKEN=ABXCX docker.io/rammpeter/panorama_gem_github_runner
 # Adjust the run command by:
 # - set the RUNNER_SUFFIX to the number of the runner
@@ -36,16 +36,30 @@ ENV PATH "${JAVA_HOME}/bin:/usr/local/rvm/bin:$PATH"
 COPY --from=openjdk /customjre $JAVA_HOME
 
 # Package iproute for command ss
-RUN microdnf install yum tar gzip podman podman-docker git fuse-overlayfs crun libicu iproute wget which findutils procps && \
-    rm -rf /var/cache /var/log/dnf* /var/log/yum.*
+RUN microdnf install yum tar gzip vim podman podman-docker git make fuse-overlayfs crun libicu iproute \
+             util-linux unzip wget which findutils procps && \
+    rm -rf /var/cache /var/log/dnf* /var/log/yum.* && \
+    echo 'Europe/Berlin' > /etc/timezone && rm -f /etc/localtime && ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 
 RUN echo "### install jruby" && \
-    curl -sSL https://get.rvm.io | bash
-
-
-RUN source /etc/profile.d/rvm.sh && \
+    curl -sSL https://get.rvm.io | bash && \
+    source /etc/profile.d/rvm.sh && \
+    rvm install jruby 9.3.2.0 && \
     rvm install jruby $JRUBY_VERSION && \
-    rvm use --default jruby-$JRUBY_VERSION
+    rvm use --default jruby-$JRUBY_VERSION && \
+    rvm cleanup all
+
+RUN echo "### install nodejs" && \
+    dnf install -y @nodejs:14 && \
+    rm -rf /var/cache /var/log/dnf* /var/log/yum.*
+
+RUN echo "### install chrome" && \
+    wget "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm" && \
+    dnf install -y liberation-fonts libXScrnSaver.x86_64 libappindicator-gtk3.x86_64 vulkan libgbm xdg-utils alsa-lib nspr nss && \
+    rpm -i google-chrome-stable_current_x86_64.rpm && \
+    rm google-chrome-stable_current_x86_64.rpm && \
+    rm -rf /var/cache /var/log/dnf* /var/log/yum.*
+
 
 #RUN useradd podman; \
 #echo podman:10000:5000 > /etc/subuid; \

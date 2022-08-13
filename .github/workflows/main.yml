@@ -149,7 +149,7 @@ jobs:
     - name: stop database
       if: always()
       run: |
-        if [[ "${{ env.DB_VERSION }}" != 'autonomous'  ]]: then
+        if [[ "${{ env.DB_VERSION }}" != 'autonomous'  ]]; then
           docker logs ${{ env.DB_CONTAINER_NAME }}
           docker rm -f ${{ env.DB_CONTAINER_NAME }}
         fi
