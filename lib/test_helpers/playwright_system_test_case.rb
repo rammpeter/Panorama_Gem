@@ -50,7 +50,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
       Rails.logger.debug('PlaywrightSystemTestCase.ensure_playwright_is_up') { "playwright.playwright.chromium.launch" }
       @@pw_browser  = playwright.playwright.chromium.launch(
         headless: RbConfig::CONFIG['host_os'] != 'darwin',
-        args: ['--no-sandbox']
+        args: ['--no-sandbox']                                                  # allow running chrome as root
       )
       Rails.logger.debug('PlaywrightSystemTestCase.ensure_playwright_is_up') { "@@pw_browser.new_page" }
       @@pw_page = @@pw_browser.new_page(viewport: { width: 800, height: 600 })
