@@ -3,10 +3,7 @@
 #   - Install Java
 #     > wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.rpm
 #     > rpm -Uvh jdk-17_linux-x64_bin.rpm && rm jdk-17_linux-x64_bin.rpm
-#   - Install Google Chrome:
-#     > wget "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
-#     > yum install liberation-fonts libXScrnSaver.x86_64 libappindicator-gtk3.x86_64 vulkan libgbm xdg-utils alsa-lib nspr nss
-#     > rpm -i google-chrome-stable_current_x86_64.rpm
+#   - Install Chromium for the dependencies needed by playwright:
 #   - Install jRuby
 #     > curl -sSL https://get.rvm.io | bash
 #     > source "$HOME/.rvm/scripts/rvm"
@@ -31,27 +28,24 @@ jobs:
       max-parallel: 8
       fail-fast: false
       matrix:
-        management_pack_license: [diagnostics_and_tuning_pack, diagnostics_pack, panorama_sampler, none]
-        db_version: [autonomous, 12.2.0.1-ee]
-        #include:
-        #  - { management_pack_license: diagnostics_and_tuning_pack, db_version: autonomous,     port: 1522 }
-        #  - { management_pack_license: diagnostics_pack,            db_version: autonomous,     port: 1523 }
-        #  - { management_pack_license: panorama_sampler,            db_version: autonomous,     port: 1524 }
-        #  - { management_pack_license: none,                        db_version: autonomous,     port: 1525 }
-        #  - { management_pack_license: diagnostics_and_tuning_pack, db_version: 12.2.0.1-ee,    port: 1526 }
-        #  - { management_pack_license: diagnostics_pack,            db_version: 12.2.0.1-ee,    port: 1527 }
-        #  - { management_pack_license: panorama_sampler,            db_version: 12.2.0.1-ee,    port: 1528 }
-        #  - { management_pack_license: none,                        db_version: 12.2.0.1-ee,    port: 1529 }
+        management_pack_license:
+        - diagnostics_and_tuning_pack
+        - diagnostics_pack
+        - panorama_sampler
+        - none
+        db_version:
+        - autonomous
+        - 11.2.0.4-ee
+        - 12.1.0.2-ee
+        - 12.2.0.1-ee
+        - 18.3.0.0-ee
+        - 18.4.0.0-xe
+        - 19.3.0.0-ee
+        - 19.10.0.0-ee
+        - 19.10.0.0-se2
     env:
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
       DB_VERSION: ${{ matrix.db_version }}
-      #TEST_PORT: ${{ matrix.port }}
-
-    #services:
-     # oracle:
-     #   image: harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{ matrix.db_version }}
-        #ports:
-        #  - ${{ matrix.port }}:1521
 
     steps:
     - uses: actions/checkout@v1
