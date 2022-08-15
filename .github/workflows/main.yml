@@ -129,7 +129,7 @@ jobs:
         export TEST_PORT=${{ env.TEST_PORT }}
         echo $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake
         ls -l $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake
-        bundle exec rake -f $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake ci_preparation:wait_for_db_available[1]
+        bundle exec rake -f $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake ci_preparation:wait_for_db_available[10]
 
     - name: run Test
       run: |
