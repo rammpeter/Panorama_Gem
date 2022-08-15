@@ -50,14 +50,14 @@ RUN echo "### install jruby" && \
     rvm cleanup all
 
 RUN echo "### install nodejs" && \
-    dnf install -y @nodejs:14 && \
+    dnf install -y @nodejs:16 && \
     rm -rf /var/cache /var/log/dnf* /var/log/yum.*
 
-RUN echo "### install chrome" && \
-    wget "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm" && \
-    dnf install -y liberation-fonts libXScrnSaver.x86_64 libappindicator-gtk3.x86_64 vulkan libgbm xdg-utils alsa-lib nspr nss && \
-    rpm -i google-chrome-stable_current_x86_64.rpm && \
-    rm google-chrome-stable_current_x86_64.rpm && \
+RUN echo "### install chromium" && \
+    dnf install -y oracle-epel-release-el8 && \
+    dnf install -y 'dnf-command(config-manager)' && \
+    dnf config-manager --set-enabled ol8_developer_EPEL && \
+    dnf install -y chromium && \
     rm -rf /var/cache /var/log/dnf* /var/log/yum.*
 
 
