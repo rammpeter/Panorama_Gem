@@ -49,19 +49,12 @@ RUN echo "### install jruby" && \
     rvm use --default jruby-$JRUBY_VERSION && \
     rvm cleanup all
 
-RUN echo "### install nodejs" && \
+RUN echo "### install nodejs and playwright with browser runtimes" && \
     dnf install -y @nodejs:16 && \
     rm -rf /var/cache /var/log/dnf* /var/log/yum.*
 
-RUN echo "### install chromium" && \
-    dnf install -y oracle-epel-release-el8 && \
-    dnf install -y 'dnf-command(config-manager)' && \
-    dnf config-manager --set-enabled ol8_developer_EPEL && \
-    dnf install -y chromium && \
-    rm -rf /var/cache /var/log/dnf* /var/log/yum.*
+RUN useradd panorama
 
-
-#RUN useradd podman; \
 #echo podman:10000:5000 > /etc/subuid; \
 #echo podman:10000:5000 > /etc/subgid;
 
@@ -81,6 +74,6 @@ WORKDIR /app
 #RUN chown -R podman /home/podman
 COPY run_github_runner.sh .
 RUN chmod +x run_github_runner.sh
-#USER podman
+USER panorama
 # set the entrypoint to the start.sh script
 CMD ["./run_github_runner.sh"]

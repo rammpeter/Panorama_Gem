@@ -118,7 +118,8 @@ jobs:
 
     - name: Ensure playwright installed
       run: |
-        npm uninstall playwright 
+        # uninstall needed only to ensure next version is completely installed
+        # npm uninstall playwright 
         npm install playwright  
         npx playwright install
 
