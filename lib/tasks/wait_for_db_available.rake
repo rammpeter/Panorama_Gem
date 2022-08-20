@@ -14,6 +14,7 @@ namespace :ci_preparation do
 
     exception_text = nil
     config = PanoramaTestConfig.test_config
+    puts "TNS = #{config[:tns]}"
     loop do
       raise "DB not available after waiting #{max_wait_minutes} minutes! Aborting!\nReason: #{exception_text}\n" if Time.now > start_time + max_wait_minutes*60
 

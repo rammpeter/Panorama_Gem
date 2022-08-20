@@ -43,9 +43,11 @@ jobs:
         - 19.3.0.0-ee
         - 19.10.0.0-ee
         - 19.10.0.0-se2
+        # TODO: PDB and CDB
     env:
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
       DB_VERSION: ${{ matrix.db_version }}
+      TEST_SERVICENAME: ${{ matrix.db_version }}
 
     steps:
     - uses: actions/checkout@v1
@@ -68,6 +70,12 @@ jobs:
         else
           echo "TEST_USERNAME=panorama_test" >> $GITHUB_ENV
           echo "TEST_PASSWORD=panorama_test" >> $GITHUB_ENV
+          # set TEST_SERVICENAME if not default ORCLPDB1
+          if [[ "$DB_VERSION" == "11.2.0.4-ee" ]]; then
+            echo "TEST_SERVICENAME=ORCL" >> $GITHUB_ENV
+          elif [[ "$DB_VERSION" == "18.4.0.0-xe" ]]; then
+            echo "TEST_SERVICENAME=XEPDB1" >> $GITHUB_ENV
+          fi
         fi
         # Ensure that each run uses it's own config without previous artifacts
         panorama_var_home=/tmp/panorama_var_home_${MANAGEMENT_PACK_LICENSE}_${DB_VERSION}
