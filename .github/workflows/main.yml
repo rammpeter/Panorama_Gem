@@ -47,7 +47,6 @@ jobs:
     env:
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
       DB_VERSION: ${{ matrix.db_version }}
-      TEST_SERVICENAME: ${{ matrix.db_version }}
 
     steps:
     - uses: actions/checkout@v1
