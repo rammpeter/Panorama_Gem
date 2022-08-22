@@ -82,10 +82,6 @@ jobs:
         echo "PANORAMA_VAR_HOME=$panorama_var_home" >> $GITHUB_ENV
         # Enable successful artifacts load even if dir is not created
         mkdir -p test/dummy/tmp/screenshots
-        # get a free random port for the database
-        TEST_PORT=`comm -23 <(seq 1530 2000 | sort) <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) | shuf | head -n 1`
-        echo "TEST_PORT=$TEST_PORT" | tee -a $GITHUB_ENV
-        echo "DB_CONTAINER_NAME=DB$TEST_PORT" | tee -a $GITHUB_ENV
         JRUBY_VERSION=`cat .ruby-version | cut -c 7-13`
         echo "JRUBY_VERSION=$JRUBY_VERSION" | tee -a $GITHUB_ENV
 
@@ -128,7 +124,12 @@ jobs:
     - name: Start database
       if: ${{ env.DB_VERSION != 'autonomous' }}
       run: |
-        docker run -d --name ${{ env.DB_CONTAINER_NAME }} -p ${{ env.TEST_PORT }}:1521 harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{ matrix.db_version }}
+        # get a free random port for the database, execute as late as possible
+        TEST_PORT=`comm -23 <(seq 1530 2000 | sort) <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) | shuf | head -n 1`
+        echo "TEST_PORT=$TEST_PORT" | tee -a $GITHUB_ENV
+        DB_CONTAINER_NAME=DB$TEST_PORT
+        echo "DB_CONTAINER_NAME=$DB_CONTAINER_NAME" | tee -a $GITHUB_ENV
+        docker run -d --name $DB_CONTAINER_NAME  -p $TEST_PORT:1521 harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{ matrix.db_version }}
 
     - name: Wait for DB available
       if: ${{ env.DB_VERSION != 'autonomous' }}
