@@ -77,9 +77,8 @@ jobs:
           fi
         fi
         # Ensure that each run uses it's own config without previous artifacts
-        panorama_var_home=/tmp/panorama_var_home_${MANAGEMENT_PACK_LICENSE}_${DB_VERSION}
-        rm -rf $panorama_var_home
-        mkdir $panorama_var_home
+        panorama_var_home=$PWD/tmp/panorama_var_home_${MANAGEMENT_PACK_LICENSE}_${DB_VERSION}
+        mkdir -p $panorama_var_home
         echo "PANORAMA_VAR_HOME=$panorama_var_home" >> $GITHUB_ENV
         # Enable successful artifacts load even if dir is not created
         mkdir -p test/dummy/tmp/screenshots
