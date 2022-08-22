@@ -22,7 +22,7 @@
   end
 
   link_privileges = proc do |rec|
-    ajax_link(fn(rec.privileges),
+    ajax_link(fn(rec.privilege_cnt),
               {action:      :list_granted_sys_privileges,
                grantee:     rec.username,
                update_area: @update_area,

@@ -44,11 +44,11 @@ class DbaSchemaController < ApplicationController
                                                               FROM   DBA_Tab_Privs
                                                               GROUP BY Grantor
                                                              ),
-                                       Sys_Privs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Grantee, COUNT(*) Privileges
+                                       Sys_Privs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Grantee, COUNT(*) Privilege_Cnt
                                                       FROM   DBA_Sys_Privs
                                                       GROUP BY Grantee
                                                      )
-                                  SELECT u.*, p.Granted_Roles, s.Privileges, t.Obj_Grants, gt.Granted_Obj_Grants
+                                  SELECT u.*, p.Granted_Roles, s.Privilege_Cnt, t.Obj_Grants, gt.Granted_Obj_Grants
                                   FROM   Users u
                                   LEFT OUTER JOIN Role_Privs p ON p.Grantee = u.UserName
                                   LEFT OUTER JOIN Tab_Privs t ON t.Grantee = u.UserName
@@ -83,11 +83,11 @@ class DbaSchemaController < ApplicationController
                                                       FROM   DBA_Tab_Privs
                                                       GROUP BY Grantee
                                                      ),
-                                       Sys_Privs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Grantee, COUNT(*) Privileges
+                                       Sys_Privs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Grantee, COUNT(*) Privilege_Cnt
                                                       FROM   DBA_Sys_Privs
                                                       GROUP BY Grantee
                                                      )
-                                  SELECT r.*, p.Grantees, gp.Roles_Granted, s.Privileges, t.Obj_Grants
+                                  SELECT r.*, p.Grantees, gp.Roles_Granted, s.Privilege_Cnt, t.Obj_Grants
                                   FROM   Roles r
                                   LEFT OUTER JOIN Role_Privs p          ON p.Granted_Role = r.Role
                                   LEFT OUTER JOIN Granted_Role_Privs gp ON gp.Grantee = r.Role
