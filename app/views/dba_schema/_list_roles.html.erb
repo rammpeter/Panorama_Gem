@@ -43,7 +43,7 @@
 
   column_options = []
   column_options << {caption: 'Role',         data: proc{|rec| rec.role},                     title: 'Name of the role'}
-  column_options << {caption: 'Role ID',      data: proc{|rec| fn(rec.role_id)},              title: 'ID number of the role', align: :right}
+  column_options << {caption: 'Role ID',      data: proc{|rec| fn(rec.role_id)},              title: 'ID number of the role', align: :right} if get_db_version >= '12.2'
   column_options << {caption: 'PW req.',      data: proc{|rec| rec.password_required},        title: 'This column is deprecated in favor of the AUTHENTICATION_TYPE column'}
   column_options << {caption: 'Auth. type',   data: proc{|rec| rec.authentication_type},      title: "Indicates the authentication mechanism for the role:\nNONE - CREATE ROLE role1;\nEXTERNAL - CREATE ROLE role2 IDENTIFIED EXTERNALLY;\nGLOBAL - CREATE ROLE role3 IDENTIFIED GLOBALLY;\nAPPLICATION - CREATE ROLE role4 IDENTIFIED USING schema.package;\nPASSWORD - CREATE ROLE role5 IDENTIFIED BY role5;"}
   column_options << {caption: 'Common',       data: proc{|rec| rec.common},                   title: "Indicates whether a given role is common. Possible values:\nYES if the role is common\nNO if the role is local (not common)"} if get_db_version >= '12.1'
