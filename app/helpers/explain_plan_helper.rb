@@ -44,8 +44,6 @@ module ExplainPlanHelper
   # @param display_map_records XML structure of display maps in array records
   # @return plan line ids to process and show
   def ajust_plan_records_for_adaptive(plan:, plan_lines:, display_map_records:, show_adaptive_plans:)
-    return plan_lines if get_db_version < '12.1'                                # return unfiltered plan
-
     display_map = {}                                                            # Hash with key=operation ID
     # Calculate rows to skip due to adaptive plan
     display_map_records.each do |m|

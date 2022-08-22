@@ -676,6 +676,8 @@ class DbaHistoryController < ApplicationController
         AND    SQL_ID = ?
         AND other_xml   IS NOT NULL
         ", get_dbid, @sql_id]
+    else
+      display_map_records = []
     end
 
 
