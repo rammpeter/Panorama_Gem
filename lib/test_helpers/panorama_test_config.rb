@@ -18,7 +18,7 @@ class PanoramaTestConfig
         password_decrypted:       test_password,
         port:                     test_port,
         privilege:                'normal',
-        query_timeout:            600,                                          # Allow 10 minutes for query and 20 minutes for socket read timeout in tests
+        query_timeout:            900,                                         # Allow 15 minutes for query and 20 minutes for socket read timeout in tests
         sid:                      test_servicename,
         sid_usage:                :SERVICE_NAME,
         syspassword_decrypted:    test_syspassword,
