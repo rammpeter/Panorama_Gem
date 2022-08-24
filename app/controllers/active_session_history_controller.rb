@@ -1052,7 +1052,7 @@ class ActiveSessionHistoryController < ApplicationController
              peo.Owner peo_Owner, peo.Object_Type peo_Object_Type, peo.Object_Name peo_Object_Name, peo.Procedure_Name peo_Procedure_Name,
              po.Owner  po_Owner,  po.Object_Type  po_Object_Type,  po.Object_Name  po_Object_Name,  po.Procedure_Name  po_Procedure_Name,
              sv.Service_Name
-      FROM   (SELECT Level, CONNECT_BY_ISCYCLE, tSel.*
+      FROM   (SELECT Level Order_Level, CONNECT_BY_ISCYCLE, tSel.*
               FROM   tSel
               CONNECT BY NOCYCLE PRIOR Blocking_Session           = Session_ID
                              AND PRIOR Blocking_Session_Serial_No = Session_Serial_No
@@ -1065,6 +1065,7 @@ class ActiveSessionHistoryController < ApplicationController
        LEFT OUTER JOIN procs po  ON po.Object_ID = x.PLSQL_Object_ID        AND po.SubProgram_ID = x.PLSQL_SubProgram_ID
        LEFT OUTER JOIN DBA_Hist_Service_Name sv ON sv.DBID = ? AND sv.Service_Name_Hash = x.Service_Hash
        LEFT OUTER JOIN DBA_Data_Files f ON f.File_ID = x.Current_File_No
+       ORDER BY x.Order_Level
       ", get_dbid, @min_snap_id, @max_snap_id, @sample_time, @sample_time, @sample_time, @blocked_session, @blocked_session_serial_no].
         concat(@blocked_inst_id ? [@blocked_inst_id] : []).concat([get_dbid]), record_modifier)
 
