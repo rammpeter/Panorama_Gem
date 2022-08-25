@@ -2,12 +2,12 @@
     @update_area = get_unique_area_id
 
     link_index = proc do |rec|
-      ajax_link(rec.index_name,
+      ajax_link(rec.min_index_name,
            {controller:     :dba_schema,
             action:         :list_indexes,
-            owner:          @owner,
+            owner:          rec.min_index_owner,
             table_name:     @table_name,
-            index_name:     rec.index_name,
+            index_name:     rec.min_index_name,
             update_area:    @update_area,
            },
            :title=>"List distribution of storage extents for index. Caution: Execution may last some time!"

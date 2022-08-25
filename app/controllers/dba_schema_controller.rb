@@ -1395,8 +1395,8 @@ class DbaSchemaController < ApplicationController
 
     @references = sql_select_all ["\
       WITH Cons_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Constraint_Name, Column_Name, Position FROM DBA_Cons_Columns WHERE Owner = ? AND Table_Name = ?),
-           Cons_Column_Count AS (SELECT /*+ NO_MERGE MATERIALIZE */ Constraint_Name, COUNT(*) Column_Count FROM DBA_Cons_Columns GROUP BY Constraint_Name)
-      SELECT c.*, r.Table_Name R_Table_Name, rt.Num_Rows r_Num_Rows, ci.Index_Name, ci.Index_Number, rt.Last_Analyzed, m.Inserts, m.Updates, m.Deletes,
+           Ind_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Table_Owner, Table_Name, Column_Name FROM DBA_Ind_Columns WHERE Table_Owner = ? AND Table_Name = ?)
+      SELECT c.*, r.Table_Name R_Table_Name, rt.Num_Rows r_Num_Rows, pi.Min_Index_Owner, pi.Min_Index_Name, pi.Index_Number, rt.Last_Analyzed, m.Inserts, m.Updates, m.Deletes,
              #{get_db_version >= "11.2" ?
                                       "(SELECT LISTAGG(column_name, ', ') WITHIN GROUP (ORDER BY Position) FROM DBA_Cons_Columns cc WHERE cc.Owner = c.Owner AND cc.Constraint_Name = c.Constraint_Name) Columns,
                                        (SELECT LISTAGG(column_name, ', ') WITHIN GROUP (ORDER BY Position) FROM DBA_Cons_Columns cc WHERE cc.Owner = r.Owner AND cc.Constraint_Name = r.Constraint_Name) R_Columns
@@ -1409,21 +1409,27 @@ class DbaSchemaController < ApplicationController
       JOIN   DBA_Constraints r    ON r.Owner = c.R_Owner AND r.Constraint_Name = c.R_Constraint_Name
       JOIN   DBA_Tables rt        ON rt.Owner = r.Owner AND rt.Table_Name = r.Table_Name
       LEFT OUTER JOIN DBA_Tab_Modifications m ON m.Table_Owner = rt.Owner AND m.Table_Name = rt.Table_Name AND m.Partition_Name IS NULL    -- Summe der Partitionen wird noch einmal als Einzel-Zeile ausgewiesen
-      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ icc.Constraint_Name, MIN(Index_Name) Index_Name, COUNT(*) Index_Number
-                       FROM   (SELECT /*+ NO_MERGE */ cc.Constraint_Name, ic.Index_Name, COUNT(*) Column_Count
-                               FROM   Cons_Columns cc
-                               JOIN DBA_Ind_Columns ic ON ic.Table_Owner = cc.Owner AND ic.Table_Name = cc.Table_Name AND ic.Column_Name = cc.Column_Name AND ic.Column_Position = cc.Position
-                               GROUP BY cc.Constraint_Name, ic.Index_Name
-                              ) icc
-                       JOIN   Cons_Column_Count ccc ON ccc.Constraint_Name = icc.Constraint_Name
-                       WHERE  ccc.Column_Count = icc.Column_Count /* All constraint columns are in index */
-                       GROUP BY icc.Constraint_Name
-                      ) ci ON ci.Constraint_Name = c.Constraint_Name
+      LEFT OUTER JOIN   (
+              SELECT Owner, Constraint_Name,
+                     MIN(Index_Owner) KEEP (DENSE_RANK FIRST ORDER BY Index_Name) Min_Index_Owner, MIN(Index_Name) Min_Index_Name,
+                     COUNT(*) Index_Number
+              FROM   (
+                      SELECT Owner, Constraint_Name, Index_Owner, Index_Name
+                      FROM   (SELECT cc.Owner, cc.Table_Name, cc.Constraint_Name, ic.Index_Owner, ic.Index_Name, ic.Column_Name Index_Column_Name,
+                                     COUNT(DISTINCT cc.Column_Name) OVER (PARTITION BY cc.Owner, cc.Table_Name, cc.Constraint_Name) Cons_Column_Count
+                              FROM   Cons_Columns cc
+                              LEFT OUTER JOIN Ind_Columns ic ON ic.Table_Owner = cc.Owner AND ic.Table_Name = cc.Table_Name AND ic.Column_name = cc.Column_Name
+                              )
+                      GROUP BY Owner, Constraint_Name, Index_Owner, Index_Name
+                      HAVING MIN(Cons_Column_Count) = COUNT(DISTINCT Index_Column_Name) /* All FK columns must exist in protecting index, no matter in which order */
+                     )
+              GROUP BY Owner, Constraint_Name
+             )  pi ON pi.Owner = c.Owner AND pi.Constraint_Name = c.Constraint_Name
       WHERE  c.Constraint_Type = 'R'
       AND    c.Owner      = ?
       AND    c.Table_Name = ?
       #{where_string}
-      ", @owner, @table_name, @owner, @table_name].concat(where_values)
+      ", @owner, @table_name, @owner, @table_name, @owner, @table_name].concat(where_values)
 
     render_partial
   end
@@ -1433,7 +1439,7 @@ class DbaSchemaController < ApplicationController
     @table_name = params[:table_name]
 
     @referencing = sql_select_all ["\
-      SELECT c.*, ct.Num_Rows,  ci.Min_Index_Owner, ci.Min_Index_Name, ci.Index_Number,
+      SELECT c.*, ct.Num_Rows,  pi.Min_Index_Owner, pi.Min_Index_Name, pi.Index_Number,
              #{get_db_version >= "11.2" ?
                                       "(SELECT  LISTAGG(column_name, ', ') WITHIN GROUP (ORDER BY Position) FROM DBA_Cons_Columns cc WHERE cc.Owner = r.Owner AND cc.Constraint_Name = r.Constraint_Name) R_Columns,
                                        (SELECT  LISTAGG(column_name, ', ') WITHIN GROUP (ORDER BY Position) FROM DBA_Cons_Columns cc WHERE cc.Owner = c.Owner AND cc.Constraint_Name = c.Constraint_Name) Columns
@@ -1445,15 +1451,22 @@ class DbaSchemaController < ApplicationController
       FROM   DBA_Constraints r
       JOIN   DBA_Constraints c ON c.R_Owner = r.Owner AND c.R_Constraint_Name = r.Constraint_Name
       JOIN   DBA_Tables ct ON ct.Owner = c.Owner AND ct.Table_Name = c.Table_Name
-      JOIN   DBA_Cons_Columns cc1 ON cc1.Owner = c.Owner AND cc1.Constraint_Name = c.Constraint_Name AND cc1.Position = 1
-      LEFT OUTER JOIN (SELECT ic.Table_Owner, ic.Table_Name, ic.Column_Name,
-                              MIN(ic.Index_Owner) KEEP (DENSE_RANK FIRST ORDER BY ic.Index_Name) Min_Index_Owner,
-                              MIN(ic.Index_Name) Min_Index_Name,
-                              COUNT(*) Index_Number
-                       FROM   DBA_Ind_Columns ic
-                       WHERE  ic.Column_Position = 1
-                       GROUP BY ic.Table_Owner, ic.Table_Name, ic.Column_Name
-                      ) ci ON ci.Table_Owner = ct.Owner AND ci.Table_Name = ct.Table_Name AND ci.Column_Name = cc1.Column_Name
+      LEFT OUTER JOIN   (
+              SELECT Owner, Constraint_Name,
+                     MIN(Index_Owner) KEEP (DENSE_RANK FIRST ORDER BY Index_Name) Min_Index_Owner, MIN(Index_Name) Min_Index_Name,
+                     COUNT(*) Index_Number
+              FROM   (
+                      SELECT Owner, Constraint_Name, Index_Owner, Index_Name
+                      FROM   (SELECT cc.Owner, cc.Table_Name, cc.Constraint_Name, ic.Index_Owner, ic.Index_Name, ic.Column_Name Index_Column_Name,
+                                     COUNT(DISTINCT cc.Column_Name) OVER (PARTITION BY cc.Owner, cc.Table_Name, cc.Constraint_Name) Cons_Columns
+                              FROM   DBA_Cons_Columns cc
+                              LEFT OUTER JOIN DBA_Ind_Columns ic ON ic.Table_Owner = cc.Owner AND ic.Table_Name = cc.Table_Name AND ic.Column_name = cc.Column_Name
+                              )
+                      GROUP BY Owner, Constraint_Name, Index_Owner, Index_Name
+                      HAVING MIN(Cons_Columns) = COUNT(DISTINCT Index_Column_Name)  /* All FK columns must exist in protecting index, no matter in which order */
+                     )
+              GROUP BY Owner, Constraint_Name
+             )  pi ON pi.Owner = c.Owner AND pi.Constraint_Name = c.Constraint_Name
       WHERE  c.Constraint_Type = 'R'
       AND    r.Owner      = ?
       AND    r.Table_Name = ?

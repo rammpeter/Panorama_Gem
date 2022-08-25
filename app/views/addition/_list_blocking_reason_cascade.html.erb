@@ -11,7 +11,7 @@ end
 link_column_blocked = proc do |rec|
   retval = ''
   if rec.sid
-    retval << ajax_link(rec.sid, {
+    retval << ajax_link(rec.blocking_sid, {
       controller:  :active_session_history,
       action:     :list_session_statistic_historic_grouping,
       groupfilter: {
