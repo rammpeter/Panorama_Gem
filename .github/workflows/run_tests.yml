@@ -108,7 +108,7 @@ jobs:
           echo "TEST_PORT=$TEST_PORT" | tee -a $GITHUB_ENV
           DB_CONTAINER_NAME=DB$TEST_PORT
           echo "DB_CONTAINER_NAME=$DB_CONTAINER_NAME" | tee -a $GITHUB_ENV
-          docker run -d --name $DB_CONTAINER_NAME  -p $TEST_PORT:1521 harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:${{ matrix.db_version }}
+          docker run -d --name $DB_CONTAINER_NAME  -p $TEST_PORT:1521 harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:$DB_VERSION
 
       - name: Wait for DB available
         if: ${{ env.DB_VERSION != 'autonomous' }}
