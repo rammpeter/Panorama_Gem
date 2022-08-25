@@ -21,17 +21,17 @@ on:
 
 jobs:
   test_11.2.0.4-ee:
-    uses: run_tests.yml@master
+    uses: rammpeter/panorama_gem/.github/workflows/run_tests.yml@master
     with:
       db_version: 11.2.0.4-ee
 
   test_12.1.0.2-ee:
-    uses: run_tests.yml@master
+    uses: rammpeter/panorama_gem/.github/workflows/run_tests.yml@master
     with:
       db_version: 12.1.0.2-ee
 
   test_12.2.0.1-ee:
-    uses: run_tests.yml@master
+    uses: rammpeter/panorama_gem/.github/workflows/run_tests.yml@master
     with:
       db_version: 12.2.0.1-ee
 
