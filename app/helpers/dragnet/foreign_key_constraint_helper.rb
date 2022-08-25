@@ -13,15 +13,44 @@ module Dragnet::ForeignKeyConstraintHelper
             :sql=> "WITH Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Constraint_name, Constraint_Type, r_Owner, r_Constraint_Name
                                          FROM   DBA_Constraints
                                          WHERE  Owner NOT IN (#{system_schema_subselect})
-                                        )
+                                        ),
+                         Cons_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Constraint_name, Column_Name, Position
+                                         FROM   DBA_Cons_Columns
+                                         WHERE  Owner NOT IN (#{system_schema_subselect})
+                                        ),
+                         Ind_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, Index_Owner, Index_Name, Column_Name
+                                         FROM   DBA_Ind_Columns
+                                         WHERE  Index_Owner NOT IN (#{system_schema_subselect})
+                                        ),
+                         Protected_Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name
+                                                   FROM   (
+                                                           SELECT Owner, Constraint_Name, Index_Owner, Index_Name
+                                                           FROM   (SELECT cc.Owner, cc.Table_Name, cc.Constraint_Name, ic.Index_Owner, ic.Index_Name, ic.Column_Name Index_Column_Name,
+                                                                          COUNT(DISTINCT cc.Column_Name) OVER (PARTITION BY cc.Owner, cc.Table_Name, cc.Constraint_Name) Cons_Column_Count
+                                                                   FROM   Cons_Columns cc
+                                                                   LEFT OUTER JOIN Ind_Columns ic ON ic.Table_Owner = cc.Owner AND ic.Table_Name = cc.Table_Name AND ic.Column_name = cc.Column_Name
+                                                                   )
+                                                           GROUP BY Owner, Constraint_Name, Index_Owner, Index_Name
+                                                           HAVING MIN(Cons_Column_Count) = COUNT(DISTINCT Index_Column_Name) /* All FK columns must exist in protecting index, no matter in which order */
+                                                          )
+                                                   GROUP BY Owner, Constraint_Name
+                                                  )
                     SELECT /* DB-Tools Ramm  Index fehlt fuer Foreign Key*/
-                           Ref.Owner, Ref.Table_Name \"Tablename\",
-                           reft.Num_Rows Rows_Org,
-                           refcol.Column_Name, refcol.Position,
-                           Ref.R_Owner Target_Owner, target.Table_Name Target_Table, targett.Num_rows Rows_Target, Ref.R_Constraint_Name, targett.Last_Analyzed Last_Analyzed_Target,
+                           LOWER(Ref.Owner)||'.'||Ref.Table_Name Table_name,
+                           reft.Num_Rows,
+                           ref.Constraint_Name,
+                           #{get_db_version >= "11.2" ?
+                                      "(SELECT LISTAGG(column_name, ', ') WITHIN GROUP (ORDER BY Position) FROM Cons_Columns cc WHERE cc.Owner = ref.Owner AND cc.Constraint_Name = ref.Constraint_Name) Columns,
+                                      " :
+                                      "(SELECT  wm_concat(column_name) FROM (SELECT * FROM Cons_Columns ORDER BY Position) cc WHERE cc.Owner = ref.Owner AND cc.Constraint_Name = ref.Constraint_Name) Columns,
+                                      "
+                           }
+                           lower(Ref.R_Owner)||'.'||target.Table_Name Target_Table,
+                           targett.Num_rows \"Target Num Rows\",
+                           Ref.R_Constraint_Name \"Target Constraint Name\",
+                           targett.Last_Analyzed Last_Analyzed_Target,
                            target_mod.Deletes \"Target Deletes since analyze\"
                     FROM   Constraints Ref
-                    JOIN   DBA_Cons_Columns refcol  ON refcol.Owner = Ref.Owner AND refcol.Constraint_Name = ref.Constraint_Name
                     JOIN   Constraints target       ON target.Owner = ref.R_Owner AND target.Constraint_Name = ref.R_Constraint_Name
                     JOIN   DBA_Tables reft          ON reft.Owner = ref.Owner AND reft.Table_Name = ref.Table_Name
                     JOIN   DBA_Tables targett       ON targett.Owner = target.Owner AND targett.Table_Name = target.Table_Name
@@ -30,14 +59,9 @@ module Dragnet::ForeignKeyConstraintHelper
                                      GROUP BY Table_Owner, Table_Name
                                     ) target_mod ON target_mod.Table_Owner = target.Owner AND target_mod.Table_Name = target.Table_Name
                     WHERE  Ref.Constraint_Type='R'
-                    AND    NOT EXISTS (SELECT 1 FROM DBA_Ind_Columns i
-                                       WHERE  i.Table_Owner     = ref.Owner
-                                       AND    i.Table_Name      = ref.Table_Name
-                                       AND    i.Column_Name     = refcol.Column_Name
-                                       AND    i.Column_Position = refcol.Position
-                                       )
                     AND targett.Num_rows > ?
-                    ORDER BY targett.Num_rows DESC NULLS LAST, ref.Table_Name, refcol.Position",
+                    AND (ref.Owner, ref.Constraint_Name) NOT IN (SELECT Owner, Constraint_Name FROM Protected_Constraints)
+                    ORDER BY targett.Num_rows DESC NULLS LAST, ref.Table_Name",
             :parameter=>[{:name=>t(:dragnet_helper_5_param_1_name, :default=> 'Min. no. of rows of referenced table'), :size=>8, :default=>1000, :title=>t(:dragnet_helper_5_param_1_hint, :default=> 'Minimum number of rows of referenced table') },]
         },
         {

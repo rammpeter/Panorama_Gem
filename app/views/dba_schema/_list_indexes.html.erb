@@ -267,6 +267,10 @@ Min. extents = #{rec.min_extents}  #{     data_title_part_def.call(rec.def_min_e
 Max. extents = #{rec.max_extents}  #{     data_title_part_def.call(rec.def_max_extents      == 'DEFAULT' ? 'DEFAULT' : fn(rec.def_max_extents), 'Partition default for max. extents')}"
    end
 
+   data_title_distinct_keys = proc do |rec|
+     "%t, #{fn(rec.num_rows.to_f/rec.distinct_keys, 1) rescue nil} rows per key"
+   end
+
    column_options =
            [
                    {:caption=> 'Name',             :data=>proc{|rec| rec.index_name},                                     :title=> 'Name of index'},
@@ -283,7 +287,7 @@ Max. extents = #{rec.max_extents}  #{     data_title_part_def.call(rec.def_max_e
                    {:caption=> '% unused',         :data=>proc{|rec| link_space_usage.call(rec, fn(calc_free_space_pct_index(rec.avg_row_len, rec.num_rows, rec.pct_free, rec.ini_trans, blocksize, rec.size_mb, rec.leaf_blocks)))}, :title=> "Unused storage of index within extents in percent.#{explain_calc_free_space_by_avg_row_len}", data_title: data_title_unused, :align=>:right},
                    {:caption=> 'B',                :data=>proc{|rec| fn(rec.blevel)},                                     :title=> "B*-Tree level (depth of the index from its root block to its leaf blocks).\nA depth of 0 indicates that the root block and leaf block are the same.", :align=>:right},
                    {:caption=> 'Leaf blocks',      :data=>proc{|rec| link_current_index_stats(rec, fn(rec.leaf_blocks))}, :title=> 'Number of leaf blocks in the index calculated by last analyze run', :align=>:right},
-                   {:caption=> 'Distinct',         :data=>proc{|rec| fn(rec.distinct_keys)},                              :title=> 'Number of distinct keys in the index calculated by last analyze run', :align=>:right, :data_title=>proc{|rec| "%t, #{fn(rec.num_rows.to_f/rec.distinct_keys, 1) rescue nil} rows per key" }},
+                   {:caption=> 'Distinct',         :data=>proc{|rec| fn(rec.distinct_keys)},                              :title=> 'Number of distinct keys in the index calculated by last analyze run', :align=>:right, data_title: data_title_distinct_keys },
                    {:caption=> 'Avg. leaf blocks / key', :data=>proc{|rec| fn(rec.avg_leaf_blocks_per_key)},              :title=> "Average number of leaf blocks (calculated by last analyze run) in which each distinct value in the index appears,\nrounded to the nearest integer.\nFor indexes that enforce UNIQUE and PRIMARY KEY constraints, this value is always 1.", :align=>:right},
                    {:caption=> 'Avg. data blocks / key', :data=>proc{|rec| fn(rec.avg_data_blocks_per_key)},              :title=> "Average number of data blocks in the table (calculated by last analyze run) that are pointed to by a distinct value in the index rounded to the nearest integer.\nThis statistic is the average number of data blocks that contain rows that contain a given value for the indexed columns.", :align=>:right},
                    {:caption=> 'Cluster.',         :data=>proc{|rec| fn(rec.clustering_factor)},                          :title=> cluster_title, :align=>:right},

@@ -49,7 +49,7 @@ module ExplainPlanHelper
     display_map_records.each do |m|
       if m.plan_hash_value == plan.plan_hash_value
         display_map[m['op']] = m                                                # remember skip info for plan line id
-        plan[:adaptive_plan] = true                                             # Mark plan as adaptive
+        plan[:adaptive_plan] = true unless m.dis.nil?                          # Mark plan as adaptive only if there are adaptive plan lines which could be mapped to real plan lines
       end
     end
 
