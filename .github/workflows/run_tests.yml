@@ -25,7 +25,7 @@ jobs:
         # TODO: PDB and CDB
     env:
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
-      DB_VERSION: ${{ db_version }}
+      DB_VERSION: ${{ inputs.db_version }}
 
     steps:
       - uses: actions/checkout@v1
