@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       max-parallel: 4
-      fail-fast: false
+      fail-fast: true
       matrix:
         management_pack_license:
           - diagnostics_and_tuning_pack
