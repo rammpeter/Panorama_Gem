@@ -20,9 +20,9 @@ on:
     - cron: '0 0 * * 0'
 
 jobs:
-  - test_11_2_0_4-ee: { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "11.2.0.4-ee" }}
-  - test_12_1_0_2-ee: { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "12.1.0.2-ee" }}
-  - test_12_2_0_1-ee: { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "12.2.0.1-ee" }}
+  test_11_2_0_4-ee: { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "11.2.0.4-ee" }}
+  test_12_1_0_2-ee: { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "12.1.0.2-ee" }}
+  test_12_2_0_1-ee: { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "12.2.0.1-ee" }}
 
 
 #        - 18.3.0.0-ee
