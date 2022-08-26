@@ -24,7 +24,7 @@ class WorkerThread
       create_snapshot(sampler_config, snapshot_time, :AWR)                      # recall method with changed domain
     else
       name = "create #{domain} snapshot"
-      thread = Thread.new{WorkerThread.new(sampler_config, name).create_snapshot_internal(snapshot_time, domain)}  # Excute the snapshot and terminate
+      thread = Thread.new{WorkerThread.new(sampler_config, name, domain: domain).create_snapshot_internal(snapshot_time, domain)}  # Excute the snapshot and terminate
       thread.name = "WorkerThread :#{name}"
     end
   rescue Exception => e
@@ -48,7 +48,10 @@ class WorkerThread
 
   ############################### inner implementation ###############################
 
-  def initialize(sampler_config, action_name)
+  # @param sampler_config
+  # @param action_name
+  # @param domain: allow setting of management_pack_license according to data source of longterm_trend
+  def initialize(sampler_config, action_name, domain: nil)
     @sampler_config = sampler_config
     @sampler_config = PanoramaSamplerConfig.new(@sampler_config) if @sampler_config.class == Hash
     raise "WorkerThread.intialize: Parameter class Hash or PanoramaSamplerConfig required, got #{@sampler_config.class}" if @sampler_config.class != PanoramaSamplerConfig
@@ -62,6 +65,9 @@ class WorkerThread
     connection_config[:query_timeout]           = connection_config[:awr_ash_snapshot_cycle]*60+60 # 1 minute more than snapshot cycle
     connection_config[:current_controller_name] = 'WorkerThread'
     connection_config[:current_action_name]     = action_name
+    connection_config[:management_pack_license] = :none                         # assume no management packs are licensed as default
+    # set management_pack_license to :diagnostics_pack if longterm trend uses access an ASH tables
+    connection_config[:management_pack_license] = :diagnostics_pack if domain == :LONGTERM_TREND && connection_config[:longterm_trend_data_source] == :oracle_ash
 
     PanoramaConnection.set_connection_info_for_request(connection_config)
 

@@ -90,7 +90,7 @@ class WorkerThreadTest < ActiveSupport::TestCase
             longterm_trend_log_action:      log_item,
             longterm_trend_subsume_limit:   400  # per mille
         ))
-        WorkerThread.new(@mod_sampler_config, "test_sampling_longterm_trend").create_snapshot_internal(Time.now.round, :LONGTERM_TREND)
+        WorkerThread.new(@mod_sampler_config, "test_sampling_longterm_trend", domain: :LONGTERM_TREND).create_snapshot_internal(Time.now.round, :LONGTERM_TREND)
       end
     end
   end
