@@ -98,6 +98,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
     page.check("#management_pack_license_#{management_pack_license}")
     page.click('text="Acknowledge and proceed"')
     page.wait_for_selector('#main_menu')
+    # TODO: Select the right DBID
   end
 
   # Call menu, last argument is DOM-ID of menu entry to click on

@@ -437,7 +437,7 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
     # Set management pack according to 'control_management_pack_access' only after DB selects,
     # Until now get_current_database[:management_pack_license] is :none for first time login, so no management pack license is violated until now
     # User has to acknowlede management pack licensing at next screen
-    set_current_database(get_current_database.merge( {:management_pack_license  => init_management_pack_license(get_current_database) } ))
+    # set_current_database(get_current_database.merge( {:management_pack_license  => init_management_pack_license(get_current_database) } ))
 
     write_connection_to_last_logins
 
@@ -536,8 +536,7 @@ public
   end
 
   def list_management_pack_license
-    @control_management_pack_access = PanoramaConnection.control_management_pack_access       # ab Oracle 11 belegt
-
+    @control_management_pack_access = sql_select_one "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"
     # check if AWR/ASH-Sampling is really active for existing Panorama-Sampler-schema
     if get_current_database[:panorama_sampler_schema].nil?
       @panorama_snapshot_exist_count = 0

@@ -123,7 +123,6 @@ class PanoramaConnection
   attr_accessor :sql_errors_count
   attr_reader :block_common_header_size
   attr_reader :cdb
-  attr_reader :control_management_pack_access
   attr_reader :con_id
   attr_reader :database_name
   attr_reader :data_header_size
@@ -185,13 +184,11 @@ class PanoramaConnection
                           (SELECT Type_Size FROM v$Type_Size WHERE Type = 'KDBH')                                                                           Data_Header_Size,
                           (SELECT Type_Size FROM v$Type_Size WHERE Type = 'KDBT')                                                                           Table_Directory_Entry_Size,
                           (SELECT VSIZE(rowid) FROM Dual)                                                                                                   RowID_Size,
-                          NVL((SELECT /*+ NO_MERGE */ Value    FROM V$Parameter WHERE name='control_management_pack_access'), 'NONE')                       control_management_pack_access,
                           SYSDATE                                                                                                                           Logon_time
                    FROM   v$Instance i
                    CROSS JOIN v$Database d
                   ")
     @block_common_header_size         = db_config['block_common_header_size']
-    @control_management_pack_access   = db_config['control_management_pack_access']
     @data_header_size                 = db_config['data_header_size']
     @db_version                       = db_config['version']
     @dbid                             = db_config['dbid']
@@ -285,21 +282,21 @@ class PanoramaConnection
   # Cache existing DBIDs once per connection
   def all_awr_dbids
     if !defined?(@awr_dbids) || @awr_dbids.nil?
-      if PanoramaConnection.control_management_pack_access != 'NONE'
-        @awr_dbids = PanoramaConnection.sql_select_all "\
-          SELECT s.DBID, n.DB_Name, s.Start_TS, s.End_TS
-          FROM   (
-                   SELECT DBID, MIN(Begin_Interval_Time) Start_TS, MAX(End_Interval_Time) End_TS
-          FROM   DBA_Hist_Snapshot ss
-          GROUP BY DBID
-          ) s
-          JOIN   (SELECT /*+ NO_MERGE */ DBID, DB_Name
-          FROM   DBA_Hist_Database_Instance d
-          GROUP BY DBID, DB_Name
-          ) n ON n.DBID = s.DBID"
-      else
-        @awr_dbids = []                                                         # suppress access violations on AWR tables
-      end
+      @awr_dbids = case PanoramaConnection.get_threadlocal_config[:management_pack_license]
+                   when 'NONE' then []                                          # suppress access violations on AWR tables
+                   else
+                     PanoramaConnection.sql_select_all "\
+                      SELECT s.DBID, n.DB_Name, s.Start_TS, s.End_TS
+                      FROM   (
+                               SELECT DBID, MIN(Begin_Interval_Time) Start_TS, MAX(End_Interval_Time) End_TS
+                      FROM   DBA_Hist_Snapshot ss
+                      GROUP BY DBID
+                      ) s
+                      JOIN   (SELECT /*+ NO_MERGE */ DBID, DB_Name
+                      FROM   DBA_Hist_Database_Instance d
+                      GROUP BY DBID, DB_Name
+                      ) n ON n.DBID = s.DBID"
+                   end
     end
     @awr_dbids
   end
@@ -323,14 +320,6 @@ class PanoramaConnection
     Thread.current[:panorama_connection_connect_info] = nil
   end
 
-  def self.get_management_pack_license_from_db_as_symbol
-    control_management_pack_access = PanoramaConnection.control_management_pack_access
-    return :diagnostics_and_tuning_pack  if control_management_pack_access['TUNING']
-    return :diagnostics_pack             if control_management_pack_access['DIAGNOSTIC']
-    return :panorama_sampler             if !get_threadlocal_config[:panorama_sampler_schema].nil?  # Use Panorama-Sampler as default if data exists
-    return :none
-  end
-
   # set the initial value for used dbid at login time (DB's DBID or CDB's DBID)
   def self.select_initial_dbid
     return PanoramaConnection.dbid unless PanoramaConnection.is_cdb?            # used DB's DBID if not CDB
@@ -348,11 +337,6 @@ class PanoramaConnection
     else
       return PanoramaConnection.login_container_dbid                            # Use containers DBID if container has AWR data
     end
-  end
-
-  # Each user of one PanoramaConnection can have different setting
-  def self.set_management_pack_license_from_db_in_connection
-    get_threadlocal_config[:management_pack_license] = get_management_pack_license_from_db_as_symbol
   end
 
   # Release connection at the end of request to mark free in pool or destroy
@@ -411,7 +395,6 @@ class PanoramaConnection
   def self.autonomous_database?;            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].autonomous_database;               end
   def self.block_common_header_size;        check_for_open_connection;        Thread.current[:panorama_connection_connection_object].block_common_header_size;          end
   def self.con_id;                          check_for_open_connection;        Thread.current[:panorama_connection_connection_object].con_id;                            end  # Container-ID for PDBs or 0
-  def self.control_management_pack_access;  check_for_open_connection(false); Thread.current[:panorama_connection_connection_object].control_management_pack_access;    end
   def self.data_header_size;                check_for_open_connection;        Thread.current[:panorama_connection_connection_object].data_header_size;                  end
   def self.db_version;                      check_for_open_connection;        Thread.current[:panorama_connection_connection_object].db_version;                        end
   def self.dbid;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].dbid;                              end

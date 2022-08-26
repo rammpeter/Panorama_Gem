@@ -172,6 +172,8 @@ class ActiveSupport::TestCase
     end
   end
 
+  # Ensure that AWR snapshots exist and time period is according to existing snapshots
+  # @param time_format
   def initialize_min_max_snap_id_and_times(time_format = :minutes)
    two_snaps_sql = "SELECT s1.DBID, s2.Snap_ID Max_Snap_ID, s3.Snap_ID Min_Snap_ID, s2.Begin_Interval_Time End_Time, s3.Begin_Interval_Time Start_Time
                    FROM   DBA_Hist_Snapshot s1

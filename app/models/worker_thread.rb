@@ -65,7 +65,8 @@ class WorkerThread
 
     PanoramaConnection.set_connection_info_for_request(connection_config)
 
-    PanoramaConnection.set_management_pack_license_from_db_in_connection
+    # management_pack_license should not depend on volatile DB setting !, commented out
+    # PanoramaConnection.set_management_pack_license_from_db_in_connection
   rescue Exception => e
     sampler_config.set_error_message e.message
     raise e
