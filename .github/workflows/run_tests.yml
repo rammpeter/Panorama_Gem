@@ -100,7 +100,12 @@ jobs:
           npm install playwright  
           npx playwright install
 
+
       - name: Start database
+        uses: nick-invision/retry@v2
+        with:
+          timeout_seconds: 5
+          max_attempts: 3
         if: ${{ env.DB_VERSION != 'autonomous' }}
         run: |
           # get a free random port for the database, execute as late as possible
