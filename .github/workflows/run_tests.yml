@@ -104,16 +104,17 @@ jobs:
       - name: Start database
         uses: nick-invision/retry@v2
         with:
-          timeout_seconds: 5
+          timeout_seconds: 30
           max_attempts: 3
-          if: ${{ env.DB_VERSION != 'autonomous' }}
           command: |
-            # get a free random port for the database, execute as late as possible
-            TEST_PORT=`comm -23 <(seq 1530 2000 | sort) <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) | shuf | head -n 1`
-            echo "TEST_PORT=$TEST_PORT" | tee -a $GITHUB_ENV
-            DB_CONTAINER_NAME=DB$TEST_PORT
-            echo "DB_CONTAINER_NAME=$DB_CONTAINER_NAME" | tee -a $GITHUB_ENV
-            docker run -d --name $DB_CONTAINER_NAME  -p $TEST_PORT:1521 harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:$DB_VERSION
+            if [[ "${{ env.DB_VERSION }}" != "autonomous" ]]; then
+              # get a free random port for the database, execute as late as possible
+              TEST_PORT=`comm -23 <(seq 1530 2000 | sort) <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) | shuf | head -n 1`
+              echo "TEST_PORT=$TEST_PORT" | tee -a $GITHUB_ENV
+              DB_CONTAINER_NAME=DB$TEST_PORT
+              echo "DB_CONTAINER_NAME=$DB_CONTAINER_NAME" | tee -a $GITHUB_ENV
+              docker run -d --name $DB_CONTAINER_NAME  -p $TEST_PORT:1521 harbor.osp-dd.de/panorama/oracle/database_prebuilt_panorama_test:$DB_VERSION
+            fi
 
       - name: Wait for DB available
         if: ${{ env.DB_VERSION != 'autonomous' }}
