@@ -103,7 +103,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
   # Call menu, last argument is DOM-ID of menu entry to click on
   # previous arguments are captions of submenus for hover to open submenu
   # @param entries
-  # @param retries
+  # @param retries: Number of already executed recursive retries
   # @param entry_with_condition: does the menu entry have a condition that may have changed since creating the menu in Puma. Tolerate non-existence in this case
   def menu_call(entries, retries: 0, entry_with_condition: false)
     raise "Parameter entries should be of type Array, not #{entries.class}" unless entries.instance_of?(Array)
@@ -116,15 +116,17 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
     entries.each_index do |i|
       if i < entries.length-1                                                   # SubMenu
         log_exception("menu_call: hover at submenu #{entries[i]}") do
+          check_for_tooltip
           page.hover("#main_menu >> .sf-with-ul >> text =\"#{entries[i]}\"", timeout: 30000) # Expand menu node
         end
       else                                                                      # last argument is DOM-ID of menu entry to click on
         log_exception("menu_call: click at menu'#{entries[i]}'") do
           begin
+            check_for_tooltip
             page.click("##{entries[i]}")                                          # click menu
           rescue
             if entry_with_condition
-              msg = "No menu entry found ro click for '#{entries[i]}'! Tolerate non-existence because menu entry has a condition that may have changed."
+              msg = "No menu entry found to click for '#{entries[i]}'! Tolerate non-existence because menu entry has a condition that may have changed."
               puts msg
               Rails.logger.debug('PlaywrightSystemTestCase.menu_call') { msg }
             else
@@ -143,6 +145,15 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
       raise
     end
 
+  end
+
+  # remove possible tooltips the prevent playwright from clicking an action
+  def check_for_tooltip
+    tooltip = page.query_selector('.ui-tooltip-content:visible')
+    if tooltip
+      Rails.logger.debug('PlaywrightSystemTestCase.check_for_tooltip') { "Trying to close tooltip with content '#{tooltip.inner_html}'" }
+      tooltip.click                                                             # Try to close tooltip by clicking on it to allow next retry to proceed
+    end
   end
 
   def wait_for_ajax(timeout_secs = 5)
