@@ -102,7 +102,10 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
 
   # Call menu, last argument is DOM-ID of menu entry to click on
   # previous arguments are captions of submenus for hover to open submenu
-  def menu_call(entries, retries: 0)
+  # @param entries
+  # @param retries
+  # @param entry_with_condition: does the menu entry have a condition that may have changed since creating the menu in Puma. Tolerate non-existence in this case
+  def menu_call(entries, retries: 0, entry_with_condition: false)
     raise "Parameter entries should be of type Array, not #{entries.class}" unless entries.instance_of?(Array)
     if page.visible?('#main_menu >> #menu_node_0')                              # menu 'Menu' if exists (small window width)
       log_exception('menu_call: hover for #menu_node_0') do
@@ -117,7 +120,17 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
         end
       else                                                                      # last argument is DOM-ID of menu entry to click on
         log_exception("menu_call: click at menu'#{entries[i]}'") do
-          page.click("##{entries[i]}")                                          # click menu
+          begin
+            page.click("##{entries[i]}")                                          # click menu
+          rescue
+            if entry_with_condition
+              msg = "No menu entry found ro click for '#{entries[i]}'! Tolerate non-existence because menu entry has a condition that may have changed."
+              puts msg
+              Rails.logger.debug('PlaywrightSystemTestCase.menu_call') { msg }
+            else
+              raise
+            end
+          end
         end
       end
     end

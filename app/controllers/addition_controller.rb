@@ -1,4 +1,4 @@
-# encoding: utf-8
+ # encoding: utf-8
 
 require 'json'
 # Zusatzfunktionen, die auf speziellen Tabellen und Prozessen aufsetzen, die nicht prinzipiell in DB vorhanden sind
