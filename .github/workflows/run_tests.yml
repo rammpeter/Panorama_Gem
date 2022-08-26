@@ -107,7 +107,7 @@ jobs:
           timeout_seconds: 5
           max_attempts: 3
           if: ${{ env.DB_VERSION != 'autonomous' }}
-          run: |
+          command: |
             # get a free random port for the database, execute as late as possible
             TEST_PORT=`comm -23 <(seq 1530 2000 | sort) <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) | shuf | head -n 1`
             echo "TEST_PORT=$TEST_PORT" | tee -a $GITHUB_ENV
