@@ -7,10 +7,11 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
     set_session_test_db_context
     EngineConfig.config.panorama_sampler_master_password = 'hugo'
 
-    @config_entry_without_id                                  = get_current_database
-    @config_entry_without_id[:name]                           = 'Hugo'
-    @config_entry_without_id[:password]                       = Encryption.decrypt_value(@config_entry_without_id[:password], cookies['client_salt'])
-    @config_entry_without_id[:owner]                          = @config_entry_without_id[:user] # Default
+    @config_entry_without_id            = get_current_database
+    @config_entry_without_id[:name]     = 'Hugo'
+    # Decrypted password used for test because this config is used as http request data for storing connection data
+    @config_entry_without_id[:password] = Encryption.decrypt_value(@config_entry_without_id[:password], cookies['client_salt'])
+    @config_entry_without_id[:owner]    = @config_entry_without_id[:user] # Default
 
     set_panorama_sampler_config_defaults!(@config_entry_without_id)
 
@@ -72,9 +73,9 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
                   :config => config
               }
           if right == 'Wrong' && button == 'Test connection'
-            assert_response :error, "save_config for button='#{button}', mode='#{mode}', right='#{right}'"
+            assert_response :error, "save_config should raise error for button='#{button}', mode='#{mode}', right='#{right}'"
           else
-            assert_response :success, "save_config for button='#{button}', mode='#{mode}', right='#{right}'"
+            assert_response :success, "save_config should be successful for button='#{button}', mode='#{mode}', right='#{right}'"
           end
         end
       end
