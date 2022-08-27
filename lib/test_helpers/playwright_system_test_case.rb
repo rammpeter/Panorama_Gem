@@ -122,6 +122,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
       else                                                                      # last argument is DOM-ID of menu entry to click on
         log_exception("menu_call: click at menu'#{entries[i]}'") do
           begin
+            # possibly comment out because it catched non visible tooltips
             check_for_tooltip
             page.click("##{entries[i]}")                                          # click menu
           rescue
@@ -152,6 +153,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
   def check_for_tooltip
     tooltip = page.query_selector('.ui-tooltip-content:visible')
     if tooltip
+      page.screenshot
       Rails.logger.debug('PlaywrightSystemTestCase.check_for_tooltip') { "Trying to close tooltip with content '#{tooltip.inner_html}'" }
       tooltip.click                                                             # Try to close tooltip by clicking on it to allow next retry to proceed
     end
