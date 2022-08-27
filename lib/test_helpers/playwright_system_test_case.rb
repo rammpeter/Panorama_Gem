@@ -117,7 +117,6 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
     entries.each_index do |i|
       if i < entries.length-1                                                   # SubMenu
         log_exception("menu_call: hover at submenu #{entries[i]}") do
-          check_for_tooltip
           page.hover("#main_menu >> .sf-with-ul >> text =\"#{entries[i]}\"", timeout: 30000) # Expand menu node
         end
       else                                                                      # last argument is DOM-ID of menu entry to click on
@@ -149,6 +148,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
   end
 
   # remove possible tooltips the prevent playwright from clicking an action
+  # Don't use for hover, only before click
   def check_for_tooltip
     tooltip = page.query_selector('.ui-tooltip-content:visible')
     if tooltip
