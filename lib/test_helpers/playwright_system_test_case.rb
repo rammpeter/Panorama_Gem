@@ -123,7 +123,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
         log_exception("menu_call: click at menu'#{entries[i]}'") do
           begin
             # possibly comment out because it catched non visible tooltips
-            check_for_tooltip
+            # check_for_tooltip
             page.click("##{entries[i]}")                                          # click menu
           rescue
             if entry_with_condition
