@@ -153,7 +153,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
   def check_for_tooltip
     tooltip = page.query_selector('.ui-tooltip-content:visible')
     if tooltip
-      page.screenshot(path: 'test/dummmy/tmp/screenshots/check_for_tooltip.png')
+      page.screenshot(path: '/tmp/check_for_tooltip.png')
       Rails.logger.debug('PlaywrightSystemTestCase.check_for_tooltip') { "Trying to close tooltip with content '#{tooltip.inner_html}'" }
       tooltip.click                                                             # Try to close tooltip by clicking on it to allow next retry to proceed
     end
