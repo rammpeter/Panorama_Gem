@@ -181,8 +181,8 @@ module MenuHelper
             { :class=> 'menu', :caption=> 'DB-Cache', :content=>[
                 {:class=> 'item', :caption=>t(:menu_sga_pga_cache_usage_caption,  :default=> 'DB-cache usage current'),  :controller=> 'dba_sga',     :action=> 'db_cache_content',              :hint=>t(:menu_sga_pga_cache_usage_hint,  :default=> 'Current content of DB-cache') },
                 {:class=> 'item', :caption=>t(:menu_sga_pga_cache_advice_caption, :default=> 'DB-cache advice'), :controller=> 'dba_sga',     :action=> 'show_db_cache_advice_historic', :hint=>t(:menu_sga_pga_cache_advice_hint, :default=>"Historic view on what-happens-if-analysis for change of cache size") },
-            ].concat(
-                PanoramaSamplerStructureCheck.panorama_table_exists?('Panorama_Cache_Objects') ? [{:class=> 'item', :caption=>t(:menu_sga_pga_cache_usage_historic_caption, :default=>'DB-cache usage historic'),           :controller=> 'addition',                 :action=> 'db_cache_ressourcen',     :hint=>t(:menu_sga_pga_cache_usage_historic_hint, :default=>'Historic view on DB-cache usage by Panorama_Cache_Objects')}] : [] )
+                {:class=> 'item', :caption=>t(:menu_sga_pga_cache_usage_historic_caption, :default=>'DB-cache usage historic'), :controller=> 'addition', :action=> 'db_cache_ressourcen',     :hint=>t(:menu_sga_pga_cache_usage_historic_hint, :default=>'Historic view on DB-cache usage by Panorama_Cache_Objects'), condition: PanoramaSamplerStructureCheck.panorama_table_exists?('Panorama_Cache_Objects') }
+                ]
             },
             { :class=> 'menu', :caption=>t(:menu_sga_pga_object_usage_caption, :default=> 'Object usage by SQL'), :content=>[
                 {:class=> 'item', :caption=>t(:menu_current_caption, :default=> 'Current'),                     :controller=> 'dba_sga',     :action=> 'show_object_usage',             :hint=>t(:menu_sga_pga_object_usage_current_hint, :default=> 'Usage of given objects in explain plan of current SQLs in SGA') },
@@ -210,14 +210,10 @@ module MenuHelper
         },
         { :class=> 'menu', :caption=>t(:menu_addition_caption, :default=> 'Spec. additions'), :content=>[
             {:class=> 'item', :caption=>t(:menu_addition_dragnet_caption, :default=> 'Dragnet investigation'), :controller=> 'dragnet', :action=> 'show_selection', :hint=>t(:menu_addition_dragnet_hint, :default=> 'Dragnet investigation for performance bottlenecks')   },
-        ].concat(
-            [{:class=> 'item', :caption=> t(:menu_addition_exec_with_given_parameters_caption, :default=>'Execute with given parameters') ,           :controller=> 'addition',                 :action=> 'show_recall_params',     :hint=>t(:menu_addition_exec_with_given_parameters_hint, :default=>'Execute one of Panoramas functions directly with given parameters') }]
-        ).concat(
-            showPanoramaSampler ?
-                [{:class=> 'item', :caption=> 'Panorama-Sampler config',      :controller=> 'panorama_sampler',   :action=> 'show_config',     :hint=> t(:menu_addition_panorama_sampler_config_hint, :default=>'Configure target databases for Panorama-Sampler')}] : []
-        ).concat(
-            [{class: 'item', caption: 'SQL worksheet', controller: :addition, action: :show_sql_worksheet, hint: 'SQL worksheet for executing and explaining SQL statements' },]
-        )
+            {:class=> 'item', :caption=> t(:menu_addition_exec_with_given_parameters_caption, :default=>'Execute with given parameters') , :controller=> 'addition', :action=> 'show_recall_params', :hint=>t(:menu_addition_exec_with_given_parameters_hint, :default=>'Execute one of Panoramas functions directly with given parameters') },
+            {:class=> 'item', :caption=> 'Panorama-Sampler config', :controller=> 'panorama_sampler', :action=> 'show_config', :hint=> t(:menu_addition_panorama_sampler_config_hint, :default=>'Configure target databases for Panorama-Sampler'), condition: showPanoramaSampler },
+            {class: 'item', caption: 'SQL worksheet', controller: :addition, action: :show_sql_worksheet, hint: 'SQL worksheet for executing and explaining SQL statements' },
+        ]
     },
     ]
 
