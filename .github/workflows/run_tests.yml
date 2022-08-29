@@ -8,6 +8,9 @@ on:
       db_version:
         required: true
         type: string
+      container:
+        required: false
+        type: string
 
 jobs:
   test:
