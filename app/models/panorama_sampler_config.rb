@@ -1,5 +1,8 @@
 # Stores Config-object in memory and synchronizes access to session store on disk
 # noinspection RubyClassVariableUsageInspection
+
+#require 'popup_message_exception'
+
 class PanoramaSamplerConfig
   @@config_array = nil                                                          # First access loads it from session store
   @@config_access_mutex = Mutex.new
@@ -326,6 +329,7 @@ class PanoramaSamplerConfig
     raise PopupMessageException.new "User name is mandatory" if (config_hash[:user].nil? || config_hash[:user] == '')
     raise PopupMessageException.new "Password is mandatory" if (config_hash[:password].nil? || config_hash[:password] == '') && !empty_password_allowed
 
+    validate_unique_name(config_hash)
     min_value_awr_cycle = 5                                                     # Default for production
     min_value_awr_cycle = 1 if Rails.env.test?                                  # allow smaller cycle for test runs in CI pipeline
       PanoramaSamplerConfig.validate_cycle_minutes(name: 'AWR/ASH-snapshot', value: config_hash[:awr_ash_snapshot_cycle], min_minutes: min_value_awr_cycle)
@@ -452,4 +456,12 @@ E.g. #{example_values.select{|v| v >= min_hours}.join(', ')} etc. hours.
     raise PopupMessageException.new "#{name} snapshot cycle must be divisible without remainder by 24 if value is > 24#{addition}" if value >= 24 && value % 24 != 0
   end
 
+  def self.validate_unique_name(config_hash)
+    puts "########### #{config_hash}"
+    PanoramaSamplerConfig.get_config_array.each do |c|
+      if config_hash[:name] == c.get_config_value(:name) && (config_hash[:id].nil? || config_hash[:id] != c.get_config_value(:id))
+        raise PopupMessageException.new("There is already a config existing with name '#{config_hash[:name]}'! Please use another name.")
+      end
+    end
+  end
 end

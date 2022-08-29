@@ -19,13 +19,6 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 gem 'puma'
 
 group :test do
-  #  gem 'selenium-webdriver'
-  # gem "webdrivers"
-
-  # gem "capybara"
-  # gem "launchy"
-  #gem 'simplecov', require: false
-
   # alternative to selenium
   gem 'playwright-ruby-client'
 end
