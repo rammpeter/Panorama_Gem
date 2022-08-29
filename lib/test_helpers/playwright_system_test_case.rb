@@ -123,7 +123,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
         log_exception("menu_call: click at menu'#{entries[i]}'") do
           begin
             # possibly comment out because it catched non visible tooltips
-            # check_for_tooltip
+            check_for_tooltip
             page.click("##{entries[i]}")                                          # click menu
           rescue
             if entry_with_condition
@@ -151,10 +151,12 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
   # remove possible tooltips the prevent playwright from clicking an action
   # Don't use for hover, only before click
   def check_for_tooltip
-    tooltip = page.query_selector('.ui-tooltip-content:visible')
+    tooltip = page.query_selector('.ui-tooltip:visible')
     if tooltip
       page.screenshot(path: '/tmp/check_for_tooltip.png')
-      Rails.logger.debug('PlaywrightSystemTestCase.check_for_tooltip') { "Trying to close tooltip with content '#{tooltip.inner_html}'" }
+      msg = "Trying to close tooltip with content '#{tooltip.inner_html}'"
+      puts "PlaywrightSystemTestCase.check_for_tooltip': #{msg}"
+      Rails.logger.debug('PlaywrightSystemTestCase.check_for_tooltip') { msg }
       tooltip.click                                                             # Try to close tooltip by clicking on it to allow next retry to proceed
     end
   end
