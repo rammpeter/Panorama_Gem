@@ -56,12 +56,13 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
   test "save_config with xhr: true" do
     Thread.report_on_exception = false                                          # Suppress exception messages and stacktrace in sysout
 
-    ['Save', 'Test connection'].each do |button|                                # Simulate pressed button "Save" or "Test connection"
-      ['Existing', 'New'].each do |mode|                                        # Simulate change of existing or new record
-        ['Right', 'Wrong'].each do |right|                            # Valid or invalid connection info
+    ['Save', 'Test connection'].each do |button|                          # Simulate pressed button "Save" or "Test connection"
+      ['Existing', 'New'].each do |mode|                                  # Simulate change of existing or new record
+        ['Right', 'Wrong'].each do |right|                                # Valid or invalid connection info
           id = mode=='New' ? PanoramaSamplerConfig.get_max_id + 1 : PanoramaSamplerConfig.get_max_id
           config = @config_entry_without_id.clone
-          response_format = :html                                                        # Default
+          response_format = :html                                               # Default
+          config[:name] = "Test save_config #{Time.now}"
           config[:user] = 'blabla' if right == 'Wrong'                          # Force connect error or not
           response_format = :js if (right == 'Wrong' || right == 'System') && button == 'Test connection'  # Popup-Dialog per JS expected
 
@@ -76,6 +77,11 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
             assert_response :error, "save_config should raise error for button='#{button}', mode='#{mode}', right='#{right}'"
           else
             assert_response :success, "save_config should be successful for button='#{button}', mode='#{mode}', right='#{right}'"
+          end
+
+          # delete config to ensure unique names for next test
+          PanoramaSamplerConfig.get_config_array.each do |c|
+            PanoramaSamplerConfig.delete_config_entry(c.get_config_value(:id)) if c.get_config_value(:name) == config[:name]
           end
         end
       end
