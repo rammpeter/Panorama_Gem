@@ -115,6 +115,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
     end
 
     entries.each_index do |i|
+      sleep(retries)                                                            # Add a sleep in retry
       if i < entries.length-1                                                   # SubMenu
         log_exception("menu_call: hover at submenu #{entries[i]}") do
           page.hover("#main_menu >> .sf-with-ul >> text =\"#{entries[i]}\"", timeout: 30000) # Expand menu node
@@ -123,7 +124,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
         log_exception("menu_call: click at menu'#{entries[i]}'") do
           begin
             # possibly comment out because it catched non visible tooltips
-            check_for_tooltip
+            # check_for_tooltip
             page.click("##{entries[i]}")                                          # click menu
           rescue
             if entry_with_condition
@@ -141,6 +142,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
   rescue Exception=>e
     if retries < 3
       Rails.logger.warn("#{self.class}.menu_call"){ "#{e.class}:#{e.message}: Starting #{retries+1}. retry" }
+      page.mouse.move(0,100)                                                    # Try to leave the possible cause for overlapping tooltip
       menu_call(entries, retries: retries+1)
     else
       raise
