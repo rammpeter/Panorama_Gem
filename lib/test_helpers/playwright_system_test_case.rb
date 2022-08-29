@@ -158,6 +158,7 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
       puts "PlaywrightSystemTestCase.check_for_tooltip': #{msg}"
       Rails.logger.debug('PlaywrightSystemTestCase.check_for_tooltip') { msg }
       tooltip.click                                                             # Try to close tooltip by clicking on it to allow next retry to proceed
+      page.screenshot(path: '/tmp/check_for_tooltip_after_click.png')
     end
   end
 
