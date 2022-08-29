@@ -336,6 +336,7 @@ class PanoramaSamplerSampling
                                 FROM   #{@sampler_config.get_longterm_trend_data_source == :oracle_ash ? "DBA_Hist_Active_Sess_History" : "#{@sampler_config.get_owner}.Panorama_Active_Sess_History"}
                                 WHERE  Sample_Time >= TO_DATE('#{start_time.strftime('%Y-%m-%d %H:%M:%S')}', 'YYYY-MM-DD HH24:MI:SS')
                                 AND    Sample_Time <  TO_DATE('#{end_time.strftime(  '%Y-%m-%d %H:%M:%S')}', 'YYYY-MM-DD HH24:MI:SS')
+                                AND    DBID = #{PanoramaConnection.login_container_dbid}
                                )
                         GROUP BY Snapshot_Timestamp, Instance_Number, Wait_Class, Wait_Event, User_ID, Service_Hash, Machine, Module, Action
                        )
@@ -401,7 +402,20 @@ class PanoramaSamplerSampling
         WHERE  t.Action NOT IN (SELECT Name FROM #{@sampler_config.get_owner}.LTT_Action)
         ;
 
-        INSERT INTO #{@sampler_config.get_owner}.Longterm_Trend (Snapshot_Timestamp, Instance_Number, LTT_Wait_Class_ID, LTT_Wait_Event_ID, LTT_User_ID, LTT_Service_ID, LTT_Machine_ID, LTT_Module_ID, LTT_Action_ID, Seconds_Active, Snapshot_Cycle_Hours)
+        INSERT INTO #{@sampler_config.get_owner}.Longterm_Trend (
+          Snapshot_Timestamp,
+          Instance_Number,
+          LTT_Wait_Class_ID,
+          LTT_Wait_Event_ID,
+          LTT_User_ID,
+          LTT_Service_ID,
+          LTT_Machine_ID,
+          LTT_Module_ID,
+          LTT_Action_ID,
+          Seconds_Active,
+          Snapshot_Cycle_Hours,
+          DBID
+        )
         SELECT t.Snapshot_Timestamp,
                t.Instance_Number,
                LTT_Wait_Class.ID,
@@ -412,7 +426,8 @@ class PanoramaSamplerSampling
                LTT_Module.ID,
                LTT_Action.ID,
                t.Seconds_Active,
-               #{@sampler_config.get_longterm_trend_snapshot_cycle}
+               #{@sampler_config.get_longterm_trend_snapshot_cycle},
+               #{PanoramaConnection.login_container_dbid}
         FROM   #{@sampler_config.get_owner}.Longterm_Trend_Temp t
         JOIN   #{@sampler_config.get_owner}.LTT_Wait_Class ON LTT_Wait_Class.Name = t.Wait_Class
         JOIN   #{@sampler_config.get_owner}.LTT_Wait_Event ON LTT_Wait_Event.Name = t.Wait_Event

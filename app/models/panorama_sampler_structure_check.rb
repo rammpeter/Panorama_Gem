@@ -164,6 +164,7 @@ class PanoramaSamplerStructureCheck
               { column_name:  'LTT_Action_ID',                  column_type:   'NUMBER',    not_null: true },
               { column_name:  'Seconds_Active',                 column_type:   'NUMBER',    not_null: true },
               { column_name:  'Snapshot_Cycle_Hours',           column_type:   'NUMBER',    not_null: true },
+              { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: false }, # Additional info about source DBID
           ],
           primary_key: { columns: ['Snapshot_Timestamp', 'Instance_Number', 'LTT_Wait_Class_ID', 'LTT_Wait_Event_ID', 'LTT_User_ID', 'LTT_Service_ID', 'LTT_Machine_ID', 'LTT_Module_ID', 'LTT_Action_ID'], compress: 1 },
       },
