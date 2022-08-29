@@ -26,6 +26,8 @@ jobs:
     env:
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
       DB_VERSION: ${{ inputs.db_version }}
+      # CONTAINER contains CDB or PDB
+      CONTAINER: ${{ inputs.container }}
 
     steps:
       - uses: actions/checkout@v1
@@ -46,13 +48,24 @@ jobs:
             echo "TEST_TNS=PANORAMATEST_TPURGENT" >> $GITHUB_ENV
             echo "TNS_ADMIN=$PWD/.github" >> $GITHUB_ENV
           else
+            # Default username and password
             echo "TEST_USERNAME=panorama_test" >> $GITHUB_ENV
             echo "TEST_PASSWORD=panorama_test" >> $GITHUB_ENV
+            if [[ "$CONTAINER" == "CDB" ]]; then
+              echo "TEST_USERNAME=c##panorama_test" >> $GITHUB_ENV
+            fi
             # set TEST_SERVICENAME if not default ORCLPDB1
             if [[ "$DB_VERSION" == "11.2.0.4-ee" ]]; then
               echo "TEST_SERVICENAME=ORCL" >> $GITHUB_ENV
-            elif [[ "$DB_VERSION" == "18.4.0.0-xe" ]]; then
+            fi
+            if [[ "$CONTAINER" == "CDB" ]]; then
+              echo "TEST_SERVICENAME=ORCLCDB" >> $GITHUB_ENV
+            fi
+            if [[ "$DB_VERSION" == *"xe*" ]]; then
               echo "TEST_SERVICENAME=XEPDB1" >> $GITHUB_ENV
+              if [[ "$CONTAINER" == "CDB" ]]; then
+                echo "TEST_SERVICENAME=XECDB" >> $GITHUB_ENV
+              fi
             fi
           fi
           # Ensure that each run uses it's own config without previous artifacts
