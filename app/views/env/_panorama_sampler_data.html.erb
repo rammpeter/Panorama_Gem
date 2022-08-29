@@ -23,6 +23,7 @@
         [
             {:caption=> 'S',                                :data=>selected,                                                        :title=> 'The selected schema is used for Panorama-Sampler workload data'},
             {:caption=> 'Schema',                           :data=>link_select,                                                     :title=> 'Schema of your database containing Panorama-Sampler workload data'},
+            {:caption=> 'Last DBID',                        :data=>proc{|rec| fn(rec[:last_dbid])},                                 :title=> "DBID of last snapshot recorded by Panorama-Sampler for this schema",  :align=>:right,  data_title: proc{|rec| "%t\nNumber of different DBIDs recorded for this schema = #{rec[:dbid_cnt]}"}},
             {:caption=> 'First AWR/ASH snapshot',           :data=>proc{|rec| localeDateTime(rec[:min_time])},                      :title=> 'Start of first snapshot recorded in this Panorama-Sampler schema for this DBID',      data_title: awr_ash_data_title},
             {:caption=> 'Last AWR/ASH snapshot',            :data=>proc{|rec| localeDateTime(rec[:max_time])},                      :title=> 'End of last snapshot recorded in this Panorama-Sampler schema for this DBID',         data_title: awr_ash_data_title},
             {:caption=> 'AWR/ASH snapshot interval',        :data=>proc{|rec| fn(rec[:snap_interval])},                             :title=> "Snapshot interval in minutes of Panorama-Sampler",                   :align=>:right,  data_title: awr_ash_data_title},
@@ -33,6 +34,8 @@
             {:caption=> 'Last DB-cache objects snapshot',   :data=>proc{|rec| localeDateTime(rec[:cache_objects_max_snapshot])},    :title=> 'Last snapshot date of DB-cache objects info' },
             {:caption=> 'First recorded blocking locks',    :data=>proc{|rec| localeDateTime(rec[:blocking_locks_min_snapshot])},   :title=> "First recorded blocking locks info.\nFirst time where blocking locks occurred and have been recorded" },
             {:caption=> 'Last recorded blocking locks',     :data=>proc{|rec| localeDateTime(rec[:blocking_locks_max_snapshot])},   :title=> "Last recorded blocking locks info.\nLast time where blocking locks occurred and have been recorded" },
+            {:caption=> 'First recorded long-term trend',   :data=>proc{|rec| localeDateTime(rec[:longterm_trend_min_snapshot])},   :title=> "First recorded snapshot for log-term trend info" },
+            {:caption=> 'Last recorded long-term trend',    :data=>proc{|rec| localeDateTime(rec[:longterm_trend_max_snapshot])},   :title=> "Last recorded snapshot for log-term trend info" },
         ]
 
   %>

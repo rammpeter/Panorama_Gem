@@ -457,7 +457,6 @@ E.g. #{example_values.select{|v| v >= min_hours}.join(', ')} etc. hours.
   end
 
   def self.validate_unique_name(config_hash)
-    puts "########### #{config_hash}"
     PanoramaSamplerConfig.get_config_array.each do |c|
       if config_hash[:name] == c.get_config_value(:name) && (config_hash[:id].nil? || config_hash[:id] != c.get_config_value(:id))
         raise PopupMessageException.new("There is already a config existing with name '#{config_hash[:name]}'! Please use another name.")

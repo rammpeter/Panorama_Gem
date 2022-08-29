@@ -506,6 +506,8 @@ private
     current_database[:management_pack_license] = management_pack_license.to_sym
     set_current_database(current_database)
     write_connection_to_last_logins
+    # choosen management pack license may influence the choosen DBID, therefore calculate it again
+    set_cached_dbid(PanoramaConnection.select_initial_dbid)
   end
 
 public

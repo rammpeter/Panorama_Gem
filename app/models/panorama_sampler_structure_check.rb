@@ -65,10 +65,21 @@ class PanoramaSamplerStructureCheck
       panorama_sampler_data.each do |ps|
 
         if ps.snapshot_count > 0
-          ps[:last_dbid]  = PanoramaConnection.sql_select_one "SELECT MAX(DBID) KEEP (DENSE_RANK LAST ORDER BY End_Interval_Time) FROM #{ps.owner}.PANORAMA_SNAPSHOT"
-          ps[:instances]  = PanoramaConnection.sql_select_one ["SELECT COUNT(DISTINCT Instance_Number) FROM #{ps.owner}.PANORAMA_SNAPSHOT WHERE DBID = ?", ps[:last_dbid]] if !ps[:last_dbid].nil?
-          ps[:min_time]   = PanoramaConnection.sql_select_one ["SELECT MIN(Begin_Interval_Time) FROM #{ps.owner}.PANORAMA_SNAPSHOT WHERE DBID = ?", ps[:last_dbid]] if !ps[:last_dbid].nil?
-          ps[:max_time]   = PanoramaConnection.sql_select_one ["SELECT MAX(End_Interval_Time)   FROM #{ps.owner}.PANORAMA_SNAPSHOT WHERE DBID = ?", ps[:last_dbid]] if !ps[:last_dbid].nil?
+          dbids = PanoramaConnection.sql_select_first_row "SELECT MAX(DBID) KEEP (DENSE_RANK LAST ORDER BY End_Interval_Time) Last_DBID,
+                                                                  COUNT(DISTINCT DBID)                                        DBID_Cnt
+                                                           FROM #{ps.owner}.PANORAMA_SNAPSHOT"
+          ps[:last_dbid]  = dbids.last_dbid
+          ps[:dbid_cnt]   = dbids.dbid_cnt
+          unless ps[:last_dbid].nil?
+            max_dbid_data = PanoramaConnection.sql_select_first_row ["SELECT COUNT(DISTINCT Instance_Number)  Instances,
+                                                                             MIN(Begin_Interval_Time)         Min_Interval_Time,
+                                                                             MAX(End_Interval_Time)           Max_interval_time
+                                                                      FROM #{ps.owner}.PANORAMA_SNAPSHOT
+                                                                      WHERE DBID = ?", ps[:last_dbid]]
+            ps[:instances]  = max_dbid_data.instances
+            ps[:min_time]   = max_dbid_data.min_interval_time
+            ps[:max_time]   = max_dbid_data.max_interval_time
+          end
         end
 
         if ps.wr_control_count > 0
@@ -91,8 +102,12 @@ class PanoramaSamplerStructureCheck
           ps[:blocking_locks_min_snapshot] = PanoramaConnection.sql_select_one "SELECT MIN(Snapshot_Timestamp) FROM #{ps.owner}.PANORAMA_BLOCKING_LOCKS"
           ps[:blocking_locks_max_snapshot] = PanoramaConnection.sql_select_one "SELECT MAX(Snapshot_Timestamp) FROM #{ps.owner}.PANORAMA_BLOCKING_LOCKS"
         end
-      end
 
+        if ps.longterm_trend_count > 0
+          ps[:longterm_trend_min_snapshot] = PanoramaConnection.sql_select_one "SELECT MIN(Snapshot_Timestamp) FROM #{ps.owner}.LONGTERM_TREND"
+          ps[:longterm_trend_max_snapshot] = PanoramaConnection.sql_select_one "SELECT MAX(Snapshot_Timestamp) FROM #{ps.owner}.LONGTERM_TREND"
+        end
+      end
     end
 
     panorama_sampler_data
