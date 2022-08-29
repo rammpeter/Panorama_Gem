@@ -9,7 +9,11 @@
       </script>
       <div id="<%= @update_area_management_pack_license %>"></div>
       <br/>
-      <%= submit_tag(t(:env_choose_managent_pack_license_submit_caption, :default=>"Acknowledge and proceed"), :title => t(:env_choose_managent_pack_license_submit_hint, :default=>"Acknowledge your choosen management pack license for this database and proceed")) %>
+      <%= submit_tag(t(:env_choose_managent_pack_license_submit_caption, :default=>"Acknowledge and proceed"),
+                     disabled: get_current_database[:management_pack_license].nil?,
+                     id: :choose_managent_pack_submit,          # Used to enable at radi button click
+                     :title => t(:env_choose_managent_pack_license_submit_hint, :default=>"Acknowledge your choosen management pack license for this database and proceed")
+          ) %>
   <% end %>
 <% else %>
   <script type="text/javascript">

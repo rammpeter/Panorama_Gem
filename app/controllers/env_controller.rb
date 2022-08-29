@@ -333,7 +333,7 @@ class EnvController < ApplicationController
     current_database = params[:database]                                        # Puffern in lokaler Variable, bevor in client_info-Cache geschrieben wird
     current_database[:save_login] = current_database[:save_login] == '1' if called_from_set_database_by_params # Store as bool instead of number fist time after login
 
-    @show_management_pack_choice =  current_database[:management_pack_license].nil?          # show choice for management pack if first login to database or stored login does not contain the choice
+    @show_management_pack_choice =  current_database[:management_pack_license].nil? # show choice for management pack if first login to database or stored login does not contain the choice
 
     if current_database[:modus] == 'tns'                                        # TNS-Alias auswerten
       tns_records = read_tnsnames                                               # Hash mit Attributen aus tnsnames.ora für gesuchte DB
