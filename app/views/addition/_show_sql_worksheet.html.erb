@@ -28,9 +28,7 @@
           action:               'sql_worksheet.sql_in_sga();',
           show_icon_in_caption: true
       },
-    ],
-    nil,
-    "<span id='sql_text_line' title='Line number in editor'></span>:<span id='sql_text_column' style='padding-right: 5px;' title='Column number in editor'></span>"
+    ]
   )
 %>
 
@@ -55,16 +53,4 @@
 
 <script type="application/javascript">
     var sql_worksheet = new SQL_Worksheet('sql_text_div');
-
-  // TODO: switch to cm update line and column number in header
-  $("#sql_text").bind("keyup click focus", function() {
-      var sql_text    = $("#sql_text");
-      var text_before_selection = sql_text.val().substr(0, sql_text.prop('selectionStart')).split("\n");
-      var line_number = text_before_selection.length;
-      var col_number  = text_before_selection[text_before_selection.length-1].length;
-
-      $('#sql_text_line').html(line_number);
-      $('#sql_text_column').html(col_number);
-  });
-
 </script>
