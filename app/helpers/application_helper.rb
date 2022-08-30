@@ -47,7 +47,7 @@ module ApplicationHelper
   end
 
   # Schreiben eines client-bezogenen Wertes in serverseitigen Cache
-  def write_to_client_info_store(key, value)
+  def write_to_client_info_store(key, value, retries: 0)
     cached_client_key = get_decrypted_client_key                                # ausserhalb des Exception-Handlers, da evtl. ActiveSupport::MessageVerifier::InvalidSignature bereits in get_cached_client_key gefangen wird
     if !defined?(@buffered_client_info_store) || @buffered_client_info_store.nil?  # First access after initiation of object
       @buffered_client_info_store = EngineConfig.get_client_info_store.read(cached_client_key)                 # Kompletten Hash aus Cache auslesen
@@ -58,8 +58,15 @@ module ApplicationHelper
     begin
       EngineConfig.get_client_info_store.write(cached_client_key, @buffered_client_info_store, expires_in: 3.months )  # Überschreiben des kompletten Hashes im Cache
     rescue Exception =>e
-      Rails.logger.error("Exception '#{e.message}' raised while writing file store at '#{EngineConfig.config.client_info_filename}'")
-      raise "Exception '#{e.message}' while writing file store at '#{EngineConfig.config.client_info_filename}'"
+      # Especially for test environments, reread the store content if something goes wrong, content has changed etc.
+      if retries < 2
+        Rails.logger.warn('ApplicationHelper.write_to_client_info_store') { "Retry after exception '#{e.message}' while writing file store at '#{EngineConfig.config.client_info_filename}'" }
+        @buffered_client_info_store = nil
+        write_to_client_info_store(key, value, retries: retries+1)
+      else
+        Rails.logger.error('ApplicationHelper.write_to_client_info_store')  { "Exception '#{e.message}' raised while writing file store at '#{EngineConfig.config.client_info_filename}'" }
+        raise "Exception '#{e.message}' while writing file store at '#{EngineConfig.config.client_info_filename}'"
+      end
     end
   end
 
