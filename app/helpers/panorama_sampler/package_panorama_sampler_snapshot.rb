@@ -417,10 +417,12 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_SGAStat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
   BEGIN
+    -- Grouped to ensure PK uniqueness because for CDB there are often duplicates for name='KKKI consumer', pool='shared pool' in Con_ID 0 and 1 with same Con_DBID
     INSERT INTO panorama_owner.Panorama_SGAStat (SNAP_ID, DBID, INSTANCE_NUMBER, NAME, Pool, Bytes, CON_DBID, CON_ID
-    ) SELECT p_Snap_ID, p_DBID, p_Instance, Name, Pool, Bytes, p_Con_DBID,
-             #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
+    ) SELECT p_Snap_ID, p_DBID, p_Instance, Name, Pool, SUM(Bytes), p_Con_DBID,
+             #{PanoramaConnection.db_version >= '12.1' ? "MAX(Con_ID)" : "0"}
       FROM   v$SGAStat
+      GROUP BY Name, Pool
     ;
     COMMIT;
   END Snap_SGAStat;
