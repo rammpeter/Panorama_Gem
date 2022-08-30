@@ -38,12 +38,14 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
 
   @@pw_browser     = nil
   @@pw_page        = nil
+  @@host           = nil
+  @@port           = nil
   def ensure_playwright_is_up
     if @@pw_browser.nil?
       Rails.logger.debug('PlaywrightSystemTestCase.ensure_playwright_is_up') { "@@pw_browser == nil, starting puma" }
       pw_puma_server = Puma::Server.new(Rails.application, Puma::Events.stdio, max_threads:100)
-      host = '127.0.0.1'
-      port = pw_puma_server.add_tcp_listener(host, 0).addr[1]
+      @@host = '127.0.0.1'
+      @@port = pw_puma_server.add_tcp_listener(@@host, 0).addr[1]
       pw_puma_server.run
       Rails.logger.debug('PlaywrightSystemTestCase.ensure_playwright_is_up') { "Playwright.create" }
       playwright = Playwright.create(playwright_cli_executable_path: 'npx playwright')
@@ -56,8 +58,6 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
       @@pw_page = @@pw_browser.new_page(viewport: { width: 800, height: 600 })
       Rails.logger.debug('PlaywrightSystemTestCase.ensure_playwright_is_up') { "@@pw_browser.set_timeout" }
       @@pw_page.set_default_timeout(30000)
-      Rails.logger.debug('PlaywrightSystemTestCase.ensure_playwright_is_up') { "goto http" }
-      @@pw_page.goto("http://#{host}:#{port}")
       do_login
 
       MiniTest.after_run do                                                       # called at exit of program
@@ -75,6 +75,9 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
   end
 
   def do_login
+    Rails.logger.debug('PlaywrightSystemTestCase.do_login') { "goto http" }
+    page.goto("http://#{@@host}:#{@@port}")
+
     test_config = PanoramaTestConfig.test_config
     # page.screenshot(path: '/tmp/playwright.png')
     #
@@ -98,7 +101,6 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
     page.check("#management_pack_license_#{management_pack_license}")
     page.click('text="Acknowledge and proceed"')
     page.wait_for_selector('#main_menu')
-    # TODO: Select the right DBID
   end
 
   # Call menu, last argument is DOM-ID of menu entry to click on
@@ -140,9 +142,14 @@ class PlaywrightSystemTestCase < ActiveSupport::TestCase
     end
     assert_ajax_success_and_test_for_access_denied                              # Accept error dur to missing rights on Diagnostics or Tuning pack
   rescue Exception=>e
+    screenshot_path = "/tmp/screenshot_#{e.class}.png"
+    puts "#{e.class}:#{e.message}: Screenshot created at #{screenshot_path}"
+    page.screenshot(path: screenshot_path)
     if retries < 3
-      Rails.logger.warn("#{self.class}.menu_call"){ "#{e.class}:#{e.message}: Starting #{retries+1}. retry" }
-      page.mouse.move(0,100)                                                    # Try to leave the possible cause for overlapping tooltip
+      msg = "#{e.class}:#{e.message}: Starting #{retries+1}. retry with new login"
+      puts msg
+      Rails.logger.warn("#{self.class}.menu_call"){ msg }
+      do_login                                                                  # Login again to clear the page with possibly overlapping tooltip
       menu_call(entries, retries: retries+1)
     else
       raise
