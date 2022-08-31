@@ -154,10 +154,10 @@ jobs:
             echo "tnsnames.ora="
             cat $TNS_ADMIN/tnsnames.ora
           fi
-          if [[ "$DB_VERSION" != *"se"*  -o "$MANAGEMENT_PACK_LICENSE" != "diagnostic"* ]]; then
-            bundle exec rake test
-          else
+          if [[ "$DB_VERSION" = *"se"* ]] && [[ "$MANAGEMENT_PACK_LICENSE" = "diagnostic"* ]]; then
             echo "Test skipped for $DB_VERSION because Management Pack license is $$MANAGEMENT_PACK_LICENSE"
+          else
+            bundle exec rake test
           fi
 
       - name: copy test.log locally to allow access before completion of whole actions
