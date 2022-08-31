@@ -154,7 +154,7 @@ jobs:
             echo "tnsnames.ora="
             cat $TNS_ADMIN/tnsnames.ora
           fi
-          if [[ "$DB_VERSION" = *"se"*  -a "$MANAGEMENT_PACK_LICENSE" != "diagnostic"* ]]; then
+          if [[ "$DB_VERSION" != *"se"*  -o "$MANAGEMENT_PACK_LICENSE" != "diagnostic"* ]]; then
             bundle exec rake test
           else
             echo "Test skipped for $DB_VERSION because Management Pack license is $$MANAGEMENT_PACK_LICENSE"
