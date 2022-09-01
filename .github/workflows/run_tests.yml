@@ -25,7 +25,6 @@ jobs:
           - diagnostics_pack
           - panorama_sampler
           - none
-        # TODO: PDB and CDB
     env:
       MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
       DB_VERSION: ${{ inputs.db_version }}
@@ -155,7 +154,10 @@ jobs:
             cat $TNS_ADMIN/tnsnames.ora
           fi
           if [[ "$DB_VERSION" = *"se"* ]] && [[ "$MANAGEMENT_PACK_LICENSE" = "diagnostic"* ]]; then
-            echo "Test skipped for $DB_VERSION because Management Pack license is $$MANAGEMENT_PACK_LICENSE"
+            echo "Test skipped for $DB_VERSION because Management Pack license is $MANAGEMENT_PACK_LICENSE"
+            # Ensure next steps find a test.log
+            mkdir -p test/dummy/log
+            touch test/dummy/log/test.log
           else
             bundle exec rake test
           fi
