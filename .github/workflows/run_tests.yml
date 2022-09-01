@@ -63,7 +63,7 @@ jobs:
             if [[ "$CONTAINER" == "CDB" ]]; then
               echo "TEST_SERVICENAME=ORCLCDB" >> $GITHUB_ENV
             fi
-            if [[ "$DB_VERSION" == *"xe*" ]]; then
+            if [[ "$DB_VERSION" == *"xe" ]]; then
               echo "TEST_SERVICENAME=XEPDB1" >> $GITHUB_ENV
               if [[ "$CONTAINER" == "CDB" ]]; then
                 echo "TEST_SERVICENAME=XECDB" >> $GITHUB_ENV
