@@ -292,10 +292,11 @@ class PanoramaConnection
                       FROM   DBA_Hist_Snapshot ss
                       GROUP BY DBID
                       ) s
-                      JOIN   (SELECT /*+ NO_MERGE */ DBID, DB_Name
-                      FROM   DBA_Hist_Database_Instance d
-                      GROUP BY DBID, DB_Name
-                      ) n ON n.DBID = s.DBID"
+                      JOIN   (SELECT /*+ NO_MERGE */ DBID,
+                                     MAX(DB_Name) KEEP (DENSE_RANK LAST ORDER BY Startup_Time) DB_Name
+                              FROM   DBA_Hist_Database_Instance d
+                              GROUP BY DBID
+                             ) n ON n.DBID = s.DBID"
                    end
     end
     @awr_dbids

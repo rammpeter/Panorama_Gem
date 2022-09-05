@@ -90,7 +90,7 @@ class PackLicense
         table_name = table_name[0, table_name.index('(')] if table_name['(']    # Tablename ends at ....
         table_name = table_name[0, table_name.index(')')] if table_name[')']    # Tablename ends at ....
 
-        message = "Access denied on table #{table_name} because of missing license for Oracle #{pack_name} Pack!\nPanorama-config for management_pack_license is #{@license_type}"
+        message = "Access denied on table #{table_name} because of missing license for Oracle #{pack_name} Pack!\nPanorama's config for management_pack_license is: '#{@license_type}'"
         Rails.logger.error message
         Rails.logger.error sql
 

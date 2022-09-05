@@ -550,6 +550,30 @@ class PanoramaSamplerStructureCheck
           indexes: [ {index_name: 'Panorama_Cache_Objects_TS', columns: ['Snapshot_Timestamp', 'Instance_Number'], compress: 1 } ]
       },
       {
+        table_name: 'Panorama_Database_Instance',
+        domain: :AWR,
+        columns: [
+          { column_name:  'DBID',                           column_type:   'NUMBER',    not_null: true },
+          { column_name:  'Instance_Number',                column_type:   'NUMBER',    not_null: true },
+          { column_name:  'Startup_Time',                   column_type:   'TIMESTAMP', not_null: true, precision: 3 },
+          { column_name:  'Parallel',                       column_type:   'VARCHAR2',  not_null: true, precision: 3 },
+          { column_name:  'Version',                        column_type:   'VARCHAR2',  not_null: true, precision: 17 },
+          { column_name:  'DB_Name',                        column_type:   'VARCHAR2',  precision: 9 },
+          { column_name:  'Instance_Name',                  column_type:   'VARCHAR2',  precision: 16},
+          { column_name:  'Host_Name',                      column_type:   'VARCHAR2',  precision: 64},
+          { column_name:  'Last_ASH_Sample_ID',             column_type:   'NUMBER' },
+          { column_name:  'Platform_Name',                  column_type:   'VARCHAR2',  precision: 101},
+          { column_name:  'CDB',                            column_type:   'VARCHAR2',  precision: 3},
+          { column_name:  'Edition',                        column_type:   'VARCHAR2',  precision: 7},
+          { column_name:  'DB_Unique_Name',                 column_type:   'VARCHAR2',  precision: 30},
+          { column_name:  'Database_Role',                  column_type:   'VARCHAR2',  precision: 16},
+          { column_name:  'CDB_Root_DBID',                  column_type:   'NUMBER' },
+          { column_name:  'CON_ID',                         column_type:   'NUMBER' },
+          { column_name:  'Startup_Time_TZ',           column_type:  'TIMESTAMP (3) WITH TIME ZONE' },
+        ],
+        primary_key: { columns: ['DBID', 'Instance_Number', 'Startup_Time'] },
+      },
+      {
           table_name: 'Panorama_Datafile',
           domain: :AWR,
           columns: [

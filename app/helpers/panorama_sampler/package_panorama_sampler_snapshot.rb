@@ -780,6 +780,27 @@ END Panorama_Sampler_Snapshot;
     COMMIT;
   END Snap_WR_Control;
 
+  PROCEDURE Snap_Database_Instance(p_DBID IN NUMBER, p_Instance IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO panorama_owner.Panorama_Database_Instance(DBID, Instance_Number, Startup_Time, Parallel, Version, DB_Name, Instance_Name,
+                                                          Host_Name, Last_ASH_Sample_ID, Platform_Name, CDB, Edition, DB_Unique_Name,
+                                                          Database_Role, CDB_Root_DBID, Startup_Time_TZ, CON_ID)
+    SELECT p_DBID, p_Instance, i.Startup_Time, i.Parallel, i.Version, d.Name, i.Instance_Name,
+           i.Host_Name, 0, d.Platform_Name, d.CDB, i.Edition, d.DB_Unique_Name,
+           d.Database_Role, p_DBID, i.Startup_Time,
+           #{PanoramaConnection.db_version >= '12.1' ? "i.Con_ID" : "0"}
+    FROM   v$Instance i
+    CROSS JOIN v$Database d
+    WHERE  i.Instance_Number = p_Instance
+    AND    NOT EXISTS (SELECT 1
+                      FROM   panorama_owner.Panorama_Database_Instance t
+                      WHERE  t.DBID = p_DBID AND t.Instance_Number = p_Instance AND t.Startup_Time = i.Startup_Time
+                     )
+    ;
+    COMMIT;
+  END Snap_Database_Instance;
+
+
   PROCEDURE Do_Snapshot(p_Snap_ID IN NUMBER, p_Instance IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER, p_Con_ID IN NUMBER,
                         p_Begin_Interval_Time IN DATE, p_Snapshot_Cycle IN NUMBER, p_Snapshot_Retention IN NUMBER,
                         p_SQL_Min_No_of_Execs IN NUMBER, p_SQL_Min_Runtime_MilliSecs IN NUMBER) IS
@@ -819,6 +840,7 @@ END Panorama_Sampler_Snapshot;
     Snap_TopLevelCallName     (p_DBID,      p_Con_DBID);
     Snap_UndoStat             (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_WR_Control           (p_DBID,      p_Snapshot_Cycle, p_Snapshot_Retention);
+    Snap_Database_Instance    (p_DBID,      p_Instance,   p_Con_DBID);
   END Do_Snapshot;
     "
   end

@@ -17,7 +17,10 @@ class DbaPgaControllerTest < ActionDispatch::IntegrationTest
 
   test "list_pga_stat_historic with xhr: true" do
     instance = PanoramaConnection.instance_number
-    post '/dba_pga/list_pga_stat_historic', :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, :instance =>instance }
+    post '/dba_pga/list_pga_stat_historic', :params => {:format=>:html,
+                                                        :time_selection_start=>@time_selection_start,
+                                                        :time_selection_end=>@time_selection_end,
+                                                        :instance =>instance }
     assert_response management_pack_license == :none ? :error : :success
   end
 

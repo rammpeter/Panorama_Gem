@@ -184,7 +184,9 @@ class ActiveSupport::TestCase
                    AND    EXTRACT (MINUTE FROM s2.End_Interval_Time-s3.Begin_Interval_Time) > 0  /* At least one minute should be between the two snapshots */
                    ORDER BY s1.Snap_ID DESC"
 
-    # Ensure existence of panorama_sampler_snapshots
+   all_awr_dbids = PanoramaConnection.all_awr_dbids                             # Initial state before additional AWR snapshots
+
+   # Ensure existence of panorama_sampler_snapshots
     if management_pack_license == :panorama_sampler
       # Ensure existence of structure
       sampler_config = prepare_panorama_sampler_thread_db_config
@@ -194,7 +196,8 @@ class ActiveSupport::TestCase
       end
 
       snaps = sql_select_first_row two_snaps_sql                                # Look for 2 subsequent snapshots in the middle of 4 snapshots with same startup time
-      if snaps.nil? ||
+      if all_awr_dbids.count == 0 ||                                            # No DBIDs found with in AWR with lookup SQL
+        snaps.nil? ||
         snaps.min_snap_id.nil? ||
         snaps.max_snap_id.nil? ||
         snaps.start_time.nil?  ||
@@ -216,9 +219,11 @@ class ActiveSupport::TestCase
         WorkerThread.new(sampler_config, 'initialize_min_max_snap_id_and_times').create_snapshot_internal(Time.now.round, :AWR)
 
         PanoramaConnection.set_connection_info_for_request(saved_config)        # reconnect because create_snapshot_internal freed the connection
-
+        all_awr_dbids = PanoramaConnection.all_awr_dbids                        # reread the DBIDs after AWR snapshots
       end
     end
+
+   Rails.logger.debug "DBIDs in AWR are: #{all_awr_dbids}"
 
     # Get 2 subsequent snapshots in the middle of 4 snapshots with same startup time
     snaps = sql_select_first_row two_snaps_sql
@@ -230,10 +235,11 @@ class ActiveSupport::TestCase
                                            )
                                     WHERE RowNum <= 10"
 
-    Rails.logger.debug "DBIDs in AWR are: #{PanoramaConnection.all_awr_dbids}"
     Rails.logger.info "Last 10 snapshots are:"
     last_10_snaps.each do |s|
-      Rails.logger.info "DBID = #{s.dbid}, Snap_ID = #{s.snap_id}, Instance = #{s.instance_number}, Startup = #{localeDateTime(s.startup_time)}, Begin_Interval_Time = #{localeDateTime(s.begin_interval_time)}, End_Interval_Time = #{localeDateTime(s.end_interval_time)}"
+      Rails.logger.info "DBID=#{s.dbid}, Snap_ID=#{s.snap_id}, Instance=#{s.instance_number}, Startup=#{localeDateTime(s.startup_time)}, \
+Begin_Interval_Time=#{localeDateTime(s.begin_interval_time)}, End_Interval_Time=#{localeDateTime(s.end_interval_time)} \
+#{PanoramaConnection.db_version >= '12.1' ? ", Con_ID=#{s.con_id}" : ''}}"
     end
 
     if snaps.nil? || snaps.min_snap_id.nil? || snaps.max_snap_id.nil? || snaps.start_time.nil? || snaps.end_time.nil?
