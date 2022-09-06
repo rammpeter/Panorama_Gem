@@ -33,6 +33,8 @@ class WorkerThread
   end
 
   # Used also for running ash daemon at Panorama-startup, snapshot_time must be time according to regular snapshot cycle
+  # @param sampler_config: object of class PanoramaSamplerConfig
+  # @param snapshot_time:
   def self.run_ash_sampler_daemon(sampler_config, snapshot_time)
     WorkerThread.new(sampler_config, 'check_structure_synchron').check_structure_synchron # Ensure existence of objects necessary for both Threads, synchron with job's thread
     thread = Thread.new{WorkerThread.new(sampler_config, 'ash_sampler_daemon').create_ash_sampler_daemon(snapshot_time)} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
@@ -116,7 +118,7 @@ class WorkerThread
   @@synchron__structure_checks = {}                                             # Prevent multiple jobs from being active
   def check_structure_synchron
     if @@synchron__structure_checks[@sampler_config.get_id]
-      Rails.logger.error("Previous check_structure_synchron not yet finshed for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}), no synchroneous structure check is done! Restart Panorama server if this problem persists.")
+      Rails.logger.error('WorkerThread.check_structure_synchron') { "Previous check_structure_synchron not yet finshed for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}), no synchroneous structure check is done! Restart Panorama server if this problem persists." }
       @sampler_config.set_error_message("Previous check_structure_synchron not yet finshed, no synchroneous structure check is done! Restart Panorama server if this problem persists.")
       return
     end
@@ -146,7 +148,7 @@ class WorkerThread
       loop_count += 1
     end
     if @@active_ash_daemons[ @sampler_config.get_id]
-      Rails.logger.error("Previous ASH daemon not yet finished for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}), new ASH daemon for snapshot not started! Restart Panorama server if this problem persists.")
+      Rails.logger.error('WorkerThread.create_ash_sampler_daemon') { "Previous ASH daemon not yet finished for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}), new ASH daemon for snapshot not started! Restart Panorama server if this problem persists." }
       @sampler_config.set_error_message("Previous ASH daemon not yet finished, new ASH daemon for snapshot not started! Restart Panorama server if this problem persists.")
       return
     end
@@ -156,7 +158,7 @@ class WorkerThread
     PanoramaSamplerSampling.run_ash_daemon(@sampler_config, snapshot_time)      # Start ASH daemon
 
     # End activities after finishing snapshot
-    Rails.logger.info "#{Time.now}: ASH daemon terminated for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}'"
+    Rails.logger.info('WorkerThread.create_ash_sampler_daemon') { "ASH daemon regularly terminated for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}'" }
   rescue Exception => e
     begin
       Rails.logger.error("Error #{e.message} during WorkerThread.create_ash_sampler_daemon (1st try) for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})")

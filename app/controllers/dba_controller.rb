@@ -780,7 +780,7 @@ oradebug setorapname diag
     if @show_only_dblink
       where_string << " AND UPPER(s.program) like 'ORACLE@%' AND UPPER(s.Program) NOT LIKE 'ORACLE@'||(SELECT UPPER(i.Host_Name) FROM gv$Instance i WHERE i.Inst_ID=s.Inst_ID)||'%' "
     end
-    unless @show_timer
+    if @only_avtive && !@show_timer
       where_string << " AND w.Event != 'PL/SQL lock timer'"
     end
     if @object_owner && @object_name

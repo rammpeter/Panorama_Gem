@@ -30,7 +30,7 @@ class PanoramaSamplerJob < ApplicationJob
 
     # Iterate over PanoramaSampler entries
     PanoramaSamplerConfig.get_config_array.each do |config|
-
+      Rails.logger.debug('PanoramaSamplerJob.perform') { "Processing config ID=#{config.get_id} name='#{config.get_name}'" }
       if @@first_call_after_startup
         if config.get_domain_active(:AWR_ASH)
           begin
@@ -44,9 +44,10 @@ class PanoramaSamplerJob < ApplicationJob
               next_full_snapshot_time += 60                                           # next full minute
             end
             prev_regular_snapshot_time = next_full_snapshot_time - snapshot_cycle_minutes * 60
+            Rails.logger.debug('PanoramaSamplerJob.perform') { "First start of ASH sampler daemon after startup for config ID=#{config.get_id} name='#{config.get_name}' snapshot_time=#{prev_regular_snapshot_time}" }
             WorkerThread.run_ash_sampler_daemon(config, prev_regular_snapshot_time)   # start ASH daemon at first startup
           rescue Exception => e
-            Rails.logger.error "Exception #{e.message} raised in PanoramaSamplerJob.perform at startup ASH-init for config-ID=#{config.get_id}"
+            Rails.logger.error('PanoramaSamplerJob.perform') { "Exception #{e.message} raised in PanoramaSamplerJob.perform at startup ASH-init for config-ID=#{config.get_id}" }
               # Don't raise exception because it should not stop calling job processing
           end
         end
@@ -84,9 +85,9 @@ class PanoramaSamplerJob < ApplicationJob
         WorkerThread.create_snapshot(config, snapshot_time, domain)
       else
         if snapshot_cycle_minutes < 1440
-          Rails.logger.warn "#{Time.now}: Last #{domain} snapshot start (#{last_snapshot_start}) not old enough to expire next snapshot after #{snapshot_cycle_minutes} minutes for ID=#{config.get_id} '#{config.get_name}'"
-          Rails.logger.warn "May be sampling is done by multiple Panorama instances?"
-          Rails.logger.warn "This can also happen one time after startup of Panorama."
+          Rails.logger.warn('PanoramaSamplerJob.check_for_sampling') { "#{Time.now}: Last #{domain} snapshot start (#{last_snapshot_start}) not old enough to expire next snapshot after #{snapshot_cycle_minutes} minutes for ID=#{config.get_id} '#{config.get_name}'" }
+          Rails.logger.warn('PanoramaSamplerJob.check_for_sampling') { "May be sampling is done by multiple Panorama instances?" }
+          Rails.logger.warn('PanoramaSamplerJob.check_for_sampling') { "This can also happen one time after startup of Panorama." }
         end
       end
     end
