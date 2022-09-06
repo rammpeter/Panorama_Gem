@@ -786,7 +786,10 @@ END Panorama_Sampler_Snapshot;
                                                           Host_Name, Last_ASH_Sample_ID, Platform_Name, CDB, Edition, DB_Unique_Name,
                                                           Database_Role, CDB_Root_DBID, Startup_Time_TZ, CON_ID)
     SELECT p_DBID, p_Instance, i.Startup_Time, i.Parallel, i.Version, d.Name, i.Instance_Name,
-           i.Host_Name, 0, d.Platform_Name, d.CDB, i.Edition, d.DB_Unique_Name,
+           i.Host_Name, 0, d.Platform_Name,
+           #{PanoramaConnection.db_version >= '12.1' ? "d.CDB" : "''"},
+           #{PanoramaConnection.db_version >= '12.1' ? "i.Edition" : "''"},
+           d.DB_Unique_Name,
            d.Database_Role, p_DBID, i.Startup_Time,
            #{PanoramaConnection.db_version >= '12.1' ? "i.Con_ID" : "0"}
     FROM   v$Instance i

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    panorama_gem (2.15.13)
+    panorama_gem (2.15.14)
       actionmailer (= 6.1.6.1)
       actionpack (= 6.1.6.1)
       actionview (= 6.1.6.1)
@@ -101,7 +101,7 @@ GEM
       rake (>= 12.2)
       thor (~> 1.0)
     rake (13.0.6)
-    rb-fsevent (0.11.1)
+    rb-fsevent (0.11.2)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
     ruby-plsql (0.8.0)
