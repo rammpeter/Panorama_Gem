@@ -27,6 +27,7 @@ class PanoramaSamplerSampling
 #    PanoramaSamplerSampling.new(sampler_config).run_ash_daemon_internal(snapshot_time)
   end
 
+  # @param sampler_config: Object of class PanoramaSamplerConfig
   def initialize(sampler_config)
     @sampler_config = sampler_config
   end
@@ -55,7 +56,7 @@ class PanoramaSamplerSampling
                                              ? FROM v$Instance",
                                     @snap_id, PanoramaConnection.login_container_dbid, PanoramaConnection.instance_number, begin_interval_time, PanoramaConnection.con_id]
 
-    current_max_ash_sample_id = PanoramaConnection.sql_select_one "SELECT MAX(Sample_ID) FROM #{@sampler_config.get_owner}.Internal_V$Active_Sess_History"
+    current_max_ash_sample_id = PanoramaConnection.sql_select_one "SELECT NVL(MAX(Sample_ID), 0) FROM #{@sampler_config.get_owner}.Internal_V$Active_Sess_History"
     Rails.logger.debug('PanoramaSamplerSampling.do_awr_sampling') { "Copy 1-second ASH samples in AWR snapshot for sample_id > #{@sampler_config.get_last_snap_max_ash_sample_id} and sample_id <= #{current_max_ash_sample_id}"}
 
     do_snapshot_call = "Do_Snapshot(p_Snap_ID                       => ?,
