@@ -324,8 +324,11 @@ module ApplicationHelper
   # Aufbereiten des Parameters "instance" aus Request, return nil wenn kein plausibler Wert
   def prepare_param_instance
     retval = params[:instance].to_i
-    retval = nil if retval == 0
-    write_to_client_info_store(:instance, retval)      # Werte puffern fuer spaetere Wiederverwendung
+    if retval == 0
+      retval = nil
+      retval = 1 unless PanoramaConnection.rac?                                 # Assume instance number = 1 if not RAC
+    end
+    write_to_client_info_store(:instance, retval)                               # Werte puffern fuer spaetere Wiederverwendung
     retval
   end
 

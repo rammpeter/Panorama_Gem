@@ -172,7 +172,7 @@ END Panorama_Sampler_ASH;
              NULL,                -- TODO: TOP_LEVEL_SQL_ID ermitteln
              NULL,                -- TODO: TOP_LEVEL_SQL_OPCODE ermitteln
              sql.PLAN_HASH_VALUE,
-             NULL,                -- TODO: SQL_PLAN_LINE_ID ermitteln
+             0,                   -- SQL_PLAN_LINE_ID set to the first line of an SQL because there's no source in v$-Views
              NULL,                -- TODO: SQL_PLAN_OPERATION ermitteln
              NULL,                -- TODO SQL_PLAN_OPTIONS ermitteln
              s.SQL_EXEC_ID,
