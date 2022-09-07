@@ -134,6 +134,8 @@ class PanoramaSamplerStructureCheck
       {
         table_name: ,
         domain:,
+        comment:,
+        temporary: empty for regular heap table or 'ON COMMIT DELETE ROWS' or 'ON COMMIT PRESERVE ROWS',
         columns: [
             {
               column_name:
@@ -1763,9 +1765,9 @@ ORDER BY Column_ID
     if !@ora_tables.include?({'table_name' => table[:table_name].upcase})
       ############# Check Table existence
       log "Table #{table[:table_name]} does not exist"
-      sql = "CREATE TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ("
+      sql = "CREATE #{'GLOBAL TEMPORARY ' if table[:temporary]}TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ("
       sql << table[:columns].map { |column| column_type_expr(column) }.join(",\n")
-      sql << ") PCTFREE 0"                                  # no need for updates on this tables
+      sql << ") #{'PCTFREE 0' if table[:temporary].nil?} #{table[:temporary]}"                                 # pctfree 0 because there's no need for updates on this tables
       log(sql)
       PanoramaConnection.sql_execute(sql)
       PanoramaConnection.sql_execute("ALTER TABLE #{@sampler_config.get_owner}.#{table[:table_name]} ENABLE ROW MOVEMENT")

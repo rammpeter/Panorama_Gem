@@ -7,9 +7,21 @@ CREATE OR REPLACE PACKAGE panorama_owner.Panorama_Sampler_Snapshot IS
   -- Panorama-Version: PANORAMA_VERSION
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
 
-  PROCEDURE Do_Snapshot(p_Snap_ID IN NUMBER, p_Instance IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER, p_Con_ID IN NUMBER,
-                        p_Begin_Interval_Time IN DATE, p_Snapshot_Cycle IN NUMBER, p_Snapshot_Retention IN NUMBER,
-                        p_SQL_Min_No_of_Execs IN NUMBER, p_SQL_Min_Runtime_MilliSecs IN NUMBER);
+  PROCEDURE Do_Snapshot(p_Snap_ID                     IN NUMBER,
+                        p_Instance                    IN NUMBER,
+                        p_DBID                        IN NUMBER,
+                        p_Con_DBID                    IN NUMBER,
+                        p_Con_ID                      IN NUMBER,
+                        p_Begin_Interval_Time         IN DATE,
+                        p_Snapshot_Cycle              IN NUMBER,
+                        p_Snapshot_Retention          IN NUMBER,
+                        p_SQL_Min_No_of_Execs         IN NUMBER,
+                        p_SQL_Min_Runtime_MilliSecs   IN NUMBER,
+                        p_last_snap_max_ash_sample_id IN NUMBER,
+                        p_current_max_ash_sample_id   IN NUMBER,
+                        p_ash_1sec_sample_keep_hours  IN NUMBER
+                      );
+-- TODO: Remove
 END Panorama_Sampler_Snapshot;
     "
 
@@ -18,10 +30,14 @@ END Panorama_Sampler_Snapshot;
 
   def panorama_sampler_snapshot_code
     "
-  PROCEDURE Move_ASH_To_Snapshot_Table(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
-    v_Max_Sample_ID NUMBER;
+  PROCEDURE Move_ASH_To_Snapshot_Table(p_Snap_ID                      IN NUMBER,
+                                       p_DBID                         IN NUMBER,
+                                       p_Con_DBID                     IN NUMBER,
+                                       p_last_snap_max_ash_sample_id  IN NUMBER,
+                                       p_current_max_ash_sample_id    IN NUMBER,
+                                       p_ash_1sec_sample_keep_hours   IN NUMBER
+                                      ) IS
   BEGIN
-    SELECT MAX(Sample_ID) INTO v_Max_Sample_ID FROM panorama_owner.Internal_V$Active_Sess_History;
     INSERT INTO panorama_owner.Internal_Active_Sess_History (
       Snap_ID, DBID, Instance_Number, Sample_ID, Sample_Time, Session_ID, Session_Serial#, Session_Type, Flags, User_ID, SQL_ID, Is_SQLID_Current, SQL_Child_Number,
       SQL_OpCode, SQL_OpName, FORCE_MATCHING_SIGNATURE, TOP_LEVEL_SQL_ID, TOP_LEVEL_SQL_OPCODE, SQL_PLAN_HASH_VALUE, SQL_PLAN_LINE_ID,
@@ -52,10 +68,14 @@ END Panorama_Sampler_Snapshot;
              DELTA_WRITE_IO_BYTES, DELTA_INTERCONNECT_IO_BYTES, PGA_Allocated, Temp_Space_Allocated,
              p_Con_DBID, Con_ID
       FROM   panorama_owner.Internal_V$Active_Sess_History
-      WHERE  Sample_ID <= v_Max_Sample_ID
+      WHERE  Sample_ID > p_last_snap_max_ash_sample_id AND Sample_ID <= p_current_max_ash_sample_id
       AND    Preserve_10Secs = 'Y'
     ;
-    DELETE FROM panorama_owner.Internal_V$Active_Sess_History WHERE Sample_ID <= v_Max_Sample_ID;
+
+    DELETE FROM panorama_owner.Internal_V$Active_Sess_History
+    WHERE Sample_ID <= p_current_max_ash_sample_id /* don't delete newer samples just created */
+    AND   Sample_Time < SYSDATE-p_ash_1sec_sample_keep_hours/24 /* Consider the minimum keep time */
+    ;
     COMMIT;
   END Move_ASH_To_Snapshot_Table;
 
@@ -448,32 +468,6 @@ END Panorama_Sampler_Snapshot;
     COMMIT;
   END Snap_SQLBind;
 
-  PROCEDURE Snap_SQL_Plan(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
-  BEGIN
-    INSERT INTO panorama_owner.Panorama_SQL_Plan (
-      DBID, SQL_ID, PLAN_HASH_VALUE, ID, OPERATION, OPTIONS, OBJECT_NODE, OBJECT#, OBJECT_OWNER, OBJECT_NAME, OBJECT_ALIAS, OBJECT_TYPE, OPTIMIZER,
-      PARENT_ID, DEPTH, POSITION, SEARCH_COLUMNS, COST, CARDINALITY, BYTES, OTHER_TAG, PARTITION_START, PARTITION_STOP, PARTITION_ID, OTHER,
-      DISTRIBUTION, CPU_COST, IO_COST, TEMP_SPACE, ACCESS_PREDICATES, FILTER_PREDICATES, PROJECTION, TIME, QBLOCK_NAME,
-      REMARKS, TIMESTAMP, OTHER_XML, CON_DBID, CON_ID
-    )
-    SELECT /*+ ORDERED */
-           p_DBID, p.SQL_ID, p.Plan_Hash_Value, p.ID, p.OPERATION, p.OPTIONS, p.OBJECT_NODE, p.OBJECT#, p.OBJECT_OWNER, p.OBJECT_NAME, p.OBJECT_ALIAS, p.OBJECT_TYPE, p.OPTIMIZER,
-           p.PARENT_ID, p.DEPTH, p.POSITION, p.SEARCH_COLUMNS, p.COST, p.CARDINALITY, p.BYTES, p.OTHER_TAG, p.PARTITION_START, p.PARTITION_STOP, p.PARTITION_ID, p.OTHER,
-           p.DISTRIBUTION, p.CPU_COST, p.IO_COST, p.TEMP_SPACE, p.ACCESS_PREDICATES, p.FILTER_PREDICATES, NULL /* p.PROJECTION also not sampled in AWR because of large size */, p.TIME, p.QBLOCK_NAME,
-           p.REMARKS, p.TIMESTAMP, p.OTHER_XML, p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "p.Con_ID" : "0"}
-    FROM   v$SQL_Plan p
-    -- Select only the plan of last parsed child with that plan_hash_value
-    JOIN   (SELECT /*+ NO_MERGE */ SQL_ID, Plan_Hash_Value, MAX(Child_Number) KEEP (DENSE_RANK LAST ORDER BY Timestamp) Max_Child_Number
-            FROM   v$SQL_Plan
-            GROUP BY SQL_ID, Plan_Hash_Value
-           ) pm ON pm.SQL_ID = p.SQL_ID AND pm.Plan_Hash_Value = p.Plan_Hash_Value AND pm.Max_Child_Number = p.Child_Number
-    LEFT OUTER JOIN panorama_owner.PANORAMA_SQL_PLAN e on e.DBID = p_DBID AND e.SQL_ID = p.SQL_ID AND e.Plan_Hash_Value = p.Plan_Hash_Value AND e.ID = p.ID AND e.Con_DBID = p_Con_DBID
-    WHERE  e.DBID IS NULL   -- New records does not yet exists in table
-    AND    EXISTS (SELECT 1 FROM panorama_owner.Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = p.SQL_ID AND ss.Plan_Hash_Value = p.Plan_Hash_Value AND ss.Con_DBID = p_Con_DBID) -- Only for SQLs recorded in Panorama_SQLStat in same snapshot
-    ;
-    COMMIT;
-  END Snap_SQL_Plan;
-
   -- call before dependent statistics like text, binds etc.
   PROCEDURE Snap_SQLStat(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER, p_Begin_Interval_Time IN DATE, p_SQL_Min_No_of_Execs IN NUMBER, p_SQL_Min_Runtime_MilliSecs IN NUMBER) IS
   BEGIN
@@ -585,6 +579,32 @@ END Panorama_Sampler_Snapshot;
     ;
     COMMIT;
   END Snap_SQLStat;
+
+  PROCEDURE Snap_SQL_Plan(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER) IS
+  BEGIN
+    INSERT INTO panorama_owner.Panorama_SQL_Plan (
+      DBID, SQL_ID, PLAN_HASH_VALUE, ID, OPERATION, OPTIONS, OBJECT_NODE, OBJECT#, OBJECT_OWNER, OBJECT_NAME, OBJECT_ALIAS, OBJECT_TYPE, OPTIMIZER,
+      PARENT_ID, DEPTH, POSITION, SEARCH_COLUMNS, COST, CARDINALITY, BYTES, OTHER_TAG, PARTITION_START, PARTITION_STOP, PARTITION_ID, OTHER,
+      DISTRIBUTION, CPU_COST, IO_COST, TEMP_SPACE, ACCESS_PREDICATES, FILTER_PREDICATES, PROJECTION, TIME, QBLOCK_NAME,
+      REMARKS, TIMESTAMP, OTHER_XML, CON_DBID, CON_ID
+    )
+    SELECT /*+ ORDERED */
+           p_DBID, p.SQL_ID, p.Plan_Hash_Value, p.ID, p.OPERATION, p.OPTIONS, p.OBJECT_NODE, p.OBJECT#, p.OBJECT_OWNER, p.OBJECT_NAME, p.OBJECT_ALIAS, p.OBJECT_TYPE, p.OPTIMIZER,
+           p.PARENT_ID, p.DEPTH, p.POSITION, p.SEARCH_COLUMNS, p.COST, p.CARDINALITY, p.BYTES, p.OTHER_TAG, p.PARTITION_START, p.PARTITION_STOP, p.PARTITION_ID, p.OTHER,
+           p.DISTRIBUTION, p.CPU_COST, p.IO_COST, p.TEMP_SPACE, p.ACCESS_PREDICATES, p.FILTER_PREDICATES, NULL /* p.PROJECTION also not sampled in AWR because of large size */, p.TIME, p.QBLOCK_NAME,
+           p.REMARKS, p.TIMESTAMP, p.OTHER_XML, p_CON_DBID, #{PanoramaConnection.db_version >= '12.1' ? "p.Con_ID" : "0"}
+    FROM   v$SQL_Plan p
+    -- Select only the plan of last parsed child with that plan_hash_value
+    JOIN   (SELECT /*+ NO_MERGE */ SQL_ID, Plan_Hash_Value, MAX(Child_Number) KEEP (DENSE_RANK LAST ORDER BY Timestamp) Max_Child_Number
+            FROM   v$SQL_Plan
+            GROUP BY SQL_ID, Plan_Hash_Value
+           ) pm ON pm.SQL_ID = p.SQL_ID AND pm.Plan_Hash_Value = p.Plan_Hash_Value AND pm.Max_Child_Number = p.Child_Number
+    LEFT OUTER JOIN panorama_owner.PANORAMA_SQL_PLAN e on e.DBID = p_DBID AND e.SQL_ID = p.SQL_ID AND e.Plan_Hash_Value = p.Plan_Hash_Value AND e.ID = p.ID AND e.Con_DBID = p_Con_DBID
+    WHERE  e.DBID IS NULL   -- New records does not yet exists in table
+    AND    EXISTS (SELECT 1 FROM panorama_owner.Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = p.SQL_ID AND ss.Plan_Hash_Value = p.Plan_Hash_Value AND ss.Con_DBID = p_Con_DBID) -- Only for SQLs recorded in Panorama_SQLStat in same snapshot
+    ;
+    COMMIT;
+  END Snap_SQL_Plan;
 
   PROCEDURE Snap_SQLText(p_Snap_ID IN NUMBER, p_DBID IN NUMBER) IS
   BEGIN
@@ -804,11 +824,22 @@ END Panorama_Sampler_Snapshot;
   END Snap_Database_Instance;
 
 
-  PROCEDURE Do_Snapshot(p_Snap_ID IN NUMBER, p_Instance IN NUMBER, p_DBID IN NUMBER, p_Con_DBID IN NUMBER, p_Con_ID IN NUMBER,
-                        p_Begin_Interval_Time IN DATE, p_Snapshot_Cycle IN NUMBER, p_Snapshot_Retention IN NUMBER,
-                        p_SQL_Min_No_of_Execs IN NUMBER, p_SQL_Min_Runtime_MilliSecs IN NUMBER) IS
+  PROCEDURE Do_Snapshot(p_Snap_ID                     IN NUMBER,
+                        p_Instance                    IN NUMBER,
+                        p_DBID                        IN NUMBER,
+                        p_Con_DBID                    IN NUMBER,
+                        p_Con_ID                      IN NUMBER,
+                        p_Begin_Interval_Time         IN DATE,
+                        p_Snapshot_Cycle              IN NUMBER,
+                        p_Snapshot_Retention          IN NUMBER,
+                        p_SQL_Min_No_of_Execs         IN NUMBER,
+                        p_SQL_Min_Runtime_MilliSecs   IN NUMBER,
+                        p_last_snap_max_ash_sample_id IN NUMBER,
+                        p_current_max_ash_sample_id   IN NUMBER,
+                        p_ash_1sec_sample_keep_hours  IN NUMBER
+                       ) IS
   BEGIN
-    Move_ASH_To_Snapshot_Table(p_Snap_ID,   p_DBID,     p_Con_DBID);
+    Move_ASH_To_Snapshot_Table(p_Snap_ID,   p_DBID,     p_Con_DBID, p_last_snap_max_ash_sample_id, p_current_max_ash_sample_id, p_ash_1sec_sample_keep_hours);
     Snap_Datafile             (p_DBID,      p_Con_DBID);
     Snap_DB_cache_Advice      (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
     Snap_Enqueue_Stat         (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_DBID);
