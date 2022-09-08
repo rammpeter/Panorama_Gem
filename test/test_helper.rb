@@ -234,7 +234,6 @@ class ActiveSupport::TestCase
                                     FROM   (SELECT *
                                             FROM   DBA_Hist_Snapshot
                                             WHERE  Instance_Number = #{PanoramaConnection.instance_number}
-                                            AND    DBID         = #{get_dbid}  /* Check AWR for the same DBID like following test will use */
                                             ORDER BY Begin_Interval_Time DESC
                                            )
                                     WHERE RowNum <= 10"
