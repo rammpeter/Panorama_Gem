@@ -62,7 +62,7 @@ class ActiveSupport::TestCase
 
     set_connection_info_for_request(current_database)
 
-    # DBID is set at first request after login normally, TODO: Use a DBID where AWR data exists if ! none
+    # DBID is set at first request after login normally
     set_cached_dbid(PanoramaConnection.select_initial_dbid)                    # Use Container-DB because SELECT FROM DBA_Hist_Active_Sess_History may kill session in autonomous DB
 
     set_I18n_locale('de')
@@ -100,7 +100,8 @@ class ActiveSupport::TestCase
         WorkerThread.new(sampler_config, 'ensure_panorama_sampler_tables_exist_with_content').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
       end
 
-      PanoramaConnection.set_connection_info_for_request(saved_config)        # reconnect because create_snapshot_internal freed the connection
+      PanoramaConnection.set_connection_info_for_request(saved_config)          # reconnect because create_snapshot_internal freed the connection
+      set_cached_dbid(PanoramaConnection.select_initial_dbid)                   # Determine the DBID again because Panorama_Snapshot is filled now
     end
   end
 
