@@ -182,6 +182,7 @@ class ActiveSupport::TestCase
                    JOIN   DBA_Hist_Snapshot s3 ON s3.Instance_Number = s1.Instance_Number AND s3.DBID = s1.DBID AND s3.Snap_ID = s1.Snap_ID -2 AND s3.Startup_Time = s1.Startup_Time
                    JOIN   DBA_Hist_Snapshot s4 ON s4.Instance_Number = s1.Instance_Number AND s4.DBID = s1.DBID AND s4.Snap_ID = s1.Snap_ID -3 AND s4.Startup_Time = s1.Startup_Time
                    WHERE  s1.Instance_Number = #{PanoramaConnection.instance_number}
+                   AND    s1.DBID            = #{get_dbid}  /* Check AWR for the same DBID like following test will use */
                    AND    EXTRACT (MINUTE FROM s2.End_Interval_Time-s3.Begin_Interval_Time) > 0  /* At least one minute should be between the two snapshots */
                    ORDER BY s1.Snap_ID DESC"
 
@@ -231,12 +232,14 @@ class ActiveSupport::TestCase
 
     last_10_snaps = sql_select_all "SELECT *
                                     FROM   (SELECT *
-                                            FROM DBA_Hist_Snapshot
+                                            FROM   DBA_Hist_Snapshot
+                                            WHERE  Instance_Number = #{PanoramaConnection.instance_number}
+                                            AND    s1.DBID         = #{get_dbid}  /* Check AWR for the same DBID like following test will use */
                                             ORDER BY Begin_Interval_Time DESC
                                            )
                                     WHERE RowNum <= 10"
 
-    Rails.logger.info "Last 10 snapshots are:"
+    Rails.logger.info "Last 10 snapshots of instance #{PanoramaConnection.instance_number} are:"
     last_10_snaps.each do |s|
       Rails.logger.info "DBID=#{s.dbid}, Snap_ID=#{s.snap_id}, Instance=#{s.instance_number}, Startup=#{localeDateTime(s.startup_time)}, \
 Begin_Interval_Time=#{localeDateTime(s.begin_interval_time)}, End_Interval_Time=#{localeDateTime(s.end_interval_time)} \

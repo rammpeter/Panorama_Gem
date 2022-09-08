@@ -62,7 +62,7 @@ class ActiveSupport::TestCase
 
     set_connection_info_for_request(current_database)
 
-    # DBID is set at first request after login normally
+    # DBID is set at first request after login normally, TODO: Use a DBID where AWR data exists if ! none
     set_cached_dbid(PanoramaConnection.select_initial_dbid)                    # Use Container-DB because SELECT FROM DBA_Hist_Active_Sess_History may kill session in autonomous DB
 
     set_I18n_locale('de')
