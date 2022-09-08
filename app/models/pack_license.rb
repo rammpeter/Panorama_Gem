@@ -7,20 +7,38 @@ class PackLicense
   end
 
   def self.diagnostics_pack_licensed?
-    license_type = PanoramaConnection.get_threadlocal_config[:management_pack_license].to_sym
+    license_type = PanoramaConnection.get_threadlocal_config[:management_pack_license]&.to_sym
     license_type == :diagnostics_pack || license_type == :diagnostics_and_tuning_pack
   end
 
   def self.tuning_pack_licensed?
-    PanoramaConnection.get_threadlocal_config[:management_pack_license].to_sym == :diagnostics_and_tuning_pack
+    PanoramaConnection.get_threadlocal_config[:management_pack_license]&.to_sym == :diagnostics_and_tuning_pack
   end
 
   def self.panorama_sampler_active?
-    PanoramaConnection.get_threadlocal_config[:management_pack_license].to_sym == :panorama_sampler
+    PanoramaConnection.get_threadlocal_config[:management_pack_license]&.to_sym == :panorama_sampler
   end
 
   def self.none_licensed?
-    PanoramaConnection.get_threadlocal_config[:management_pack_license].to_sym == :none
+    PanoramaConnection.get_threadlocal_config[:management_pack_license]&.to_sym == :none
+  end
+
+
+  # Is user allowed to choose the management_pack_license for this database
+  # @param management_pack_license: Symbol
+  def self.management_pack_selectable(management_pack_license)
+    case management_pack_license
+    when :diagnostics_pack then
+      return (PanoramaConnection.edition == :enterprise && @control_management_pack_access['DIAGNOSTIC']) || PanoramaConnection.edition == :express
+    when :diagnostics_and_tuning_pack then
+      return (PanoramaConnection.edition == :enterprise && @control_management_pack_access['TUNING']) || PanoramaConnection.edition == :express
+    when :panorama_sampler then
+      # check if AWR/ASH-Sampling is really active for existing Panorama-Sampler-schema
+      return false if PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema].nil?
+      return sql_select_one(["SELECT COUNT(*) FROM All_Tables WHERE Owner = ? AND Table_Name = 'PANORAMA_SNAPSHOT'", PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]]) > 0
+    when :none then return true
+    end
+    false
   end
 
   # Filter SQL string or array for unlicensed Table Access

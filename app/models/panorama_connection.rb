@@ -176,6 +176,7 @@ class PanoramaConnection
                           (SELECT /*+ NO_MERGE */ TO_NUMBER(Value) FROM v$parameter WHERE UPPER(Name) = 'DB_BLOCK_SIZE')                                    db_blocksize,
                           (SELECT /*+ NO_MERGE */ DECODE (INSTR (banner, '64bit'), 0, 4, 8) Word_Size FROM v$version WHERE Banner LIKE '%Oracle Database%') db_wordsize,
                           (SELECT /*+ NO_MERGE */ COUNT(*) FROM v$version WHERE Banner LIKE '%Enterprise Edition%' OR Banner LIKE '%EE%')                   enterprise_edition_count,
+                          (SELECT /*+ NO_MERGE */ COUNT(*) FROM v$version WHERE Banner LIKE '%Express Edition%')                                            express_edition_count,
                           (SELECT /*+ NO_MERGE */ COUNT(*) FROM gv$Instance)                                                                                instance_count,
                           (SELECT Type_Size FROM v$Type_Size WHERE Type = 'KCBH')                                                                           Block_Common_Header_Size,
                           (SELECT Type_Size FROM v$Type_Size WHERE Type = 'UB4')                                                                            Unsigned_Byte_4_Size,
@@ -195,7 +196,7 @@ class PanoramaConnection
     @database_name                    = db_config['database_name']
     @db_blocksize                     = db_config['db_blocksize']
     @db_wordsize                      = db_config['db_wordsize']
-    @edition                          = (db_config['enterprise_edition_count'] > 0  ? :enterprise : :standard)
+    @edition                          = (db_config['enterprise_edition_count'] > 0  ? :enterprise : (db_config['express_edition_count'] > 0 ?  :express : :standard) )
     @instance_count                   = db_config['instance_count']
     @instance_number                  = db_config['instance_number']
     @login_container_dbid             = db_config['dbid']                       # Default is DB's DBID, specified later for CDBs

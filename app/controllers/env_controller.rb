@@ -388,8 +388,12 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
       return        # Fehler-Ausgang
     end
 
-    # deprecated
-    #initialize_unique_area_id                                                   # Zaehler für eindeutige IDs ruecksetzen
+    # Ensure that a sampler schema is set if management_pack_license is :panorama_sampler, else reset to :none
+    if get_current_database[:management_pack_license] == :panorama_sampler && get_current_database[:panorama_sampler_schema].nil?
+      Rails.logger.debug('EnvController.set_database') { "management_pack_license set to none because panorama_sampler_schema is missing"}
+      set_current_database(get_current_database.merge( { management_pack_license: :none}))
+    end
+
 
     # Detect existence of Panorama_Sampler
     panorama_sampler_data = {}
@@ -504,6 +508,12 @@ private
   def persist_management_pack_license(management_pack_license)
     current_database = get_current_database
     current_database[:management_pack_license] = management_pack_license.to_sym
+    # Ensure that a panorama_sampler_schema is set for PackLicense.translate_sql_names
+    if management_pack_license.to_sym == :panorama_sampler && current_database[:panorama_sampler_schema].nil?
+      schemas = PanoramaSamplerStructureCheck.panorama_sampler_schemas
+      raise "EnvController.persist_management_pack_license: A valid schema for Panorama-Sampler is required in DB to choose Panorama-Sampler" if schemas.count == 0
+      current_database[:panorama_sampler_schema] = schemas[0].owner             # Choose the first schema to ensure PackLicense.translate_sql_names can work
+    end
     set_current_database(current_database)
     write_connection_to_last_logins
     # choosen management pack license may influence the choosen DBID, therefore calculate it again
@@ -539,13 +549,6 @@ public
 
   def list_management_pack_license
     @control_management_pack_access = sql_select_one "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"
-    # check if AWR/ASH-Sampling is really active for existing Panorama-Sampler-schema
-    if get_current_database[:panorama_sampler_schema].nil?
-      @panorama_snapshot_exist_count = 0
-    else
-      @panorama_snapshot_exist_count = sql_select_one ["SELECT COUNT(*) FROM All_Tables WHERE Owner = ? AND Table_Name = 'PANORAMA_SNAPSHOT'", get_current_database[:panorama_sampler_schema]]
-    end
-
     render_partial :list_management_pack_license
   rescue Exception => e
     Rails.logger.error "Error during list_management_pack_license: #{e.class.name}  #{e.message}"
