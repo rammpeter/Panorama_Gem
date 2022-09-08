@@ -286,11 +286,12 @@ class PanoramaConnection
                    when 'NONE' then []                                          # suppress access violations on AWR tables
                    else
                      PanoramaConnection.sql_select_all "\
-                      SELECT s.DBID, n.DB_Name, s.Start_TS, s.End_TS
+                      SELECT s.DBID, n.DB_Name, s.Start_TS, s.End_TS, Con_ID
                       FROM   (
-                               SELECT DBID, MIN(Begin_Interval_Time) Start_TS, MAX(End_Interval_Time) End_TS
+                               SELECT DBID, MIN(Begin_Interval_Time) Start_TS, MAX(End_Interval_Time) End_TS,
+                               #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"} Con_ID
                       FROM   DBA_Hist_Snapshot ss
-                      GROUP BY DBID
+                      GROUP BY DBID, #{PanoramaConnection.db_version >= '12.1' ? "Con_ID" : "0"}
                       ) s
                       JOIN   (SELECT /*+ NO_MERGE */ DBID,
                                      MAX(DB_Name) KEEP (DENSE_RANK LAST ORDER BY Startup_Time) DB_Name

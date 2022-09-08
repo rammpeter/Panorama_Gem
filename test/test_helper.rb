@@ -11,6 +11,7 @@ $VERBOSE=old_verbose
 require "rails/test_help"
 
 require 'fileutils'
+require 'json'
 
 #require "minitest/reporters"
 
@@ -223,7 +224,7 @@ class ActiveSupport::TestCase
       end
     end
 
-   Rails.logger.debug "DBIDs in AWR are: #{all_awr_dbids}"
+   Rails.logger.debug "DBIDs in AWR are: #{JSON.pretty_generate(all_awr_dbids)}"
 
     # Get 2 subsequent snapshots in the middle of 4 snapshots with same startup time
     snaps = sql_select_first_row two_snaps_sql
