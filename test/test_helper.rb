@@ -173,6 +173,16 @@ class ActiveSupport::TestCase
     end
   end
 
+  # allow assertions failure message to appear in logfile
+  # use like: assert_response :success, log_on_failure('should get log file with JWT')
+  # @param {message} String
+  def log_on_failure(message)
+    Proc.new do
+      Rails.logger.debug('TestHelper.log_on_failure'){ "Assertion failed: #{message}" }
+      message
+    end
+  end
+
   # Ensure that AWR snapshots exist and time period is according to existing snapshots
   # @param time_format
   def initialize_min_max_snap_id_and_times(time_format = :minutes)
