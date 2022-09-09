@@ -548,13 +548,16 @@ public
   end
 
   def list_management_pack_license
-    @control_management_pack_access = sql_select_one "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"
+    sql = "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"
+    @control_management_pack_access = sql_select_one sql
     render_partial :list_management_pack_license
   rescue Exception => e
-    Rails.logger.error "Error during list_management_pack_license: #{e.class.name}  #{e.message}"
+    # log_exception_backtrace(e)
+    msg = "Cannot read managament pack licensing state from database!\nAssuming no management pack license exists.\n#{e.class}:#{e.message}\nUsed SQL:\n#{sql}"
+    Rails.logger.error('EnvController.list_management_pack_license') { msg }
     set_current_database(get_current_database.merge( {:management_pack_license  => :none } ))
-    add_statusbar_message("Cannot read managament pack licensing state from database!\nAssuming no management pack license exists.\n#{e.message}")
-    start_page                                                                  # Assuming this is the first call at statup and not included from start_page
+    reraise_extended_exception(e, msg)
+    #start_page                                                                  # Assuming this is the first call at statup and not included from start_page
   end
 
   def set_management_pack_license

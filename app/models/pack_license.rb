@@ -25,17 +25,18 @@ class PackLicense
 
 
   # Is user allowed to choose the management_pack_license for this database
-  # @param management_pack_license: Symbol
-  def self.management_pack_selectable(management_pack_license)
+  # @param {management_pack_license} Symbol license type to check
+  # @param {control_management_pack_access} String Current value of init parameter control_management_pack_access
+  def self.management_pack_selectable(management_pack_license, control_management_pack_access)
     case management_pack_license
     when :diagnostics_pack then
-      return (PanoramaConnection.edition == :enterprise && @control_management_pack_access['DIAGNOSTIC']) || PanoramaConnection.edition == :express
+      return (PanoramaConnection.edition == :enterprise && control_management_pack_access['DIAGNOSTIC']) || PanoramaConnection.edition == :express
     when :diagnostics_and_tuning_pack then
-      return (PanoramaConnection.edition == :enterprise && @control_management_pack_access['TUNING']) || PanoramaConnection.edition == :express
+      return (PanoramaConnection.edition == :enterprise && control_management_pack_access['TUNING']) || PanoramaConnection.edition == :express
     when :panorama_sampler then
       # check if AWR/ASH-Sampling is really active for existing Panorama-Sampler-schema
       return false if PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema].nil?
-      return sql_select_one(["SELECT COUNT(*) FROM All_Tables WHERE Owner = ? AND Table_Name = 'PANORAMA_SNAPSHOT'", PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]]) > 0
+      return PanoramaConnection.sql_select_one(["SELECT COUNT(*) FROM All_Tables WHERE Owner = ? AND Table_Name = 'PANORAMA_SNAPSHOT'", PanoramaConnection.get_threadlocal_config[:panorama_sampler_schema]]) > 0
     when :none then return true
     end
     false

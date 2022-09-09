@@ -17,6 +17,17 @@ module ExceptionHelper
     Rails.logger.error "Stack-Trace for exception: #{exception.class} #{exception.message}\n#{output}"
   end
 
+  # Raise an exception with original backtrace but extended message
+  # @param exception: Original catched exception
+  # @param msg: Message to add to original exception
+  # @return: nothing, raises exception
+  def reraise_extended_exception(exception, msg)
+    msg = "Exception #{exception.class}:#{exception.message} : #{msg}"
+    new_ex = Exception.new(msg)
+    new_ex.set_backtrace(exception.backtrace)
+    raise new_ex
+  end
+
   def self.memory_info_hash
     memoryBean = java.lang.management.ManagementFactory.getMemoryMXBean
     gb = (1024 * 1024 * 1024).to_f

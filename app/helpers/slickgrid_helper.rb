@@ -41,7 +41,8 @@ module SlickgridHelper
 
   def eval_with_rec (input, rec)  # Ausführen eval mit Ausgabe des Inputs in Exception
     eval input
-  rescue Exception=>e; raise "#{e.message} during eval of '#{input}'"
+  rescue Exception=>e
+    reraise_extended_exception(e, "during eval of '#{input}'")
   end
 
   # Aufbauen Javascipt-Strunktur mit columns für slickgrid
@@ -91,7 +92,7 @@ module SlickgridHelper
         output << '},'
         col_index = col_index+1
       rescue Exception => e
-        raise "#{e.class.name}: #{e.message} Error processing prepare_js_columns_for_slickgrid for column #{col[:caption]}"
+        reraise_extended_exception(e, "processing prepare_js_columns_for_slickgrid for column #{col[:caption]}")
       end
     end
     output << ']'
@@ -249,9 +250,7 @@ module SlickgridHelper
             celldata = eval_with_rec("#{col[:data]}.to_s", rec)                 # Inhalt eines Feldes incl. html-Code für Link, Style etc.
           end
         rescue Exception => e
-          new_ex = Exception.new("Error #{e.class}: '#{e.message}' evaluating :data-expression for column '#{col[:caption]}'")
-          new_ex.set_backtrace(e.backtrace)                                     # Ensure catching this exception gets the original backtrace
-          raise new_ex
+          reraise_extended_exception(e, "evaluating :data-expression for column '#{col[:caption]}'")
         end
         begin
           celldata.encode!(Encoding::UTF_8) if celldata.encoding != Encoding::UTF_8 # Ensure that other content is translated to UTF-8
@@ -285,7 +284,7 @@ module SlickgridHelper
             title << col[:data_title].call(rec).to_s if col[:data_title].class == Proc # Ersetzungen im string a'la "#{}" ermoeglichen
             title << eval_with_rec("\"#{col[:data_title]}\"", rec)  unless col[:data_title].class == Proc # Ersetzungen im string a'la "#{}" ermoeglichen
           rescue Exception => e
-            raise "#{e.class.name}: #{e.message} Error processing :data_title-rule for column #{col[:caption]}"
+            reraise_extended_exception(e, "processing data_title-rule for column #{col[:caption]}")
           end
           title['%t'] = col[:title] if title['%t'] && col[:title]   # einbetten :title in :data_title, wenn per %t angewiesen
         end

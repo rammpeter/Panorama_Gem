@@ -117,6 +117,7 @@ MAX_CONNECTION_POOL_SIZE = ENV['MAX_CONNECTION_POOL_SIZE'] || 100               
 
 # noinspection RubyClassVariableUsageInspection
 class PanoramaConnection
+
   attr_accessor :used_in_thread
   attr_accessor :last_used_time
   attr_accessor :last_used_query_timeout
@@ -596,6 +597,7 @@ class PanoramaConnection
         bind_text << "#{b.name} = #{b.value}\n"
       end
     end
+
 
     # Ensure stacktrace of first exception is show
     msg = "Error while executing SQL:\n#{PanoramaConnection.get_nested_exception_message(e)}\nSQL-Statement:\n#{sql}\n#{bind_text.length > 0 ? "Bind-Values:\n#{bind_text}" : ''}"
