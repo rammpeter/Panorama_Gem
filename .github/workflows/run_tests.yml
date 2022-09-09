@@ -133,7 +133,7 @@ jobs:
       - name: Start database
         uses: nick-invision/retry@v2
         with:
-          timeout_seconds: 30
+          timeout_seconds: 300
           max_attempts: 3
           command: |
             if [[ "${{ env.DB_VERSION }}" != "autonomous" ]]; then
