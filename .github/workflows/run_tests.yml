@@ -20,19 +20,33 @@ jobs:
       max-parallel: 4
       fail-fast: true
       matrix:
+        # Short values to let the job names visible
         management_pack_license:
-          - diagnostics_and_tuning_pack
-          - diagnostics_pack
-          - panorama_sampler
+          - dtp
+          - dp
+          - ps
           - none
     env:
-      MANAGEMENT_PACK_LICENSE: ${{ matrix.management_pack_license }}
       DB_VERSION: ${{ inputs.db_version }}
       # CONTAINER contains CDB or PDB
       CONTAINER: ${{ inputs.container }}
 
     steps:
       - uses: actions/checkout@v1
+      - name: Set MANAGEMENT_PACK_LICENSE according to matrix short value
+        run: |
+          if [[ "${{ matrix.management_pack_license }}" == "dtp" ]]; then             
+            echo "MANAGEMENT_PACK_LICENSE=diagnostics_and_tuning_pack" >> $GITHUB_ENV
+          elif [[ "${{ matrix.management_pack_license }}" == "dp" ]]; then    
+            echo "MANAGEMENT_PACK_LICENSE=diagnostics_pack" >> $GITHUB_ENV
+          elif [[ "${{ matrix.management_pack_license }}" == "ps" ]]; then    
+            echo "MANAGEMENT_PACK_LICENSE=panorama_sampler" >> $GITHUB_ENV
+          elif [[ "${{ matrix.management_pack_license }}" == "none" ]]; then    
+            echo "MANAGEMENT_PACK_LICENSE=none" >> $GITHUB_ENV
+          else
+            echo "Unknown matrix value ${{ matrix.management_pack_license }}"
+            return 1
+          fi
 
       - name: Set environment for subsequent steps
         run: |
