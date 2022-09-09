@@ -179,7 +179,7 @@ jobs:
 
       - name: copy test.log locally to allow access before completion of whole actions
         if: always()
-        run: cp test/dummy/log/test.log /home/pramm/github_runner/log/${{ env.MANAGEMENT_PACK_LICENSE }}_${{ env.DB_VERSION }}_test.log
+        run: cp test/dummy/log/test.log /home/pramm/github_runner/log/${MANAGEMENT_PACK_LICENSE}_${DB_VERSION}__${CONTAINER}test.log
 
       - name: stop database
         if: always()
