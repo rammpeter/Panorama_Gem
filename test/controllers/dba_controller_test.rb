@@ -89,7 +89,8 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
     get  '/dba/show_session_detail', :params => {:format=>:html, :instance=>instance, :sid=>sid, :serial_no=>serial_no, :update_area=>:hugo }
     assert_response :success
 
-    if get_db_version >= '12.2'
+    # Access on gv$Diag_Trace_File in autonomous DB leads cancels the connection
+    if get_db_version >= '12.2' && !PanoramaConnection.autonomous_database?
       post  '/dba/render_session_detail_tracefile_button', :params => {:format=>:html, :instance=>instance, :pid=>pid, :update_area=>:hugo }
       assert_response :success
     end
