@@ -10,6 +10,7 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
     set_session_test_db_context
 
     initialize_min_max_snap_id_and_times
+    @autonomous = PanoramaConnection.autonomous_database?
   end
 
   # Alle Menu-Einträge testen für die der Controller eine Action definiert hat
@@ -90,7 +91,7 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     # Access on gv$Diag_Trace_File in autonomous DB leads cancels the connection
-    if get_db_version >= '12.2' && !PanoramaConnection.autonomous_database?
+    if get_db_version >= '12.2' && !@autonomous
       post  '/dba/render_session_detail_tracefile_button', :params => {:format=>:html, :instance=>instance, :pid=>pid, :update_area=>:hugo }
       assert_response :success
     end
