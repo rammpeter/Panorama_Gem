@@ -667,13 +667,13 @@ class PanoramaConnection
     immediate_destroy_reasons = [
       'Closed Connection'
     ]
+    conn = Thread.current[:panorama_connection_connection_object]
     immediate_destroy_reasons.each do |reason|
       if exception.message[reason]                                              # Exception message contains searched string
         Rails.logger.error('PanoramaConnection.check_for_erroneous_connection_removal') { "DB-Connection '#{conn.sid},#{conn.serial_no}' immediately destroyed after SQL error because of '#{reason}' in exception message"}
         PanoramaConnection.destroy_connection                                     # Force reconnect at next operation
       end
     end
-    conn = Thread.current[:panorama_connection_connection_object]
     conn.sql_errors_count =  conn.sql_errors_count + 1                          # remember the error during SQL
     if conn.sql_errors_count > MAX_CONNECTION_SQL_ERRORS_BEFORE_CLOSE
       Rails.logger.error('PanoramaConnection.check_for_erroneous_connection_removal') { "DB-Connection '#{conn.sid},#{conn.serial_no}' destroyed due to more than #{MAX_CONNECTION_SQL_ERRORS_BEFORE_CLOSE} SQL errors during this DB session"}
