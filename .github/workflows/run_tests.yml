@@ -70,19 +70,21 @@ jobs:
             if [[ "$CONTAINER" == "CDB" ]]; then
               echo "TEST_USERNAME=c##panorama_test" >> $GITHUB_ENV
             fi
-            # set TEST_SERVICENAME if not default ORCLPDB1
+            # set TEST_SERVICENAME 
+            TEST_SERVICENAME=ORCLPDB1
             if [[ "$DB_VERSION" == "11.2.0.4-ee" ]]; then
-              echo "TEST_SERVICENAME=ORCL" >> $GITHUB_ENV
+              TEST_SERVICENAME=ORCL
             fi
             if [[ "$CONTAINER" == "CDB" ]]; then
-              echo "TEST_SERVICENAME=ORCLCDB" >> $GITHUB_ENV
+              TEST_SERVICENAME=ORCLCDB
             fi
-            if [[ "$DB_VERSION" == *"xe" ]]; then
-              echo "TEST_SERVICENAME=XEPDB1" >> $GITHUB_ENV
+            if [ "$DB_VERSION" == *"xe" ] && [ "$DB_VERSION" < "19" ]; then
+              TEST_SERVICENAME=XEPDB1
               if [[ "$CONTAINER" == "CDB" ]]; then
-                echo "TEST_SERVICENAME=XE" >> $GITHUB_ENV
+                TEST_SERVICENAME=XE
               fi
             fi
+            echo "TEST_SERVICENAME=$TEST_SERVICENAME" >> $GITHUB_ENV
           fi
           # Ensure that each run uses it's own config without previous artifacts
           panorama_var_home=$PWD/tmp/panorama_var_home_${MANAGEMENT_PACK_LICENSE}_${DB_VERSION}
@@ -179,7 +181,7 @@ jobs:
 
       - name: copy test.log locally to allow access before completion of whole actions
         if: always()
-        run: cp test/dummy/log/test.log /home/pramm/github_runner/log/${MANAGEMENT_PACK_LICENSE}_${DB_VERSION}__${CONTAINER}test.log
+        run: cp test/dummy/log/test.log /home/pramm/github_runner/log/${MANAGEMENT_PACK_LICENSE}_${DB_VERSION}_${CONTAINER}_test.log
 
       - name: stop database
         if: always()
@@ -193,12 +195,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v1
         with:
-          name: ${{ env.MANAGEMENT_PACK_LICENSE }}_${{ env.DB_VERSION }}_test.log
+          name: ${{ env.MANAGEMENT_PACK_LICENSE }}_${{ env.DB_VERSION }}_${CONTAINER}_test.log
           path: test/dummy/log/test.log
 
       - name: Archive test screenshots
         if: always()
         uses: actions/upload-artifact@v1
         with:
-          name: ${{ env.MANAGEMENT_PACK_LICENSE }}_${{ env.DB_VERSION }}_tmp
+          name: ${{ env.MANAGEMENT_PACK_LICENSE }}_${{ env.DB_VERSION }}_${CONTAINER}_tmp
           path: test/dummy/tmp/screenshots
