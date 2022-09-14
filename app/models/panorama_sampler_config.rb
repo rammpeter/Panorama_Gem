@@ -337,6 +337,7 @@ class PanoramaSamplerConfig
   def self.validate_entry(config_hash, empty_password_allowed = false)
     raise PopupMessageException.new "User name is mandatory" if (config_hash[:user].nil? || config_hash[:user] == '')
     raise PopupMessageException.new "Password is mandatory" if (config_hash[:password].nil? || config_hash[:password] == '') && !empty_password_allowed
+    raise PopupMessageException.new "For login with 'system' you should provide a different user schema for storage" if config_hash[:user].upcase == 'SYSTEM' && (config_hash[:owner]&.upcase == 'SYSTEM' || config_hash[:owner].nil? || config_hash[:owner] == '')
 
     validate_unique_name(config_hash)
     min_value_awr_cycle = 5                                                     # Default for production
