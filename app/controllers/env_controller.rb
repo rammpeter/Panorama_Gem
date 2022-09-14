@@ -331,9 +331,12 @@ class EnvController < ApplicationController
 
     #current_database = params[:database].to_h.symbolize_keys                   # Puffern in lokaler Variable, bevor in client_info-Cache geschrieben wird
     current_database = params[:database]                                        # Puffern in lokaler Variable, bevor in client_info-Cache geschrieben wird
-    current_database[:save_login] = current_database[:save_login] == '1' if called_from_set_database_by_params # Store as bool instead of number fist time after login
+    if called_from_set_database_by_params
+      current_database[:save_login] = current_database[:save_login] == '1' # Store as bool instead of number fist time after login
+      current_database[:management_pack_license] = :none                        # No license violation possible until the user decides the license to use
+    end
 
-    @show_management_pack_choice =  current_database[:management_pack_license].nil? # show choice for management pack if first login to database or stored login does not contain the choice
+    @show_management_pack_choice =  called_from_set_database_by_params          # show choice for management pack if first login to database or stored login does not contain the choice
 
     if current_database[:modus] == 'tns'                                        # TNS-Alias auswerten
       tns_records = read_tnsnames                                               # Hash mit Attributen aus tnsnames.ora für gesuchte DB
@@ -441,7 +444,7 @@ Client Timezone: \"#{java.util.TimeZone.get_default.get_id}\", #{java.util.TimeZ
     # Set management pack according to 'control_management_pack_access' only after DB selects,
     # Until now get_current_database[:management_pack_license] is :none for first time login, so no management pack license is violated until now
     # User has to acknowlede management pack licensing at next screen
-    # set_current_database(get_current_database.merge( {:management_pack_license  => init_management_pack_license(get_current_database) } ))
+    set_current_database(get_current_database.merge( {management_pack_license: init_management_pack_license } )) if called_from_set_database_by_params
 
     write_connection_to_last_logins
 
@@ -505,6 +508,30 @@ private
 
   end
 
+  def init_management_pack_license
+    cmpa = read_control_management_pack_access
+    case cmpa.upcase
+    when 'NONE'               then :none
+    when 'DIAGNOSTIC'         then :diagnostics_pack
+    when 'DIAGNOSTIC+TUNING'  then :diagnostics_and_tuning_pack
+    else
+      raise "EnvController.init_management_pack_license: Unknown value for control_management_pack_access: '#{cmpa}'"
+    end
+  end
+
+  # @return [String] NONE | DIAGNOSTIC | DIAGNOSTIC+TUNING
+  def read_control_management_pack_access
+    sql = "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"
+    sql_select_one sql
+  rescue Exception => e
+    msg = "Cannot read managament pack licensing state from database!\nAssuming no management pack license exists.\n#{e.class}:#{e.message}\nUsed SQL:\n#{sql}"
+    Rails.logger.error('EnvController.read_control_management_pack_access') { msg }
+    log_exception_backtrace(e)
+    # reraise_extended_exception(e, msg)
+    'NONE'
+  end
+
+
   def persist_management_pack_license(management_pack_license)
     current_database = get_current_database
     current_database[:management_pack_license] = management_pack_license.to_sym
@@ -548,16 +575,8 @@ public
   end
 
   def list_management_pack_license
-    sql = "SELECT Value FROM V$Parameter WHERE name='control_management_pack_access'"
-    @control_management_pack_access = sql_select_one sql
+    @control_management_pack_access = read_control_management_pack_access
     render_partial :list_management_pack_license
-  rescue Exception => e
-    # log_exception_backtrace(e)
-    msg = "Cannot read managament pack licensing state from database!\nAssuming no management pack license exists.\n#{e.class}:#{e.message}\nUsed SQL:\n#{sql}"
-    Rails.logger.error('EnvController.list_management_pack_license') { msg }
-    set_current_database(get_current_database.merge( {:management_pack_license  => :none } ))
-    reraise_extended_exception(e, msg)
-    #start_page                                                                  # Assuming this is the first call at statup and not included from start_page
   end
 
   def set_management_pack_license
