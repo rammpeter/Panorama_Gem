@@ -188,6 +188,8 @@ jobs:
         run: |
           if [[ "${{ env.DB_VERSION }}" != 'autonomous'  ]]; then
             docker logs ${{ env.DB_CONTAINER_NAME }}
+            echo "### Get listener status from running database before stop:"
+            docker exec $DB_CONTAINER_NAME bash -c 'lsnrctl status'
             docker rm -f ${{ env.DB_CONTAINER_NAME }}
           fi
 
