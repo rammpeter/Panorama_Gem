@@ -148,7 +148,7 @@ jobs:
               # To prevent from Java::JavaSql::SQLRecoverableException: I/O-Fehler: Got minus one from a read call 
               if [[ "$DB_VERSION" > "18" ]]; then
                 echo "Patching all found sqlnet.ora for 19.x and 21.x due to Bug ( Doc ID 2662778.1 )" 
-                docker exec $DB_CONTAINER_NAME bash -c "find / -name sqlnet.ora 2>/dev/null | sed 's/^/echo DISABLE_OOB=ON >> /' | bash
+                docker exec $DB_CONTAINER_NAME bash -c "find / -name sqlnet.ora 2>/dev/null | sed 's/^/echo DISABLE_OOB=ON >> /' | bash"
               fi
             fi
 
