@@ -158,10 +158,6 @@ jobs:
           source "$HOME/.rvm/scripts/rvm
           docker exec $DB_CONTAINER_NAME bash -c 'lsnrctl status'
           bundle exec rake -f $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake ci_preparation:wait_for_db_available[10]
-          RET=$?
-          echo "Return status = $RET"
-          docker exec $DB_CONTAINER_NAME bash -c 'lsnrctl status'
-          exit $RET          
 
       - name: run Test
         run: |
