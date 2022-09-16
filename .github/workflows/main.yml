@@ -35,10 +35,10 @@ jobs:
 #  test_19_19-ee_PDB:   { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "19.10.0.0-ee",  container: "PDB" }, secrets: "inherit"}
 #  test_19_10-se2_CDB:  { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "19.10.0.0-se2", container: "CDB" }, secrets: "inherit"}
 #  test_19_10-se2_PDB:  { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "19.10.0.0-se2", container: "PDB" }, secrets: "inherit"}
-#  test_21_3-ee_CDB:    { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "21.3.0.0-ee",   container: "CDB" }, secrets: "inherit"}
-  test_21_3-ee_PDB:    { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "21.3.0.0-ee",   container: "PDB" }, secrets: "inherit"}
+  test_21_3-ee_CDB:    { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "21.3.0.0-ee",   container: "CDB" }, secrets: "inherit"}
+#  test_21_3-ee_PDB:    { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "21.3.0.0-ee",   container: "PDB" }, secrets: "inherit"}
 #  test_21_3-se2_CDB:   { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "21.3.0.0-se2",  container: "CDB" }, secrets: "inherit"}
-  test_21_3-se2_PDB:   { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "21.3.0.0-se2",  container: "PDB" }, secrets: "inherit"}
+#  test_21_3-se2_PDB:   { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "21.3.0.0-se2",  container: "PDB" }, secrets: "inherit"}
   # TODO: 21 xe
 
 
