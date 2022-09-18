@@ -78,7 +78,7 @@ jobs:
             if [[ "$CONTAINER" == "CDB" ]]; then
               TEST_SERVICENAME=ORCLCDB
             fi
-            if [ "$DB_VERSION" == *"xe" ] && [ "$DB_VERSION" < "19" ]; then
+            if [[ "$DB_VERSION" == *"xe" ]] && [[ "$DB_VERSION" < "19" ]]; then
               TEST_SERVICENAME=XEPDB1
               if [[ "$CONTAINER" == "CDB" ]]; then
                 TEST_SERVICENAME=XE
@@ -157,14 +157,6 @@ jobs:
         run: |
           source "$HOME/.rvm/scripts/rvm"
           bundle exec rake -f $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake ci_preparation:wait_for_db_available[10]
-          RET=$?
-          if [[ $RET -ne 0 ]]; then
-            echo "Return status of wait_for_db_available.rake = $RET"
-            if [[ "$DB_VERSION" != "11.2.0.4-ee" ]]; then
-              docker exec $DB_CONTAINER_NAME bash -c 'lsnrctl status'
-            fi
-          fi
-          exit $RET          
 
       - name: run Test
         run: |
@@ -194,7 +186,9 @@ jobs:
           if [[ "${{ env.DB_VERSION }}" != 'autonomous'  ]]; then
             docker logs ${{ env.DB_CONTAINER_NAME }}
             echo "### Get listener status from running database before stop:"
-            docker exec $DB_CONTAINER_NAME bash -c 'lsnrctl status'
+            if [[ "$DB_VERSION" != "11.2.0.4-ee" ]]; then
+              docker exec $DB_CONTAINER_NAME bash -c 'lsnrctl status'
+            fi
             docker rm -f ${{ env.DB_CONTAINER_NAME }}
           fi
 
