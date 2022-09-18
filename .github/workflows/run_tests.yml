@@ -156,11 +156,15 @@ jobs:
         if: ${{ env.DB_VERSION != 'autonomous' }}
         run: |
           source "$HOME/.rvm/scripts/rvm"
-          docker exec $DB_CONTAINER_NAME bash -c 'lsnrctl status'
-            bundle exec rake -f $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake ci_preparation:wait_for_db_available[10]
+          if [[ "$DB_VERSION" != "11.2.0.4-ee" ]]; then
+            docker exec $DB_CONTAINER_NAME bash -c 'lsnrctl status'
+          fi
+          bundle exec rake -f $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake ci_preparation:wait_for_db_available[10]
           RET=$?
           echo "Return status = $RET"
-          docker exec $DB_CONTAINER_NAME bash -c 'lsnrctl status'
+          if [[ "$DB_VERSION" != "11.2.0.4-ee" ]]; then
+            docker exec $DB_CONTAINER_NAME bash -c 'lsnrctl status'
+          fi
           exit $RET          
 
       - name: run Test
