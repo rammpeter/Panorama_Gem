@@ -328,6 +328,7 @@ class DbaHistoryControllerTest < ActionDispatch::IntegrationTest
             post '/dba_history/list_performance_hub_report', :params => {:format=>:html, :time_selection_start =>@time_selection_between, :time_selection_end =>@time_selection_end, :instance=>instance, download_oracle_com_reachable: true }
             assert_response management_pack_license_ok? ? :success : :error
           rescue Exception => e
+            # TODO: rescue also catches Minitest::Assertion Expected response to be a <2XX: success>, but was a <500: Surely hasn't been expected
             msg = "DbaHistoryControllerTest.genuine_oracle_reports: Exception catched #{e.class} #{e.message} but not raised for breaking test"
             Rails.logger.info msg
             puts msg
