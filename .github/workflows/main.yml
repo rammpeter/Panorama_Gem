@@ -20,6 +20,13 @@ on:
     - cron: '0 0 * * 0'
 
 jobs:
+  setup:
+    runs-on: self-hosted
+    steps:
+      - name: Remove orphanded DB containers older than 1 hour from previous runs
+        run: |
+          docker ps --filter "name=DB*" | grep "hours ago\|days ago|weeks ago" | awk '{print $1}' | xargs docker rm -f
+
   test_autonomous_PDB: { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "autonomous",    container: "PDB" }, secrets: "inherit"}
   test_11_2-ee:        { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "11.2.0.4-ee",   container: "PDB" }, secrets: "inherit"}
   test_12_1-ee:        { uses: "rammpeter/panorama_gem/.github/workflows/run_tests.yml@master", with: { db_version: "12.1.0.2-ee",   container: "PDB" }, secrets: "inherit"}

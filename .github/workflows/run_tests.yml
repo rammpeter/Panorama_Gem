@@ -15,6 +15,7 @@ on:
 jobs:
   test:
     runs-on: self-hosted
+    needs: [setup]
 
     strategy:
       max-parallel: 4
