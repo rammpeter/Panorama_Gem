@@ -1,6 +1,7 @@
 class PanoramaSamplerStructureCheck
   include ExceptionHelper
   include PanoramaSampler::PackagePanoramaSamplerAsh
+  include PanoramaSampler::PackageConDbidFromConId
   include PanoramaSampler::PackagePanoramaSamplerSnapshot
   include PanoramaSampler::PackagePanoramaSamplerBlockingLocks
 
@@ -1626,6 +1627,14 @@ ORDER BY Column_ID
     end
 
     Rails.logger.info("Running test with @sampler_config.get_select_any_table = #{@sampler_config.get_select_any_table?}")  if  Rails.env.test?
+
+    # globallly used packages
+    case domain
+    when :AWR then
+      filename = PanoramaSampler::PackageConDbidFromConId.instance_method(:con_dbid_from_con_id_spec).source_location[0]
+      create_or_check_package(filename, con_dbid_from_con_id_spec, 'CON_DBID_FROM_CON_ID', :spec)
+      create_or_check_package(filename, con_dbid_from_con_id_body, 'CON_DBID_FROM_CON_ID', :body)
+    end
 
     if @sampler_config.get_select_any_table?                                     # call PL/SQL package? v$Tables with SELECT_ANY_CATALOG-role are accessible in PL/SQL only if SELECT ANY TABLE is granted
       case domain
