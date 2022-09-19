@@ -8,7 +8,7 @@ CREATE OR REPLACE Package panorama_owner.Panorama_Sampler_ASH AS
   -- Compiled at COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME
 
   FUNCTION Get_Stat_ID(p_Name IN VARCHAR2) RETURN NUMBER;
-  PROCEDURE Run_Sampler_Daemon(p_Instance_Number IN NUMBER, p_Con_ID IN NUMBER, p_Next_Snapshot_Start_Seconds IN NUMBER);
+  PROCEDURE Run_Sampler_Daemon(p_Instance_Number IN NUMBER, p_Next_Snapshot_Start_Seconds IN NUMBER);
 
 END Panorama_Sampler_ASH;
     "
@@ -116,6 +116,7 @@ END Panorama_Sampler_ASH;
     DELTA_INTERCONNECT_IO_BYTES NUMBER,
     PGA_ALLOCATED             NUMBER,
     TEMP_SPACE_ALLOCATED      NUMBER,
+    Con_ID                    NUMBER,
     Preserve_10Secs           VARCHAR2(1)
   );
   TYPE AshTableType IS TABLE OF AshType INDEX BY BINARY_INTEGER;
@@ -139,7 +140,6 @@ END Panorama_Sampler_ASH;
 
   PROCEDURE CreateSample(
     p_Instance_Number IN NUMBER,
-    p_Con_ID          IN NUMBER,
     p_Sample_ID       IN OUT NUMBER
   ) IS
       v_DoubleCheck_SID NUMBER := -1;                                                 -- suppress double records
@@ -259,6 +259,7 @@ END Panorama_Sampler_ASH;
              NULL, -- DELTA_INTERCONNECT_IO_BYTES
              p.PGA_Alloc_Mem,     -- PGA_ALLOCATED
              NVL(ts.blocks * #{PanoramaConnection.db_blocksize}, 0),  -- TEMP_SPACE_ALLOCATED
+             #{PanoramaConnection.db_version >= '12.1' ? "s.Con_ID" : "0"}, -- Con_ID
              v_Preserve_10Secs -- Preserve_10Secs, decide MOD 10 on rounded seconds (distance between samples may be a bit smaller than 1 second)
       BULK COLLECT INTO AshTable4Select
       FROM   v$Session s
@@ -285,7 +286,7 @@ END Panorama_Sampler_ASH;
       WHERE  s.Status = 'ACTIVE'
       AND    s.Wait_Class != 'Idle'
       AND    s.SID        != USERENV('SID')  -- dont record the own session that assumes always active this way
-      #{"AND s.Con_ID = p_Con_ID" if PanoramaConnection.db_version >= '12.1'}
+      #{"AND s.Con_ID IN (SELECT /*+ NO_MERGE */ Con_ID FROM v$Containers) /* Consider sessions of Con-IDs to sample only */ " if PanoramaConnection.db_version >= '12.1'}
       ORDER BY s.SID  -- sorted order needed for suppression of doublettes in next step
       ;
 
@@ -301,8 +302,7 @@ END Panorama_Sampler_ASH;
     END CreateSample;
 
   PROCEDURE Persist_Samples(
-    p_Instance_Number IN NUMBER,
-    p_Con_ID IN NUMBER
+    p_Instance_Number IN NUMBER
   ) IS
       Msg VARCHAR2(2000);
     BEGIN
@@ -352,7 +352,7 @@ END Panorama_Sampler_ASH;
         AshTable(Idx).DBREPLAY_FILE_ID, AshTable(Idx).DBREPLAY_CALL_COUNTER, AshTable(Idx).TM_Delta_Time, AshTable(Idx).TM_DELTA_CPU_TIME, AshTable(Idx).TM_DELTA_DB_TIME,
         AshTable(Idx).DELTA_TIME, AshTable(Idx).DELTA_READ_IO_REQUESTS, AshTable(Idx).DELTA_WRITE_IO_REQUESTS, AshTable(Idx).DELTA_READ_IO_BYTES,
         AshTable(Idx).DELTA_WRITE_IO_BYTES, AshTable(Idx).DELTA_INTERCONNECT_IO_BYTES, AshTable(Idx).PGA_Allocated, AshTable(Idx).Temp_Space_Allocated,
-        p_Con_ID, AshTable(Idx).Preserve_10Secs
+        AshTable(Idx).Con_ID, AshTable(Idx).Preserve_10Secs
       );
       COMMIT;
       AshTable.DELETE;
@@ -370,7 +370,6 @@ END Panorama_Sampler_ASH;
 
   PROCEDURE Run_Sampler_Daemon(
     p_Instance_Number IN NUMBER,
-    p_Con_ID IN NUMBER,
     p_Next_Snapshot_Start_Seconds IN NUMBER
   ) IS
     v_Counter         INTEGER;
@@ -408,11 +407,11 @@ END Panorama_Sampler_ASH;
           END IF;
         END IF;
 
-        CreateSample(p_Instance_Number, p_Con_ID, v_Sample_ID);
+        CreateSample(p_Instance_Number, v_Sample_ID);
         v_Counter := v_Counter + 1;
         IF v_Counter >= v_Bulk_Size THEN                                        -- Persist into DB each x seconds
           v_Counter := 0;
-          Persist_Samples(p_Instance_Number, p_Con_ID);                         -- write content of AshTable into DB
+          Persist_Samples(p_Instance_Number);                                   -- write content of AshTable into DB
         END IF;
 
         EXIT WHEN SYSDATE >= v_LastSampleTime;                                  -- return control to Panorama server

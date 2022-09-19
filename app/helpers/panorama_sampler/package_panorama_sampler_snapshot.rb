@@ -826,8 +826,8 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Do_Snapshot(p_Snap_ID                     IN NUMBER,
                         p_Instance                    IN NUMBER,
-                        p_DBID                        IN NUMBER,
-                        p_Con_DBID                    IN NUMBER,
+                        p_DBID                        IN NUMBER,  /* DBID of container-DB */
+                        p_Con_DBID                    IN NUMBER,  /* DBID of PDB */
                         p_Con_ID                      IN NUMBER,
                         p_Begin_Interval_Time         IN DATE,
                         p_Snapshot_Cycle              IN NUMBER,

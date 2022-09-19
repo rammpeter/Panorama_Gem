@@ -32,34 +32,45 @@ class PanoramaSamplerSampling
     @sampler_config = sampler_config
   end
 
+  # Iterate over the visible PDBs (recognized by v$Containers)
   def do_awr_sampling(snapshot_time)
-    last_snap = PanoramaConnection.sql_select_first_row ["SELECT Snap_ID, End_Interval_Time
-                                                    FROM   #{@sampler_config.get_owner}.Panorama_Snapshot
-                                                    WHERE  DBID=? AND Instance_Number=?
-                                                    AND    Snap_ID = (SELECT MAX(Snap_ID) FROM #{@sampler_config.get_owner}.Panorama_Snapshot WHERE DBID=? AND Instance_Number=?)
-                                                   ", PanoramaConnection.login_container_dbid, PanoramaConnection.instance_number, PanoramaConnection.login_container_dbid, PanoramaConnection.instance_number]
-
-    if last_snap.nil?                                                           # First access
-      @snap_id = 1
-      begin_interval_time = (PanoramaConnection.sql_select_one "SELECT SYSDATE FROM Dual") - (@sampler_config.get_awr_ash_snapshot_cycle).minutes
-    else
-      @snap_id            = last_snap.snap_id + 1
-      begin_interval_time = last_snap.end_interval_time
+    containers = []
+    containers = PanoramaConnection.sql_select_all "SELECT DBID, Con_ID, Name, Block_Size FROM v$Containers" if PanoramaConnection.db_version >= '12.1'
+    if containers.count == 0                                                    # 11.2 or no PDB
+      containers << { dbid: PanoramaConnection.dbid, con_id: 0, name: PanoramaConnection.database_name, block_size: PanoramaConnection.db_blocksize}.extend(SelectHashHelper)
     end
 
-    ## DBA_Hist_Snapshot, must be the first atomic transaction to ensure that next snap_id is exactly incremented
-    PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config.get_owner}.Panorama_Snapshot (Snap_ID, DBID, Instance_Number, Startup_Time, Begin_Interval_Time, End_Interval_Time, End_Interval_Time_TZ, Snap_Timezone, Con_ID
+    # Sample_ID in ASH is the same for all considered CON_IDs
+    current_max_ash_sample_id = PanoramaConnection.sql_select_one "SELECT NVL(MAX(Sample_ID), 0) FROM #{@sampler_config.get_owner}.Internal_V$Active_Sess_History"
+    Rails.logger.debug('PanoramaSamplerSampling.do_awr_sampling') { "Copy 1-second ASH samples in AWR snapshot for sample_id > #{@sampler_config.get_last_snap_max_ash_sample_id} and sample_id <= #{current_max_ash_sample_id}"}
+
+    containers.each do |container|
+      Rails.logger.debug('PanoramaSamplerSampling.do_awr_sampling') {"Start sampling at #{snapshot_time} for '#{container.name}', DBID=#{container.dbid}, Con-ID=#{container.con_id}"}
+
+      last_snap = PanoramaConnection.sql_select_first_row ["SELECT Snap_ID, End_Interval_Time
+                                                            FROM   #{@sampler_config.get_owner}.Panorama_Snapshot
+                                                            WHERE  DBID=? AND Instance_Number=?
+                                                            AND    Snap_ID = (SELECT MAX(Snap_ID) FROM #{@sampler_config.get_owner}.Panorama_Snapshot WHERE DBID=? AND Instance_Number=?)
+                                                           ", container.dbid, PanoramaConnection.instance_number, container.dbid, PanoramaConnection.instance_number]
+
+      if last_snap.nil?                                                           # First access
+        @snap_id = 1
+        begin_interval_time = (PanoramaConnection.sql_select_one "SELECT SYSDATE FROM Dual") - (@sampler_config.get_awr_ash_snapshot_cycle).minutes
+      else
+        @snap_id            = last_snap.snap_id + 1
+        begin_interval_time = last_snap.end_interval_time
+      end
+
+      ## DBA_Hist_Snapshot, must be the first atomic transaction to ensure that next snap_id is exactly incremented
+      PanoramaConnection.sql_execute ["INSERT INTO #{@sampler_config.get_owner}.Panorama_Snapshot (Snap_ID, DBID, Instance_Number, Startup_Time, Begin_Interval_Time, End_Interval_Time, End_Interval_Time_TZ, Snap_Timezone, Con_ID
                                     ) SELECT ?, ?, ?, Startup_Time, ?, SYSDATE, SYSTIMESTAMP,
                                              TO_DSINTERVAL(CASE WHEN TO_NUMBER(TO_CHAR(SYSTIMESTAMP, 'TZH')) < 0 THEN '-' END||'0 '||
                                                            SUBSTR(TO_CHAR(SYSTIMESTAMP, 'TZH'), 2)||':'||TO_CHAR(SYSTIMESTAMP, 'TZM')||':00'
                                                           ),
                                              ? FROM v$Instance",
-                                    @snap_id, PanoramaConnection.login_container_dbid, PanoramaConnection.instance_number, begin_interval_time, PanoramaConnection.con_id]
+                                      @snap_id, container.dbid, PanoramaConnection.instance_number, begin_interval_time, container.con_id]
 
-    current_max_ash_sample_id = PanoramaConnection.sql_select_one "SELECT NVL(MAX(Sample_ID), 0) FROM #{@sampler_config.get_owner}.Internal_V$Active_Sess_History"
-    Rails.logger.debug('PanoramaSamplerSampling.do_awr_sampling') { "Copy 1-second ASH samples in AWR snapshot for sample_id > #{@sampler_config.get_last_snap_max_ash_sample_id} and sample_id <= #{current_max_ash_sample_id}"}
-
-    do_snapshot_call = "Do_Snapshot(p_Snap_ID                       => ?,
+      do_snapshot_call = "Do_Snapshot(p_Snap_ID                       => ?,
                                     p_Instance                      => ?,
                                     p_DBID                          => ?,
                                     p_Con_DBID                      => ?,
@@ -74,36 +85,35 @@ class PanoramaSamplerSampling
                                     p_ash_1sec_sample_keep_hours    => ?
                                    )"
 
-    if @sampler_config.get_select_any_table?                                       # call PL/SQL package ?
-      sql = " BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_Snapshot.#{do_snapshot_call}; END;"
-    else
-      # replace PANORAMA. with the real owner in PL/SQL-Source
-      sql = "
+      if @sampler_config.get_select_any_table?                                  # call PL/SQL package ?
+        sql = " BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_Snapshot.#{do_snapshot_call}; END;"
+      else
+        # replace PANORAMA. with the real owner in PL/SQL-Source
+        sql = "
         DECLARE
         #{PanoramaSamplerStructureCheck.translate_plsql_aliases(@sampler_config, panorama_sampler_snapshot_code)}
         BEGIN
           #{do_snapshot_call};
         END;
         "
+      end
+      PanoramaConnection.sql_execute [sql,
+                                      @snap_id,
+                                      PanoramaConnection.instance_number,
+                                      PanoramaConnection.dbid,
+                                      container.dbid ,
+                                      container.con_id,
+                                      begin_interval_time,
+                                      @sampler_config.get_awr_ash_snapshot_cycle,
+                                      @sampler_config.get_awr_ash_snapshot_retention,
+                                      @sampler_config.get_sql_min_no_of_execs,
+                                      @sampler_config.get_sql_min_runtime_millisecs,
+                                      @sampler_config.get_last_snap_max_ash_sample_id,
+                                      current_max_ash_sample_id,
+                                      @sampler_config.get_ash_1sec_sample_keep_hours
+                                     ]
+
     end
-
-    ## TODO: Con_DBID mit realen werten des Containers füllen, falls PDB-übergreifendes Sampling gewünscht wird
-    PanoramaConnection.sql_execute [sql,
-                                    @snap_id,
-                                    PanoramaConnection.instance_number,
-                                    PanoramaConnection.login_container_dbid,
-                                    con_dbid,
-                                    PanoramaConnection.con_id,
-                                    begin_interval_time,
-                                    @sampler_config.get_awr_ash_snapshot_cycle,
-                                    @sampler_config.get_awr_ash_snapshot_retention,
-                                    @sampler_config.get_sql_min_no_of_execs,
-                                    @sampler_config.get_sql_min_runtime_millisecs,
-                                    @sampler_config.get_last_snap_max_ash_sample_id,
-                                    current_max_ash_sample_id,
-                                    @sampler_config.get_ash_1sec_sample_keep_hours
-                                   ]
-
     @sampler_config.set_last_snap_max_ash_sample_id(current_max_ash_sample_id) # Remember the value for the next snapshot
   end
 
@@ -161,7 +171,7 @@ class PanoramaSamplerSampling
     next_snapshot_start_seconds += 5                                            # Assume 5 seconds delay until start of sampling to fill with previous daemon
 
     if @sampler_config.get_select_any_table?                                     # call PL/SQL package ?
-      sql = " BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_ASH.Run_Sampler_Daemon(?, ?, ?); END;"
+      sql = " BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_ASH.Run_Sampler_Daemon(?, ?); END;"
     else
       sql = "
         DECLARE
@@ -173,7 +183,7 @@ class PanoramaSamplerSampling
     end
 
     Rails.logger.info "#{Time.now}: Create new ASH daemon for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}', Instance=#{PanoramaConnection.instance_number}, next_snapshot_start_seconds=#{next_snapshot_start_seconds}  SID=#{PanoramaConnection.sid}"
-    PanoramaConnection.sql_execute [sql, PanoramaConnection.instance_number, PanoramaConnection.con_id, next_snapshot_start_seconds]
+    PanoramaConnection.sql_execute [sql, PanoramaConnection.instance_number, next_snapshot_start_seconds]
   end
 
   def do_object_size_sampling(snapshot_time)
@@ -513,9 +523,6 @@ class PanoramaSamplerSampling
   end
 
   private
-  def con_dbid
-    PanoramaConnection.login_container_dbid
-  end
 
   # Limit transaction size to prevent unnecessary UNDO traffic and ORA-1550 snapshot too old
   def execute_until_nomore(params, max_rows=100000)

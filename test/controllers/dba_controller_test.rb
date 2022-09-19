@@ -188,7 +188,7 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'trace_files with xhr: true' do
-    # Access on trace files leads to hours of runtime in autonomous DB
+    # Access on trace files leads to hours of runtime in autonomous DBK
     if get_db_version >= '12.2' && !PanoramaConnection.autonomous_database?
       instance  = PanoramaConnection.instance_number
       trace_file = nil
