@@ -43,6 +43,8 @@ module HtmlHelper
   # Select DBID from different sources
   def dbid_selection(select_element_id: nil, onchange: nil)
     result = ''
+    dbids = []
+=begin
     dbids = [{dbid: PanoramaConnection.dbid, title: "DBID of instance / container DB"}]
     current_dbids = Set[PanoramaConnection.dbid]
     PanoramaConnection.pdbs.each do |p|
@@ -50,16 +52,16 @@ module HtmlHelper
       current_dbids.add(p[:dbid])
       dbids << {dbid: p[:dbid], title: "PDB #{p[:con_id]}: #{p[:name]}"}
     end
-
+=end
     # Add possibly existing previously recorded databases
     PanoramaConnection.all_awr_dbids.each do |a|
-      unless current_dbids.include? a.dbid                                      # List AWR DBIDs not already known as current
-        dbids << {dbid: a.dbid, title: "#{a.db_name} #{localeDateTime(a.start_ts, :minutes)} .. #{localeDateTime(a.end_ts, :minutes)}"}
-      end
+      #      unless current_dbids.include? a.dbid                                      # List AWR DBIDs not already known as current
+        dbids << {dbid: a.dbid, title: "#{a.db_name}/#{a.con_id} #{localeDateTime(a.start_ts, :days)} .. #{localeDateTime(a.end_ts, :days)}"}
+      #end
     end
 
     # Don't show choice if only one DBID available
-    result << "<div class=\"flex-row-element\" #{"style=\"display:none;\"" if dbids.count == 1 } title=\"The requested info can be recorded for different database IDs as well as global and per PDB.\nSelect for which DBID values should be to evaluated.\">"
+    result << "<div class=\"flex-row-element\" #{"style=\"display:none;\"" if dbids.count < 2 } title=\"The requested info can be recorded for different database IDs as well as global and per PDB.\nSelect for which DBID values should be to evaluated.\">"
     result << "  <label>DB-ID</label>"
     result << "  <select name=\"dbid\" #{"id=\"#{select_element_id}\"" if select_element_id} #{"onchange=\"#{onchange}\"" if onchange}>"
     selected_dbid = get_dbid                                                    # Default
