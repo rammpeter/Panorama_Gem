@@ -188,12 +188,12 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'trace_files with xhr: true' do
-    instance  = PanoramaConnection.instance_number
-    trace_file = nil
-    trace_file = sql_select_first_row "SELECT Inst_ID, ADR_Home, Trace_Filename, Con_ID FROM gv$Diag_Trace_File" if get_db_version >= '12.2'
+    # Access on trace files leads to hours of runtime in autonomous DB
+    if get_db_version >= '12.2' && !PanoramaConnection.autonomous_database?
+      instance  = PanoramaConnection.instance_number
+      trace_file = nil
+      trace_file = sql_select_first_row "SELECT Inst_ID, ADR_Home, Trace_Filename, Con_ID FROM gv$Diag_Trace_File"
 
-
-    if get_db_version >= '12.2'
       [nil, 'hugo', 'erster|zweiter'].each do |filter|
         post '/dba/list_trace_files', :params => {format:               :html,
                                                   time_selection_start: @time_selection_start,
@@ -205,25 +205,23 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
                                                   update_area:          :hugo
         }
         assert_response :success
-      end
 
-      if !trace_file.nil?
-        [0,1].each do |dont_show_sys|
-          [0,1].each do |dont_show_stat|
-            post '/dba/list_trace_file_content', params: {format: :html, instance: trace_file.inst_id, adr_home: trace_file.adr_home,
-                                                          trace_filename: trace_file.trace_filename, con_id: trace_file.con_id,
-                                                          dont_show_sys: dont_show_sys, dont_show_stat: dont_show_stat,
-                                                          update_area: :hugo }
-            assert_response :success
+        if !trace_file.nil?
+          [0,1].each do |dont_show_sys|
+            [0,1].each do |dont_show_stat|
+              post '/dba/list_trace_file_content', params: {format: :html, instance: trace_file.inst_id, adr_home: trace_file.adr_home,
+                                                            trace_filename: trace_file.trace_filename, con_id: trace_file.con_id,
+                                                            dont_show_sys: dont_show_sys, dont_show_stat: dont_show_stat,
+                                                            update_area: :hugo }
+              assert_response :success
+            end
           end
         end
+
+        post '/dba/list_trace_file_content', params: {format: :html, instance: instance, adr_home: 'hugo', trace_filename: 'hugo', con_id: 1, update_area: :hugo }
+        assert_response :success
       end
-
-      post '/dba/list_trace_file_content', params: {format: :html, instance: instance, adr_home: 'hugo', trace_filename: 'hugo', con_id: 1, update_area: :hugo }
-      assert_response :success
-
     end
-
   end
 
 
