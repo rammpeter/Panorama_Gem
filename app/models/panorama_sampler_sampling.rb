@@ -100,7 +100,7 @@ class PanoramaSamplerSampling
     PanoramaConnection.sql_execute [sql,
                                     @snap_id,
                                     PanoramaConnection.instance_number,
-                                    PanoramaConnection.login_container_dbid,
+                                    PanoramaConnection.dbid,
                                     PanoramaConnection.con_id,
                                     begin_interval_time,
                                     @sampler_config.get_awr_ash_snapshot_cycle,
