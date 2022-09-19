@@ -158,7 +158,7 @@ END Panorama_Sampler_Snapshot;
              SUM(RETRIES_ON_ERROR),
              #{PanoramaConnection.db_version >= '12.1' ? "panorama_owner.Con_DBID_From_Con_ID.Get(Con_ID), Con_ID" : "p_DBID, 0 Con_ID"}
       FROM   V$IOSTAT_FILE
-      GROUP BY FILETYPE_ID, Con_ID
+      GROUP BY FILETYPE_ID#{", Con_ID" if PanoramaConnection.db_version >= '12.1'}
     ;
     COMMIT;
   END Snap_IOStat_Filetype;
