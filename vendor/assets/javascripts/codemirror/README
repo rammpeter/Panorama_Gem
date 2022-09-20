@@ -1,11 +1,15 @@
-CodeMirror currently used: 5.63.1
+CodeMirror previously used: 5.63.1
+CodeMirror currently used: 5.65.8
 Download:
 https://codemirror.net
 There's a link to:
-> Get the current version: 5.63.1
+> Get the current version: xxx
 unzip
 use:
 lib/codemirror.js
 lib/codemirror.css
 mode/sql/sql.js
+addon/search/seach.js
+addon/search/seachcursor.js
+
 
