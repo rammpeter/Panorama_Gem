@@ -485,13 +485,13 @@ function SlickGridExtended(container_id, options){
             '<div>'+
             //Tables für Test der resultierenden Hoehe und Breite von Zellen für slickGrid
             // Zwei table für volle Zeichenbreite
-            '<div class="slick-inner-cell" style="visibility:hidden; position: absolute; z-index: -1; padding: 0; margin: 0; height: 20px; width: 90%;"><nobr><div id="' + test_cell_id + '" style="width: 1px; height: 1px; overflow: hidden;"></div></nobr></div>'+
+            '<div class="slick-inner-cell" style="visibility:hidden; position:absolute; left: 0px; z-index: -1; padding: 0; margin: 0; height: 20px; width: 90%;"><nobr><div id="' + test_cell_id + '" style="width: 1px; height: 1px; overflow: hidden;"></div></nobr></div>'+
             // Zwei table für umgebrochene Zeichenbreite
-            '<div  class="slick-inner-cell" id="' + test_cell_wrap_id + '" style="visibility:hidden; position:absolute; z-index: -1; width:1px; height:'+jQuery(window).height()/2+'px; padding: 0; margin: 0; word-wrap: normal;"></div>' +
+            '<div  class="slick-inner-cell" id="' + test_cell_wrap_id + '" style="visibility:hidden; position:absolute; left: 0px; z-index: -1; width:1px; height:'+jQuery(window).height()/2+'px; padding: 0; margin: 0; word-wrap: normal;"></div>' +
             '</div>'+
-            '<div  class="slick-inner-cell" id="' + test_cell_height_id + '" style="visibility:hidden; position:absolute; z-index: -1; height:1px; padding: 0; margin: 0; word-wrap: normal;"></div>' +
+            '<div  class="slick-inner-cell" id="' + test_cell_height_id + '" style="visibility:hidden; position:absolute; left: 0px; z-index: -1; height:1px; padding: 0; margin: 0; word-wrap: normal;"></div>' +
             '</div>'+
-            '<div id="'+test_cell_header_id+'" class="ui-state-default slick-header-column slick-header-sortable"   style="visibility:hidden; position:absolute; z-index: -1; width:1px; height: 1px; margin: 0; word-wrap: normal;">'+
+            '<div id="'+test_cell_header_id+'" class="ui-state-default slick-header-column slick-header-sortable"   style="visibility:hidden; position:absolute; left: 0px; z-index: -1; width:1px; height: 1px; margin: 0; word-wrap: normal;">'+
             '  <span class="slick-column-name" id="'+ test_cell_header_name_id +'"></span>' +
             '  <span class="slick-sort-indicator"></span>' +
             '</div>'
