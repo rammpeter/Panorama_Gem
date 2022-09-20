@@ -12,4 +12,7 @@ mode/sql/sql.js
 addon/search/seach.js
 addon/search/seachcursor.js
 
+Comment out in codemirror.css:
+ Commented our because too long in Chrome */
+  /* padding-bottom: 50px; */
 
