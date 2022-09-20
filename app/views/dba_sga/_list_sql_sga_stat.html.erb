@@ -155,13 +155,20 @@ end
     }
 
     (function() {
-        let cm = CodeMirror.fromTextArea(document.getElementById("<%= "#{@table_id_prefix}_sql" %>"), {
+        let text_area_id = "<%= "#{@table_id_prefix}_sql" %>";
+        let text_area = document.getElementById(text_area_id);
+        let cm = CodeMirror.fromTextArea(text_area, {
                 mode:  "sql",
                 readOnly: true,
                 lineWrapping: true
         }
         );
         cm.setSize('100%', $("#<%= "#{@table_id_prefix}_right_td" %>").height()); // set height of sql (left column) to height of right column
+
+        // Remove property padding-bottom:50px from class CodeMirror-scroll because this overlaps the areas above in Chrome
+        if (window.chrome){
+            jQuery('#'+text_area_id).find('.CodeMirror-scroll').css('padding-bottom', '0')
+        }
 
         jQuery("#<%= "#{@table_id_prefix}_main" %>").resize(function(){
                 cm.setSize('100%', $("#<%= "#{@table_id_prefix}_right_td" %>").height());
