@@ -651,7 +651,8 @@ class DbaSgaController < ApplicationController
       if @time_selection_start && @time_selection_end
         redirect_to url_for(controller: :dba_history, action: :list_sql_detail_historic, params: params.permit!, method: :post)
       else
-        show_popup_message("#{t(:dba_sga_list_sql_detail_sql_id_childno_no_hit_msg, :default=>'No record found in GV$SQL for')} SQL_ID='#{@sql_id}', Instance=#{@instance}, Child_Number=#{@child_number}")
+        # Use format html for popup message to ensure working in test
+        show_popup_message("#{t(:dba_sga_list_sql_detail_sql_id_childno_no_hit_msg, :default=>'No record found in GV$SQL for')} SQL_ID='#{@sql_id}', Instance=#{@instance}, Child_Number=#{@child_number}", :html)
       end
     end
   end
