@@ -96,23 +96,25 @@ module ExplainPlanHelper
     tab = ""
     toggle_id = "#{get_unique_area_id}_#{rec.id}"
 
-    if rec.depth > indent_vector.count                                        # Einrückung gegenüber Vorgänger
-      last_exists_id = 0                                                       # ID des letzten Records, für den die selbe parent_id existiert
-      plan_array.each do |p|
-        if p.id > rec.id &&  p.parent_id == rec.parent_id                      # nur Nachfolger des aktuellen testen, letzte Existenz des parent_id suchen
-          last_exists_id = p.id
+    unless rec.depth.nil?
+      if rec.depth > indent_vector.count                                        # Einrückung gegenüber Vorgänger
+        last_exists_id = 0                                                       # ID des letzten Records, für den die selbe parent_id existiert
+        plan_array.each do |p|
+          if p.id > rec.id &&  p.parent_id == rec.parent_id                      # nur Nachfolger des aktuellen testen, letzte Existenz des parent_id suchen
+            last_exists_id = p.id
+          end
         end
+        indent_vector << {:parent_id => rec.parent_id, :last_exists_id => last_exists_id}
       end
-      indent_vector << {:parent_id => rec.parent_id, :last_exists_id => last_exists_id}
-    end
 
-    while rec.depth < indent_vector.count                                   # Einrückung gegenüber Vorgänger
-      indent_vector.delete_at(indent_vector.count-1);
-    end
+      while rec.depth < indent_vector.count                                   # Einrückung gegenüber Vorgänger
+        indent_vector.delete_at(indent_vector.count-1);
+      end
 
-    #rec.depth.downto(1) {
-    #  tab << "<span class=\"toggle\"></span>&nbsp;"
-    #}
+      #rec.depth.downto(1) {
+      #  tab << "<span class=\"toggle\"></span>&nbsp;"
+      #}
+    end
 
     indent_vector.each_index do |i|
       if i < indent_vector.count-1                                          # den letzten Eintrag unterdrücken, wird relevant beim nächsten, wenn der einen weiter rechts eingerückt ist
