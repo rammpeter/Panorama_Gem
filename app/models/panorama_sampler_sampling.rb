@@ -140,7 +140,7 @@ class PanoramaSamplerSampling
       # Delete from tables without columns DBID and SNAP_ID
       execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.Panorama_SQL_Plan p
                            WHERE  DBID      = ?
-                           AND    (SQL_ID, Plan_Hash_Value) NOT IN (SELECT SQL_ID, Plan_Hash_Value FROM #{@sampler_config.get_owner}.Panorama_SQLStat s
+                           AND    (SQL_ID, Plan_Hash_Value) NOT IN (SELECT /*+ HASH_AJ */ SQL_ID, Plan_Hash_Value FROM #{@sampler_config.get_owner}.Panorama_SQLStat s
                                                  WHERE  s.DBID      = p.DBID
                                                  AND    s.Con_DBID  = p.Con_DBID
                                                 )
@@ -148,7 +148,7 @@ class PanoramaSamplerSampling
 
       execute_until_nomore ["DELETE FROM #{@sampler_config.get_owner}.Panorama_SQLText t
                            WHERE  DBID      = ?
-                           AND    SQL_ID NOT IN (SELECT SQL_ID FROM #{@sampler_config.get_owner}.Panorama_SQLStat s
+                           AND    SQL_ID NOT IN (SELECT /*+ HASH_AJ */ SQL_ID FROM #{@sampler_config.get_owner}.Panorama_SQLStat s
                                                  WHERE  s.DBID      = t.DBID
                                                  AND    s.Con_DBID  = t.Con_DBID
                                                 )

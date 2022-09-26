@@ -120,14 +120,14 @@ END Panorama_Sampler_Snapshot;
 
   PROCEDURE Snap_FileStatXS(p_Snap_ID IN NUMBER, p_DBID IN NUMBER, p_Instance IN NUMBER) IS
   BEGIN
-    INSERT INTO panorama_owner.Panorama_FileStatXS (SNAP_ID, DBID, INSTANCE_NUMBER, FILE#, Creation_Change#,
+    INSERT INTO panorama_owner.Internal_FileStatXS (SNAP_ID, DBID, INSTANCE_NUMBER, FILE#, Creation_Change#,
                                      PHYRDS, PHYWRTS, SINGLEBLKRDS, READTIM, WRITETIM, SINGLEBLKRDTIM, PHYBLKRD, PHYBLKWRT, WAIT_COUNT, TIME,
                                      OPTIMIZED_PHYBLKRD, CON_DBID, CON_ID
     ) SELECT p_Snap_ID, p_DBID, p_Instance, f.File#, d.Creation_Change#, f.PHYRDS, f.PHYWRTS, f.SINGLEBLKRDS, f.READTIM, f.WRITETIM, f.SINGLEBLKRDTIM, f.PHYBLKRD, f.PHYBLKWRT, NULL /* WAIT_COUNT */, NULL /* TIME */,
              f.OPTIMIZED_PHYBLKRD,
              #{PanoramaConnection.db_version >= '12.1' ? "panorama_owner.Con_DBID_From_Con_ID.Get(f.Con_ID), f.Con_ID" : "p_DBID, 0"}
       FROM   v$FileStat f
-      JOIN   v$Datafile d ON d.File# = f.File#
+      JOIN   v$Datafile d ON d.File# = f.File# #{ " AND d.Con_ID = f.Con_ID" if PanoramaConnection.db_version >= '12.1'}
     ;
     COMMIT;
   END Snap_FileStatXS;

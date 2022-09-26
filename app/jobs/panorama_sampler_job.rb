@@ -13,6 +13,10 @@ class PanoramaSamplerJob < ApplicationJob
 
   def perform(*args)
 
+    if Rails.env.test?
+      Rails.logger.error('PanoramaSamplerJob.perform') { "Should never be called in test here:\n#{Thread.current.backtrace.join("\n")}" }
+    end
+
     snapshot_time = Time.now.round                                              # cut subseconds
 
     min_snapshot_cycle = PanoramaSamplerConfig.min_snapshot_cycle               # smallest cycle in minutes

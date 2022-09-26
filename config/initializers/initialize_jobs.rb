@@ -7,8 +7,10 @@ require_relative '../../app/jobs/panorama_sampler_job'
 
 # Wait async to proceed rails startup before first job execution
 
-InitializationJob.set(wait: 1.seconds).perform_later
-
-PanoramaSamplerJob.set(wait: 5.seconds).perform_later if !EngineConfig.config.panorama_sampler_master_password.nil?
-
-ConnectionTerminateJob.set(wait: 10.seconds).perform_later                      # Check connections for inactivity
+unless Rails.env.test?                                                          # Don't start the background jobs in test environment
+  InitializationJob.set(wait: 1.seconds).perform_later
+  PanoramaSamplerJob.set(wait: 5.seconds).perform_later if !EngineConfig.config.panorama_sampler_master_password.nil?
+  ConnectionTerminateJob.set(wait: 10.seconds).perform_later                      # Check connections for inactivity
+else
+  Rails.logger.debug('initialize_jobs.rb') { "Initializing jobs suppressed for test runs"}
+end
