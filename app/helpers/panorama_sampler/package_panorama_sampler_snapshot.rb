@@ -222,7 +222,7 @@ END Panorama_Sampler_Snapshot;
               WHEN Group_ID = 14	THEN 'WLM PC Metrics'
              ELSE '[Unknown group_id]' END,
              METRIC_ID, METRIC_NAME, METRIC_UNIT, Con_DBID, Con_ID
-      FROM   (SELECT DISTINCT Group_ID, Metric_ID, Metric_Name, Metric_Unit, #{PanoramaConnection.db_version >= '12.1' ? "panorama_owner.Con_DBID_From_Con_ID.Get(Con_ID) Con_DBID, Con_ID" : "pDBID Con_DBID, 0 Con_ID"}
+      FROM   (SELECT DISTINCT Group_ID, Metric_ID, Metric_Name, Metric_Unit, #{PanoramaConnection.db_version >= '12.1' ? "panorama_owner.Con_DBID_From_Con_ID.Get(Con_ID) Con_DBID, Con_ID" : "p_DBID Con_DBID, 0 Con_ID"}
               FROM   v$SysMetric_History
              )
       WHERE  (p_DBID, Group_ID, Metric_ID, Con_DBID) NOT IN (SELECT DBID, Group_ID, Metric_ID, Con_DBID FROM panorama_owner.Panorama_Metric_Name)
