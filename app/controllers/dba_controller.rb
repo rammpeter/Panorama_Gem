@@ -2116,7 +2116,7 @@ Oldest remaining ASH record in SGA is from #{localeDateTime(min_ash_time)} but c
 
     @top_sessions = sql_select_all ["\
       SELECT h.*,
-             COALESCE(s.UserName, (SELECT u.UserName FROM All_Users u WHERE u.User_ID = h.User_ID)) UserName,
+             COALESCE(s.UserName, (SELECT u.UserName FROM #{get_db_version >= '12.1' ? "CDB_Users /* see users of all PDBs if possible */" : "All_Users"} u WHERE u.User_ID = h.User_ID #{" AND u.Con_ID = h.Con_ID" if get_db_version >= '12.1'})) UserName,
              s.OSUser
       FROM   (
               SELECT /*+ NO_MERGE */ *
@@ -2128,6 +2128,7 @@ Oldest remaining ASH record in SGA is from #{localeDateTime(min_ash_time)} but c
                              MAX(Action)            KEEP (DENSE_RANK LAST ORDER BY Max_Wait_Action) Max_Action,
                              COUNT(*) Wait_Time_secs, MIN(Sample_Time) First_Occurrence, MAX(Sample_Time) Last_Occurrence,
                              COUNT(DISTINCT PQ_Session) PQ_Sessions
+                             #{", Con_ID" if get_db_version >= '12.1' }
                       FROM   (SELECT h.*,
                                      COUNT(*) OVER (PARTITION BY QInst_ID, QSession_ID, QSession_Serial_No, SQL_ID, SQL_Child_Number) Max_Wait_SQL,
                                      COUNT(*) OVER (PARTITION BY QInst_ID, QSession_ID, QSession_Serial_No, Module) Max_Wait_Module,
@@ -2141,7 +2142,7 @@ Oldest remaining ASH record in SGA is from #{localeDateTime(min_ash_time)} but c
                                       #{where_string}
                                      ) h
                              )
-                      GROUP BY QInst_ID, QSession_ID, QSession_Serial_No
+                      GROUP BY QInst_ID, QSession_ID, QSession_Serial_No#{", Con_ID" if get_db_version >= '12.1' }
                       ORDER BY Wait_Time_secs DESC
                      ) h
               WHERE  RowNum <= 10
@@ -2159,7 +2160,7 @@ Oldest remaining ASH record in SGA is from #{localeDateTime(min_ash_time)} but c
 
     @top_sqls = sql_select_all ["\
       SELECT h.*, SUBSTR(sql.SQL_Text, 1, 80) SQL_SubText, s.OSUSer,
-             CASE WHEN User_IDs = 1 THEN (SELECT u.UserName FROM All_Users u WHERE u.User_ID = h.Min_User_ID) END UserName
+             CASE WHEN User_IDs = 1 THEN (SELECT u.UserName FROM #{get_db_version >= '12.1' ? "CDB_Users /* see users of all PDBs if possible */" : "All_Users"} u WHERE u.User_ID = h.Min_User_ID #{" AND u.Con_ID = h.Con_ID" if get_db_version >= '12.1'}) END UserName
       FROM   (
               SELECT /*+ NO_MERGE */ *
               FROM   (
@@ -2174,6 +2175,7 @@ Oldest remaining ASH record in SGA is from #{localeDateTime(min_ash_time)} but c
                              COUNT(DISTINCT User_ID)      User_IDs,
                              MIN(User_ID)                 Min_User_ID,
                              MIN(Sample_Time) First_OCcurrence, MAX(Sample_Time) Last_Occurrence
+                             #{", Con_ID" if get_db_version >= '12.1' }
                       FROM   (SELECT h.*,
                                      NVL(QC_Instance_ID, Inst_ID)                   QInst_ID,
                                      NVL(QC_Session_ID, Session_ID)                 QSession_ID,
@@ -2182,7 +2184,7 @@ Oldest remaining ASH record in SGA is from #{localeDateTime(min_ash_time)} but c
                               FROM   gv$Active_Session_History h
                               #{where_string} AND SQL_ID IS NOT NULL
                              ) h
-                      GROUP BY Inst_ID, SQL_ID
+                      GROUP BY Inst_ID, SQL_ID#{", Con_ID" if get_db_version >= '12.1' }
                       ORDER BY Wait_Time_secs DESC
                      ) h
               WHERE  RowNum <= 10
