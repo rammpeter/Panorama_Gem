@@ -18,14 +18,15 @@ WITH Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Index_Typ
                  FROM DBA_Indexes
                  WHERE Owner NOT IN (#{system_schema_subselect}) AND UNiqueness != 'UNIQUE'
                 ),
-     Ind_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Column_Name, Column_Position FROM DBA_Ind_Columns),
+     Ind_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Column_Name, Column_Position FROM DBA_Ind_Columns WHERE Index_Owner NOT IN (#{system_schema_subselect})),
      Ind_Columns_Group AS  (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name,
                                    LISTAGG(Column_name, ', ') WITHIN GROUP (ORDER BY Column_Position) Columns
                             FROM   Ind_Columns
+                            WHERE  Index_Owner NOT IN (#{system_schema_subselect})
                             GROUP BY Index_Owner, Index_Name
                            ),
-     Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Constraint_Name, R_Owner, R_Constraint_Name, Constraint_Type FROM DBA_Constraints ),
-     Cons_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Column_Name, Position FROM DBA_Cons_Columns)
+     Constraints AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Constraint_Name, R_Owner, R_Constraint_Name, Constraint_Type FROM DBA_Constraints WHERE Owner NOT IN (#{system_schema_subselect})),
+     Cons_Columns AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Column_Name, Position FROM DBA_Cons_Columns WHERE Owner NOT IN (#{system_schema_subselect}))
 SELECT /* DB-Tools Ramm nicht genutzte Indizes */ * FROM (
         SELECT i.Owner Index_Owner, i.Index_Name, i.Index_Type, i.Table_Owner, i.Table_Name, sz.MBytes,
                i.Num_Rows, i.Tablespace_Name, i.UniqueNess, i.Distinct_Keys,
@@ -114,6 +115,7 @@ If the index with the smaller column set ensures uniqueness, than an unique cons
             :sql=> "
 WITH Ind_Cols AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Listagg(Column_Name, ',') WITHIN GROUP (ORDER BY Column_Position) Columns
                   FROM   DBA_Ind_Columns
+                  WHERE  Index_Owner NOT IN (#{system_schema_subselect})
                   GROUP BY Index_Owner, Index_Name
                  ),
      Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Num_Rows, Uniqueness
@@ -125,13 +127,14 @@ WITH Ind_Cols AS (SELECT /*+ NO_MERGE MATERIALIZE */ Index_Owner, Index_Name, Li
                    JOIN   Ind_Cols ic  ON ic.Index_Owner = i.Owner AND ic.Index_Name = i.Index_Name
                   ),
      Segments AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Segment_Name, SUM(Bytes)/(1024*1024) MBytes
-                 FROM DBA_Segments
-                 GROUP BY Owner, Segment_Name
-                ),
-     Constraints AS (SELECT  /*+ NO_MERGE MATERIALIZE */ Table_Name, Index_Name, Constraint_Name FROM DBA_Constraints WHERE Index_Name IS NOT NULL)
+                  FROM   DBA_Segments
+                  WHERE  Owner NOT IN (#{system_schema_subselect})
+                  GROUP BY Owner, Segment_Name
+                 ),
+     Constraints AS (SELECT  /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Index_Name, Constraint_Name FROM DBA_Constraints WHERE Index_Name IS NOT NULL AND Owner NOT IN (#{system_schema_subselect}))
 SELECT x.*, ROUND(s.MBytes, 2) Size_MB_Index1, c.Constraint_Name \"Constr. Enforcement by idx1\"
 FROM   (
-        SELECT i1.owner, i1.Table_Name,
+        SELECT i1.owner, i1.Table_Owner, i1.Table_Name,
                i1.Index_Name Index_1, i1.Columns Columns_1, i1.Num_Rows Num_Rows_1, i1.Uniqueness Uniqueness_1,
                i2.Index_Name Index_2, i2.Columns Columns_2, i2.Num_Rows Num_Rows_2, i2.Uniqueness Uniqueness_2
         FROM   IndexFull i1
@@ -140,7 +143,7 @@ FROM   (
         AND    i2.Columns LIKE i1.Columns || ',%' /* Columns of i1 are already indexed by i2 */
         AND    i1.Num_Rows > ?
        ) x
-LEFT OUTER JOIN Constraints c ON c.Table_Name = x.Table_Name AND c.Index_Name = x.Index_1
+LEFT OUTER JOIN Constraints c ON c.Owner = x.Table_Owner AND c.Table_Name = x.Table_Name AND c.Index_Name = x.Index_1
 LEFT OUTER JOIN segments s    ON s.Owner = x.Owner AND s.Segment_Name = x.Index_1
 ORDER BY s.MBytes DESC NULLS LAST
             ",
@@ -165,7 +168,7 @@ Shows the existence of further structure-identical tables with which partition e
 If none of the four reasons really requires the existence, the index can be removed without risk.
 "),
             :sql=> "
-                    WITH Constraints AS        (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Constraint_Type, Table_Name, R_Owner, R_Constraint_Name FROM DBA_Constraints),
+                    WITH Constraints AS        (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Constraint_Name, Constraint_Type, Table_Name, R_Owner, R_Constraint_Name FROM DBA_Constraints WHERE Owner NOT IN (#{system_schema_subselect})),
                          Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Num_Rows, Last_Analyzed, Uniqueness, Index_Type, Tablespace_Name, Prefix_Length, Compression, Distinct_Keys, Partitioned
                                      FROM   DBA_Indexes
                                      WHERE  Owner NOT IN (#{system_schema_subselect})
@@ -202,13 +205,13 @@ If none of the four reasons really requires the existence, the index can be remo
                          PE_Part_Tables AS (SELECT /*+ NO_MERGE MATERIALIZE */ t.Owner, t.Table_Name, t.Partitioned
                                             FROM   Tables t
                                             WHERE  t.Partitioned = 'YES'
-                                            AND    t.Owner NOT IN (#{system_schema_subselect})
                                             AND NOT EXISTS (SELECT 1 FROM Indexes i WHERE i.Table_Owner = t.Owner AND i.Table_Name = t.Table_Name AND i.Partitioned = 'NO')
                                            ),
-                         PE_Indexes as (SELECT /*+ NO_MERGE MATERIALIZE */ ic.Table_Owner, ic.Table_Name, COUNT(DISTINCT ic.Index_Name) Indexes, COUNT(*) Ind_Columns,
-                                               SUM(ic.Column_Position * ic.Column_Length ) Structure_Hash
+                         PE_Indexes as (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, COUNT(DISTINCT Index_Name) Indexes, COUNT(*) Ind_Columns,
+                                               SUM(Column_Position * Column_Length ) Structure_Hash
                                         FROM   Ind_Columns ic
-                                        GROUP BY ic.Table_Owner, ic.Table_Name
+                                        WHERE  Table_Owner NOT IN (#{system_schema_subselect})
+                                        GROUP BY Table_Owner, Table_Name
                                        ),
                          PE_Result_Tables AS (SELECT /*+ NO_MERGE MATERIALIZE */ t.Owner, t.Table_Name,
                                                      t.Structure_Hash Table_Structure_Hash,
