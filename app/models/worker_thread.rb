@@ -189,15 +189,15 @@ class WorkerThread
   def create_snapshot_internal(snapshot_time, domain)
     snapshot_semaphore_key = "#{@sampler_config.get_id}_#{domain}"
     if @@active_snapshots[snapshot_semaphore_key]
-      Rails.logger.error("Previous #{domain} snapshot not yet finshed for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}), new #{domain} snapshot not started! Restart Panorama server if this problem persists.")
-      @sampler_config.set_error_message("Previous #{domain} snapshot not yet finshed, new #{domain} snapshot not started! Restart Panorama server if this problem persists.")
+      Rails.logger.error("Previous #{domain} snapshot not yet finshed for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) since #{@@active_snapshots[snapshot_semaphore_key]}, new #{domain} snapshot not started! Restart Panorama server if this problem persists.")
+      @sampler_config.set_error_message("Previous #{domain} snapshot not yet finshed since #{@@active_snapshots[snapshot_semaphore_key]}, new #{domain} snapshot not started! Restart Panorama server if this problem persists.")
       return
     end
 
     begin                                                                       # Start observation for already closed semaphore here, previous return should not reset semaphore
       Rails.logger.info "#{Time.now}: Create new #{domain} snapshot for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}' SID=#{PanoramaConnection.sid}"
 
-      @@active_snapshots[snapshot_semaphore_key] = true                         # Create semaphore for thread, begin processing
+      @@active_snapshots[snapshot_semaphore_key] = Time.now                     # Create semaphore for thread, begin processing
 
       @sampler_config.last_successful_connect(domain, PanoramaConnection.instance_number) # Set after first successful SQL
 
