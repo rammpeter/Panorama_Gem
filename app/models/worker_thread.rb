@@ -191,7 +191,7 @@ class WorkerThread
     if @@active_snapshots[snapshot_semaphore_key]                               # Predecessor not correctly finished
       prev_db_session = check_for_really_active_predecessor_in_db
       if prev_db_session
-        msg = "Corresponding DB session '#{prev_db_session}' is still active for previous #{domain} snapshot for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) since #{@@active_snapshots[snapshot_semaphore_key]}, new #{domain} snapshot not started! Restart Panorama server if this problem persists."
+        msg = "A corresponding DB session '#{prev_db_session}' is still active for previous #{domain} snapshot for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) since #{@@active_snapshots[snapshot_semaphore_key]} (due to semaphore), new #{domain} snapshot not started! Restarting Panorama server may possibly fix this problem."
         Rails.logger.error('WorkerThread.create_snapshot_internal') { msg }
         @sampler_config.set_error_message(msg)
         return
