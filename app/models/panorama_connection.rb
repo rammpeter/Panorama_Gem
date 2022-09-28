@@ -401,7 +401,7 @@ class PanoramaConnection
   end
 
 
-  def self.all_awr_dbids;                   check_for_open_connection;        Thread.current[:panorama_connection_connection_object].all_awr_dbids;               end
+  def self.all_awr_dbids;                   check_for_open_connection;        Thread.current[:panorama_connection_connection_object].all_awr_dbids;                     end
   def self.autonomous_database?;            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].autonomous_database;               end
   def self.block_common_header_size;        check_for_open_connection;        Thread.current[:panorama_connection_connection_object].block_common_header_size;          end
   def self.con_id;                          check_for_open_connection;        Thread.current[:panorama_connection_connection_object].con_id;                            end  # Container-ID for PDBs or 0
@@ -414,6 +414,7 @@ class PanoramaConnection
   def self.edition;                         check_for_open_connection;        Thread.current[:panorama_connection_connection_object].edition;                           end
   def self.instance_number;                 check_for_open_connection;        Thread.current[:panorama_connection_connection_object].instance_number;                   end
   def self.is_cdb?;                         check_for_open_connection;        Thread.current[:panorama_connection_connection_object].cdb == 'YES';                      end
+  def self.last_used_action_name;           check_for_open_connection;        Thread.current[:panorama_connection_connection_object].last_used_action_name;             end
   def self.login_container_dbid;            check_for_open_connection(false); Thread.current[:panorama_connection_connection_object].login_container_dbid;              end
   def self.pdbs;                            check_for_open_connection;        Thread.current[:panorama_connection_connection_object].pdbs;                              end
   def self.pid;                             check_for_open_connection;        Thread.current[:panorama_connection_connection_object].pid;                               end

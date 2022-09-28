@@ -188,10 +188,19 @@ class WorkerThread
   @@active_snapshots = {}
   def create_snapshot_internal(snapshot_time, domain)
     snapshot_semaphore_key = "#{@sampler_config.get_id}_#{domain}"
-    if @@active_snapshots[snapshot_semaphore_key]
-      Rails.logger.error("Previous #{domain} snapshot not yet finshed for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) since #{@@active_snapshots[snapshot_semaphore_key]}, new #{domain} snapshot not started! Restart Panorama server if this problem persists.")
-      @sampler_config.set_error_message("Previous #{domain} snapshot not yet finshed since #{@@active_snapshots[snapshot_semaphore_key]}, new #{domain} snapshot not started! Restart Panorama server if this problem persists.")
-      return
+    if @@active_snapshots[snapshot_semaphore_key]                               # Predecessor not correctly finished
+      prev_db_session = check_for_really_active_predecessor_in_db
+      if prev_db_session
+        msg = "Corresponding DB session '#{prev_db_session}' is still active for previous #{domain} snapshot for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) since #{@@active_snapshots[snapshot_semaphore_key]}, new #{domain} snapshot not started! Restart Panorama server if this problem persists."
+        Rails.logger.error('WorkerThread.create_snapshot_internal') { msg }
+        @sampler_config.set_error_message(msg)
+        return
+      else
+        msg = "Previous #{domain} snapshot not yet finshed for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) since #{@@active_snapshots[snapshot_semaphore_key]} due to semaphore, but corresponding DB session is not active no more"
+        Rails.logger.error('WorkerThread.create_snapshot_internal') { msg }
+        @sampler_config.set_error_message(msg)
+        @@active_snapshots.delete(snapshot_semaphore_key)                       # Remove semaphore because
+      end
     end
 
     begin                                                                       # Start observation for already closed semaphore here, previous return should not reset semaphore
@@ -228,7 +237,7 @@ class WorkerThread
         Rails.logger.error "WorkerThread.create_snapshot_internal: Exception in exception handler for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}\n#{x.message}"
         log_exception_backtrace(x, 40)
         @sampler_config.set_error_message("Error #{e.message} during WorkerThread.create_snapshot_internal for domain=#{domain}")
-        PanoramaConnection.destroy_connection                                     # Ensure this connection with errors will not be reused
+        PanoramaConnection.destroy_connection                                   # Ensure this connection with errors will not be reused
         raise x
       end
     rescue Object => e
@@ -267,4 +276,15 @@ class WorkerThread
     PanoramaConnection.release_connection                                       # Free DB connection in Pool
   end
 
+  # is there a DB session active for predecessor?
+  # @return [String] nil if no active session or SID/SN of session
+  def check_for_really_active_predecessor_in_db
+    PanoramaConnection.sql_select_one ["SELECT SID||','||Serial#
+                                        FROM   v$Session
+                                        WHERE  Status = 'ACTIVE'
+                                        AND    Module = 'Panorama'
+                                        AND    Action = ?
+                                        AND    SID != SYS_CONTEXT('USERENV', 'SID')
+                                        ", PanoramaConnection.last_used_action_name]
+  end
 end
