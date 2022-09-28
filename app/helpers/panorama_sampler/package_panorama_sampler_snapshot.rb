@@ -191,11 +191,12 @@ END Panorama_Sampler_Snapshot;
   BEGIN
     INSERT INTO panorama_owner.Panorama_Memory_Resize_Ops (SNAP_ID, DBID, INSTANCE_NUMBER, COMPONENT, OPER_TYPE, START_TIME, END_TIME, TARGET_SIZE,
                                             OPER_MODE, PARAMETER, INITIAL_SIZE, FINAL_SIZE, STATUS, CON_DBID, CON_ID
-    ) SELECT p_Snap_ID, p_DBID, p_Instance, COMPONENT, OPER_TYPE, START_TIME, END_TIME, TARGET_SIZE,
-             OPER_MODE, PARAMETER, INITIAL_SIZE, FINAL_SIZE, STATUS,
+    ) SELECT p_Snap_ID, p_DBID, p_Instance, COMPONENT, OPER_TYPE, START_TIME, MIN(END_TIME), TARGET_SIZE,
+             MIN(OPER_MODE), MIN(PARAMETER), MIN(INITIAL_SIZE), MIN(FINAL_SIZE), MIN(STATUS),
              #{PanoramaConnection.db_version >= '12.1' ? "panorama_owner.Con_DBID_From_Con_ID.Get(Con_ID), Con_ID" : "p_DBID, 0"}
       FROM   v$Memory_Resize_Ops
       WHERE  End_Time >= p_Begin_Interval_Time  /* Resize ended in considered snapshot period */
+      GROUP BY COMPONENT, OPER_TYPE, START_TIME, TARGET_SIZE, Con_ID /* eliminate possible duplicates */
     ;
     COMMIT;
   END Snap_Memory_Resize_Ops;
@@ -806,43 +807,48 @@ END Panorama_Sampler_Snapshot;
                         p_current_max_ash_sample_id   IN NUMBER,
                         p_ash_1sec_sample_keep_hours  IN NUMBER
                        ) IS
+    ErrMsg  VARCHAR2(32000) := NULL;
   BEGIN
-    Move_ASH_To_Snapshot_Table(p_Snap_ID,   p_DBID,     p_last_snap_max_ash_sample_id, p_current_max_ash_sample_id, p_ash_1sec_sample_keep_hours);
-    Snap_Datafile             (p_DBID);
-    Snap_DB_cache_Advice      (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_Enqueue_Stat         (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_FileStatXS           (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_IOStat_Detail        (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_IOStat_Filetype      (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_Latch                (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_Memory_Resize_Ops    (p_Snap_ID,   p_DBID,     p_Instance,   p_Begin_Interval_Time);
-    Snap_Metric_Name          (p_DBID);
-    Snap_Parameter            (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_OSStat               (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_PGAStat              (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_Process_Mem_Summary  (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_Resource_Limit       (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_Seg_Stat             (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_ID);
-    Snap_Service_Name         (p_DBID);
-    Snap_SGAStat              (p_Snap_ID,   p_DBID,     p_Instance);
+    CATCH_START Move_ASH_To_Snapshot_Table(p_Snap_ID,   p_DBID,     p_last_snap_max_ash_sample_id, p_current_max_ash_sample_id, p_ash_1sec_sample_keep_hours); CATCH_END
+    CATCH_START Snap_Datafile             (p_DBID); CATCH_END
+    CATCH_START Snap_DB_cache_Advice      (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_Enqueue_Stat         (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_FileStatXS           (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_IOStat_Detail        (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_IOStat_Filetype      (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_Latch                (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_Log                  (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_Memory_Resize_Ops    (p_Snap_ID,   p_DBID,     p_Instance,   p_Begin_Interval_Time); CATCH_END
+    CATCH_START Snap_Metric_Name          (p_DBID); CATCH_END
+    CATCH_START Snap_Parameter            (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_OSStat               (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_PGAStat              (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_Process_Mem_Summary  (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_Resource_Limit       (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_Seg_Stat             (p_Snap_ID,   p_DBID,     p_Instance,   p_Con_ID); CATCH_END
+    CATCH_START Snap_Service_Name         (p_DBID); CATCH_END
+    CATCH_START Snap_SGAStat              (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
     -- call Snap_SQLStat before any dependent statistic, because dependents record only for SQLs already in SQLStat
-    Snap_SQLStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Begin_Interval_Time,     p_SQL_Min_No_of_Execs,      p_SQL_Min_Runtime_MilliSecs);
-    Snap_SQLBind              (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_SQL_Plan             (p_Snap_ID,   p_DBID);
-    Snap_SQLText              (p_Snap_ID,   p_DBID);
-    Snap_StatName             (p_DBID);
-    Snap_Sysmetric_History    (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_Sysmetric_Summary    (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_System_Event         (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_SysStat              (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_Tablespace           (p_DBID);
-    Snap_Tempfile             (p_DBID);
-    Snap_TempStatXS           (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_TopLevelCallName     (p_DBID);
-    Snap_UndoStat             (p_Snap_ID,   p_DBID,     p_Instance);
-    Snap_WR_Control           (p_DBID,      p_Snapshot_Cycle, p_Snapshot_Retention);
-    Snap_Database_Instance    (p_DBID,      p_Instance);
+    CATCH_START Snap_SQLStat              (p_Snap_ID,   p_DBID,     p_Instance,   p_Begin_Interval_Time,     p_SQL_Min_No_of_Execs,      p_SQL_Min_Runtime_MilliSecs); CATCH_END
+    CATCH_START Snap_SQLBind              (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_SQL_Plan             (p_Snap_ID,   p_DBID); CATCH_END
+    CATCH_START Snap_SQLText              (p_Snap_ID,   p_DBID); CATCH_END
+    CATCH_START Snap_StatName             (p_DBID); CATCH_END
+    CATCH_START Snap_Sysmetric_History    (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_Sysmetric_Summary    (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_System_Event         (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_SysStat              (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_Tablespace           (p_DBID); CATCH_END
+    CATCH_START Snap_Tempfile             (p_DBID); CATCH_END
+    CATCH_START Snap_TempStatXS           (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_TopLevelCallName     (p_DBID); CATCH_END
+    CATCH_START Snap_UndoStat             (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
+    CATCH_START Snap_WR_Control           (p_DBID,      p_Snapshot_Cycle, p_Snapshot_Retention); CATCH_END
+    CATCH_START Snap_Database_Instance    (p_DBID,      p_Instance); CATCH_END
+
+    IF ErrMsg IS NOT NULL THEN
+      RAISE_APPLICATION_ERROR(-20999, SUBSTR(ErrMsg, 1, 2048));
+    END IF;
   END Do_Snapshot;
     "
   end

@@ -1695,6 +1695,9 @@ ORDER BY Column_ID
     translated_source_buffer.gsub!(/COMPILE_TIME_BY_PANORAMA_ENSURES_CHANGE_OF_LAST_DDL_TIME/, Time.now.to_s) # change source to provocate change of LAST_DDL_TIME even content is still the same
     translated_source_buffer.gsub!(/PANORAMA_VERSION/, PanoramaGem::VERSION) # stamp version to file
     translated_source_buffer.gsub!(/DBMS_LOCK.SLEEP/i, 'DBMS_SESSION.SLEEP') if PanoramaConnection.db_version >= '18.0'
+    # Expand macro to exception handler
+    translated_source_buffer.gsub!(/CATCH_START/, "BEGIN\n     ")
+    translated_source_buffer.gsub!(/CATCH_END/, "\n    EXCEPTION\n      WHEN OTHERS THEN\n        ErrMsg := SQLErrM||' '||DBMS_UTILITY.FORMAT_ERROR_STACK();\n    END;\n")
     translated_source_buffer
   end
 
@@ -1718,7 +1721,11 @@ ORDER BY Column_ID
                                               ", (type == :spec ? 'PACKAGE' : 'PACKAGE BODY'), @sampler_config.get_owner.upcase, package_name.upcase]
   end
 
-  # type :spec or :body
+  # Ensure existence of most recent version of package
+  # @param {String} file_for_time_check File name of helper file
+  # @param {String} source_buffer Package code
+  # @param {String} package_name Name of package
+  # @param {Symbol} type :spec or :body
   def create_or_check_package(file_for_time_check, source_buffer, package_name, type)
     package_obj = get_package_obj(package_name, type)
     package_version = PanoramaConnection.sql_select_one ["SELECT TRIM(SUBSTR(Text, INSTR(Text, 'Panorama-Version: ')+18))
