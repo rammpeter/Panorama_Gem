@@ -132,7 +132,7 @@ GEM
     zeitwerk (2.6.0)
 
 PLATFORMS
-  universal-java-18
+  universal-java-19
 
 DEPENDENCIES
   panorama_gem!
