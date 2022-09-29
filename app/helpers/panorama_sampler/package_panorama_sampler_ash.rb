@@ -401,7 +401,7 @@ END Panorama_Sampler_ASH;
       LOOP
         -- Wait until current second ends, ensure also that first sample is at seconds bound
         -- DBMS_LOCK will be replaced with DBMS_SESSION before execution if DB version >= 18.0
-        -- Add 2/100 seconds to sleep time to be sure that next timestamp is surely at the next second (possible round problem?)
+        -- Add 2/100 seconds to sleep time to be sure that next timestamp is surely at the next second (possible round problem)
         DBMS_LOCK.SLEEP(1-MOD(EXTRACT(SECOND FROM SYSTIMESTAMP), 1)+0.02);
 
         -- cast SYSTIMESTAMP to timestamp without timezone to ensure timezone setting does not influence the difference SYSTIMESTAMP-Sample_Time
