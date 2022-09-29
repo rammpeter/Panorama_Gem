@@ -1675,7 +1675,7 @@ ORDER BY Column_ID
           PanoramaConnection.sql_execute(sql)
           log "Table #{table[:table_name]} dropped"
         rescue Exception => e
-          Rails.logger.error "Error #{e.message} dropping table #{@sampler_config.get_owner}.#{table[:table_name]}"
+          Rails.logger.error('PanoramaSamplerStructureCheck.remove_tables_internal') { "Error #{e.message} dropping table #{@sampler_config.get_owner}.#{table[:table_name]}" }
           log_exception_backtrace(e, 40)
           raise e
         end
@@ -1685,7 +1685,7 @@ ORDER BY Column_ID
     begin
       PanoramaConnection.sql_execute "PURGE RECYCLEBIN"                           # Free ressources after drop table, avoid ORA-10632 especially for 19.10-SE2
     rescue Exception => e
-      Rails.logger.error "#{e.class}:#{e.message} at PURGE RECYCLEBIN"
+      Rails.logger.error('PanoramaSamplerStructureCheck.remove_tables_internal') { "#{e.class}:#{e.message} at PURGE RECYCLEBIN"}
     end
   end
 
@@ -1742,17 +1742,17 @@ ORDER BY Column_ID
         package_obj.status != 'VALID' ||
         package_version != PanoramaGem::VERSION
       # Compile package
-      Rails.logger.info "Package #{'body ' if type==:body}#{@sampler_config.get_owner.upcase}.#{package_name} needs #{package_obj.nil? ? 'creation' : 'recompile'}"
+      Rails.logger.info('PanoramaSamplerStructureCheck.create_or_check_package') { "Package #{'body ' if type==:body}#{@sampler_config.get_owner.upcase}.#{package_name} needs #{package_obj.nil? ? 'creation' : 'recompile'}" }
 
       translated_source_buffer = PanoramaSamplerStructureCheck.translate_plsql_aliases(@sampler_config, source_buffer)
 
-      Rails.logger.info translated_source_buffer
+      Rails.logger.info('PanoramaSamplerStructureCheck.create_or_check_package') { translated_source_buffer }
       PanoramaConnection.sql_execute translated_source_buffer
       package_obj = get_package_obj(package_name, type)                         # repeat check on ALL_Objects
       if package_obj.nil? || package_obj.status != 'VALID'
         errors = PanoramaConnection.sql_select_all ["SELECT * FROM User_Errors WHERE Name = ? AND Type = ? ORDER BY Sequence", package_name.upcase, (type==:spec ? 'PACKAGE' : 'PACKAGE BODY')]
         errors.each do |e|
-          Rails.logger.error "Line=#{e.line} position=#{e.position}: #{e.text}"
+          Rails.logger.error('PanoramaSamplerStructureCheck.create_or_check_package') { "Line=#{e.line} position=#{e.position}: #{e.text}" }
         end
         raise "Error compiling package #{'body ' if type==:body}#{@sampler_config.get_owner.upcase}.#{package_name}. See previous lines"
       end

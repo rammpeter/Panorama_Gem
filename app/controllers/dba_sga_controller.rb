@@ -1727,7 +1727,7 @@ class DbaSgaController < ApplicationController
           where_values << @translated_sql_id
         else
           where_string << "WHERE 1=2"    # without hit
-          Rails.logger.error "No SQL text found in gv$SQLArea or DBA_Hist_SQLText for SQL-ID='#{@translated_sql_id}'"
+          Rails.logger.error('DbaSgaController.show_sql_translations') { "No SQL text found in gv$SQLArea or DBA_Hist_SQLText for SQL-ID='#{@translated_sql_id}'" }
         end
       end
     end

@@ -35,16 +35,16 @@ class ApplicationController < ActionController::Base
     @exception = exception                                                      # Sichtbarkeit im template
     @request   = request
 
-    Rails.logger.error @exception.class.name
+    Rails.logger.error('ApplicationController.global_exception_handler') { @exception.class.name }
     if @request.parameters['controller']
-      Rails.logger.error "#{@request.parameters['controller'].camelize}Controller#{"##{@request.parameters['action']}" if @request.parameters['action']}"
+      Rails.logger.error('ApplicationController.global_exception_handler') { "#{@request.parameters['controller'].camelize}Controller#{"##{@request.parameters['action']}" if @request.parameters['action']}" }
     end
 
-    Rails.logger.error @exception.message
+    Rails.logger.error('ApplicationController.global_exception_handler') { @exception.message }
     log_exception_backtrace(@exception, Rails.env.test? ? nil : 40)
 
     if performed?                                                               # Render already called in action?, Suppress DoubleRenderError
-      Rails.logger.error "Exception #{@exception.message} raised!\nAction has already rendered, so error cannot be shown as HTML-result with status 500"
+      Rails.logger.error('ApplicationController.global_exception_handler') { "Exception #{@exception.message} raised!\nAction has already rendered, so error cannot be shown as HTML-result with status 500" }
     else
       if @exception.instance_of? PopupMessageException
         render partial: 'application/popup_exception_message', status: 500 # Show message only without status etc.
@@ -90,12 +90,12 @@ class ApplicationController < ActionController::Base
     begin
       current_database = get_current_database
       unless current_database
-        Rails.logger.error "ApplicationController.begin_request: current_database is nil for controller = '#{controller_name}', action = '#{action_name}'"
+        Rails.logger.error('ApplicationController.begin_request') { "current_database is nil for controller = '#{controller_name}', action = '#{action_name}'" }
         raise PopupMessageException.new('No current DB connect info set! Please reconnect to DB!')
       end
       set_connection_info_for_request(current_database)
     rescue StandardError => e                                                   # Problem bei Zugriff auf verschlüsselte Cookies
-      Rails.logger.error "Error '#{e.message}' occured in ApplicationController.begin_request"
+      Rails.logger.error('ApplicationController.begin_request') { "Error '#{e.message}' occured" }
       log_exception_backtrace(e)
       raise "Error '#{e.message}' occured. Please close browser session and start again!"
     end

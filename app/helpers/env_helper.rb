@@ -20,34 +20,34 @@ module EnvHelper
 
     if ENV['SECRET_KEY_BASE']                                                   # Env rules over file
       retval = ENV['SECRET_KEY_BASE']
-      Rails.logger.info "Secret key base read from environment variable SECRET_KEY_BASE (#{retval.length} chars)"
-      Rails.logger.warn "Secret key base from SECRET_KEY_BASE environment variable is too short! Should have at least 128 chars!" if retval.length < 128
+      Rails.logger.info('EnvHelper.secret_key_base') { "Secret key base read from environment variable SECRET_KEY_BASE (#{retval.length} chars)"}
+      Rails.logger.warn('EnvHelper.secret_key_base') { "Secret key base from SECRET_KEY_BASE environment variable is too short! Should have at least 128 chars!" } if retval.length < 128
     end
 
     if retval.nil? && ENV['SECRET_KEY_BASE_FILE']                                              # User-provided secrets file
       if File.exists?(ENV['SECRET_KEY_BASE_FILE'])
         retval = File.read(ENV['SECRET_KEY_BASE_FILE'])
-        Rails.logger.info "Secret key base read from file '#{ENV['SECRET_KEY_BASE_FILE']}' pointed to by SECRET_KEY_BASE_FILE environment variable (#{retval.length} chars)"
-        Rails.logger.error "Secret key base file pointed to by SECRET_KEY_BASE_FILE environment variable is empty!" if retval.nil? || retval == ''
-        Rails.logger.warn "Secret key base from file pointed to by SECRET_KEY_BASE_FILE environment variable is too short! Should have at least 128 chars!" if retval.length < 128
+        Rails.logger.info('EnvHelper.secret_key_base') { "Secret key base read from file '#{ENV['SECRET_KEY_BASE_FILE']}' pointed to by SECRET_KEY_BASE_FILE environment variable (#{retval.length} chars)" }
+        Rails.logger.error('EnvHelper.secret_key_base') { "Secret key base file pointed to by SECRET_KEY_BASE_FILE environment variable is empty!" } if retval.nil? || retval == ''
+        Rails.logger.warn('EnvHelper.secret_key_base') { "Secret key base from file pointed to by SECRET_KEY_BASE_FILE environment variable is too short! Should have at least 128 chars!" } if retval.length < 128
       else
-        Rails.logger.error "Secret key base file pointed to by SECRET_KEY_BASE_FILE environment variable does not exist (#{ENV['SECRET_KEY_BASE_FILE']})!"
+        Rails.logger.error('EnvHelper.secret_key_base') { "Secret key base file pointed to by SECRET_KEY_BASE_FILE environment variable does not exist (#{ENV['SECRET_KEY_BASE_FILE']})!" }
       end
     end
 
     if retval.nil? && File.exists?(default_secret_key_base_file)                # look for generated file
       retval = File.read(default_secret_key_base_file)
-      Rails.logger.info "Secret key base read from default file location '#{default_secret_key_base_file}' (#{retval.length} chars)"
-      Rails.logger.warn "Default location of secret key base file '#{default_secret_key_base_file}' points to a temporary folder because you did not provide a value for PANORAMA_VAR_HOME" unless EngineConfig.config.panorama_var_home_user_defined
-      Rails.logger.warn "Your stored connections and sampler configuration may be lost at next Panorama restart !" unless EngineConfig.config.panorama_var_home_user_defined
-      Rails.logger.error "Secret key base file at default location '#{default_secret_key_base_file}' is empty!" if retval.nil? || retval == ''
-      Rails.logger.warn "Secret key base from file at default location '#{default_secret_key_base_file}' is too short! Should have at least 128 chars!" if retval.length < 128
+      Rails.logger.info('EnvHelper.secret_key_base') { "Secret key base read from default file location '#{default_secret_key_base_file}' (#{retval.length} chars)" }
+      Rails.logger.warn('EnvHelper.secret_key_base') { "Default location of secret key base file '#{default_secret_key_base_file}' points to a temporary folder because you did not provide a value for PANORAMA_VAR_HOME" } unless EngineConfig.config.panorama_var_home_user_defined
+      Rails.logger.warn('EnvHelper.secret_key_base') { "Your stored connections and sampler configuration may be lost at next Panorama restart !" } unless EngineConfig.config.panorama_var_home_user_defined
+      Rails.logger.error('EnvHelper.secret_key_base') { "Secret key base file at default location '#{default_secret_key_base_file}' is empty!" } if retval.nil? || retval == ''
+      Rails.logger.warn('EnvHelper.secret_key_base') { "Secret key base from file at default location '#{default_secret_key_base_file}' is too short! Should have at least 128 chars!" } if retval.length < 128
     end
 
     if retval.nil? || retval == ''
-      Rails.logger.warn "Neither SECRET_KEY_BASE nor SECRET_KEY_BASE_FILE provided nor file exists at default location #{default_secret_key_base_file}!"
-      Rails.logger.warn "Encryption key for SECRET_KEY_BASE is initially generated and stored at #{default_secret_key_base_file}!"
-      Rails.logger.warn "This key is may be valid only for the lifetime of this running Panorama instance because you did not provide a value for PANORAMA_VAR_HOME !" unless EngineConfig.config.panorama_var_home_user_defined
+      Rails.logger.warn('EnvHelper.secret_key_base') { "Neither SECRET_KEY_BASE nor SECRET_KEY_BASE_FILE provided nor file exists at default location #{default_secret_key_base_file}!" }
+      Rails.logger.warn('EnvHelper.secret_key_base') { "Encryption key for SECRET_KEY_BASE is initially generated and stored at #{default_secret_key_base_file}!" }
+      Rails.logger.warn('EnvHelper.secret_key_base') { "This key is may be valid only for the lifetime of this running Panorama instance because you did not provide a value for PANORAMA_VAR_HOME !" } unless EngineConfig.config.panorama_var_home_user_defined
       retval = Random.rand 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
       File.write(default_secret_key_base_file, retval)
     end
@@ -120,7 +120,7 @@ module EnvHelper
       begin
         Encryption.decrypt_value(cookies['client_key'], cookies['client_salt']) # Test client_key-Cookie for possible decryption
       rescue Exception => e
-        Rails.logger.error("Exception #{e.message} while database_helper_decrypt_value(cookies['client_key'])")
+        Rails.logger.error('EnvHelper.initialize_client_key_cookie') { "Exception #{e.message} while database_helper_decrypt_value(cookies['client_key'])" }
         cookies.delete('client_key')                                            # Verwerfen des nicht entschlüsselbaren Cookies
         cookies.delete('client_salt')
       end
@@ -183,7 +183,7 @@ module EnvHelper
     read_tnsnames_internal(tnsnames_filename)
 
   rescue Exception => e
-    Rails.logger.error "Error processing tnsnames.ora: #{e.message}"
+    Rails.logger.error('EnvHelper.read_tnsnames') { "Error processing tnsnames.ora: #{e.message}" }
     {}
   end
 
@@ -248,7 +248,7 @@ module EnvHelper
       port,     start_pos_port = extract_attr('PORT', fullstring)
 
       if hostName.nil? || port.nil?
-        Rails.logger.error "tnsnames.ora: cannot determine host and port for '#{tns_name}'"
+        Rails.logger.error('EnvHelper.read_tnsnames_internal') { "tnsnames.ora: cannot determine host and port for '#{tns_name}'" }
         next
       end
 
@@ -272,7 +272,7 @@ module EnvHelper
       end
       # Naechster Block mit Description beginnen wenn kein SID enthalten oder in naechster Description gefunden
       if start_pos_sid==nil || (fullstring.index('DESCRIPTION') && fullstring.index('DESCRIPTION')<start_pos_sid) # Alle weiteren Treffer muessen vor der naechsten Description liegen
-        Rails.logger.error "tnsnames.ora: cannot determine sid or service_name for '#{tns_name}'"
+        Rails.logger.error('EnvHelper.read_tnsnames_internal') { "tnsnames.ora: cannot determine sid or service_name for '#{tns_name}'" }
         next
       end
       fullstring = fullstring[start_pos_sid + sid_tag_length, 1000000]               # Rest des Strings fuer weitere Verarbeitung
@@ -285,7 +285,7 @@ module EnvHelper
     end
     tnsnames
   rescue Exception => e
-    Rails.logger.error "Error processing #{file_name}: #{e.message}"
+    Rails.logger.error('EnvHelper.read_tnsnames_internal') { "Error processing #{file_name}: #{e.message}" }
     tnsnames
   end
 

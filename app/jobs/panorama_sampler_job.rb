@@ -67,7 +67,7 @@ class PanoramaSamplerJob < ApplicationJob
 
     @@first_call_after_startup = false                                          # regular operation now
   rescue Exception => e
-    Rails.logger.error "Exception in PanoramaSamplerJob.perform:\n#{e.message}"
+    Rails.logger.error('PanoramaSamplerJob.perform') { "Exception in PanoramaSamplerJob.perform:\n#{e.message}" }
     log_exception_backtrace(e, 40)
     raise e
   end

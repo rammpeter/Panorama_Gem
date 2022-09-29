@@ -481,10 +481,10 @@ class PanoramaSamplerSampling
     PanoramaConnection.sql_execute("ALTER TABLE #{@sampler_config.get_owner}.#{table_name} ENABLE ROW MOVEMENT")
     begin
       shrink_cmd = "ALTER TABLE #{@sampler_config.get_owner}.#{table_name} SHRINK SPACE CASCADE"
-      Rails.logger.info "Executing #{shrink_cmd}"
+      Rails.logger.info('PanoramaSamplerSampling.exec_shrink_space') { "Executing #{shrink_cmd}" }
       PanoramaConnection.sql_execute(shrink_cmd)
     rescue Exception => e
-      Rails.logger.error "Exception #{e.message}"
+      Rails.logger.error('PanoramaSamplerSampling.exec_shrink_space') { "Exception #{e.class}: #{e.message}" }
       # get one index name to drop that is not PK etc.
       index_name = PanoramaConnection.sql_select_one "SELECT Index_Name
                                                       FROM   All_Indexes i
@@ -508,13 +508,13 @@ class PanoramaSamplerSampling
       begin
         PanoramaConnection.sql_execute(lob_cmd)
       rescue Exception => e
-        Rails.logger.error "Exception #{e.message}\ntrying move instead"
+        Rails.logger.error('PanoramaSamplerSampling.exec_shrink_space') { "Exception #{e.message}\ntrying move instead" }
         lob_cmd = "ALTER TABLE #{@sampler_config.get_owner}.#{table_name} MOVE LOB (#{lob.column_name}) STORE AS (TABLESPACE #{lob.tablespace_name})"
         Rails.logger.info "Executing #{lob_cmd}"
         begin
           PanoramaConnection.sql_execute(lob_cmd)
         rescue Exception => e
-          Rails.logger.error "Exception #{e.message}\nError ignored"
+          Rails.logger.error('PanoramaSamplerSampling.exec_shrink_space') { "Exception #{e.message}\nError ignored" }
         end
       end
     end

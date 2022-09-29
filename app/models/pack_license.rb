@@ -110,8 +110,8 @@ class PackLicense
         table_name = table_name[0, table_name.index(')')] if table_name[')']    # Tablename ends at ....
 
         message = "Access denied on table #{table_name} because of missing license for Oracle #{pack_name} Pack!\nPanorama's config for management_pack_license is: '#{@license_type}'"
-        Rails.logger.error message
-        Rails.logger.error sql
+        Rails.logger.error('PackLicense.check_existence_in_sql') { message }
+        Rails.logger.error('PackLicense.check_existence_in_sql') { sql }
 
         raise PopupMessageException.new(message)
       end

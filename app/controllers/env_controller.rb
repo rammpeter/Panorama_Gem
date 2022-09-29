@@ -61,7 +61,7 @@ class EnvController < ApplicationController
 
 
   rescue Exception=>e
-    Rails.logger.error("#{e.message}")
+    Rails.logger.error('EnvController.index'){ "#{e.message}" }
     set_current_database(nil) unless cookies['client_key'].nil? # Sicherstellen, dass bei naechstem Aufruf neuer Einstieg (nur wenn client_info_store bereits initialisiert ist)
     raise e                                                                     # Werfen der Exception
   end
@@ -213,7 +213,7 @@ class EnvController < ApplicationController
 
       check_awr_for_time_drift
     rescue Exception => e
-      Rails.logger.error "Exception: #{e.message}"
+      Rails.logger.error('EnvController.start_page') { "Exception: #{e.message}" }
       log_exception_backtrace(e, 20)
       PanoramaConnection.destroy_connection                                     # Remove connection from pool. Ensure using new connection with next retry
       raise PopupMessageException.new("Your user is missing SELECT-right on gv$Instance, gv$Database.<br/>Please ensure that your user has granted SELECT ANY DICTIONARY or SELECT_CATALOG_ROLE.<br/>Panorama is not usable with this user account!\n\n".html_safe, e)

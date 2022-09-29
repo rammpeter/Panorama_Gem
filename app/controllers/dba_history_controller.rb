@@ -2390,7 +2390,7 @@ exec DBMS_SHARED_POOL.PURGE ('#{r.address}, #{r.hash_value}', 'C');
     if  download_oracle_com_reachable
       type = 'ACTIVE'                                                               # Active content with download from oracle
     else
-      Rails.logger.error "SQL Monitor report type switched from ACTIVE to HTTP because host 'download.oracle.com' is unreachable"
+      Rails.logger.error('DbaHistoryController.list_awr_sql_monitor_report_html') { "SQL Monitor report type switched from ACTIVE to HTTP because host 'download.oracle.com' is unreachable" }
       type = 'HTML'                                                             # Static content without download from oracle
     end
 

@@ -13,7 +13,7 @@ class ConnectionTerminateJob < ApplicationJob
     thread.name = 'ConnectionTerminateJob'
     EngineConfig.cleanup_client_info_store                                      # Remove expired cache entries
   rescue Exception => e
-    Rails.logger.error "Exception in ConnectionTerminateJob.perform:\n#{e.message}"
+    Rails.logger.error('ConnectionTerminateJob.perform') { "Exception #{e.class}\n#{e.message}" }
     log_exception_backtrace(e, 40)
     raise e
   end

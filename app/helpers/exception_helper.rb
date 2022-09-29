@@ -14,7 +14,7 @@ module ExceptionHelper
       curr_line_no += 1
     end
 
-    Rails.logger.error "Stack-Trace for exception: #{exception.class} #{exception.message}\n#{output}"
+    Rails.logger.error('ExceptionHelper.log_exception_backtrace') { "Stack-Trace for exception: #{exception.class} #{exception.message}\n#{output}" }
   end
 
   # Raise an exception with original backtrace but extended message

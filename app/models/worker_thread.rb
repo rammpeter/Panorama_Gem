@@ -12,7 +12,7 @@ class WorkerThread
     result = thread.value
     result
   rescue Exception => e
-    Rails.logger.error "Exception #{e.message} raised in WorkerThread.check_connection"
+    Rails.logger.error('WorkerThread.check_connection') { "Exception #{e.message} raised in WorkerThread.check_connection" }
     raise e if raise_exeption_on_error
   end
 
@@ -28,7 +28,7 @@ class WorkerThread
       thread.name = "WorkerThread :#{name}"
     end
   rescue Exception => e
-    Rails.logger.error "Exception #{e.message} raised in WorkerThread.create_snapshot for config-ID=#{sampler_config.get_id} and domain=#{domain}"
+    Rails.logger.error('WorkerThread.create_snapshot') { "Exception #{e.message} raised in WorkerThread.create_snapshot for config-ID=#{sampler_config.get_id} and domain=#{domain}" }
     # Don't raise exception because it should not stop calling job processing
   end
 
@@ -45,7 +45,7 @@ class WorkerThread
     thread = Thread.new{WorkerThread.new(sampler_config, 'check_analyze').check_analyze_internal}
     thread.name = 'WorkerThread: check_analyze'
   rescue Exception => e
-    Rails.logger.error "Exception #{e.message} raised in WorkerThread.check_analyze for config-ID=#{sampler_config.get_id}"
+    Rails.logger.error('WorkerThread.check_analyze') { "Exception #{e.message} raised for config-ID=#{sampler_config.get_id}" }
   end
 
   ############################### inner implementation ###############################
@@ -106,7 +106,7 @@ class WorkerThread
     end
     dbid
   rescue Exception => e
-    Rails.logger.error "Exception #{e.message} raised in WorkerThread.check_connection_internal"
+    Rails.logger.error('WorkerThread.check_connection_internal') { "Exception #{e.class}:#{e.message}" }
     controller.add_statusbar_message("Trial connect to '#{@sampler_config.get_name}' not successful!\nExcpetion: #{e.message}\nFor details see Panorama-Log for details")
     @sampler_config.set_error_message(e.message)
     raise e
@@ -129,7 +129,7 @@ class WorkerThread
     @@synchron__structure_checks.delete(@sampler_config.get_id)                 # Remove semaphore
   rescue Exception => e
     @@synchron__structure_checks.delete(@sampler_config.get_id)                 # Remove semaphore
-    Rails.logger.error("Error #{e.message} during WorkerThread.check_structure_synchron for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})")
+    Rails.logger.error('WorkerThread.check_structure_synchron') { "Error #{e.message} for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})" }
     log_exception_backtrace(e, 20) if !Rails.env.test?
     @sampler_config.set_error_message("Error #{e.message} during WorkerThread.check_structure_synchron")
     raise e
@@ -161,7 +161,7 @@ class WorkerThread
     Rails.logger.info('WorkerThread.create_ash_sampler_daemon') { "ASH daemon regularly terminated for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}'" }
   rescue Exception => e
     begin
-      Rails.logger.error("Error #{e.message} during WorkerThread.create_ash_sampler_daemon (1st try) for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})")
+      Rails.logger.error('WorkerThread.create_ash_sampler_daemon') { "Error #{e.message} (1st try) for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})" }
       log_exception_backtrace(e, 20) if !Rails.env.test?
       PanoramaConnection.destroy_connection                                     # Ensure next try is done with a new connection
       PanoramaSamplerSampling.new(@sampler_config).exec_shrink_space('Internal_V$Active_Sess_History')   # try to shrink size of object
@@ -175,7 +175,7 @@ class WorkerThread
       raise x
     end
   rescue Object => e
-    Rails.logger.error("Exception #{e.class} during WorkerThread.create_ash_sampler_daemon for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})")
+    Rails.logger.error('WorkerThread.create_ash_sampler_daemon') { "Exception #{e.class} for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})" }
     @sampler_config.set_error_message("Exception #{e.class} during WorkerThread.create_ash_sampler_daemon")
     raise e
   ensure
@@ -204,7 +204,7 @@ class WorkerThread
     end
 
     begin                                                                       # Start observation for already closed semaphore here, previous return should not reset semaphore
-      Rails.logger.info "#{Time.now}: Create new #{domain} snapshot for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}' SID=#{PanoramaConnection.sid}"
+      Rails.logger.info('WorkerThread.create_snapshot_internal') { "#{Time.now}: Create new #{domain} snapshot for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}' SID=#{PanoramaConnection.sid}" }
 
       @@active_snapshots[snapshot_semaphore_key] = Time.now                     # Create semaphore for thread, begin processing
 
@@ -221,10 +221,10 @@ class WorkerThread
 
       # End activities after finishing snapshot
       @sampler_config.set_domain_last_snapshot_end(domain, Time.now)
-      Rails.logger.info "#{Time.now}: Finished creating new #{domain} snapshot for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}' and domain=#{domain}"
+      Rails.logger.info('WorkerThread.create_snapshot_internal') { "#{Time.now}: Finished creating new #{domain} snapshot for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}' and domain=#{domain}" }
     rescue Exception => e
       begin
-        Rails.logger.error("Error during WorkerThread.create_snapshot_internal in first try for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}\n#{e.message}")
+        Rails.logger.error('WorkerThread.create_snapshot_internal') { "Error in first try for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}\n#{e.message}" }
         log_exception_backtrace(e, 30) if !Rails.env.test?
         PanoramaConnection.destroy_connection                                   # Ensure this connection with errors will not be reused for next steps
         PanoramaSamplerStructureCheck.do_check(@sampler_config, domain)         # Check data structure preconditions first in case of error
@@ -232,16 +232,16 @@ class WorkerThread
         PanoramaSamplerSampling.do_sampling(@sampler_config, snapshot_time, domain)  # Retry sampling
 
         @sampler_config.set_domain_last_snapshot_end(domain, Time.now)
-        Rails.logger.info "#{Time.now}: Finished creating new #{domain} snapshot in second try for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}' and domain=#{domain}"
+        Rails.logger.info('WorkerThread.create_snapshot_internal') { "#{Time.now}: Finished creating new #{domain} snapshot in second try for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}' and domain=#{domain}" }
       rescue Exception => x
-        Rails.logger.error "WorkerThread.create_snapshot_internal: Exception in exception handler for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}\n#{x.message}"
+        Rails.logger.error('WorkerThread.create_snapshot_internal') { "Exception in exception handler for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}\n#{x.message}" }
         log_exception_backtrace(x, 40)
         @sampler_config.set_error_message("Error #{e.message} during WorkerThread.create_snapshot_internal for domain=#{domain}")
         PanoramaConnection.destroy_connection                                   # Ensure this connection with errors will not be reused
         raise x
       end
     rescue Object => e
-      Rails.logger.error("Exception #{e.class} during WorkerThread.create_snapshot_internal for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}")
+      Rails.logger.error('WorkerThread.create_snapshot_internal') { "Exception #{e.class} for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}\n#{e.message}" }
       @sampler_config.set_error_message("Exception #{e.class} during WorkerThread.create_snapshot_internal for domain=#{domain}")
       raise e
     ensure
@@ -264,12 +264,12 @@ class WorkerThread
         end
 
         PanoramaConnection.sql_execute ["BEGIN DBMS_STATS.Gather_Table_Stats(?, ?); END;", @sampler_config.get_owner.upcase, t.table_name]
-        Rails.logger.info("Analyzed table #{@sampler_config.get_owner.upcase}.#{t.table_name} and shrink indizes in #{Time.now-start_time} seconds")
+        Rails.logger.info('WorkerThread.check_analyze_internal') { "Analyzed table #{@sampler_config.get_owner.upcase}.#{t.table_name} and shrink indizes in #{Time.now-start_time} seconds" }
       end
       @sampler_config.set_last_analyze_check_timestamp
     end
   rescue Exception => e
-    Rails.logger.error("Exception #{e.class} during WorkerThread.check_analyze_internal for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})");
+    Rails.logger.error('WorkerThread.check_analyze_internal') { "Exception #{e.class} for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})" }
     log_exception_backtrace(e, 40)
     raise e
   ensure

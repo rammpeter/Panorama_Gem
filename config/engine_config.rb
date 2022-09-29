@@ -13,7 +13,7 @@ class EngineConfig < Rails::Application
       File.unlink(filename)
       Rails.logger.info "#{filename} removed because Java version is #{java_version}"
     rescue Exception => e
-      Rails.logger.error "Error #{e.class}:#{e.message} while removing #{filename} because Java version is #{java_version}"
+      Rails.logger.error('EngineConfig') { "Error #{e.class}:#{e.message} while removing #{filename} because Java version is #{java_version}" }
     end
   end
 

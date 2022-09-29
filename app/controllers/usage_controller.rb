@@ -16,7 +16,7 @@ class UsageController < ApplicationController
     begin
       file = File.open(EngineConfig.config.usage_info_filename, "r")
     rescue Exception => e
-      Rails.logger.error "Error opening file #{EngineConfig.config.usage_info_filename}: #{e.message}. PWD = #{Dir.pwd}"
+      Rails.logger.error('UsageController.fill_usage_info') { "Error opening file #{EngineConfig.config.usage_info_filename}: #{e.message}. PWD = #{Dir.pwd}" }
       raise
     end
 

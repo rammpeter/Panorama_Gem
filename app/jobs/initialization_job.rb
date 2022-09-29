@@ -9,7 +9,7 @@ class InitializationJob < ApplicationJob
   def perform(*args)
     ExceptionHelper.log_memory_state                                                            # Log memory values once at startup
   rescue Exception => e
-    Rails.logger.error "Exception in InitializationJob.perform:\n#{e.message}"
+    Rails.logger.error('InitializationJob.perform') { "Exception #{e.class}:\n#{e.message}" }
     log_exception_backtrace(e, 40)
     raise e
   end

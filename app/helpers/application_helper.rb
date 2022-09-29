@@ -80,7 +80,11 @@ module ApplicationHelper
     end
     if @buffered_client_info_store.nil? || @buffered_client_info_store.class != Hash                       # Abbruch wenn Struktur nicht passt
       msg = "read_from_client_info_store: No data found in client_info_store while looking for key=#{key}"
-      suppress_non_existing_error ? Rails.logger.debug(msg) : Rails.logger.error(msg)
+      if suppress_non_existing_error
+        Rails.logger.debug('ApplicationHelper.read_from_client_info_store') {msg}
+      else
+        Rails.logger.error('ApplicationHelper.read_from_client_info_store') {msg}
+      end
       return nil
     end
     @buffered_client_info_store[key]                                              # return value regardless it's nil or not
@@ -280,7 +284,7 @@ module ApplicationHelper
     begin
       retval = ERB::Util.html_escape(org_value)                                          # Standard-Escape kann kein NewLine-><BR>
     rescue Encoding::CompatibilityError => e
-      Rails.logger.error "#{e.class} #{e.message}: Content: #{org_value}"
+      Rails.logger.error('ApplicationHelper.my_html_escape') { "#{e.class} #{e.message}: Content: #{org_value}" }
       log_exception_backtrace(e)
 
       # force encoding to UTF-8 before
@@ -747,7 +751,7 @@ module ApplicationHelper
     end
     @buffered_client_key
   rescue ActiveSupport::MessageVerifier::InvalidSignature => e
-    Rails.logger.error("Exception '#{e.message}' raised while decrypting cookies['client_key'] (#{cookies['client_key']})")
+    Rails.logger.error('ApplicationHelper.get_decrypted_client_key') { "Exception '#{e.message}' raised while decrypting cookies['client_key'] (#{cookies['client_key']})" }
     #log_exception_backtrace(e, 20)
     if cookies['client_key'].nil?
       raise("Your browser does not allow cookies for this URL!\nPlease enable usage of browser cookies for this URL and reload the page.")

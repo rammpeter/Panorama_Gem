@@ -385,12 +385,12 @@ class PanoramaConnection
         # Cancelling should be done by setNetworkTimeout, Exception handling due to socket read error should remove connection from pool
         min_age_for_active_disconnect = conn.last_used_query_timeout * 2
         if conn.used_in_thread && conn.last_used_time < Time.now - min_age_for_active_disconnect
-          Rails.logger.error "Long running active DB connection should have been cancelled yet by socket read timeout after #{min_age_for_active_disconnect} seconds: URL='#{config[:url]}' User='#{config[:username]}', last used=#{conn.last_used_time}, last action='#{conn.last_used_action_name}', last query timeout=#{conn.last_used_query_timeout}"
+          Rails.logger.error('PanoramaConnection.disconnect_aged_connections') { "Long running active DB connection should have been cancelled yet by socket read timeout after #{min_age_for_active_disconnect} seconds: URL='#{config[:url]}' User='#{config[:username]}', last used=#{conn.last_used_time}, last action='#{conn.last_used_action_name}', last query timeout=#{conn.last_used_query_timeout}" }
         end
       end
     end
   rescue Exception => e
-    Rails.logger.error "Exception in disconnect_aged_connections:\n#{e.message}"
+    Rails.logger.error('PanoramaConnection.disconnect_aged_connections') { "Exception #{e.class}:\n#{e.message}" }
     log_exception_backtrace(e, 40)
     raise e
   end
@@ -580,7 +580,7 @@ class PanoramaConnection
       get_connection.exec_update(sql, query_name, binds)
     rescue Exception => e
       if e.message['ORA-10632']
-        Rails.logger.error "#{e.class}:#{e.message}! Retrying execution of SQL\n#{sql}"
+        Rails.logger.error('PanoramaConnection.sql_execute_native') { "#{e.class}:#{e.message}! Retrying execution of SQL\n#{sql}" }
         sleep(10)
         # reexecute the SQL in case of ORA-10632: invalid rowid
         # this can happen at CREATE TABLE with ENABLE ROW MOVEMENT, especially for 19.10 SE2
@@ -602,7 +602,6 @@ class PanoramaConnection
 
     # Ensure stacktrace of first exception is show
     msg = "Error while executing SQL:\n#{PanoramaConnection.get_nested_exception_message(e)}\nSQL-Statement:\n#{sql}\n#{bind_text.length > 0 ? "Bind-Values:\n#{bind_text}" : ''}"
-    # Rails.logger.error("PanoramaConnection.sql_execute: #{msg}")  # Logging is done in outer exception handler
     new_ex = Exception.new(msg)
     new_ex.set_backtrace(e.backtrace)
     raise new_ex
@@ -627,8 +626,8 @@ class PanoramaConnection
   def self.get_threadlocal_config
 
     unless Thread.current[:panorama_connection_connect_info]
-      Rails.logger.error "PanoramaConnection.get_threadlocal_config: Thread.current[:panorama_connection_connect_info] does not exist"
-      Rails.logger.error "Stack trace:\n#{Thread.current.backtrace.join("\n")}"
+      Rails.logger.error('PanoramaConnection.get_threadlocal_config') { "Thread.current[:panorama_connection_connect_info] does not exist" }
+      Rails.logger.error('PanoramaConnection.get_threadlocal_config') { "Stack trace:\n#{Thread.current.backtrace.join("\n")}" }
       raise 'No current DB connect info set! Please reconnect to DB or restart Panorama in browser!'
     end
     Thread.current[:panorama_connection_connect_info]
@@ -649,7 +648,7 @@ class PanoramaConnection
       begin
         set_application_info
       rescue Exception => e
-        Rails.logger.error "Error '#{e.message}' in PanoramaConnection.check_for_open_connection! Drop connection and look for next one from pool"
+        Rails.logger.error('PanoramaConnection.check_for_open_connection') { "Error #{e.class}:'#{e.message}'! Drop connection and look for next one from pool" }
         destroy_connection                                                      # Remove erroneous connection from pool
         Thread.current[:panorama_connection_connection_object] = retrieve_from_pool_or_create_new_connection  # get new connection from pool or create
         set_application_info                                                    # Set application info again and throw exception if error persists
@@ -714,11 +713,11 @@ class PanoramaConnection
 
           if @@connection_pool.count >= MAX_CONNECTION_POOL_SIZE
             if retry_count < 5
-              Rails.logger.info "Maximum number of active concurrent database sessions for Panorama reached (#{MAX_CONNECTION_POOL_SIZE})!\nWaiting one second until retry."
+              Rails.logger.info('PanoramaConnection.retrieve_from_pool_or_create_new_connection') { "Maximum number of active concurrent database sessions for Panorama reached (#{MAX_CONNECTION_POOL_SIZE})!\nWaiting one second until retry." }
               retry_count += 1
               sleep 1
             else
-              Rails.logger.error "Maximum number of active concurrent database sessions for Panorama reached (#{MAX_CONNECTION_POOL_SIZE})!"
+              Rails.logger.error('PanoramaConnection.retrieve_from_pool_or_create_new_connection') { "Maximum number of active concurrent database sessions for Panorama reached (#{MAX_CONNECTION_POOL_SIZE})!" }
               dump_connection_pool_to_log
               raise "Maximum number of active concurrent database sessions for Panorama exceeded (#{MAX_CONNECTION_POOL_SIZE})!\nPlease try again later."
             end
@@ -732,8 +731,8 @@ class PanoramaConnection
           begin
             PanoramaConnection.direct_select_one(jdbc_connection, "SELECT /* Panorama first connection test for tns */ SYSDATE FROM DUAL")    # Connect with TNS-Alias has second try if does not function
           rescue Exception => e                                                   # Switch to host/port/sid instead
-            Rails.logger.error "PanoramaConnection: Error connecting to database in first try: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{get_threadlocal_config[:tns]}' User='#{get_threadlocal_config[:user]}'"
-            Rails.logger.error "#{e.class.name} #{e.message}"
+            Rails.logger.error('PanoramaConnection.retrieve_from_pool_or_create_new_connection') { "Error connecting to database in first try: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{get_threadlocal_config[:tns]}' User='#{get_threadlocal_config[:user]}'" }
+            Rails.logger.error('PanoramaConnection.retrieve_from_pool_or_create_new_connection') { "#{e.class.name} #{e.message}" }
             log_exception_backtrace(e, 30)
 
             jdbc_connection.logoff if !jdbc_connection.nil?                     # close/free wrong connection
@@ -748,8 +747,8 @@ class PanoramaConnection
         end
       rescue Exception => e
         jdbc_connection.logoff if !jdbc_connection.nil?                     # close/free wrong connection
-        Rails.logger.error "PanoramaConnection: Error connecting to database in second try: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{get_threadlocal_config[:tns]}' User='#{get_threadlocal_config[:user]}'"
-        Rails.logger.error "#{e.class.name} #{e.message}"
+        Rails.logger.error('PanoramaConnection.retrieve_from_pool_or_create_new_connection') { "Error connecting to database in second try: URL='#{PanoramaConnection.jdbc_thin_url}' TNSName='#{get_threadlocal_config[:tns]}' User='#{get_threadlocal_config[:user]}'" }
+        Rails.logger.error('PanoramaConnection.retrieve_from_pool_or_create_new_connection') { "#{e.class.name} #{e.message}" }
         log_exception_backtrace(e, 30)
         raise
       end
@@ -763,21 +762,21 @@ class PanoramaConnection
       begin
         jdbc_connection.exec_update(parallel_degree_policy_stmt, 'set parallel_degree_policy', [])
       rescue Exception => e
-        Rails.logger.error "Error '#{e.message}' while setting parallel_degree_policy with '#{parallel_degree_policy_stmt}'"
+        Rails.logger.error('PanoramaConnection.retrieve_from_pool_or_create_new_connection') { "Error '#{e.message}' while setting parallel_degree_policy with '#{parallel_degree_policy_stmt}'" }
       end
 
       tz_stmt = "ALTER SESSION SET Time_Zone = '#{java.util.TimeZone.get_default.get_id}'"
       begin
         jdbc_connection.exec_update(tz_stmt, 'set timezone', [])
       rescue Exception => e
-          Rails.logger.error "Error '#{e.message}' while setting client timezone with '#{tz_stmt}'"
+          Rails.logger.error('PanoramaConnection.retrieve_from_pool_or_create_new_connection') { "Error '#{e.message}' while setting client timezone with '#{tz_stmt}'" }
       end
 
       begin
         retval.read_initial_attributes
       rescue Exception => e
         jdbc_connection.logoff if !jdbc_connection.nil?                     # close/free wrong connection
-        Rails.logger.error "#{e.class.name} #{e.message}"
+        Rails.logger.error('PanoramaConnection.retrieve_from_pool_or_create_new_connection') { "#{e.class.name} #{e.message}" }
         log_exception_backtrace(e, 20)
         raise "Your user needs SELECT ANY DICTIONARY or equivalent rights to login to Panorama!\n\n\n#{e.class.name} #{e.message}"
       end
@@ -796,7 +795,7 @@ class PanoramaConnection
     decrypted_password
   rescue Exception => e
     msg = "Error in PanoramaConnection.get_decrypted_password decrypting pasword: #{e.class} #{e.message}"
-    Rails.logger.warn msg
+    Rails.logger.warn('PanoramaConnection.get_decrypted_password') { msg }
     raise "One part of encryption key for stored password has changed at server side!\nPlease connect again with full connection info including username and password.\n\n#{msg}"
   end
 
@@ -815,7 +814,7 @@ class PanoramaConnection
     privilege     = get_threadlocal_config[:privilege]
     query_timeout = get_threadlocal_config[:query_timeout]
     if query_timeout.nil?
-      Rails.logger.info "PanoramaConnection.do_login: query_timeout not set in thread, assuming default value = 300"
+      Rails.logger.info('PanoramaConnection.do_login') { "query_timeout not set in thread, assuming default value = 300" }
       query_timeout = 300
     end
 
@@ -836,7 +835,7 @@ class PanoramaConnection
           'oracle.net.crypto_checksum_client' => 'REQUESTED'
         }
     )
-    Rails.logger.info "New database connection created: URL='#{jdbc_thin_url}' User='#{get_threadlocal_config[:user]}' Pool size=#{@@connection_pool.count+1}"
+    Rails.logger.info('PanoramaConnection.do_login') { "New database connection created: URL='#{jdbc_thin_url}' User='#{get_threadlocal_config[:user]}' Pool size=#{@@connection_pool.count+1}" }
 
     # Schedule socket timeout to cancel connection in case of network stuck after twice of query timeout
     jdbc_connection.raw_connection.setNetworkTimeout(java.util.concurrent.Executors.newSingleThreadExecutor, query_timeout*2*1000);
@@ -849,7 +848,7 @@ class PanoramaConnection
 
     jdbc_connection
   rescue Exception => e
-    Rails.logger.error "Exception #{e.class}:#{e.message} while connecting to URL='#{url}', user='#{username}'"
+    Rails.logger.error('PanoramaConnection.do_login') { "Exception #{e.class}:#{e.message} while connecting to URL='#{url}', user='#{username}'" }
     raise
   end
 
@@ -875,10 +874,10 @@ class PanoramaConnection
   end
 
   def self.log_exception_backtrace(exception, line_number_limit=nil)
-    Rails.logger.error "Stack-Trace for exception: #{exception.class} #{exception.message}"
+    Rails.logger.error('PanoramaConnection.log_exception_backtrace') { "Stack-Trace for exception: #{exception.class} #{exception.message}" }
     curr_line_no=0
     exception.backtrace.each do |bt|
-      Rails.logger.error bt if line_number_limit.nil? || curr_line_no < line_number_limit # report First x lines of stacktrace in log
+      Rails.logger.error('PanoramaConnection.log_exception_backtrace') { bt } if line_number_limit.nil? || curr_line_no < line_number_limit # report First x lines of stacktrace in log
       curr_line_no += 1
     end
   end
@@ -931,7 +930,7 @@ class PanoramaConnection
 
       # Ensure stacktrace of first exception is show
       msg = "Error while executing SQL:\n#{PanoramaConnection.get_nested_exception_message(e)}\nSQL-Statement:\n#{@stmt}\n#{bind_text.length > 0 ? "Bind-Values:\n#{bind_text}" : ''}"
-      Rails.logger.error("SqlSelectIterator.each : #{msg}")
+      Rails.logger.error('SqlSelectIterator.each') { msg }
       new_ex = Exception.new(msg)
       new_ex.set_backtrace(e.backtrace)
       raise new_ex

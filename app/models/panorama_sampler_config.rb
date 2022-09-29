@@ -439,7 +439,7 @@ class PanoramaSamplerConfig
   def self.write_config_array_to_store
     EngineConfig.get_client_info_store.write(client_info_store_key, @@config_array.map{|config| config.get_cloned_config_hash})  # Store config array as Hash-Array
   rescue Exception =>e
-    Rails.logger.error("Exception '#{e.message}' raised while writing file store at '#{EngineConfig.config.client_info_filename}'")
+    Rails.logger.error('PanoramaSamplerConfig.write_config_array_to_store') { "Exception '#{e.message}' raised while writing file store at '#{EngineConfig.config.client_info_filename}'" }
     raise "Exception '#{e.message}' while writing file store at '#{EngineConfig.config.client_info_filename}'"
   end
 
