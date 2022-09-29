@@ -27,6 +27,40 @@
     <%
       column_options =
         [
+          {caption: 'Object',           data: proc{|rec| link_object_description(@update_area, rec.owner, rec.object_name, nil, rec.object_type)},       title: "Object owner and name"},
+          {caption: 'Object type',      data: proc{|rec| rec.object_type},        title: "Type of the object"},
+          {caption: 'Alt',              data: proc{|rec| rec.alt},                title: "Auditing ALTER WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+          {caption: 'Aud',              data: proc{|rec| rec.aud},                title: "Auditing AUDIT WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+          {caption: 'Com',              data: proc{|rec| rec['com']},                title: "Auditing COMMENT WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+          {caption: 'Del',              data: proc{|rec| rec.del},                title: "Auditing DELETE WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+          {caption: 'Gra',              data: proc{|rec| rec.gra},                title: "Auditing GRANT WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+          {caption: 'Ind',              data: proc{|rec| rec.ind},                title: "Auditing INDEX WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+          {caption: 'Ins',              data: proc{|rec| rec.ins},                title: "Auditing INSERT WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+          {caption: 'Loc',              data: proc{|rec| rec.loc},                title: "Auditing LOCK WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+          {caption: 'Ren',              data: proc{|rec| rec.ren},                title: "Auditing RENAME WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+          {caption: 'Sel',              data: proc{|rec| rec.sel},                title: "Auditing SELECT WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+          {caption: 'Upd',              data: proc{|rec| rec.upd},                title: "Auditing UPDATE WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+          {caption: 'Cre',              data: proc{|rec| rec.cre},                title: "Auditing CREATE WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+          {caption: 'Rea',              data: proc{|rec| rec.rea},                title: "Auditing READ WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+          {caption: 'Wri',              data: proc{|rec| rec.wri},                title: "Auditing WRITE WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+          {caption: 'Fbk',              data: proc{|rec| rec.fbk },                title: "Auditing FLASHBACK WHENEVER SUCCESSFUL / UNSUCCESSFUL"},
+        ]
+    %>
+
+    <%=
+      gen_slickgrid(@obj_audit_opts, column_options, {
+        :caption    => 'Active auditing rules from DBA_Obj_Audit_Opts',
+        :max_height => 450,
+        :width      => :auto,
+        show_pin_icon: 3
+      })
+    %>
+  </div>
+
+  <div class="flex-row-element">
+    <%
+      column_options =
+        [
           {:caption=> 'Instance',         :data=>proc{|rec| rec.inst_id},         :title=> "Instance number"},
           {:caption=> 'Parameter',        :data=>proc{|rec| rec.parameter},       :title=> "Parameter name"},
           {:caption=> 'Value',            :data=>proc{|rec| rec.value},           :title=> "Parameter value"},

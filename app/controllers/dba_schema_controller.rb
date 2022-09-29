@@ -1855,9 +1855,10 @@ class DbaSchemaController < ApplicationController
   end
 
   def show_audit_rules
-    @audits = sql_select_all "SELECT * FROM DBA_Stmt_Audit_Opts ORDER BY Audit_Option"
-    @options = sql_select_all "SELECT * FROM gv$Option WHERE Parameter = 'Unified Auditing' ORDER BY Inst_ID"
-    @policies = sql_select_iterator "SELECT * from DBA_Audit_Policies"
+    @audits         = sql_select_all "SELECT * FROM DBA_Stmt_Audit_Opts ORDER BY Audit_Option"
+    @obj_audit_opts = sql_select_all "SELECT * FROM DBA_Obj_Audit_Opts ORDER BY Owner, Object_Name"
+    @options        = sql_select_all "SELECT * FROM gv$Option WHERE Parameter = 'Unified Auditing' ORDER BY Inst_ID"
+    @policies       = sql_select_iterator "SELECT * from DBA_Audit_Policies"
     begin
       @config_params = sql_select_all "SELECT * FROM DBA_Audit_Mgmt_Config_Params ORDER BY Audit_Trail, Parameter_Name"
     rescue Exception => e
