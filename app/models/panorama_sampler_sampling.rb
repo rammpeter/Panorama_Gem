@@ -126,7 +126,7 @@ class PanoramaSamplerSampling
                                                       AND    Begin_Interval_Time < SYSDATE - ?
                                                      ", sampled_dbid, PanoramaConnection.instance_number, @sampler_config.get_awr_ash_snapshot_retention]
 
-      Rails.logger.info("PanoramaSampler_Sampling.do_awr_housekeeping with awr_ash_snapshot_retention=#{@sampler_config.get_awr_ash_snapshot_retention} Max. Snap_ID to delete = #{max_snap_id}")
+      Rails.logger.info('PanoramaSampler_Sampling.do_awr_housekeeping') { "awr_ash_snapshot_retention=#{@sampler_config.get_awr_ash_snapshot_retention} Max. Snap_ID to delete = #{max_snap_id}" }
 
       if !max_snap_id.nil?                                                        # Snaps to delete exists
         # Delete from tables with columns DBID and SNAP_ID and Instance_Number
@@ -166,7 +166,6 @@ class PanoramaSamplerSampling
   def run_ash_daemon_internal(snapshot_time)
     start_delay_from_snapshot = (Time.now - snapshot_time).round                # at seconds bound
     next_snapshot_start_seconds = @sampler_config.get_awr_ash_snapshot_cycle * 60 - start_delay_from_snapshot # Number of seconds until next snapshot start
-    next_snapshot_start_seconds += 5                                            # Assume 5 seconds delay until start of sampling to fill with previous daemon
 
     if @sampler_config.get_select_any_table?                                     # call PL/SQL package ?
       sql = " BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_ASH.Run_Sampler_Daemon(?, ?); END;"
@@ -180,8 +179,9 @@ class PanoramaSamplerSampling
         "
     end
 
-    Rails.logger.info "#{Time.now}: Create new ASH daemon for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}', Instance=#{PanoramaConnection.instance_number}, next_snapshot_start_seconds=#{next_snapshot_start_seconds}  SID=#{PanoramaConnection.sid}"
+    Rails.logger.info('PanoramaSamplerSampling.run_ash_daemon_internal') { "ASH daemon created for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}', Instance=#{PanoramaConnection.instance_number}, next_snapshot_start_seconds=#{next_snapshot_start_seconds}  SID=#{PanoramaConnection.sid}" }
     PanoramaConnection.sql_execute [sql, PanoramaConnection.instance_number, next_snapshot_start_seconds]
+    Rails.logger.info('PanoramaSamplerSampling.run_ash_daemon_internal') { "ASH daemon regularly terminated for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}'" }
   end
 
   def do_object_size_sampling(snapshot_time)
@@ -492,9 +492,9 @@ class PanoramaSamplerSampling
                                                       AND    Index_Name NOT IN (SELECT Index_Name FROM All_Constraints c WHERE c.Owner = '#{@sampler_config.get_owner.upcase}' AND Index_Name IS NOT NULL)
                                                       "
       if index_name.nil?
-        Rails.logger.info "No more non-PK indexes to drop for reclaiming space"
+        Rails.logger.info('PanoramaSamplerSampling.exec_shrink_space') { "No more non-PK indexes to drop for reclaiming space" }
       else
-        Rails.logger.info "Dropping index #{@sampler_config.get_owner}.#{index_name} to reclaim space for following SHRINK SPACE operations"
+        Rails.logger.info('PanoramaSamplerSampling.exec_shrink_space') { "Dropping index #{@sampler_config.get_owner}.#{index_name} to reclaim space for following SHRINK SPACE operations" }
         PanoramaConnection.sql_execute("DROP INDEX #{@sampler_config.get_owner}.#{index_name}")
         PanoramaConnection.sql_execute(shrink_cmd)                              # try again to shrink
       end
@@ -504,13 +504,13 @@ class PanoramaSamplerSampling
     lobs = PanoramaConnection.sql_select_all ["SELECT Column_Name, Tablespace_Name FROM DBA_Lobs WHERE Owner = ? AND Table_Name = ?", @sampler_config.get_owner.upcase, table_name.upcase]
     lobs.each do |lob|
       lob_cmd = "ALTER TABLE #{@sampler_config.get_owner}.#{table_name} MODIFY LOB (#{lob.column_name}) (SHRINK SPACE)"
-      Rails.logger.info "Executing #{lob_cmd}"
+      Rails.logger.info('PanoramaSamplerSampling.exec_shrink_space') { "Executing #{lob_cmd}" }
       begin
         PanoramaConnection.sql_execute(lob_cmd)
       rescue Exception => e
         Rails.logger.error('PanoramaSamplerSampling.exec_shrink_space') { "Exception #{e.message}\ntrying move instead" }
         lob_cmd = "ALTER TABLE #{@sampler_config.get_owner}.#{table_name} MOVE LOB (#{lob.column_name}) STORE AS (TABLESPACE #{lob.tablespace_name})"
-        Rails.logger.info "Executing #{lob_cmd}"
+        Rails.logger.info('PanoramaSamplerSampling.exec_shrink_space') { "Executing #{lob_cmd}" }
         begin
           PanoramaConnection.sql_execute(lob_cmd)
         rescue Exception => e

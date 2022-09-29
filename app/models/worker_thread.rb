@@ -138,27 +138,10 @@ class WorkerThread
   end
 
 
-  @@active_ash_daemons = {}
   # Create snapshot in database
   def create_ash_sampler_daemon(snapshot_time)
-    # Wait for end of previous ASH sampler daemon if not yet terminated
-    loop_count = 0
-    while @@active_ash_daemons[ @sampler_config.get_id] && loop_count < 600  # wait max. 60 seconds for previous ASH sampler daemon to terminate
-      sleep 0.1
-      loop_count += 1
-    end
-    if @@active_ash_daemons[ @sampler_config.get_id]
-      Rails.logger.error('WorkerThread.create_ash_sampler_daemon') { "Previous ASH daemon not yet finished for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}), new ASH daemon for snapshot not started! Restart Panorama server if this problem persists." }
-      @sampler_config.set_error_message("Previous ASH daemon not yet finished, new ASH daemon for snapshot not started! Restart Panorama server if this problem persists.")
-      return
-    end
-
-    @@active_ash_daemons[@sampler_config.get_id] = true                           # Create semaphore for thread, begin processing
     # Check data structure only for ASH-tables is already done in check_structure_synchron
     PanoramaSamplerSampling.run_ash_daemon(@sampler_config, snapshot_time)      # Start ASH daemon
-
-    # End activities after finishing snapshot
-    Rails.logger.info('WorkerThread.create_ash_sampler_daemon') { "ASH daemon regularly terminated for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}'" }
   rescue Exception => e
     begin
       Rails.logger.error('WorkerThread.create_ash_sampler_daemon') { "Error #{e.message} (1st try) for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})" }
@@ -179,7 +162,6 @@ class WorkerThread
     @sampler_config.set_error_message("Exception #{e.class} during WorkerThread.create_ash_sampler_daemon")
     raise e
   ensure
-    @@active_ash_daemons.delete(@sampler_config.get_id)                         # Remove semaphore
     PanoramaConnection.release_connection                                       # Free DB connection in Pool
   end
 

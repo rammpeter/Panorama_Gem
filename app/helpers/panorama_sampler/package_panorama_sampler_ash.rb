@@ -126,9 +126,7 @@ END Panorama_Sampler_ASH;
   TYPE StatNameTableType IS TABLE OF NUMBER INDEX BY VARCHAR2(64);
   StatNameTable           StatNameTableType;
 
-  v_SysTimestamp          TIMESTAMP(3);
-  v_Mod_Seconds           NUMBER(2);
-  v_Preserve_10Secs       CHAR(1);
+  v_Ash_Run_ID            NUMBER;                                               -- ID of current ASH daemon run for the duration of AWR snapshot
 
   FUNCTION Get_Stat_ID(p_Name IN VARCHAR2) RETURN NUMBER IS
   BEGIN
@@ -140,24 +138,17 @@ END Panorama_Sampler_ASH;
 
   PROCEDURE CreateSample(
     p_Instance_Number IN NUMBER,
+    p_Preserve_10Secs IN VARCHAR2,                                              -- Y or NULL
+    p_SysTimestamp    IN TIMESTAMP,
     p_Sample_ID       IN OUT NUMBER
   ) IS
-      v_DoubleCheck_SID NUMBER := -1;                                                 -- suppress double records
+      v_DoubleCheck_SID NUMBER := -1;                                           -- suppress double records
     BEGIN
       p_Sample_ID := p_Sample_ID + 1;
       AshTable4Select.DELETE;
 
-      -- cast SYSTIMESTAMP to timestamp without timezone to ensure timezone setting does not influence the difference SYSTIMESTAMP-Sample_Time
-      v_SysTimestamp := CAST(SYSTIMESTAMP AS TIMESTAMP);
-      v_Mod_Seconds := MOD(TO_NUMBER(TO_CHAR(CAST(v_SysTimestamp + interval '0.5' second AS DATE), 'SS')), 10);
-      IF v_Mod_Seconds = 0 THEN
-        v_Preserve_10Secs := 'Y';
-      ELSE
-        v_Preserve_10Secs := NULL;
-      END IF;
-
       SELECT p_Sample_ID,
-             v_SysTimestamp,      -- Sample_Time
+             p_SysTimestamp,      -- Sample_Time
              s.SID,
              s.Serial#,
              s.Type,
@@ -246,12 +237,12 @@ END Panorama_Sampler_ASH;
              NULL,                -- DBREPLAY_FILE_ID
              NULL,                -- DBREPLAY_CALL_COUNTER
              -- cast SYSTIMESTAMP to timestamp without timezone to ensure timezone setting does not influence the difference SYSTIMESTAMP-Sample_Time
-             DECODE(ph.Sample_Time, NULL, NULL, (EXTRACT(DAY    FROM v_SysTimestamp-ph.Sample_Time)*86400 + EXTRACT(HOUR FROM v_SysTimestamp-ph.Sample_Time)*3600 +
-                                                 EXTRACT(MINUTE FROM v_SysTimestamp-ph.Sample_Time)*60    + EXTRACT(SECOND FROM v_SysTimestamp-ph.Sample_Time))*1000000), -- TM_Delta_Time
+             DECODE(ph.Sample_Time, NULL, NULL, (EXTRACT(DAY    FROM p_SysTimestamp-ph.Sample_Time)*86400 + EXTRACT(HOUR FROM p_SysTimestamp-ph.Sample_Time)*3600 +
+                                                 EXTRACT(MINUTE FROM p_SysTimestamp-ph.Sample_Time)*60    + EXTRACT(SECOND FROM p_SysTimestamp-ph.Sample_Time))*1000000), -- TM_Delta_Time
              DECODE(ph.Sample_Time, NULL, NULL, stm_cp.Value - NVL(ph.TM_Delta_CPU_Time, 0)),     -- TM_DELTA_CPU_TIME
              DECODE(ph.Sample_Time, NULL, NULL, stm_db.Value - NVL(ph.TM_Delta_DB_Time, 0)),      -- TM_DELTA_DB_TIME
-             DECODE(ph.Sample_Time, NULL, NULL, (EXTRACT(DAY    FROM v_SysTimestamp-ph.Sample_Time)*86400 + EXTRACT(HOUR FROM v_SysTimestamp-ph.Sample_Time)*3600 +
-                                                 EXTRACT(MINUTE FROM v_SysTimestamp-ph.Sample_Time)*60    + EXTRACT(SECOND FROM v_SysTimestamp-ph.Sample_Time))*1000000), -- Delta_Time
+             DECODE(ph.Sample_Time, NULL, NULL, (EXTRACT(DAY    FROM p_SysTimestamp-ph.Sample_Time)*86400 + EXTRACT(HOUR FROM p_SysTimestamp-ph.Sample_Time)*3600 +
+                                                 EXTRACT(MINUTE FROM p_SysTimestamp-ph.Sample_Time)*60    + EXTRACT(SECOND FROM p_SysTimestamp-ph.Sample_Time))*1000000), -- Delta_Time
              NULL, -- DECODE(ph.Sample_Time, NULL, NULL, ss_rio.Value - NVL(ph.DELTA_READ_IO_REQUESTS, 0)),  --  DELTA_READ_IO_REQUESTS
              NULL, -- DELTA_WRITE_IO_REQUESTS
              NULL, -- DELTA_READ_IO_BYTES
@@ -260,7 +251,7 @@ END Panorama_Sampler_ASH;
              p.PGA_Alloc_Mem,     -- PGA_ALLOCATED
              NVL(ts.blocks * #{PanoramaConnection.db_blocksize}, 0),  -- TEMP_SPACE_ALLOCATED
              #{PanoramaConnection.db_version >= '12.1' ? "s.Con_ID" : "0"}, -- Con_ID
-             v_Preserve_10Secs -- Preserve_10Secs, decide MOD 10 on rounded seconds (distance between samples may be a bit smaller than 1 second)
+             p_Preserve_10Secs -- Preserve_10Secs, decide MOD 10 on rounded seconds (distance between samples may be a bit smaller than 1 second)
       BULK COLLECT INTO AshTable4Select
       FROM   v$Session s
       LEFT OUTER JOIN v$Process p               ON p.Addr = s.pAddr -- dont think that join per Con_ID is necessary here
@@ -372,57 +363,66 @@ END Panorama_Sampler_ASH;
     p_Instance_Number IN NUMBER,
     p_Next_Snapshot_Start_Seconds IN NUMBER
   ) IS
-    v_Counter         INTEGER;
     v_Dummy           INTEGER;
     v_Sample_ID       INTEGER;
     v_LastSampleTime  DATE;
-    v_Bulk_Size       INTEGER;
-    v_Seconds_Run     INTEGER := 0;
+    v_SysTimestamp          TIMESTAMP(3);
+    v_Preserve_10Secs VARCHAR2(1);
     BEGIN
-      v_Counter := 0;
+      -- Initiate Counter
+      SELECT MAX(Ash_Run_ID) INTO v_Ash_Run_ID FROM panorama_owner.Panorama_ASH_Counter WHERE Instance_Number = p_Instance_Number;
+      IF v_Ash_Run_ID IS NULL THEN
+        INSERT INTO panorama_owner.Panorama_ASH_Counter(Instance_Number, Ash_Run_ID) VALUES (p_Instance_Number, 0);
+        COMMIT;
+        v_Ash_Run_ID := 0;                                                      -- start value
+      END IF;
+      v_Ash_Run_ID := v_Ash_Run_ID + 1;
+      -- Inform predecessing daemon to terminate at next 10 seconds boundary
+      UPDATE panorama_owner.Panorama_ASH_Counter SET Ash_Run_ID = v_Ash_Run_ID WHERE Instance_Number = p_Instance_Number;
+      COMMIT;
+
       -- Ensure that local database time controls end of PL/SQL-execution (allows different time zones and some seconds delay between Panorama and DB)
       -- but assumes that PL/SQL-Job is started at the exact second
-      v_LastSampleTime := SYSDATE + p_Next_Snapshot_Start_Seconds/86400;
-      SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM panorama_owner.Internal_V$Active_Sess_History;
+      v_LastSampleTime := SYSDATE + p_Next_Snapshot_Start_Seconds/86400+5;      -- Ensure that the last 10 seconds block is executed after end_snapshot
+      SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM panorama_owner.Internal_V$Active_Sess_History WHERE Instance_Number = p_Instance_Number;
       IF v_Sample_ID = 0 THEN                                                   -- no sample found in Internal_V$Active_Sess_History
         -- use EXECUTE IMMEDIATE for accessing panorama_owner.Panorama_Active_Sess_History because this view does not exists at first run
         SELECT COUNT(*) INTO v_Dummy FROM All_Tables WHERE Owner = UPPER('panorama_owner') AND Table_Name = UPPER('Panorama_Active_Sess_History');
         IF V_Dummy > 0 THEN
-          EXECUTE IMMEDIATE 'SELECT NVL(MAX(Sample_ID), 0) FROM panorama_owner.Panorama_Active_Sess_History' INTO v_Sample_ID;  -- look for Sample_ID in permanent table
+          -- look for Sample_ID in permanent table
+          EXECUTE IMMEDIATE 'SELECT NVL(MAX(Sample_ID), 0) FROM panorama_owner.Panorama_Active_Sess_History WHERE Instance_Number = :Instance_Number' INTO v_Sample_ID USING p_Instance_Number;
         END IF;
       END IF;
 
-      LOOP
-        v_Bulk_Size := 10; -- Number of seconds between persists/commits
+      v_Sample_ID := v_Sample_ID + 10;                                          -- Start with next bulk because predecessing daemon will write up to 10 samples before terminating
 
+      DBMS_LOCK.SLEEP(10-MOD(EXTRACT(SECOND FROM SYSTIMESTAMP), 10));           -- Wait until time is at excact 10 seconds boundary
+      DBMS_LOCK.SLEEP(0.1);                                                     -- Ensure next SLEEP waits until 1 second after 10 seconds boundary
+      LOOP
         -- Wait until current second ends, ensure also that first sample is at seconds bound
         -- DBMS_LOCK will be replaced with DBMS_SESSION before execution if DB version >= 18.0
-        DBMS_LOCK.SLEEP(1-MOD(EXTRACT(SECOND FROM SYSTIMESTAMP), 1));
+        -- Add 2/100 seconds to sleep time to be sure that next timestamp is surely at the next second (possible round problem?)
+        DBMS_LOCK.SLEEP(1-MOD(EXTRACT(SECOND FROM SYSTIMESTAMP), 1)+0.02);
 
-        -- Reduce Bulk_Size before end of snapshot so last records are so commited that they are visible for snapshot creation and don't fall into the next snapshot
-        IF v_Seconds_Run > p_Next_Snapshot_Start_Seconds - v_Bulk_Size THEN     -- less than v_Bulk_Size seconds until next snapshot
-          v_Bulk_Size := p_Next_Snapshot_Start_Seconds - v_Seconds_Run;         -- reduce bulk size
-          IF v_Bulk_Size < 1 THEN
-            v_Bulk_Size := 1;
-          END IF;
+        -- cast SYSTIMESTAMP to timestamp without timezone to ensure timezone setting does not influence the difference SYSTIMESTAMP-Sample_Time
+        v_SysTimestamp := CAST(SYSTIMESTAMP AS TIMESTAMP);
+
+
+        if MOD(TRUNC(EXTRACT(SECOND FROM v_SysTimestamp)), 10) = 0 THEN
+          v_Preserve_10Secs := 'Y';
+        ELSE
+          v_Preserve_10Secs := NULL;
         END IF;
 
-        CreateSample(p_Instance_Number, v_Sample_ID);
-        v_Counter := v_Counter + 1;
-        IF v_Counter >= v_Bulk_Size THEN                                        -- Persist into DB each x seconds
-          v_Counter := 0;
+        CreateSample(p_Instance_Number, v_Preserve_10Secs, v_SysTimestamp, v_Sample_ID);
+        IF v_Preserve_10Secs = 'Y' THEN                                         -- Persist into DB each 10 seconds
           Persist_Samples(p_Instance_Number);                                   -- write content of AshTable into DB
+          -- Check for termination
+          SELECT Ash_Run_ID INTO v_Dummy FROM panorama_owner.Panorama_ASH_Counter WHERE Instance_Number = p_Instance_Number;
+          EXIT WHEN v_Dummy > v_Ash_Run_ID;                                     -- a successing daemon process is active
+          EXIT WHEN SYSDATE >= v_LastSampleTime;                                -- return control to Panorama server at least x seconds after end of AWR snapshot
         END IF;
-
-        EXIT WHEN SYSDATE >= v_LastSampleTime;                                  -- return control to Panorama server
-
-        v_Seconds_Run := v_Seconds_Run + 1;
-
       END LOOP;
-
-      EXCEPTION
-        WHEN OTHERS THEN
-          RAISE;
     END Run_Sampler_Daemon;
     "
   end

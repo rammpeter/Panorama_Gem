@@ -484,6 +484,16 @@ class PanoramaSamplerStructureCheck
           primary_key: { columns: ['DBID', 'SNAP_ID', 'INSTANCE_NUMBER', 'SAMPLE_ID', 'SESSION_ID', 'Con_DBID'], compress: 2 },
       },
       {
+        table_name: 'Panorama_ASH_Counter',
+        domain: :ASH,
+        comment: 'Simple counter table to increment session overarching counters',
+        columns: [
+          { column_name:  'Instance_Number',                column_type:   'NUMBER',    not_null: true },
+          { column_name:  'ASH_Run_ID',                     column_type:   'NUMBER',    not_null: true, comment: 'Run ID of current ASH daemon (cycles with AWR snapshots)' },
+        ],
+        primary_key: { columns: ['Instance_Number'] }
+      },
+      {
           table_name: 'Panorama_Blocking_Locks',
           domain: :BLOCKING_LOCKS,
           columns: [
@@ -1828,7 +1838,7 @@ ORDER BY Column_ID
       end
     end
 
-    # Check existencwe of obsolete columns
+    # Check existence of obsolete columns
     @ora_tab_columns.each do |tcol|
       if tcol.table_name == table[:table_name].upcase
         should_exist = false
