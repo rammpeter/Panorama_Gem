@@ -383,7 +383,7 @@ END Panorama_Sampler_ASH;
 
       -- Ensure that local database time controls end of PL/SQL-execution (allows different time zones and some seconds delay between Panorama and DB)
       -- but assumes that PL/SQL-Job is started at the exact second
-      v_LastSampleTime := SYSDATE + p_Next_Snapshot_Start_Seconds/86400+5;      -- Ensure that the last 10 seconds block is executed after end_snapshot
+      v_LastSampleTime := SYSDATE + (p_Next_Snapshot_Start_Seconds+5)/86400;    -- Ensure that the last 10 seconds block is executed after end_snapshot
       SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM panorama_owner.Internal_V$Active_Sess_History WHERE Instance_Number = p_Instance_Number;
       IF v_Sample_ID = 0 THEN                                                   -- no sample found in Internal_V$Active_Sess_History
         -- use EXECUTE IMMEDIATE for accessing panorama_owner.Panorama_Active_Sess_History because this view does not exists at first run

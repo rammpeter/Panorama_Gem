@@ -675,6 +675,7 @@ class DbaSgaController < ApplicationController
     if @sqls.count == 0
       if @time_selection_start && @time_selection_end
         redirect_to url_for(controller: :dba_history, action: :list_sql_detail_historic, params: params.permit!, method: :post)
+        return
       else
         show_popup_message "SQL-ID '#{@sql_id}' not found in GV$SQL for instance = #{@instance} !"
         return

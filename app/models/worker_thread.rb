@@ -144,7 +144,7 @@ class WorkerThread
     PanoramaSamplerSampling.run_ash_daemon(@sampler_config, snapshot_time)      # Start ASH daemon
   rescue Exception => e
     begin
-      Rails.logger.error('WorkerThread.create_ash_sampler_daemon') { "Error #{e.message} (1st try) for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})" }
+      Rails.logger.error('WorkerThread.create_ash_sampler_daemon') { "Error (1st try) for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})\n#{e.message} " }
       log_exception_backtrace(e, 20) if !Rails.env.test?
       PanoramaConnection.destroy_connection                                     # Ensure next try is done with a new connection
       PanoramaSamplerSampling.new(@sampler_config).exec_shrink_space('Internal_V$Active_Sess_History')   # try to shrink size of object
@@ -152,7 +152,7 @@ class WorkerThread
 
     rescue Exception => x
       @sampler_config.set_error_message("Error #{x.message} during WorkerThread.create_ash_sampler_daemon (2nd retry)")
-      Rails.logger.error('WorkerThread.create_ash_sampler_daemon') {"Exception #{x.message} in exception handler (2nd try) for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})" }
+      Rails.logger.error('WorkerThread.create_ash_sampler_daemon') {"Error (2nd try) for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})\n#{x.message} " }
       log_exception_backtrace(x, 40)
       PanoramaConnection.destroy_connection                                     # Ensure this connection with errors will not be reused
       raise x
