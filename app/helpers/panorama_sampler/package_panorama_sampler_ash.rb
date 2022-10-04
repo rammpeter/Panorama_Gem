@@ -379,7 +379,7 @@ END Panorama_Sampler_ASH;
 
       -- Ensure that local database time controls end of PL/SQL-execution (allows different time zones and some seconds delay between Panorama and DB)
       -- but assumes that PL/SQL-Job is started at the exact second
-      v_LastSampleTime := SYSDATE + (p_Next_Snapshot_Start_Seconds+5)/86400;    -- Ensure that the last 10 seconds block is executed after end_snapshot
+      v_LastSampleTime := SYSDATE + (p_Next_Snapshot_Start_Seconds+2)/86400;    -- Ensure that the last 10 seconds block is executed after end_snapshot
       SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM panorama_owner.Internal_V$Active_Sess_History WHERE Instance_Number = p_Instance_Number;
       IF v_Sample_ID = 0 THEN                                                   -- no sample found in Internal_V$Active_Sess_History
         -- use EXECUTE IMMEDIATE for accessing panorama_owner.Panorama_Active_Sess_History because this view does not exists at first run
@@ -394,7 +394,7 @@ END Panorama_Sampler_ASH;
 
       -- The daemon starts at minute boundary, but the samples for the first 10 seconds after the snapshot time are still processed by the previously running daemon
       -- To cover some time shift between Panorama-Server and DB the daemon should start so that it will not process this first 10 seconds itself, because this may lead to PK error
-      DBMS_LOCK.SLEEP(5);
+      DBMS_LOCK.SLEEP(2);
 
       v_Ash_Run_ID := v_Ash_Run_ID + 1;
       -- Inform predecessing daemon to terminate at next 10 seconds boundary
@@ -428,6 +428,9 @@ END Panorama_Sampler_ASH;
           EXIT WHEN SYSDATE >= v_LastSampleTime;                                -- return control to Panorama server at least x seconds after end of AWR snapshot
         END IF;
       END LOOP;
+    EXCEPTION
+      WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20999, 'Exception raised for Inst='||p_Instance_Number||', Next_Snapshot_Start_Seconds='||p_Next_Snapshot_Start_Seconds||', LastSampleTime='||TO_CHAR(v_LastSampleTime, 'HH24:MI:SS'), TRUE);
     END Run_Sampler_Daemon;
     "
   end

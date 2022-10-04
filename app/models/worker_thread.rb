@@ -1,5 +1,7 @@
 # contains functions to be executed in separate manual thread
 # noinspection RubyClassVariableUsageInspection
+require 'panorama_sampler_sampling'
+
 class WorkerThread
   include ExceptionHelper
 
