@@ -116,35 +116,10 @@ class WorkerThread
     PanoramaConnection.release_connection                                       # Free DB connection in Pool in any case
   end
 
-
-  # Execute first part of job synchroneous with job's PanoramaConnection
-  @@synchron_structure_checks = {}                                             # Prevent multiple jobs from being active
-  def check_ash_structure
-    case @@synchron_structure_checks[@sampler_config.get_id]
-    when :running then
-      Rails.logger.error('WorkerThread.check_ash_structure') { "Previous check_ash_structure not yet finshed for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}), no synchroneous structure check is done! Restart Panorama server if this problem persists." }
-      @sampler_config.set_error_message("Previous check_ash_structure not yet finshed, no synchroneous structure check is done! Restart Panorama server if this problem persists.")
-      return
-    when :finished then
-      return                                                                    # Nothing to do because already executed for this config
-    end
-
-    @@synchron_structure_checks[@sampler_config.get_id] = :running              # Create semaphore for thread, begin processing
-    PanoramaSamplerStructureCheck.do_check(@sampler_config, :ASH)               # Check data structure preconditions, but only for ASH-tables
-    @@synchron_structure_checks[@sampler_config.get_id] = :finished             # Create semaphore for thread, begin processing
-  rescue Exception => e
-    @@synchron_structure_checks[@sampler_config.get_id] = :error                # Mark erroneous, execute again at next try
-    Rails.logger.error('WorkerThread.check_ash_structure') { "Execption #{e.class}:#{e.message} for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})" }
-    log_exception_backtrace(e, 20) if !Rails.env.test?
-    @sampler_config.set_error_message("Error #{e.class}:#{e.message} during WorkerThread.check_ash_structure")
-    raise e
-  end
-
   # Create snapshot in database, executed in new Thread
   # @param {Time} snapshot_time Start time of current snapshot, start time for ASH daemon
   def create_ash_sampler_daemon(snapshot_time)
-    # check data structure on time after startup of Panorama Server
-    check_ash_structure # Ensure existence of objects necessary for ASH, synchron in job's thread
+    PanoramaSamplerStructureCheck.do_check(@sampler_config, :ASH)               # check data structure once after startup of Panorama Server
     PanoramaSamplerSampling.run_ash_daemon(@sampler_config, snapshot_time)      # Start ASH daemon
   rescue Exception => e
     @sampler_config.set_error_message("Error #{e.message} during WorkerThread.create_ash_sampler_daemon")
@@ -162,7 +137,6 @@ class WorkerThread
   end
 
   # Generic method to create snapshots
-  @@checked_db_domains = {}                                                     # Flag to ensure that each domain has et least one structure check after panorama restart
   @@active_snapshots = {}
   def create_snapshot_internal(snapshot_time, domain)
     snapshot_semaphore_key = "#{@sampler_config.get_id}_#{domain}"
@@ -188,11 +162,7 @@ class WorkerThread
 
       @sampler_config.last_successful_connect(domain, PanoramaConnection.instance_number) # Set after first successful SQL
 
-      checked_signature = "#{@sampler_config.get_id}_#{domain}"
-      if !@@checked_db_domains.has_key?(checked_signature)                      # Is domain for this DB already checked after Panorama startup
-        PanoramaSamplerStructureCheck.do_check(@sampler_config, domain);        # Check data structure preconditions, but not for ASH-tables
-        @@checked_db_domains[checked_signature] = 1                             # Mark domain for this DB as initially checked
-      end
+      PanoramaSamplerStructureCheck.do_check(@sampler_config, domain);        # Check data structure preconditions once after startup, but not for ASH-tables
 
       PanoramaSamplerSampling.do_sampling(@sampler_config, snapshot_time, domain)  # Do Sampling
       PanoramaSamplerSampling.do_housekeeping(@sampler_config, false, domain)   # Do housekeeping without shrink space

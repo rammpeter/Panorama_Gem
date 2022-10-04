@@ -55,6 +55,9 @@ class PanoramaSamplerConfig
     @config_hash[:last_blocking_locks_snapshot_start] = nil   if !@config_hash.has_key?(:last_blocking_locks_snapshot_start)
     @config_hash[:last_longterm_trend_snapshot_start] = nil   if !@config_hash.has_key?(:last_longterm_trend_snapshot_start)
 
+    # Hash with indicators for each domain if check has occurred since last startup (nil, :running, :finished, :error)
+    @config_hash[:structure_checks]                   = {}    if !@config_hash.has_key?(:structure_checks)
+
   end
 
   def get_cloned_config_hash
@@ -108,6 +111,8 @@ class PanoramaSamplerConfig
   def get_domain_snapshot_cycle(domain);      get_config_value("#{domain.downcase}_snapshot_cycle".to_sym);       end
   def get_last_domain_snapshot_start(domain); get_config_value("last_#{domain.downcase}_snapshot_start".to_sym);  end
   def get_last_domain_snapshot_end(domain);   get_config_value("last_#{domain.downcase}_snapshot_end".to_sym);    end
+
+  def get_structure_check(domain);            get_config_value(:structure_checks)[domain];            end
 
   # Does the user have SELECT ANY TABLE? This ensures that user may select V$-Tables from within packages
   def get_select_any_table?
@@ -212,12 +217,31 @@ class PanoramaSamplerConfig
     end
   end
 
+  # set the state of structure check for specific domain
+  # @param {Symbol} domain
+  # @param {Symbol} state nil, :running, :finished, :error
+  def set_structure_check(domain, state)
+    @@config_access_mutex.synchronize do
+      @config_hash[:structure_checks][domain] = state
+      # PanoramaSamplerConfig.write_config_array_to_store is not necessary because content is valid for runtime of Panorama instance only
+    end
+  end
+
+  # Called once at start of Panorama instance
+  def reset_structure_check
+    @@config_access_mutex.synchronize do
+      @config_hash[:structure_checks] = {}
+      # PanoramaSamplerConfig.write_config_array_to_store is not necessary because content is valid for runtime of Panorama instance only
+    end
+  end
+
   # Allow snapshot cycle with less than 1 minute for tests
   def set_test_awr_ash_snapshot_cycle(seconds)
     raise "Method only allowed for test purpose" if !Rails.env.test?
     @config_hash[:awr_ash_snapshot_cycle] = seconds.to_f/60
     PanoramaSamplerConfig.write_config_array_to_store
   end
+
 
   # Modify object with values from hash
   def modify(modified_config_hash)
@@ -387,7 +411,6 @@ class PanoramaSamplerConfig
       write_config_array_to_store
     end
   end
-
 
   #-------------- not validated class methods --------------
 

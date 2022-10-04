@@ -36,16 +36,17 @@ class PanoramaSamplerJob < ApplicationJob
     PanoramaSamplerConfig.get_config_array.each do |config|
       Rails.logger.debug('PanoramaSamplerJob.perform') { "Processing config ID=#{config.get_id} name='#{config.get_name}'" }
       if @@first_call_after_startup
+        config.reset_structure_check                                            # Ensure structure check is executed once at startup
         if config.get_domain_active(:AWR_ASH)
           begin
             snapshot_cycle_minutes  = config.get_domain_snapshot_cycle(:AWR_ASH)
-            next_full_snapshot_time = Time.now                                        # look for next regular snapshot time from now
-            next_full_snapshot_time += 60 - next_full_snapshot_time.sec               # Next full minute
+            next_full_snapshot_time = Time.now                                  # look for next regular snapshot time from now
+            next_full_snapshot_time += 60 - next_full_snapshot_time.sec         # Next full minute
             while snapshot_cycle_minutes > 60 && next_full_snapshot_time.hour % snapshot_cycle_minutes/60 != 0
               next_full_snapshot_time += 3600 - next_full_snapshot_time.min * 60      # next full hour
             end
             while snapshot_cycle_minutes <= 60 && next_full_snapshot_time.min % snapshot_cycle_minutes != 0
-              next_full_snapshot_time += 60                                           # next full minute
+              next_full_snapshot_time += 60                                     # next full minute
             end
             prev_regular_snapshot_time = next_full_snapshot_time - snapshot_cycle_minutes * 60
             Rails.logger.debug('PanoramaSamplerJob.perform') { "First start of ASH sampler daemon after startup for config ID=#{config.get_id} name='#{config.get_name}' snapshot_time=#{prev_regular_snapshot_time}" }
@@ -55,7 +56,7 @@ class PanoramaSamplerJob < ApplicationJob
               # Don't raise exception because it should not stop calling job processing
           end
         end
-      else                                                                        # regular operation in snapshot cycle
+      else                                                                      # regular operation in snapshot cycle
         check_for_sampling(config, snapshot_time, :AWR_ASH)
         check_for_sampling(config, snapshot_time, :OBJECT_SIZE, 60)
         check_for_sampling(config, snapshot_time, :CACHE_OBJECTS)

@@ -11,7 +11,27 @@ class PanoramaSamplerStructureCheck
 
   def self.do_check(sampler_config, domain)
     raise "Unsupported domain #{domain}" if !domains.include? domain
-    PanoramaSamplerStructureCheck.new(sampler_config).do_check_internal(domain)
+
+    case sampler_config.get_structure_check(domain)
+    when :running then
+      err_msg = "Previous structure check for domain #{domain} not yet finshed, no structure check is done now"
+      @sampler_config.set_error_message(err_msg)
+      msg  = "ID=#{sampler_config.get_id} (#{sampler_config.get_name}): #{err_msg}"
+      Rails.logger.error('PanoramaSamplerStructureCheck.do_check') { msg }
+      raise msg
+    when :finished then
+      return                                                                    # Nothing to do because already executed for this config / domain
+    end
+
+    sampler_config.set_structure_check(domain, :running)                        # Create semaphore for thread, begin processing
+    PanoramaSamplerStructureCheck.new(sampler_config).do_check_internal(domain) # Check data structure preconditions for domain
+    sampler_config.set_structure_check(domain, :finished)                       # set semaphore for thread, finished processing
+  rescue Exception => e
+    sampler_config.set_structure_check(domain, :error)                          # Mark erroneous, execute again at next try
+    Rails.logger.error('PanoramaSamplerStructureCheck.do_check') { "Execption #{e.class}:#{e.message} for ID=#{sampler_config.get_id} (#{sampler_config.get_name})" }
+    log_exception_backtrace(e, 20) if !Rails.env.test?
+    sampler_config.set_error_message("Error #{e.class}:#{e.message} during PanoramaSamplerStructureCheck.do_check")
+    raise e
   end
 
   def self.remove_tables(sampler_config)
@@ -1663,6 +1683,7 @@ ORDER BY Column_ID
         else
       end
     end
+    Rails.logger.debug('PanoramaSampleStructureCheck.do_check_internal') { "Finished structure check for domain #{domain} in config ID=#{@sampler_config.get_id} #{@sampler_config.get_name}"}
   end
 
   def remove_tables_internal
