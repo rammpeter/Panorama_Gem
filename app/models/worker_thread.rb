@@ -17,6 +17,9 @@ class WorkerThread
   end
 
   # Generic create snapshot
+  # @param {PanoramaSamplerConfig} sampler_config: configuration object
+  # @param {Time} snapshot_time Start time of current snapshot
+  # @param {Symbol} domain For which domain the snapshot should be executed
   def self.create_snapshot(sampler_config, snapshot_time, domain)
 
     if domain == :AWR_ASH
@@ -33,8 +36,8 @@ class WorkerThread
   end
 
   # Used also for running ash daemon at Panorama-startup, snapshot_time must be time according to regular snapshot cycle
-  # @param sampler_config: object of class PanoramaSamplerConfig
-  # @param snapshot_time:
+  # @param {PanoramaSamplerConfig} sampler_config: configuration object
+  # @param {Time} snapshot_time Start time of current snapshot, start time for ASH daemon
   def self.run_ash_sampler_daemon(sampler_config, snapshot_time)
     WorkerThread.new(sampler_config, 'check_structure_synchron').check_structure_synchron # Ensure existence of objects necessary for both Threads, synchron with job's thread
     thread = Thread.new{WorkerThread.new(sampler_config, 'ash_sampler_daemon').create_ash_sampler_daemon(snapshot_time)} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
@@ -138,25 +141,18 @@ class WorkerThread
   end
 
 
-  # Create snapshot in database
+  # Create snapshot in database, executed in new Thread
+  # @param {Time} snapshot_time Start time of current snapshot, start time for ASH daemon
   def create_ash_sampler_daemon(snapshot_time)
     # Check data structure only for ASH-tables is already done in check_structure_synchron
     PanoramaSamplerSampling.run_ash_daemon(@sampler_config, snapshot_time)      # Start ASH daemon
   rescue Exception => e
-    begin
-      Rails.logger.error('WorkerThread.create_ash_sampler_daemon') { "Error (1st try) for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})\n#{e.message} " }
-      log_exception_backtrace(e, 20) if !Rails.env.test?
-      PanoramaConnection.destroy_connection                                     # Ensure next try is done with a new connection
-      PanoramaSamplerSampling.new(@sampler_config).exec_shrink_space('Internal_V$Active_Sess_History')   # try to shrink size of object
-      PanoramaSamplerSampling.run_ash_daemon(@sampler_config, snapshot_time)    # Try again to execute sampler
-
-    rescue Exception => x
-      @sampler_config.set_error_message("Error #{x.message} during WorkerThread.create_ash_sampler_daemon (2nd retry)")
-      Rails.logger.error('WorkerThread.create_ash_sampler_daemon') {"Error (2nd try) for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})\n#{x.message} " }
-      log_exception_backtrace(x, 40)
-      PanoramaConnection.destroy_connection                                     # Ensure this connection with errors will not be reused
-      raise x
-    end
+    @sampler_config.set_error_message("Error #{e.message} during WorkerThread.create_ash_sampler_daemon")
+    Rails.logger.error('WorkerThread.create_ash_sampler_daemon') {"Error for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})\n#{e.class}:#{e.message} " }
+    log_exception_backtrace(e, 40)
+    PanoramaConnection.destroy_connection                                     # Ensure this connection with errors will not be reused
+    PanoramaSamplerSampling.new(@sampler_config).exec_shrink_space('Internal_V$Active_Sess_History')   # try to shrink the size of object
+    raise e
   rescue Object => e
     Rails.logger.error('WorkerThread.create_ash_sampler_daemon') { "Exception #{e.class} for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})" }
     @sampler_config.set_error_message("Exception #{e.class} during WorkerThread.create_ash_sampler_daemon")

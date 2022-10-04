@@ -19,12 +19,11 @@ class PanoramaSamplerSampling
     end
   end
 
+  # class method for external call
+  # @param {PanoramaSamplerConfig} sampler_config: configuration object
+  # @param {Time} snapshot_time Start time of current snapshot, start time for ASH daemon
   def self.run_ash_daemon(sampler_config, snapshot_time)
     PanoramaSamplerSampling.new(sampler_config).run_ash_daemon_internal(snapshot_time)
-# Commented out because second calculation with snapshot_time may get wrong result for next snapshot time if current snapshot time is already stored
-#  rescue Exception => e
-#    # try second time to fix error ORA-04068 existing state of package has changed ...
-#    PanoramaSamplerSampling.new(sampler_config).run_ash_daemon_internal(snapshot_time)
   end
 
   # @param sampler_config: Object of class PanoramaSamplerConfig
@@ -162,11 +161,9 @@ class PanoramaSamplerSampling
     end
   end
 
-  # Run daemon, daeomon returns 1 second before next snapshot timestamp
+  # Run deamon, terminate if semahore cancels run or snapshot cycle expired
+  # @param {Time} snapshot_time Start time of current snapshot at exact minute boundary
   def run_ash_daemon_internal(snapshot_time)
-    start_delay_from_snapshot = (Time.now - snapshot_time).round                # at seconds bound
-    next_snapshot_start_seconds = @sampler_config.get_awr_ash_snapshot_cycle * 60 - start_delay_from_snapshot # Number of seconds until next snapshot start
-
     if @sampler_config.get_select_any_table?                                     # call PL/SQL package ?
       sql = " BEGIN #{@sampler_config.get_owner}.Panorama_Sampler_ASH.Run_Sampler_Daemon(?, ?); END;"
     else
@@ -179,6 +176,12 @@ class PanoramaSamplerSampling
         "
     end
 
+    # The daemon starts at minute boundary, but the samples for the first 10 seconds after the snapshot time are still processed by the previously running daemon
+    # To cover some time shift between Panorama-Server and DB the daemon should start so that it will not process this first 10 seconds itself, because this may lead to PK error
+    sleep 5
+
+    start_delay_from_snapshot = (Time.now - snapshot_time).round                # at seconds bound
+    next_snapshot_start_seconds = @sampler_config.get_awr_ash_snapshot_cycle * 60 - start_delay_from_snapshot # Number of seconds until next snapshot start
     Rails.logger.info('PanoramaSamplerSampling.run_ash_daemon_internal') { "ASH daemon created for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}', Instance=#{PanoramaConnection.instance_number}, next_snapshot_start_seconds=#{next_snapshot_start_seconds}  SID=#{PanoramaConnection.sid}" }
     PanoramaConnection.sql_execute [sql, PanoramaConnection.instance_number, next_snapshot_start_seconds]
     Rails.logger.info('PanoramaSamplerSampling.run_ash_daemon_internal') { "ASH daemon regularly terminated for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}'" }
