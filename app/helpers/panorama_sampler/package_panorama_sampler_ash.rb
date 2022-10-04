@@ -127,6 +127,8 @@ END Panorama_Sampler_ASH;
   StatNameTable           StatNameTableType;
 
   v_Ash_Run_ID            NUMBER;                                               -- ID of current ASH daemon run for the duration of AWR snapshot
+  v_Dummy                 NUMBER;
+
 
   FUNCTION Get_Stat_ID(p_Name IN VARCHAR2) RETURN NUMBER IS
   BEGIN
@@ -350,6 +352,8 @@ END Panorama_Sampler_ASH;
    EXCEPTION
       WHEN OTHERS THEN
         Msg := SQLERRM||':';
+        SELECT MAX(Sample_ID) INTO v_Dummy FROM panorama_owner.Internal_V$Active_Sess_History; -- Compare max existing value in table
+        Msg := Msg||':'||v_Dummy||':';
         FOR Idx IN 1 .. AshTable.COUNT LOOP
           IF Idx < 50 THEN                                                      -- Ensure max. VARCHAR2 size is not exceeded
             Msg := Msg||AshTable(Idx).Sample_ID||'.'||AshTable(Idx).Session_ID||'/';
@@ -363,10 +367,9 @@ END Panorama_Sampler_ASH;
     p_Instance_Number IN NUMBER,
     p_Next_Snapshot_Start_Seconds IN NUMBER
   ) IS
-    v_Dummy           INTEGER;
-    v_Sample_ID       INTEGER;
+    v_Sample_ID       NUMBER;
     v_LastSampleTime  DATE;
-    v_SysTimestamp          TIMESTAMP(3);
+    v_SysTimestamp    TIMESTAMP(3);
     v_Preserve_10Secs VARCHAR2(1);
     BEGIN
       -- Initiate Counter

@@ -15,7 +15,7 @@ class PanoramaSamplerStructureCheck
     case sampler_config.get_structure_check(domain)
     when :running then
       err_msg = "Previous structure check for domain #{domain} not yet finshed, no structure check is done now"
-      @sampler_config.set_error_message(err_msg)
+      sampler_config.set_error_message(err_msg)
       msg  = "ID=#{sampler_config.get_id} (#{sampler_config.get_name}): #{err_msg}"
       Rails.logger.error('PanoramaSamplerStructureCheck.do_check') { msg }
       raise msg
