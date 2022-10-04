@@ -372,14 +372,10 @@ END Panorama_Sampler_ASH;
       -- Initiate Counter
       SELECT MAX(Ash_Run_ID) INTO v_Ash_Run_ID FROM panorama_owner.Panorama_ASH_Counter WHERE Instance_Number = p_Instance_Number;
       IF v_Ash_Run_ID IS NULL THEN
-        INSERT INTO panorama_owner.Panorama_ASH_Counter(Instance_Number, Ash_Run_ID) VALUES (p_Instance_Number, 0);
-        COMMIT;
         v_Ash_Run_ID := 0;                                                      -- start value
+        INSERT INTO panorama_owner.Panorama_ASH_Counter(Instance_Number, Ash_Run_ID) VALUES (p_Instance_Number, v_Ash_Run_ID);
+        COMMIT;
       END IF;
-      v_Ash_Run_ID := v_Ash_Run_ID + 1;
-      -- Inform predecessing daemon to terminate at next 10 seconds boundary
-      UPDATE panorama_owner.Panorama_ASH_Counter SET Ash_Run_ID = v_Ash_Run_ID WHERE Instance_Number = p_Instance_Number;
-      COMMIT;
 
       -- Ensure that local database time controls end of PL/SQL-execution (allows different time zones and some seconds delay between Panorama and DB)
       -- but assumes that PL/SQL-Job is started at the exact second
@@ -399,6 +395,11 @@ END Panorama_Sampler_ASH;
       -- The daemon starts at minute boundary, but the samples for the first 10 seconds after the snapshot time are still processed by the previously running daemon
       -- To cover some time shift between Panorama-Server and DB the daemon should start so that it will not process this first 10 seconds itself, because this may lead to PK error
       DBMS_LOCK.SLEEP(5);
+
+      v_Ash_Run_ID := v_Ash_Run_ID + 1;
+      -- Inform predecessing daemon to terminate at next 10 seconds boundary
+      UPDATE panorama_owner.Panorama_ASH_Counter SET Ash_Run_ID = v_Ash_Run_ID WHERE Instance_Number = p_Instance_Number;
+      COMMIT;
 
       DBMS_LOCK.SLEEP(10-MOD(EXTRACT(SECOND FROM SYSTIMESTAMP), 10));           -- Wait until time is at excact 10 seconds boundary
       DBMS_LOCK.SLEEP(0.1);                                                     -- Ensure next SLEEP waits until 1 second after 10 seconds boundary
