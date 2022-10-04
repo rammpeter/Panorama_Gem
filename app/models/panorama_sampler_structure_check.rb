@@ -1581,7 +1581,7 @@ ORDER BY Column_ID
 
   # Check data structures, for ASH-Thread or snapshot thread
   def do_check_internal(domain)
-
+    Rails.logger.debug('PanoramaSampleStructureCheck.do_check_internal') { "Execute structure check for domain #{domain} in config ID=#{@sampler_config.get_id} #{@sampler_config.get_name}"}
     @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config.get_owner.upcase]
     @ora_tab_privs    = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM ALL_TAB_PRIVS WHERE Table_Schema = ?  AND Privilege = 'SELECT'  AND Grantee = 'PUBLIC'",  @sampler_config.get_owner.upcase]
 

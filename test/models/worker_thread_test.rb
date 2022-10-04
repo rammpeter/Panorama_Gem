@@ -56,11 +56,9 @@ class WorkerThreadTest < ActiveSupport::TestCase
 
         PanoramaSamplerStructureCheck.remove_tables(@sampler_config)            # ensure missing objects is tested
 
-        WorkerThread.new(@sampler_config, 'test_check_structure_synchron').check_structure_synchron
         WorkerThread.new(@sampler_config, 'test_create_ash_sampler_daemon').create_ash_sampler_daemon(Time.now.round)
         WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
 
-        WorkerThread.new(@sampler_config, 'test_check_structure_synchron').check_structure_synchron
         WorkerThread.new(@sampler_config, 'test_create_ash_sampler_daemon').create_ash_sampler_daemon(Time.now.round)
         WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
 

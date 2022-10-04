@@ -39,7 +39,6 @@ class WorkerThread
   # @param {PanoramaSamplerConfig} sampler_config: configuration object
   # @param {Time} snapshot_time Start time of current snapshot, start time for ASH daemon
   def self.run_ash_sampler_daemon(sampler_config, snapshot_time)
-    WorkerThread.new(sampler_config, 'check_structure_synchron').check_structure_synchron # Ensure existence of objects necessary for both Threads, synchron with job's thread
     thread = Thread.new{WorkerThread.new(sampler_config, 'ash_sampler_daemon').create_ash_sampler_daemon(snapshot_time)} # Start PL/SQL daemon that does ASH-sampling, terminates before next snapshot
     thread.name = 'WorkerThread: ash_sampler_daemon'
   end
@@ -117,34 +116,35 @@ class WorkerThread
     PanoramaConnection.release_connection                                       # Free DB connection in Pool in any case
   end
 
+
   # Execute first part of job synchroneous with job's PanoramaConnection
-  @@synchron__structure_checks = {}                                             # Prevent multiple jobs from being active
-  def check_structure_synchron
-    if @@synchron__structure_checks[@sampler_config.get_id]
-      Rails.logger.error('WorkerThread.check_structure_synchron') { "Previous check_structure_synchron not yet finshed for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}), no synchroneous structure check is done! Restart Panorama server if this problem persists." }
-      @sampler_config.set_error_message("Previous check_structure_synchron not yet finshed, no synchroneous structure check is done! Restart Panorama server if this problem persists.")
+  @@synchron_structure_checks = {}                                             # Prevent multiple jobs from being active
+  def check_ash_structure
+    case @@synchron_structure_checks[@sampler_config.get_id]
+    when :running then
+      Rails.logger.error('WorkerThread.check_ash_structure') { "Previous check_ash_structure not yet finshed for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}), no synchroneous structure check is done! Restart Panorama server if this problem persists." }
+      @sampler_config.set_error_message("Previous check_ash_structure not yet finshed, no synchroneous structure check is done! Restart Panorama server if this problem persists.")
       return
+    when :finished then
+      return                                                                    # Nothing to do because already executed for this config
     end
 
-    @@synchron__structure_checks[@sampler_config.get_id] = true                 # Create semaphore for thread, begin processing
-
+    @@synchron_structure_checks[@sampler_config.get_id] = :running              # Create semaphore for thread, begin processing
     PanoramaSamplerStructureCheck.do_check(@sampler_config, :ASH)               # Check data structure preconditions, but only for ASH-tables
-    @@synchron__structure_checks.delete(@sampler_config.get_id)                 # Remove semaphore
+    @@synchron_structure_checks[@sampler_config.get_id] = :finished             # Create semaphore for thread, begin processing
   rescue Exception => e
-    @@synchron__structure_checks.delete(@sampler_config.get_id)                 # Remove semaphore
-    Rails.logger.error('WorkerThread.check_structure_synchron') { "Error #{e.message} for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})" }
+    @@synchron_structure_checks[@sampler_config.get_id] = :error                # Mark erroneous, execute again at next try
+    Rails.logger.error('WorkerThread.check_ash_structure') { "Execption #{e.class}:#{e.message} for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})" }
     log_exception_backtrace(e, 20) if !Rails.env.test?
-    @sampler_config.set_error_message("Error #{e.message} during WorkerThread.check_structure_synchron")
+    @sampler_config.set_error_message("Error #{e.class}:#{e.message} during WorkerThread.check_ash_structure")
     raise e
-  ensure
-    PanoramaConnection.release_connection                                       # Free DB connection in Pool in any case
   end
-
 
   # Create snapshot in database, executed in new Thread
   # @param {Time} snapshot_time Start time of current snapshot, start time for ASH daemon
   def create_ash_sampler_daemon(snapshot_time)
-    # Check data structure only for ASH-tables is already done in check_structure_synchron
+    # check data structure on time after startup of Panorama Server
+    check_ash_structure # Ensure existence of objects necessary for ASH, synchron in job's thread
     PanoramaSamplerSampling.run_ash_daemon(@sampler_config, snapshot_time)      # Start ASH daemon
   rescue Exception => e
     @sampler_config.set_error_message("Error #{e.message} during WorkerThread.create_ash_sampler_daemon")

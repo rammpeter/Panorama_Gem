@@ -161,7 +161,7 @@ class PanoramaSamplerSampling
     end
   end
 
-  # Run deamon, terminate if semahore cancels run or snapshot cycle expired
+  # Run daemon, terminate if semahore cancels run or snapshot cycle expired
   # @param {Time} snapshot_time Start time of current snapshot at exact minute boundary
   def run_ash_daemon_internal(snapshot_time)
     if @sampler_config.get_select_any_table?                                     # call PL/SQL package ?
@@ -175,10 +175,6 @@ class PanoramaSamplerSampling
         END;
         "
     end
-
-    # The daemon starts at minute boundary, but the samples for the first 10 seconds after the snapshot time are still processed by the previously running daemon
-    # To cover some time shift between Panorama-Server and DB the daemon should start so that it will not process this first 10 seconds itself, because this may lead to PK error
-    sleep 5
 
     start_delay_from_snapshot = (Time.now - snapshot_time).round                # at seconds bound
     next_snapshot_start_seconds = @sampler_config.get_awr_ash_snapshot_cycle * 60 - start_delay_from_snapshot # Number of seconds until next snapshot start
