@@ -383,15 +383,6 @@ END Panorama_Sampler_ASH;
       -- Ensure that local database time controls end of PL/SQL-execution (allows different time zones and some seconds delay between Panorama and DB)
       -- but assumes that PL/SQL-Job is started at the exact second
       v_LastSampleTime := SYSDATE + (p_Next_Snapshot_Start_Seconds+2)/86400;    -- Ensure that the last 10 seconds block is executed after end_snapshot
-      SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM panorama_owner.Internal_V$Active_Sess_History WHERE Instance_Number = p_Instance_Number;
-      IF v_Sample_ID = 0 THEN                                                   -- no sample found in Internal_V$Active_Sess_History
-        -- use EXECUTE IMMEDIATE for accessing panorama_owner.Panorama_Active_Sess_History because this view does not exists at first run
-        SELECT COUNT(*) INTO v_Dummy FROM All_Tables WHERE Owner = UPPER('panorama_owner') AND Table_Name = UPPER('Panorama_Active_Sess_History');
-        IF V_Dummy > 0 THEN
-          -- look for Sample_ID in permanent table
-          EXECUTE IMMEDIATE 'SELECT NVL(MAX(Sample_ID), 0) FROM panorama_owner.Panorama_Active_Sess_History WHERE Instance_Number = :Instance_Number' INTO v_Sample_ID USING p_Instance_Number;
-        END IF;
-      END IF;
 
       v_Sample_ID := v_Sample_ID + 10;                                          -- Start with next bulk because predecessing daemon will write up to 10 samples before terminating
 
@@ -405,7 +396,18 @@ END Panorama_Sampler_ASH;
       COMMIT;
 
       DBMS_LOCK.SLEEP(10-MOD(EXTRACT(SECOND FROM SYSTIMESTAMP), 10));           -- Wait until time is at excact 10 seconds boundary
-      DBMS_LOCK.SLEEP(0.1);                                                     -- Ensure next SLEEP waits until 1 second after 10 seconds boundary
+      DBMS_LOCK.SLEEP(0.1);                                                     -- Ensure next SLEEP waits until 0.1 second after 10 seconds boundary
+
+      SELECT NVL(MAX(Sample_ID), 0) INTO v_Sample_ID FROM panorama_owner.Internal_V$Active_Sess_History WHERE Instance_Number = p_Instance_Number;
+      IF v_Sample_ID = 0 THEN                                                   -- no sample found in Internal_V$Active_Sess_History
+        -- use EXECUTE IMMEDIATE for accessing panorama_owner.Panorama_Active_Sess_History because this view does not exists at first run
+        SELECT COUNT(*) INTO v_Dummy FROM All_Tables WHERE Owner = UPPER('panorama_owner') AND Table_Name = UPPER('Panorama_Active_Sess_History');
+        IF V_Dummy > 0 THEN
+          -- look for Sample_ID in permanent table
+          EXECUTE IMMEDIATE 'SELECT NVL(MAX(Sample_ID), 0) FROM panorama_owner.Panorama_Active_Sess_History WHERE Instance_Number = :Instance_Number' INTO v_Sample_ID USING p_Instance_Number;
+        END IF;
+      END IF;
+
       LOOP
         -- Wait until current second ends, ensure also that first sample is at seconds bound
         -- DBMS_LOCK will be replaced with DBMS_SESSION before execution if DB version >= 18.0
