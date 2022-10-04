@@ -196,7 +196,7 @@ END Panorama_Sampler_Snapshot;
              #{PanoramaConnection.db_version >= '12.1' ? "panorama_owner.Con_DBID_From_Con_ID.Get(Con_ID), Con_ID" : "p_DBID, 0"}
       FROM   v$Memory_Resize_Ops
       WHERE  End_Time >= p_Begin_Interval_Time  /* Resize ended in considered snapshot period */
-      GROUP BY COMPONENT, OPER_TYPE, START_TIME, TARGET_SIZE, Con_ID /* eliminate possible duplicates */
+      GROUP BY COMPONENT, OPER_TYPE, START_TIME, TARGET_SIZE#{", Con_ID" if PanoramaConnection.db_version >= '12.1'} /* eliminate possible duplicates */
     ;
     COMMIT;
   END Snap_Memory_Resize_Ops;
