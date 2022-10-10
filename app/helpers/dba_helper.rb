@@ -77,10 +77,11 @@ module DbaHelper
         "Blocking-SID=#{p2.to_i/2**(4*wordsize) }, Cursor-Hash-Value=#{p1.to_i} SQL-ID='#{cursor_rec.sql_id if cursor_rec}', User=#{cursor_rec.parsing_schema_name if cursor_rec}, #{cursor_rec.sql_text if cursor_rec}"
       else   # Mutex etc. e.g. 'library cache: mutex X'
         # P1 = “idn” = Unique Mutex Identifier. Hash value of library cache object protected by mutex or hash bucket number.
-        # P2 = “value” = “Blocking SID | Shared refs” = Top 2 (4 on 64bit) bytes contain SID of blocker. This session is currently holding the mutex exclusively or modifying it. Lower bytes represent the number of shared references when the mutex is in-flux
+        # P2 = “value” = “Blocking SID | Shared refs” = SID: bitand(p2/power(2,32),power(2,16)-1). This session is currently holding the mutex exclusively or modifying it. Lower bytes represent the number of shared references when the mutex is in-flux
+        # Source for p2 SID-Interpretation: https://fritshoogland.files.wordpress.com/2020/04/mutexes-2.pdf
         # P3 = “where” = “Location ID | Sleeps” = Top 2(4) bytes contain location in code (internal identifier) where mutex is being waited for. Lower bytes contain the number of sleeps for this mutex. These bytes not populated on some platforms, including Linux
         lc_obj_name = sql_select_one ["SELECT /*+ Panorama-Tool Ramm */ Type||' '||Owner||'.'||Name FROM gv$DB_Object_Cache WHERE Inst_ID=? AND Hash_Value=?", instance, p1.to_i]
-        "Object=#{lc_obj_name}, Blocking-SID=#{ p2.to_i/2**(4*wordsize)}, number of shared references=#{p2.to_i%2**(4*wordsize)}, Location-ID=#{p3.to_i/2**(4*wordsize)}, Number of Sleeps=#{p3.to_i%2**(4*wordsize)} "
+        "Object=#{lc_obj_name}, Blocking-SID=#{p2.to_i/2**32 & 2**16-1}, number of shared references=#{p2.to_i%2**(4*wordsize)}, Location-ID=#{p3.to_i/2**(4*wordsize)}, Number of Sleeps=#{p3.to_i%2**(4*wordsize)} "
       end
     when event.match('library cache') && p1text=="handle address" then
       # TODO: move to
