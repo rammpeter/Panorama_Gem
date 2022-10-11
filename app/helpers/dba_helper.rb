@@ -87,8 +87,33 @@ module DbaHelper
       # TODO: move to
       # select * from v$libcache_locks where object_handle = to_char(21096197416,'fm000000000000000X') -- p1raw
       # select * from v$db_object_cache where addr = to_char(21096197416,'fm000000000000000X') -- p1raw
-      result = sql_select_one ["SELECT 'handle_address: Owner='''||kglnaown||''', Object='''||kglnaobj||'''' FROM x$kglob WHERE kglhdadr=HEXToRaw(TRIM(TO_char(?,'XXXXXXXXXXXXXXXX')))", p1]
-      result = "Nothing found in x$kglob for p1" unless result
+      begin
+        result = sql_select_one ["SELECT 'handle_address: Owner='''||kglnaown||''', Object='''||kglnaobj||''''
+                                FROM   x$kglob
+                                WHERE kglhdadr=HEXToRaw(TRIM(TO_char(?,'XXXXXXXXXXXXXXXX')))", p1]
+        result = "Nothing found in x$kglob for p1" unless result
+      rescue Exception
+        result = "Access denied on x$kglob"
+      end
+      oc = sql_select_first_row ["SELECT * FROM v$DB_Object_Cache WHERE Addr = TO_CHAR(?, 'fm000000000000000X')", p1]
+      if oc.nil?
+        result << ", No hit in v$DB_Object_Cache for p1"
+      else
+        result << ", Owner='#{oc.owner}'"           if oc.owner
+        result << ", Name='#{oc.name[0,100]}'"      if oc.name
+        result << ", DB-Link='#{oc.db_link}'"       if oc.db_link
+        result << ", Namespace='#{oc.namespace}'"   if oc.namespace
+        result << ", Type='#{oc.type}'"             if oc.type
+      end
+      result << ", Mode='#{(p3.to_i % 2**32) & 2**16-1}'"
+      begin
+        ns_id = (p3.to_i % 2**32)/2**16
+        result << ", Namespace-ID='#{ns_id}'"
+        ns = sql_select_one ["SELECT KGLSTDSC FROM x$kglst WHERE INDX=? and KGLSTTYP='NAMESPACE'", ns_id]
+        result << ", Namespace='#{ns}'"
+      rescue Exception
+        result << ", Access denied on x$kglst"
+      end
       result
     when p1text == 'channel context' # reliable message
       sql = "\
