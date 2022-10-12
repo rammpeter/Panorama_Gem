@@ -147,8 +147,7 @@
   <div class="flex-row-element">
     <%=
       render_async(:dba, :oracle_parameter, {
-        caption:              "Init-Parameter relevant for auditing",
-        name_array:           ["audit_sys_operations", "unified_audit_sga_queue_size", "audit_file_dest", "audit_syslog_level", "audit_trail"],
+        option:               :auditing,
         update_area:          @update_area
       })
     %>

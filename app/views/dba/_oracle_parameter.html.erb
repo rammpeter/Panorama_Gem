@@ -40,7 +40,7 @@ FALSE - Parameter cannot be changed with ALTER SYSTEM unless a server parameter 
 %>
 
 <%=
-    caption = @caption.nil? ? t(:dba_oracle_parameter_caption, :default=>'Init-parameter of database') : @caption
+    caption = @caption
     gen_slickgrid(@parameters, column_options, {caption: caption, max_height: 600, width: :auto, show_pin_icon: 1})
 %>
 

@@ -567,24 +567,29 @@ oradebug setorapname diag
 
   def oracle_parameter
     @instance = prepare_param_instance
-    @name_array = params[:name_array]
-    @name_array = nil if @name_array == ''
+    @option = prepare_param(:option)&.to_sym
 
-    @caption = params[:caption]
-    @caption = nil if @caption == ''
+    # Limited amount of values to show if filtering option is given
+    option_names = {
+      auditing: ["audit_sys_operations", "unified_audit_sga_queue_size", "audit_file_dest", "audit_syslog_level", "audit_trail"],
+      memory:   ['memory_target', 'memory_max_target', 'pga_aggregate_limit', 'pga_aggregate_target', 'sga_max_size', 'sga_target']
+    }
+
+    raise "Unsupported option #{@option}" if !@option.nil? && !option_names.has_key?(@option)
+
+    @caption = "#{t(:dba_oracle_parameter_caption, :default=>'Init-parameter of database')}#{" relevant for #{@option}" if @option}"
 
     @reduced_columns = params[:reduced_columns]
 
     where_string = ''
     where_values = []
 
-    if @name_array
-      raise "Array type expected instead of #{@name_array.class} for parameter @name_array" if @name_array.class != Array
+    if @option
       where_string << " AND Name IN ("
-      @name_array.each_index do |i|
+      option_names[@option].each_index do |i|
         where_string << "?"
-        where_string << "," if i < @name_array.count-1
-        where_values << @name_array[i]
+        where_string << "," if i < option_names[@option].count-1
+        where_values << option_names[@option][i]
       end
       where_string << ")"
     end
@@ -602,7 +607,7 @@ oradebug setorapname diag
     }
 
     begin
-      @parameters = sql_select_iterator(["\
+      @parameters = sql_select_all(["\
         SELECT /* Panorama-Tool Ramm */ *
         FROM   (SELECT NVL(v.Instance,      i.Instance)      Instance,
                        NVL(v.ID,            i.ID)            ID,
@@ -645,10 +650,8 @@ oradebug setorapname diag
         record_modifier
       )
 
-      render_partial
-
     rescue Exception
-      if @name_array.nil?
+      if @option.nil?
         @hint = "Access rights on tables X$KSPPI and X$KSPPSV are possibly missing!</br>
   Therefore only documented parameters from GV$Parameter are shown.</br></br>
 
@@ -663,7 +666,7 @@ oradebug setorapname diag
   ".html_safe
 
       end
-      @parameters = sql_select_iterator(["\
+      @parameters = sql_select_all(["\
         SELECT /* Panorama-Tool Ramm */ *
         FROM   (SELECT Inst_ID                Instance,
                        Num                    ID,
@@ -680,7 +683,14 @@ oradebug setorapname diag
         ORDER BY Name, Instance"].concat(where_values),
         record_modifier
       )
-
+    ensure
+      if @option == :auditing
+        audit_sys_operations  = @parameters.select{|p| p.name.downcase == 'audit_sys_operations'  && p.value.upcase == 'TRUE'}.length > 0
+        audit_trail_in_db     = @parameters.select{|p| p.name.downcase == 'audit_trail'           && p.value.upcase['DB']}.length > 0
+        if audit_sys_operations && audit_trail_in_db
+          @hint = "<span style=\"color: red;\">Caution: Remember that SYS actions are not recorded in DB even if 'audit_trail=DB'. They are written to OS system audit file (journalctl --system)</span>".html_safe
+        end
+      end
       render_partial
     end
 

@@ -7,11 +7,10 @@
   <div id="<%= @update_area_init_params %>" class="flex-row-element">
     <%=
       render_async(:dba, :oracle_parameter, {
-          caption:              "Memory-related init-parameter",
-          name_array:           ['memory_target', 'memory_max_target', 'pga_aggregate_limit', 'pga_aggregate_target', 'sga_max_size', 'sga_target'],
-          reduced_columns:      true,
-          instance:             @instance,
-          update_area:          @update_area_init_params
+        option:              :memory,
+        reduced_columns:      true,
+        instance:             @instance,
+        update_area:          @update_area_init_params
       })
     %>
   </div>
