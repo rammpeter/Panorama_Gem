@@ -721,7 +721,7 @@ class DbaHistoryController < ApplicationController
                          LEFT OUTER JOIN DBA_Tables t  ON t.Owner=p.Object_Owner AND t.Table_Name=p.Object_Name -- evtl. weiter zu filtern per  NVL(p.Object_Type, 'TABLE') LIKE 'TABLE%'
                          LEFT OUTER JOIN DBA_Indexes i ON i.Owner=p.Object_Owner AND i.Index_Name=p.Object_Name -- evtl. weiter zu filtern per  p.Object_Type LIKE 'INDEX%'
                          -- Object_Type ensures that only one record is gotten from DBA_Objects even if object is partitioned
-                         LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Object_Owner AND o.Object_Name = p.Object_Name AND o.Object_Type = p.Object_Type
+                         LEFT OUTER JOIN DBA_Objects o ON o.Owner = p.Object_Owner AND o.Object_Name = p.Object_Name AND o.Object_Type = DECODE(p.Object_Type, 'INDEX (UNIQUE)', 'INDEX', p.Object_Type)
                          ORDER BY p.ID
                        ", get_dbid, @sql_id, @time_selection_start, @time_selection_end].concat(where_values)
 

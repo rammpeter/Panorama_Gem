@@ -36,8 +36,8 @@
    def link_samples(rec)
      groupfilter = @groupfilter.clone       # Nur lokale Kopie überschreiben
 
-     groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :minutes)
-     groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+60, :minutes)   # Sicherstellen, dass nach Abschneiden auf Minute die Folgeminute als Ende engenommen wird
+     groupfilter[:time_selection_start] = localeDateTime(rec.start_sample_time, :seconds)
+     groupfilter[:time_selection_end]   = localeDateTime(rec.end_sample_time+1, :seconds)   # Ensure that last sample is include regardless the fractions of second in time stamp
 
 
      ajax_link(fn(rec.sample_count),
