@@ -8,6 +8,9 @@ class WorkerThread
   ############################### class methods as public interface ###############################
   # Check if connection may function and return DBID of database
   # raise_exeption_on_error allows to proceeed without exception
+  # @param [PanoramaSamplerConfig] sampler_config
+  # @param [ApplicationController] controller
+  # @param [TrueClass, FalseClass] raise_exeption_on_error
   def self.check_connection(sampler_config, controller, raise_exeption_on_error = true)
     thread = Thread.new{WorkerThread.new(sampler_config, 'check_connection').check_connection_internal(controller)}
     thread.name = 'WorkerThread: check_connection'
@@ -45,6 +48,8 @@ class WorkerThread
     thread.name = 'WorkerThread: ash_sampler_daemon'
   end
 
+  # Check if analyze info of DB objects is sufficient
+  # @param [PanoramaSamplerConfig] config
   def self.check_analyze(sampler_config)
     thread = Thread.new{WorkerThread.new(sampler_config, 'check_analyze').check_analyze_internal}
     thread.name = 'WorkerThread: check_analyze'
@@ -54,13 +59,13 @@ class WorkerThread
 
   ############################### inner implementation ###############################
 
-  # @param sampler_config
+  # @param [PanoramaSamplerConfig,Hash] sampler_config
   # @param action_name
   # @param domain: allow setting of management_pack_license according to data source of longterm_trend
   def initialize(sampler_config, action_name, domain: nil)
     @sampler_config = sampler_config
-    @sampler_config = PanoramaSamplerConfig.new(@sampler_config) if @sampler_config.class == Hash
-    raise "WorkerThread.intialize: Parameter class Hash or PanoramaSamplerConfig required, got #{@sampler_config.class}" if @sampler_config.class != PanoramaSamplerConfig
+    # @sampler_config = PanoramaSamplerConfig.new(@sampler_config) if @sampler_config.class == Hash
+    raise "WorkerThread.intialize: Parameter sampler_config of class PanoramaSamplerConfig required, got #{@sampler_config.class}" if @sampler_config.class != PanoramaSamplerConfig
 
 
     connection_config = @sampler_config.get_cloned_config_hash                  # Structure similar to database

@@ -9,6 +9,9 @@ class PanoramaSamplerStructureCheck
     [:ASH, :AWR, :OBJECT_SIZE, :CACHE_OBJECTS, :BLOCKING_LOCKS, :LONGTERM_TREND]                 # :ASH needs to be first before :AWR
   end
 
+  # Execute the check of schema objects structure
+  # @param [] sampler_config
+  # @param [Symbol] domain The domain the check is executed for
   def self.do_check(sampler_config, domain)
     raise "Unsupported domain #{domain}" if !domains.include? domain
 

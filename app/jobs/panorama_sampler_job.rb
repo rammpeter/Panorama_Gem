@@ -75,6 +75,11 @@ class PanoramaSamplerJob < ApplicationJob
 
 
   private
+  # Check if sampling should be executed
+  # @param [PanoramaSamplerConfig] config
+  # @param [Time] snapshot_time
+  # @param [Symbol] domain
+  # @param [Integer] minute_factor
   def check_for_sampling(config, snapshot_time, domain, minute_factor = 1)
 
     last_snapshot_start_key = "last_#{domain.downcase}_snapshot_start".to_sym
