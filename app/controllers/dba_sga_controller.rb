@@ -754,6 +754,7 @@ class DbaSgaController < ApplicationController
       SELECT /* Panorama-Tool Ramm */ Child_Number, Name, Position, DataType_String, Last_Captured,
              CASE DataType_String
                WHEN 'TIMESTAMP' THEN TO_CHAR(ANYDATA.AccessTimestamp(Value_AnyData), '#{sql_datetime_minute_mask}')
+               WHEN 'DATE'      THEN TO_CHAR(TO_DATE(Value_String, 'MM/DD/YYYY HH24:MI:SS'), '#{sql_datetime_second_mask}')
              ELSE Value_String END Value_String,
              Child_Number,
              NLS_CHARSET_NAME(Character_SID) Character_Set, Precision, Scale, Max_Length
