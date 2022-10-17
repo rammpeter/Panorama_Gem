@@ -126,6 +126,7 @@ class PackLicense
 
   # raise Exception if SQL contains content violating missing diagnostic pack license
   def check_for_diagnostics_pack_usage(sql)
+    # Objects allowed without diagnostics pack even if name pattern belongs to objects requiring diagnostics pack
     allowed_array = [
       'CDB_HIST_BLOCKING_LOCKS',                                              # private table
       'CDB_HIST_DATABASE_INSTANCE',
@@ -154,9 +155,12 @@ class PackLicense
         'DBA_STREAMS_TP_COMPONENT_STAT',
         'DBMS_WORKLOAD_REPOSITORY',
         'DBMS_ADDM',
-        'DBMS_ADVISOR',
-        'DBMS_PERF',
+        'DBMS_ADVISOR',                                                         # requires Tuning Pack in addition
+        'DBMS_AWRHUB',                                                          # requires both an Oracle Diagnostics Pack license and an OCI Operations Insights Service license subscription.
+        'DBMS_PERF',                                                            # Named as part of Diagnostics Pack as well as part of Tuning Pack, unclear which pack is really needed
+        'DBMS_UMF',
         'DBMS_WORKLOAD_REPLAY',                                                 # DIAGNOSTIC PACK if advisor_name => ADDM OR task_name LIKE ADDM% TUNING PACK - where advisor_name => SQL Tuning Advisor
+        'DBMS_WORKLOAD_REPOSITORY',
         'DISPLAY_AWR',                                                          # DBMS_XPLAN.DISPLAY_AWR requires access on DBA_HIST_SQLSTat etc.
         'MGMT$ALERT_',
         'MGMT$AVAILABILITY_',
@@ -181,10 +185,16 @@ class PackLicense
     allowed_array = []
 
     # Packages Tables etc. belonging to tuning pack
+    # for 12.2 https://docs.oracle.com/en/database/oracle/oracle-database/12.2/dblic/Licensing-Information.html#GUID-68A4128C-4F52-4441-8BC0-A66F5B3EEC35
+    # for 19c https://docs.oracle.com/en/database/oracle/oracle-database/19/dblic/Licensing-Information.html#GUID-C3042D9A-5596-41A3-A08A-4581FED7634F
+    # for 21c https://docs.oracle.com/en/database/oracle/oracle-database/21/dblic/Licensing-Information.html#GUID-68A4128C-4F52-4441-8BC0-A66F5B3EEC35
     test_array = [
         'CDB_HIST_REPORTS',                                                     # SQL-Monitoring: CDB_HIST_REPORTS, CDB_HIST_REPORTS_DETAILS
         'DBA_HIST_REPORTS',                                                     # SQL-Monitoring: DBA_HIST_REPORTS, DBA_HIST_REPORTS_DETAILS
         'DBMS_ADVISOR',                                                         # DIAGNOSTIC PACK if advisor_name => ADDM OR task_name LIKE ADDM% TUNING PACK - where advisor_name => SQL Tuning Advisor
+        'DBMS_AUTO_SQLTUNE',
+        # 'DBMS_PERF',                                                            # Named as part of Diagnostics Pack as well as part of Tuning Pack, unclear which pack is really needed
+        'DBMS_SQL_MONITOR',
         'DBMS_SQLTUNE.ADD_SQLSET_REFERENCE',                                    # Only this methods are part of Tuning Pack
         'DBMS_SQLTUNE.CAPTURE_CURSOR_CACHE_SQLSETS',
         'DBMS_SQLTUNE.CREATE_SQLSET',

@@ -2155,6 +2155,12 @@ FROM (
 -- Generated with Panorama at #{Time.now}
 -- based on idea from rmoff (https://rnm1978.wordpress.com/?s=baseline)
 
+-- CAUTION: The traditional package for managing SQL tuning sets is DBMS_SQLTUNE,
+-- which requires the Oracle Tuning Pack.
+-- Starting in Oracle Database 18c, you can perform the same tasks with DBMS_SQLSET,
+-- which does not require the Oracle Tuning Pack.
+-- In most cases, the name of the subprogram in DBMS_SQLSET is identical to the name of the equivalent subprogram in DBMS_SQLTUNE.
+
 -- to create a SQL-baseline execute this PL/SQL snippet as SYSDBA in SQL*Plus
 #{snap_corrected_warning}
 
