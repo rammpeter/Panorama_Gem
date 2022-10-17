@@ -10,7 +10,7 @@ class PanoramaSamplerStructureCheck
   end
 
   # Execute the check of schema objects structure
-  # @param [] sampler_config
+  # @param [PanoramaSamplerConfig] sampler_config
   # @param [Symbol] domain The domain the check is executed for
   def self.do_check(sampler_config, domain)
     raise "Unsupported domain #{domain}" if !domains.include? domain
@@ -1602,6 +1602,7 @@ ORDER BY Column_ID
   end
 
   # Check data structures, for ASH-Thread or snapshot thread
+  # @param [Symbol] domain
   def do_check_internal(domain)
     Rails.logger.debug('PanoramaSampleStructureCheck.do_check_internal') { "Execute structure check for domain #{domain} in config ID=#{@sampler_config.get_id} #{@sampler_config.get_name}"}
     @ora_tables       = PanoramaConnection.sql_select_all ["SELECT Table_Name FROM All_Tables WHERE Owner = ?",  @sampler_config.get_owner.upcase]
@@ -1688,7 +1689,7 @@ ORDER BY Column_ID
     Rails.logger.debug('PanoramaSampleStructureCheck.do_check_internal') { "Finished structure check for domain #{domain} in config ID=#{@sampler_config.get_id} #{@sampler_config.get_name}"}
   end
 
-  def remove_tables_internal
+  def   remove_tables_internal
     PanoramaConnection.sql_execute "ALTER SESSION SET DDL_LOCK_TIMEOUT=30"      # Ensure shot locks at DROP do not lead to error
     packages = PanoramaConnection.sql_select_all [ "SELECT Object_Name
                                                     FROM   All_Objects

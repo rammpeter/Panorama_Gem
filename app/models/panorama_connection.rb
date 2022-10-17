@@ -37,9 +37,6 @@ end
 ActiveRecord::ConnectionAdapters::OracleEnhanced::JDBCConnection.class_eval do
 
   def log(sql, name = "SQL", binds = [], type_casted_binds = [], statement_name = '[not defined]')
-
-    name = "#{Time.now.strftime("%H:%M:%S")} #{name}" if Rails.env.test? || Rails.env.development?
-
     ActiveSupport::Notifications.instrumenter.instrument(
         "sql.active_record",
         :sql                => sql,

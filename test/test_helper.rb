@@ -102,6 +102,8 @@ class ActiveSupport::TestCase
     @db_version
   end
 
+  # Add defaults for PanoramaSampler to config
+  # @param [Hash] sampler_config
   def set_panorama_sampler_config_defaults!(sampler_config)
 
     sampler_config[:query_timeout]                  = 600                       # single test should not last longer, previous value = 20
@@ -175,7 +177,7 @@ class ActiveSupport::TestCase
 
   # allow assertions failure message to appear in logfile
   # use like: assert_response :success, log_on_failure('should get log file with JWT')
-  # @param {message} String
+  # @param [String] message
   def log_on_failure(message)
     Proc.new do
       Rails.logger.debug('TestHelper.log_on_failure'){ "Assertion failed: #{message}" }
@@ -184,7 +186,7 @@ class ActiveSupport::TestCase
   end
 
   # Ensure that AWR snapshots exist and time period is according to existing snapshots
-  # @param time_format
+  # @param [Symbol] time_format
   def initialize_min_max_snap_id_and_times(time_format = :minutes)
    two_snaps_sql = "SELECT s1.DBID, s2.Snap_ID Max_Snap_ID, s3.Snap_ID Min_Snap_ID, s2.Begin_Interval_Time End_Time, s3.Begin_Interval_Time Start_Time
                    FROM   DBA_Hist_Snapshot s1

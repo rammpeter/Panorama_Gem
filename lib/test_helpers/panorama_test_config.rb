@@ -1,5 +1,8 @@
 class PanoramaTestConfig
   @@test_config_logged = false
+
+  # Get configuration for tests
+  # @return [Hash]
   def self.test_config
     test_host         = ENV['TEST_HOST']        || 'localhost'
     test_port         = ENV['TEST_PORT']        || '1521'
