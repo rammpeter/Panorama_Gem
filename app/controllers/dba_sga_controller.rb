@@ -38,7 +38,8 @@ class DbaSgaController < ApplicationController
   def list_last_sql_from_sql_worksheet
     params[:maxResultCount] = 100
     params[:topSort] = 'LastActive'
-    params[:filter]  = params[:sql_statement]&.strip&.gsub(/;$/, '')
+    # params[:filter]  = params[:sql_statement]&.strip&.gsub(/;$/, '')
+    params[:sql_id] = read_from_client_info_store(:last_used_worksheet_sql_id)
 
     params[:username] = sql_select_one "SELECT USER FROM DUAL"
 

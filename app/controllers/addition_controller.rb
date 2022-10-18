@@ -859,9 +859,11 @@ class AdditionController < ApplicationController
       if stripped_sql_statement.upcase =~ /^SELECT/ || stripped_sql_statement.upcase =~ /^WITH/
         @res = []
         PanoramaConnection::SqlSelectIterator.new(stmt: PackLicense.filter_sql_for_pack_license(@sql_statement), binds: ar_binds_from_binds(@binds), query_name: 'exec_worksheet_sql').each {|r| @res << r}
+        remember_last_executed_sql_id                                           # remember the SQL-ID for SQL details view
         render_partial :list_dragnet_sql_result, controller: :dragnet
       else
         PanoramaConnection.sql_execute_native(sql: PackLicense.filter_sql_for_pack_license(@sql_statement), binds: ar_binds_from_binds(@binds), query_name: 'exec_worksheet_sql')
+        remember_last_executed_sql_id                                           # remember the SQL-ID for SQL details view
         render html: "<div class='page_caption'>Statement executed at #{localeDateTime(Time.now)}</div>
         #{render_code_mirror(@sql_statement)}\n".html_safe
       end
@@ -1064,6 +1066,12 @@ COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) #{column_alias}_Cnt"
       ar_binds << ActiveRecord::Relation::QueryAttribute.new(":#{key}", typed_value, worksheet_bind_types[value[:type]][:type_class].new)
     end
     ar_binds
+  end
+
+  # persist the SQL ID of the last executed statement in this session
+  def remember_last_executed_sql_id
+    sql_id = sql_select_one "SELECT Prev_SQL_ID FROM v$Session WHERE SID=SYS_CONTEXT('USERENV', 'SID')"
+    write_to_client_info_store(:last_used_worksheet_sql_id, sql_id)
   end
 end
 

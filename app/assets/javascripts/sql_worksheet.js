@@ -97,7 +97,6 @@ class SQL_Worksheet  {
 
     sql_in_sga(){
         this.open_and_focus_tab('sga', 'dba_sga', 'list_last_sql_from_sql_worksheet');            // bring tab in front
-        var sql_statement = this.get_sql_at_cursor_position();
     }
 
 

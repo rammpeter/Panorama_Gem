@@ -46,7 +46,10 @@ module ApplicationHelper
     raise "Exception '#{e.message}' while creating file store at '#{EngineConfig.config.client_info_filename}'"
   end
 
-  # Schreiben eines client-bezogenen Wertes in serverseitigen Cache
+  # Write client related info value to server-side cache
+  # @param [String, Symbol] key
+  # @param value
+  # @param [Integer] retries Should not be used in direct call, for recursive calls only
   def write_to_client_info_store(key, value, retries: 0)
     cached_client_key = get_decrypted_client_key                                # ausserhalb des Exception-Handlers, da evtl. ActiveSupport::MessageVerifier::InvalidSignature bereits in get_cached_client_key gefangen wird
     if !defined?(@buffered_client_info_store) || @buffered_client_info_store.nil?  # First access after initiation of object
