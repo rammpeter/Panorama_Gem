@@ -90,7 +90,7 @@ module DragnetHelper
             :entries  => [{   :name    => t(:dragnet_helper_group_optimizable_full_scans, :default=>'Optimizable full-scan operations'),
                               :entries => optimizable_full_scans
                           },
-                          {   :name    => t(:dragnet_helper_group_problems_with_parallel_query, :default=>'Potential problems with parallel query'),
+                          {   :name    => t(:dragnet_helper_group_problems_with_parallel_query, :default=>'Potential for improvement in the use of Parallel Query'),
                               :entries => problems_with_parallel_query
                           },
                           {   :name    => t(:dragnet_helper_group_unnecessary_executions, :default=>'Potentially unnecessary execution of SQL statements'),

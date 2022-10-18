@@ -601,7 +601,7 @@
   dragnet_helper_group_partitioning:                        Empfehlungen für Partitionierung
   dragnet_helper_group_pl_sql_usage:                        Hinweise zur Nutzung von PL/SQL
   dragnet_helper_group_potential_db_structures:             Potential in DB-Strukturen
-  dragnet_helper_group_problems_with_parallel_query:        Eventuelle Probleme mit Parallel Query
+  dragnet_helper_group_problems_with_parallel_query:        Potential für Verbesserungen bei Nutzung von Parallel Query
   dragnet_helper_group_soft_parses_cursor_caching:          Soft-Parse-Aktivitäten / Cachen von SQL-Statement Cursoren
   dragnet_helper_group_suboptimal_index_index:              Suboptimale Nutzung von Indizes in SQL-Statements
   dragnet_helper_group_tuning_sga_pga:                      Tuning bzw. Entlastung von SGA/PGA-Strukturen
@@ -1748,6 +1748,24 @@
   dragnet_helper_165_param_2_name:                          Minimale Wartezeit je Operation(Sekunden)
   dragnet_helper_165_param_2_hint:                          Minimale Wartezeit je Operation in Sekunden um in Selektion berücksichtigt zu werden. Berechnet aus ASH pro Zeile des Execution Plan.
 
+  dragnet_helper_166_desc: |-
+    Seit Rel. 18 gibt es eine undokumentierte Funktion Parallel Shared Hash Join, die die gemeinsame Nutzung von Speicher zwischen Parallel Query Slaves einführt.
+    Besonders teure HASH JOIN BUFFERED-Operationen, bei denen viele Daten in den temporären Tablespace ausgelagert werden, können in HASH JOIN SHARED-Operationen umgewandelt werden, die deutlich weniger Speicherplatz benötigen und somit die Laufzeit verbessern.
+    Diese Selektion zeigt SQLs mit HASH JOIN BUFFERED in der DB-Historie, geordnet nach der Laufzeit die sie für diese spezielle Operation verbrauchen.
+
+    Es gibt mehrere Möglichkeiten, den Parallel Shared Hash Join zu aktivieren:
+    - Setzen von '_px_shared_hash_join'=true; auf System- oder Sessionebene
+    - Definieren der PQ-Verteilungsstrategie für eine bestimmte Tabelle in SQL mit dem Hint /*+ PQ_DISTRIBUTE(<Tabellenalias> SHARED NONE) */
+    - setzen von '_px_shared_hash_join'=true; auf SQL-Ebene durch hint /*+ OPT_PARAM('_px_shared_hash_join' 'true') */
+    Die letztere Option per OPT_PARAM passt für mich am besten, da das Verhalten auf SQL-Ebene gesteuert werden kann, ohne dass jede Tabelle definiert werden muss.
+  
+    Wenn diese Transformation funktioniert, dann wird aus dem HASH JOIN BUFFERED ein HASH JOIN SHARED im Ausführungsplan.
+  
+    In Anbetracht des inoffiziellen Status dieser Funktion sollte sie in RAC-Umgebung nicht verwendet werden, wenn PQ-Operationen auf mehrere Instanzen verteilt sind (parallel_force_local=FALSE).
+  
+    Vielen Dank an Randolf Eberle-Geist, der die Hintergründe zu diesem Feature geteilt hat.
+    Siehe auch: https://chinaraliyev.wordpress.com/2019/04/29/parallel-shared-hash-join/
+  dragnet_helper_166_name:                                  Mögliche Eliminierung von HASH JOIN BUFFERED durch Parallel Shared Hash Join
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 

@@ -330,6 +330,63 @@ This selection considers SQLs in the current SGA'),
                     ORDER BY PX_Servers_Executions DESC",
             :parameter=>[{:name=>t(:dragnet_helper_134_param_1_name, :default=>'Maximum runtime per execution in seconds'), :size=>8, :default=>5, :title=>t(:dragnet_helper_134_param_1_hint, :default=>'Maximum runtime per execution in seconds for consideration in result') }]
         },
+        {
+          :name  => t(:dragnet_helper_166_name, :default=>'Possible elimination of HASH JOIN BUFFERED by Parallel Shared Hash Join'),
+          :desc  => t(:dragnet_helper_166_desc, :default=>"\
+Since Rel. 18 there's an undocumented feature Parallel Shared Hash Join which introduces sharing memory between parallel query slaves.
+Especially expensive HASH JOIN BUFFERED operations with spilling a lot of data into temporary tablespace can be transformed to HASH JOIN SHARED with much less memory requirements and thus improved runtime.
+This selection shows SQLs with HASH JOIN BUFFERED in the DB history ordered by the runtime they consume for this particular operation.
+
+There are several ways to activate the Parallel Shared Hash Join:
+- set '_px_shared_hash_join'=true; at system or session level
+- define the PQ distribution strategy for a particular table in SQL by hint /*+ PQ_DISTRIBUTE(<table alias> SHARED NONE) */
+- set '_px_shared_hash_join'=true; at SQL level by hint /*+ OPT_PARAM('_px_shared_hash_join' 'true') */
+The latter option by OPT_PARAM fits best for me because behyviour can be controlled at SQL level without defining each table.
+
+If this transformation works, then the HASH JOIN BUFFERED turns into HASH JOIN SHARED in the execution plan.
+
+Respecting the unofficial state of this feature it should not be used in RAC environment if PQ operations are spread over several instances (parallel_force_local=FALSE).
+
+Many thanks to Randolf Eberle-Geist, who shared backgrounds of this feature.
+See also: https://chinaraliyev.wordpress.com/2019/04/29/parallel-shared-hash-join/
+          "),
+          :sql=> "\
+WITH Min_Ash_Sample_ID AS (SELECT /*+ NO_MERGE MATERIALIZE */ Inst_ID, MIN(Sample_ID) Min_Sample_ID
+                           FROM   gv$Active_Session_History
+                           GROUP BY Inst_ID
+                          )
+SELECT Instance_Number, SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID,
+       SUM(Seconds_Waiting) Seconds_Waiting, MAX(Max_Temp_MB) Max_Temp_MB,
+       MIN(Min_Sample_Time) First_Occurrence, MAX(Max_Sample_Time) Last__Occurrence
+FROM   (
+        SELECT h.Instance_Number, h.SQL_ID, h.SQL_Plan_Hash_Value, h.SQL_Plan_Line_ID,
+               COUNT(*) * 10 Seconds_Waiting, MAX(h.Temp_Space_Allocated)/(1024*1024) Max_Temp_MB,
+               MIN(Sample_Time) Min_Sample_Time, MAX(Sample_Time) Max_Sample_Time
+        FROM   DBA_Hist_Active_Sess_History h
+        JOIN   Min_Ash_Sample_ID m ON m.Inst_ID = h.Instance_Number
+        WHERE  SQL_Plan_Operation = 'HASH JOIN'
+        AND    SQL_Plan_Options = 'BUFFERED'
+        AND    h.Sample_ID < m.Min_Sample_ID
+        AND    h.Sample_Time > SYSDATE - ?
+        GROUP BY h.Instance_Number, h.SQL_ID, h.SQL_Plan_Hash_Value, h.SQL_Plan_Line_ID
+        UNION ALL
+        SELECT h.Inst_ID, h.SQL_ID, h.SQL_Plan_Hash_Value, h.SQL_Plan_Line_ID,
+               COUNT(*) Seconds_Waiting, MAX(h.Temp_Space_Allocated)/(1024*1024) Max_Temp_MB,
+               MIN(Sample_Time) Min_Sample_Time, MAX(Sample_Time) Max_Sample_Time
+        FROM   gv$Active_Session_History h
+        WHERE  SQL_Plan_Operation = 'HASH JOIN'
+        AND    SQL_Plan_Options = 'BUFFERED'
+        GROUP BY h.Inst_ID, h.SQL_ID, h.SQL_Plan_Hash_Value, h.SQL_Plan_Line_ID
+       )
+GROUP BY Instance_Number, SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID
+HAVING SUM(Seconds_Waiting) > ?
+ORDER BY Seconds_Waiting DESC
+          ",
+          :parameter=>[
+            {:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') },
+            {:name=>t(:dragnet_helper_param_minimal_elapsed_name, :default=>'Minimum total elapsed time (sec.)'), :size=>8, :default=>60, :title=>t(:dragnet_helper_param_minimal_elapsed_hint, :default=>'Minimum total elapsed time in seconds for consideration in selection') }
+          ]
+        },
 
     ]
   end # problems_with_parallel_query
