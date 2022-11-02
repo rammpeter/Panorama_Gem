@@ -1,8 +1,12 @@
 # encoding: utf-8
 class StorageController < ApplicationController
 
-  # Groesse und Füllung der Tabelspaces
   def tablespace_usage
+    render_partial
+  end
+
+  # Groesse und Füllung der Tabelspaces
+  def storage_usage_totals
     @tablespaces = sql_select_all("\
       WITH free AS (SELECT /*+ NO_MERGE MATERIALIZE */
                            f.TABLESPACE_NAME, #{"f.Con_ID," if PanoramaConnection.is_cdb?}
@@ -11,56 +15,31 @@ class StorageController < ApplicationController
                     GROUP BY f.TABLESPACE_NAME #{", f.Con_ID" if PanoramaConnection.is_cdb?}
                    )
       SELECT /* Panorama-Tool Ramm */
-             t.TableSpace_Name, NULL Inst_ID,
              t.contents,
              DECODE(t.Contents, 'PERMANENT',  'Tablespaces for tables, indexes, materialized views etc.',
                                 'UNDO',       'UNDO-Tablespaces'
-                   )                        content_Hint,
-             t.Block_Size                   BlockSize,
-             f.FileSize                     MBTotal,
-             NVL(free.MBFree,0)             MBFree,
-             f.FileSize-NVL(free.MBFree,0)  MBUsed,
-             (f.FileSize-NVL(free.MBFree,0))/f.FileSize*100 PctUsed,
-             t.Status, t.Logging, t.Force_Logging, t.Extent_Management,
-             t.Allocation_Type, t.Plugged_In,
-             t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
-             f.AutoExtensible, f.Max_Size_MB, f.File_Count, t.Retention
-             #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
-             #{ ", t.Def_InMemory" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
-             #{", t.Con_ID" if PanoramaConnection.is_cdb?}
+                   )                            content_Hint,
+             SUM(f.FileSize)                    MBTotal,
+             SUM(NVL(free.MBFree,0))            MBFree,
+             SUM(f.FileSize-NVL(free.MBFree,0)) MBUsed
       FROM  #{dba_or_cdb('DBA_Tablespaces')} t
       LEFT OUTER JOIN free ON free.Tablespace_Name = t.Tablespace_Name #{" AND free.Con_ID = t.Con_ID" if PanoramaConnection.is_cdb?}
       LEFT OUTER JOIN
             (
-            SELECT /*+ NO_MERGE */ d.TableSpace_Name, #{"d.Con_ID," if PanoramaConnection.is_cdb?} SUM(d.Bytes)/1048576 FileSize,
-                   CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
-                   SUM(DECODE(d.AutoExtensible, 'YES', d.MaxBytes, d.Bytes))/1048576 Max_Size_MB,
-                   COUNT(*) File_Count
+            SELECT /*+ NO_MERGE */ d.TableSpace_Name, #{"d.Con_ID," if PanoramaConnection.is_cdb?} SUM(d.Bytes)/1048576 FileSize
             FROM   #{dba_or_cdb('DBA_Data_Files')} d
             GROUP BY d.Tablespace_Name #{", d.Con_ID" if PanoramaConnection.is_cdb?}
             ) f ON f.Tablespace_Name = t.TableSpace_Name #{" AND f.Con_ID = t.Con_ID" if PanoramaConnection.is_cdb?}
       WHERE Contents != 'TEMPORARY'
+      GROUP BY Contents
       UNION ALL
-      SELECT f.Tablespace_Name, NULL Inst_ID,
-             t.Contents,
-             'Temporary tablespace'         Content_Hint,
-             t.Block_Size                   BlockSize,
-             NVL(f.MBTotal,0)               MBTotal,
-             NVL(f.MBTotal,0)-NVL(s.Used_Blocks,0)*t.Block_Size/1048576 MBFree,
-             NVL(s.Used_Blocks,0)*t.Block_Size/1048576 MBUsed,
-             (NVL(s.Used_Blocks,0)*t.Block_Size/1048576)/NVL(f.MBTotal,0)*100 PctUsed,
-             t.Status, t.Logging, t.Force_Logging, t.Extent_Management,
-             t.Allocation_Type, t.Plugged_In,
-             t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
-             f.AutoExtensible, f.Max_Size_MB, f.File_Count, NULL Retention
-             #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
-             #{ ", t.Def_InMemory" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
-             #{", t.Con_ID" if PanoramaConnection.is_cdb?}
+      SELECT t.Contents,
+             'Temporary tablespace'                                           Content_Hint,
+             SUM(NVL(f.MBTotal,0))                                            MBTotal,
+             SUM(NVL(f.MBTotal,0)-NVL(s.Used_Blocks,0)*t.Block_Size/1048576)  MBFree,
+             SUM(NVL(s.Used_Blocks,0)*t.Block_Size/1048576)                   MBUsed
       FROM  #{dba_or_cdb('DBA_Tablespaces')} t
-      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Tablespace_Name, #{"Con_ID," if PanoramaConnection.is_cdb?} SUM(Bytes)/1048576 MBTotal, SUM(Bytes)/SUM(Blocks) BlockSize,
-                              CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
-                              SUM(DECODE(AutoExtensible, 'YES', MaxBytes, Bytes))/1048576 Max_Size_MB,
-                              COUNT(*) File_Count
+      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Tablespace_Name, #{"Con_ID," if PanoramaConnection.is_cdb?} SUM(Bytes)/1048576 MBTotal, SUM(Bytes)/SUM(Blocks) BlockSize
                        FROM #{dba_or_cdb('DBA_Temp_Files')}
                        GROUP BY Tablespace_Name #{", Con_ID" if PanoramaConnection.is_cdb?}
                       ) f ON f.Tablespace_Name = t.TableSpace_Name #{" AND f.Con_ID = t.Con_ID" if PanoramaConnection.is_cdb?}
@@ -69,47 +48,20 @@ class StorageController < ApplicationController
                        GROUP BY Tablespace_Name #{", Con_ID" if PanoramaConnection.is_cdb?}
                       ) s ON s.Tablespace_Name = t.TableSpace_Name #{" AND s.Con_ID = t.Con_ID" if PanoramaConnection.is_cdb?}
       WHERE t.Contents = 'TEMPORARY'
-      UNION ALL
-      SELECT 'Redo Inst='||l.Inst_ID    Tablespace_Name, l.Inst_ID,
-             DECODE(lf.Is_Recovery_Dest_File, 'YES', 'Redo-Logs in FRA',
-                                              'NO',  'Redo-Logs ouside FRA'
-                   )                    Contents,
-             DECODE(lf.Is_Recovery_Dest_File, 'YES', 'Size of all Redo-Logfiles that are stored in FRA',
-                                              'NO',  'Size of all Redo-Logfiles that are stored ouside FRA'
-                   )                    Content_Hint,
-             #{ if get_db_version >= "11.2"
-                  "MIN(l.BlockSize)"
-                else
-                  0
-                end
-             }                          BlockSize,
+      GROUP BY Contents
+      ")
+
+    log_files = sql_select_all "\
+      SELECT 'Redo-Logs ouside FRA'     Contents,
+             'Size of all Redo-Logfiles that are stored ouside FRA' Content_Hint,
              SUM(l.Bytes)/1048576       MBTotal,
              0                          MBFree,
-             SUM(l.Bytes)/1048576       MBUsed,
-             100                        PctUsed,
-             NULL                       Status,
-             NULL                       Logging,
-             NULL                       Force_Logging,
-             NULL                       Extent_Management,
-             NULL                       Allocation_Type,
-             NULL                       Plugged_In,
-             NULL                       Segment_Space_Management,
-             NULL                       Def_Tab_Compression,
-             NULL                       Bigfile,
-             NULL                       AutoExtensible,
-             NULL                       Max_Size_MB,
-             COUNT(*)                   File_Count,
-             NULL                       Retention
-             #{ ", NULL Encrypted, NULL Compress_For" if get_db_version >= '11.2'}
-             #{ ", NULL Def_InMemory" if get_db_version >= '12.1.0.2'  && PanoramaConnection.edition == :enterprise}
-             #{", l.Con_ID" if PanoramaConnection.is_cdb?}
+             SUM(l.Bytes)/1048576       MBUsed
       FROM   gv$Log l
       JOIN   gv$LogFile lf ON lf.Inst_ID = l.Inst_ID AND lf.Group# = l.Group#
       WHERE  l.Inst_ID = l.Thread#  -- im gv$-View werden jeweils die Logs der anderen Instanzen noch einmal in jeder Instance mit Thread# getzeigt, dies verhindert die Dopplung
-      GROUP BY l.Inst_ID, lf.Is_Recovery_Dest_File#{", l.Con_ID" if PanoramaConnection.is_cdb?}
-      ORDER BY 5 DESC NULLS LAST
-      ")
-
+      AND    lf.Is_Recovery_Dest_File = 'NO'  /* Count only redo logs outside FRA separate */
+      "
 
     @fra_size_bytes = sql_select_one("SELECT Value FROM v$Parameter WHERE Name='db_recovery_file_dest_size'").to_i
     #@flashback_log = sql_select_first_row "SELECT * FROM v$Flashback_Database_Log"
@@ -118,7 +70,8 @@ class StorageController < ApplicationController
     totals = {}
     total_sum = {"contents"=>"TOTAL", 'content_hint'=>'Sum over all storage components', "mbtotal"=>0, "mbfree"=>0, "mbused"=>0}
     total_sum.extend SelectHashHelper
-    @tablespaces.each do |t|
+
+    @tablespaces.concat(log_files).each do |t|
       if t.contents != 'Redo-Logs in FRA'
         unless totals[t.contents]
           totals[t.contents] = {'content_hint'=>t.content_hint, "mbtotal"=>0, "mbfree"=>0, "mbused"=>0}
@@ -158,6 +111,56 @@ class StorageController < ApplicationController
     end
     @totals << total_sum
 
+
+    render_partial
+  end
+
+  #
+  def storage_usage_segments
+    @segments = sql_select_all "SELECT /* Panorama-Tool Ramm */
+                                       Segment_Type,
+                                       SUM(Bytes)/1048576   MBytes
+                                FROM  (SELECT s.Bytes,
+                                       DECODE(i.Index_Type, 'IOT - TOP', 'TABLE',  /* treat IOTs as TABLE */
+                                         CASE Segment_Type
+                                           WHEN 'TABLE PARTITION'           THEN 'TABLE'
+                                           WHEN 'TABLE SUBPARTITION'        THEN 'TABLE'
+                                           WHEN 'NESTED TABLE'              THEN 'TABLE'
+                                           WHEN 'INDEX PARTITION'           THEN 'INDEX'
+                                           WHEN 'INDEX SUBPARTITION'        THEN 'INDEX'
+                                           WHEN 'LOB PARTITION'             THEN 'LOBSEGMENT'
+                                           WHEN 'LOB SUBPARTITION'          THEN 'LOBSEGMENT'
+                                         ELSE Segment_Type
+                                         END
+                                       ) Segment_Type ,
+                                       i.Index_Type
+                                       FROM   DBA_Segments s
+                                       LEFT OUTER JOIN DBA_Indexes i ON i.Owner = s.Owner AND i.Index_Name=s.Segment_Name
+                                      )
+                                GROUP BY Segment_Type
+                                ORDER BY 2 DESC"
+    render_partial
+  end
+
+  def storage_usage_tablespaces_per_schema
+    @tablespace_per_schema = sql_select_all "
+      WITH Quotas AS (SELECT /*+ NO_MERGE MATERIALIZE */ Tablespace_Name, Username, Bytes, Max_Bytes FROM   DBA_TS_Quotas) -- without MATERIALIZE long runtime on 11.2
+      SELECT /* Panorama-Tool Ramm */ s.Owner, s.Tablespace_Name, s.MBytes, q.Bytes Bytes_Charged, q.Max_Bytes Bytes_Quota
+      FROM (
+        SELECT /*+ NO_MERGE */ Owner,
+               Tablespace_Name,
+               SUM(Bytes)/1048576 MBytes
+        FROM   DBA_Segments s
+        GROUP BY Owner, Tablespace_Name
+        ) s
+      LEFT OUTER JOIN Quotas q ON q.Tablespace_Name = s.Tablespace_Name AND q.Username = s.Owner
+      WHERE s.MBytes > 0   -- Show only schemas with objects
+      ORDER BY s.MBytes DESC
+    "
+    render_partial
+  end
+
+  def storage_usage_schemas
     schemas = sql_select_all("\
       SELECT /* Panorama-Tool Ramm */ Owner Schema, Type Segment_Type, SUM(Bytes)/1048576 MBytes
       FROM (
@@ -213,47 +216,119 @@ class StorageController < ApplicationController
     end
     @schemas.sort_by! {|obj| -obj.total_mbytes}
 
-    @segments = sql_select_all "SELECT /* Panorama-Tool Ramm */
-                                       Segment_Type,
-                                       SUM(Bytes)/1048576   MBytes
-                                FROM  (SELECT s.Bytes,
-                                       DECODE(i.Index_Type, 'IOT - TOP', 'TABLE',  /* treat IOTs as TABLE */
-                                         CASE Segment_Type
-                                           WHEN 'TABLE PARTITION'           THEN 'TABLE'
-                                           WHEN 'TABLE SUBPARTITION'        THEN 'TABLE'
-                                           WHEN 'NESTED TABLE'              THEN 'TABLE'
-                                           WHEN 'INDEX PARTITION'           THEN 'INDEX'
-                                           WHEN 'INDEX SUBPARTITION'        THEN 'INDEX'
-                                           WHEN 'LOB PARTITION'             THEN 'LOBSEGMENT'
-                                           WHEN 'LOB SUBPARTITION'          THEN 'LOBSEGMENT'
-                                         ELSE Segment_Type
-                                         END
-                                       ) Segment_Type ,
-                                       i.Index_Type
-                                       FROM   DBA_Segments s
-                                       LEFT OUTER JOIN DBA_Indexes i ON i.Owner = s.Owner AND i.Index_Name=s.Segment_Name
-                                      )
-                                GROUP BY Segment_Type
-                                ORDER BY 2 DESC"
-
-    @tablespace_per_schema = sql_select_all "
-      WITH Quotas AS (SELECT /*+ NO_MERGE MATERIALIZE */ Tablespace_Name, Username, Bytes, Max_Bytes FROM   DBA_TS_Quotas) -- without MATERIALIZE long runtime on 11.2
-      SELECT /* Panorama-Tool Ramm */ s.Owner, s.Tablespace_Name, s.MBytes, q.Bytes Bytes_Charged, q.Max_Bytes Bytes_Quota
-      FROM (
-        SELECT /*+ NO_MERGE */ Owner,
-               Tablespace_Name,
-               SUM(Bytes)/1048576 MBytes
-        FROM   DBA_Segments s
-        GROUP BY Owner, Tablespace_Name
-        ) s
-      LEFT OUTER JOIN Quotas q ON q.Tablespace_Name = s.Tablespace_Name AND q.Username = s.Owner
-      WHERE s.MBytes > 0   -- Show only schemas with objects
-      ORDER BY s.MBytes DESC
-    "
-
     render_partial
   end
 
+  def storage_usage_tablespaces
+    @tablespaces = sql_select_all("\
+      WITH free AS (SELECT /*+ NO_MERGE MATERIALIZE */
+                           f.TABLESPACE_NAME, #{"f.Con_ID," if PanoramaConnection.is_cdb?}
+                           Sum(f.BYTES)/1048576     MBFree
+                    FROM   #{dba_or_cdb('DBA_FREE_SPACE')} f
+                    GROUP BY f.TABLESPACE_NAME #{", f.Con_ID" if PanoramaConnection.is_cdb?}
+                   )
+      SELECT /* Panorama-Tool Ramm */
+             t.TableSpace_Name, NULL Inst_ID,
+             t.contents,
+             DECODE(t.Contents, 'PERMANENT',  'Tablespaces for tables, indexes, materialized views etc.',
+                                'UNDO',       'UNDO-Tablespaces'
+                   )                        content_Hint,
+             t.Block_Size                   BlockSize,
+             f.FileSize                     MBTotal,
+             NVL(free.MBFree,0)             MBFree,
+             f.FileSize-NVL(free.MBFree,0)  MBUsed,
+             (f.FileSize-NVL(free.MBFree,0))/f.FileSize*100 PctUsed,
+             t.Status, t.Logging, t.Force_Logging, t.Extent_Management,
+             t.Allocation_Type, t.Plugged_In,
+             t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
+             f.AutoExtensible, f.Max_Size_MB, f.File_Count, t.Retention
+             #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
+                                  #{ ", t.Def_InMemory" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
+                                  #{", t.Con_ID" if PanoramaConnection.is_cdb?}
+      FROM  #{dba_or_cdb('DBA_Tablespaces')} t
+      LEFT OUTER JOIN free ON free.Tablespace_Name = t.Tablespace_Name #{" AND free.Con_ID = t.Con_ID" if PanoramaConnection.is_cdb?}
+      LEFT OUTER JOIN
+            (
+            SELECT /*+ NO_MERGE */ d.TableSpace_Name, #{"d.Con_ID," if PanoramaConnection.is_cdb?} SUM(d.Bytes)/1048576 FileSize,
+                   CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
+                   SUM(DECODE(d.AutoExtensible, 'YES', d.MaxBytes, d.Bytes))/1048576 Max_Size_MB,
+                   COUNT(*) File_Count
+            FROM   #{dba_or_cdb('DBA_Data_Files')} d
+            GROUP BY d.Tablespace_Name #{", d.Con_ID" if PanoramaConnection.is_cdb?}
+            ) f ON f.Tablespace_Name = t.TableSpace_Name #{" AND f.Con_ID = t.Con_ID" if PanoramaConnection.is_cdb?}
+      WHERE Contents != 'TEMPORARY'
+      UNION ALL
+      SELECT f.Tablespace_Name, NULL Inst_ID,
+             t.Contents,
+             'Temporary tablespace'         Content_Hint,
+             t.Block_Size                   BlockSize,
+             NVL(f.MBTotal,0)               MBTotal,
+             NVL(f.MBTotal,0)-NVL(s.Used_Blocks,0)*t.Block_Size/1048576 MBFree,
+             NVL(s.Used_Blocks,0)*t.Block_Size/1048576 MBUsed,
+             (NVL(s.Used_Blocks,0)*t.Block_Size/1048576)/NVL(f.MBTotal,0)*100 PctUsed,
+             t.Status, t.Logging, t.Force_Logging, t.Extent_Management,
+             t.Allocation_Type, t.Plugged_In,
+             t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
+             f.AutoExtensible, f.Max_Size_MB, f.File_Count, NULL Retention
+             #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
+                                  #{ ", t.Def_InMemory" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
+                                  #{", t.Con_ID" if PanoramaConnection.is_cdb?}
+      FROM  #{dba_or_cdb('DBA_Tablespaces')} t
+      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Tablespace_Name, #{"Con_ID," if PanoramaConnection.is_cdb?} SUM(Bytes)/1048576 MBTotal, SUM(Bytes)/SUM(Blocks) BlockSize,
+                              CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
+                              SUM(DECODE(AutoExtensible, 'YES', MaxBytes, Bytes))/1048576 Max_Size_MB,
+                              COUNT(*) File_Count
+                       FROM #{dba_or_cdb('DBA_Temp_Files')}
+                       GROUP BY Tablespace_Name #{", Con_ID" if PanoramaConnection.is_cdb?}
+                      ) f ON f.Tablespace_Name = t.TableSpace_Name #{" AND f.Con_ID = t.Con_ID" if PanoramaConnection.is_cdb?}
+      LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Tablespace_Name, #{"Con_ID," if PanoramaConnection.is_cdb?} SUM(Total_Blocks) Used_Blocks
+                       FROM   GV$Sort_Segment
+                       GROUP BY Tablespace_Name #{", Con_ID" if PanoramaConnection.is_cdb?}
+                      ) s ON s.Tablespace_Name = t.TableSpace_Name #{" AND s.Con_ID = t.Con_ID" if PanoramaConnection.is_cdb?}
+      WHERE t.Contents = 'TEMPORARY'
+      UNION ALL
+      SELECT 'Redo Inst='||l.Inst_ID    Tablespace_Name, l.Inst_ID,
+             DECODE(lf.Is_Recovery_Dest_File, 'YES', 'Redo-Logs in FRA',
+                                              'NO',  'Redo-Logs ouside FRA'
+                   )                    Contents,
+             DECODE(lf.Is_Recovery_Dest_File, 'YES', 'Size of all Redo-Logfiles that are stored in FRA',
+                                              'NO',  'Size of all Redo-Logfiles that are stored ouside FRA'
+                   )                    Content_Hint,
+             #{ if get_db_version >= "11.2"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "MIN(l.BlockSize)"
+                else
+                  0
+                end
+    }                          BlockSize,
+             SUM(l.Bytes)/1048576       MBTotal,
+             0                          MBFree,
+             SUM(l.Bytes)/1048576       MBUsed,
+             100                        PctUsed,
+             NULL                       Status,
+             NULL                       Logging,
+             NULL                       Force_Logging,
+             NULL                       Extent_Management,
+             NULL                       Allocation_Type,
+             NULL                       Plugged_In,
+             NULL                       Segment_Space_Management,
+             NULL                       Def_Tab_Compression,
+             NULL                       Bigfile,
+             NULL                       AutoExtensible,
+             NULL                       Max_Size_MB,
+             COUNT(*)                   File_Count,
+             NULL                       Retention
+             #{ ", NULL Encrypted, NULL Compress_For" if get_db_version >= '11.2'}
+                                  #{ ", NULL Def_InMemory" if get_db_version >= '12.1.0.2'  && PanoramaConnection.edition == :enterprise}
+                                  #{", l.Con_ID" if PanoramaConnection.is_cdb?}
+      FROM   gv$Log l
+      JOIN   gv$LogFile lf ON lf.Inst_ID = l.Inst_ID AND lf.Group# = l.Group#
+      WHERE  l.Inst_ID = l.Thread#  -- im gv$-View werden jeweils die Logs der anderen Instanzen noch einmal in jeder Instance mit Thread# getzeigt, dies verhindert die Dopplung
+      GROUP BY l.Inst_ID, lf.Is_Recovery_Dest_File#{", l.Con_ID" if PanoramaConnection.is_cdb?}
+      ORDER BY 5 DESC NULLS LAST
+      ")
+
+    render_partial
+  end
 
   # Einsprung aus show_materialzed_views
   def list_materialized_view_action

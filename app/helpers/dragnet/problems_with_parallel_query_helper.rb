@@ -333,7 +333,8 @@ This selection considers SQLs in the current SGA'),
         {
           :name  => t(:dragnet_helper_166_name, :default=>'Possible elimination of HASH JOIN BUFFERED by Parallel Shared Hash Join'),
           :desc  => t(:dragnet_helper_166_desc, :default=>"\
-Since Rel. 18 there's an undocumented feature Parallel Shared Hash Join which introduces sharing memory between parallel query slaves.
+Since release 18c there's an undocumented feature Parallel Shared Hash Join which introduces sharing memory between parallel query slaves.
+The needed memory is allocated in the new memory region MGA (Managed Global Area).
 Especially expensive HASH JOIN BUFFERED operations with spilling a lot of data into temporary tablespace can be transformed to HASH JOIN SHARED with much less memory requirements and thus improved runtime.
 This selection shows SQLs with HASH JOIN BUFFERED in the DB history ordered by the runtime they consume for this particular operation.
 
@@ -341,7 +342,7 @@ There are several ways to activate the Parallel Shared Hash Join:
 - set '_px_shared_hash_join'=true; at system or session level
 - define the PQ distribution strategy for a particular table in SQL by hint /*+ PQ_DISTRIBUTE(<table alias> SHARED NONE) */
 - set '_px_shared_hash_join'=true; at SQL level by hint /*+ OPT_PARAM('_px_shared_hash_join' 'true') */
-The latter option by OPT_PARAM fits best for me because behyviour can be controlled at SQL level without defining each table.
+The latter option by OPT_PARAM fits best for me because behaviour can be controlled at SQL level without defining each table.
 
 If this transformation works, then the HASH JOIN BUFFERED turns into HASH JOIN SHARED in the execution plan.
 

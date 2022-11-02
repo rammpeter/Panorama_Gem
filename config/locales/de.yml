@@ -1749,7 +1749,8 @@
   dragnet_helper_165_param_2_hint:                          Minimale Wartezeit je Operation in Sekunden um in Selektion berücksichtigt zu werden. Berechnet aus ASH pro Zeile des Execution Plan.
 
   dragnet_helper_166_desc: |-
-    Seit Rel. 18 gibt es eine undokumentierte Funktion Parallel Shared Hash Join, die die gemeinsame Nutzung von Speicher zwischen Parallel Query Slaves einführt.
+    Seit Release 18c gibt es eine undokumentierte Funktion Parallel Shared Hash Join, die die gemeinsame Nutzung von Speicher zwischen Parallel Query Slaves einführt.
+    Der benötigte Speicher wird in der neuen Speicherregion MGA (Managed Global Area) zugewiesen.    
     Besonders teure HASH JOIN BUFFERED-Operationen, bei denen viele Daten in den temporären Tablespace ausgelagert werden, können in HASH JOIN SHARED-Operationen umgewandelt werden, die deutlich weniger Speicherplatz benötigen und somit die Laufzeit verbessern.
     Diese Selektion zeigt SQLs mit HASH JOIN BUFFERED in der DB-Historie, geordnet nach der Laufzeit die sie für diese spezielle Operation verbrauchen.
 
