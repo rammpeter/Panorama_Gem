@@ -23,6 +23,12 @@ COPY    create_awr_snapshots.sql $ORACLE_BASE/scripts/startup/
 
 RUN     /bin/sh -c "$ORACLE_BASE/setup_db_in_build.sh"
 
+USER    root
+RUN     rm -rf /var/log/*
+
+# Update OS to current patch state
+RUN     yum -y update
+
 FROM scratch
 
 BASE_ENV
