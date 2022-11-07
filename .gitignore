@@ -14,6 +14,6 @@ test/dummy/config/secrets.yml
 /test/dummy/public/assets/*
 /test/dummy/node_modules/.yarn-integrity
 /vendor/assets/javascripts/d3.v6.js
-/docker/oracle_db_prebuilt_panorama_test/local_build.sh
-/docker/oracle_db_prebuilt_panorama_test/base.env
-/docker/oracle_db_prebuilt_panorama_test/Dockerfile.modified
+/test/docker/oracle_db_prebuilt_panorama_test/local_build.sh
+/test/docker/oracle_db_prebuilt_panorama_test/base.env
+/test/docker/oracle_db_prebuilt_panorama_test/Dockerfile.modified
