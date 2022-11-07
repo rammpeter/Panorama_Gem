@@ -193,7 +193,7 @@ ORDER BY h.Elapsed_Secs/p.Cardinality DESC              ",
             :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') }]
         },
         {
-            :name  => t(:dragnet_helper_86_name, :default=>'Long running full table scans caused by IS NULL selection (from 11g)'),
+            :name  => t(:dragnet_helper_86_name, :default=>'Long running full table scans caused by IS NULL selection'),
             :desc  => t(:dragnet_helper_86_desc, :default=>'Selections with IS NULL in WHERE-condition often lead to fall table scan, although there are less NULL-Records to select.
 Solution can be: indexing of column accessed by IS NULL with function based index which also contains records with NUL value and usage of function expression in select instead of IS NULL.
 Example: Indexing with NVL(Column,0)'),

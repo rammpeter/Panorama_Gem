@@ -196,7 +196,7 @@ module MenuHelper
 
                 ]
             },
-            {class: 'menu', caption: 'Result Cache (from 11g)', content: [
+            {class: 'menu', caption: 'Result Cache', content: [
                 {:class => 'item', :caption => t(:menu_current_caption, :default => 'Current'), :controller => 'dba_sga', :action => 'show_result_cache', :hint => t(:menu_sga_pga_result_cache_current_hint, :default => 'Show current usage of result cache')},
             ]
             },

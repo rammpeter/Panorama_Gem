@@ -924,7 +924,7 @@
   dragnet_helper_66_desc: |-
     Ungenutzte Spalten, die nur NULL-Werte enthalten, können möglicherweise entfernt werden.
     Jede NULL-Spalte eines Records belegt ein Byte, wenn nicht alle nachfolgenden Spalten auch NULL sind.
-    Ab 11g können statt dessen virtuelle Spalten definiert werden, wenn Struktur fest vorausgesetzt wird (SAP etc.).
+    Statt dessen können virtuelle Spalten definiert werden, wenn Struktur fest vorausgesetzt wird (SAP etc.).
   dragnet_helper_66_name:                                   Ermittlung nicht genutzter Spalten (alle Werte = NULL)
 
   dragnet_helper_67_desc: |-
@@ -1041,7 +1041,7 @@
     Die Abfrage mit IS NULL als WHERE-Bedingung führt oftmals zu FullTableScan obwohl evtl. nur wenige NULL-Records selektiert werden.
     Lösung kann sein: Indizierung des mit IS NULL abgefragten Feldes durch speziellen Index, der auch NULL-Werte indiziert und Nutzung des Funktionsausdruckes im Select an Stelle von IS NULL.
     Beispiel: Indizierung von NVL(Column,0)
-  dragnet_helper_86_name:                                   Lang laufende Full Table Scans durch IS NULL-Abfrage (ab 11g)
+  dragnet_helper_86_name:                                   Lang laufende Full Table Scans durch IS NULL-Abfrage
 
   dragnet_helper_87_desc: |-
     Zugriffe auf DB-Blöcke im Cache der DB (db-block-gets, consistent reads) werden dann kritisch hinsichtlich des provozierens von 'cache buffers chains'-Latchwaits wenn:
@@ -1055,7 +1055,7 @@
   dragnet_helper_88_desc: |-
     Bei oft ausgeführten Statements kann es sich lohnen, kleine Tabellen per Caching-Funktionen statt SQL zuzugreifen.
     Damit reduziert sich CPU-Belastung und Gefahr von „Cache Buffers Chains“ Latch-Waits.
-    Ab 11g können stored functions mit function result caching für diesen Zweck genutzt werden.
+    Stored functions mit function result caching können für diesen Zweck genutzt werden.
   dragnet_helper_88_name:                                   Hochfrequenter Zugriff auf kleine Objekte
   dragnet_helper_88_param_1_hint:                           Minimale Anzahl Executions für Aufnahme in Selektion
   dragnet_helper_88_param_1_name:                           Minimale Anzahl Executions

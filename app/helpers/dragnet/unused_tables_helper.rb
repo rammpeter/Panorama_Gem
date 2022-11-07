@@ -151,7 +151,7 @@ For valid function of this selection table analysis should only be done if there
             :name  => t(:dragnet_helper_66_name, :default=>'Detection of not used columns (all values = NULL)'),
             :desc  => t(:dragnet_helper_66_desc, :default=>'Unused columns with only NULL-values Spalten can possibly be removed.
 Each NULL-value of a record claims one byte if not all subsequent columns of that record are also NULL.
-Starting from 11g you can use virtual columns instead if this table structure is precondition (SAP etc.).
+You can use virtual columns instead if this table structure is precondition (SAP etc.).
 '),
             :sql=> "SELECT /* DB-Tools Ramm  Spalten mit komplett  NULL-Values */
                              c.Owner, c.Table_Name, c.Column_Name, t.Num_Rows, c.Num_Nulls, c.Num_Distinct

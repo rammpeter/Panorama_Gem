@@ -23,7 +23,8 @@ if [[ $BASE_IMAGE =~ "xe" ]]; then
 fi
 
 # Ensure that image is loaded before docker inspect
-docker pull $BASE_IMAGE
+# Supressed to ensure using local image instead of possibly older image in registry
+# docker pull $BASE_IMAGE
 
 # get environment from base image and replace in Dockerfile
 docker inspect ${BASE_IMAGE} | jq ".[0].Config.Env" |
