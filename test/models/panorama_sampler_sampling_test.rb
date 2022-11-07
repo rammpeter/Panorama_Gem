@@ -6,11 +6,11 @@ class PanoramaSamplerSamplingTest < ActiveSupport::TestCase
     @sampler_config = prepare_panorama_sampler_thread_db_config
   end
 
-
-#  test "do_sampling" do
-#    PanoramaSamplerStructureCheck.remove_tables(@sampler_config)
-#    PanoramaSamplerSampling.do_sampling(@sampler_config)
-#  end
+  # Test executed in WorkerThreadTest
+  #test "do_sampling" do
+  #  PanoramaSamplerStructureCheck.remove_tables(@sampler_config)
+  #  PanoramaSamplerSampling.do_sampling(@sampler_config, Time.now, :AWR)
+  #end
 
   test "do_housekeeping" do
     PanoramaSamplerStructureCheck.do_check(@sampler_config, :ASH)               # Check data structure preconditions, but only for ASH-tables

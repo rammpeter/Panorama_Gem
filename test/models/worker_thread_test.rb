@@ -59,6 +59,11 @@ class WorkerThreadTest < ActiveSupport::TestCase
         WorkerThread.new(@sampler_config, 'test_create_ash_sampler_daemon').create_ash_sampler_daemon(Time.now.round)
         WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
 
+        PanoramaConnection.set_connection_info_for_request(saved_config)        # reconnect for next line because create_snapshot_internal freed the connection
+        # Check if next sampling fixes unusable indexes which can be result of SHRINK SPACE
+        # Force create_snapshot_internal to run into second pass including housekeeping an shrink space
+        PanoramaConnection.sql_execute "ALTER INDEX #{@sampler_config.get_owner}.Panorama_SQL_Plan_PK UNUSABLE"
+
         WorkerThread.new(@sampler_config, 'test_create_ash_sampler_daemon').create_ash_sampler_daemon(Time.now.round)
         WorkerThread.new(@sampler_config, 'test_do_sampling_AWR').create_snapshot_internal(Time.now.round, :AWR) # Tables must be created before snapshot., first snapshot initialization called
 
