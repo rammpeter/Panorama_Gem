@@ -15,7 +15,7 @@ class PanoramaSamplerSampling
     PanoramaSamplerSampling.new(sampler_config).send("do_#{domain.downcase}_housekeeping".to_sym, shrink_space)
 
     if shrink_space
-      PanoramaSamplerStructureCheck.do_check(sampler_config, domain)            # Recreate indexes to ensure complete structure before next execution
+      PanoramaSamplerStructureCheck.do_check(sampler_config, domain, force_repeated_execution: true) # Recreate indexes to ensure complete structure before next execution
     end
   end
 

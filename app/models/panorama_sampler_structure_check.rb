@@ -10,9 +10,10 @@ class PanoramaSamplerStructureCheck
   end
 
   # Execute the check of schema objects structure
-  # @param [PanoramaSamplerConfig] sampler_config
+  # @param [PanoramaSamplerConfig] sampler_config The configuration object
   # @param [Symbol] domain The domain the check is executed for
-  def self.do_check(sampler_config, domain)
+  # @param [TrueClass,FalseClass] force_repeated_execution repeated call as reaction to error or execute on first call only?
+  def self.do_check(sampler_config, domain, force_repeated_execution: false)
     raise "Unsupported domain #{domain}" if !domains.include? domain
 
     case sampler_config.get_structure_check(domain)
@@ -23,7 +24,12 @@ class PanoramaSamplerStructureCheck
       Rails.logger.error('PanoramaSamplerStructureCheck.do_check') { msg }
       raise msg
     when :finished then
-      return                                                                    # Nothing to do because already executed for this config / domain
+      if force_repeated_execution
+        Rails.logger.debug('WorkerThread.do_check') { "Repeated execution for domain #{domain} forced"}
+      else
+        Rails.logger.debug('WorkerThread.do_check') { "Execution suppressed because initial execution for domain #{domain} already finished"}
+        return                                                                    # Nothing to do because already executed for this config / domain
+      end
     end
 
     sampler_config.set_structure_check(domain, :running)                        # Create semaphore for thread, begin processing

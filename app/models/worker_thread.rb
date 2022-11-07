@@ -182,7 +182,7 @@ class WorkerThread
         Rails.logger.error('WorkerThread.create_snapshot_internal') { "Error in first try for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}\n#{e.message}" }
         log_exception_backtrace(e, 30) if !Rails.env.test?
         PanoramaConnection.destroy_connection                                   # Ensure this connection with errors will not be reused for next steps
-        PanoramaSamplerStructureCheck.do_check(@sampler_config, domain)         # Check data structure preconditions first in case of error
+        PanoramaSamplerStructureCheck.do_check(@sampler_config, domain, force_repeated_execution: true) # Check data structure preconditions first in case of error
         PanoramaSamplerSampling.do_housekeeping(@sampler_config, true, domain)  # Do housekeeping also in case of exception to clear full tablespace quota etc. + shrink space
         PanoramaSamplerSampling.do_sampling(@sampler_config, snapshot_time, domain)  # Retry sampling
 
