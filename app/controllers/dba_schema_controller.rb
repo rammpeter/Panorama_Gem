@@ -2194,6 +2194,31 @@ class DbaSchemaController < ApplicationController
                                     WHERE Status != 'VALID'
                                     ORDER BY Last_DDL_Time DESC
     ")
+
+    @indexes = sql_select_iterator("\
+      SELECT i.Owner, i.Index_Name, i.Table_Owner, i.Table_Name, NULL Partition_Name, i.Status, o.Object_Type,
+             o.Object_ID, o.Data_Object_ID, o.Created, o.Last_DDL_Time,
+             TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Last_Spec_Time
+      FROM   DBA_Indexes i
+      LEFT OUTER JOIN DBA_Objects o ON o.Owner = i.Owner AND o.Object_Name = i.Index_Name AND o.SubObject_Name IS NULL
+      WHERE i.Status NOT IN ('VALID', 'N/A', 'USABLE')
+      UNION ALL
+      SELECT ip.Index_Owner, ip.Index_Name, i.Table_Owner, i.Table_Name, ip. Partition_Name, ip.Status, o.Object_Type,
+             o.Object_ID, o.Data_Object_ID, o.Created, o.Last_DDL_Time,
+             TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Last_Spec_Time
+      FROM   DBA_Ind_Partitions ip
+      JOIN   DBA_Indexes i ON i.Owner = ip.Index_Owner AND i.Index_Name = ip.Index_Name
+      LEFT OUTER JOIN DBA_Objects o ON o.Owner = i.Owner AND o.Object_Name = i.Index_Name AND o.SubObject_Name = ip.Partition_Name
+      WHERE ip.Status NOT IN ('VALID', 'N/A', 'USABLE')
+      UNION ALL
+      SELECT ip.Index_Owner, ip.Index_Name, i.Table_Owner, i.Table_Name, ip. Partition_Name, ip.Status, o.Object_Type,
+             o.Object_ID, o.Data_Object_ID, o.Created, o.Last_DDL_Time,
+             TO_DATE(o.Timestamp, 'YYYY-MM-DD:HH24:MI:SS') Last_Spec_Time
+      FROM   DBA_Ind_SubPartitions ip
+      JOIN   DBA_Indexes i ON i.Owner = ip.Index_Owner AND i.Index_Name = ip.Index_Name
+      LEFT OUTER JOIN DBA_Objects o ON o.Owner = i.Owner AND o.Object_Name = i.Index_Name AND o.SubObject_Name = ip.Partition_Name
+      WHERE ip.Status NOT IN ('VALID', 'N/A', 'USABLE')
+")
     render_partial
   end
 

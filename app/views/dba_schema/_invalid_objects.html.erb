@@ -34,6 +34,31 @@
     caption:        "Invalid objects from DBA_Objects ",
     max_height:     450,
     show_pin_icon:  1,
-    update_area: @update_area
 })
 %>
+
+<%
+  column_options =
+    [
+      {caption: 'Index name',         data: proc{|rec| link_object_description(@update_area, rec.owner, rec.index_name)}, title: 'Owner and name of index'},
+      {caption: 'Table name',         data: proc{|rec| link_object_description(@update_area, rec.table_owner, rec.table_name)}, title: 'Owner and name of table of index'},
+      {caption: 'Status',             data: proc{|rec| rec.status},                         title: 'Status of the index'},
+      {caption: 'Partition',          data: proc{|rec| rec.partition_name},                 title: 'Partition or subpartition name'},
+      {caption: 'Object ID',          data: proc{|rec| rec.object_id},                      title: 'Dictionary object number of the object', align: :right},
+      {caption: 'Data-object ID',     data: proc{|rec| rec.data_object_id},                 title: 'Dictionary object number of the segment that contains the object', align: :right},
+      {caption: 'Object type',        data: proc{|rec| rec.object_type},                    title: 'Type of unusable index object'},
+      {caption: 'Created',            data: proc{|rec| localeDateTime(rec.created)},        title: 'Timestamp for the creation of the object'},
+      {caption: 'Last DDL time',      data: proc{|rec| localeDateTime(rec.last_ddl_time)},  title: 'Timestamp for the last modification of the object resulting from a DDL statement (including grants and revokes)'},
+      {caption: 'Last spec. change',  data: proc{|rec| localeDateTime(rec.last_spec_time)}, title: 'Timestamp of last specification change'},
+    ]
+%>
+
+
+<%= gen_slickgrid(@indexes, column_options, {
+  caption:        "Unusable indexes from DBA_Indexes, DBA_Ind_Partitions and DBA_Ind_SubPartitions ",
+  max_height:     450,
+  show_pin_icon:  1,
+})
+%>
+
+<div id="<%= @update_area %>"></div>
