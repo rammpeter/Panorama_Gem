@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    panorama_gem (2.15.44)
+    panorama_gem (2.15.46)
       actionmailer (= 6.1.7)
       actionpack (= 6.1.7)
       actionview (= 6.1.7)
@@ -127,9 +127,9 @@ GEM
     tilt (2.0.11)
     tzinfo (2.0.5)
       concurrent-ruby (~> 1.0)
-    tzinfo-data (1.2022.5)
+    tzinfo-data (1.2022.6)
       tzinfo (>= 1.0.0)
-    zeitwerk (2.6.1)
+    zeitwerk (2.6.5)
 
 PLATFORMS
   universal-java-19
@@ -141,4 +141,4 @@ DEPENDENCIES
   tzinfo-data
 
 BUNDLED WITH
-   2.3.24
+   2.3.25
