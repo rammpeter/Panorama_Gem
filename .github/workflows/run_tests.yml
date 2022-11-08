@@ -196,12 +196,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v1
         with:
-          name: ${{ env.MANAGEMENT_PACK_LICENSE }}_${{ env.DB_VERSION }}_${CONTAINER}_test.log
+          name: ${{ env.MANAGEMENT_PACK_LICENSE }}_${{ env.DB_VERSION }}_${{ env.CONTAINER }}_test.log
           path: test/dummy/log/test.log
 
       - name: Archive test screenshots
         if: always()
         uses: actions/upload-artifact@v1
         with:
-          name: ${{ env.MANAGEMENT_PACK_LICENSE }}_${{ env.DB_VERSION }}_${CONTAINER}_tmp
+          name: ${{ env.MANAGEMENT_PACK_LICENSE }}_${{ env.DB_VERSION }}_${{ env.CONTAINER }}_tmp
           path: test/dummy/tmp/screenshots
