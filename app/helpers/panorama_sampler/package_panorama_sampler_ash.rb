@@ -384,8 +384,6 @@ END Panorama_Sampler_ASH;
       -- but assumes that PL/SQL-Job is started at the exact second
       v_LastSampleTime := SYSDATE + (p_Next_Snapshot_Start_Seconds+2)/86400;    -- Ensure that the last 10 seconds block is executed after end_snapshot
 
-      v_Sample_ID := v_Sample_ID + 10;                                          -- Start with next bulk because predecessing daemon will write up to 10 samples before terminating
-
       -- The daemon starts at minute boundary, but the samples for the first 10 seconds after the snapshot time are still processed by the previously running daemon
       -- To cover some time shift between Panorama-Server and DB the daemon should start so that it will not process this first 10 seconds itself, because this may lead to PK error
       DBMS_LOCK.SLEEP(2);
@@ -407,6 +405,7 @@ END Panorama_Sampler_ASH;
           EXECUTE IMMEDIATE 'SELECT NVL(MAX(Sample_ID), 0) FROM panorama_owner.Panorama_Active_Sess_History WHERE Instance_Number = :Instance_Number' INTO v_Sample_ID USING p_Instance_Number;
         END IF;
       END IF;
+      v_Sample_ID := v_Sample_ID + 10;                                          -- Start with next bulk because predecessing daemon will write up to 10 samples before terminating
 
       LOOP
         -- Wait until current second ends, ensure also that first sample is at seconds bound
