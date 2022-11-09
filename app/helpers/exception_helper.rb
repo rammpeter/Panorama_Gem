@@ -13,7 +13,7 @@ module ExceptionHelper
       curr_line_no += 1
     end
 
-    Rails.logger.error('ExceptionHelper.log_exception_backtrace') { "Stack-Trace for exception: #{exception.class} #{exception.message}\n#{output}" }
+    Rails.logger.error('ExceptionHelper.log_exception_backtrace') { "Stack-Trace for #{exception.class}:\n#{output}" }
   end
 
   # Raise an exception with original backtrace but extended message
@@ -21,7 +21,7 @@ module ExceptionHelper
   # @param msg: Message to add to original exception
   # @return: nothing, raises exception
   def reraise_extended_exception(exception, msg)
-    msg = "Exception #{exception.class}:#{exception.message} : #{msg}"
+    msg = "#{exception.class}:#{exception.message} : #{msg}"
     new_ex = Exception.new(msg)
     new_ex.set_backtrace(exception.backtrace)
     raise new_ex

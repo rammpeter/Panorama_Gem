@@ -63,11 +63,11 @@ module ApplicationHelper
     rescue Exception =>e
       # Especially for test environments, reread the store content if something goes wrong, content has changed etc.
       if retries < 2
-        Rails.logger.warn('ApplicationHelper.write_to_client_info_store') { "Retry after exception '#{e.message}' while writing file store at '#{EngineConfig.config.client_info_filename}'" }
+        Rails.logger.warn('ApplicationHelper.write_to_client_info_store') { "Retry after #{e.class} '#{e.message}' while writing file store at '#{EngineConfig.config.client_info_filename}'" }
         @buffered_client_info_store = nil
         write_to_client_info_store(key, value, retries: retries+1)
       else
-        Rails.logger.error('ApplicationHelper.write_to_client_info_store')  { "Exception '#{e.message}' raised while writing file store at '#{EngineConfig.config.client_info_filename}'" }
+        Rails.logger.error('ApplicationHelper.write_to_client_info_store')  { "#{e.class} '#{e.message}' raised while writing file store at '#{EngineConfig.config.client_info_filename}'" }
         raise "Exception '#{e.message}' while writing file store at '#{EngineConfig.config.client_info_filename}'"
       end
     end

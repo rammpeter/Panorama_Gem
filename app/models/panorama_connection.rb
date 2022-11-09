@@ -444,7 +444,7 @@ class PanoramaConnection
     destroy_conn.jdbc_connection.logoff
     Rails.logger.info "destroy_jdbc_connection_in_thread: Database connection destroyed: URL='#{config[:url]}' User='#{config[:username]}' Last used=#{destroy_conn.last_used_time} SID=#{destroy_conn.sid} Remaining pool size=#{@@connection_pool.count}"
   rescue Exception => e
-    Rails.logger.info "destroy_jdbc_connection_in_thread: Exception #{e.message} during logoff. URL='#{config[:url]}' User='#{config[:username]}' Last used=#{destroy_conn.last_used_time} SID=#{destroy_conn.sid}"
+    Rails.logger.info "destroy_jdbc_connection_in_thread: #{e.class} #{e.message} during logoff. URL='#{config[:url]}' User='#{config[:username]}' Last used=#{destroy_conn.last_used_time} SID=#{destroy_conn.sid}"
   end
 
   def self.get_host_tns(current_database)                                            # JDBC-URL for host/port/sid
@@ -878,7 +878,7 @@ class PanoramaConnection
       curr_line_no += 1
     end
 
-    Rails.logger.error('PanoramaConnection.log_exception_backtrace') { "Stack-Trace for exception: #{exception.class} #{exception.message}\n#{output}" }
+    Rails.logger.error('PanoramaConnection.log_exception_backtrace') { "Stack-Trace for #{exception.class}:\n#{output}" }
   end
 
   # Execute select direct on JDBC-Connection with logging

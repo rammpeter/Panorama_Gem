@@ -44,7 +44,7 @@ class ApplicationController < ActionController::Base
     log_exception_backtrace(@exception, Rails.env.test? ? nil : 40)
 
     if performed?                                                               # Render already called in action?, Suppress DoubleRenderError
-      Rails.logger.error('ApplicationController.global_exception_handler') { "Exception #{@exception.message} raised!\nAction has already rendered, so error cannot be shown as HTML-result with status 500" }
+      Rails.logger.error('ApplicationController.global_exception_handler') { "#{@exception.class} #{@exception.message} raised!\nAction has already rendered, so error cannot be shown as HTML-result with status 500" }
     else
       if @exception.instance_of? PopupMessageException
         render partial: 'application/popup_exception_message', status: 500 # Show message only without status etc.
@@ -123,7 +123,7 @@ class ApplicationController < ActionController::Base
 
       File.open(filename, 'a') { |file| file.write("#{client_ip} #{PanoramaConnection.database_name} #{Time.now.year}/#{'%02d' % Time.now.month} #{real_controller_name} #{real_action_name} #{Time.now.strftime('%Y/%m/%d-%H:%M:%S')} #{get_current_database[:tns]}\n") }
     rescue Exception => e
-      Rails.logger.warn("#### ApplicationController.begin_request: #{t(:application_helper_usage_error, default: 'Exception while writing in')} #{filename}: #{e.message}")
+      Rails.logger.warn('ApplicationController.begin_request') { "#{e.class} while writing in #{filename}: #{e.message}" }
     end
 
     add_statusbar_message(params[:statusbar_message]) if params[:statusbar_message]

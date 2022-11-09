@@ -37,7 +37,7 @@ class PanoramaSamplerStructureCheck
     sampler_config.set_structure_check(domain, :finished)                       # set semaphore for thread, finished processing
   rescue Exception => e
     sampler_config.set_structure_check(domain, :error)                          # Mark erroneous, execute again at next try
-    Rails.logger.error('PanoramaSamplerStructureCheck.do_check') { "Execption #{e.class}:#{e.message} for ID=#{sampler_config.get_id} (#{sampler_config.get_name})" }
+    Rails.logger.error('PanoramaSamplerStructureCheck.do_check') { "#{e.class} for ID=#{sampler_config.get_id} (#{sampler_config.get_name}): #{e.message} " }
     sampler_config.set_error_message("Error #{e.class}:#{e.message} during PanoramaSamplerStructureCheck.do_check")
     raise e
   end

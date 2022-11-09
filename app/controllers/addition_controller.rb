@@ -831,7 +831,7 @@ class AdditionController < ApplicationController
       parameter_info = JSON.parse(params[:parameter_info])
       raise "wrong ruby class '#{parameter_info.class}'! Expression must be of ruby class 'Hash' (comparable to JSON)." if parameter_info.class != Hash
     rescue Exception => e
-      show_popup_message("Exception while evaluating expression:\n#{e.message}")
+      show_popup_message("#{e.class} while evaluating expression:\n#{e.message}")
       return
     end
 

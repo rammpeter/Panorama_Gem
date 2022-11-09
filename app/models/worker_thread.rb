@@ -189,7 +189,7 @@ class WorkerThread
         @sampler_config.set_domain_last_snapshot_end(domain, Time.now)
         Rails.logger.info('WorkerThread.create_snapshot_internal') { "#{Time.now}: Finished creating new #{domain} snapshot in second try for ID=#{@sampler_config.get_id}, Name='#{@sampler_config.get_name}' and domain=#{domain}" }
       rescue Exception => x
-        Rails.logger.error('WorkerThread.create_snapshot_internal') { "Exception in exception handler for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}\n#{x.message}" }
+        Rails.logger.error('WorkerThread.create_snapshot_internal') { "#{x.class} in exception handler for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name}) and domain=#{domain}\n#{x.message}" }
         log_exception_backtrace(x, 40)
         @sampler_config.set_error_message("Error #{e.message} during WorkerThread.create_snapshot_internal for domain=#{domain}")
         PanoramaConnection.destroy_connection                                   # Ensure this connection with errors will not be reused
