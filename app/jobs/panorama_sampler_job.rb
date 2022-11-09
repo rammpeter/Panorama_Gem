@@ -84,6 +84,10 @@ class PanoramaSamplerJob < ApplicationJob
 
     last_snapshot_start_key = "last_#{domain.downcase}_snapshot_start".to_sym
     snapshot_cycle_minutes  = config.get_domain_snapshot_cycle(domain) * minute_factor
+    if snapshot_cycle_minutes.nil? || snapshot_cycle_minutes == 0 || !snapshot_cycle_minutes.instance_of?(Integer)
+      Rails.logger.warn('PanoramaSamplerJob.check_for_sampling'){ "snapshot_cycle_minutes not valid, assuming 60: '#{snapshot_cycle_minutes}' of class #{snapshot_cycle_minutes.class}" }
+      snapshot_cycle_minutes = 60
+    end
     last_snapshot_start     = config.get_last_domain_snapshot_start(domain)
 
     if config.get_domain_active(domain) &&

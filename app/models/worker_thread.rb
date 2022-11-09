@@ -235,11 +235,12 @@ class WorkerThread
   # @return [String] nil if no active session or SID/SN of session
   def check_for_really_active_predecessor_in_db
     PanoramaConnection.sql_select_one ["SELECT SID||','||Serial#
-                                        FROM   v$Session
+                                        FROM   v$Session /* only test the current instance because other instances may also have sampling */
                                         WHERE  Status = 'ACTIVE'
                                         AND    Module = 'Panorama'
                                         AND    Action = ?
-                                        AND    SID != SYS_CONTEXT('USERENV', 'SID')
+                                        AND    SID      != SYS_CONTEXT('USERENV', 'SID') /* Do not check the own session */
+                                        AND    UserName = SYS_CONTEXT('USERENV', 'SESSION_USER') /* hide active sampling with other user */
                                         ", PanoramaConnection.last_used_action_name]
   end
 end
