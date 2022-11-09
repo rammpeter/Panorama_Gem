@@ -19,7 +19,6 @@ class PanoramaSamplerConfig
     @config_hash[:sql_min_runtime_millisecs]          = 10    if !@config_hash.has_key?(:sql_min_runtime_millisecs)
     @config_hash[:awr_ash_active]                     = false if !@config_hash.has_key?(:awr_ash_active)
     @config_hash[:ash_1sec_sample_keep_hours]         = 3     if !@config_hash.has_key?(:ash_1sec_sample_keep_hours)
-    @config_hash[:last_snap_max_ash_sample_id]        = 0     if !@config_hash.has_key?(:last_snap_max_ash_sample_id)
 
     @config_hash[:object_size_active]                 = false if !@config_hash.has_key?(:object_size_active)
     @config_hash[:object_size_snapshot_cycle]         = 24    if !@config_hash.has_key?(:object_size_snapshot_cycle)
@@ -89,7 +88,6 @@ class PanoramaSamplerConfig
   def get_awr_ash_snapshot_cycle;             get_config_value(:awr_ash_snapshot_cycle);              end
   def get_awr_ash_snapshot_retention;         get_config_value(:awr_ash_snapshot_retention);          end
   def get_ash_1sec_sample_keep_hours;         get_config_value(:ash_1sec_sample_keep_hours);          end
-  def get_last_snap_max_ash_sample_id;        get_config_value(:last_snap_max_ash_sample_id);         end
   def get_blocking_locks_active;              get_config_value(:blocking_locks_active);               end
   def get_blocking_locks_long_locks_limit;    get_config_value(:blocking_locks_long_locks_limit);     end
   def get_blocking_locks_snapshot_cycle;      get_config_value(:blocking_locks_snapshot_cycle);       end
@@ -175,13 +173,6 @@ class PanoramaSamplerConfig
   def set_domain_last_snapshot_end(domain, snapshot_time)
     @@config_access_mutex.synchronize do
       @config_hash["last_#{domain.downcase}_snapshot_end".to_sym] = snapshot_time
-      PanoramaSamplerConfig.write_config_array_to_store
-    end
-  end
-
-  def set_last_snap_max_ash_sample_id(sample_id)
-    @@config_access_mutex.synchronize do
-      @config_hash[:last_snap_max_ash_sample_id] = sample_id
       PanoramaSamplerConfig.write_config_array_to_store
     end
   end

@@ -16,8 +16,6 @@ CREATE OR REPLACE PACKAGE panorama_owner.Panorama_Sampler_Snapshot IS
                         p_Snapshot_Retention          IN NUMBER,
                         p_SQL_Min_No_of_Execs         IN NUMBER,
                         p_SQL_Min_Runtime_MilliSecs   IN NUMBER,
-                        p_last_snap_max_ash_sample_id IN NUMBER,
-                        p_current_max_ash_sample_id   IN NUMBER,
                         p_ash_1sec_sample_keep_hours  IN NUMBER
                       );
 -- TODO: Remove
@@ -31,11 +29,24 @@ END Panorama_Sampler_Snapshot;
     "
   PROCEDURE Move_ASH_To_Snapshot_Table(p_Snap_ID                      IN NUMBER,
                                        p_DBID                         IN NUMBER,
-                                       p_last_snap_max_ash_sample_id  IN NUMBER,
-                                       p_current_max_ash_sample_id    IN NUMBER,
+                                       p_Instance                     IN NUMBER,
                                        p_ash_1sec_sample_keep_hours   IN NUMBER
                                       ) IS
+    v_current_max_ash_sample_id   NUMBER;
+    v_last_snap_max_ash_sample_id NUMBER;
   BEGIN
+    -- Get the maximum Sample_ID to move and remember this value for the next snapshot
+    SELECT NVL(MAX(Sample_ID), 0) INTO v_current_max_ash_sample_id FROM panorama_owner.Internal_V$Active_Sess_History WHERE Instance_Number = p_Instance;
+
+    -- There is only one or no record in result of this SQL, MAX(... catches no_record_found
+    SELECT MAX(last_snap_max_ash_sample_id) INTO v_last_snap_max_ash_sample_id FROM panorama_owner.Panorama_ASH_Counter WHERE Instance_Number = p_Instance;
+    IF v_last_snap_max_ash_sample_id IS NULL THEN /* Backward compatibility */
+      SELECT NVL(MAX(Sample_ID), 0) INTO v_last_snap_max_ash_sample_id FROM panorama_owner.Internal_Active_Sess_History WHERE Instance_Number = p_Instance;
+    END IF;
+
+    -- Rember the current value for next snapshot
+    UPDATE panorama_owner.Panorama_ASH_Counter SET last_snap_max_ash_sample_id = v_current_max_ash_sample_id WHERE Instance_Number = p_Instance;
+
     INSERT INTO panorama_owner.Internal_Active_Sess_History (
       Snap_ID, DBID, Instance_Number, Sample_ID, Sample_Time, Session_ID, Session_Serial#, Session_Type, Flags, User_ID, SQL_ID, Is_SQLID_Current, SQL_Child_Number,
       SQL_OpCode, SQL_OpName, FORCE_MATCHING_SIGNATURE, TOP_LEVEL_SQL_ID, TOP_LEVEL_SQL_OPCODE, SQL_PLAN_HASH_VALUE, SQL_PLAN_LINE_ID,
@@ -66,13 +77,16 @@ END Panorama_Sampler_Snapshot;
              DELTA_WRITE_IO_BYTES, DELTA_INTERCONNECT_IO_BYTES, PGA_Allocated, Temp_Space_Allocated,
              panorama_owner.Con_DBID_From_Con_ID.Get(Con_ID), Con_ID
       FROM   panorama_owner.Internal_V$Active_Sess_History
-      WHERE  Sample_ID > p_last_snap_max_ash_sample_id AND Sample_ID <= p_current_max_ash_sample_id
+      WHERE  Sample_ID       > v_last_snap_max_ash_sample_id
+      AND    Sample_ID       <= v_current_max_ash_sample_id
+      AND    Instance_Number = p_Instance
       AND    Preserve_10Secs = 'Y'
     ;
 
     DELETE FROM panorama_owner.Internal_V$Active_Sess_History
-    WHERE Sample_ID <= p_current_max_ash_sample_id /* don't delete newer samples just created */
+    WHERE Sample_ID <= v_current_max_ash_sample_id /* don't delete newer samples just created */
     AND   Sample_Time < SYSDATE-p_ash_1sec_sample_keep_hours/24 /* Consider the minimum keep time */
+    AND   Instance_Number = p_Instance
     ;
     COMMIT;
   END Move_ASH_To_Snapshot_Table;
@@ -803,13 +817,11 @@ END Panorama_Sampler_Snapshot;
                         p_Snapshot_Retention          IN NUMBER,
                         p_SQL_Min_No_of_Execs         IN NUMBER,
                         p_SQL_Min_Runtime_MilliSecs   IN NUMBER,
-                        p_last_snap_max_ash_sample_id IN NUMBER,
-                        p_current_max_ash_sample_id   IN NUMBER,
                         p_ash_1sec_sample_keep_hours  IN NUMBER
                        ) IS
     ErrMsg  VARCHAR2(32000) := NULL;
   BEGIN
-    CATCH_START Move_ASH_To_Snapshot_Table(p_Snap_ID,   p_DBID,     p_last_snap_max_ash_sample_id, p_current_max_ash_sample_id, p_ash_1sec_sample_keep_hours); CATCH_END
+    CATCH_START Move_ASH_To_Snapshot_Table(p_Snap_ID,   p_DBID,     p_Instance, p_ash_1sec_sample_keep_hours); CATCH_END
     CATCH_START Snap_Datafile             (p_DBID); CATCH_END
     CATCH_START Snap_DB_cache_Advice      (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END
     CATCH_START Snap_Enqueue_Stat         (p_Snap_ID,   p_DBID,     p_Instance); CATCH_END

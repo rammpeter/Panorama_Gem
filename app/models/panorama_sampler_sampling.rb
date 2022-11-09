@@ -56,9 +56,6 @@ class PanoramaSamplerSampling
                                              ? FROM v$Instance",
                                     @snap_id, PanoramaConnection.login_container_dbid, PanoramaConnection.instance_number, begin_interval_time, PanoramaConnection.con_id]
 
-    current_max_ash_sample_id = PanoramaConnection.sql_select_one "SELECT NVL(MAX(Sample_ID), 0) FROM #{@sampler_config.get_owner}.Internal_V$Active_Sess_History"
-    Rails.logger.debug('PanoramaSamplerSampling.do_awr_sampling') { "Copy 1-second ASH samples in AWR snapshot for sample_id > #{@sampler_config.get_last_snap_max_ash_sample_id} and sample_id <= #{current_max_ash_sample_id}"}
-
     do_snapshot_call = "Do_Snapshot(p_Snap_ID                       => ?,
                                     p_Instance                      => ?,
                                     p_DBID                          => ?,
@@ -68,8 +65,6 @@ class PanoramaSamplerSampling
                                     p_Snapshot_Retention            => ?,
                                     p_SQL_Min_No_of_Execs           => ?,
                                     p_SQL_Min_Runtime_MilliSecs     => ?,
-                                    p_last_snap_max_ash_sample_id   => ?,
-                                    p_current_max_ash_sample_id     => ?,
                                     p_ash_1sec_sample_keep_hours    => ?
                                    )"
 
@@ -106,12 +101,8 @@ class PanoramaSamplerSampling
                                     @sampler_config.get_awr_ash_snapshot_retention,
                                     @sampler_config.get_sql_min_no_of_execs,
                                     @sampler_config.get_sql_min_runtime_millisecs,
-                                    @sampler_config.get_last_snap_max_ash_sample_id,
-                                    current_max_ash_sample_id,
                                     @sampler_config.get_ash_1sec_sample_keep_hours
                                    ]
-
-    @sampler_config.set_last_snap_max_ash_sample_id(current_max_ash_sample_id) # Remember the value for the next snapshot
   end
 
   def do_awr_housekeeping(shrink_space)
