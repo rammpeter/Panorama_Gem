@@ -15,17 +15,11 @@ module IoHelper
     @io_file_key_rules_hash
   end
 
+  # Get the part of WHERE clause for the key
+  # @param [Symbol] key The key to identify the filter column / condition
+  # @return [Hash] :sql
   def io_file_key_rule(key)
     retval = io_file_key_rules[key.to_s]
-    unless retval
-      retval = {
-        :DBID                 => {:sql => "s.DBID", :hide_content => true},
-        :time_selection_end   => {:sql => "s.Begin_Interval_Time <  TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')"  , :already_bound => true},   # SQL muss nicht mehr um =? erweitert werden
-        :time_selection_start => {:sql => "s.End_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')"    , :already_bound => true},
-      }[key.to_sym]
-    end
-
-
     raise "io_file_key_rule: unknown key '#{key}' of class #{key.class.name}" unless retval
     retval
   end
@@ -72,14 +66,6 @@ module IoHelper
 
   def iostat_detail_key_rule(key)
     retval = iostat_detail_key_rules[key.to_s]
-    unless retval
-      retval = {
-          :DBID                 => {:sql => "s.DBID", :hide_content => true},
-          :time_selection_end   => {:sql => "s.Begin_Interval_Time <  TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')"  , :already_bound => true},   # SQL muss nicht mehr um =? erweitert werden
-          :time_selection_start => {:sql => "s.End_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')"    , :already_bound => true},
-      }[key.to_sym]
-    end
-
     raise "iostat_detail_key_rule: unknown key '#{key}' of class #{key.class.name}" unless retval
     retval
   end
@@ -128,15 +114,6 @@ module IoHelper
 
   def iostat_filetype_key_rule(key)
     retval = iostat_filetype_key_rules[key.to_s]
-    unless retval
-      retval = {
-          :DBID                 => {:sql => "s.DBID", :hide_content => true},
-          :time_selection_end   => {:sql => "s.Begin_Interval_Time <  TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')"  , :already_bound => true},   # SQL muss nicht mehr um =? erweitert werden
-          :time_selection_start => {:sql => "s.End_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_minute_mask}')"    , :already_bound => true},
-      }[key.to_sym]
-    end
-
-
     raise "iostat_filetype_key_rule: unknown key '#{key}' of class #{key.class.name}" unless retval
     retval
   end
@@ -174,8 +151,5 @@ module IoHelper
     end
     @iostat_filetype_values_column_options
   end
-
-
-
 end
 

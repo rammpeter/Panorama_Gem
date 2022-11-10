@@ -24,14 +24,14 @@
      form_content << "<table>"
      form_content << "<tr>"
      @groupfilter.each do|key,value|
-       form_content << "<th>#{key}</th>".html_safe if !@key_rule_proc.call(key)[:hide_content] &&  key != :time_selection_start && key != :time_selection_end
+       form_content << "<th>#{key}</th>".html_safe if key != :time_selection_start && key != :time_selection_end && key != :DBID
      end
      form_content << "<th>Start time</th>"
      form_content << "<th>End time</th>"
 
      form_content << "</tr><tr>"
      @groupfilter.each do|key,value|
-       if !@key_rule_proc.call(key)[:hide_content] &&  key != :time_selection_start && key != :time_selection_end
+       if  key != :time_selection_start && key != :time_selection_end && key != :DBID
          form_content << "<td>"
          form_content << "#{value}".html_safe
          form_content << submit_tag("x", :name=>key, :title => t(:active_session_history_list_groupfilter_delete_filter_hint, :default=>"Refresh content without this filter"), :style=>"color:red")

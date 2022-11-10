@@ -29,24 +29,26 @@ class IoController < ApplicationController
     @with_where_string    = ""
     @with_where_values    = []
 
-    @groupfilter.each {|key,value|
-      sql = key_rule_function.call(key)[:sql].clone
-      unless key_rule_function.call(key)[:already_bound]
+    @groupfilter.each do |key,value|
+      if key == :time_selection_end || key==:time_selection_start || key==:DBID
+        sql = case key
+              when :DBID                 then "s.DBID = ?"
+              when :time_selection_end   then "s.Begin_Interval_Time <  TO_TIMESTAMP(?, '#{sql_datetime_mask(value)}')"
+              when :time_selection_start then "s.End_Interval_Time >= TO_TIMESTAMP(?, '#{sql_datetime_mask(value)}')"
+              end
+        @with_where_string << " AND #{sql}"
+        @with_where_values << value
+      else
+        sql = key_rule_function.call(key)[:sql].clone
         if value && value != ''
           sql << " = ?"
         else
           sql << " IS NULL"
         end
-      end
-
-      if key == :time_selection_end || key==:time_selection_start || key==:DBID || key==:instance
-        @with_where_string << " AND #{sql}"
-        @with_where_values << value
-      else
         @global_where_string << " AND #{sql}"
         @global_where_values << value if value && value != ''  # Wert nur binden wenn nicht im :sql auf NULL getestet wird
       end
-    }
+    end
   end # where_from_groupfilter
 
   private
