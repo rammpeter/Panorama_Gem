@@ -45,4 +45,18 @@ class AdminController < ApplicationController
     cookies.delete 'master'
     render html: "<script type='text/javascript'>#{build_main_menu_js_code}</script>".html_safe
   end
+
+  def show_log_level
+    @log_level = @@log_level_aliases[Rails.logger.level]
+    render_partial
+  end
+
+  def set_log_level
+    return if force_login_if_admin_jwt_not_valid                                # Ensure valid authentication and suppress double rendering in tests
+    log_level = prepare_param :log_level                                        # DEBUG, ERROR etc.
+    Rails.logger.level = "Logger::#{log_level}".constantize
+    msg = "Log level of Panorama server process set to #{log_level}"
+    Rails.logger.warn('AdminController.set_log_level') { msg }
+    render js: "show_status_bar_message('#{my_html_escape(msg)}')"
+  end
 end

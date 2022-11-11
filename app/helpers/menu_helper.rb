@@ -221,7 +221,8 @@ module MenuHelper
       main_menu << {
          class: 'menu', caption: 'Admin', content: [
           {class: 'item', caption: 'Panorama-Sampler config', :controller=> 'panorama_sampler', :action=> 'list_config', :hint=> t(:menu_addition_panorama_sampler_config_hint, :default=>'Configure target databases for Panorama-Sampler') },
-          {class: 'item', caption: 'Admin Logout ', controller: :admin, action: :admin_logout, :hint=> t(:menu_admin_logout_hint, default: 'Logout from admin functions') },
+          {class: 'item', caption: 'Set log level', controller: :admin, action: :show_log_level, :hint=> t(:menu_admin_show_log_level_hint, default: 'Set the log level of Panorama server process') },
+          {class: 'item', caption: 'Admin logout', controller: :admin, action: :admin_logout, :hint=> t(:menu_admin_logout_hint, default: 'Logout from admin functions') },
         ]
       }
     end

@@ -1878,7 +1878,7 @@
   menu_addition_size_evolution_caption:                     Größen-Entwicklung von Objekten
   menu_addition_size_evolution_hint:                        Entwicklung der Größe von Objekten im betrachteten Zeitraum
 
-  menu_admin_logout_hint:                                   Logout aus Admin-Funktionen
+  menu_admin_show_log_level_hint:                           Setzen des Log-Levels für den Panorama-Serverprozess
 
   menu_current_caption:                                     Aktuell
 
