@@ -70,7 +70,7 @@ class WorkerThread
 
     connection_config = @sampler_config.get_cloned_config_hash                  # Structure similar to database
 
-    connection_config[:client_salt]             = EngineConfig.config.panorama_sampler_master_password
+    connection_config[:client_salt]             = EngineConfig.config.panorama_master_password
     connection_config[:management_pack_license] = :none                         # assume no management packs are licensed for first steps
     connection_config[:privilege]               = 'normal' if !connection_config.has_key?(:privilege)
     connection_config[:query_timeout]           = connection_config[:awr_ash_snapshot_cycle]*60+60 # 1 minute more than snapshot cycle

@@ -5,7 +5,7 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     set_session_test_db_context
-    EngineConfig.config.panorama_sampler_master_password = 'hugo'
+    EngineConfig.config.panorama_master_password = 'hugo'
 
     @config_entry_without_id            = get_current_database
     @config_entry_without_id[:name]     = 'Hugo'
@@ -21,36 +21,55 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "show_config with xhr: true" do
-    get '/panorama_sampler/show_config',  :params => {:format=>:html}
-    assert_response :success, 'show_config'
+  def admin_login
+    # Set a valid JWT with cookie
+    post '/admin/admin_logon',  :params => {:format=>:html, origin_controller: :admin, origin_action: :master_login, master_password: EngineConfig.config.panorama_master_password}
+    assert_response :redirect, log_on_failure('Should be redirecte to a dummy page after successful logon')
   end
 
-  test "request_master_password with xhr: true" do
-    get '/panorama_sampler/request_master_password',  :params => {:format=>:html}
-    assert_response :success, 'request_master_password'
+  def admin_logout
+    get '/admin/admin_logout',  :params => {:format=>:html}
+    assert_response :success, log_on_failure('Remove a possibly existing cookie before test')
   end
 
-  test "check_master_password with xhr: true" do
-    get '/panorama_sampler/check_master_password',  :params => {:format=>:html, :master_password=>'hugo'}
-    assert_response :success, 'check_master_password should connect'
-    get '/panorama_sampler/check_master_password',  :params => {:format=>:js, :master_password=>'wrong'}
-    assert_response :success, 'check_master_password should produce connect error'
+  test "list_config with xhr: true" do
+    admin_logout
+    get '/panorama_sampler/list_config',  :params => {:format=>:html}
+    assert_response :redirect, log_on_failure('should request admin logon')
+
+    admin_login
+    get '/panorama_sampler/list_config',  :params => {:format=>:html}
+    assert_response :success, log_on_failure('should show config')
   end
 
   test "show_new_config_form with xhr: true" do
+    admin_logout
     get '/panorama_sampler/show_new_config_form',  :params => {:format=>:html}
-    assert_response :success, 'show_new_config_form'
+    assert_response :redirect, log_on_failure('show_new_config_form should request admin logon')
+
+    admin_login
+    get '/panorama_sampler/show_new_config_form',  :params => {:format=>:html}
+    assert_response :success, log_on_failure('show_new_config_form should succeed')
   end
 
   test "show_edit_config_form with xhr: true" do
+    admin_logout
     get '/panorama_sampler/show_edit_config_form',  :params => {:format=>:html, :id=>1}
-    assert_response :success, 'show_edit_config_form'
+    assert_response :redirect, log_on_failure('show_edit_config_form should request admin logon')
+
+    admin_login
+    get '/panorama_sampler/show_edit_config_form',  :params => {:format=>:html, :id=>1}
+    assert_response :success, log_on_failure('show_edit_config_form should succeed')
   end
 
   test "clear_config_error with xhr: true" do
+    admin_logout
     post '/panorama_sampler/clear_config_error',  :params => {:format=>:html, :id=>1}
-    assert_response :success, 'clear_config_error'
+    assert_response :redirect, log_on_failure('clear_config_error should request admin logon')
+
+    admin_login
+    post '/panorama_sampler/clear_config_error',  :params => {:format=>:html, :id=>1}
+    assert_response :success, log_on_failure('clear_config_error should succeed')
   end
 
   test "save_config with xhr: true" do
@@ -66,6 +85,17 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
           config[:user] = 'blabla' if right == 'Wrong'                          # Force connect error or not
           response_format = :js if (right == 'Wrong' || right == 'System') && button == 'Test connection'  # Popup-Dialog per JS expected
 
+          admin_logout
+          get '/panorama_sampler/save_config',
+              :params => {
+                :format => response_format,
+                :commit => button,
+                :id     => id,
+                :config => config
+              }
+          assert_response :redirect, log_on_failure('save_config should request admin logon')
+
+          admin_login
           get '/panorama_sampler/save_config',
               :params => {
                   :format => response_format,
@@ -74,9 +104,9 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
                   :config => config
               }
           if right == 'Wrong' && button == 'Test connection'
-            assert_response :error, "save_config should raise error for button='#{button}', mode='#{mode}', right='#{right}'"
+            assert_response :error, log_on_failure("save_config should raise error for button='#{button}', mode='#{mode}', right='#{right}'")
           else
-            assert_response :success, "save_config should be successful for button='#{button}', mode='#{mode}', right='#{right}'"
+            assert_response :success, log_on_failure("save_config should be successful for button='#{button}', mode='#{mode}', right='#{right}'")
           end
 
           # delete config to ensure unique names for next test
@@ -89,8 +119,13 @@ class PanoramaSamplerControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "delete_config with xhr: true" do
+    admin_logout
     get '/panorama_sampler/delete_config',  :params => {:format=>:html, :id=>PanoramaSamplerConfig.get_max_id }
-    assert_response :success, 'delete_config'
+    assert_response :redirect, log_on_failure('delete_config should request admin logon')
+
+    admin_login
+    get '/panorama_sampler/delete_config',  :params => {:format=>:html, :id=>PanoramaSamplerConfig.get_max_id }
+    assert_response :success, log_on_failure('delete_config should succeed')
   end
 
 end

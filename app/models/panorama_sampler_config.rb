@@ -254,7 +254,7 @@ class PanoramaSamplerConfig
   def self.get_config_array
     if @@config_array.nil?
       @@config_access_mutex.synchronize do
-        if EngineConfig.config.panorama_sampler_master_password.nil?
+        if EngineConfig.config.panorama_master_password.nil?
           @@config_array = []                                                     # No config to read if master password is not given
         else
           config_hash_array = EngineConfig.get_client_info_store.read(client_info_store_key)  # get stored values as Hash
@@ -346,7 +346,7 @@ class PanoramaSamplerConfig
 
   #
   def self.encryt_password(native_password)
-    Encryption.encrypt_value(native_password, EngineConfig.config.panorama_sampler_master_password) # Encrypt password with master_password
+    Encryption.encrypt_value(native_password, EngineConfig.config.panorama_master_password) # Encrypt password with master_password
   end
 
   def self.validate_entry(config_hash, empty_password_allowed = false)
@@ -444,8 +444,8 @@ class PanoramaSamplerConfig
   private
 
   def self.client_info_store_key
-    raise "There was no Panorama-Sampler master password given at server startup (Environment variable PANORAMA_SERVER_MASTER_PASSWORD)!" if EngineConfig.config.panorama_sampler_master_password.nil?
-    "panorama_sampler_master_config_#{EngineConfig.config.panorama_sampler_master_password.to_i(36)}_#{EngineConfig.config.panorama_sampler_master_password.length}"
+    raise "There was no Panorama master password given at server startup (Environment variable PANORAMA_MASTER_PASSWORD)!" if EngineConfig.config.panorama_master_password.nil?
+    "panorama_sampler_master_config_#{EngineConfig.config.panorama_master_password.to_i(36)}_#{EngineConfig.config.panorama_master_password.length}"
   end
 
 

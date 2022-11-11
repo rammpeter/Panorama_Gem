@@ -130,13 +130,13 @@ class ActiveSupport::TestCase
   end
 
   def prepare_panorama_sampler_thread_db_config(user = nil)
-    EngineConfig.config.panorama_sampler_master_password = 'hugo'
+    EngineConfig.config.panorama_master_password = 'hugo'
 
     sampler_config = PanoramaTestConfig.test_config
 
     sampler_config[:id]                             = 1
     sampler_config[:name]                           = 'Test-Config'
-    sampler_config[:client_salt]                    = EngineConfig.config.panorama_sampler_master_password  # identic doubled like WorkerThread.initialized
+    sampler_config[:client_salt]                    = EngineConfig.config.panorama_master_password  # identic doubled like WorkerThread.initialized
     sampler_config[:management_pack_license]        = management_pack_license   # use same management_pack_license as all other tests
     sampler_config[:owner]                          = sampler_config[:user]     # assume owner = connected user for test
 

@@ -221,7 +221,7 @@ class EnvController < ApplicationController
 
     @dictionary_access_problem = true unless select_any_dictionary?(@dictionary_access_msg)
 
-    render_partial :start_page, {additional_javascript_string: "$('#main_menu').html('#{j render_to_string :partial =>"build_main_menu" }');" }  # Wait until all loogon jobs are processed before showing menu
+    render_partial :start_page, {additional_javascript_string: build_main_menu_js_code }  # Wait until all loogon jobs are processed before showing menu
   end
 
   # Aufgerufen aus dem Anmelde-Dialog für gemerkte DB-Connections

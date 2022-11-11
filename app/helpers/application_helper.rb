@@ -11,6 +11,7 @@ require 'slickgrid_helper'
 require 'explain_application_info_helper'
 require 'strings_helper'
 require 'json'
+require 'jwt'
 
 # Fix uninitialized constant Application if used as engine
 require_relative '../../config/engine_config'
@@ -685,8 +686,40 @@ module ApplicationHelper
     end
   end
 
+  def admin_jwt_valid?
+    token = cookies['master']
+    begin
+      decoded_token = JWT.decode(token, jwt_secret, true, { algorithm: 'HS256' })
+      true
+    rescue JWT::DecodeError => e
+      false
+    end
+  end
+
+  # Check for valid JWT and redirect to logon page if not valid
+  # @return [TrueClass, FalseClass] true if redirect to login page forced, false if JWT is valid
+  def force_login_if_admin_jwt_not_valid
+    unless admin_jwt_valid?
+      Rails.logger.info('ApplicationHelper.force_login_if_admin_jwt_not_valid') { "Unauthorized request without or with invalid token" }
+      redirect_to url_for(controller: :admin,
+                          action:     :show_admin_logon,
+                          :params     => {origin_controller: controller_name, origin_action: action_name, browser_tab_id: @browser_tab_id },
+                          :method     => :post
+                  )
+      true
+    else
+      false
+    end
+  end
+
   ####################################### only protected and private methods from here #####################################
   protected
+
+  # @return [String] the secret used for encryption of JWT
+  def jwt_secret
+    "#{cookies['client_salt']}#{Rails.application.secrets.secret_key_base}"
+  end
+
   def get_sga_sql_statement(instance, sql_id)  # Ermittlung formatierter SQL-Text
 
     def get_sga_sql_statement_internal(instance, sql_id)

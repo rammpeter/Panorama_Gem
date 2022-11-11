@@ -211,17 +211,26 @@ module MenuHelper
         { :class=> 'menu', :caption=>t(:menu_addition_caption, :default=> 'Spec. additions'), :content=>[
             {:class=> 'item', :caption=>t(:menu_addition_dragnet_caption, :default=> 'Dragnet investigation'), :controller=> 'dragnet', :action=> 'show_selection', :hint=>t(:menu_addition_dragnet_hint, :default=> 'Dragnet investigation for performance bottlenecks')   },
             {:class=> 'item', :caption=> t(:menu_addition_exec_with_given_parameters_caption, :default=>'Execute with given parameters') , :controller=> 'addition', :action=> 'show_recall_params', :hint=>t(:menu_addition_exec_with_given_parameters_hint, :default=>'Execute one of Panoramas functions directly with given parameters') },
-            {:class=> 'item', :caption=> 'Panorama-Sampler config', :controller=> 'panorama_sampler', :action=> 'show_config', :hint=> t(:menu_addition_panorama_sampler_config_hint, :default=>'Configure target databases for Panorama-Sampler'), condition: showPanoramaSampler },
             {class: 'item', caption: 'SQL worksheet', controller: :addition, action: :show_sql_worksheet, hint: 'SQL worksheet for executing and explaining SQL statements' },
+            {class: 'item', caption: 'Admin login', controller: :admin, action: :master_login, :hint=> t(:menu_addition_master_login_hint, :default=>'Login with master password to activate additional admin functions'), condition: showPanoramaSampler },
         ]
-    },
+        },
     ]
+
+    if admin_jwt_valid?
+      main_menu << {
+         class: 'menu', caption: 'Admin', content: [
+          {class: 'item', caption: 'Panorama-Sampler config', :controller=> 'panorama_sampler', :action=> 'list_config', :hint=> t(:menu_addition_panorama_sampler_config_hint, :default=>'Configure target databases for Panorama-Sampler') },
+          {class: 'item', caption: 'Admin Logout ', controller: :admin, action: :admin_logout, :hint=> t(:menu_admin_logout_hint, default: 'Logout from admin functions') },
+        ]
+      }
+    end
 
     extend_main_menu main_menu      # Erweitern des Menues in die Panorama-Engine nutzender App durch Überblenden von menu_extension_helper.rb
   end
 
   def showPanoramaSampler
-    !EngineConfig.config.panorama_sampler_master_password.nil?
+    !EngineConfig.config.panorama_master_password.nil?
   end
 
   def isExadata?
@@ -279,6 +288,10 @@ module MenuHelper
     </ul>
     "
     output.html_safe
+  end
+
+  def build_main_menu_js_code
+  "$('#main_menu').html('#{j render_to_string :partial =>"env/build_main_menu" }');"
   end
 
   private

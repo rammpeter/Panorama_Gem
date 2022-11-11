@@ -11,7 +11,7 @@ class PanoramaSamplerConfigTest < ActiveSupport::TestCase
   end
 
   test "validate" do
-    EngineConfig.config.panorama_sampler_master_password = 'not_hugo' # awr_ash_snapshot_cycle requires this
+    EngineConfig.config.panorama_master_password = 'not_hugo' # awr_ash_snapshot_cycle requires this
     [
         { name: :user,                                value: nil},
         { name: :user,                                value: ''},
@@ -51,7 +51,7 @@ class PanoramaSamplerConfigTest < ActiveSupport::TestCase
         PanoramaSamplerConfig.validate_entry(config_hash)
       end
     end
-    EngineConfig.config.panorama_sampler_master_password = 'hugo' # reset to previous value for next tests
+    EngineConfig.config.panorama_master_password = 'hugo' # reset to previous value for next tests
   end
 
 

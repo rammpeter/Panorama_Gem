@@ -28,8 +28,10 @@ class EngineConfig < Rails::Application
   Dir.mkdir config.panorama_var_home if !File.exist?(config.panorama_var_home)  # Ensure that directory exists
   Rails.logger.info "Panorama writes server side info to #{config.panorama_var_home}"
 
-  # Password for access on Panorama-Sampler config: Panorama-Sampler and his menu are activated if password is not empty
-  config.panorama_sampler_master_password = ENV['PANORAMA_SAMPLER_MASTER_PASSWORD']  ? ENV['PANORAMA_SAMPLER_MASTER_PASSWORD'] : nil
+  # Password for access on Admin menu, Panorama-Sampler config etc. : admin menu is activated if password is not empty
+  # Backward campatibility for previously used environment entry
+  config.panorama_master_password = ENV['PANORAMA_SAMPLER_MASTER_PASSWORD']  ? ENV['PANORAMA_SAMPLER_MASTER_PASSWORD'] : nil
+  config.panorama_master_password = ENV['PANORAMA_MASTER_PASSWORD'] if ENV['PANORAMA_MASTER_PASSWORD'] # currently used env. entry overwrites
 
   # Textdatei zur Erfassung der Panorama-Nutzung
   # Sicherstellen, dass die Datei ausserhalb der Applikation zu liegen kommt und Deployment der Applikation überlebt durch Definition von ENV['PANORAMA_VAR_HOME']

@@ -50,5 +50,6 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   # s.add_dependency 'i18n', '1.8.7'
   s.add_dependency 'i18n'
 
-
+  # Use Json Web Token (JWT) for token based authentication
+  s.add_dependency 'jwt'
 end

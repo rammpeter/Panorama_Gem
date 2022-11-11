@@ -10,14 +10,14 @@ class LongtermTrendControllerTest < ActionDispatch::IntegrationTest
 
     initialize_min_max_snap_id_and_times                                        # Ensure that enough records are in DBA_Hist_Active_Sess_History or Panorama_Active_Sess_History
 
-    EngineConfig.config.panorama_sampler_master_password = 'hugo'
+    EngineConfig.config.panorama_master_password = 'hugo'
 
     config_hash        = get_current_database.clone
     config_hash[:name] = 'Hugo'
     # Get the password of the default test connection
     decrypted_password = Encryption.decrypt_value(config_hash[:password], cookies['client_salt'])
     # Encrypt the password again with salt = panorama_sampler master password
-    config_hash[:password]                       = Encryption.encrypt_value(decrypted_password, EngineConfig.config.panorama_sampler_master_password)
+    config_hash[:password]                       = Encryption.encrypt_value(decrypted_password, EngineConfig.config.panorama_master_password)
     config_hash[:owner]                          = config_hash[:user] # Default
 
     set_panorama_sampler_config_defaults!(config_hash)

@@ -1,38 +1,22 @@
 require 'json'
 
 class PanoramaSamplerController < ApplicationController
-  def show_config
-    request_master_password
-  end
 
   def list_config
+    return if force_login_if_admin_jwt_not_valid                                # Ensure valid authentication and suppress double rendering in tests
     @sampler_config = PanoramaSamplerConfig.get_config_array.map{|config| config.get_cloned_config_hash}
     render_partial :list_config
   end
 
-  def request_master_password
-    render_partial :request_master_password
-  end
-
-  $master_password_wrong_count=0
-  def check_master_password
-    if params[:master_password] == EngineConfig.config.panorama_sampler_master_password
-      $master_password_wrong_count=0                                            # reset delay for wrong password
-      list_config
-    else
-      sleep $master_password_wrong_count
-      $master_password_wrong_count += 1
-      show_popup_message('Wrong value entered for master password')
-    end
-  end
-
   def show_new_config_form
+    return if force_login_if_admin_jwt_not_valid                                # Ensure valid authentication and suppress double rendering in tests
     @modus = :new
     @config = PanoramaSamplerConfig.new.get_cloned_config_hash
     render_partial :edit_config
   end
 
   def show_edit_config_form
+    return if force_login_if_admin_jwt_not_valid                                # Ensure valid authentication and suppress double rendering in tests
     @modus = :edit
     @config = PanoramaSamplerConfig.get_config_entry_by_id(params[:id].to_i).get_cloned_config_hash
     @config[:password] = nil                                                    # Password set ony if changed
@@ -40,6 +24,7 @@ class PanoramaSamplerController < ApplicationController
   end
 
   def save_config
+    return if force_login_if_admin_jwt_not_valid                                # Ensure valid authentication and suppress double rendering in tests
     config_entry                          = params[:config].to_unsafe_h.symbolize_keys
     config_entry[:id]                     = params[:id].to_i
     config_entry[:awr_ash_active]         = config_entry[:awr_ash_active]         == '1'
@@ -64,6 +49,7 @@ class PanoramaSamplerController < ApplicationController
   end
 
   def store_config(config_entry)
+    return if force_login_if_admin_jwt_not_valid                                # Ensure valid authentication and suppress double rendering in tests
     old_min_snapshot_cycle = PanoramaSamplerConfig.min_snapshot_cycle
 
     existing_config = PanoramaSamplerConfig.get_config_entry_by_id_or_nil(config_entry[:id])  # Check if config already exists
@@ -84,15 +70,18 @@ class PanoramaSamplerController < ApplicationController
   end
 
   def delete_config
+    return if force_login_if_admin_jwt_not_valid                                # Ensure valid authentication and suppress double rendering in tests
     PanoramaSamplerConfig.delete_config_entry(params[:id])
     list_config
   end
 
   def clear_config_error
+    return if force_login_if_admin_jwt_not_valid                                # Ensure valid authentication and suppress double rendering in tests
     PanoramaSamplerConfig.get_config_entry_by_id(params[:id]).clear_error_message
     list_config
   end
 
+  # Access without admin logon possible for monitoring
   def monitor_sampler_status
     status = 200                                                                # Default
 

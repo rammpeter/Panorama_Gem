@@ -1,7 +1,5 @@
 Rails.application.routes.draw do
 
-  get 'panorama_sampler/show_config'
-
   # define routes as controller/action
   # Rails.logger.info "Panorama_Gem/config/routes.rb: Setting routes for every controller action"
   sleep_count = 0
