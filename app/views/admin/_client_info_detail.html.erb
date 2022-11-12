@@ -8,7 +8,7 @@
 
     if rec.elements > 0
       ajax_link(fn(rec.elements), {
-                :controller  => '../usage',                        # Default-URL-Prefix is already usage, so prevent URL usage/usage/action
+                :controller  => :admin,                        # Default-URL-Prefix is already usage, so prevent URL usage/usage/action
                 :action      => :client_info_detail,
                 locate_array: param_locate_array,
                 :update_area =>  @update_area

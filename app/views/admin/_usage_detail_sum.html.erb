@@ -3,8 +3,8 @@
 
    def link_column(rec, value, groupkey)
        ajax_link(value, {
-                 :controller  => '../usage',                                    # Default-URL-Prefix is already usage, so prevent URL usage/usage/action
-                 :action      => "detail_sum",
+                 :controller  => :admin,                                    # Default-URL-Prefix is already usage, so prevent URL usage/usage/action
+                 :action      => :usage_detail_sum,
                  :groupkey    => groupkey,
                  :filter      => @filter.merge({"#{@groupkey}" =>  rec.Groupkey}),
                  :update_area => @update_area
@@ -30,8 +30,8 @@
 
    def link_column_single_record(rec, value)
        ajax_link(value, {
-                 :controller  => '../usage',                                    # Default-URL-Prefix is already usage, so prevent URL usage/usage/action
-                 :action      => "single_record",
+                 :controller  => :admin,                                    # Default-URL-Prefix is already usage, so prevent URL usage/usage/action
+                 :action      => :usage_single_record,
                  :filter      => @filter.merge({"#{@groupkey}" =>  rec.Groupkey}),
                  :update_area => @update_area
                },
@@ -41,8 +41,8 @@
    def show_groupkey(rec)
      if @groupkey == "IP_Address"
        ajax_link(rec.Groupkey, {
-                 :controller  => '../usage',                                    # Default-URL-Prefix is already usage, so prevent URL usage/usage/action
-                 :action      => "ip_info",
+                 :controller  => :admin,                                    # Default-URL-Prefix is already usage, so prevent URL usage/usage/action
+                 :action      => :ip_info,
                  :ip_address  => rec.Groupkey,
                  :update_area => @update_area
                },

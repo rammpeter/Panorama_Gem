@@ -222,6 +222,10 @@ module MenuHelper
          class: 'menu', caption: 'Admin', content: [
           {class: 'item', caption: 'Panorama-Sampler config', :controller=> 'panorama_sampler', :action=> 'list_config', :hint=> t(:menu_addition_panorama_sampler_config_hint, :default=>'Configure target databases for Panorama-Sampler') },
           {class: 'item', caption: 'Set log level', controller: :admin, action: :show_log_level, :hint=> t(:menu_admin_show_log_level_hint, default: 'Set the log level of Panorama server process') },
+          {class: 'item', caption: 'DB connection pool', controller: :admin, action: :connection_pool, :hint=> t(:menu_admin_connection_pool_hint, default: 'Show current DB connections in connection pool and server threads of Panorama') },
+          {class: 'item', caption: 'Usage history', controller: :admin, action: :show_usage_history, :hint=> t(:menu_admin_show_usage_history_hint, default: 'Show history of Panorama usage by users') },
+          {class: 'item', caption: 'Server cache store sizes', controller: :admin, action: :client_info_store_sizes, :hint=> t(:menu_admin_client_info_store_sizes_hint, default: 'Show sizes of server-side cache store in folder client_info.store') },
+          # {class: 'item', caption: 'Client browser tab config', controller: :admin, action: :browser_tab_ids, :hint=> t(:menu_admin_client_browser_tab_hint, default: 'Show different browser tab config of this browser instance') },
           {class: 'item', caption: 'Admin logout', controller: :admin, action: :admin_logout, :hint=> t(:menu_admin_logout_hint, default: 'Logout from admin functions') },
         ]
       }

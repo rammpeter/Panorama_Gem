@@ -1878,7 +1878,11 @@
   menu_addition_size_evolution_caption:                     Größen-Entwicklung von Objekten
   menu_addition_size_evolution_hint:                        Entwicklung der Größe von Objekten im betrachteten Zeitraum
 
+  menu_admin_client_browser_tab_hint:                       Anzeige der verschiedenen Browser-Tab Konfiguration dieser Browser-Instanz
+  menu_admin_client_info_store_sizes_hint:                  Anzeige der Größen des serverseitigen Caches im Ordner client_info.store
+  menu_admin_connection_pool_hint:                          Anzeige der aktuellen DB-Connections im Connection Pool und Server-Threads von Panorama
   menu_admin_show_log_level_hint:                           Setzen des Log-Levels für den Panorama-Serverprozess
+  menu_admin_show_usage_history_hint:                       Historie der Panorama-Nutzung durch Anwender
 
   menu_current_caption:                                     Aktuell
 
