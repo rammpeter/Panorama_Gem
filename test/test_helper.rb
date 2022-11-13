@@ -82,7 +82,7 @@ class ActiveSupport::TestCase
 
     connect_oracle_db_internal(test_config)   # aus lib/test_helpers/oracle_connection_test_helper
     @db_version = PanoramaConnection.db_version                                 # Store db_version outside PanoramaConnection
-    Rails.logger.info "#{Time.now} : Starting Test with configuration #{test_config} DB-Version = #{@db_version}"
+    Rails.logger.info('ActiveSupport::TestCase.connect_oracle_db') { "#{Time.now} : Starting Test with configuration #{test_config} DB-Version = #{@db_version}" }
 
 
     unless $first_log_written
@@ -119,14 +119,14 @@ class ActiveSupport::TestCase
 
   setup do
     @test_start_time = Time.now
-    Rails.logger.info "#{@test_start_time} : start of test #{self.class}.#{self.name}" # set timestamp in test.logs
+    Rails.logger.info('ActiveSupport::TestCase.setup') { "#{@test_start_time} : start of test #{self.class}.#{self.name}" } # set timestamp in test.logs
   end
 
   teardown do
     @test_end_time = Time.now
-    Rails.logger.info "#{@test_end_time} : end of test #{self.class}.#{self.name}" # set timestamp in test.logs
-    Rails.logger.info "#{(@test_end_time-@test_start_time).round(2)} seconds for test #{self.class}.#{self.name}" # set timestamp in test.logs
-    Rails.logger.info ''
+    Rails.logger.info('ActiveSupport::TestCase.teardown') { "#{@test_end_time} : end of test #{self.class}.#{self.name}" } # set timestamp in test.logs
+    Rails.logger.info('ActiveSupport::TestCase.teardown') { "#{(@test_end_time-@test_start_time).round(2)} seconds for test #{self.class}.#{self.name}" } # set timestamp in test.logs
+    Rails.logger.info('ActiveSupport::TestCase.teardown') { '' }
   end
 
   def prepare_panorama_sampler_thread_db_config(user = nil)
@@ -185,6 +185,13 @@ class ActiveSupport::TestCase
     end
   end
 
+  # Are four valid snapshots found for AWR ?
+  # @param [Hash] snaps the result record from test
+  # @return [TrueClass, FalseClass]
+  def four_valid_snaps_found?(snaps)
+    !snaps.nil? && !snaps.min_snap_id.nil? && !snaps.max_snap_id.nil? && !snaps.start_time.nil? && !snaps.end_time.nil?
+  end
+
   # Ensure that AWR snapshots exist and time period is according to existing snapshots
   # @param [Symbol] time_format
   def initialize_min_max_snap_id_and_times(time_format = :minutes)
@@ -210,16 +217,11 @@ class ActiveSupport::TestCase
       end
 
       snaps = sql_select_first_row two_snaps_sql                                # Look for 2 subsequent snapshots in the middle of 4 snapshots with same startup time
-      if all_awr_dbids.count == 0 ||                                            # No DBIDs found with in AWR with lookup SQL
-        snaps.nil? ||
-        snaps.min_snap_id.nil? ||
-        snaps.max_snap_id.nil? ||
-        snaps.start_time.nil?  ||
-        snaps.end_time.nil?    ||                                             # Not enough snapshots exists, create 4 subsequent
-        (snaps.end_time - snaps.start_time) < 61                              # at least one minute should be between snapshots
+      if all_awr_dbids.count == 0 || !four_valid_snaps_found?(snaps) || (snaps.end_time - snaps.start_time) < 61 # Not enough snapshots exists, create 4 subsequent
+        # at least one minute should be between snapshots
 
         if !snaps.nil? && !snaps.start_time.nil? && !snaps.end_time.nil? && (snaps.end_time - snaps.start_time) < 61
-          Rails.logger.info "initialize_min_max_snap_id_and_times: new snaps executed because duration between snapshots is only #{} seconds"
+          Rails.logger.info('ActiveSupport::TestCase.initialize_min_max_snap_id_and_times') { "new snaps executed because duration between snapshots is only #{} seconds" }
         end
 
         saved_config = Thread.current[:panorama_connection_connect_info]        # store current config before being reset by WorkerThread.create_snapshot_internal
@@ -237,10 +239,20 @@ class ActiveSupport::TestCase
       end
     end
 
-    Rails.logger.debug "DBIDs in AWR are: #{JSON.pretty_generate(all_awr_dbids)}"
+    Rails.logger.debug('ActiveSupport::TestCase.initialize_min_max_snap_id_and_times') {"DBIDs in AWR are: #{JSON.pretty_generate(all_awr_dbids)}"}
+
 
     # Get 2 subsequent snapshots in the middle of 4 snapshots with same startup time
     snaps = sql_select_first_row two_snaps_sql
+
+    # Check if another DBID will have four valid AWR snapshots if not already found
+    all_awr_dbids.each do |awr_dbid|
+      unless four_valid_snaps_found?(snaps)
+        Rails.logger.debug('ActiveSupport::TestCase.initialize_min_max_snap_id_and_times') { "No four subsequent snapshots with same startup_time found for DBID=#{get_dbid}, trying alternative DBID=#{awr_dbid['dbid']} now." }
+        set_cached_dbid(awr_dbid['dbid'])                                       # Set this DBID as current choosen DBID for subsequent tests
+        snaps = sql_select_first_row two_snaps_sql
+      end
+    end
 
     last_10_snaps = sql_select_all "SELECT *
                                     FROM   (SELECT *
@@ -250,41 +262,17 @@ class ActiveSupport::TestCase
                                            )
                                     WHERE RowNum <= 10"
 
-    Rails.logger.info "Last 10 snapshots of instance #{PanoramaConnection.instance_number} are:"
+    Rails.logger.info('ActiveSupport::TestCase.initialize_min_max_snap_id_and_times')  { "Last 10 snapshots of instance #{PanoramaConnection.instance_number} are:" }
     last_10_snaps.each do |s|
-      Rails.logger.info "DBID=#{s.dbid}, Snap_ID=#{s.snap_id}, Instance=#{s.instance_number}, Startup=#{localeDateTime(s.startup_time)}, \
+      Rails.logger.info('ActiveSupport::TestCase.initialize_min_max_snap_id_and_times') { "DBID=#{s.dbid}, Snap_ID=#{s.snap_id}, Instance=#{s.instance_number}, Startup=#{localeDateTime(s.startup_time)}, \
 Begin_Interval_Time=#{localeDateTime(s.begin_interval_time)}, End_Interval_Time=#{localeDateTime(s.end_interval_time)} \
-#{PanoramaConnection.db_version >= '12.1' ? ", Con_ID=#{s.con_id}" : ''}}"
+#{PanoramaConnection.db_version >= '12.1' ? ", Con_ID=#{s.con_id}" : ''}}" }
     end
 
-    four_snaps_found = true                                                          # Default assumption
-    four_snaps_not_found_reason = nil
-    if snaps.nil?
-      four_snaps_found = false
-      four_snaps_not_found_reason = 'snaps is nil'
-    else
-      if snaps.min_snap_id.nil?
-        four_snaps_found = false
-        four_snaps_not_found_reason = 'snaps.min_snap_id is nil'
-      end
-      if snaps.max_snap_id.nil?
-        four_snaps_found = false
-        four_snaps_not_found_reason = 'snaps.max_snap_id is nil'
-      end
-      if snaps.start_time.nil?
-        four_snaps_found = false
-        four_snaps_not_found_reason = 'snaps.start_time is nil'
-      end
-      if snaps.end_time.nil?
-        four_snaps_found = false
-        four_snaps_not_found_reason = 'snaps.end_time is nil'
-      end
-    end
-
-    unless four_snaps_found
-      message = "No 4 subsequent snapshots with same startup_time found in #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')}: Reason = #{four_snaps_not_found_reason}"
+    unless four_valid_snaps_found?(snaps)
+      message = "No 4 subsequent snapshots with same startup_time found in #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')}: snaps = #{snaps}"
       puts message
-      Rails.logger.debug message
+      Rails.logger.debug('ActiveSupport::TestCase.initialize_min_max_snap_id_and_times') {message}
 
       raise message
     end
@@ -298,6 +286,6 @@ Begin_Interval_Time=#{localeDateTime(s.begin_interval_time)}, End_Interval_Time=
     snaps_end = snaps.end_time+(time_format == :minutes ? 60 : 0)
     @time_selection_end   = localeDateTime(snaps_end, time_format)      # Add at least one minute to be sure timestamp is after snaps.end_time even if time_format is :minutes
     raise "@time_selection_between (#{@time_selection_between}) not between @time_selection_start (#{@time_selection_start}) and @time_selection_end (#{@time_selection_end})" if snaps_between >= snaps_end
-    Rails.logger.info "initialize_min_max_snap_id_and_times: Selected Snap_IDs: #{@min_snap_id}, #{@max_snap_id} Times: #{@time_selection_start}, #{@time_selection_end}"
+    Rails.logger.info('ActiveSupport::TestCase.initialize_min_max_snap_id_and_times') { "initialize_min_max_snap_id_and_times: Selected Snap_IDs: #{@min_snap_id}, #{@max_snap_id} Times: #{@time_selection_start}, #{@time_selection_end}" }
   end
 end
