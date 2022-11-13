@@ -188,19 +188,19 @@ class ActiveSupport::TestCase
   # Ensure that AWR snapshots exist and time period is according to existing snapshots
   # @param [Symbol] time_format
   def initialize_min_max_snap_id_and_times(time_format = :minutes)
-   two_snaps_sql = "SELECT s1.DBID, s2.Snap_ID Max_Snap_ID, s3.Snap_ID Min_Snap_ID, s2.Begin_Interval_Time End_Time, s3.Begin_Interval_Time Start_Time
-                   FROM   DBA_Hist_Snapshot s1
-                   JOIN   DBA_Hist_Snapshot s2 ON s2.Instance_Number = s1.Instance_Number AND s2.DBID = s1.DBID AND s2.Snap_ID = s1.Snap_ID -1 AND s2.Startup_Time = s1.Startup_Time
-                   JOIN   DBA_Hist_Snapshot s3 ON s3.Instance_Number = s1.Instance_Number AND s3.DBID = s1.DBID AND s3.Snap_ID = s1.Snap_ID -2 AND s3.Startup_Time = s1.Startup_Time
-                   JOIN   DBA_Hist_Snapshot s4 ON s4.Instance_Number = s1.Instance_Number AND s4.DBID = s1.DBID AND s4.Snap_ID = s1.Snap_ID -3 AND s4.Startup_Time = s1.Startup_Time
-                   WHERE  s1.Instance_Number = #{PanoramaConnection.instance_number}
-                   AND    s1.DBID            = #{get_dbid}  /* Check AWR for the same DBID like following test will use */
-                   AND    EXTRACT (MINUTE FROM s2.End_Interval_Time-s3.Begin_Interval_Time) > 0  /* At least one minute should be between the two snapshots */
-                   ORDER BY s1.Snap_ID DESC"
+    two_snaps_sql = "SELECT s1.DBID, s2.Snap_ID Max_Snap_ID, s3.Snap_ID Min_Snap_ID, s2.Begin_Interval_Time End_Time, s3.Begin_Interval_Time Start_Time
+                     FROM   DBA_Hist_Snapshot s1
+                     JOIN   DBA_Hist_Snapshot s2 ON s2.Instance_Number = s1.Instance_Number AND s2.DBID = s1.DBID AND s2.Snap_ID = s1.Snap_ID -1 AND s2.Startup_Time = s1.Startup_Time
+                     JOIN   DBA_Hist_Snapshot s3 ON s3.Instance_Number = s1.Instance_Number AND s3.DBID = s1.DBID AND s3.Snap_ID = s1.Snap_ID -2 AND s3.Startup_Time = s1.Startup_Time
+                     JOIN   DBA_Hist_Snapshot s4 ON s4.Instance_Number = s1.Instance_Number AND s4.DBID = s1.DBID AND s4.Snap_ID = s1.Snap_ID -3 AND s4.Startup_Time = s1.Startup_Time
+                     WHERE  s1.Instance_Number = #{PanoramaConnection.instance_number}
+                     AND    s1.DBID            = #{get_dbid}  /* Check AWR for the same DBID like following test will use */
+                     AND    EXTRACT (MINUTE FROM s2.End_Interval_Time-s3.Begin_Interval_Time) > 0  /* At least one minute should be between the two snapshots */
+                     ORDER BY s1.Snap_ID DESC"
 
-   all_awr_dbids = PanoramaConnection.all_awr_dbids                             # Initial state before additional AWR snapshots
+    all_awr_dbids = PanoramaConnection.all_awr_dbids                             # Initial state before additional AWR snapshots
 
-   # Ensure existence of panorama_sampler_snapshots
+    # Ensure existence of panorama_sampler_snapshots
     if management_pack_license == :panorama_sampler
       # Ensure existence of structure
       sampler_config = prepare_panorama_sampler_thread_db_config
@@ -237,7 +237,7 @@ class ActiveSupport::TestCase
       end
     end
 
-   Rails.logger.debug "DBIDs in AWR are: #{JSON.pretty_generate(all_awr_dbids)}"
+    Rails.logger.debug "DBIDs in AWR are: #{JSON.pretty_generate(all_awr_dbids)}"
 
     # Get 2 subsequent snapshots in the middle of 4 snapshots with same startup time
     snaps = sql_select_first_row two_snaps_sql
@@ -257,8 +257,32 @@ Begin_Interval_Time=#{localeDateTime(s.begin_interval_time)}, End_Interval_Time=
 #{PanoramaConnection.db_version >= '12.1' ? ", Con_ID=#{s.con_id}" : ''}}"
     end
 
-    if snaps.nil? || snaps.min_snap_id.nil? || snaps.max_snap_id.nil? || snaps.start_time.nil? || snaps.end_time.nil?
-      message = "No 4 subsequent snapshots with same startup_time found in #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')}"
+    four_snaps_found = true                                                          # Default assumption
+    four_snaps_not_found_reason = nil
+    if snaps.nil?
+      four_snaps_found = false
+      four_snaps_not_found_reason = 'snaps is nil'
+    else
+      if snaps.min_snap_id.nil?
+        four_snaps_found = false
+        four_snaps_not_found_reason = 'snaps.min_snap_id is nil'
+      end
+      if snaps.max_snap_id.nil?
+        four_snaps_found = false
+        four_snaps_not_found_reason = 'snaps.max_snap_id is nil'
+      end
+      if snaps.start_time.nil?
+        four_snaps_found = false
+        four_snaps_not_found_reason = 'snaps.start_time is nil'
+      end
+      if snaps.end_time.nil?
+        four_snaps_found = false
+        four_snaps_not_found_reason = 'snaps.end_time is nil'
+      end
+    end
+
+    unless four_snaps_found
+      message = "No 4 subsequent snapshots with same startup_time found in #{PanoramaConnection.adjust_table_name('DBA_Hist_Snapshot')}: Reason = #{four_snaps_not_found_reason}"
       puts message
       Rails.logger.debug message
 
