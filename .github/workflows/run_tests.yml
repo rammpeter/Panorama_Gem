@@ -145,6 +145,10 @@ jobs:
               DB_CONTAINER_NAME=DB$TEST_PORT
               echo "DB_CONTAINER_NAME=$DB_CONTAINER_NAME" | tee -a $GITHUB_ENV
               docker run -d --name $DB_CONTAINER_NAME  -p $TEST_PORT:1521 registry.gitlab.com/osp-silver/panorama_gem/database_prebuilt_panorama_test:$DB_VERSION
+              if [[ $? -ne 0 ]]; then
+                echo "Error starting database"
+                exit 1
+              fi
               # To prevent from Java::JavaSql::SQLRecoverableException: I/O-Fehler: Got minus one from a read call 
               if [[ "$DB_VERSION" > "18" ]]; then
                 echo "Patching all found sqlnet.ora for 19.x and 21.x due to Bug ( Doc ID 2662778.1 )" 
