@@ -150,7 +150,7 @@ module ApplicationHelper
   end
 
   def set_cached_dbid(dbid)                                                     # Current or previous DBID of connected database
-    Rails.logger.debug('ApplicationHelper.set_cached_dbid'){ "ApplicationHelper.set_cached_dbid set choosen_dbid = #{dbid}"}
+    Rails.logger.debug('ApplicationHelper.set_cached_dbid'){ "Choosen_dbid set = #{dbid}"}
     @buffered_dbid = nil                                                        # throe away previous value
     set_current_database(get_current_database.merge({choosen_dbid: dbid.to_i}))
     # write_to_client_info_store(:dbid, dbid.to_i)

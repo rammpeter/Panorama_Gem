@@ -201,7 +201,7 @@ class ActiveSupport::TestCase
                      JOIN   DBA_Hist_Snapshot s3 ON s3.Instance_Number = s1.Instance_Number AND s3.DBID = s1.DBID AND s3.Snap_ID = s1.Snap_ID -2 AND s3.Startup_Time = s1.Startup_Time
                      JOIN   DBA_Hist_Snapshot s4 ON s4.Instance_Number = s1.Instance_Number AND s4.DBID = s1.DBID AND s4.Snap_ID = s1.Snap_ID -3 AND s4.Startup_Time = s1.Startup_Time
                      WHERE  s1.Instance_Number = #{PanoramaConnection.instance_number}
-                     AND    s1.DBID            = #{get_dbid}  /* Check AWR for the same DBID like following test will use */
+                     AND    s1.DBID            = ?  /* Check AWR for the same DBID like following test will use */
                      AND    EXTRACT (MINUTE FROM s2.End_Interval_Time-s3.Begin_Interval_Time) > 0  /* At least one minute should be between the two snapshots */
                      ORDER BY s1.Snap_ID DESC"
 
@@ -216,7 +216,7 @@ class ActiveSupport::TestCase
         PanoramaSamplerStructureCheck.do_check(sampler_config, domain)
       end
 
-      snaps = sql_select_first_row two_snaps_sql                                # Look for 2 subsequent snapshots in the middle of 4 snapshots with same startup time
+      snaps = sql_select_first_row [two_snaps_sql, get_dbid]                    # Look for 2 subsequent snapshots in the middle of 4 snapshots with same startup time
       if all_awr_dbids.count == 0 || !four_valid_snaps_found?(snaps) || (snaps.end_time - snaps.start_time) < 61 # Not enough snapshots exists, create 4 subsequent
         # at least one minute should be between snapshots
 
@@ -243,14 +243,14 @@ class ActiveSupport::TestCase
 
 
     # Get 2 subsequent snapshots in the middle of 4 snapshots with same startup time
-    snaps = sql_select_first_row two_snaps_sql
+    snaps = sql_select_first_row [two_snaps_sql, get_dbid]
 
     # Check if another DBID will have four valid AWR snapshots if not already found
     all_awr_dbids.each do |awr_dbid|
       unless four_valid_snaps_found?(snaps)
         Rails.logger.debug('ActiveSupport::TestCase.initialize_min_max_snap_id_and_times') { "No four subsequent snapshots with same startup_time found for DBID=#{get_dbid}, trying alternative DBID=#{awr_dbid['dbid']} now." }
         set_cached_dbid(awr_dbid['dbid'])                                       # Set this DBID as current choosen DBID for subsequent tests
-        snaps = sql_select_first_row two_snaps_sql
+        snaps = sql_select_first_row [two_snaps_sql, get_dbid]
       end
     end
 
