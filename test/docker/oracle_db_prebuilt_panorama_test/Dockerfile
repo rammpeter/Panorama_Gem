@@ -11,11 +11,6 @@ ARG BASE_IMAGE=registry:0.0.0.0-ee
 FROM ${BASE_IMAGE} as base
 MAINTAINER Peter Ramm <Peter.Ramm@ottogroup.com>
 
-ARG CDB_SERVICE=ORCLCDB
-ARG PDB_SERVICE=orclpdb1
-ENV CDB_SERVICE ${CDB_SERVICE}
-ENV PDB_SERVICE ${PDB_SERVICE}
-
 COPY    setup_db_in_build.sh create_panorama_test_user.sql analyze_sys_schemas.sql modify_instance_settings.sql $ORACLE_BASE/
 
 # Files are executed at instance startup
@@ -30,6 +25,11 @@ RUN     rm -rf /var/log/*
 RUN     yum -y update && yum clean all
 
 FROM scratch
+
+ARG CDB_SERVICE=ORCLCDB
+ARG PDB_SERVICE=orclpdb1
+ENV CDB_SERVICE ${CDB_SERVICE}
+ENV PDB_SERVICE ${PDB_SERVICE}
 
 BASE_ENV
 
