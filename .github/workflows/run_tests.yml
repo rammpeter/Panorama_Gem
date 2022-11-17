@@ -161,6 +161,10 @@ jobs:
         run: |
           source "$HOME/.rvm/scripts/rvm"
           bundle exec rake -f $GITHUB_WORKSPACE/lib/tasks/wait_for_db_available.rake ci_preparation:wait_for_db_available[10]
+          if [[ $? -ne 0 ]]; then
+            docker exec -ti $DB_CONTAINER_NAME lsntctl status
+            exit 1
+          fi
 
       - name: run Test
         run: |
