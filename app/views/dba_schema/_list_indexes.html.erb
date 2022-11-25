@@ -62,6 +62,7 @@
      result << "#{'<br/>' if result.length > 0}Key Compression =  #{rec.compression}#{" (#{rec.prefix_length})" if rec.prefix_length}"  if !(rec.compression == 'DISABLED')
      result << "#{'<br/>' if result.length > 0}Flash Cache = #{rec.flash_cache}"                                                           if get_db_version >= '12.1' && !(rec.flash_cache.nil? || rec.flash_cache == 'DEFAULT')
      result << "#{'<br/>' if result.length > 0}Cell Flash Cache = #{rec.cell_flash_cache}"                                                 if get_db_version >= '12.1' && !(rec.cell_flash_cache.nil? || rec.cell_flash_cache == 'DEFAULT')
+     result << "#{'<br/>' if result.length > 0}Visibility = #{rec.visibility}"                                                             if !(rec.visibility.nil? || rec.visibility == 'VISIBLE')
      result.html_safe
    end
 
@@ -70,6 +71,7 @@
 - Status (if != 'VALID')
 - Function Index Status (if set and != 'ENABLED')
 - Index key compression with number of compressed columns
+- Visibility
 - Smart flash cache
 - Cell flash cache
 "
