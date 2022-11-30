@@ -118,6 +118,26 @@
     end
   end
 
+  init_ext_data_title = proc do |rec|
+    result = "%t\n"
+    result << "Next extent = #{fn(rec.next_extent&./1024)}#{" KB" if rec.next_extent}\n"
+    result << "Min extents = #{fn(rec.min_extents)}\n"
+    result << "Max extents = #{fn(rec.max_extents)}\n"
+    result << "Default maximum size of segments = #{fn(rec.max_size&./(1024*1024)&.*rec.blocksize)}#{" MB" if rec.max_size}\n"
+    result << "Pct. increase = #{fn(rec.pct_increase)}#{" %" if rec.pct_increase}\n"
+    result << "Minimum extent size = #{fn(rec.min_extlen&./1024)}#{" KB" if rec.min_extlen}\n"
+    result
+  end
+
+  data_default_compression = proc do |rec|
+    result = '';
+    result = "Tables:'#{rec['compress_for']}' "               if rec['compress_for']
+    result = "Indexes:'#{rec['index_compress_for']}' "        if rec['index_compress_for']
+    result = "InMemory:'#{rec['def_inmemory_compression']}' " if rec['def_inmemory_compression']
+    result
+  end
+
+
   column_options =
     [
       {:caption=>"Tablespace",          :data=>proc{|rec| rec.tablespace_name},             :title=>t(:storage_tablespace_usage_tablespace_name_hint, :default=>'Name of tablespace')},
@@ -127,6 +147,7 @@
   column_options.concat [
                           {:caption=>"Contents",            :data=>proc{|rec| rec.contents},                    :title=>t(:storage_tablespace_usage_tablespace_content_hint, :default=>'Type/content of tablespace'), data_title: proc{|rec| "%t: #{rec.content_hint}"} },
                           {:caption=>"Block size",          :data=>proc{|rec| formattedNumber(rec.blocksize)},  :title=>t(:storage_tablespace_usage_tablespace_blocksize_hint, :default=>'Blocksize of tablespace in Bytes'),        :align=>:right},
+                          {:caption=>"Init. ext.",          :data=>proc{|rec| formattedNumber(rec.initial_extent&./1024)},  :title=>'Initial extent size in KB', data_title: init_ext_data_title, :align=>:right},
                           {:caption=>"MB Total",            :data=>proc{|rec| formattedNumber(rec.mbtotal)},    :title=>"Total current size of tablespace in MB\n(without possible autoextend-expansion)",  data_title: proc{|rec| "%t\n#{size_explain(rec.mbtotal)}"}, :align=>:right, show_pct_hint: true},
                           {:caption=>"MB Used",             :data=>link_mb_used,                                :title=>"Used space in tablespace in MB",                                                   data_title: proc{|rec| "%t\n#{size_explain(rec.mbused)}"},  :align=>:right, show_pct_hint: true},
                           {:caption=>"MB Free",             :data=>link_mb_free,                                :title=>"Free space in tablespace in MB\n(without possible autoextend-expansion)",          data_title: proc{|rec| "%t\n#{size_explain(rec.mbfree)}"},  :align=>:right, show_pct_hint: true},
@@ -143,7 +164,7 @@
                           {:caption=>"Pl. in",              :data=>proc{|rec| rec.plugged_in},                  :title=>'Indicates whether the tablespace is plugged in '},
                           {:caption=>"Segment Space Mgmt.", :data=>proc{|rec| rec.segment_space_management},    :title=>'Indicates whether the free and used segment space in the tablespace is managed using free lists (MANUAL) or bitmaps (AUTO)'}
                         ]
-  column_options << {:caption=>"Def. table compression", :data=>proc{|rec| rec.def_tab_compression},      :title=>'Indicates whether default table compression is enabled (ENABLED) or not (DISABLED)', :data_title=>proc{|rec| get_db_version >= '11.2' ? "%t\nCompress For = #{rec.compress_for}" : "%t"}}
+  column_options << {:caption=>'Default compr.',      :data=>data_default_compression,                    :title=>'Default compression for tables, indexes or inmemory'}
   column_options << {:caption=>'Big file',            :data=>proc{|rec| rec.bigfile},                     :title=>'Indicates whether the tablespace is a bigfile tablespace (YES) or a smallfile tablespace (NO)'}
   column_options << {:caption=>'Encrypt.',            :data=>proc{|rec| rec.encrypted},                   :title=>"Indicates whether the tablespace is encrypted"} if get_db_version >= '11.2'
   column_options << {:caption=>'Def. in memory',      :data=>proc{|rec| rec.def_inmemory},                :title=>"Indicates whether the In-Memory Column Store (IM column store) is by default enabled (ENABLED) or disabled (DISABLED) for tables in this tablespace"} if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise

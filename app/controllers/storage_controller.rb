@@ -234,17 +234,19 @@ class StorageController < ApplicationController
                                 'UNDO',       'UNDO-Tablespaces'
                    )                        content_Hint,
              t.Block_Size                   BlockSize,
+             t.Initial_Extent, t.Next_Extent, t.Min_Extents, t.Max_Extents, t.max_size, t.Pct_Increase, t.Min_ExtLen,
              f.FileSize                     MBTotal,
              NVL(free.MBFree,0)             MBFree,
              f.FileSize-NVL(free.MBFree,0)  MBUsed,
              (f.FileSize-NVL(free.MBFree,0))/f.FileSize*100 PctUsed,
              t.Status, t.Logging, t.Force_Logging, t.Extent_Management,
              t.Allocation_Type, t.Plugged_In,
-             t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
+             t.Segment_Space_Management, t.Bigfile,
              f.AutoExtensible, f.Max_Size_MB, f.File_Count, t.Retention
              #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
-                                  #{ ", t.Def_InMemory" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
-                                  #{", t.Con_ID" if PanoramaConnection.is_cdb?}
+             #{ ", t.Index_Compress_For" if get_db_version >= '18.0'}
+             #{ ", t.Def_InMemory, t.Def_InMemory_Compression" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
+             #{", t.Con_ID" if PanoramaConnection.is_cdb?}
       FROM  #{dba_or_cdb('DBA_Tablespaces')} t
       LEFT OUTER JOIN free ON free.Tablespace_Name = t.Tablespace_Name #{" AND free.Con_ID = t.Con_ID" if PanoramaConnection.is_cdb?}
       LEFT OUTER JOIN
@@ -262,17 +264,19 @@ class StorageController < ApplicationController
              t.Contents,
              'Temporary tablespace'         Content_Hint,
              t.Block_Size                   BlockSize,
+             t.Initial_Extent, t.Next_Extent, t.Min_Extents, t.Max_Extents, t.max_size, t.Pct_Increase, t.Min_ExtLen,
              NVL(f.MBTotal,0)               MBTotal,
              NVL(f.MBTotal,0)-NVL(s.Used_Blocks,0)*t.Block_Size/1048576 MBFree,
              NVL(s.Used_Blocks,0)*t.Block_Size/1048576 MBUsed,
              (NVL(s.Used_Blocks,0)*t.Block_Size/1048576)/NVL(f.MBTotal,0)*100 PctUsed,
              t.Status, t.Logging, t.Force_Logging, t.Extent_Management,
              t.Allocation_Type, t.Plugged_In,
-             t.Segment_Space_Management, t.Def_Tab_Compression, t.Bigfile,
+             t.Segment_Space_Management, t.Bigfile,
              f.AutoExtensible, f.Max_Size_MB, f.File_Count, NULL Retention
              #{ ", t.Encrypted, t.Compress_For" if get_db_version >= '11.2'}
-                                  #{ ", t.Def_InMemory" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
-                                  #{", t.Con_ID" if PanoramaConnection.is_cdb?}
+             #{ ", t.Index_Compress_For" if get_db_version >= '18.0'}
+             #{ ", t.Def_InMemory, t.Def_InMemory_Compression" if get_db_version >= '12.1.0.2' && PanoramaConnection.edition == :enterprise}
+             #{", t.Con_ID" if PanoramaConnection.is_cdb?}
       FROM  #{dba_or_cdb('DBA_Tablespaces')} t
       LEFT OUTER JOIN (SELECT /*+ NO_MERGE */ Tablespace_Name, #{"Con_ID," if PanoramaConnection.is_cdb?} SUM(Bytes)/1048576 MBTotal, SUM(Bytes)/SUM(Blocks) BlockSize,
                               CASE WHEN COUNT(DISTINCT AutoExtensible)> 1 THEN 'Partial' ELSE MIN(AutoExtensible) END AutoExtensible,
@@ -294,12 +298,8 @@ class StorageController < ApplicationController
              DECODE(lf.Is_Recovery_Dest_File, 'YES', 'Size of all Redo-Logfiles that are stored in FRA',
                                               'NO',  'Size of all Redo-Logfiles that are stored ouside FRA'
                    )                    Content_Hint,
-             #{ if get_db_version >= "11.2"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "MIN(l.BlockSize)"
-                else
-                  0
-                end
-    }                          BlockSize,
+             NULL                       BlockSize,
+             NULL Initial_Extent, NULL Next_Extent, NULL Min_Extents, NULL Max_Extents, NULL max_size, NULL Pct_Increase, NULL Min_ExtLen,
              SUM(l.Bytes)/1048576       MBTotal,
              0                          MBFree,
              SUM(l.Bytes)/1048576       MBUsed,
@@ -311,15 +311,15 @@ class StorageController < ApplicationController
              NULL                       Allocation_Type,
              NULL                       Plugged_In,
              NULL                       Segment_Space_Management,
-             NULL                       Def_Tab_Compression,
              NULL                       Bigfile,
              NULL                       AutoExtensible,
              NULL                       Max_Size_MB,
              COUNT(*)                   File_Count,
              NULL                       Retention
              #{ ", NULL Encrypted, NULL Compress_For" if get_db_version >= '11.2'}
-                                  #{ ", NULL Def_InMemory" if get_db_version >= '12.1.0.2'  && PanoramaConnection.edition == :enterprise}
-                                  #{", l.Con_ID" if PanoramaConnection.is_cdb?}
+             #{ ", NULL Index_Compress_For" if get_db_version >= '18.0'}
+             #{ ", NULL Def_InMemory, NULL Def_InMemory_Compression" if get_db_version >= '12.1.0.2'  && PanoramaConnection.edition == :enterprise}
+             #{", l.Con_ID" if PanoramaConnection.is_cdb?}
       FROM   gv$Log l
       JOIN   gv$LogFile lf ON lf.Inst_ID = l.Inst_ID AND lf.Group# = l.Group#
       WHERE  l.Inst_ID = l.Thread#  -- im gv$-View werden jeweils die Logs der anderen Instanzen noch einmal in jeder Instance mit Thread# getzeigt, dies verhindert die Dopplung
