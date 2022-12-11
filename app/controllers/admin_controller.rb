@@ -47,6 +47,7 @@ class AdminController < ApplicationController
   end
 
   def show_log_level
+    return if force_login_if_admin_jwt_not_valid                                # Ensure valid authentication and suppress double rendering in tests
     @log_level = @@log_level_aliases[Rails.logger.level]
     render_partial
   end
