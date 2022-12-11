@@ -23,5 +23,11 @@ class PanoramaSamplerSamplingTest < ActiveSupport::TestCase
     end
   end
 
+  test 'error handling ash daemon' do
+    PanoramaSamplerStructureCheck.do_check(@sampler_config, :ASH)
+    PanoramaConnection.sql_execute "DROP TABLE Internal_V$Active_Sess_History"  # Simulate empty or new schema in DB while Panorama is running
+    # expect that rerun of ASH daemon after error fixes this problem
+    WorkerThread.new(@sampler_config, 'ErrorTest', domain: :AWR_ASH).create_ash_sampler_daemon(Time.now-55) # Let ASH run for 5 seconds
+  end
 
 end

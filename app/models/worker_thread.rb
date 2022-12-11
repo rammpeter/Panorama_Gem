@@ -133,8 +133,10 @@ class WorkerThread
     Rails.logger.error('WorkerThread.create_ash_sampler_daemon') {"Error for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})\n#{e.class}:#{e.message} " }
     log_exception_backtrace(e, 40)
     PanoramaConnection.destroy_connection                                     # Ensure this connection with errors will not be reused
+    PanoramaSamplerStructureCheck.do_check(@sampler_config, :ASH, force_repeated_execution: true) # check data structure again after error
     PanoramaSamplerSampling.new(@sampler_config).exec_shrink_space('Internal_V$Active_Sess_History')   # try to shrink the size of object
-    raise e
+    Rails.logger.error('WorkerThread.create_ash_sampler_daemon') {"Retry after error for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})" }
+    PanoramaSamplerSampling.run_ash_daemon(@sampler_config, snapshot_time)      # Start ASH daemon again
   rescue Object => e
     Rails.logger.error('WorkerThread.create_ash_sampler_daemon') { "Exception #{e.class} for ID=#{@sampler_config.get_id} (#{@sampler_config.get_name})" }
     @sampler_config.set_error_message("Exception #{e.class} during WorkerThread.create_ash_sampler_daemon")
