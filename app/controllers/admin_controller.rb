@@ -6,7 +6,10 @@ class AdminController < ApplicationController
   # Called from menu entry "Spec. additions"/"Admin login"
   def master_login
     return if force_login_if_admin_jwt_not_valid                                # Ensure valid authentication and suppress double rendering in tests
-    render html: "<script type='text/javascript'>#{build_main_menu_js_code}</script>".html_safe
+    render html: "<script type='text/javascript'>
+      #{build_main_menu_js_code}
+      show_status_bar_message('New submenu \"Admin\" added for administrative functions.');
+      </script>".html_safe
   end
 
   # Called from restricted pages if not authorized before
