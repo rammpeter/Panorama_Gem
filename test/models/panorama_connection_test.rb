@@ -32,5 +32,10 @@ class PanoramaConnectionTest < ActiveSupport::TestCase
     assert(Thread.current[:panorama_connection_connection_object].sql_errors_count  < max_sql_errors, log_on_failure("There should be a new connection used now with sql_errors_count (#{Thread.current[:panorama_connection_connection_object].sql_errors_count}) less than the termination value of the previous connection (#{max_sql_errors}) "))
   end
 
+  test "recreate destroyed connection" do
+    PanoramaConnection.sql_execute("BEGIN\nDBMS_Application_Info.Set_Module('Panorama-Test', 'recreate destroyed connection');\nEND;")
+    PanoramaConnection.destroy_connection
+    PanoramaConnection.sql_execute("BEGIN\nDBMS_Application_Info.Set_Module('Panorama-Test', 'recreate destroyed connection');\nEND;")
+  end
 
 end
