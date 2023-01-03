@@ -17,3 +17,6 @@ test/dummy/config/secrets.yml
 /test/docker/oracle_db_prebuilt_panorama_test/local_build.sh
 /test/docker/oracle_db_prebuilt_panorama_test/base.env
 /test/docker/oracle_db_prebuilt_panorama_test/Dockerfile.modified
+/node_modules/
+/package.json
+/package-lock.json

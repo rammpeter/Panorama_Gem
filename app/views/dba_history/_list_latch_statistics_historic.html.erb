@@ -40,11 +40,11 @@ column_options =
 %>
 
 <%= gen_slickgrid(@latches, column_options, {
-        :caption    =>"#{t(:dba_history_list_latch_statistics_historic_caption, {
+        :caption    =>"#{t(:dba_history_list_latch_statistics_historic_caption,
                           :default              => 'Latch history from DBA_Hist_Latch between %{time_selection_start} and %{time_selection_end}',
                           :time_selection_start => @time_selection_start,
                           :time_selection_end   => @time_selection_end
-        })} #{"#{t(:for, :default=>'for')}=#{@instance}" if @instance}",
+        )} #{"#{t(:for, :default=>'for')}=#{@instance}" if @instance}",
         :max_height => 450, show_pin_icon: 1,
         update_area: @update_area
 })
