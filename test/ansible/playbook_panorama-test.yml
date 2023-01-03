@@ -26,6 +26,7 @@
           - rng-tools
           - gcc-c++
           - nodejs
+          - npm
           - chromium
         state: latest
 

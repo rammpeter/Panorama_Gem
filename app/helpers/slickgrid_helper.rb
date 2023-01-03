@@ -253,7 +253,8 @@ module SlickgridHelper
           reraise_extended_exception(e, "evaluating :data-expression for column '#{col[:caption]}'")
         end
         begin
-          celldata.encode!(Encoding::UTF_8) if celldata.encoding != Encoding::UTF_8 # Ensure that other content is translated to UTF-8
+          # Clone celldata while encoding to avoid "can't modify frozen String" if using encode!
+          celldata = celldata.encode(Encoding::UTF_8) if celldata.encoding != Encoding::UTF_8 # Ensure that other content is translated to UTF-8
         rescue Exception => e
           celldata = "Error #{e.class}: #{e.message} converting result for column '#{col[:caption]}'".gsub(/\\x/, '0x')
           # raise "Error #{e.class}: '#{e.message}' converting result for column '#{col[:caption]}' from #{celldata.encoding} to #{Encoding::UTF_8}"
