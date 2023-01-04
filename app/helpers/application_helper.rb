@@ -333,7 +333,7 @@ module ApplicationHelper
     retval = params[:instance].to_i
     if retval == 0
       retval = nil
-      retval = 1 unless PanoramaConnection.rac?                                 # Assume instance number = 1 if not RAC
+      retval = PanoramaConnection.instance_number unless PanoramaConnection.rac? # set valid instance number if not RAC
     end
     write_to_client_info_store(:instance, retval)                               # Werte puffern fuer spaetere Wiederverwendung
     retval
