@@ -60,7 +60,7 @@ jobs:
             elif [[ "$MANAGEMENT_PACK_LICENSE" == "none" ]]; then
               echo "TEST_USERNAME=panorama_test4" >> $GITHUB_ENV
             fi
-            echo "TEST_PASSWORD=Panorama_test9" >> $GITHUB_ENV
+            echo "TEST_PASSWORD=SimpePW9" >> $GITHUB_ENV
             echo "TEST_TNS=PANORAMATEST_TPURGENT" >> $GITHUB_ENV
             echo "TNS_ADMIN=$PWD/.github" >> $GITHUB_ENV
           else

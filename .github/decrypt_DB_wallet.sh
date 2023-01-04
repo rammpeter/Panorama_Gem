@@ -1,4 +1,5 @@
 #!/bin/sh
+# Encrypt the file by: gpg -c Wallet_panoramatest.zip
 
 # Decrypt the file
 mkdir $HOME/secrets
