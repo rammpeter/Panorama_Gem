@@ -195,7 +195,7 @@ class ActiveSupport::TestCase
   # Ensure that AWR snapshots exist and time period is according to existing snapshots
   # @param [Symbol] time_format
   def initialize_min_max_snap_id_and_times(time_format = :minutes)
-    two_snaps_sql = "WITH Hist_Snapshot AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, Snap_ID, Begin_Interval_Time, End_Interval_Time, Startup_Time
+    two_snaps_sql = "WITH Hist_Snapshot AS (SELECT /*+ NO_MERGE MATERIALIZE OPT_ESTIMATE(TABLE DBA_Hist_Snapshot ROWS=10000) */ DBID, Snap_ID, Begin_Interval_Time, End_Interval_Time, Startup_Time
                                             FROM   DBA_Hist_Snapshot
                                             WHERE  Instance_Number = #{PanoramaConnection.instance_number}
                                             AND    DBID            = ?  /* Check AWR for the same DBID like following test will use */
