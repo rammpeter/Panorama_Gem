@@ -37,14 +37,15 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   s.add_dependency  "railties",       rails_version
 
   s.add_dependency 'activerecord-nulldb-adapter'
-  s.add_dependency 'activerecord-oracle_enhanced-adapter'     
-
-  # s.add_dependency 'nokogiri'
+  s.add_dependency 'activerecord-oracle_enhanced-adapter'
 
   # sass-rails pinned to 5.0 which depends on sass, current sass-rails (6.0) depends on sassc which is incompatible with warbler
   # sass-rails 6.0 requires sassc which requires make and C compiler for installation
   s.add_dependency  'sass-rails', '~> 5.0'
   #s.add_dependency  'sass-rails'
+
+  # Starting with 7.0.4 required
+  # s.add_dependency 'sprockets-rails'
 
   # TODO: i18n 1.8.8, 1.8.9 leads to Uncaught exception: undefined method `deep_merge!' for {}:Concurrent::Hash
   # Check if following versions fix this error

@@ -95,7 +95,7 @@ GEM
     nio4r (2.5.8-java)
     nokogiri (1.13.10-java)
       racc (~> 1.4)
-    playwright-ruby-client (1.28.1)
+    playwright-ruby-client (1.29.0)
       concurrent-ruby (>= 1.1.6)
       mime-types (>= 3.0)
     puma (6.0.2-java)

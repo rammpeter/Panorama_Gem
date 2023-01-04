@@ -12,7 +12,8 @@ gemspec
 
 
 # Specific path for nulldb not nbecessary from rel. 0.3.7
-#gem 'activerecord-nulldb-adapter', :git => 'http://github.com/mnoack/nulldb', :branch =>'rails5'
+#:git => 'http://github.com/mnoack/nulldb', :branch =>'rails5'
+# gem 'activerecord-oracle_enhanced-adapter', github: "rsim/oracle-enhanced", branch: "release70"
 
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
