@@ -195,14 +195,17 @@ class ActiveSupport::TestCase
   # Ensure that AWR snapshots exist and time period is according to existing snapshots
   # @param [Symbol] time_format
   def initialize_min_max_snap_id_and_times(time_format = :minutes)
-    two_snaps_sql = "SELECT s1.DBID, s2.Snap_ID Max_Snap_ID, s3.Snap_ID Min_Snap_ID, s2.Begin_Interval_Time End_Time, s3.Begin_Interval_Time Start_Time
-                     FROM   DBA_Hist_Snapshot s1
-                     JOIN   DBA_Hist_Snapshot s2 ON s2.Instance_Number = s1.Instance_Number AND s2.DBID = s1.DBID AND s2.Snap_ID = s1.Snap_ID -1 AND s2.Startup_Time = s1.Startup_Time
-                     JOIN   DBA_Hist_Snapshot s3 ON s3.Instance_Number = s1.Instance_Number AND s3.DBID = s1.DBID AND s3.Snap_ID = s1.Snap_ID -2 AND s3.Startup_Time = s1.Startup_Time
-                     JOIN   DBA_Hist_Snapshot s4 ON s4.Instance_Number = s1.Instance_Number AND s4.DBID = s1.DBID AND s4.Snap_ID = s1.Snap_ID -3 AND s4.Startup_Time = s1.Startup_Time
-                     WHERE  s1.Instance_Number = #{PanoramaConnection.instance_number}
-                     AND    s1.DBID            = ?  /* Check AWR for the same DBID like following test will use */
-                     AND    EXTRACT (MINUTE FROM s2.End_Interval_Time-s3.Begin_Interval_Time) > 0  /* At least one minute should be between the two snapshots */
+    two_snaps_sql = "WITH Hist_Snapshot AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, Snap_ID, Begin_Interval_Time, End_Interval_Time, Startup_Time
+                                            FROM   DBA_Hist_Snapshot
+                                            WHERE  Instance_Number = #{PanoramaConnection.instance_number}
+                                            AND    DBID            = ?  /* Check AWR for the same DBID like following test will use */
+                      )
+                     SELECT s1.DBID, s2.Snap_ID Max_Snap_ID, s3.Snap_ID Min_Snap_ID, s2.Begin_Interval_Time End_Time, s3.Begin_Interval_Time Start_Time
+                     FROM   Hist_Snapshot s1
+                     JOIN   Hist_Snapshot s2 ON s2.Snap_ID = s1.Snap_ID -1 AND s2.Startup_Time = s1.Startup_Time
+                     JOIN   Hist_Snapshot s3 ON s3.Snap_ID = s1.Snap_ID -2 AND s3.Startup_Time = s1.Startup_Time
+                     JOIN   Hist_Snapshot s4 ON s4.Snap_ID = s1.Snap_ID -3 AND s4.Startup_Time = s1.Startup_Time
+                     WHERE  EXTRACT (MINUTE FROM s2.End_Interval_Time-s3.Begin_Interval_Time) > 0  /* At least one minute should be between the two snapshots */
                      ORDER BY s1.Snap_ID DESC"
 
     all_awr_dbids = PanoramaConnection.all_awr_dbids                             # Initial state before additional AWR snapshots
