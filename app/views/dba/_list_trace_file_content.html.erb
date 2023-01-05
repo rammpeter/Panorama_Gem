@@ -112,10 +112,39 @@ Times are in microseconds
 %>
 <%=
   caption = "Trace file content for #{@adr_home}/trace/#{@trace_filename}, Con-ID = #{@con_id} (from GV$Diag_Trace_File_Contents)\n"
-  caption << check_box_tag(:dont_show_sys, 1, @dont_show_sys=='1', onclick: "toggle_dont_show_sys();")
-  caption << " Exclude recursive SQLs executed as user SYS\n"
-  caption << check_box_tag(:dont_show_stat, 1, @dont_show_stat=='1', onclick: "toggle_dont_show_stat();")
-  caption << " Exclude STAT records with execution plan lines"
+  caption << "<div style=\"font-weight: normal;\" class=\"flex-row-container\">"
+
+  caption << "  <div class=\"flex-row-element\" title=\"Exclude recursive SQLs that are executed as user SYS\">"
+  caption << "    Exclude SYS SQLs "
+  caption <<      check_box_tag(:dont_show_sys, 1, @dont_show_sys=='1')
+  caption << "  </div>"
+
+  caption << "  <div class=\"flex-row-element\" title=\"Exclude STAT lines with execution plan content\">"
+  caption << "    Exclude STAT lines "
+  caption <<      check_box_tag(:dont_show_stat, 1, @dont_show_stat=='1')
+  caption << "  </div>"
+
+  caption << "  <div class=\"flex-row-element\" title=\"Maximum number of trace file lines to show in list. The file contains #{@trace_file_line_count} lines in total.\" style=\"#{"visibility: hidden;display: none;" if @trace_file_line_count <= @max_trace_file_lines_to_show}\">"
+  caption << "    Max. lines "
+  caption <<      text_field_tag(:max_trace_file_lines_to_show, @max_trace_file_lines_to_show, size: 5)
+  caption << "  </div>"
+  if @trace_file_line_count > @max_trace_file_lines_to_show
+
+    caption << "  <div class=\"flex-row-element\" title=\"Choose wether the first n lines or the last n lines of the file are shown.\">"
+    caption << "    First lines "
+    caption <<      radio_button_tag(:first_or_last_lines, :first, @first_or_last_lines == 'first')
+    caption << "    Last lines "
+    caption <<      radio_button_tag(:first_or_last_lines, :last, @first_or_last_lines == 'last')
+    caption << "  </div>"
+
+  end
+
+  caption << "  <div class=\"flex-row-element\" title=\"Refresh the trace file content with the given filter\">"
+  caption <<      submit_tag('Refresh', onclick: "recall_list();")
+  caption << "  </div>"
+
+  caption << "</div>"
+
   gen_slickgrid(@content, column_options, {
     :caption => caption,
     :max_height=>450,
@@ -125,20 +154,18 @@ Times are in microseconds
 %>
 
 <script type=application/javascript>
-  function recall_list(dont_show_sys, dont_show_stat){
+  function recall_list(){
       ajax_html('<%= @org_update_area %>', 'dba', 'list_trace_file_content', {
-          'update_area':    '<%= @org_update_area %>',
-          'instance':       '<%= @instance %>',
-          'adr_home':       '<%= @adr_home %>',
-          'trace_filename': '<%= @trace_filename %>',
-          'con_id':         '<%= @con_id%>',
-          'dont_show_sys':  dont_show_sys,
-          'dont_show_stat': dont_show_stat
+          'update_area':                  '<%= @org_update_area %>',
+          'instance':                     '<%= @instance %>',
+          'adr_home':                     '<%= @adr_home %>',
+          'trace_filename':               '<%= @trace_filename %>',
+          'con_id':                       '<%= @con_id%>',
+          'dont_show_sys':                jQuery('#dont_show_sys').prop("checked") ? 1 : 0,
+          'dont_show_stat':               jQuery('#dont_show_stat').prop("checked") ? 1 : 0,
+          'max_trace_file_lines_to_show': jQuery('#max_trace_file_lines_to_show').val(),
+          'first_or_last_lines':          jQuery('input[name="first_or_last_lines"]:checked').val(),
   });
   }
-
-  function toggle_dont_show_sys()   { recall_list('<%= @dont_show_sys == '1' ? 0 : 1 %>', '<%= @dont_show_stat %>'); }
-  function toggle_dont_show_stat()  { recall_list('<%= @dont_show_sys %>',                '<%= @dont_show_stat == '1' ? 0 : 1 %>'); }
-
 </script>
 

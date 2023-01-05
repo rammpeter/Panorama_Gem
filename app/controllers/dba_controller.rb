@@ -1768,10 +1768,10 @@ oradebug setorapname diag
 
   def list_trace_files
     save_session_time_selection
-    @filename_incl_filter = prepare_param(:filename_incl_filter)
-    @filename_excl_filter = prepare_param(:filename_excl_filter)
-    @content_incl_filter  = prepare_param(:content_incl_filter)
-    @content_excl_filter  = prepare_param(:content_excl_filter)
+    @filename_incl_filter         = prepare_param(:filename_incl_filter)
+    @filename_excl_filter         = prepare_param(:filename_excl_filter)
+    @content_incl_filter          = prepare_param(:content_incl_filter)
+    @content_excl_filter          = prepare_param(:content_excl_filter)
 
     where_string = ''
     where_values = []
@@ -1810,15 +1810,16 @@ oradebug setorapname diag
     render_partial
   end
 
-  MAX_TRACE_FILE_LINES_TO_SHOW=10000
   def list_trace_file_content
-    @instance         = prepare_param_instance
-    @adr_home         = prepare_param(:adr_home)
-    @trace_filename   = prepare_param(:trace_filename)
-    @con_id           = prepare_param(:con_id)
-    @dont_show_sys    = prepare_param(:dont_show_sys)
-    @dont_show_stat   = prepare_param(:dont_show_stat)
-    @org_update_area  = prepare_param(:update_area)
+    @instance                     = prepare_param_instance
+    @adr_home                     = prepare_param(:adr_home)
+    @trace_filename               = prepare_param(:trace_filename)
+    @con_id                       = prepare_param(:con_id)
+    @dont_show_sys                = prepare_param(:dont_show_sys)
+    @dont_show_stat               = prepare_param(:dont_show_stat)
+    @org_update_area              = prepare_param(:update_area)
+    @max_trace_file_lines_to_show = prepare_param_int(:max_trace_file_lines_to_show, default: 10000)
+    @first_or_last_lines          = prepare_param(:first_or_last_lines, default: 'first')
 
     counts = sql_select_first_row ["SELECT COUNT(*) lines, MAX(Line_Number) Max_Line_Number
                                     FROM   gv$Diag_Trace_File_Contents c
@@ -1828,10 +1829,18 @@ oradebug setorapname diag
                                     AND    c.Con_ID         = ?
                                     ORDER BY c.Line_Number
                                    ", @instance, @adr_home, @trace_filename, @con_id]
-
-    if counts.lines > MAX_TRACE_FILE_LINES_TO_SHOW
-      add_statusbar_message("Trace file #{@trace_filename} contains #{fn(counts.lines)} rows!\nEvaluating only the last #{fn(MAX_TRACE_FILE_LINES_TO_SHOW)} rows.")
+    @trace_file_line_count = counts.lines
+    if @trace_file_line_count > @max_trace_file_lines_to_show
+      add_statusbar_message("Trace file #{@trace_filename} contains #{fn(@trace_file_line_count)} rows!\nEvaluating only the #{@first_or_last_lines} #{fn(@max_trace_file_lines_to_show)} rows of the file.")
     end
+
+    rownum_condition, row_num_value = lambda{
+      if @first_or_last_lines == 'first'
+        return "Row_Num < ?", @max_trace_file_lines_to_show + 1
+      else
+        return "Row_Num > ?", @trace_file_line_count - @max_trace_file_lines_to_show
+      end
+    }.call
 
     content_iter = sql_select_iterator ["SELECT x.*, NULL elapsed_ms, Null delay_ms, NULL parse_line_no, NULL SQL_ID
                                          FROM   (SELECT /*+ NO_MERGE */ c.*, c.Serial# Serial_No, RowNum Row_Num
@@ -1842,8 +1851,8 @@ oradebug setorapname diag
                                                  AND    c.Con_ID         = ?
                                                  ORDER BY c.Line_Number
                                                 ) x
-                                         WHERE  Row_Num > ?
-                                      ", @instance, @adr_home, @trace_filename, @con_id, counts.lines - MAX_TRACE_FILE_LINES_TO_SHOW]
+                                         WHERE  #{rownum_condition}
+                                      ", @instance, @adr_home, @trace_filename, @con_id, row_num_value]
 
     @content = []
     all_cursors = {}

@@ -315,16 +315,16 @@ module ApplicationHelper
   end
 
   # switch empty param string to nil
-  def prepare_param(param_sym)
+  def prepare_param(param_sym, **options)
     retval = params[param_sym]
-    retval = nil if retval == ''
-    retval.strip! unless retval.nil?                                            # Remove leading and trailing blanks
+    return options[:default] if retval.nil? || retval == ''                     # nil if no default option given
+    retval.strip!                                                               # Remove leading and trailing blanks
     retval
   end
 
-  def prepare_param_int(param_sym)
+  def prepare_param_int(param_sym, **options)
     retval = prepare_param(param_sym)
-    return nil if retval.nil?
+    return options[:default] if retval.nil?                                     # nil if no default option given
     retval.to_i
   end
 

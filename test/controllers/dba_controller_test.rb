@@ -215,6 +215,8 @@ class DbaControllerTest < ActionDispatch::IntegrationTest
               post '/dba/list_trace_file_content', params: {format: :html, instance: trace_file.inst_id, adr_home: trace_file.adr_home,
                                                             trace_filename: trace_file.trace_filename, con_id: trace_file.con_id,
                                                             dont_show_sys: dont_show_sys, dont_show_stat: dont_show_stat,
+                                                            max_trace_file_lines_to_show: 100,
+                                                            first_or_last_lines: dont_show_sys==0 ? 'first' : 'last',
                                                             update_area: :hugo }
               assert_response :success
             end
