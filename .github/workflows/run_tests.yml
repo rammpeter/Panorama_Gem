@@ -9,8 +9,11 @@ on:
         required: true
         type: string
       container:
-        required: false
+        required: true
         type: string
+      max_parallel:
+        required: true
+        type: number
 
 jobs:
   test:
