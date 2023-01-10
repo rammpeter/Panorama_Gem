@@ -3,7 +3,8 @@ class EngineConfig < Rails::Application
   # Application configuration should go into files in config/initializers
   # -- all .rb files in that directory are automatically loaded.
 
-  if defined? PanoramaGem                                                       # May not yet been defined in tests of application including this engine
+
+  if defined?(PanoramaGem) && defined?(PanoramaGem::VERSION)                                                      # May not yet been defined in tests of application including this engine
     Rails.logger.info "Panorama for Oracle: Release #{PanoramaGem::VERSION} ( #{PanoramaGem::RELEASE_YEAR}/#{PanoramaGem::RELEASE_MONTH}/#{PanoramaGem::RELEASE_DAY} )"
   end
 
