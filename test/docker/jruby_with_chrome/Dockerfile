@@ -5,18 +5,13 @@
 # increasing memory available for docker to 3GB via Docker > Preferences... > Advanced > Ram. It defaults to only 2 GB (on mac).
 # Build image:
 # > docker pull oraclelinux:8-slim
-# > docker build --no-cache -t rammpeter/jruby_with_chrome:9.3.4.0 .
-# Distribute image:
-# > docker tag rammpeter/jruby_with_chrome:9.3.4.0 git.osp-dd.de:5005/pramm/panorama_gem_ci/jruby_with_chrome:9.3.4.0
-# > docker push git.osp-dd.de:5005/pramm/panorama_gem_ci/jruby_with_chrome:9.3.4.0
-# > docker tag git.osp-dd.de:5005/pramm/panorama_gem_ci/jruby_with_chrome:9.3.4.0 registry.gitlab.com/osp-silver/panorama_gem/jruby_with_chrome:9.3.4.0
-# > docker push registry.gitlab.com/osp-silver/panorama_gem/jruby_with_chrome:9.3.4.0
+# > docker build --no-cache -t rammpeter/jruby_with_chrome:9.4.0.0 .
 
 
 FROM oraclelinux:8-slim
 
 MAINTAINER Peter.Ramm@ottogroup.com
-ARG JRUBY_VERSION=9.3.4.0
+ARG JRUBY_VERSION=9.4.0.0
 ENV JRUBY_VERSION=$JRUBY_VERSION
 ENV PATH "$PATH:/opt/jruby-$JRUBY_VERSION/bin"
 
@@ -30,8 +25,8 @@ EXPOSE  9515
 # - install podman
 RUN  microdnf update && \
      microdnf install procps wget tar gzip vim git make findutils util-linux podman jq bc dnf && \
-     wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.rpm && \
-     rpm -Uvh jdk-17_linux-x64_bin.rpm && rm jdk-17_linux-x64_bin.rpm && \
+     wget https://download.oracle.com/java/19/latest/jdk-19_linux-x64_bin.rpm && \
+     rpm -Uvh jdk-19_linux-x64_bin.rpm && rm jdk-19_linux-x64_bin.rpm && \
      dnf install -y @nodejs && \
      cd /opt && wget https://repo1.maven.org/maven2/org/jruby/jruby-dist/$JRUBY_VERSION/jruby-dist-$JRUBY_VERSION-bin.tar.gz && \
      cd /opt && tar -xvf jruby-dist-$JRUBY_VERSION-bin.tar.gz && rm jruby-dist-$JRUBY_VERSION-bin.tar.gz && \
