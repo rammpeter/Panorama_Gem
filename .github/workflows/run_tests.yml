@@ -18,7 +18,7 @@ jobs:
 
     strategy:
       # run only one job for autonomous DB with restricted CPU capactity
-      max-parallel: ${{ inputs.db_version == "autonomous" && 1 || 4}}
+      max-parallel: ${{ (inputs.db_version == "autonomous" && 1) || 4}}
       fail-fast: true
       matrix:
         # Short values to let the job names visible
