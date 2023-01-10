@@ -592,21 +592,17 @@ END Panorama_Sampler_Snapshot;
     SELECT /*+ ORDERED */ p_DBID, p.SQL_ID, p.Plan_Hash_Value, p.ID, p.OPERATION, p.OPTIONS, p.OBJECT_NODE, p.OBJECT#, p.OBJECT_OWNER, p.OBJECT_NAME, p.OBJECT_ALIAS, p.OBJECT_TYPE, p.OPTIMIZER,
            p.PARENT_ID, p.DEPTH, p.POSITION, p.SEARCH_COLUMNS, p.COST, p.CARDINALITY, p.BYTES, p.OTHER_TAG, p.PARTITION_START, p.PARTITION_STOP, p.PARTITION_ID, p.OTHER,
            p.DISTRIBUTION, p.CPU_COST, p.IO_COST, p.TEMP_SPACE, p.ACCESS_PREDICATES, p.FILTER_PREDICATES, NULL /* p.PROJECTION also not sampled in AWR because of large size */, p.TIME, p.QBLOCK_NAME,
-           p.REMARKS, p.TIMESTAMP, p.OTHER_XML, p.Con_DBID, p.Con_ID
-    FROM   (SELECT p_DBID, p.SQL_ID, p.Plan_Hash_Value, p.ID, p.OPERATION, p.OPTIONS, p.OBJECT_NODE, p.OBJECT#, p.OBJECT_OWNER, p.OBJECT_NAME, p.OBJECT_ALIAS, p.OBJECT_TYPE, p.OPTIMIZER,
-                   p.PARENT_ID, p.DEPTH, p.POSITION, p.SEARCH_COLUMNS, p.COST, p.CARDINALITY, p.BYTES, p.OTHER_TAG, p.PARTITION_START, p.PARTITION_STOP, p.PARTITION_ID, p.OTHER,
-                   p.DISTRIBUTION, p.CPU_COST, p.IO_COST, p.TEMP_SPACE, p.ACCESS_PREDICATES, p.FILTER_PREDICATES, NULL /* p.PROJECTION also not sampled in AWR because of large size */, p.TIME, p.QBLOCK_NAME,
-                   p.REMARKS, p.TIMESTAMP, p.OTHER_XML, p.Child_Number, #{PanoramaConnection.db_version >= '12.1' ? "panorama_owner.Con_DBID_From_Con_ID.Get(Con_ID) Con_DBID, Con_ID" : "p_DBID Con_DBID, 0 Con_ID"}
-            FROM   v$SQL_Plan p
+           p.REMARKS, p.TIMESTAMP, p.OTHER_XML, #{PanoramaConnection.db_version >= '12.1' ? "panorama_owner.Con_DBID_From_Con_ID.Get(p.Con_ID) Con_DBID, p.Con_ID" : "p_DBID Con_DBID, 0 Con_ID"}
+    FROM   (SELECT ip.*,
+                   MAX(CHILD_NUMBER) KEEP (DENSE_RANK LAST ORDER BY TIMESTAMP) OVER (PARTITION BY SQL_ID, PLAN_HASH_VALUE) MAX_CHILD_NUMBER
+            FROM   v$SQL_Plan ip
            ) p
-    -- Select only the plan of last parsed child with that plan_hash_value
-    JOIN   (SELECT /*+ NO_MERGE */ SQL_ID, Plan_Hash_Value, MAX(Child_Number) KEEP (DENSE_RANK LAST ORDER BY Timestamp) Max_Child_Number
-            FROM   v$SQL_Plan
-            GROUP BY SQL_ID, Plan_Hash_Value
-           ) pm ON pm.SQL_ID = p.SQL_ID AND pm.Plan_Hash_Value = p.Plan_Hash_Value AND pm.Max_Child_Number = p.Child_Number
-    LEFT OUTER JOIN panorama_owner.PANORAMA_SQL_PLAN e on e.DBID = p_DBID AND e.SQL_ID = p.SQL_ID AND e.Plan_Hash_Value = p.Plan_Hash_Value AND e.ID = p.ID AND e.Con_DBID = p.Con_DBID
-    WHERE  e.DBID IS NULL   -- New records does not yet exists in table
-    AND    EXISTS (SELECT 1 FROM panorama_owner.Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = p.SQL_ID AND ss.Plan_Hash_Value = p.Plan_Hash_Value AND ss.Con_DBID = p.Con_DBID) -- Only for SQLs recorded in Panorama_SQLStat in same snapshot
+    /* join PANORAMA_SQL_PLAN and Panorama_SQLStat with Con_ID instead of PK attribute Con_DBID to avoid multiple calculation by Con_DBID_From_Con_ID */
+    LEFT OUTER JOIN panorama_owner.PANORAMA_SQL_PLAN e on e.DBID = p_DBID AND e.SQL_ID = p.SQL_ID AND e.Plan_Hash_Value = p.Plan_Hash_Value AND e.ID = p.ID AND e.Con_ID = #{PanoramaConnection.db_version >= '12.1' ? "p.Con_ID" : "0"}
+    WHERE  p.Max_Child_Number = p.Child_Number /* Select only the plan of last parsed child with that plan_hash_value */
+    AND    e.DBID IS NULL   -- New records does not already exist in table
+    /* get plans only for SQLs recorded in Panorama_SQLStat in same snapshot */
+    AND    EXISTS (SELECT 1 FROM panorama_owner.Panorama_SQLStat ss WHERE ss.DBID = p_DBID AND ss.Snap_ID = p_Snap_ID AND ss.SQL_ID = p.SQL_ID AND ss.Plan_Hash_Value = p.Plan_Hash_Value AND ss.Con_ID = #{PanoramaConnection.db_version >= '12.1' ? "p.Con_ID" : "0"})
     ;
     COMMIT;
   END Snap_SQL_Plan;
