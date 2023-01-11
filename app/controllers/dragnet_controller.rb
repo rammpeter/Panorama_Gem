@@ -64,9 +64,7 @@ Rails.logger.info "get_selection_list started" if  Rails.env.test?
 
     response = '[ '                                                             # JSON-Buffer
     entry_id = 0
-Rails.logger.info "get_selection_list: Starting render_entry_json" if  Rails.env.test?
     dragnet_sql_list.each do |s|
-Rails.logger.info "get_selection_list: Looping in render_entry_json" if  Rails.env.test?
       subresult = render_entry_json('', entry_id, s, filter, include_description)
       response << subresult if subresult
       entry_id = entry_id + 1
@@ -74,9 +72,7 @@ Rails.logger.info "get_selection_list: Looping in render_entry_json" if  Rails.e
     response[response.length-1] = ' '                                           # letztes Komma entfernen
     response << ']'
 
-Rails.logger.info "get_selection_list: calling render" if  Rails.env.test?
   render :json => response.html_safe, :status => 200
-Rails.logger.info "get_selection_list: called render" if  Rails.env.test?
   end # get_selection_list
 
 

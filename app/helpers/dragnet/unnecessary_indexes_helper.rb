@@ -39,6 +39,7 @@ SELECT /* DB-Tools Ramm nicht genutzte Indizes */ * FROM (
                                          FROM   gv$SQLArea
                                          WHERE  SQL_Text NOT LIKE '%dbms_stats cursor_sharing_exact%' /* DBMS-Stats-Statement */
                                         ) t ON t.Inst_ID=p.Inst_ID AND t.SQL_ID=p.SQL_ID
+                                 WHERE p.Object_Owner NOT IN (#{system_schema_subselect})
                                 ) p ON p.Object_Owner=i.Owner AND p.Object_Name=i.Index_Name
                 LEFT OUTER JOIN (SELECT /*+ NO_MERGE USE_HASH(p s t) */ DISTINCT p.Object_Owner, p.Object_Name
                                  FROM   DBA_Hist_SQL_Plan p

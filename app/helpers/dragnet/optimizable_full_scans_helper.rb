@@ -10,40 +10,40 @@ module Dragnet::OptimizableFullScansHelper
             :desc  => t(:dragnet_helper_70_desc, :default=>'Index full scan operations on large indexes often may be successfully switched to parallel direct path read per index fast full, if sort order of result does not matter.
 If optimizer does not decide to do so himself, you can use hints /*+ PARALLEL_INDEX(Alias, Degree) INDEX_FFS(Alias) */.
 '),
-            :sql=> "SELECT /* DB-Tools Ramm IndexFullScan */ * FROM (
-                      SELECT p.SQL_ID, s.Parsing_Schema_Name, p.Object_Owner, p.Object_Name,
-                             (SELECT Num_Rows FROM DBA_Indexes i WHERE i.Owner=p.Object_Owner AND i.Index_Name=p.Object_Name
-                             ) Num_Rows_Index, s.Instance_Number,
-                             (SELECT MAX(Begin_Interval_Time) FROM DBA_Hist_SnapShot ss
-                              WHERE ss.DBID=p.DBID AND ss.Snap_ID=s.MaxSnapID AND ss.Instance_Number=s.Instance_Number ) MaxIntervalTime,
-                             (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=p.DBID AND t.SQL_ID=p.SQL_ID AND RowNum < 2) SQLText,
-                             s.Elapsed_Secs, s.Executions, s.Disk_Reads, s.Buffer_Gets
-                      FROM  (
-                              SELECT DISTINCT p.DBID, p.Plan_Hash_Value, p.SQL_ID, p.Object_Owner, p.Object_Name
-                              FROM  DBA_Hist_SQL_Plan p
-                              WHERE Operation = 'INDEX'
-                              AND   Options   = 'FULL SCAN'
-                            ) p,
-                            (SELECT s.DBID, s.SQL_ID, s.Plan_Hash_Value, s.Instance_Number,
-                                    MIN(s.Parsing_Schema_Name) Parsing_Schema_Name,
-                                    SUM(Elapsed_Time_Delta)/1000000 Elapsed_Secs,
-                                    SUM(Executions_Delta)           Executions,
-                                    SUM(Disk_Reads_Delta)           Disk_Reads,
-                                    SUM(Buffer_Gets_Delta)          Buffer_Gets,
-                                    MAX(s.Snap_ID)                     MaxSnapID
-                             FROM   DBA_Hist_SQLStat s,
-                                    (SELECT DBID, Instance_Number, MIN(Snap_ID) Snap_ID
-                                     FROM   DBA_Hist_SnapShot ss
-                                     WHERE  Begin_Interval_Time>SYSDATE-?
-                                     /* Nur Snap_ID groesser der hier ermittelten auswerten */
-                                     GROUP BY DBID, Instance_Number
-                                    ) MaxSnap
-                             WHERE MaxSnap.DBID            = s.DBID
-                             AND   MaxSnap.Instance_Number = s.Instance_Number
-                             AND   s.Snap_ID               > MaxSnap.Snap_ID
-                             GROUP BY s.DBID, s.SQL_ID, s.Plan_Hash_Value, s.Instance_Number) s
-                      WHERE s.DBID=p.DBID AND s.SQL_ID=p.SQL_ID AND s.Plan_Hash_Value=p.Plan_Hash_Value
-                      ) ORDER BY Num_Rows_Index DESC NULLS LAST, Elapsed_Secs DESC NULLS LAST",
+            :sql=> "\
+WITH Indexes AS (SELECT /*+ NO_MERGE MATERIALZE */ Owner, Index_Name, Num_Rows FROM DBA_Indexes WHERE Owner NOT IN (#{system_schema_subselect}))
+SELECT p.SQL_ID, s.Parsing_Schema_Name, p.Object_Owner, p.Object_Name,
+       i.Num_Rows Num_Rows_Index, s.Instance_Number,
+       (SELECT MAX(Begin_Interval_Time) FROM DBA_Hist_SnapShot ss
+        WHERE ss.DBID=p.DBID AND ss.Snap_ID=s.MaxSnapID AND ss.Instance_Number=s.Instance_Number ) MaxIntervalTime,
+       (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=p.DBID AND t.SQL_ID=p.SQL_ID AND RowNum < 2) SQLText,
+       s.Elapsed_Secs, s.Executions, s.Disk_Reads, s.Buffer_Gets
+FROM  (
+        SELECT /*+ NO_MERGE */ DISTINCT p.DBID, p.Plan_Hash_Value, p.SQL_ID, p.Object_Owner, p.Object_Name
+        FROM  DBA_Hist_SQL_Plan p
+        WHERE Operation = 'INDEX'
+        AND   Options   = 'FULL SCAN'
+        AND   p.Object_Owner NOT IN (#{system_schema_subselect})
+      ) p
+JOIN  (SELECT s.DBID, s.SQL_ID, s.Plan_Hash_Value, s.Instance_Number,
+              MIN(s.Parsing_Schema_Name) Parsing_Schema_Name,
+              SUM(Elapsed_Time_Delta)/1000000 Elapsed_Secs,
+              SUM(Executions_Delta)           Executions,
+              SUM(Disk_Reads_Delta)           Disk_Reads,
+              SUM(Buffer_Gets_Delta)          Buffer_Gets,
+              MAX(s.Snap_ID)                     MaxSnapID
+       FROM   DBA_Hist_SQLStat s
+       JOIN   (SELECT /*+ NO_MERGE */ DBID, Instance_Number, MIN(Snap_ID) Snap_ID
+               FROM   DBA_Hist_SnapShot ss
+               WHERE  Begin_Interval_Time>SYSDATE-?
+               /* Nur Snap_ID groesser der hier ermittelten auswerten */
+               GROUP BY DBID, Instance_Number
+              ) MaxSnap ON MaxSnap.DBID = s.DBID AND MaxSnap.Instance_Number = s.Instance_Number
+       WHERE s.Snap_ID               > MaxSnap.Snap_ID
+       GROUP BY s.DBID, s.SQL_ID, s.Plan_Hash_Value, s.Instance_Number
+      ) s ON s.DBID=p.DBID AND s.SQL_ID=p.SQL_ID AND s.Plan_Hash_Value=p.Plan_Hash_Value
+JOIN  Indexes i ON i.Owner = p.Object_Owner AND i.Index_Name=p.Object_Name
+ORDER BY i.Num_Rows DESC NULLS LAST, s.Elapsed_Secs DESC NULLS LAST",
             :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') }]
         },
         {

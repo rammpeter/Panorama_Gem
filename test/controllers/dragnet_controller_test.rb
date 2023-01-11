@@ -58,21 +58,20 @@ class DragnetControllerTest < ActionController::TestCase
           if !full_entry[:not_executable] &&
             (full_entry[:min_db_version].nil? || full_entry[:min_db_version] <= get_db_version) &&
             !full_entry[:not_for_autonomous]
-            #start_time = Time.now
+            start_time = Time.now
             post  :exec_dragnet_sql, :params => params                          # call execution of SQL
-
+            Rails.logger.debug('DragnetControllerTest.execute_tree') {"#{Time.now-start_time} secs. in execute dragnet sql for #{entry['id']}"}
             errmsg = "Error testing dragnet SQL #{entry['id']} #{full_entry[:name]}, result should be '#{expected_result}'"
-            if @response.response_code != expected_result
+            if @response.response_code.to_s[0] != ActionDispatch::AssertionResponse.new(expected_result).code[0]
               Rails.logger.debug errmsg
             end
             # Without management pack license execution should result in error if SQL contains DBA_HIST
             assert_response(expected_result, errmsg)
-            # puts "%6.1f secs: #{entry['id']} Dragnet execution time for #{full_entry[:name]}" % (Time.now - start_time)
           end
 
           params[:commit_show] = 'hugo'
           post  :exec_dragnet_sql, :params => params                          # Call show SQL text
-          assert_response(expected_result, "Error testing dragnet SQL #{entry['id']} #{full_entry[:name]}, result should be '#{expected_result}'")
+          assert_response(expected_result, "Error showing dragnet SQL #{entry['id']} #{full_entry[:name]}, result should be '#{expected_result}'")
         end
       end
     end
