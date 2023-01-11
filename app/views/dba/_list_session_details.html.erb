@@ -280,7 +280,7 @@
     %>
   </div>
 
-  <% if get_db_version >= '12.2' %>
+  <% if get_db_version >= '12.2' && !@dbsessions[0].pid.nil? %>
     <div class="flex-row-element">
       <%=
         render_async(:dba, :render_session_detail_tracefile_button, {

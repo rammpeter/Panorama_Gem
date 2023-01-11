@@ -960,7 +960,7 @@ oradebug setorapname diag
                   s.Blocking_Session_Status, s.Blocking_Instance, s.Blocking_Session, b.Serial# Blocking_Serial_No,
                   s.Final_Blocking_Session_Status, s.Final_Blocking_Instance, s.Final_Blocking_Session, fb.Serial# Final_Blocking_Serial_No
            FROM   GV$Session s
-           JOIN   GV$process p                       ON p.Addr = s.pAddr AND p.Inst_ID = s.Inst_ID
+           LEFT OUTER JOIN GV$process p  ON p.Addr = s.pAddr AND p.Inst_ID = s.Inst_ID /* gv$Process sometimes not visible for active sessions in autonomous DB */
            LEFT OUTER JOIN GV$Session b  ON b.Inst_ID = s.Blocking_Instance AND b.SID = s.Blocking_Session
            LEFT OUTER JOIN GV$Session fb ON fb.Inst_ID = s.Final_Blocking_Instance AND fb.SID = s.Final_Blocking_Session
            LEFT OUTER JOIN (SELECT Inst_ID, SID#{', Serial#' if get_db_version >= '11.2'}, AUTHENTICATION_TYPE
@@ -1013,7 +1013,7 @@ oradebug setorapname diag
                                               s.Logon_Time, p.spID, p.PID
                                        FROM   gv$PX_Session ps
                                        JOIN   gv$Session s ON s.Inst_ID = ps.QCInst_ID AND s.SID = ps.QCSID AND s.Serial# = ps.QCSerial#
-                                       JOIN   GV$process p ON p.Addr = s.pAddr AND p.Inst_ID = s.Inst_ID
+                                       LEFT OUTER JOIN GV$process p ON p.Addr = s.pAddr AND p.Inst_ID = s.Inst_ID /* gv$Process sometimes not visible for active sessions in autonomous DB */
                                        WHERE  ps.Inst_ID = ?
                                        AND    ps.SID     = ?
                                        AND    ps.Serial# = ?

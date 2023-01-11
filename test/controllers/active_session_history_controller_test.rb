@@ -196,7 +196,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
   end
 
   test "blocking_locks_historic with xhr: true" do
-    post :fork_blocking_locks_historic_call, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end, commit: 'Blocking locks session dependency tree' }
+    post :fork_blocking_locks_historic_call, :params => {:format=>:html, :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_between, commit: 'Blocking locks session dependency tree' }
     assert_response_success_or_management_pack_violation('list_blocking_locks_historic')
 
     post :list_ash_dependency_thread, :params => { format: :html, blocked_inst_id: 1, blocked_session: 7379, blocked_session_serial_no: 55500, max_snap_id: 45113, min_snap_id: 45113, sample_time: @time_selection_start, update_area: 'hugo'}
@@ -208,7 +208,7 @@ class ActiveSessionHistoryControllerTest < ActionController::TestCase
 
     [nil, '1'].each do |show_instances|
       post :fork_blocking_locks_historic_call, :params => {:format=>:html,
-                                                           :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_end,
+                                                           :time_selection_start=>@time_selection_start, :time_selection_end=>@time_selection_between,
                                                            show_instances: show_instances,
                                                            commit: 'Blocking locks event dependency' }
       assert_response_success_or_management_pack_violation('list_blocking_locks_historic_event_dependency')
