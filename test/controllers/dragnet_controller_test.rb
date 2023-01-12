@@ -42,7 +42,7 @@ class DragnetControllerTest < ActionController::TestCase
           if full_entry[:parameter]
             full_entry[:parameter].each do |p|                                  # Iterate over optional parameter of selection
               if p[:name] == t(:dragnet_helper_param_history_backward_name, default: 'Consideration of history backward in days')
-                params[p[:name]] = 0.1                                          # Show only 1/10 day back in history to speedup tests
+                params[p[:name]] = 1                                            # Show only 1 day back in history to speedup tests
               else
                 params[p[:name]] = p[:default]
               end
