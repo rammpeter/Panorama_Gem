@@ -98,15 +98,16 @@ Solution for such situations is global (not) partitioning of index.'),
                                                         GROUP BY Inst_ID
                                                        ) ash ON ash.Inst_ID = i.Inst_ID
                                       ),
+                    Min_Snap AS (SELECT /*+ NO_MERGE MATERIALIZE */ MIN(Snap_ID) Min_Snap_ID FROM DBA_Hist_Snapshot WHERE Begin_Interval_Time > (SELECT Limit FROM Days_Back)),
                     Ash AS (SELECT /*+ NO_MERGE MATERIALIZE */ SUM(Sample_Cycle) Elapsed_Secs, Instance_Number, SQL_ID, SQL_Plan_Hash_Value, SQL_plan_Line_ID
                             FROM   (
-                                     SELECT /*+ NO_MERGE ORDERED */
+                                     SELECT /*+ NO_MERGE */
                                            10 Sample_Cycle, s.Instance_Number, SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID
                                     FROM   DBA_Hist_Active_Sess_History s
-                                    JOIN   DBA_Hist_Snapshot ss ON ss.DBID = s.DBID AND ss.Instance_Number = s.Instance_Number AND ss.Snap_ID = s.Snap_ID
-                                    CROSS JOIN Days_Back
                                     WHERE  s.Sample_Time < (SELECT Min_Sample_Time FROM Ash_Time a WHERE a.Inst_ID = s.Instance_Number)  /* Nur Daten lesen, die nicht in gv$Active_Session_History vorkommen */
-                                    AND    ss.Begin_Interval_Time > Days_Back.Limit
+                                    AND    s.Sample_Time > (SELECT Limit FROM Days_Back)
+                                    AND    s.Snap_ID > (SELECT Min_Snap_ID FROM Min_Snap)
+                                    AND    s.DBID = (SELECT DBID FROM v$Database)
                                     UNION ALL
                                     SELECT 1 Sample_Cycle, Inst_ID Instance_Number, SQL_ID, SQL_Plan_Hash_Value, SQL_Plan_Line_ID
                                     FROM   gv$Active_Session_History
