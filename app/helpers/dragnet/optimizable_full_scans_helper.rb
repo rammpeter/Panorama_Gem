@@ -158,38 +158,35 @@ ORDER BY h.Elapsed_Secs/p.Cardinality DESC              ",
         {
             :name  => t(:dragnet_helper_73_name, :default=>'Optimizable full table scan operations at long running foreign key checks by deletes'),
             :desc  => t(:dragnet_helper_73_desc, :default=>'Long running foreign key checks at deletes are often caused by missing indexes at referencing table.'),
-            :sql=>  "SELECT /*+ USE_NL(s t) */ t.SQL_Text Full_SQL_Text,
-                             TO_CHAR(SUBSTR(t.SQL_Text, 1, 40)) SQL_Text,
-                             s.*
-                             FROM (
-                                   SELECT /*+ NO_MERGE ORDERED */ s.DBID, s.SQL_ID, s.Instance_number \"Instance\",
-                                           NVL(MIN(Parsing_Schema_Name), '[UNKNOWN]') UserName, /* sollte immer gleich sein in Gruppe */
-                                           SUM(Executions_Delta)                                              Executions,
-                                           SUM(Elapsed_Time_Delta)/1000000                                    \"Elapsed Time (Sec.)\",
-                                           ROUND(SUM(ELAPSED_TIME_Delta/1000000) / DECODE(SUM(EXECUTIONS_Delta), 0, 1, SUM(EXECUTIONS_Delta)),5) \"Elapsed Time (s) per Execute\",
-                                           SUM(CPU_Time_Delta)/1000000                                        \"CPU Time (Sec.)\",
-                                           SUM(Disk_Reads_Delta)                                              \"Disk Reads\",
-                                           ROUND(SUM(DISK_READS_delta) / DECODE(SUM(EXECUTIONS_Delta), 0, 1, SUM(EXECUTIONS_Delta)),2) \"Disk Reads per Execute\",
-                                           ROUND(SUM(Executions_Delta) / DECODE(SUM(Disk_Reads_Delta), 0, 1, SUM(Disk_Reads_Delta)),4) \"Executions per Disk Read\",
-                                           SUM(Buffer_Gets_Delta)                                             \"Buffer Gets\",
-                                           ROUND(SUM(BUFFER_GETS_delta) / DECODE(SUM(EXECUTIONS_Delta), 0, 1, SUM(EXECUTIONS_delta)),2) \"Buffer Gets per Execution\",
-                                           ROUND(SUM(BUFFER_GETS_delta) / DECODE(SUM(Rows_Processed_Delta), 0, 1, SUM(Rows_Processed_Delta)),2) \"Buffer Gets per Row\",
-                                           SUM(Rows_Processed_Delta)                                          \"Rows Processed\",
-                                           SUM(Rows_Processed_Delta) / DECODE(SUM(EXECUTIONS_Delta), 0, 1, SUM(EXECUTIONS_Delta)) \"Rows Processed per Execute\",
-                                           SUM(ClWait_Delta)                                                  \"Cluster Wait Time\",
-                                           MAX(s.Snap_ID) Max_Snap_ID
-                                   FROM dba_hist_snapshot snap,
-                                   DBA_Hist_SQLStat s
-                                   WHERE snap.Snap_ID = s.Snap_ID
-                                   AND snap.DBID = s.DBID
-                                   AND snap.Instance_Number= s.instance_number
-                                   AND snap.Begin_Interval_time >  SYSDATE - ?
-                                   AND s.Parsing_Schema_Name = 'SYS'
-                                   GROUP BY s.DBID, s.SQL_ID, s.Instance_number
-                             ) s
-                       JOIN  DBA_Hist_SQLText t ON t.DBID = s.DBID AND t.SQL_ID = s.SQL_ID
-                       WHERE UPPER(t.SQL_Text) LIKE '%SELECT%ALL_ROWS%COUNT(1)%'
-                       ORDER BY \"Elapsed Time (s) per Execute\" DESC NULLS LAST",
+            :sql=>  "\
+WITH SQLText AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, SQL_ID, SQL_Text FROM DBA_Hist_SQLText WHERE UPPER(SQL_Text) LIKE '%SELECT%ALL_ROWS%COUNT(1)%'),
+     SQLStat AS (SELECT /*+ NO_MERGE MATERIALIZE */ s.DBID, s.SQL_ID, s.Instance_number Instance,
+                        NVL(MIN(Parsing_Schema_Name), '[UNKNOWN]') UserName, /* sollte immer gleich sein in Gruppe */
+                        SUM(Executions_Delta)                                              Executions,
+                        SUM(Elapsed_Time_Delta)/1000000                                    \"Elapsed Time (Sec.)\",
+                        ROUND(SUM(ELAPSED_TIME_Delta/1000000) / DECODE(SUM(EXECUTIONS_Delta), 0, 1, SUM(EXECUTIONS_Delta)),2) \"Elapsed Time (s) per Execute\",
+                        SUM(CPU_Time_Delta)/1000000                                        \"CPU Time (Sec.)\",
+                        SUM(Disk_Reads_Delta)                                              \"Disk Reads\",
+                        ROUND(SUM(DISK_READS_delta) / DECODE(SUM(EXECUTIONS_Delta), 0, 1, SUM(EXECUTIONS_Delta)),2) \"Disk Reads per Execute\",
+                        ROUND(SUM(Executions_Delta) / DECODE(SUM(Disk_Reads_Delta), 0, 1, SUM(Disk_Reads_Delta)),4) \"Executions per Disk Read\",
+                        SUM(Buffer_Gets_Delta)                                             \"Buffer Gets\",
+                        ROUND(SUM(BUFFER_GETS_delta) / DECODE(SUM(EXECUTIONS_Delta), 0, 1, SUM(EXECUTIONS_delta)),2) \"Buffer Gets per Execution\",
+                        ROUND(SUM(BUFFER_GETS_delta) / DECODE(SUM(Rows_Processed_Delta), 0, 1, SUM(Rows_Processed_Delta)),2) \"Buffer Gets per Row\",
+                        SUM(Rows_Processed_Delta)                                          \"Rows Processed\",
+                        ROUND(SUM(Rows_Processed_Delta) / DECODE(SUM(EXECUTIONS_Delta), 0, 1, SUM(EXECUTIONS_Delta)), 2) \"Rows Processed per Execute\",
+                        SUM(ClWait_Delta)                                                  \"Cluster Wait Time\"
+                 FROM   DBA_Hist_Snapshot snap
+                 JOIN   DBA_Hist_SQLStat s ON snap.Snap_ID = s.Snap_ID AND snap.DBID = s.DBID AND snap.Instance_Number= s.instance_number
+                 WHERE  snap.Begin_Interval_time >  SYSDATE - ?
+                 AND    s.Parsing_Schema_Name = 'SYS'
+                 GROUP BY s.DBID, s.SQL_ID, s.Instance_number
+                )
+SELECT t.SQL_Text Full_SQL_Text,
+       s.*
+FROM   SQLstat s
+JOIN  SQLText t ON t.DBID = s.DBID AND t.SQL_ID = s.SQL_ID
+ORDER BY \"Elapsed Time (s) per Execute\" DESC NULLS LAST
+             ",
             :parameter=>[{:name=>t(:dragnet_helper_param_history_backward_name, :default=>'Consideration of history backward in days'), :size=>8, :default=>8, :title=>t(:dragnet_helper_param_history_backward_hint, :default=>'Number of days in history backward from now for consideration') }]
         },
         {
