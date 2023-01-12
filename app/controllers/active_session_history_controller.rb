@@ -454,11 +454,11 @@ class ActiveSessionHistoryController < ApplicationController
     @locks = sql_select_iterator [
       "WITH /* Panorama-Tool Ramm */
        #{ash_select(awr_filter:     "DBID = ? AND Snap_ID BETWEEN ? AND ?",
-                    global_filter:  "     Sample_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')
-                                     AND  Blocking_Session_Status IN ('VALID', 'GLOBAL') /* Session wartend auf Blocking-Session */",
+                    global_filter:  "     Sample_Time BETWEEN TO_DATE(?, '#{sql_datetime_mask(@time_selection_start)}') AND TO_DATE(?, '#{sql_datetime_mask(@time_selection_end)}')",
                     select_rounded_sample_time: true,
-                    with_cte_alias: 'TSSel'
+                    with_cte_alias: 'Ash'
                    )},
+       TSSel AS (SELECT /*+ NO_MERGE MATERIALIZE */ * FROM Ash WHERE Blocking_Session_Status IN ('VALID', 'GLOBAL') /* Session wartend auf Blocking-Session */),
        -- Komplette Menge an Samples erweitert um die Attribute des Root-Blockers
        root_sel as (SELECT  /*+ NO_MERGE MATERIALIZE */
                            CONNECT_BY_ROOT Rounded_Sample_Time      Root_Rounded_Sample_Time,
@@ -544,12 +544,12 @@ class ActiveSessionHistoryController < ApplicationController
                      gr.Root_Blocking_Session, gr.Root_Blocking_Session_SerialNo, gr.Root_Blocking_Session_Status #{', gr.Root_Blocking_Inst_ID' if get_db_version >= '11.2'},
                      MAX(Seconds_in_Wait_Total) Max_Seconds_in_Wait_Total
                      #{if get_db_version >= '11.2'
-                         ", CASE WHEN COUNT(DISTINCT NVL(NVL(NVL(rhh.Event, rhh.Session_State), NVL(rha.Event, rha.Session_State)), 'INACTIVE')) > 1 THEN '< '||COUNT(DISTINCT NVL(NVL(NVL(rhh.Event, rhh.Session_State), NVL(rha.Event, rha.Session_State)), 'INACTIVE')) ||' >' ELSE MIN(NVL(NVL(NVL(rhh.Event, rhh.Session_State), NVL(rha.Event, rha.Session_State)), 'INACTIVE')) END Root_Blocking_Event
-                          , CASE WHEN COUNT(DISTINCT NVL(rhh.Module,  rha.Module )) > 1 THEN '< '||COUNT(DISTINCT NVL(rhh.Module,  rha.Module )) ||' >' ELSE MIN(NVL(rhh.Module,  rha.Module )) END  Root_Blocking_Module
-                          , CASE WHEN COUNT(DISTINCT NVL(rhh.Action,  rha.Action )) > 1 THEN '< '||COUNT(DISTINCT NVL(rhh.Action,  rha.Action )) ||' >' ELSE MIN(NVL(rhh.Action,  rha.Action )) END  Root_Blocking_Action
-                          , CASE WHEN COUNT(DISTINCT NVL(rhh.Program, rha.Program)) > 1 THEN '< '||COUNT(DISTINCT NVL(rhh.Program, rha.Program)) ||' >' ELSE MIN(NVL(rhh.Program, rha.Program)) END  Root_Blocking_Program
-                          , CASE WHEN COUNT(DISTINCT NVL(rhh.SQL_ID,  rha.SQL_ID )) > 1 THEN '< '||COUNT(DISTINCT NVL(rhh.SQL_ID,  rha.SQL_ID )) ||' >' ELSE MIN(NVL(rhh.SQL_ID,  rha.SQL_ID )) END  Root_Blocking_SQL_ID
-                          , MAX(NVL(rhh.User_ID, rha.User_ID)) Root_Blocking_User_ID /* kann sich eigentlich nicht ändern innerhalb Session */
+                         ", CASE WHEN COUNT(DISTINCT NVL(NVL(rh.Event, rh.Session_State), 'INACTIVE')) > 1 THEN '< '||COUNT(DISTINCT NVL(NVL(rh.Event, rh.Session_State), 'INACTIVE')) ||' >' ELSE MIN(NVL(NVL(rh.Event, rh.Session_State), 'INACTIVE')) END Root_Blocking_Event
+                          , CASE WHEN COUNT(DISTINCT rh.Module)  > 1 THEN '< '||COUNT(DISTINCT rh.Module)  ||' >' ELSE MIN(rh.Module)  END  Root_Blocking_Module
+                          , CASE WHEN COUNT(DISTINCT rh.Action)  > 1 THEN '< '||COUNT(DISTINCT rh.Action)  ||' >' ELSE MIN(rh.Action)  END  Root_Blocking_Action
+                          , CASE WHEN COUNT(DISTINCT rh.Program) > 1 THEN '< '||COUNT(DISTINCT rh.Program) ||' >' ELSE MIN(rh.Program) END  Root_Blocking_Program
+                          , CASE WHEN COUNT(DISTINCT rh.SQL_ID)  > 1 THEN '< '||COUNT(DISTINCT rh.SQL_ID)  ||' >' ELSE MIN(rh.SQL_ID)  END  Root_Blocking_SQL_ID
+                          , MAX(rh.User_ID) Root_Blocking_User_ID /* kann sich eigentlich nicht ändern innerhalb Session */
                          "
                        end
                      }
@@ -563,14 +563,7 @@ class ActiveSessionHistoryController < ApplicationController
                     ) gr
                     CROSS JOIN (SELECT ? DBID FROM DUAL) db
                     #{if get_db_version >= '11.2'
-                   "LEFT OUTER JOIN DBA_Hist_Active_Sess_History rhh ON  rhh.DBID                       = db.DBID
-                                                                      AND rhh.Snap_ID                   = gr.Root_Snap_ID  /* Snap-ID innerhalb von RAC-Instanzen ist identisch, diese koennet von anderer Instanz stammen */
-                                                                      AND rhh.Instance_Number           = gr.Root_Blocking_Inst_ID
-                                                                      AND #{rounded_sample_time_sql(10, 'rhh.Sample_Time')} = gr.Root_Rounded_Sample_Time /* auf 10 Sekunden gerundete Zeit */
-                                                                      AND rhh.Session_ID                = gr.Root_Blocking_Session
-                    LEFT OUTER JOIN gv$Active_Session_History rha     ON  rha.Inst_ID                   = gr.Root_Blocking_Inst_ID
-                                                                      AND #{rounded_sample_time_sql(1, 'rha.Sample_Time')} = gr.Root_Rounded_Sample_Time   /* auf eine Sekunde gerundete Zeit */
-                                                                      AND rha.Session_ID                = gr.Root_Blocking_Session
+                   "LEFT OUTER JOIN Ash rh ON rh.Instance_Number = gr.Root_Blocking_Inst_ID AND rh.Rounded_Sample_Time = gr.Root_Rounded_Sample_Time AND rh.Session_ID = gr.Root_Blocking_Session
                     WHERE (NOT EXISTS (SELECT /*+ HASH_AJ) */ 1 FROM TSSel i    /* Nur die Knoten ohne Parent-Blocker darstellen */
                                         WHERE  i.Rounded_Sample_Time  = gr.Root_Rounded_Sample_Time
                                         AND    i.Session_ID           = gr.Root_Blocking_Session
