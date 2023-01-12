@@ -213,7 +213,8 @@ Listed functions should be checked if they can be expanded by pragma PARALLEL_EN
             :desc  => t(:dragnet_helper_82_desc, :default=>"Parts of parallel processed statements my be executed serially and results of these subprocesses are parallelized by broadcast.
 For small data structures it is often wanted, for large data structures it may be due to missing PARALLEL-hints.
 This Selection lists all statements with 'PARALLEL_FROM_SERIAL'-processing after full-scan on objects as candidates for forgotten parallelising."),
-            :sql=>  "SELECT /* DB-Tools Ramm PARALLEL_FROM_SERIAL in PQ */ * FROM (
+            :sql=>  "WITH SQL_Plan AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, SQL_ID, Operation, Options, Object_Owner, Object_Name, Plan_Hash_Value, Other_Tag, Timestamp, ID, Parent_ID FROM DBA_Hist_SQL_PLan)
+                     SELECT /* DB-Tools Ramm PARALLEL_FROM_SERIAL in PQ */ * FROM (
                       SELECT /*+ NO_MERGE */ a.*, (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=a.DBID AND t.SQL_ID=a.SQL_ID AND RowNum < 2) SQLText,
                              CASE
                              WHEN Operation='TABLE ACCESS' THEN (SELECT Num_Rows FROM DBA_Tables t WHERE t.Owner=Object_Owner AND t.Table_Name=Object_Name)
@@ -226,7 +227,7 @@ This Selection lists all statements with 'PARALLEL_FROM_SERIAL'-processing after
                               SUM(ss.Executions_Delta) Executions--,
                       --        (SELECT SQL_Text FROM DBA_Hist_SQLText t WHERE t.DBID=p.DBID AND t.SQL_ID=p.SQL_ID AND RowNum < 2) SQLText
                       FROM   (
-                              SELECT /*+ NO_MERGE MATERIALIZE FIRST_ROWS ORDERED USE_NL(p1 p2) PARALLEL(p,4)  */ p.DBID, p.SQL_ID, p.Plan_Hash_Value,
+                              SELECT /*+ NO_MERGE MATERIALIZE */ p.DBID, p.SQL_ID, p.Plan_Hash_Value,
                                      CASE WHEN p1.Options LIKE '%FULL%' THEN p1.Operation ELSE p2.Operation END Operation,
                                      CASE WHEN p1.Options LIKE '%FULL%' THEN p1.Options ELSE p2.Options END Options,
                                      CASE WHEN p1.Options LIKE '%FULL%' THEN p1.Object_Owner ELSE p2.Object_Owner END Object_Owner,
@@ -235,15 +236,15 @@ This Selection lists all statements with 'PARALLEL_FROM_SERIAL'-processing after
                                       SELECT  DBID, SQL_ID,
                                               MAX(p.Plan_Hash_Value) KEEP (DENSE_RANK LAST ORDER BY p.Timestamp) Plan_Hash_Value,
                                               MAX(p.ID) KEEP (DENSE_RANK LAST ORDER BY p.Timestamp) ID
-                                      FROM DBA_Hist_SQL_Plan p
+                                      FROM SQL_Plan p
                                       WHERE   p.Other_Tag = 'PARALLEL_FROM_SERIAL'
                                       GROUP BY DBID, SQL_ID
                                    ) p
-                              LEFT OUTER JOIN DBA_Hist_SQL_Plan p1 ON (    p1.DBID=p.DBID
+                              LEFT OUTER JOIN SQL_Plan p1 ON (    p1.DBID=p.DBID
                                                                        AND p1.SQL_ID=p.SQL_ID
                                                                        AND p1.Plan_Hash_Value=p.Plan_Hash_Value
                                                                        AND p1.Parent_ID = p.ID)
-                              LEFT OUTER JOIN DBA_Hist_SQL_Plan p2 ON (    p2.DBID=p1.DBID
+                              LEFT OUTER JOIN SQL_Plan p2 ON (    p2.DBID=p1.DBID
                                                                        AND p2.SQL_ID=p1.SQL_ID
                                                                        AND p2.Plan_Hash_Value=p1.Plan_Hash_Value
                                                                        AND p2.Parent_ID = p1.ID)

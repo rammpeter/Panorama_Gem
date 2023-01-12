@@ -12,8 +12,9 @@ module Dragnet::UnnecessaryHighExecutionFrequencyHelper
 - excessive read access on many DB-blocks (may be critical even even if these blocks are widely spreaded in cache and are not hot blocks)
 For both constellations problematic statements can be identified by number of block access between two AWR-snapshots.
 '),
-            :sql=> "SELECT /* DB-Tools Ramm CacheBuffer */ * FROM (
-                      SELECT /*+ USE_NL(s t) */ s.*, SUBSTR(t.SQL_Text,1,600) \"SQL-Text\"
+            :sql=> "WITH SQLText AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, SQL_ID, SQL_Text FROM DBA_Hist_SQLText)
+                    SELECT /* DB-Tools Ramm CacheBuffer */ * FROM (
+                      SELECT s.*, SUBSTR(t.SQL_Text,1,600) \"SQL-Text\"
                       FROM (
                                SELECT /*+ NO_MERGE ORDERED */ s.SQL_ID, s.Instance_number \"Instance\",
                                       NVL(MIN(Parsing_Schema_Name), '[UNKNOWN]') \"UserName\", /* sollte immer gleich sein in Gruppe */
@@ -41,16 +42,13 @@ For both constellations problematic statements can be identified by number of b
                                       SUM(CCWait_Delta)/1000000                                      \"Concurrency Wait-Time (Sec)\",
                                       SUM(PLSExec_Time_Delta)/1000000                                \"PL/SQL Wait-Time (Sec)\",
                                       s.DBID
-                               FROM   dba_hist_snapshot snap,
-                                      DBA_Hist_SQLStat s
-                               WHERE  snap.Snap_ID = s.Snap_ID
-                               AND    snap.DBID                = s.DBID
-                               AND    snap.Instance_Number     = s.instance_number
-                               AND    snap.Begin_Interval_time > SYSDATE - ?
+                               FROM   dba_hist_snapshot snap
+                               JOIN   DBA_Hist_SQLStat s ON snap.Snap_ID = s.Snap_ID AND snap.DBID = s.DBID AND snap.Instance_Number = s.instance_number
+                               WHERE  snap.Begin_Interval_time > SYSDATE - ?
                                GROUP BY s.DBID, s.SQL_ID, s.Instance_number
                                HAVING MAX(Buffer_Gets_Delta) IS NOT NULL
-                               ) s,
-                               DBA_Hist_SQLText t
+                               ) s
+                               JOIN SQLText t ON t.DBID = s.DBID AND t.SQL_ID = s.SQL_ID
                       WHERE  t.DBID   = s.DBID
                       AND    t.SQL_ID = s.SQL_ID
                       ORDER BY \"max. BufferGets betw.snapshots\" DESC NULLS LAST

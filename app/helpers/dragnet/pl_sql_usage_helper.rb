@@ -190,7 +190,8 @@ WITH Procs AS  (SELECT /*+ NO_MERGE MATERIALIZE */ p.Owner, p.Object_Name
                                                                  WHERE  (Referenced_Owner != 'SYS' OR Referenced_Name != 'STANDARD')
                                                                 )
                ),
-     SQLs as (SELECT /*+ NO_MERGE MATERIALIZE */ Inst_ID, SQL_ID, UPPER(SQL_Text) SQL_Text FROM GV$SQLTEXT_WITH_NEWLINES)
+     SQLs as (SELECT /*+ NO_MERGE MATERIALIZE */ Inst_ID, SQL_ID, UPPER(SQL_Text) SQL_Text FROM GV$SQLTEXT_WITH_NEWLINES),
+     SQL_A AS (SELECT /*+ NO_MERGE MATERIALIZE */ Inst_ID, SQL_ID, Elapsed_Time, Executions FROM gv$SQLArea)
 SELECT p.Owner, p.Object_Name, p.Inst_ID,
        ROUND(SUM(a.Elapsed_Time)/1000000) \"Elapsed time (secs) in SQL\",
        SUM(a.Executions)                  \"No. of executions in SQL\",
@@ -201,7 +202,7 @@ FROM   (SELECT /*+ NO_MERGE */ p.Owner, p.Object_Name, s.Inst_ID, s.SQL_ID
         LEFT OUTER JOIN   SQLs s ON s.SQL_Text LIKE '%'||p.Object_Name||'%'
         GROUP BY p.Owner, p.Object_Name, s.Inst_ID, s.SQL_ID
        ) p
-LEFT OUTER JOIN   gv$SQLArea a ON a.Inst_ID = p.Inst_ID AND a.SQL_ID = p.SQL_ID
+LEFT OUTER JOIN SQL_A a ON a.Inst_ID = p.Inst_ID AND a.SQL_ID = p.SQL_ID
 GROUP BY p.Owner, p.Object_Name, p.Inst_ID
 ORDER BY 4 DESC NULLS LAST
            ",

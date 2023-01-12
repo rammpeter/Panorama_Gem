@@ -274,9 +274,12 @@ Results are from DBA_Hist_SQL_Plan'),
                       FROM   (
                               SELECT /*+ LEADING(p) */ s.Instance_Number, p.SQL_ID, p.Plan_Hash_Value, p.Operation, p.Options, p.Object_Owner, p.Object_Name, p.ID Line_ID, p.Parent_ID, p.Cartesian_Line_ID,
                                      SUM(s.Executions_Delta) Executions, ROUND(SUM(s.Elapsed_Time_Delta/1000000), 1) Elapsed_Time_Secs
-                              FROM   (WITH plans AS (SELECT /*+ NO_MERGE MATERIALIZE */ o.*
-                                                     FROM   (SELECT /*+ PARALLEL(i,2) */ DISTINCT DBID, SQL_ID, Plan_Hash_Value FROM DBA_Hist_SQL_Plan i WHERE options = 'CARTESIAN') i
-                                                     JOIN   DBA_Hist_SQL_Plan o ON o.DBID=i.DBID AND o.SQL_ID=I.SQL_ID AND o.Plan_Hash_Value = i.Plan_Hash_Value
+                              FROM   (
+                                      WITH  SQL_Plan AS (SELECT /*+ NO_MERGE MATERIALIZE */ DBID, SQL_ID, Plan_Hash_Value, Operation, Options, Object_Owner, Object_Name, ID, Parent_ID FROM DBA_Hist_SQL_Plan),
+                                            Cartesian AS (SELECT /*+ NO_MERGE MATERIALIZE */ DISTINCT DBID, SQL_ID, Plan_Hash_Value FROM SQL_Plan WHERE options = 'CARTESIAN'),
+                                            plans AS (SELECT /*+ NO_MERGE MATERIALIZE */ o.*
+                                                     FROM   Cartesian  i
+                                                     JOIN   SQL_Plan o ON o.DBID=i.DBID AND o.SQL_ID=I.SQL_ID AND o.Plan_Hash_Value = i.Plan_Hash_Value
                                                     )
                                       SELECT /*+ NO_MERGE */ Level, plans.*, CONNECT_BY_ROOT ID Cartesian_Line_ID
                                       FROM   plans

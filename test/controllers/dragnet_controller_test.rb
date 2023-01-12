@@ -34,14 +34,18 @@ class DragnetControllerTest < ActionController::TestCase
       if entry['children']
         execute_tree(entry['children'])        # Test subnode's entries
       else
-        prepare_panorama_sampler_thread_db_config                         # Ensure that PanoramaConnection has valid config even outside controller action
-        full_entry = extract_entry_by_entry_id(entry['id'])                 # Get SQL from id
+        prepare_panorama_sampler_thread_db_config                               # Ensure that PanoramaConnection has valid config even outside controller action
+        full_entry = extract_entry_by_entry_id(entry['id'])                     # Get SQL from id
         unless full_entry[:exclude_from_test]                                   # Exclude selections from test which are not executable
           params = {:format=>:html, :dragnet_hidden_entry_id=>entry['id'], :update_area=>:hugo}
 
           if full_entry[:parameter]
-            full_entry[:parameter].each do |p|                                # Iterate over optional parameter of selection
-              params[p[:name]] = p[:default]
+            full_entry[:parameter].each do |p|                                  # Iterate over optional parameter of selection
+              if p[:name] == t(:dragnet_helper_param_history_backward_name, default: 'Consideration of history backward in days')
+                params[p[:name]] = 0.1                                          # Show only 1/10 day back in history to speedup tests
+              else
+                params[p[:name]] = p[:default]
+              end
             end
           end
 
