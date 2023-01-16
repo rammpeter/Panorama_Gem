@@ -2121,7 +2121,41 @@ class DbaSchemaController < ApplicationController
 
     if get_db_version >= '11.1'
       @extensions     = sql_select_all ["SELECT * FROM DBA_Stat_Extensions WHERE Owner = ? AND Table_Name = ?", @owner, @table_name]
-      @tab_stat_prefs = sql_select_all ["SELECT * FROM DBA_Tab_Stat_Prefs  WHERE Owner = ? AND Table_Name = ?", @owner, @table_name]
+
+      @prefs = sql_select_all ["\
+        WITH prefs AS (SELECT 'APPROXIMATE_NDV_ALGORITHM' Name, 'REPEAT OR HYPERLOGLOG' Default_Value FROM DUAL UNION ALL
+                       SELECT 'AUTO_STAT_EXTENSIONS',           'OFF'                                 FROM Dual UNION ALL
+                       SELECT 'AUTO_TASK_STATUS',               'OFF'                                 FROM Dual UNION ALL
+                       SELECT 'AUTO_TASK_MAX_RUN_TIME',         '3600'                                FROM Dual UNION ALL
+                       SELECT 'AUTO_TASK_INTERVAL',             '900'                                 FROM Dual UNION ALL
+                       SELECT 'AUTOSTATS_TARGET',               'AUTO'                                FROM Dual UNION ALL
+                       SELECT 'CASCADE',                        'DBMS_STATS.AUTO_CASCADE'             FROM Dual UNION ALL
+                       SELECT 'CONCURRENT',                     'OFF'                                 FROM Dual UNION ALL
+                       SELECT 'DEGREE',                         'NULL'                                FROM Dual UNION ALL
+                       SELECT 'ESTIMATE_PERCENT',               'DBMS_STATS.AUTO_SAMPLE_SIZE'         FROM Dual UNION ALL
+                       SELECT 'GLOBAL_TEMP_TABLE_STATS',        'SESSION'                             FROM Dual UNION ALL
+                       SELECT 'GRANULARITY',                    'AUTO'                                FROM Dual UNION ALL
+                       SELECT 'INCREMENTAL',                    'FALSE'                               FROM Dual UNION ALL
+                       SELECT 'INCREMENTAL_LEVEL',              'PARTITION'                           FROM Dual UNION ALL
+                       SELECT 'INCREMENTAL_STALENESS',          'ALLOW_MIXED_FORMAT'                  FROM Dual UNION ALL
+                       SELECT 'METHOD_OPT',                     'FOR ALL COLUMNS SIZE AUTO'           FROM Dual UNION ALL
+                       SELECT 'NO_INVALIDATE',                  'DBMS_STATS.AUTO_INVALIDATE'          FROM Dual UNION ALL
+                       SELECT 'OPTIONS',                        'GATHER'                              FROM Dual UNION ALL
+                       SELECT 'PREFERENCE_OVERRIDES_PARAMETER', 'FALSE'                               FROM Dual UNION ALL
+                       SELECT 'PUBLISH',                        'TRUE'                                FROM Dual UNION ALL
+                       SELECT 'STALE_PERCENT',                  '10'                                  FROM Dual UNION ALL
+                       SELECT 'STAT_CATEGORY',                  'OBJECT_STATS, REALTIME_STATS'        FROM Dual UNION ALL
+                       SELECT 'TABLE_CACHED_BLOCKS',            '1'                                   FROM Dual UNION ALL
+                       SELECT 'WAIT_TIME_TO_UPDATE_STATS',      '15'                                  FROM DUAL
+                      )
+        SELECT *
+        FROM   (
+                SELECT p.Name, p.Default_Value, DBMS_Stats.Get_Prefs(p.Name, ?, ?) Value, DECODE(tp.Preference_Name, NULL, 'Y', 'N') Global
+                FROM   prefs p
+                LEFT OUTER JOIN DBA_Tab_Stat_Prefs tp ON tp.Owner = ? AND tp.Table_Name = ? AND tp.Preference_Name = p.Name
+               )
+        WHERE  Value != Default_Value
+      ", @owner, @table_name, @owner, @table_name]
     end
 
     render_partial

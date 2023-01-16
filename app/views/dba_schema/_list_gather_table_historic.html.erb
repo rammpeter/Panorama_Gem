@@ -26,20 +26,18 @@
 
 <%= gen_slickgrid(@operations, column_options, {
     :caption => "GATHER_TABLE_STATS-operations for #{@owner}.#{@table_name}#{" (#{@partition_name})" if @partition_name} from sys.WRI$_OPTSTAT_OPR",
-    :max_height => 250
+    :max_height => 250, show_pin_icon: 3
 })
 %>
 
 <%
-   column_options =
-       [
-           {:caption=> 'Sub-object name',     :data=>proc{|rec| rec.subobject_name},               :title=> 'Name of subobject if partitioned'},
-           {:caption=> 'Analyze time',        :data=>proc{|rec| localeDateTime(rec.savtime) },     :title=> 'Time of analyze operation'},
-           {:caption=> 'Row count',           :data=>proc{|rec| fn(rec.rowcnt)},                   :title=> 'Number of rows at analyze time', :align=>:right},
-           {:caption=> 'Block count',         :data=>proc{|rec| fn(rec.blkcnt)},                   :title=> 'Number of blocks at analyze time', :align=>:right},
-           {:caption=> 'Avg. row len',        :data=>proc{|rec| fn(rec.avgrln)},                   :title=> 'Average row len at analyze time', :align=>:right},
-           {:caption=> 'Prev. Analyze time',  :data=>proc{|rec| localeDateTime(rec.analyzetime) }, :title=> 'Time of previous analyze operation'},
-       ]
+   column_options = []
+   column_options << {:caption=> 'Sub-object name',     :data=>proc{|rec| rec.subobject_name},               :title=> 'Name of subobject if partitioned'} if @partition_name
+   column_options << {:caption=> 'Analyze time',        :data=>proc{|rec| localeDateTime(rec.savtime) },     :title=> 'Time of analyze operation'}
+   column_options << {:caption=> 'Row count',           :data=>proc{|rec| fn(rec.rowcnt)},                   :title=> 'Number of rows at analyze time', :align=>:right}
+   column_options << {:caption=> 'Block count',         :data=>proc{|rec| fn(rec.blkcnt)},                   :title=> 'Number of blocks at analyze time', :align=>:right}
+   column_options << {:caption=> 'Avg. row len',        :data=>proc{|rec| fn(rec.avgrln)},                   :title=> 'Average row len at analyze time', :align=>:right}
+   column_options << {:caption=> 'Prev. Analyze time',  :data=>proc{|rec| localeDateTime(rec.analyzetime) }, :title=> 'Time of previous analyze operation'}
 
 %>
 
@@ -47,7 +45,7 @@
   <div class="flex-row-element">
     <%= gen_slickgrid(@tab_history, column_options, {
       :caption => "GATHER_TABLE_STATS-operations for #{@owner}.#{@table_name}#{" (#{@partition_name})" if @partition_name} from sys.WRI$_OPTSTAT_TAB_HISTORY",
-      :max_height => 250, width: :auto
+      :max_height => 250, width: :auto, show_pin_icon: 3
     })
     %>
   </div>
@@ -67,7 +65,7 @@
     <div class="flex-row-element">
       <%= gen_slickgrid(@extensions, column_options, {
           :caption => "Extended statisticts for #{@owner}.#{@table_name} from DBA_Stat_Extensions",
-          :max_height => 250, width: :auto
+          :max_height => 250, width: :auto, show_pin_icon: 3
       })
       %>
     </div>
@@ -75,15 +73,16 @@
     <%
       column_options =
         [
-          {:caption=> 'Preference name',       :data=>proc{|rec| rec.preference_name},              :title=> 'Name of the preference'},
-          {:caption=> 'Preference value',      :data=>proc{|rec| rec.preference_value},             :title=> 'Value of the preference'},
+          {:caption=> 'Preference name',       :data=>proc{|rec| rec.name},              :title=> 'Name of the preference'},
+          {:caption=> 'Preference value',      :data=>proc{|rec| rec.value},             :title=> 'Value of the preference'},
+          {:caption=> 'Global',                :data=>proc{|rec| rec.global},            :title=> "Is preference global (Y) or local (N)\n\nGlobal preferences can be found in SYS.OPTSTAT_HIST_CONTROL$\nLocal prefences can be found in DBA_TAB_STAT_PREFS"},
         ]
     %>
 
     <div class="flex-row-element">
-      <%= gen_slickgrid(@tab_stat_prefs, column_options, {
-        :caption => "Preferences for #{@owner}.#{@table_name} from DBA_Tab_Stat_Prefs",
-        :max_height => 250, width: :auto
+      <%= gen_slickgrid(@prefs, column_options, {
+        :caption => "Preferences != Default for #{@owner}.#{@table_name} from DBMS_STATS.Get_Prefs",
+        :max_height => 250, width: :auto, show_pin_icon: 3
       })
       %>
     </div>
