@@ -25,7 +25,7 @@ Aims to issues that are inadequately analyzed and presented by other existing to
   # Alternative instead of complete rails including actioncable etc., prev. version was 6.0.4
   # rails_version = "7.0.0" # requires ruby >= 2.7.0 but jRuby 9.3.2.0 is compatible with ruby 2.6 only
   # see: https://rubygems.org/gems/rails/versions
-  rails_version = "6.1.7"
+  rails_version = "6.1.7.1"
   # rails_version = "7.0.4"
   s.add_dependency  "activerecord",   rails_version
   s.add_dependency  "activemodel",    rails_version
