@@ -278,7 +278,7 @@ Overallocation of PQ servers may result in serial processing og other SQLs estim
                               WHERE  QC_Session_ID IS NOT NULL
                               AND    Sample_Time > SYSDATE - ?
                               GROUP BY Instance_Number, QC_Instance_ID, qc_session_id, QC_Session_Serial#, Sample_ID, SQL_ID
-                              HAVING count(*) > 16
+                              HAVING count(*) > ?
                              ) g
                       LEFT OUTER JOIN DBA_Users u ON U.USER_ID = g.User_ID
                       GROUP BY Instance_Number, SQL_ID, u.UserName
