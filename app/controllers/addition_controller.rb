@@ -1003,10 +1003,11 @@ COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) #{column_alias}_Cnt"
     without_escaped.gsub(/'.*'/m, '')
   end
 
-  # @return Array
+  # @param [String] sql The statement
+  # @return Array with Hash { alias, value, type}
   def find_binds_in_sql(sql)
     remaining = remove_string_literals(remove_comments_from_sql(sql))
-    result = {}
+    result = []
     stored_binds = read_from_client_info_store(:bind_aliases) || {}
     while remaining[':'] do
       remaining = remaining[remaining.index(':')+1..]
@@ -1015,7 +1016,8 @@ COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) #{column_alias}_Cnt"
         end_pos = remaining.index(end_char) if remaining.index(end_char) && remaining.index(end_char) < end_pos
       end
       bind_alias = remaining[0, end_pos]
-      result[bind_alias] =  {
+      result << {
+        alias: bind_alias,
         value: stored_binds[bind_alias] ? stored_binds[bind_alias][:value] : nil,
         type:  stored_binds[bind_alias] ? stored_binds[bind_alias][:type]  : 'Content dependent'
       }
@@ -1024,46 +1026,59 @@ COUNT(DISTINCT NVL(#{column_name}, #{local_replace})) #{column_alias}_Cnt"
   end
 
   # Check if all expected aliases are in defined array
-  # @param expected Hash
-  # @param defined Hash
+  # @param [Array] expected Array of hashes with { alias, value, type}
+  # @param [Array] defined
+  # @return [TrueClass, FalseClass]
   def all_binds_defined?(expected, defined)
-    expected.each do |key, _value|
-      return false unless defined.has_key?(key)
+    expected.each_index do |i|
+      return false if i > defined.length-1 || expected[i][:alias] != defined[i][:alias]
     end
     true
   end
 
+  # Store used bind values
+  # @param [Array] binds
   def remember_binds_for_next_usage(binds)
     stored_binds = read_from_client_info_store(:bind_aliases)
     stored_binds = {} if stored_binds.nil?
-    binds.each do |key, value|
-      stored_binds[key] = value
+    binds.each do |bind|
+      stored_binds[bind[:alias]] = bind
     end
     write_to_client_info_store(:bind_aliases, stored_binds)
   end
 
   # read the bind values from params into Hash
-  # @param expected_binds Hash
+  # @param [Array] expected_binds Array of hashes with { alias, value, type}
   # @param param Request parameter
+  # @return [Array] { alias, value, type}
   def binds_from_params(expected_binds, params)
-    result = {}
-    expected_binds.each do |key, value|
-      if params["alias_#{key}"]
-        result[key] = {
-          value: params["alias_#{key}"],
-          type:  params["type_#{key}"]
+    result = []
+    expected_binds.each do |expb|
+      if params["alias_#{expb[:alias]}"]
+        result << {
+          alias: expb[:alias],
+          value: params["alias_#{expb[:alias]}"],
+          type:  params["type_#{expb[:alias]}"]
         }
       end
     end
     result
   end
 
+  # translate binds to AR structure
+  # @param [Array] binds
   def ar_binds_from_binds(binds)
     ar_binds = []
-    binds.each do |key, value|
-      typed_value = Float(value[:value]) rescue value[:value]
-      raise "Unsupported type '#{value[:type]}'" unless worksheet_bind_types.has_key?(value[:type])
-      ar_binds << ActiveRecord::Relation::QueryAttribute.new(":#{key}", typed_value, worksheet_bind_types[value[:type]][:type_class].new)
+    binds.each do |bind|
+      typed_value = case bind[:type]
+                    when 'Content dependent' then Float(bind[:value]) rescue bind[:value]
+                    when 'String'     then bind[:value]
+                    when 'Integer'    then Integer(bind[:value])
+                    when 'Float'      then Float(bind[:value])
+                    when 'Date/Time'  then DateTime.parse(bind[:value])
+                    else raise "Unsupported type '#{bind[:type]}'"
+                    end
+      ar_binds << ActiveRecord::Relation::QueryAttribute.new(":#{bind[:alias]}", typed_value, worksheet_bind_types[bind[:type]][:type_class].new)
     end
     ar_binds
   end

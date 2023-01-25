@@ -171,11 +171,11 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
     post '/addition/exec_worksheet_sql', params: {format: :html, sql_statement: 'SELECT SYSDATE FROM DUAL WHERE 1=:A1', update_area: :hugo }
     assert_response :success
 
-    # Should execute with for binds
-    # Type 'String' raises ORA-01722: Ungültige Zahl in this case
-    worksheet_bind_types.select{|key, _value| key != 'String'}.each do |key, _value|
-      post '/addition/exec_worksheet_sql', params: {format: :html, sql_statement: "SELECT /* #{key} */ SYSDATE FROM DUAL WHERE :A1 = 1", alias_A1: 2, type_A1: key, update_area: :hugo }
+    # Should execute with values for binds
+    worksheet_bind_types.each do |key, value|
+      post '/addition/exec_worksheet_sql', params: {format: :html, sql_statement: "SELECT /* #{key} */ 'VALUE_MATCHED '||SYSDATE result FROM DUAL WHERE #{value[:test_sql_value]} = :A1", alias_A1: value[:test_bind_value], type_A1: key, update_area: :hugo }
       assert_response :success
+      assert @response.body['VALUE_MATCHED'] != nil, "Response should contain one result line from SQL with matching filter condition"
     end
   end
 
@@ -187,10 +187,9 @@ class AdditionControllerTest < ActionDispatch::IntegrationTest
     post '/addition/explain_worksheet_sql', params: {format: :html, sql_statement: 'SELECT SYSDATE FROM DUAL WHERE 1=:A1', update_area: :hugo }
     assert_response :success
 
-    # Should explain with for binds
-    # Type 'String' raises ORA-01722: Ungültige Zahl in this case
-    worksheet_bind_types.select{|key, _value| key != 'String'}.each do |key, _value|
-      post '/addition/explain_worksheet_sql', params: {format: :html, sql_statement: "SELECT /* #{key} */ SYSDATE FROM DUAL WHERE :A1 = 1", alias_A1: 2, type_A1: key, update_area: :hugo }
+    # Should explain with values for binds
+    worksheet_bind_types.each do |key, value|
+      post '/addition/explain_worksheet_sql', params: {format: :html, sql_statement: "SELECT /* #{key} */ SYSDATE FROM DUAL WHERE #{value[:test_sql_value]} = :A1", alias_A1: value[:test_bind_value], type_A1: key, update_area: :hugo }
       assert_response :success
     end
   end

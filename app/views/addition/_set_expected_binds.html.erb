@@ -17,7 +17,15 @@
         <th>Value</th>
         <th>Type</th>
       </tr>
-      <% @expected_binds.each do |key, value| %>
+      <%
+        # Remove duplicate aliases from expected binds
+        bind_data = {}
+        @expected_binds.each do |expb|
+          bind_data[expb[:alias]] = expb
+        end
+
+      %>
+      <% bind_data.each do |key, value| %>
         <tr>
           <td>:<%= key %></td>
           <td><%= text_field_tag("alias_#{key}",value[:value]) %></td>
