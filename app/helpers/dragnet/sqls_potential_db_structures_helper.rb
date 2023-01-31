@@ -160,29 +160,46 @@ WITH Tab_Modifications AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table
                            FROM   DBA_Tab_Modifications
                            WHERE  Table_Owner NOT IN (#{system_schema_subselect})
                            AND    Updates = 0
+                          ),
+     Tables AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, PCT_Free, Num_Rows, Avg_Row_Len, Last_Analyzed, Ini_Trans, Max_Trans
+                FROM   DBA_Tables
+                WHERE  Owner NOT IN (#{system_schema_subselect})
+                AND    Num_Rows > 0
+               ),
+     Tab_Partitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, Partition_Name, PCT_Free, Num_Rows, Avg_Row_Len, Last_Analyzed, Ini_Trans, Max_Trans
+                        FROM   DBA_Tab_Partitions
+                        WHERE  Table_Owner NOT IN (#{system_schema_subselect})
+                        AND    Num_Rows > 0
+                       ),
+     Tab_SubPartitions AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, Partition_Name, SubPartition_Name, PCT_Free, Num_Rows, Avg_Row_Len, Last_Analyzed, Ini_Trans, Max_Trans
+                           FROM   DBA_Tab_SubPartitions
+                           WHERE  Table_Owner NOT IN (#{system_schema_subselect})
+                           AND    Num_Rows > 0
                           )
 SELECT *
 FROM   (
-        SELECT t.Owner, t.Table_Name, NULL Partition_Name, NULL SubPartition_Name, t.PCT_Free, t.Num_Rows, t.Avg_Row_Len, t.Last_Analyzed,
+        SELECT t.Owner, t.Table_Name, NULL Partitions, t.PCT_Free, t.Num_Rows, t.Avg_Row_Len, t.Last_Analyzed,
                ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024), 2) Size_MB_Netto,
                ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024)*t.PCT_Free/100, 2) Size_MB_For_PctFree, t.INI_Trans, t.Max_Trans,
                m.Inserts, m.Updates, m.Deletes, m.Truncated, m.Drop_Segments, m.Last_DML_Timestamp
-        FROM   DBA_Tables t
+        FROM   Tables t
         JOIN   Tab_Modifications m ON m.Table_Owner = t.Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name IS NULL AND m.SubPartition_Name IS NULL
         UNION ALL
-        SELECT t.Table_Owner, t.Table_Name, t.Partition_Name, NULL SubPartition_Name,  t.PCT_Free, t.Num_Rows, t.Avg_Row_Len, t.Last_Analyzed,
-               ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024), 2) Size_MB_Netto,
-               ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024)*t.PCT_Free/100, 2) Size_MB_For_PctFree, t.INI_Trans, t.Max_Trans,
-               m.Inserts, m.Updates, m.Deletes, m.Truncated, m.Drop_Segments, m.Last_DML_Timestamp
-        FROM   DBA_Tab_Partitions t
+        SELECT t.Table_Owner, t.Table_Name, COUNT(*) Partitions, t.PCT_Free, SUM(t.Num_Rows) Num_Rows, ROUND(SUM(t.Avg_Row_Len*t.Num_Rows)/SUM(t.Num_Rows)) Avg_Row_Len , MAX(t.Last_Analyzed) Last_Analyzed,
+               ROUND(SUM(t.Num_Rows*t.Avg_Row_Len/(1024*1024)), 2) Size_MB_Netto,
+               ROUND(SUM(t.Num_Rows*t.Avg_Row_Len/(1024*1024)*t.PCT_Free/100), 2) Size_MB_For_PctFree, MAX(t.INI_Trans) Ini_Trans, MAX(t.Max_Trans) Max_Trans,
+               SUM(m.Inserts) Inserts, SUM(m.Updates) Updates, SUM(m.Deletes) Deletes, MAX(m.Truncated) Truncated, SUM(m.Drop_Segments) Drop_Segments, MAX(m.Last_DML_Timestamp) Last_DML_Timestamp
+        FROM   Tab_Partitions t
         JOIN   Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name AND m.SubPartition_Name IS NULL
+        GROUP BY t.Table_Owner, t.Table_Name, t.PCT_Free
         UNION ALL
-        SELECT t.Table_Owner, t.Table_Name, t.Partition_Name, t.SubPartition_Name,  t.PCT_Free, t.Num_Rows, t.Avg_Row_Len, t.Last_Analyzed,
-               ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024), 2) Size_MB_Netto,
-               ROUND(t.Num_Rows*t.Avg_Row_Len/(1024*1024)*t.PCT_Free/100, 2) Size_MB_For_PctFree, t.INI_Trans, t.Max_Trans,
-               m.Inserts, m.Updates, m.Deletes, m.Truncated, m.Drop_Segments, m.Last_DML_Timestamp
-        FROM   DBA_Tab_SubPartitions t
+        SELECT t.Table_Owner, t.Table_Name, COUNT(*) Partitions, t.PCT_Free, SUM(t.Num_Rows) Num_Rows, ROUND(SUM(t.Avg_Row_Len*t.Num_Rows)/SUM(t.Num_Rows)) Avg_Row_Len , MAX(t.Last_Analyzed) Last_Analyzed,
+               ROUND(SUM(t.Num_Rows*t.Avg_Row_Len/(1024*1024)), 2) Size_MB_Netto,
+               ROUND(SUM(t.Num_Rows*t.Avg_Row_Len/(1024*1024)*t.PCT_Free/100), 2) Size_MB_For_PctFree, MAX(t.INI_Trans) Ini_Trans, MAX(t.Max_Trans) Max_Trans,
+               SUM(m.Inserts) Inserts, SUM(m.Updates) Updates, SUM(m.Deletes) Deletes, MAX(m.Truncated) Truncated, SUM(m.Drop_Segments) Drop_Segments, MAX(m.Last_DML_Timestamp) Last_DML_Timestamp
+        FROM   Tab_SubPartitions t
         JOIN   Tab_Modifications m ON m.Table_Owner = t.Table_Owner AND m.Table_Name = t.Table_Name AND m.Partition_Name = t.Partition_Name AND m.SubPartition_Name = t.SubPartition_Name
+        GROUP BY t.Table_Owner, t.Table_Name, t.PCT_Free
        )
 WHERE  PCT_Free > 0
 AND    Last_Analyzed < SYSDATE - ?
