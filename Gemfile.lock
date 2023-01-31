@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    panorama_gem (2.16.10)
+    panorama_gem (2.16.11)
       actionmailer (= 6.1.7.1)
       actionpack (= 6.1.7.1)
       actionview (= 6.1.7.1)
@@ -59,12 +59,12 @@ GEM
       tzinfo (~> 2.0)
       zeitwerk (~> 2.3)
     builder (3.2.4)
-    concurrent-ruby (1.1.10)
+    concurrent-ruby (1.2.0)
     crass (1.0.6)
     date (3.3.3-java)
     erubi (1.12.0)
     ffi (1.15.5-java)
-    globalid (1.0.1)
+    globalid (1.1.0)
       activesupport (>= 5.0)
     i18n (1.12.0)
       concurrent-ruby (~> 1.0)
@@ -93,9 +93,9 @@ GEM
     net-smtp (0.3.3)
       net-protocol
     nio4r (2.5.8-java)
-    nokogiri (1.14.0-java)
+    nokogiri (1.14.1-java)
       racc (~> 1.4)
-    playwright-ruby-client (1.29.0)
+    playwright-ruby-client (1.30.0)
       concurrent-ruby (>= 1.1.6)
       mime-types (>= 3.0)
     puma (6.0.2-java)
@@ -141,7 +141,7 @@ GEM
     thor (1.2.1)
     tilt (2.0.11)
     timeout (0.3.1)
-    tzinfo (2.0.5)
+    tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     tzinfo-data (1.2022.7)
       tzinfo (>= 1.0.0)
@@ -157,4 +157,4 @@ DEPENDENCIES
   tzinfo-data
 
 BUNDLED WITH
-   2.3.26
+   2.4.3
