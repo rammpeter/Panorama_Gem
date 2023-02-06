@@ -293,7 +293,7 @@
   dba_history_show_sysmetric_submit_detail_caption:         Anzeige Details
   dba_history_show_sysmetric_submit_detail_hint:            Details der SysMetric-Historie anzeigen
   dba_history_show_sysmetric_submit_summary_caption:        Anzeige Summen
-  dba_history_show_sysmetric_submit_summary_hint:           Details der SysMetric-Summary (mehr verdichtet)
+  dba_history_show_sysmetric_submit_summary_hint:           Details der SysMetric-Summary (alle Metriken, mehr verdichtet, per AWR-Snapshot)
 
   dba_history_show_system_statistics_historic_caption:          Historie der System-Statistics aus
   dba_history_show_system_statistics_historic_caption_link:     Hier klicken für nähere Erläuterungen

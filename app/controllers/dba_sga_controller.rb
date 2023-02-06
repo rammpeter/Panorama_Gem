@@ -598,10 +598,10 @@ class DbaSgaController < ApplicationController
 
     sql_count = sql_select_one ["SELECT COUNT(*) FROM gv$SQLArea WHERE SQL_ID = ? #{where_string}", sql_id].concat(where_values)
     if sql_count > 0
-      add_statusbar_message("SQL not found in SGA! Showing history from AWR.")
+      add_statusbar_message("SQL found in SGA! Showing content from SGA instead of AWR history.")
       list_sql_detail_sql_id
     else
-      params[:statusbar_message] = "SQL found in SGA! Showing content from SGA instead of AWR history."
+      params[:statusbar_message] = "SQL not found in SGA! Showing history from AWR."
       redirect_to url_for(controller: :dba_history, action: :list_sql_detail_historic, params: params.permit! , method: :post)
     end
 
