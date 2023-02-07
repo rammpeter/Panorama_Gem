@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    panorama_gem (2.16.11)
+    panorama_gem (2.16.12)
       actionmailer (= 6.1.7.1)
       actionpack (= 6.1.7.1)
       actionview (= 6.1.7.1)
@@ -68,11 +68,11 @@ GEM
       activesupport (>= 5.0)
     i18n (1.12.0)
       concurrent-ruby (~> 1.0)
-    jwt (2.6.0)
+    jwt (2.7.0)
     loofah (2.19.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
-    mail (2.8.0.1)
+    mail (2.8.1)
       mini_mime (>= 0.1.1)
       net-imap
       net-pop

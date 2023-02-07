@@ -17,11 +17,13 @@ module ExceptionHelper
   end
 
   # Raise an exception with original backtrace but extended message
-  # @param exception: Original catched exception
-  # @param msg: Message to add to original exception
+  # @param [Exception] exception: Original catched exception
+  # @param [String] msg: Message to add to original exception
+  # @param [String] log_location: Location info for error logging. Log error only if != nil
   # @return: nothing, raises exception
-  def reraise_extended_exception(exception, msg)
+  def reraise_extended_exception(exception, msg, log_location: nil)
     msg = "#{exception.class}:#{exception.message} : #{msg}"
+    Rails.logger.error(log_location) { msg } unless log_location.nil?
     new_ex = Exception.new(msg)
     new_ex.set_backtrace(exception.backtrace)
     raise new_ex

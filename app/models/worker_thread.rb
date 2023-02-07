@@ -17,8 +17,11 @@ class WorkerThread
     result = thread.value
     result
   rescue Exception => e
-    Rails.logger.error('WorkerThread.check_connection') { "Exception #{e.message} raised in WorkerThread.check_connection" }
-    raise e if raise_exeption_on_error
+    if raise_exeption_on_error
+      reraise_extended_exception(e, "", log_location: 'WorkerThread.check_connection')
+    else
+      Rails.logger.error('WorkerThread.check_connection') { "Exception #{e.message} raised in WorkerThread.check_connection" }
+    end
   end
 
   # Generic create snapshot

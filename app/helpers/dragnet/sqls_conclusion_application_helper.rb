@@ -405,6 +405,55 @@ AND    (tc.Owner, tc.Table_Name, tc.Column_Name) NOT IN (
 ORDER BY tc.Num_Distinct DESC
            ",
         },
+        {
+          :name  => t(:dragnet_helper_167_name, :default=>'Possibly probematic NULL-handling in bind variables (:A1 IS NULL OR Column = :A1)'),
+          :desc  => t(:dragnet_helper_167_desc, :default=>"\
+To disable filtering on a certain column with NULL as bound value you often find a syntax like:
+
+SELECT * FROM table WHERE (:A1 IS NULL OR column = :A1);
+
+There can be huge drawbacks if using such OR-conditions.
+The optimizer calculates with a cardinality of 5% in this case and chooses a full table scan.
+This may be suboptimal because a possibly existing index on that column will not be used and also partition pruning cannot be used if the table is partitioned by that column.
+
+There are several alternatives with working usage of indexing or partition pruning:
+1. Use specific SQL syntax depending on the value of the bind variable and bind only the needed values.
+
+2. If the list ouf bound variables at execution time is fixed, place a dummy line in the SQL for the NULL case like \"(1=1 OR 1=:A1)\", otherwise \"column = :A1\" .
+
+3. Use SQL macros to get the according SQL syntax for the bound value.
+
+4. Use UNION ALL instead of OR. This executes the full scan only if the bound value is NULL and scans the index only if the bound value is not NULL.
+
+SELECT * FROM table WHERE :A1 IS NULL
+UNION ALL
+SELECT * FROM table WHERE column = :A1;
+          "),
+          :sql=> "\
+WITH Plans AS (SELECT /*+ NO_MERGE MATERIALIZE */ SQL_ID, ID, Plan_Hash_Value, MIN(Filter_Predicates) Filter_Predicates
+               FROM   gv$SQL_Plan
+               WHERE  Operation = 'TABLE ACCESS'
+               AND    Options LIKE '%FULL' /* possibly STORAGE FULL */
+               AND    (   REGEXP_LIKE(UPPER(Filter_Predicates), '\\( *:[a-zA-Z0-9]+ +IS +NULL +OR +')
+                       OR REGEXP_LIKE(UPPER(Filter_Predicates), 'OR +:[a-zA-Z0-9]+ +IS +NULL *\\)')
+                      )
+               GROUP BY SQL_ID, ID, Plan_Hash_Value
+              ),
+     ASH AS (SELECT /*+ NO_MERGE MATERIALIZE */ SQL_ID, SQL_Plan_Line_ID, SQL_Plan_Hash_Value, COUNT(*) Seconds
+             FROM   gv$Active_Session_History
+             WHERE  SQL_Plan_Line_ID IS NOT NULL
+             GROUP BY SQL_ID, SQL_Plan_Line_ID, SQL_Plan_Hash_Value
+             HAVING COUNT(*) > ?
+            )
+SELECT ash.SQL_ID, p.Plan_Hash_Value, ash.SQL_Plan_Line_ID, ash.Seconds \"Runtime of line in seconds\", p.Filter_Predicates
+FROM   Plans p
+JOIN   ASH ON ash.SQL_ID=p.SQL_ID AND ash.SQL_Plan_Line_ID = p.ID AND ash.SQL_Plan_Hash_Value = p.Plan_Hash_Value
+ORDER BY ash.Seconds DESC
+           ",
+          :parameter=>[
+            {:name=>t(:dragnet_helper_167_param_1_name, :default=>'Minimum runtime of plan line in seconds'), :size=>8, :default=>10, :title=>t(:dragnet_helper_167_param_1_hint, :default=>'Minimum runtime of SQL on particular plan line ID in seconds to be shown in selection') },
+          ]
+        },
     ]
   end
 

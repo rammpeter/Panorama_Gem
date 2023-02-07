@@ -44,7 +44,7 @@ module ApplicationHelper
 
     $login_client_store
   rescue Exception =>e
-    raise "Exception '#{e.message}' while creating file store at '#{EngineConfig.config.client_info_filename}'"
+    reraise_extended_exception(e, "while creating file store at '#{EngineConfig.config.client_info_filename}'", log_location: 'ApplicationHelper.get_client_info_store')
   end
 
   # Write client related info value to server-side cache
@@ -68,8 +68,7 @@ module ApplicationHelper
         @buffered_client_info_store = nil
         write_to_client_info_store(key, value, retries: retries+1)
       else
-        Rails.logger.error('ApplicationHelper.write_to_client_info_store')  { "#{e.class} '#{e.message}' raised while writing file store at '#{EngineConfig.config.client_info_filename}'" }
-        raise "Exception '#{e.message}' while writing file store at '#{EngineConfig.config.client_info_filename}'"
+        reraise_extended_exception(e, "while writing file store at '#{EngineConfig.config.client_info_filename}'", log_location: 'ApplicationHelper.write_to_client_info_store')
       end
     end
   end
@@ -794,7 +793,7 @@ module ApplicationHelper
     else
       cookies.delete('client_key')                                               # Verwerfen des nicht entschlüsselbaren Cookies
       cookies.delete('client_salt')
-      raise "Exception '#{e.message}' while decrypting your client key from browser cookie. \nPlease try again."
+      reraise_extended_exception(e, "while decrypting your client key from browser cookie. \nPlease try again.", log_location: 'ApplictionHelper.get_decrypted_client_key')
     end
   end
 

@@ -1767,6 +1767,11 @@
     Siehe auch: https://chinaraliyev.wordpress.com/2019/04/29/parallel-shared-hash-join/
   dragnet_helper_166_name:                                  Mögliche Eliminierung von HASH JOIN BUFFERED durch Parallel Shared Hash Join
 
+  dragnet_helper_167_desc: |-
+  dragnet_helper_167_name:                                  Möglicherweise problematisches NULL-Handling in Bindevariablen (:A1 IS NULL OR Column = :A1)
+  dragnet_helper_167_param_1_hint:                          Minimale Laufzeit des SQLs auf einer Zeile des Ausführungsplans in Sekunden, um in Selektion gezeigt zu werden
+  dragnet_helper_167_param_1_name:                          Minimale Laufzeit der Zeile des Plans in Sekunden
+
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 
   dragnet_show_personal_selection_form_caption:             Erweitern der Rasterfahndungs-SQLs um persönliche Abfragen

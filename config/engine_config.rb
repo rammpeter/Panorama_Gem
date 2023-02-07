@@ -1,4 +1,6 @@
 class EngineConfig < Rails::Application
+  include ExceptionHelper
+
   # Settings in config/environments/* take precedence over those specified here.
   # Application configuration should go into files in config/initializers
   # -- all .rb files in that directory are automatically loaded.
@@ -58,7 +60,7 @@ class EngineConfig < Rails::Application
     end
     $login_client_store
   rescue Exception =>e
-    raise "Exception '#{e.message}' while creating file store at '#{EngineConfig.config.client_info_filename}'"
+    reraise_extended_exception(e, "while creating file store at '#{EngineConfig.config.client_info_filename}'", log_location: 'EngineConfig.get_client_info_store')
   end
 
   # Remove expired entries

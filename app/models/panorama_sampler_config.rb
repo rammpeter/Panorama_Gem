@@ -4,6 +4,8 @@
 #require 'popup_message_exception'
 
 class PanoramaSamplerConfig
+  include ExceptionHelper
+
   @@config_array = nil                                                          # First access loads it from session store
   @@config_access_mutex = Mutex.new
 
@@ -229,8 +231,10 @@ class PanoramaSamplerConfig
   # Allow snapshot cycle with less than 1 minute for tests
   def set_test_awr_ash_snapshot_cycle(seconds)
     raise "Method only allowed for test purpose" if !Rails.env.test?
-    @config_hash[:awr_ash_snapshot_cycle] = seconds.to_f/60
-    PanoramaSamplerConfig.write_config_array_to_store
+    @@config_access_mutex.synchronize do
+      @config_hash[:awr_ash_snapshot_cycle] = seconds.to_f/60
+      PanoramaSamplerConfig.write_config_array_to_store
+    end
   end
 
 
@@ -451,10 +455,10 @@ class PanoramaSamplerConfig
 
   #  Call inside Mutex.synchronize only
   def self.write_config_array_to_store
+    raise "PanoramaSamplerConfig.write_config_array_to_store: Mutex @@config_access_mutex is not locked before call" unless @@config_access_mutex.locked?
     EngineConfig.get_client_info_store.write(client_info_store_key, @@config_array.map{|config| config.get_cloned_config_hash})  # Store config array as Hash-Array
   rescue Exception =>e
-    Rails.logger.error('PanoramaSamplerConfig.write_config_array_to_store') { "Exception '#{e.message}' raised while writing file store at '#{EngineConfig.config.client_info_filename}'" }
-    raise "Exception '#{e.message}' while writing file store at '#{EngineConfig.config.client_info_filename}'"
+    reraise_extended_exception(e, "while writing file store at '#{EngineConfig.config.client_info_filename}'", log_location: 'PanoramaSamplerConfig.write_config_array_to_store')
   end
 
   def self.validate_cycle_minutes(name:, value:, min_minutes:1)

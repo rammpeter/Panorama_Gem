@@ -5,6 +5,7 @@ class ActiveSupport::TestCase
   include ApplicationHelper
   include EnvHelper
   include ActionView::Helpers::TranslationHelper
+  include ExceptionHelper
 
   # Setup all fixtures in test/fixtures/*.(yml|csv) for all tests in alphabetical order.
   #
