@@ -159,7 +159,6 @@ WITH Tab_Modifications AS (SELECT /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table
                                   Inserts, Updates, Deletes, Truncated, Drop_Segments, Timestamp Last_DML_Timestamp
                            FROM   DBA_Tab_Modifications
                            WHERE  Table_Owner NOT IN (#{system_schema_subselect})
-                           AND    Updates = 0
                           ),
      Tables AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, PCT_Free, Num_Rows, Avg_Row_Len, Last_Analyzed, Ini_Trans, Max_Trans
                 FROM   DBA_Tables
@@ -203,6 +202,7 @@ FROM   (
        )
 WHERE  PCT_Free > 0
 AND    Last_Analyzed < SYSDATE - ?
+AND    Updates = 0
 ORDER BY Num_Rows*Avg_Row_Len*PCT_Free DESC
             ",
             :parameter=>[{:name=>t(:dragnet_helper_140_param_1_name, :default=> 'Min. no. days since last analyze'), :size=>8, :default=>8, :title=>t(:dragnet_helper_140_param_1_hint, :default=> 'Minimum number of days since last analyze timestamp for object') },]

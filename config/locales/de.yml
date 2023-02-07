@@ -1768,9 +1768,42 @@
   dragnet_helper_166_name:                                  Mögliche Eliminierung von HASH JOIN BUFFERED durch Parallel Shared Hash Join
 
   dragnet_helper_167_desc: |-
+    Um die Filterung für eine bestimmte Spalte mit NULL als gebundenem Wert zu deaktivieren, findet man oft eine Syntax wie die folgende:
+
+    SELECT * FROM table WHERE (:A1 IS NULL OR column = :A1);
+
+    Die Verwendung solcher OR-Bedingungen kann große Nachteile mit sich bringen.
+    Der Optimierer rechnet in diesem Fall mit einer Kardinalität von 5% und wählt einen vollständigen Tabellenscan.
+    Dies kann suboptimal sein, da ein möglicherweise vorhandener Index auf dieser Spalte nicht verwendet wird und auch Partition Pruning nicht verwendet werden kann, wenn die Tabelle durch diese Spalte partitioniert ist.
+
+    Es gibt mehrere Alternativen, bei denen Indizierung oder Partition Pruning verwendet werden:
+    1. Verwenden Sie eine spezifische SQL-Syntax, die vom Wert der Bindungsvariablen abhängt, und binden Sie nur die benötigten Werte.
+
+    2. Wenn die Liste der gebundenen Variablen zur Ausführungszeit feststeht, fügen Sie eine Dummy-Zeile in die SQL für den NULL-Fall ein, z. B. \"(1=1 OR 1=:A1)\", andernfalls \"Spalte = :A1\".
+
+    3. Verwenden Sie SQL-Makros, um die entsprechende SQL-Syntax für den gebundenen Wert zu erhalten.
+
+    4. Verwenden Sie UNION ALL anstelle von OR. Dies führt den vollständigen Scan nur aus, wenn der gebundene Wert NULL ist, und scannt den Index nur, wenn der gebundene Wert nicht NULL ist.
+
+    SELECT * FROM table WHERE :A1 IS NULL
+    UNION ALL
+    SELECT * FROM table WHERE column = :A1;
   dragnet_helper_167_name:                                  Möglicherweise problematisches NULL-Handling in Bindevariablen (:A1 IS NULL OR Column = :A1)
   dragnet_helper_167_param_1_hint:                          Minimale Laufzeit des SQLs auf einer Zeile des Ausführungsplans in Sekunden, um in Selektion gezeigt zu werden
   dragnet_helper_167_param_1_name:                          Minimale Laufzeit der Zeile des Plans in Sekunden
+
+  dragnet_helper_168_desc: |-
+    Die mit Oracle 12.2 eingeführte ADVANCED HIGH Indexkomprimierung als Teil der Oracle Advanced Compression Option ermöglicht eine deutlich bessere Komprimierung als die anderen Indexschlüssel-Deduplizierungsfunktionen (COMPRESS, COMPRESS ADVANCED LOW).
+    Der Nachteil ist jedoch, dass die Indexpflege aufwändiger ist und der Indexzugriff mehr CPU-Leistung kostet und bis zu fünfmal langsamer werden kann, insbesondere bei Index-Scans mit größeren Ergebnissen.
+    Daher wird COMPRESS ADVANCED HIGH insbesondere für weniger häufig verwendete Indizes auf Tabellen mit weniger DML empfohlen.
+    Diese Auswahl hält Indizes mit < x Sekunden Wartezeit bei SQLs, die auf diesen Index zugreifen, für mögliches COMPRESS ADVANCED HIGH wert.
+  dragnet_helper_168_name:                                  Empfehlungen für ADVANCED HIGH Index-Komprimierung
+  dragnet_helper_168_param_1_hint:                          Anzahl der letzten Tage in der Active Session History, die für die Berechnung der Wartezeit in Sekunden für diesen Index berücksichtigt wird
+  dragnet_helper_168_param_1_name:                          Anzahl der letzten zu berücksichtigenden Tage in ASH
+  dragnet_helper_168_param_2_hint:                          Maximale Anzahl von Sekunden, die Active Session History im betrachteten Zeitraum als Sitzungsaktivität für den Index aufgezeichnet hat
+  dragnet_helper_168_param_2_name:                          Maximale Wartezeit von Sekunden auf den Index
+  dragnet_helper_168_param_3_hint:                          Mindestgröße des Index in MB um bei dieser Auswahl berücksichtigt zu werden
+  dragnet_helper_168_param_3_name:                          Mindestgröße des Index in MB für Berücksichtigung
 
   dragnet_list_dragnet_sql_result_no_result:                SQL brachte kein Result
 

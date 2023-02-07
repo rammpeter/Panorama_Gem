@@ -131,6 +131,79 @@ This selections shows recommendations for compression of single columns of multi
             ]
         },
         {
+          :name  => t(:dragnet_helper_168_name, :default=> 'Recommendations for ADVANCED HIGH index compression'),
+          :desc  => t(:dragnet_helper_168_desc, :default=>"Introduced with Oracle 12.2 the ADVANCED HIGH index compression as part of the Oracle Advanced Compression Option allows significant better compression than the other index key deduplication functions (COMPRESS, COMPRESS ADVANCED LOW).
+But the drawback is that index maintenence is more costly and index access costs more CPU effort and can become up to five times slower, especially for index scans with larger results.
+Therefore COMPRESS ADVANCED HIGH is especially suggested for less frequently used indexes on tables with less DML.
+This selection considers indexes with < x seconds in wait at SQLs accessing this index worth for possible COMPRESS ADVANCED HIGH.
+"),
+          :sql=> "\
+WITH Segments AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Segment_Name, ROUND(SUM(bytes)/(1024*1024),1) MBytes
+                  FROM   DBA_Segments
+                  WHERE  Owner NOT IN (SELECT /*+ NO_MERGE */ UserName FROM All_Users WHERE Oracle_Maintained = 'Y')
+                  GROUP BY Owner, Segment_Name
+                 ),
+     Ind_Columns AS (SELECT  /*+ NO_MERGE MATERIALIZE */ Table_Owner, Table_Name, Index_Owner, Index_Name, Column_Name
+                     FROM    DBA_Ind_Columns i
+                     WHERE   Index_Owner NOT IN (SELECT /*+ NO_MERGE */ UserName FROM All_Users WHERE Oracle_Maintained = 'Y')
+                    ),
+     Tab_Columns AS (SELECT  /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, Column_Name, Avg_Col_Len
+                     FROM    DBA_Tab_Columns i
+                     WHERE   Owner NOT IN (SELECT /*+ NO_MERGE */ UserName FROM All_Users WHERE Oracle_Maintained = 'Y')
+                    ),
+     Indexes AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Index_Name, Table_Owner, Table_Name, Num_Rows, Distinct_Keys, Index_Type, Compression
+                 FROM   DBA_Indexes
+                 WHERE  Owner NOT IN (SELECT /*+ NO_MERGE */ UserName FROM All_Users WHERE Oracle_Maintained = 'Y')
+                 AND    Index_Type NOT IN ('BITMAP')
+                ),
+     Tables AS (SELECT /*+ NO_MERGE MATERIALIZE */ Owner, Table_Name, IOT_Type
+                FROM   DBA_Tables
+                WHERE  Owner NOT IN (SELECT /*+ NO_MERGE */ UserName FROM All_Users WHERE Oracle_Maintained = 'Y')
+               ),
+     ASH AS ( SELECT /*+ NO_MERGE MATERIALIZE */ o.Owner, o.Object_Name, SUM(h.Seconds_In_Wait) Seconds_In_Wait
+              FROM   (
+                      SELECT /*+ NO_MERGE */ Current_Obj#, SUM(10) Seconds_In_Wait
+                      FROM   DBA_Hist_Active_Sess_History h
+                      JOIN   (SELECT /*+ NO_MERGE */ Inst_ID, MIN(Sample_Time) Min_Sample_Time
+                              FROM gv$Active_Session_History
+                              GROUP BY Inst_ID
+                             ) mh ON mh.Inst_ID = h.Instance_Number
+                      WHERE  h.SQL_Plan_Operation = 'INDEX'
+                      AND    h.Sample_Time > SYSDATE -?
+                      AND    h.Sample_Time < mh.Min_Sample_Time
+                      GROUP BY Current_Obj#
+                      UNION ALL
+                      SELECT /*+ NO_MERGE */ Current_Obj#, COUNT(*) Seconds_In_Wait
+                      FROM   gv$Active_Session_History
+                      GROUP BY Current_Obj#
+                     ) h
+              JOIN   DBA_Objects o ON o.Object_ID = h.Current_Obj#
+              WHERE  o.Owner NOT IN (SELECT /*+ NO_MERGE */ UserName FROM All_Users WHERE Oracle_Maintained = 'Y')
+              GROUP BY  o.Owner, o.Object_Name
+             )
+SELECT /* Advanced High Compression Suggestions */ i.Owner, i.Index_Name, i.Index_Type, i.Compression, i.Table_Owner, i.Table_Name,
+       ash.Seconds_In_Wait, t.IOT_Type, seg.MBytes, i.Num_Rows, Distinct_Keys, ROUND(i.Num_Rows/DECODE(i.Distinct_Keys,0,1,i.Distinct_Keys)) Rows_Per_Key, cs.Avg_Col_Len
+FROM   Indexes i
+JOIN   Tables t ON t.Owner = i.Table_Owner AND t.Table_Name = i.Table_Name
+JOIN   Segments seg ON seg.Owner = i.Owner AND seg.Segment_Name = i.Index_Name
+JOIN   (SELECT /*+ NO_MERGE */ ic.Index_Owner, ic.Index_Name, SUM(tc.Avg_Col_Len) Avg_Col_Len
+        FROM   Ind_Columns ic
+        JOIN   Tab_Columns tc ON tc.Owner = ic.Table_Owner AND tc.Table_Name = ic.Table_Name AND tc.Column_Name = ic.Column_Name
+        GROUP BY ic.Index_Owner, ic.Index_Name
+       ) cs ON cs.Index_Owner = i.Owner AND cs.Index_Name = i.Index_Name
+LEFT OUTER JOIN ash ON ash.Owner = i.Owner AND ash.Object_Name = i.Index_Name
+WHERE  i.Compression != 'ADVANCED HIGH'
+AND    NVL(ash.Seconds_In_Wait, 0) < ?
+AND    seg.MBytes > ?
+ORDER BY seg.MBytes DESC NULLS LAST
+          ",
+          :parameter=>[
+            {name: t(:dragnet_helper_168_param_1_name, default: 'Number of last days in ASH to consider') , size: 8, default: 8, title: t(:dragnet_helper_168_param_1_hint, default: 'Number of last days in Active Session History to consider for calculation of seconds in wait for that index') },
+            {name: t(:dragnet_helper_168_param_3_name, default: 'Maximum seconds in wait for index') , size: 8, default: 100, title: t(:dragnet_helper_168_param_3_hint, default: 'Maximum number of seconds Active Session History has recorded in the considered period as session activity on index') },
+            {name: t(:dragnet_helper_168_param_2_name, default: 'Minimum size of index in MB to be considered') , size: 1, default: 8, title: t(:dragnet_helper_168_param_2_hint, default: 'Minimum size of index in MB to be considered in this selection') },
+          ]
+        },
+        {
             :name  => t(:dragnet_helper_4_name, :default=> 'Avoid data redundancy in primary key index (move to index-organized tables)'),
             :desc  => t(:dragnet_helper_4_desc, :default=>"IOT-structure for tables is recommended if following criterias outbalance to positive side:
   Positive: Saving of disk space and buffer cache space due to omission of table itself
@@ -166,7 +239,6 @@ This selections shows recommendations for compression of single columns of multi
                       ORDER BY 1/Num_Rows*(Anzahl_Columns-Anzahl_PKey_Columns+1)*Anzahl_Indizes",
             :parameter=>[{:name=> 'Min. number of rows', :size=>8, :default=>100000, :title=>t(:dragnet_helper_4_param_1_hint, :default=> 'Minimum number of rows of index') },]
         },
-
     ]
   end # optimal_index_storage
 
