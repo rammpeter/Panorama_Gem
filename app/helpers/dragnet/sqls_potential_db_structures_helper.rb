@@ -277,7 +277,11 @@ DECLARE
   statdiff  NUMBER;
   Anzahl    NUMBER;
   StatNum   NUMBER;
-  Row_Count NUMBER; -- real number of rows found in table. Possibly below sample_size
+  v_SQL_ID  VARCHAR2(20);     -- the executed select by rowid
+  v_Gets    NUMBER;           -- the buffer gets by SQL
+  v_Time    VARCHAR2(20);     -- the timestamp to make the SQL unique
+  v_Execs   NUMBER;           -- The number of executions of SQL
+  Row_Count NUMBER;           -- real number of rows found in table. Possibly below sample_size
   Sample_Size NUMBER := 1000;
 
   TYPE RowID_TableType IS TABLE OF URowID;
@@ -297,17 +301,22 @@ DECLARE
 
   PROCEDURE RunTest(p_Owner IN VARCHAR2, p_Table_Name IN VARCHAR2) IS
   BEGIN
+    v_Time := TO_CHAR(SYSTIMESTAMP, 'HH24:MI:SS.FF');
     statdiff := Diff();
     FOR i IN 1..RowID_Table.COUNT LOOP
-      EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM (SELECT /*+ NO_MERGE */ * FROM '||p_Owner||'.'||p_Table_Name||' WHERE RowID=:A1)' INTO Anzahl USING RowID_Table(i);
+      EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM (SELECT /*+ NO_MERGE '||v_Time||' */ * FROM '||p_Owner||'.'||p_Table_Name||' WHERE RowID=:A1)' INTO Anzahl USING RowID_Table(i);
     END LOOP;
+    SELECT Prev_SQL_ID INTO v_SQL_ID FROM v$Session WHERE SID = SYS_CONTEXT('USERENV', 'SID');   /* Separate SQL to not catch the implicit FGA policy SQL while selecting from v$SQL */
     statdiff := Diff();
+    SELECT Buffer_gets, Executions INTO v_Gets, v_Execs FROM v$SQL WHERE SQL_ID = v_SQL_ID;
   END RunTest;
 
 BEGIN
   DBMS_OUTPUT.PUT_LINE('===========================================');
   DBMS_OUTPUT.PUT_LINE('Detection of chained rows: connected as user='||SYS_CONTEXT ('USERENV', 'SESSION_USER'));
   DBMS_OUTPUT.PUT_LINE('Sample-size='||Sample_Size||' rows');
+  DBMS_OUTPUT.PUT_LINE('There might be incorrect results for partioned and/or compressed tables');
+  DBMS_OUTPUT.PUT_LINE('===========================================');
   SELECT Statistic# INTO StatNum FROM v$StatName WHERE Name='consistent gets';
   FOR Rec IN (SELECT Owner, Table_Name, Num_Rows
               FROM   DBA_Tables
@@ -321,7 +330,7 @@ BEGIN
       runTest(Rec.Owner, Rec.Table_Name);  -- der erste zum Warmlaufen und übersetzen der Cursor
       runTest(Rec.Owner, Rec.Table_Name);  -- dieser zum Zaehlen
       IF statdiff > Row_Count THEN
-        DBMS_OUTPUT.PUT_LINE('Table='||Rec.Owner||'.'||Rec.Table_Name||',   num rows='||Rec.Num_Rows||',   consistent gets='||statdiff||',   pct. chained rows='||((statdiff*100/Row_Count)-100)||' %');
+        DBMS_OUTPUT.PUT_LINE('Table='||RPAD(Rec.Owner||'.'||Rec.Table_Name, 61)||', num rows='||LPAD(Rec.Num_Rows, 10)||', consistent gets='||LPAD(statdiff, 6)||', buffer gets='||LPAD(v_Gets, 6)||', pct. chained rows='||LPAD(ROUND(((statdiff*100/Row_Count)-100), 2), 4)||' %');
       END IF;
     EXCEPTION
       WHEN OTHERS THEN
