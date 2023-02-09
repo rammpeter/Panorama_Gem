@@ -828,7 +828,7 @@ class DbaSchemaController < ApplicationController
     @indexes = sql_select_one ['SELECT COUNT(*) FROM DBA_Indexes WHERE Table_Owner = ? AND Table_Name = ?', @owner, @table_name]
 
     @mv_attribs = nil                                                           # suppress warning: instance variable @viewtext not initialized
-    if @table_type == "MATERIALIZED VIEW"
+    if @table_type == "MATERIALIZED VIEW" || sql_select_one(["SELECT COUNT(*) FROM DBA_Objects WHERE Owner=? AND Object_Name=? AND Object_Type = 'MATERIALIZED VIEW'", @owner, @table_name]) > 0
       @mv_attribs = sql_select_first_row ["SELECT m.*
                                            FROM   DBA_MViews m
                                            WHERE  m.Owner      = ?
@@ -1057,6 +1057,13 @@ class DbaSchemaController < ApplicationController
     render_partial
   end
 
+  # FGA policies of table or view
+  def list_object_policies
+    @owner        = prepare_param :owner
+    @object_name  = prepare_param :object_name
+    @policies = sql_select_all ["SELECT * FROM DBA_Audit_Policies WHERE Object_Schema = ? AND Object_Name = ?", @owner, @object_name]
+    render_partial
+  end
 
   def list_indexes
     @owner      = params[:owner]

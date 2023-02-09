@@ -343,33 +343,33 @@ Max. extents = #{rec.max_extents}  #{     data_title_part_def.call(rec.def_max_e
 
 <% if @mv_attribs %>
   <%=
+    @update_area_mv_attribs = get_unique_area_id
     render_async(:storage, :list_materialized_view_action, {
         all_mviews:  "All local materialized views",
         owner:                          @owner,
         name:                           @table_name,
         called_from_object_description: true,
-        update_area:                    @update_area
+        update_area:                    @update_area_mv_attribs
     })
   %>
+  <div id="<%= @update_area_mv_attribs %>"></div>
 
-  <h4>Viewtext of <%= @table_type %> <%= @owner %>.<%= @table_name %></h4>
+  <h4>Viewtext of materialzed view <%= @owner %>.<%= @table_name %></h4>
   <%=  render_code_mirror(@mv_attribs.query) %>
 <% end %>
 
 <% if @mv_log_count > 0 %>
   <%=
+    @update_area_mv_logs = get_unique_area_id
     render_async(:storage, :list_materialized_view_action, {
         mview_logs:  'Materialized view logs',
         log_owner:   @owner,
         master:      @table_name,
-        update_area: @update_area
+        update_area: @update_area_mv_logs
     })
   %>
 <% end %>
-
-
-
-
+<div id="<%= @update_area_mv_logs %>"></div>
 
 <% if @unique_constraints.count > 0 %>
     <%=
@@ -391,6 +391,17 @@ Max. extents = #{rec.max_extents}  #{     data_title_part_def.call(rec.def_max_e
     %>
 
 <% end %>
+
+<%=
+  @update_area_policies = get_unique_area_id
+  render_async(:dba_schema, :list_object_policies, {
+    owner:          @owner,
+    object_name:    @table_name,
+    update_area:    @update_area_policies
+  })
+%>
+<div id="<%= @update_area_policies %>"></div>
+
 
 <div class="flex-row-container">
   <div class="flex-row-element">

@@ -6,6 +6,10 @@ require 'resolv'
 module AjaxHelper
   include ExceptionHelper
 
+  # call action and render result
+  # @param [String] controller
+  # @param [String] action
+  # @param [Hash] params {update_area:}
   def render_async(controller, action, params={})
     update_area = get_unique_area_id                                            # DIV where result of async call should be rendered in
     params[:update_area] = update_area unless params.has_key?(:update_area)     # render next action in same DIV if no other target is set
